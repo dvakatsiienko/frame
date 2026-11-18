@@ -100,15 +100,41 @@ describe('his press: local, then written, then read', () => {
         expect(shown(r)).toBe('open');
     });
 
-    test('a failed write gives the shelf’s press back', () => {
+    // sixth sense round 1 (FRM-648 a1): a failed write is its own phase with its reason, never a revert to read
+    test('a failed write is failed, with its reason, and draws the shelf’s press', () => {
         const r = run(
             null,
             read(),
             { at: 1, type: 'pressed', verdict: 'tick' },
-            { at: 1, type: 'writeFailed' },
+            { at: 1, reason: 'disk full', type: 'writeFailed' },
         );
-        expect(r?.phase).toBe('read');
+        expect(r?.phase).toBe('failed');
+        expect(r?.reason).toBe('disk full');
         expect(shown(r)).toBe('open');
+    });
+
+    test('a failure stays through the reads after it, so he sees it', () => {
+        const r = run(
+            null,
+            read(),
+            { at: 1, type: 'pressed', verdict: 'tick' },
+            { at: 1, reason: 'disk full', type: 'writeFailed' },
+            read({ mark: 'accepted' }),
+        );
+        expect(r?.phase).toBe('failed');
+        expect(shown(r)).toBe('ticked');
+    });
+
+    test('failed, then pressed again, is local', () => {
+        const r = run(
+            null,
+            read(),
+            { at: 1, type: 'pressed', verdict: 'tick' },
+            { at: 1, reason: 'disk full', type: 'writeFailed' },
+            { at: 2, type: 'pressed', verdict: 'tick' },
+        );
+        expect(r?.phase).toBe('local');
+        expect(r?.reason).toBeUndefined();
     });
 
     test('an older write’s answer never moves a newer press', () => {
@@ -117,7 +143,7 @@ describe('his press: local, then written, then read', () => {
             read(),
             { at: 1, type: 'pressed', verdict: 'tick' },
             { at: 2, type: 'pressed', verdict: 'untick' },
-            { at: 1, type: 'writeFailed' },
+            { at: 1, reason: 'late', type: 'writeFailed' },
             { at: 1, type: 'writeOk' },
         );
         expect(r?.phase).toBe('local');

@@ -44,10 +44,10 @@ import { next, pressState } from './press.js';
 
 /** the reload chain on a fake clock, each run timed by it */
 function serialOn(clock: ReturnType<typeof fakeClock>) {
-    const chain = createSerial();
+    const chain = createSerial(clock.now);
     return Object.assign(
         (run: Parameters<typeof chain>[0]) => chain(run, clock.after),
-        { isStalled: chain.isStalled },
+        { state: chain.state },
     );
 }
 
@@ -62,6 +62,7 @@ function fakeClock() {
             return { cancel: () => timers.delete(timer) };
         },
         armed: () => timers.size,
+        now: () => now,
         pass(ms: number) {
             now += ms;
             for (const timer of [...timers])
@@ -833,16 +834,45 @@ describe('a reload lands whole and alone: a ticked ask never flips back (FRM-628
         const serial = serialOn(clock);
         const stuck = serial(() => new Promise<void>(() => {}));
         await Promise.resolve();
-        expect(serial.isStalled()).toBe(false);
+        expect(serial.state().phase).not.toBe('stalled');
         clock.pass(READ_STALL_MS);
         await stuck;
-        expect(serial.isStalled()).toBe(true);
+        expect(serial.state().phase).toBe('stalled');
         let isRun = false;
         await serial(async () => {
             isRun = true;
         });
         expect(isRun).toBe(true);
-        expect(serial.isStalled()).toBe(false);
+        expect(serial.state().phase).not.toBe('stalled');
+    });
+
+    // sixth sense round 1 (FRM-648 5b): the chain is one named state, never a running id beside a stalled flag
+    test('the chain is one state: idle, running, then stalled since its last settled read', async () => {
+        const clock = fakeClock();
+        const serial = serialOn(clock);
+        expect(serial.state()).toEqual({ phase: 'idle', settledAt: null });
+        clock.pass(1_000);
+        await serial(async () => {});
+        expect(serial.state()).toEqual({ phase: 'idle', settledAt: 1_000 });
+        const stuck = serial(() => new Promise<void>(() => {}));
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(serial.state().phase).toBe('running');
+        clock.pass(READ_STALL_MS);
+        await stuck;
+        expect(serial.state()).toEqual({ phase: 'stalled', settledAt: 1_000 });
+    });
+
+    test('a read that fails frees the chain and keeps its last settled time', async () => {
+        const clock = fakeClock();
+        const serial = serialOn(clock);
+        await serial(async () => {});
+        await expect(
+            serial(async () => {
+                throw new Error('ps timed out');
+            }),
+        ).rejects.toThrow();
+        expect(serial.state()).toEqual({ phase: 'idle', settledAt: 0 });
     });
 
     test('a stalled read that answers late is told it is no longer the current one', async () => {
@@ -865,6 +895,8 @@ describe('a reload lands whole and alone: a ticked ask never flips back (FRM-628
         release();
         await Promise.resolve();
         expect(isCurrentLate).toBe(false);
+        // its answer never moves the chain: still stalled, its last settled read unchanged
+        expect(serial.state().phase).toBe('stalled');
     });
 
     test('a read that settles in time cancels its stall timer', async () => {
@@ -872,7 +904,7 @@ describe('a reload lands whole and alone: a ticked ask never flips back (FRM-628
         const serial = serialOn(clock);
         await serial(async () => {});
         expect(clock.armed()).toBe(0);
-        expect(serial.isStalled()).toBe(false);
+        expect(serial.state().phase).not.toBe('stalled');
     });
 
     test('a reload asked for while one runs waits for it: two never overlap', async () => {

@@ -181,39 +181,75 @@ export async function withPending(rows, readTicks) {
 export const READ_STALL_MS = 30 * 1000;
 
 /**
+ * @typedef {{ phase: 'idle', settledAt: number | null }
+ *   | { phase: 'running', id: number, settledAt: number | null }
+ *   | { phase: 'stalled', settledAt: number | null }} ChainState
+ * @typedef {{ type: 'started', id: number }
+ *   | { type: 'settled' | 'failed' | 'stallTimedOut', id: number, at: number }} ChainEvent
+ */
+
+/**
+ * the reload chain's one state: a run's answer or its stall timer moves it only while that run is the running one, so
+ * a run let go as stalled changes nothing when it answers late
+ * @param {ChainState} chain @param {ChainEvent} event @returns {ChainState}
+ */
+export function nextChain(chain, event) {
+    if (event.type === 'started')
+        return { id: event.id, phase: 'running', settledAt: chain.settledAt };
+    if (chain.phase !== 'running' || chain.id !== event.id) return chain;
+    if (event.type === 'settled') return { phase: 'idle', settledAt: event.at };
+    if (event.type === 'failed')
+        return { phase: 'idle', settledAt: chain.settledAt };
+    return { phase: 'stalled', settledAt: chain.settledAt };
+}
+
+/**
  * one run at a time: a run asked for while one goes waits for it, and of those waiting only the newest runs, so two
  * reloads never overlap and the newest read always lands last (FRM-628: a slow `ps` let an older read put a gone ask back).
  * a run that never settles stalls the chain (FRM-648 step 113b, dima's empty deck at 14:41): past READ_STALL_MS it is
- * let go, its late answer told it is no longer current, and the deck says so until a run settles
+ * let go, its late answer told it is no longer current, and the deck says «no read since» its last settled read
+ * @param {() => number} now
  */
-export function createSerial() {
+export function createSerial(now) {
     let tail = Promise.resolve();
     let newest = 0;
-    let current = 0;
-    let isStalled = false;
+    /** @type {ChainState} */
+    let chain = { phase: 'idle', settledAt: null };
     /**
      * @param {(isCurrent: () => boolean) => Promise<void>} run
      * @param {(ms: number, fire: () => void) => { cancel: () => unknown }} after the run's own timer, `cx.timer.after`
      */
     const serial = (run, after) => {
-        const mine = ++newest;
+        const id = ++newest;
         const next = tail.then(() => {
-            if (mine !== newest) return;
-            current = mine;
+            if (id !== newest) return;
+            chain = nextChain(chain, { id, type: 'started' });
             return new Promise((resolve, reject) => {
                 const timer = after(READ_STALL_MS, () => {
-                    isStalled = true;
-                    current = 0;
+                    chain = nextChain(chain, {
+                        at: now(),
+                        id,
+                        type: 'stallTimedOut',
+                    });
                     resolve(undefined);
                 });
-                run(() => current === mine).then(
+                run(() => chain.phase === 'running' && chain.id === id).then(
                     () => {
                         timer.cancel();
-                        if (current === mine) isStalled = false;
+                        chain = nextChain(chain, {
+                            at: now(),
+                            id,
+                            type: 'settled',
+                        });
                         resolve(undefined);
                     },
                     (err) => {
                         timer.cancel();
+                        chain = nextChain(chain, {
+                            at: now(),
+                            id,
+                            type: 'failed',
+                        });
                         reject(err);
                     },
                 );
@@ -222,7 +258,7 @@ export function createSerial() {
         tail = next.catch(() => {});
         return next;
     };
-    return Object.assign(serial, { isStalled: () => isStalled });
+    return Object.assign(serial, { state: () => chain });
 }
 
 /**

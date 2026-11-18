@@ -255,7 +255,7 @@ export default class Deck extends View {
     /** @type {Map<string, import('gpui-kit').Task>} */
     pressTimers = new Map();
     // reloads one at a time, the newest last: an older read never puts a gone ask back
-    reloads = createSerial();
+    reloads = createSerial(Date.now);
     // Enter in every steer box, one press at a time: a held key's repeats act once
     steerKeys = createKeyPress();
     /** @param {unknown} _props @param {Context} cx */
@@ -308,7 +308,6 @@ export default class Deck extends View {
         this.pressError = null;
         /** @type {string | null} */
         this.pressNote = null;
-        this.loadedAt = null;
         /** @type {number | null} */
         this.week = null;
         cx.timer.every(THREADS_BEAT_MS, (cx) => this.reload(cx));
@@ -340,20 +339,20 @@ export default class Deck extends View {
     reload(cx) {
         cx.spawn(async (cx) => {
             await this.reloads(
-                (isCurrent) => this.read(cx, isCurrent),
+                (isCurrent) => this.read(isCurrent),
                 (ms, fire) => cx.timer.after(ms, () => fire()),
             );
-            // a read let go as stalled says so in the footer at once
-            if (this.reloads.isStalled()) cx.notify();
+            // drawn once the chain holds the read's end: settled, failed or let go as stalled
+            cx.notify();
         });
     }
 
     /**
      * one read of the shelf, whole: the rows draw only with their presses read; a read the chain let go as stalled
      * changes nothing when it answers late
-     * @param {AsyncContext} cx @param {() => boolean} isCurrent
+     * @param {() => boolean} isCurrent
      */
-    async read(cx, isCurrent) {
+    async read(isCurrent) {
         const shelf = await states();
         const lanes = (await json(LANES))?.lanes ?? [];
         const filePresses = hotPresses(
@@ -436,8 +435,16 @@ export default class Deck extends View {
                     // the reload that redraws the whole deck
                     this.makeSteerBox(key);
             }
-        this.loadedAt = new Date();
-        cx.notify();
+    }
+
+    /** the footer, from the reload chain's one state */
+    footerLine() {
+        const chain = this.reloads.state();
+        if (chain.settledAt === null) return 'reading…';
+        const at = new Date(chain.settledAt);
+        return chain.phase === 'stalled'
+            ? `no read since ${clockOf(at, 2)}, reading again`
+            : `updated ${clockOf(at, 3)}`;
     }
 
     /** @param {Theme} t @param {Row} s @param {number} i */
@@ -689,7 +696,6 @@ export default class Deck extends View {
         const steer = this.steers.get(key)?.value().trim();
         const at = Date.now();
         this.pressMade(cx, key, verdict, at);
-        this.pressError = null;
         cx.notify();
         try {
             const made = await exec('mkdir', ['-p', TICKS]);
@@ -713,8 +719,11 @@ export default class Deck extends View {
             );
             this.pressStep(key, { at, type: 'writeOk' });
         } catch (err) {
-            this.pressStep(key, { at, type: 'writeFailed' });
-            this.pressError = `${ask.id} not sent: ${err instanceof Error ? err.message : err}`;
+            this.pressStep(key, {
+                at,
+                reason: `not sent: ${err instanceof Error ? err.message : err}`,
+                type: 'writeFailed',
+            });
         }
         cx.notify();
     }
@@ -735,7 +744,6 @@ export default class Deck extends View {
         if (takes.length > 0)
             for (const a of s.asks)
                 if (a.isGated) this.passedOver.add(`${s.sid}:${a.id}`);
-        this.pressError = null;
         cx.notify();
         try {
             const made = await exec('mkdir', ['-p', TICKS]);
@@ -758,8 +766,11 @@ export default class Deck extends View {
                 this.pressStep(`${s.sid}:${a.id}`, { at, type: 'writeOk' });
         } catch (err) {
             for (const a of takes)
-                this.pressStep(`${s.sid}:${a.id}`, { at, type: 'writeFailed' });
-            this.pressError = `tick all not sent: ${err instanceof Error ? err.message : err}`;
+                this.pressStep(`${s.sid}:${a.id}`, {
+                    at,
+                    reason: `tick all not sent: ${err instanceof Error ? err.message : err}`,
+                    type: 'writeFailed',
+                });
         }
         cx.notify();
     }
@@ -784,7 +795,6 @@ export default class Deck extends View {
     /** @param {Context} cx @param {string} key @param {boolean} isCmd */
     steerKeyAct(cx, key, isCmd) {
         if (this.steerKeys.pressed() === 'repeat') return;
-        const at = Date.now();
         const step = steerKeyAct(this.rows, key, isCmd, (s, id) =>
             this.pressStateOf(s, id),
         );
@@ -814,7 +824,6 @@ export default class Deck extends View {
         if (!this.steers.has(key)) this.makeSteerBox(key);
         const io = { read: readTextFile, write: writeTextFile };
         const path = `${TICKS}/${s.sid}.jsonl`;
-        this.pressError = null;
         // drawn open at once, before the write: the ticks file's last read may still hold the press
         const at = Date.now();
         const isDrop = untickDoor(this.presses.get(key), ask.mark) === 'drop';
@@ -833,8 +842,11 @@ export default class Deck extends View {
             );
             this.pressStep(key, { at, type: 'writeOk' });
         } catch (err) {
-            this.pressStep(key, { at, type: 'writeFailed' });
-            this.pressError = `${ask.id} not unticked: ${err instanceof Error ? err.message : err}`;
+            this.pressStep(key, {
+                at,
+                reason: `not unticked: ${err instanceof Error ? err.message : err}`,
+                type: 'writeFailed',
+            });
         }
         cx.notify();
     }
@@ -847,6 +859,9 @@ export default class Deck extends View {
         const key = `${s.sid}:${ask.id}`;
         const steer = this.steers.get(key);
         const state = this.pressStateOf(s, ask.id);
+        const record = this.presses.get(key);
+        const failed =
+            record?.phase === 'failed' ? (record.reason ?? '') : null;
         const isLocked = state === 'locked';
         const labels = pressLabel(state, ask.mark);
         // tick is the main act, so it is the one filled button
@@ -1029,6 +1044,15 @@ export default class Deck extends View {
                             .text_size(SIZE.secondary)
                             .text_color(t.muted)
                             .child(this.keyNotes.get(key)?.text ?? ''),
+                    ),
+                )
+                // a write that failed says why under its box until his next press
+                .when(failed !== null, (el) =>
+                    el.child(
+                        div()
+                            .text_size(SIZE.secondary)
+                            .text_color(t.blocked)
+                            .child(`⚠️ ${failed}`),
                     ),
                 )
                 .when(
@@ -1408,13 +1432,7 @@ export default class Deck extends View {
                     .py(8)
                     .text_size(SIZE.small)
                     .text_color(t.muted)
-                    .child(
-                        !this.loadedAt
-                            ? 'reading…'
-                            : this.reloads.isStalled()
-                              ? `no read since ${clockOf(this.loadedAt, 2)}, reading again`
-                              : `updated ${clockOf(this.loadedAt, 3)}`,
-                    ),
+                    .child(this.footerLine()),
             );
     }
 }

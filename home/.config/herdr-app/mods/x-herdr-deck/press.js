@@ -1,13 +1,16 @@
 // an ask's press, one record per ask, moved only by named events (FRM-648, x:guide-code § state): his press is local
-// until its write lands, written until a read of the shelf shows it, then read; a turn that takes it locks it, and a
-// press the session never answers is given up. the board draws from the record alone
+// until its write lands, written until a read of the shelf shows it, then read; a turn that takes it locks it, a write
+// that fails is failed with its reason until his next press, and a press the session never answers is given up. the
+// board draws from the record alone
 
 /** @typedef {'tick' | 'replay' | 'untick'} Verdict */
-/** @typedef {'local' | 'written' | 'read' | 'locked' | 'given-up'} PressPhase */
-/** @typedef {{ verdict: Verdict | null, phase: PressPhase, at: number, shelf: Verdict | null }} PressRecord */
+/** @typedef {'local' | 'written' | 'read' | 'locked' | 'failed' | 'given-up'} PressPhase */
+/** @typedef {{ verdict: Verdict | null, phase: PressPhase, at: number, shelf: Verdict | null, reason?: string }} PressRecord */
 /**
  * @typedef {{ type: 'pressed', verdict: Verdict, at: number }
- *   | { type: 'writeOk' | 'writeFailed' | 'timedOut', at: number }
+ *   | { type: 'writeOk', at: number }
+ *   | { type: 'timedOut', at: number }
+ *   | { type: 'writeFailed', at: number, reason: string }
  *   | { type: 'shelfRead', pending: Verdict | null | undefined, mark: string | null | undefined, isLocked: boolean, isGone: boolean }} PressEvent
  */
 
@@ -51,6 +54,9 @@ export function next(record, event) {
             };
         if (!record) return { at: 0, phase: 'read', shelf, verdict: shelf };
         if (record.phase === 'local') return { ...record, shelf };
+        // a failure stays drawn until his next press, its press drawn as the shelf has it
+        if (record.phase === 'failed')
+            return { ...record, shelf, verdict: shelf };
         if (
             record.phase === 'written' &&
             pressState(record) !== pressState({ ...record, verdict: shelf })
@@ -73,9 +79,12 @@ export function next(record, event) {
         return record.phase === 'local'
             ? { ...record, phase: 'written' }
             : record;
+    if (event.type === 'timedOut')
+        return { ...record, phase: 'given-up', verdict: record.shelf };
     return {
         ...record,
-        phase: event.type === 'timedOut' ? 'given-up' : 'read',
+        phase: 'failed',
+        reason: event.reason,
         verdict: record.shelf,
     };
 }
