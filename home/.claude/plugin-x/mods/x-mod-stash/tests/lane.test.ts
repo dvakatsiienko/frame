@@ -893,24 +893,39 @@ test("at 0 asks the board's top has no strip", async ($, on) => {
     ).toBe(undefined);
 });
 
-test("the board's top strip counts the asks waiting on dima, per member, a marked one not counted", async ($, on) => {
+// FRM-643 (dima's 12:54 ok): the strip counts only the clios' own orbit asks; a member's asks show on its lane card alone
+test("the board's top strip counts the clio's own open asks, a marked one not counted, never a member's", async ($, on) => {
     const w = world(on, { files: linked() });
-    published(w, CODIE, [ASK, { ...ASK, id: 'o4' }, { ...ASK, id: 'o5' }]);
-    published(w, SIXTH_SENSE, [{ ...ASK, mark: 'accepted' }]);
+    published(w, CODIE, [ASK, { ...ASK, id: 'o4' }]);
+    published(w, SID, [
+        ASK,
+        { ...ASK, id: 'o4' },
+        { ...ASK, id: 'o5', mark: 'accepted' },
+    ]);
     await start($);
+    await w.clock.advance(5_000);
     const ui = await board($);
-    const keys = (await ui.findAll({ type: 'Box' })).map((b) => b.key ?? '');
-    expect([
-        (await ui.find({ key: 'asks-strip', type: 'Box' }))?.text,
-        keys.indexOf('asks-strip') < keys.indexOf('lane:l1'),
-    ]).toEqual(['🙋 3 asks wait for you· 🔧 codie 3', true]);
+    expect((await ui.find({ key: 'asks-strip', type: 'Box' }))?.text).toBe(
+        '🙋 2 asks wait for you· 🦉 clio 2',
+    );
 });
 
-test('🛼 glide switched off draws no strip', async ($, on) => {
+test("a member's asks alone draw no strip", async ($, on) => {
     const w = world(on, { files: linked() });
     published(w, CODIE, [ASK]);
-    w.store.set('shown', { 'stash.glide': false });
     await start($);
+    await w.clock.advance(5_000);
+    expect(
+        await (await board($)).find({ key: 'asks-strip', type: 'Box' }),
+    ).toBe(undefined);
+});
+
+test('🪐 orbit switched off draws no strip', async ($, on) => {
+    const w = world(on, { files: linked() });
+    published(w, SID, [ASK]);
+    w.store.set('shown', { 'stash.orbit': false });
+    await start($);
+    await w.clock.advance(5_000);
     expect(
         await (await board($)).find({ key: 'asks-strip', type: 'Box' }),
     ).toBe(undefined);

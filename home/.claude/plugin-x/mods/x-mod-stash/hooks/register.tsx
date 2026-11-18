@@ -428,6 +428,7 @@ const FOLDS = { key: 'folds', plugin: 'x-mod-stash' } as const;
 // every board on its poll; at most 5 plain steps, each ≤60 chars, stale after 8 of clio's turns with nothing moved
 const LANES = { key: 'lanes', plugin: 'x-mod-stash' } as const;
 const LANE_ASKS = { key: 'laneAsks', plugin: 'x-mod-stash' } as const;
+const CLIO_ASKS = { key: 'clioAsks', plugin: 'x-mod-stash' } as const;
 // dima's steer on a lane's current step and its 🛎️ tick, one store key per lane: any board writes it, so the shelf file
 // keeps its one writer, clio's lane op
 const LANE_STEER = 'lane-steer:';
@@ -3584,6 +3585,44 @@ async function readPlanSteps(
     } catch {
         return { state: 'stale' };
     }
+}
+
+// each live clio, main and wings, with its own orbit asks that wait on dima: unmarked, as it last published them; read at
+// the poll into $.state, since the board draws with no file read
+let clioAsksShown = '';
+async function showClioAsks($: EngineInterface) {
+    const waiting = await cliosWaiting($);
+    const text = JSON.stringify(waiting);
+    if (text === clioAsksShown) return;
+    clioAsksShown = text;
+    await $.state.set(CLIO_ASKS, waiting).catch(() => undefined);
+}
+async function cliosWaiting($: EngineInterface) {
+    const live = new Set(
+        (await registry($)).filter((r) => r.isAlive).map((r) => r.base.sid),
+    );
+    const self = await currentId($);
+    const clios = (await threadRecords($)).filter(
+        (t) =>
+            (t.role === MAIN_ROLE || t.role === WING_ROLE) &&
+            live.has(t.sessionId),
+    );
+    const waiting: { isSelf: boolean; n: number; name: string; sid: string }[] =
+        [];
+    for (const t of clios) {
+        const entry = (await $.store
+            .get(PREFIX + t.sessionId)
+            .catch(() => undefined)) as Entry | undefined;
+        const n = (entry?.items ?? []).filter((a) => !a.mark).length;
+        if (n)
+            waiting.push({
+                isSelf: t.sessionId === self,
+                n,
+                name: t.display ?? t.name ?? t.sessionId,
+                sid: t.sessionId,
+            });
+    }
+    return waiting;
 }
 
 // a dispatch opens its lane's card (FRM-602): x's record of a live codie names the lane, whose plan file holds the steps,
@@ -7803,6 +7842,7 @@ export const register: Register = (on) => {
                     await relayCrowWake($).catch(() => undefined);
                     await followCodies($).catch(() => undefined);
                     await openDispatchedLanes($).catch(() => undefined);
+                    await showClioAsks($).catch(() => undefined);
                     await followPlans($).catch(() => undefined);
                     // a fold or mobile mode is kept within one poll of its change
                     await keepState($).catch(() => undefined);
@@ -9439,19 +9479,10 @@ export const register: Register = (on) => {
                             </Box>
                         );
                     };
-                    // 🙋 the board's top while a lane member's asks wait on dima: their count, then each member, a press scrolls to its asks
-                    const waitingOn = isPartOn('stash.glide')
-                        ? lanes.flatMap((lane) =>
-                              LANE_ROLES.flatMap((role) => {
-                                  const sid = lane.members[role];
-                                  const n = sid
-                                      ? (
-                                            (laneAsks[sid] ?? []) as OrbitAsk[]
-                                        ).filter((a) => !a.mark).length
-                                      : 0;
-                                  return n ? [{ lane, n, role }] : [];
-                              }),
-                          )
+                    // 🙋 the board's top while a clio's own orbit asks wait on dima: their count, then each clio, a press scrolls
+                    // to its asks; a member's asks show only on its lane card, since they reach dima through a clio (FRM-643)
+                    const waitingOn = isPartOn('stash.orbit')
+                        ? ((await $.state.get(CLIO_ASKS)).value ?? [])
                         : [];
                     const waitingCount = waitingOn.reduce(
                         (sum, w) => sum + w.n,
@@ -9473,19 +9504,21 @@ export const register: Register = (on) => {
                                 </Text>
                                 {waitingOn.map((w) => (
                                     <Button
-                                        key={`asks-strip:${w.lane.id}:${w.role}`}
+                                        key={`asks-strip:${w.sid}`}
                                         onPress={() =>
                                             void $.ui
                                                 .scroll({
                                                     block: 'start',
                                                     to: {
-                                                        key: `lane:${w.lane.id}:${w.role}`,
+                                                        key: w.isSelf
+                                                            ? 'orbit'
+                                                            : 'sessions',
                                                     },
                                                 })
                                                 .catch(() => undefined)
                                         }
                                         plain>
-                                        {`· ${memberBadge(w.role)} ${w.role.replace('-', ' ')} ${w.n}`}
+                                        {`· ${w.name} ${w.n}`}
                                     </Button>
                                 ))}
                             </Box>

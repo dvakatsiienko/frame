@@ -312,8 +312,15 @@ declare module 'claude-code' {
             mobile: boolean;
             // the fleet's live lanes as this session last read the shelf file
             lanes: StashLane[];
-            // each linked member's open asks, by session id, its pending remote marks laid over them
+            // each linked member's open asks, by session id
             laneAsks: Record<string, PublishedAsk[]>;
+            // each live clio's own orbit asks that wait on dima, for the board's top strip
+            clioAsks: {
+                isSelf: boolean;
+                n: number;
+                name: string;
+                sid: string;
+            }[];
             // the board's cards folded to their head row, by card: sessions, orbit, phases
             folds: Record<string, boolean>;
             // dima's ticks, newest last; any plugin reads them, only this mod's press handler writes them
