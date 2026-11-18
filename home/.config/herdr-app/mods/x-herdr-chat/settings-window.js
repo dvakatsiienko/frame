@@ -42,9 +42,9 @@ export const settingsOverlay = (page) => ({
     width: 860,
 });
 
-// shepherdr's sizes: 13 body and titles, 12 second lines, 15 the nav's title; a page title 20 and a group's heading 15,
-// bigger than shepherdr's dim 12, on his word (o1, 20:06: «section titles are tiny»)
-const TEXT = { body: 13, heading: 15, label: 12, page: 20, title: 15 };
+// shepherdr's sizes: 13 body and titles, 12 second lines, 15 the nav's title; a group's heading 18 and a page title
+// 22, well above a row's 13, on his word (20:27: «the headings mix up with the options»)
+const TEXT = { body: 13, heading: 18, label: 12, page: 22, title: 15 };
 const CARD_MAX_H = 760;
 
 /** @typedef {import('./settings-model.js').Row} Row */
@@ -286,7 +286,7 @@ function nav(t, w, at) {
                 .text_size(TEXT.title)
                 .font_semibold()
                 .text_color(t.foreground)
-                .child('Settings'),
+                .child('settings'),
         )
         .children(
             pages.map((p) => {
@@ -331,7 +331,7 @@ function nav(t, w, at) {
                 .pb(4)
                 .text_size(TEXT.label)
                 .text_color(t.dim)
-                .child('Colours follow herdr’s theme'),
+                .child('colours follow herdr’s theme'),
         );
 }
 
@@ -374,7 +374,7 @@ function content(t, w, page) {
                 .hover((/** @type {any} */ x) =>
                     x.bg(t.hover).text_color(t.foreground),
                 )
-                .tooltip('Close · Esc')
+                .tooltip('close · esc')
                 .on_click(() => w.close())
                 .child('✕'),
         );
@@ -405,8 +405,8 @@ function content(t, w, page) {
 /** a small dim heading over a group of rows, sentence case @param {any} t @param {string} text */
 const heading = (t, text) =>
     div()
-        .pt(28)
-        .pb(4)
+        .pt(32)
+        .pb(6)
         .text_size(TEXT.heading)
         .font_semibold()
         .text_color(t.foreground)
@@ -488,7 +488,7 @@ function control(t, w, r) {
             .bg(isOn ? t.accent : t.hover)
             .when(isOn, (/** @type {any} */ el) => el.justify_end())
             .cursor_pointer()
-            .tooltip(isOn ? 'On · press to turn off' : 'Off · press to turn on')
+            .tooltip(isOn ? 'on · press to turn off' : 'off · press to turn on')
             .on_click((/** @type {any} */ _e, /** @type {any} */ cx) => {
                 cx.stop_propagation();
                 w.change(r.key, !isOn, cx);
@@ -613,7 +613,7 @@ function noteBox(t, w, r, needs) {
         return div()
             .text_size(TEXT.label)
             .text_color(t.dim)
-            .child('Reading the note…');
+            .child('reading the note…');
     const fallback = w.noteDefaults[r.key] ?? '';
     const text = String(box.value());
     const stored = typeof w.values[r.key] === 'string' ? w.values[r.key] : '';
@@ -680,9 +680,9 @@ function noteBox(t, w, r, needs) {
             h_flex()
                 .items_center()
                 .gap(8)
-                .child(act('save', 'Save', !isSaved, false, true))
+                .child(act('save', 'save', !isSaved, false, true))
                 .child(
-                    act('reset', 'Reset to default', !isDefault, true, false),
+                    act('reset', 'reset to default', !isDefault, true, false),
                 )
                 .child(
                     div()
@@ -690,10 +690,10 @@ function noteBox(t, w, r, needs) {
                         .text_color(t.dim)
                         .child(
                             !isSaved
-                                ? 'Not saved yet'
+                                ? 'not saved yet'
                                 : isDefault
-                                  ? 'The default'
-                                  : 'Your text',
+                                  ? 'the default'
+                                  : 'your text',
                         ),
                 ),
         );
@@ -747,8 +747,8 @@ function keysPage(t, w) {
             .hover((/** @type {any} */ x) => x.opacity(0.8))
             .tooltip(
                 isRecording
-                    ? 'Press the new keys · Esc to cancel'
-                    : `Change the key for ${what}`,
+                    ? 'press the new keys · esc to cancel'
+                    : `change the key for ${what}`,
             )
             .on_click((/** @type {any} */ _e, /** @type {any} */ cx) => {
                 cx.stop_propagation();
@@ -757,7 +757,7 @@ function keysPage(t, w) {
             .child(
                 keyCap(
                     t,
-                    isRecording ? 'Press keys…' : keyLabel(key),
+                    isRecording ? 'press keys…' : keyLabel(key),
                     isRecording,
                 ),
             );
@@ -810,19 +810,19 @@ function keysPage(t, w) {
                         .child(w.keysNote),
                 ),
             )
-            .child(heading(t, 'Ours'))
+            .child(heading(t, 'ours'))
             .children(
                 w.keys.ours.map((k) =>
                     keyRow(
                         cap(k.key, k.title),
                         k.title,
                         k.takenBy
-                            ? `Refused: herdr’s «${k.takenBy}» holds this key`
+                            ? `refused: herdr’s «${k.takenBy}» holds this key`
                             : null,
                     ),
                 ),
             )
-            .child(heading(t, 'Herdr’s own'))
+            .child(heading(t, 'herdr’s own'))
             .children(
                 w.keys.herdr.map(([key, action]) =>
                     keyRow(cap(key, action), action, null),

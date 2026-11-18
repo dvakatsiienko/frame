@@ -3019,7 +3019,7 @@ export default class Chat extends View {
                     .gap(6)
                     .flex_wrap()
                     .children(
-                        ['1', '2', '3'].map((k) =>
+                        ['1', '2', '3', '4'].map((k) =>
                             askButton(
                                 t,
                                 `chat-key-${k}`,
