@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-17
+until: 2026-11-25
 dies-when: the verdict line below is written
 fits: codie sixth-sense
 ---
@@ -106,5 +106,6 @@ group by 1 order by 2 desc;
 - one plain card: 66 s, 39k tokens, 7 tool calls; 3 findings (2 bug, 1 nit), 2 questions, 1 pre-existing
 - all 3 real: «W2 (dropped)» passed with no verdict, a nested paren left a stray «dropped», the tests missed both; fixed in the next commit, each new test proven red with `x verify red`
 - 0 false hits; the suite had gone green on both bugs, so the card caught what the tests could not
+- 2026-11-18 overdue read (a helper card): not enough rounds — one benchmark run found 3.5 of 6 known slips vs the bar 5 of 6 in 2 of 3 runs; the kill rule (two runs under 4) not fired; false-hit rate and spawn count never counted · extended to 11-25 for two more benchmark runs
 
 ## verdict

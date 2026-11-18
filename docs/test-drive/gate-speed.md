@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-17
+until: 2026-11-25
 dies-when: the verdict line below is written
 ---
 
@@ -104,5 +104,6 @@ dima explores how to balance the load across clio main and her wings; FRM-521 is
 - 2026-11-12 · the siesta checks' budget read, 14:44 to 16:14 (`_clio/script/siesta-checks.ts --since`), median load 16–20 · five steps over budget: commit `mods:test --skip-tested` p90 164 s vs 121 s, `pnpm typecheck` 5.5 s vs 3 s, `mods:typecheck && mods:skew` 13 s vs 9 s, `test:twin` 64.5 s vs 47.6 s (other) and 79 s vs 60 s (push); the vm probe the same day put x-mod-guard's suite at 55–75 s on the mac under load 20–27 against 101–107 s in the vm, so the mods step is load-bound, not slot-bound · worse under load; the queue and red-proof rows not re-read
 - 2026-11-10 · vitest 5.1 pools on the root suite (FRM-557, FRM-537's probe), 3 runs each in a shuffled order, load 7–9, `/usr/bin/time -p`; pass sets compared by test name with temp paths cut · forks (today) wall 39.4–41.3 s, user + sys 136–138 s, 2,191 pass · threads 38.6–39.6 s, 133–134 s, but `pocket-check.test.ts`'s «a UTC updated_date is read on the local calendar day» fails every run (threads share one process TZ) · `isolate: false`, shuffled, 39.9–47.3 s, 128–131 s, the same 2,191 pass · no pool met both bars: threads changes a result, no isolation saves 6 % cpu but not wall · `vitest.config.ts` stays on forks with isolation; `vitest doctor`, re-run under a 1,200 s bound (413 s), agrees: forks 43.1 s, threads failed, no isolation 46.0 s (+7 %), «keep the current configuration»
 - 2026-11-10 · FRM-557's rules replayed over the 11-07 → 11-09 rows of `test-commit.log` and `gate-steps.log`, copied once, paths from git, nothing run (`gate-speed/hook-replay.mjs`) · from 11-07 15:40 (FRM-534 live, the fair baseline) 118 → 51 min a day against dima's bar of 46, 41 rows git could not rebuild kept at their old 10 min; 11-09 alone 155 → 73; the whole days from 11-07 00:00 read 122 → 57 but count pre-FRM-534 rows as this change's saving · no commit row classifies as whole · better, above the bar, within o91's ~60; the measured rows alone (108 → 41) are an inference about the rest
+- 2026-11-18 overdue read (a helper card): not enough rounds — gate wait p90 636 → 31 s meets its row; the commit test step p50 18 s misses <5 s; the red-proof p90 and the safety rows never read · extended to 11-25 to read those rows
 
 ## verdict
