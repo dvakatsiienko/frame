@@ -175,13 +175,14 @@ export function createQuills(store, onWrite = () => {}) {
         apply(thread, event) {
             const before = get(thread);
             const now = next(before, event);
-            if (now === before) return now;
-            quills.set(thread, now);
-            if (thread !== null && now.text !== before.text)
-                keepDraft(thread, now.text);
-            if (thread !== null && now.mark !== before.mark) keepMarks();
-            if (shown?.thread === thread && now.text !== before.text)
-                write(now.text);
+            if (now !== before) {
+                quills.set(thread, now);
+                if (thread !== null && now.text !== before.text)
+                    keepDraft(thread, now.text);
+                if (thread !== null && now.mark !== before.mark) keepMarks();
+            }
+            // against the box itself, never the quill before: a submit can beat the change of Enter's line break
+            if (shown?.thread === thread) write(now.text);
             return now;
         },
         get,

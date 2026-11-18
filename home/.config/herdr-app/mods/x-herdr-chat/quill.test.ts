@@ -189,6 +189,19 @@ describe('the quills of every thread, kept and shown by one owner', () => {
         expect(box.writes).toBe(0);
     });
 
+    // send.js: in his window Enter's change can come after the submit (2026-11-16)
+    test('a submit ahead of Enter’s change still takes the line break off the screen', () => {
+        const told: string[] = [];
+        const quills = createQuills(fakeStorage(), (text) => told.push(text));
+        const box = fakeBox();
+        quills.show('a.jsonl', box);
+        box.text = 'foo';
+        quills.apply('a.jsonl', { text: 'foo', type: 'typed' });
+        box.text = 'foo\n';
+        quills.apply('a.jsonl', { text: 'foo', type: 'typed' });
+        expect([box.text, told.at(-1)]).toEqual(['foo', 'foo']);
+    });
+
     test('a write from code tells the view, so Enter’s line break is found against it', () => {
         const told: string[] = [];
         const quills = createQuills(fakeStorage(), (text) => told.push(text));
