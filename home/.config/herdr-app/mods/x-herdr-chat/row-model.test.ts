@@ -340,11 +340,13 @@ const queueOp = (
     operation: string,
     content?: string,
     at = '2026-11-16T16:45:40.000Z',
+    more: object = {},
 ) => {
     const rest = JSON.stringify({
         operation,
         timestamp: at,
         ...(content === undefined ? {} : { content }),
+        ...more,
     });
     // its type first, as Claude Code writes it: a formatter sorts an object's keys
     return `{"type":"queue-operation",${rest.slice(1)}`;
@@ -368,13 +370,18 @@ const joined = (...texts: string[]) => {
     return `{"parentUuid":"p-${serial}",${rest.slice(1)}`;
 };
 // a prompt taken mid-turn, as Claude Code writes it: a queued command, its remove record a few lines later
-const taken = (prompt: string | object[], origin = 'human') => {
+const taken = (
+    prompt: string | object[],
+    origin = 'human',
+    command = `cmd-${serial + 1}`,
+) => {
     serial += 1;
     const rest = JSON.stringify({
         attachment: {
             commandMode: 'prompt',
             origin: { kind: origin },
             prompt,
+            source_uuid: command,
             type: 'queued_command',
         },
         isSidechain: false,
@@ -551,5 +558,57 @@ describe('the turn clock starts at his prompt', () => {
         const model = createRowModel();
         model.add([reply('hi')]);
         expect(model.turnAt()).toBeNull();
+    });
+});
+
+describe('his message knows when Claude Code read it (FRM-594)', () => {
+    const removeOf = (command: string, at: string) =>
+        queueOp('remove', 'also the tests', at, { commandUuid: command });
+
+    test('a prompt a tool round took reads the remove that took it, and only its row changes', () => {
+        const model = createRowModel();
+        model.add([reply('working'), taken('also the tests', 'human', 'c1')]);
+        const row = model.rows.at(-1);
+        expect(row?.readAt ?? null).toBeNull();
+        const { changed } = model.add([
+            removeOf('c1', '2026-11-16T16:46:19.000Z'),
+        ]);
+        expect(row?.readAt).toBe('2026-11-16T16:46:19.000Z');
+        expect(row?.version).toBe(2);
+        expect(changed).toEqual([row?.id]);
+    });
+
+    test('a remove that names another command reads nothing', () => {
+        const model = createRowModel();
+        model.add([taken('also the tests', 'human', 'c1')]);
+        const { changed } = model.add([
+            removeOf('c2', '2026-11-16T16:46:19.000Z'),
+        ]);
+        expect(model.rows[0]?.readAt ?? null).toBeNull();
+        expect(changed).toEqual([]);
+    });
+
+    test('an earlier page reads its own removes', () => {
+        const model = createRowModel();
+        model.add([reply('later')]);
+        model.addEarlier([
+            taken('also the tests', 'human', 'c1'),
+            removeOf('c1', '2026-11-16T16:46:19.000Z'),
+        ]);
+        expect(model.rows[0]?.readAt).toBe('2026-11-16T16:46:19.000Z');
+    });
+
+    test('a prompt that started a turn has no read of its own: its stamp is the read', () => {
+        const model = createRowModel();
+        model.add([mine('start'), queueOp('dequeue')]);
+        expect(model.rows[0]?.readAt ?? null).toBeNull();
+    });
+
+    test('clear forgets the reads', () => {
+        const model = createRowModel();
+        model.add([removeOf('c1', '2026-11-16T16:46:19.000Z')]);
+        model.clear();
+        model.add([taken('also the tests', 'human', 'c1')]);
+        expect(model.rows[0]?.readAt ?? null).toBeNull();
     });
 });

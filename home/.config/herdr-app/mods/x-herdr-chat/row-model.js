@@ -1,5 +1,6 @@
 // the row model: transcript lines in, the thread's rows out. a row keeps its object for as long as it lives, and its
-// `version` grows only when its own text does, so the list redraws and measures only the rows an update names.
+// `version` grows only when what it draws does (its text, its read time), so the list redraws and measures only the
+// rows an update names.
 // drawn so far: his messages, replies and one line per tool call; every other line waits for its own slice.
 // a message he sent while the thread works waits in Claude Code's queue: it is his last row, waiting, until a turn
 // takes it and its own transcript line replaces it: a user line at a turn's start, a queued command mid-turn.
@@ -19,6 +20,8 @@ import { claudeQueueAfter, isHisQueued, unwrapPastes } from './queued.js';
  * @property {string[]} tools the names of the tool calls a tool row folds, in order
  * @property {boolean} isWaiting his message in Claude Code's queue, no turn has taken it yet
  * @property {boolean} isTurnStart his prompt that started a turn, never words a running turn took in
+ * @property {string} [command] a prompt a tool round took: the queued command its `remove` record names
+ * @property {string | null} [readAt] when that `remove` took it; any other row of his was read at its own stamp
  */
 
 // a conversation line opens with this key; api requests, snapshots and modes open with "type" and are never parsed
@@ -86,7 +89,10 @@ function rowsOf(line) {
             queued.origin.kind === 'human'
         ) {
             const said = unwrapPastes(saidIn(queued.prompt));
-            return said ? [row('mine', said)] : [];
+            const command = textOf(queued.source_uuid);
+            return said
+                ? [{ ...row('mine', said), ...(command ? { command } : {}) }]
+                : [];
         }
         // words that joined a turn (the magic send) are his messages, one row each
         return joinedTexts(entry).map((text, n) =>
@@ -155,6 +161,24 @@ export function createRowModel() {
     /** the row of each message of his in the queue: the last rows, in queue order @type {Map<import('./queued.js').Queued, Row>} */
     let waiting = new Map();
     let waitingSerial = 0;
+    /** when each queued command was taken, by the `commandUuid` its `remove` record names @type {Map<string, string>} */
+    const takenAt = new Map();
+    /** the row of each queued command loaded @type {Map<string, Row>} */
+    const rowOfCommand = new Map();
+
+    /** a `remove` record's read: kept for its row, which lands before it, and stamped on that row once it is loaded
+     * @param {any} op @returns {Row | null} the row it stamped */
+    function readBy(op) {
+        const command = textOf(op?.commandUuid);
+        const at = textOf(op?.timestamp);
+        if (op?.operation !== 'remove' || !command || !at) return null;
+        takenAt.set(command, at);
+        const row = rowOfCommand.get(command);
+        if (!row || row.readAt) return null;
+        row.readAt = at;
+        row.version += 1;
+        return row;
+    }
 
     /**
      * @param {string[]} lines
@@ -173,6 +197,10 @@ export function createRowModel() {
                 continue;
             }
             rowOfLine.set(next.id, next);
+            if (next.command) {
+                rowOfCommand.set(next.command, next);
+                next.readAt = takenAt.get(next.command) ?? null;
+            }
             into.push(next);
             changed.add(next.id);
         }
@@ -196,7 +224,10 @@ export function createRowModel() {
                     continue;
                 }
                 try {
-                    queue = claudeQueueAfter(queue, JSON.parse(line));
+                    const op = JSON.parse(line);
+                    queue = claudeQueueAfter(queue, op);
+                    const read = readBy(op);
+                    if (read) changed.add(read.id);
                 } catch {
                     // half a record: it never arrives whole, the reader hands over complete lines only
                 }
@@ -234,6 +265,13 @@ export function createRowModel() {
         addEarlier(lines) {
             /** @type {Row[]} */
             const page = [];
+            for (const line of lines)
+                if (line.startsWith(QUEUE_RECORD))
+                    try {
+                        readBy(JSON.parse(line));
+                    } catch {
+                        // half a record at the page's top edge: the line above it was cut
+                    }
             fold(lines, page);
             const last = page.at(-1);
             const [first] = rows;
@@ -261,6 +299,8 @@ export function createRowModel() {
             rowOfLine.clear();
             queue = [];
             waiting = new Map();
+            takenAt.clear();
+            rowOfCommand.clear();
         },
         /** where the row holding the transcript line `id` sits, -1 when it is not loaded @param {string} id */
         indexOf(id) {

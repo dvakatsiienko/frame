@@ -63,6 +63,7 @@ import {
     withPress,
 } from './band.js';
 import { splitBlocks } from './blocks.js';
+import { messageDetails } from './details.js';
 import {
     EFFORTS,
     effortKey,
@@ -2159,20 +2160,13 @@ export default class Chat extends View {
                                 ).selectable(isShown),
                             ),
                     )
-                    .when(row.isWaiting, (el) =>
-                        el.child(
-                            div()
-                                .px(4)
-                                .text_size(12)
-                                .text_color(t.muted)
-                                .child('Waiting for the turn'),
-                        ),
-                    ),
+                    .child(this.detailsLine(row, t)),
             );
         return column(
-            h_flex()
+            v_flex()
                 .w_full()
-                .justify_start()
+                .items_start()
+                .gap(2)
                 .child(
                     v_flex()
                         .max_w(most)
@@ -2204,8 +2198,26 @@ export default class Chat extends View {
                                               ),
                             ),
                         ),
-                ),
+                )
+                .child(this.detailsLine(row, t)),
         );
+    }
+
+    /**
+     * the dim line under a bubble, one state and its own time (FRM-594): always drawn, a tooltip in a list row never
+     * showed for him (herdr-app#598)
+     * @param {Row} row @param {Theme} t
+     */
+    detailsLine(row, t) {
+        const details = messageDetails(
+            { ...row, isMine: row.kind === 'mine' },
+            Date.now(),
+        );
+        return div()
+            .px(4)
+            .text_size(12)
+            .text_color(t.muted)
+            .when(details !== null, (el) => el.child(details ?? ''));
     }
 
     /**

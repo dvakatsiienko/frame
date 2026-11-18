@@ -339,7 +339,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a row the thread joined before it ended does not come back
 - ⬜ cmd-enter is listed with the x-herdr keys (FRM-564)
   - then the Keys page lists it, refused by name when herdr binds cmd-enter, never written into his keys.json
-- ⬜ a message tells when it was sent and when Claude read it
+- ✅ a message tells when it was sent and when Claude read it
   - given a message in the chat
   - then a small dim line under it holds one state and its own time, on his clock, a date before it from an earlier day: his own message reads «sent 14:45» while Claude Code holds it, «read 14:46» once it took it off its queue (at a tool round or the turn's end; a row with no queue record, an idle send above all, at its own time); a reply reads its time alone, under its last part when it is cut into parts
   - and a pushed message Claude Code still holds reads «sent 15:10» at the log's end
@@ -387,7 +387,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when he presses Enter or clicks the send button, then his words are marked to join the thread's turn and stay in the quill, one line, the caret where it was, the button reading 🍕; a second press takes the mark off; once a turn took them they leave the quill and the button reads 😋 for a moment, then 🛎️ again
   - when he holds the send button or presses cmd+Enter, then the words go now and a turn starts; a slash command, or a thread that takes no joins, is sent that way on a plain press, and a line over the quill says why
   - when a send is refused, or the thread does not run in herdr, then his words are back in the quill and a line over it says so
-  - and a message waiting in Claude Code's queue is his last row, an outline of his bubble with dim words, reading «Waiting for the turn», until the turn takes it; words that joined a turn are drawn as his messages
+  - and a message waiting in Claude Code's queue is his last row, an outline of his bubble with dim words, reading «sent HH:MM» under it, until the turn takes it; words that joined a turn are drawn as his messages
   - Shift+Enter breaks the line
   - and one press of Enter acts once: a held Enter, or one press herdr reports twice, marks once and its let-go leaves the mark on; a slow tap (~150 ms) marks once (FRM-628)
   - 🧭 and Enter never scrolls the quill: with the caret past the quill's view, Enter marks and the view stays where he left it (dima, 13:14: «enter only does 🍕 and does not scroll quill»)
