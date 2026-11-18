@@ -318,7 +318,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a picture waiting over the quill joins as its path and stays over the quill, as the words do, until a turn takes it; one dropped or removed while the words wait rides or leaves the same row
   - and with the quill empty the button keeps its black face, no disabled look: a click, Enter or a hold there does nothing, no disc
   - decision: no disabled state on send; an empty quill's press just does nothing (dima, 20:30)
-- ⬜ a 1 s hold on send or Enter pushes, its disc filling (FRM-564)
+- ✅ a 1 s hold on send or Enter pushes, its disc filling (FRM-564)
   - given text in the quill
   - when dima holds send or Enter
   - then after a short pause (100 ms, so a tap never shows it) a disc fills the button over 1 s and then the message pushes; Settings › Chatter › send sets both, words marked to join taken out of the join file first: a turn starts, as a send did before joins
