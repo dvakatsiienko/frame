@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-18T11:17:00Z'
-updated_date: '2026-11-18T11:18:00Z'
+updated_date: '2026-11-18T11:42:00Z'
 labels:
   - s
 dependencies: []
@@ -25,4 +25,7 @@ PK-451:W2 (2026-11-18 12:56, dima): herdr state library: a vendored file is not 
 PK-451:W3 (2026-11-18 12:56, dima): standardize the state-machine approach (lib or hand-written), apply best practices as one pattern across the whole herdr system at scale, not one-off stray fixes while the rest rots; codie's pick was to keep the hand-written machines for now, dima leans to a standard approach either way
 
 13:17 input to a shape-idea round after FRM-582's emoji grill (his o22 tick); the cc mods join after a mods mess hunt (o22 follow, ticked); FRM-647 waits on it
+
+
+PK-451:W4 (2026-11-18 13:34, dima, o28 steer): how do you propose to have the contract: where do the guidelines and project-wide rules live, so any code, anytime, knows the patterns and applies a correct architectural approach in all future moves; not local patches that let rot patterns pile up tomorrow
 <!-- SECTION:NOTES:END -->
