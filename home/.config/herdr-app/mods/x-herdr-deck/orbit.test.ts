@@ -4,20 +4,17 @@ import { describe, expect, test } from 'vitest';
 import { createKeyPress } from '../_shared/keypress.js';
 import {
     type Ask,
-    SENT_MS,
     THREADS_BEAT_MS,
     askLabel,
     asksOf,
     byName,
     canTakeBack,
-    createPresses,
     createSerial,
     createTurns,
     hotOf,
     hotPressLine,
     hotPresses,
     inListOrder,
-    isPressSettled,
     linkOf,
     literalAngles,
     nextThreads,
@@ -35,15 +32,14 @@ import {
     tickAll,
     tickAllTakes,
     tickAllThread,
-    tickState,
     unbold,
-    untickDoor,
     waitOf,
     withBandPress,
     withPending,
     withPress,
     withoutPress,
 } from './orbit.js';
+import { next, pressState } from './press.js';
 
 const SID = 's1';
 const ask: Ask = {
@@ -377,58 +373,6 @@ describe('the deck follows the agents list order', () => {
     });
 });
 
-describe('a tick locks only when a turn takes it', () => {
-    test('an untaken press is ticked and can be taken back', () => {
-        expect(tickState(ask, 'tick')).toBe('ticked');
-    });
-
-    test('a press the stash has read stays ticked, and can still be taken back', () => {
-        expect(tickState({ ...ask, mark: 'accepted' }, null)).toBe('ticked');
-    });
-
-    test('an untick on its way to the stash draws open, with its tick button', () => {
-        expect(tickState({ ...ask, mark: 'accepted' }, 'untick')).toBe('open');
-    });
-
-    test('a locked ask is locked', () => {
-        expect(
-            tickState({ ...ask, isLocked: true, mark: 'accepted' }, null),
-        ).toBe('locked');
-    });
-
-    test('a gated press can be taken back too', () => {
-        expect(tickState({ ...ask, isGated: true }, 'tick')).toBe('ticked');
-    });
-
-    test('a locked ask ignores an untick still in the file', () => {
-        expect(
-            tickState({ ...ask, isLocked: true, mark: 'accepted' }, 'untick'),
-        ).toBe('locked');
-    });
-
-    test('no press is open', () => {
-        expect(tickState(ask, null)).toBe('open');
-    });
-
-    test('a replay reads as replayed', () => {
-        expect(tickState(ask, 'replay')).toBe('replayed');
-    });
-});
-
-describe('his second click writes the door that still reaches the thread', () => {
-    test('a press the stash has not read leaves the file', () => {
-        expect(untickDoor('tick')).toBe('drop');
-    });
-
-    test('a press the stash has read gets an untick line', () => {
-        expect(untickDoor(null)).toBe('untick');
-    });
-
-    test('a press still in the file but marked by the stash gets an untick line', () => {
-        expect(untickDoor('tick', 'accepted')).toBe('untick');
-    });
-});
-
 describe('a tick after an untick (dima, 14:51: «the very next tick lands»)', () => {
     test('a tick pressed after an untick is a new press line, never a drop of the old ones', () => {
         const text = [
@@ -593,25 +537,13 @@ describe('runningThreads: a row stays only while its own process runs (FRM-601)'
 
 describe('a replay can be taken back until a turn takes it (PK-386, dima 14:54)', () => {
     test('a replay, sent or read by the stash, takes the second click', () => {
-        expect(canTakeBack(tickState(ask, 'replay'))).toBe(true);
-        expect(canTakeBack(tickState({ ...ask, mark: 'rejected' }, null))).toBe(
-            true,
-        );
+        expect(canTakeBack('replayed')).toBe(true);
     });
 
     test('a tick still does, an open or a locked ask does not', () => {
         expect(canTakeBack('ticked')).toBe(true);
         expect(canTakeBack('open')).toBe(false);
         expect(canTakeBack('locked')).toBe(false);
-    });
-
-    test('a replay the stash has not read leaves the file', () => {
-        expect(untickDoor('replay')).toBe('drop');
-        expect(untickDoor('replay', 'rejected')).toBe('untick');
-    });
-
-    test('an untick on a read replay draws open', () => {
-        expect(tickState({ ...ask, mark: 'rejected' }, 'untick')).toBe('open');
     });
 
     test('the pressed button reads 🍕, the other keeps its emoji', () => {
@@ -649,6 +581,7 @@ describe("«tick all» ticks one thread's open asks (FRM-589)", () => {
         };
     }
     const none = () => undefined;
+    const allOpen = () => 'open' as const;
     const lines = (text: string | null | undefined) =>
         (text ?? '')
             .trimEnd()
@@ -662,7 +595,7 @@ describe("«tick all» ticks one thread's open asks (FRM-589)", () => {
             { asks: [open('o1'), open('o2')], sid: 'B', taken: 0 },
             { asks: [open('o1'), open('o2'), open('o3')], sid: 'A', taken: 0 },
         ];
-        await tickAll(shelf(files), 't', rows, 'A', none, none, 7);
+        await tickAll(shelf(files), 't', rows, 'A', allOpen, none, 7);
         expect(lines(files['t/A.jsonl'])).toEqual(
             ['o1', 'o2', 'o3'].map((id, i) => ({
                 at: 7 + i,
@@ -688,7 +621,7 @@ describe("«tick all» ticks one thread's open asks (FRM-589)", () => {
             't',
             rows,
             'A',
-            none,
+            allOpen,
             none,
             1,
         );
@@ -700,20 +633,22 @@ describe("«tick all» ticks one thread's open asks (FRM-589)", () => {
     });
 
     test('an ask already ticked or replayed is left as it is', () => {
-        const sent = new Map([
-            ['o1', 'tick' as const],
-            ['o2', 'replay' as const],
+        const shown = new Map([
+            ['o1', 'ticked' as const],
+            ['o2', 'replayed' as const],
         ]);
         const asks = [open('o1'), open('o2'), open('o3')];
         expect(
-            tickAllTakes(asks, (id) => sent.get(id)).map((a) => a.id),
+            tickAllTakes(asks, (id) => shown.get(id) ?? 'open').map(
+                (a) => a.id,
+            ),
         ).toEqual(['o3']);
     });
 
     test("a steer typed in an ask's box rides its tick", async () => {
         const files: Record<string, string | null> = {};
         const rows = [{ asks: [open('o1')], sid: 'A', taken: 0 }];
-        await tickAll(shelf(files), 't', rows, 'A', none, () => ' go b ', 1);
+        await tickAll(shelf(files), 't', rows, 'A', allOpen, () => ' go b ', 1);
         expect(lines(files['t/A.jsonl'])[0].steer).toBe('go b');
     });
 
@@ -721,10 +656,10 @@ describe("«tick all» ticks one thread's open asks (FRM-589)", () => {
         const files: Record<string, string | null> = {};
         const rows = [{ asks: [open('o1', true)], sid: 'A', taken: 0 }];
         expect(
-            await tickAll(shelf(files), 't', rows, 'A', none, none, 1),
+            await tickAll(shelf(files), 't', rows, 'A', allOpen, none, 1),
         ).toEqual([]);
         expect(
-            await tickAll(shelf(files), 't', rows, 'Z', none, none, 1),
+            await tickAll(shelf(files), 't', rows, 'Z', allOpen, none, 1),
         ).toEqual([]);
         expect(files).toEqual({});
     });
@@ -766,140 +701,6 @@ describe('a key that does nothing says why under the steer box', () => {
     });
     test('a locked ask stays quiet, its lock already shown', () => {
         expect(steerKeyNote('locked', false, true)).toBeNull();
-    });
-});
-
-describe('a press draws as sent until the shelf agrees with it, so a fast run of presses never flips back (dima, 20:48)', () => {
-    const open: Ask = { ...ask, isLocked: false, mark: null };
-    test('an untick the stash has not answered yet stays drawn open', () => {
-        expect(
-            isPressSettled({ ...open, mark: 'accepted' }, 'tick', 'untick'),
-        ).toBe(false);
-    });
-    test('a take-back whose file read still holds the press stays drawn open', () => {
-        expect(isPressSettled(open, 'tick', 'untick')).toBe(false);
-    });
-    test('a tick is settled once the file or the mark shows it', () => {
-        expect(isPressSettled(open, undefined, 'tick')).toBe(false);
-        expect(isPressSettled(open, 'tick', 'tick')).toBe(true);
-        expect(
-            isPressSettled({ ...open, mark: 'accepted' }, undefined, 'tick'),
-        ).toBe(true);
-    });
-    test('an untick is settled once nothing holds the press', () => {
-        expect(isPressSettled(open, undefined, 'untick')).toBe(true);
-    });
-    test('a locked ask settles every press', () => {
-        expect(
-            isPressSettled({ ...open, isLocked: true }, undefined, 'untick'),
-        ).toBe(true);
-    });
-});
-
-describe('one record of his press per ask: every reader asks it, only events move it (FRM-628)', () => {
-    const open: Ask = { ...ask, isLocked: false, mark: null };
-    const KEY = `${SID}:o1`;
-    const lookup =
-        (found: Ask | undefined, pending?: 'tick' | 'replay' | 'untick') =>
-        () => ({ ask: found, pending });
-
-    test('nothing pressed: the ask shows the ticks file’s press', () => {
-        expect(createPresses().of(KEY, 'tick')).toBe('tick');
-    });
-
-    test('a press he just made shows over the ticks file’s', () => {
-        const presses = createPresses();
-        presses.pressed(KEY, 'untick', 1_000);
-        expect(presses.of(KEY, 'tick')).toBe('untick');
-    });
-
-    test('a write that failed gives the press back', () => {
-        const presses = createPresses();
-        presses.pressed(KEY, 'tick', 1_000);
-        presses.failed(KEY, 1_000);
-        expect(presses.of(KEY, undefined)).toBeUndefined();
-    });
-
-    test('a failed write never takes back a newer press', () => {
-        const presses = createPresses();
-        presses.pressed(KEY, 'tick', 1_000);
-        presses.pressed(KEY, 'untick', 2_000);
-        presses.failed(KEY, 1_000);
-        expect(presses.of(KEY, undefined)).toBe('untick');
-    });
-
-    test('a press stays until the shelf draws the ask the same without it', () => {
-        const presses = createPresses();
-        presses.pressed(KEY, 'tick', 1_000);
-        presses.settle(lookup(open, undefined), 2_000);
-        expect(presses.of(KEY, undefined)).toBe('tick');
-        presses.settle(lookup(open, 'tick'), 3_000);
-        expect(presses.of(KEY, 'untick')).toBe('untick');
-    });
-
-    test('a press on an ask that left is dropped', () => {
-        const presses = createPresses();
-        presses.pressed(KEY, 'tick', 1_000);
-        presses.settle(lookup(undefined), 2_000);
-        expect(presses.of(KEY, undefined)).toBeUndefined();
-    });
-
-    test('a press the session never took gives the buttons back after a while', () => {
-        const presses = createPresses();
-        presses.pressed(KEY, 'tick', 1_000);
-        presses.settle(lookup(open, undefined), 1_000 + SENT_MS - 1);
-        expect(presses.of(KEY, undefined)).toBe('tick');
-        presses.settle(lookup(open, undefined), 1_000 + SENT_MS + 1);
-        expect(presses.of(KEY, undefined)).toBeUndefined();
-    });
-
-    test('a press given up by time is named, so the box can say so', () => {
-        const presses = createPresses();
-        presses.pressed(KEY, 'tick', 1_000);
-        expect(
-            presses.settle(lookup(open, undefined), 1_000 + SENT_MS + 1),
-        ).toEqual([KEY]);
-    });
-
-    test('a press the shelf settled is never named given up', () => {
-        const presses = createPresses();
-        presses.pressed(KEY, 'tick', 1_000);
-        expect(
-            presses.settle(lookup(open, 'tick'), 1_000 + SENT_MS + 1),
-        ).toEqual([]);
-    });
-
-    test('the deck merges his press with the ticks file’s only through the record', () => {
-        const main = readFileSync(
-            new URL('./main.js', import.meta.url),
-            'utf8',
-        );
-        expect(main.match(/\.verdict\s*\?\?/g)).toBeNull();
-    });
-});
-
-describe("a press switches over the stash's mark at once: a read tick takes cmd-enter's replay (dima, 20:59)", () => {
-    test('a replay sent over an accepted mark draws replayed', () => {
-        expect(
-            tickState({ ...ask, isLocked: false, mark: 'accepted' }, 'replay'),
-        ).toBe('replayed');
-    });
-    test('a tick sent over a replay mark draws ticked', () => {
-        expect(
-            tickState({ ...ask, isLocked: false, mark: 'rejected' }, 'tick'),
-        ).toBe('ticked');
-    });
-    test('cmd-enter on a read tick replays', () => {
-        expect(
-            steerKeyPress(
-                tickState(
-                    { ...ask, isLocked: false, mark: 'accepted' },
-                    undefined,
-                ),
-                true,
-                false,
-            ),
-        ).toBe('replay');
     });
 });
 
@@ -1056,10 +857,15 @@ describe('Enter then ⌘Enter in a steer box: the replay takes over from the tic
     const KEY = `${SID}:o1`;
 
     test('each key acts on the press the one before it made, with no shelf read between', () => {
-        const presses = createPresses();
+        let record = next(null, {
+            isGone: false,
+            isLocked: false,
+            mark: null,
+            pending: null,
+            type: 'shelfRead',
+        });
         const keys = createKeyPress();
-        const pressOf = (s: (typeof rows)[number], id: string | null) =>
-            presses.of(`${s.sid}:${id}`, s.pending.get(id ?? ''));
+        const stateOf = () => pressState(record);
         const states: string[] = [];
         for (const [at, isCmd] of [
             [1_000, false],
@@ -1068,9 +874,14 @@ describe('Enter then ⌘Enter in a steer box: the replay takes over from the tic
         ] as const) {
             keys.released();
             if (keys.pressed() === 'repeat') continue;
-            const step = steerKeyAct(rows, KEY, isCmd, pressOf);
-            if (step?.act) presses.pressed(KEY, step.act, at);
-            states.push(tickState(rows[0]!.asks[0]!, pressOf(rows[0]!, 'o1')));
+            const step = steerKeyAct(rows, KEY, isCmd, stateOf);
+            if (step?.act)
+                record = next(record, {
+                    at,
+                    type: 'pressed',
+                    verdict: step.act,
+                });
+            states.push(stateOf());
         }
         // the third: ⌘Enter again takes the replay back
         expect(states).toEqual(['ticked', 'replayed', 'open']);
@@ -1078,7 +889,7 @@ describe('Enter then ⌘Enter in a steer box: the replay takes over from the tic
 
     test('a key in a box whose ask left does nothing', () => {
         expect(
-            steerKeyAct(rows, `${SID}:gone`, false, () => undefined),
+            steerKeyAct(rows, `${SID}:gone`, false, () => 'open'),
         ).toBeNull();
     });
 
@@ -1086,7 +897,7 @@ describe('Enter then ⌘Enter in a steer box: the replay takes over from the tic
         const gated = [
             { ...rows[0]!, asks: [{ ...rows[0]!.asks[0]!, isGated: true }] },
         ];
-        expect(steerKeyAct(gated, KEY, false, () => undefined)).toMatchObject({
+        expect(steerKeyAct(gated, KEY, false, () => 'open')).toMatchObject({
             act: null,
             note: 'Ticks by click only',
         });

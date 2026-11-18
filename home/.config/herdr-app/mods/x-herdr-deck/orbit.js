@@ -3,6 +3,7 @@
 // session's next turn (FRM-552)
 
 /** @typedef {{ id: string | null, text: string, pick: string | null, link: string | null, mark: string | null, isGated: boolean, isLocked: boolean }} Ask */
+/** @typedef {ReturnType<typeof import('./press.js').pressState>} PressState */
 /** @typedef {{ id: string, verdict: 'tick' | 'replay' | 'untick', steer?: string, text?: string, at: number }} Press */
 
 /**
@@ -239,15 +240,10 @@ export const dropPress = (io, path, id, taken) =>
  * the asks «tick all» takes (FRM-589): open and pressable, never gated, since a gated ask unlocks an action and stays
  * his own press, one each (mods AGENTS.md § never)
  * @param {Ask[]} asks
- * @param {(id: string) => Press['verdict'] | null | undefined} sentOf
+ * @param {(id: string) => PressState} stateOf
  */
-export const tickAllTakes = (asks, sentOf) =>
-    asks.filter(
-        (a) =>
-            a.id !== null &&
-            !a.isGated &&
-            tickState(a, sentOf(a.id)) === 'open',
-    );
+export const tickAllTakes = (asks, stateOf) =>
+    asks.filter((a) => a.id !== null && !a.isGated && stateOf(a.id) === 'open');
 
 /**
  * «tick all» on the one thread `sid` names: a tick line per ask it takes, the single tick's shape, in that thread's
@@ -256,14 +252,14 @@ export const tickAllTakes = (asks, sentOf) =>
  * @param {string} dir the ticks folder
  * @param {{ sid: string, asks: Ask[], taken: number }[]} rows every thread on the deck
  * @param {string} sid
- * @param {(id: string) => Press['verdict'] | null | undefined} sentOf
+ * @param {(id: string) => PressState} stateOf
  * @param {(id: string) => string | undefined} steerOf a steer typed in an ask's box rides its tick, as with one tick
  * @param {number} at
  * @returns {Promise<Ask[]>} the asks it ticked
  */
-export async function tickAll(io, dir, rows, sid, sentOf, steerOf, at) {
+export async function tickAll(io, dir, rows, sid, stateOf, steerOf, at) {
     const row = rows.find((r) => r.sid === sid);
-    const takes = row ? tickAllTakes(row.asks, sentOf) : [];
+    const takes = row ? tickAllTakes(row.asks, stateOf) : [];
     if (!row || takes.length === 0) return [];
     await rewrite(io, `${dir}/${sid}.jsonl`, (text) =>
         takes.reduce((was, a) => {
@@ -354,94 +350,8 @@ export function inListOrder(rows, pids) {
 }
 
 /**
- * what an ask's tick shows: 🔒 only once the published ask is locked, which a turn does, never the stash's 4 s read of
- * the press; until then a tick is ✅ and his second click takes it back, gated asks too (dima: «ticked and able to
- * untick until you actually receive them»); an untick on its way draws open, so he can tick again at once
- * @param {Ask} ask
- * @param {Press['verdict'] | null | undefined} sent his press still in the ticks file, or just sent
- * @returns {'open' | 'ticked' | 'locked' | 'replayed'}
- */
-export function tickState(ask, sent) {
-    if (ask.isLocked) return 'locked';
-    // his press outranks the stash's mark, which answers an older one
-    if (sent === 'untick') return 'open';
-    if (sent === 'tick') return 'ticked';
-    if (sent === 'replay') return 'replayed';
-    if (ask.mark === 'accepted') return 'ticked';
-    if (ask.mark) return 'replayed';
-    return 'open';
-}
-
-/**
- * a press he made is settled once the shelf draws the ask the same without it: his mark from the stash or his press in
- * the ticks file; until then the deck draws his press, so a poll that read the shelf a moment early never flips it back
- * @param {Ask} ask @param {Press['verdict'] | null | undefined} pending his press as the last read of the ticks file has it
- * @param {Press['verdict']} sent
- */
-export const isPressSettled = (ask, pending, sent) =>
-    ask.isLocked || tickState(ask, pending) === tickState(ask, sent);
-
-/** a press the session never took gives the buttons back after this long */
-export const SENT_MS = 2 * 60 * 1000;
-
-/**
- * his presses on the asks, one record each, keyed `sid:id`: a key or a click presses, a failed write takes its own
- * press back, and a press settles once the shelf draws the ask the same without it, the ask leaves, or SENT_MS passes.
- * every reader of his press asks `of`, so a fix lands in one place (FRM-628)
- */
-export function createPresses() {
-    /** @type {Map<string, { verdict: Press['verdict'], at: number }>} */
-    const sent = new Map();
-    return {
-        /** its write failed: only the press made at `at`, never a newer one @param {string} key @param {number} at */
-        failed(key, at) {
-            if (sent.get(key)?.at === at) sent.delete(key);
-        },
-        /**
-         * his press on an ask: one he just made, else the last read of the ticks file
-         * @param {string} key @param {Press['verdict'] | null | undefined} pending
-         */
-        of: (key, pending) => sent.get(key)?.verdict ?? pending,
-        /** @param {string} key @param {Press['verdict']} verdict @param {number} at */
-        pressed(key, verdict, at) {
-            sent.set(key, { at, verdict });
-        },
-        /**
-         * after a read of the shelf
-         * @param {(key: string) => { ask: Ask | undefined, pending: Press['verdict'] | null | undefined }} lookup
-         * @param {number} now
-         * @returns {string[]} the presses given up by time, never answered: each box says so, never a silent revert
-         */
-        settle(lookup, now) {
-            /** @type {string[]} */
-            const givenUp = [];
-            for (const [key, press] of sent) {
-                const { ask, pending } = lookup(key);
-                if (!ask || isPressSettled(ask, pending, press.verdict))
-                    sent.delete(key);
-                else if (now - press.at > SENT_MS) {
-                    sent.delete(key);
-                    givenUp.push(key);
-                }
-            }
-            return givenUp;
-        },
-    };
-}
-
-/**
- * how his second click takes a tick back: a press the stash has not read leaves the ticks file, so neither the stash
- * nor the guard ever sees it; a press it has read gets an untick line, which the stash answers by dropping the mark
- * @param {Press['verdict'] | null | undefined} pending his press still in the ticks file
- * @param {Ask['mark']} [mark] the stash's mark: set once it read the press
- * @returns {'drop' | 'untick'}
- */
-export const untickDoor = (pending, mark) =>
-    (pending === 'tick' || pending === 'replay') && !mark ? 'drop' : 'untick';
-
-/**
  * his second click takes a tick or a replay back until a turn takes it (PK-386: a replay locked at once)
- * @param {ReturnType<typeof tickState>} state
+ * @param {PressState} state
  */
 export const canTakeBack = (state) =>
     state === 'ticked' || state === 'replayed';
@@ -449,7 +359,7 @@ export const canTakeBack = (state) =>
 /**
  * the two buttons' emojis (dima's W63–W67, 21:03): both stay, the pressed one reading 🍕 queued, then 😋 once a turn
  * took it, by the stash's mark of what was taken
- * @param {ReturnType<typeof tickState>} state @param {Ask['mark']} [mark]
+ * @param {PressState} state @param {Ask['mark']} [mark]
  */
 export function pressLabel(state, mark) {
     const taken = mark === 'accepted' ? 'tick' : 'replay';
@@ -485,7 +395,7 @@ export function askLabel(thread, id) {
 /**
  * a key in an ask's steer box: Enter is 🛎️, cmd-enter 🔁, each pressed a second time taking its press back (dima,
  * 20:34); a guarded ask's tick stays his click, as no key reaches an unlocking press
- * @param {ReturnType<typeof tickState>} state @param {boolean} isCmd @param {boolean} isGated
+ * @param {PressState} state @param {boolean} isCmd @param {boolean} isGated
  * @returns {'tick' | 'replay' | 'untick' | null}
  */
 export function steerKeyPress(state, isCmd, isGated) {
@@ -500,14 +410,14 @@ export function steerKeyPress(state, isCmd, isGated) {
  * two keys, so Enter then ⌘Enter takes the replay over the tick at once (FRM-628:W1)
  * @template {{ sid: string, asks: Ask[] }} R
  * @param {R[]} rows @param {string} key the box's `sid:id` @param {boolean} isCmd
- * @param {(s: R, id: string | null) => Press['verdict'] | null | undefined} pressOf
+ * @param {(s: R, id: string | null) => PressState} stateOf
  * @returns {{ s: R, ask: Ask, act: ReturnType<typeof steerKeyPress>, note: string | null } | null} null: its ask left
  */
-export function steerKeyAct(rows, key, isCmd, pressOf) {
+export function steerKeyAct(rows, key, isCmd, stateOf) {
     for (const s of rows)
         for (const ask of s.asks) {
             if (`${s.sid}:${ask.id}` !== key) continue;
-            const state = tickState(ask, pressOf(s, ask.id));
+            const state = stateOf(s, ask.id);
             const isGated = Boolean(ask.isGated);
             return {
                 act: steerKeyPress(state, isCmd, isGated),
@@ -539,7 +449,7 @@ export function createTurns() {
 
 /**
  * the line under a steer box when its key did nothing: a guarded ask's tick is his click, never Enter
- * @param {ReturnType<typeof tickState>} state @param {boolean} isCmd @param {boolean} isGated
+ * @param {PressState} state @param {boolean} isCmd @param {boolean} isGated
  * @returns {string | null}
  */
 export function steerKeyNote(state, isCmd, isGated) {
