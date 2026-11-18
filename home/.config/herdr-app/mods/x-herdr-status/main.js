@@ -31,8 +31,6 @@ import {
 /** @typedef {{ ahead: number, behind: number, branch: string | null, dirty: number, oid: string | null, upstream: string | null }} GitInfo */
 /** @typedef {{ url: string, number: number, state: string, isDraft: boolean, title: string, head?: string }} Pr */
 /** @typedef {{ pr: Pr | null, error?: string, at?: number }} PrEntry */
-/** @typedef {Awaited<ReturnType<typeof syncRepo>>} SyncResult */
-/** @typedef {ReturnType<typeof import('herdr').focused>} Focused */
 /** @typedef {{ x: number, y: number }} Anchor */
 /** @typedef {{ dirs: string[], prs?: Record<string, PrEntry>, status?: Record<string, GitInfo | null> }} RepoSet */
 /** @typedef {{ current: boolean, name: string, when: string }} Branch */
@@ -179,27 +177,21 @@ async function syncRepo(folder) {
     if (fetched.code)
         return {
             body: tail(fetched) || repo,
-            n: 0,
             ok: false,
-            repo,
             title: "Couldn't fetch",
         };
     const upstream = await git('rev-parse', '--abbrev-ref', '@{u}');
     if (upstream.code)
         return {
             body: `${repo}: no upstream branch to pull from`,
-            n: 0,
             ok: true,
-            repo,
             title: 'Fetched',
         };
     const pulled = await git('pull', '--ff-only');
     if (pulled.code)
         return {
             body: tail(pulled),
-            n: 0,
             ok: false,
-            repo,
             title: "Couldn't pull",
         };
     const after = (await git('rev-parse', 'HEAD')).stdout.trim();
@@ -213,9 +205,7 @@ async function syncRepo(folder) {
               ) || 0;
     return {
         body: `${repo} · ${upstream.stdout.trim()}`,
-        n,
         ok: true,
-        repo,
         title: n ? `Pulled ${n} commit${n === 1 ? '' : 's'}` : 'Up to date',
     };
 }
@@ -928,9 +918,8 @@ export default class WorkspaceStatus extends View {
                 Math.min(info.branches.length, 10) * 30 +
                 34 +
                 16;
-            const st = this.repos?.[dir] ?? this.git?.[dir] ?? null;
+            const st = this.git?.[dir] ?? null;
             const pr = st ? this.prs[`${dir}|${st.branch}`] : null;
-            if (props()?.overlay) closeOverlay(props().overlay);
             openOverlay({
                 at: {
                     x: Math.max(4, anchor.x),
@@ -941,7 +930,6 @@ export default class WorkspaceStatus extends View {
                 mod: 'x-herdr-status',
                 // what's known of it, under git's own name for the folder
                 props: {
-                    anchor,
                     repo: {
                         dir: info.root,
                         info,
@@ -1038,8 +1026,7 @@ export default class WorkspaceStatus extends View {
     }
 
     // After a switch or a new branch the page closes: the bar reads the new branch.
-    /** @param {Context | AsyncContext} _cx */
-    leavePage(_cx) {
+    leavePage() {
         closeOverlay(props().overlay);
     }
 
@@ -1073,7 +1060,7 @@ export default class WorkspaceStatus extends View {
                     body: baseName(root),
                     title: `On new branch ${name}`,
                 });
-                this.leavePage(cx);
+                this.leavePage();
             }
         });
     }
@@ -1123,7 +1110,7 @@ export default class WorkspaceStatus extends View {
                         'git switch failed'
                     ).trim();
                     cx.notify();
-                } else this.leavePage(cx);
+                } else this.leavePage();
             });
         };
         return v_flex()

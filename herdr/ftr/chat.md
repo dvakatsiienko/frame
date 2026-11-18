@@ -46,9 +46,9 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - then his words sit in an accent-tinted bubble on the right, Claude's in a quiet bubble on the left
   - decision: their bubbles, after shepherdr's chat (dima, 21:13)
   - missing in the new chat: «Your messages» Box, Tint and Bar; the row left the look popover until the chat draws them (dima's o5, 2026-11-18)
-- ✅ **bold** and *italic* in replies draw bold and italic
+- ⬜ **bold** and *italic* in replies draw bold and italic
   - given the chat's font is Sans
-  - then a reply's markdown bold reads bold (shot 1928, the old chat)
+  - then a reply's markdown bold reads bold; seen only in the old chat (shot 1928), not yet in the new one
   - decision: Sans is the system font: herdr's own UI font, Geist, ships one face and drew bold flat
 - 🐞 a triple click selects a reply's whole paragraph
   - given a reply's paragraph holds inline code and wraps
@@ -138,7 +138,6 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - when he presses cmd+Enter in the focused quill, then the words go now, no disc (dima, 20:41: «cmd+enter — sends immediately»)
   - and a slash command, or a thread that takes no joins, is sent that way on a plain press, and a line over the quill says why
   - when a send is refused, or the thread does not run in herdr, then his words are back in the quill and a line over it says so
-  - and joins a thread never took come back to the quill when the thread ends, in the order he sent them
   - and a message waiting in Claude Code's queue is his last row, an outline of his bubble with dim words, reading «sent HH:MM» under it, until the turn takes it; words that joined a turn are drawn as his messages
   - and a picture waiting over the quill joins as its path and stays, as the words do, until a turn takes it
   - and with the quill empty the button keeps its face: a click, Enter or a hold there does nothing, no disc (dima, 20:30)
@@ -149,6 +148,11 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and his words, their 🍕 mark and his draft have one owner (`quill.js`) (FRM-628 step 88, his ✓ 12:39)
   - decision: a let-go after the disc starts sends nothing, a started hold he aborts being a changed mind (his o127 tick, 21:23)
   - decision: no Queued strip and no «Send now» over the quill (dima, 19:37: «queued messages go to a Queued section I don't want»)
+- ⬜ joins a thread never took come back to the quill when the thread ends
+  - given his words marked to join a thread's turn
+  - when the thread ends before any turn took them
+  - then they are back in the quill, in the order he sent them
+  - missing in the new chat: `joins.js` `backTexts` has no caller, so the hand-back is not wired (FRM-638 slice 12c round 1)
 - 🧭 a queued message comes back to the quill with its × (FRM-563)
   - given a thread mid-turn holds his queued messages
   - when dima clicks × on one before it joins
