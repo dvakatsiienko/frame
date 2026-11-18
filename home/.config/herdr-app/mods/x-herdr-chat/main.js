@@ -107,7 +107,7 @@ import {
 import { createKeyPress } from './keypress.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { createMagic, retextWait } from './magic.js';
-import { copyText, createMessageMenu, menuPlace } from './menu.js';
+import { copyText, createMessageMenu, menuPlace, withReply } from './menu.js';
 import { createPages } from './pages.js';
 import {
     MODELS,
@@ -121,6 +121,8 @@ import {
     runsAtAfter,
 } from './picker.js';
 import { createPlace } from './place.js';
+import { card, typeAnswer } from './question.js';
+import { createAskWatch, screenTail } from './question-read.js';
 import { sendArgs } from './queued.js';
 import { createQuills } from './quill.js';
 import { createReader } from './reader.js';
@@ -248,7 +250,33 @@ const SENT_THUMB = 96;
 const PASTE_NOTE_MS = 6000;
 const NO_IMAGE = 'No image on the clipboard';
 // the right-click menu's size, one row; its note under the quill once a message is copied
-const MENU_SIZE = { h: 34, w: 200 };
+const MENU_SIZE = { h: 60, w: 200 };
+// a blocked thread's screen is read this often while it asks, so the question card follows its cursor
+const ASK_READ_MS = 1000;
+/**
+ * a button of the question card and the blocked panel; `strong` is the one that answers
+ * @param {any} t @param {string} id @param {string} label @param {((e: any, cx: any) => void) | null} onClick @param {boolean} [strong]
+ */
+function askButton(t, id, label, onClick, strong) {
+    return div()
+        .id(id)
+        .px(10)
+        .py(4)
+        .rounded(6)
+        .text_size(12)
+        .cursor_pointer()
+        .bg(strong ? t.solid : t.raised)
+        .text_color(strong ? t.solid_foreground : t.foreground)
+        .hover((s) =>
+            strong
+                ? s.bg(t.accent).text_color(t.accent_foreground)
+                : s.bg(t.hover),
+        )
+        .when(Boolean(onClick), (el) =>
+            el.on_click((e, cx) => onClick?.(e, cx)),
+        )
+        .child(label);
+}
 const COPIED_NOTE = 'Message copied';
 const COPIED_NOTE_MS = 1500;
 // each save waits for the one before it, so an older store never lands last
@@ -609,6 +637,22 @@ export default class Chat extends View {
     slashMenu = createSlashMenu();
     /** the right-click menu on a message (slice 7) */
     messageMenu = createMessageMenu();
+    /** the question Claude waits on, read off the transcript (slice 7) */
+    askWatch = createAskWatch();
+    /** what the question card reads and writes: the blocked thread's screen, where its cursor was, a fold @type {import('./question-read.js').AskView} */
+    ask = {
+        address: '',
+        askFolded: null,
+        button: (t, id, label, onClick, strong) =>
+            askButton(t, id, label, onClick, strong),
+        items: [],
+        lastAsk: null,
+        screen: null,
+        tick: () => {},
+        toTerminal: () => {},
+    };
+    /** the message a reply answers, by thread: one line above the quill, sent quoted before his words @type {Map<string, string>} */
+    replies = new Map();
     /** the thread's skills, from its transcript's listing @type {Map<string, string>} */
     skills = new Map();
     /** the skills of the plugins its folder enables @type {Map<string, string>} */
@@ -786,6 +830,9 @@ export default class Chat extends View {
         cx.timer.every(SHOWN_LOOK_MS, (later) =>
             this.showThread(this.shownAddress, later),
         );
+        this.ask.tick = (later) => this.readAsk(later);
+        this.ask.toTerminal = (address) => this.toTerminal(address);
+        cx.timer.every(ASK_READ_MS, (later) => this.readAsk(later));
         this.ageBand(cx);
         cx.timer.every(BAND_AGE_MS, (later) => this.ageBand(later));
         cx.spawn(async (cx) => {
@@ -974,6 +1021,7 @@ export default class Chat extends View {
                     .text_color(t.muted)
                     .child(this.note),
             );
+        if (this.replies.has(this.file)) root.child(this.replyStrip(t));
         if (this.pickNote)
             root.child(
                 div()
@@ -989,6 +1037,9 @@ export default class Chat extends View {
         return (
             root
                 .relative()
+                .when(this.statusNow() === 'blocked', (el) =>
+                    el.child(this.blockedPanel(t)),
+                )
                 .child(this.band(drawn.band, t))
                 .child(this.quill(this.box, t))
                 .child(this.bar(drawn.bar, drawn.band.buttons, t))
@@ -2772,6 +2823,26 @@ export default class Chat extends View {
             this.messageMenu.close();
             cx.notify();
         };
+        /** @param {string} id @param {string} label @param {(cx: Context) => void} act */
+        const item = (id, label, act) =>
+            h_flex()
+                .id(`chat-message-menu-${id}`)
+                .h(26)
+                .px(8)
+                .items_center()
+                .rounded(5)
+                .text_size(13)
+                .text_color(text ? t.foreground : t.dim)
+                .when(Boolean(text), (el) =>
+                    el
+                        .cursor_pointer()
+                        .hover((s) => s.bg(t.hover))
+                        .on_click((_event, cx) => {
+                            close(cx);
+                            act(cx);
+                        }),
+                )
+                .child(label);
         return v_flex()
             .id('chat-message-menu')
             .absolute()
@@ -2786,25 +2857,185 @@ export default class Chat extends View {
             .shadow_md()
             .on_mouse_down_out((_event, cx) => close(cx))
             .child(
+                item('copy', 'Copy message', (cx) => {
+                    cx.write_to_clipboard(text ?? '');
+                    this.flashNote(COPIED_NOTE, cx);
+                }),
+            )
+            .child(
+                item('reply', 'Reply', () => {
+                    if (this.file && text) this.replies.set(this.file, text);
+                    this.box?.focus();
+                }),
+            );
+    }
+
+    /** the blocked thread's ask, read off its screen: the question card reads where its cursor is @param {Context} cx */
+    readAsk(cx) {
+        const { address } = this;
+        const isBlocked = Boolean(address) && this.statusNow() === 'blocked';
+        this.ask.address = address ?? '';
+        this.ask.items = this.askWatch.items();
+        if (!isBlocked || !address) {
+            if (this.ask.screen !== null) {
+                this.ask.screen = null;
+                cx.notify();
+            }
+            return;
+        }
+        cx.spawn(async (cx) => {
+            const read = await hc(['read', address]).catch(() => null);
+            if (this.address !== address || !read || read.code !== 0) return;
+            const screen = screenTail(read.stdout);
+            if (screen === this.ask.screen) return;
+            this.ask.screen = screen;
+            cx.notify();
+        });
+    }
+
+    /** the Terminal view on this thread: the stack shows its other child, the thread's pane takes the keyboard @param {string} address */
+    toTerminal(address) {
+        const { stack, other } = props() ?? {};
+        if (stack && other)
+            runCommand('layout.select', { child: other, stack });
+        if (address) runCommand('pane.focus', { terminal: address });
+    }
+
+    /**
+     * Claude asking: its question as a card, or anything else it asks (a permission) as its screen with the keys that
+     * answer it
+     * @param {Theme} t
+     */
+    blockedPanel(t) {
+        const asking = card(this.ask, t, (n) => n);
+        if (asking) return asking;
+        const address = this.address ?? '';
+        /** @param {string[]} keys */
+        const keys =
+            (...keys) =>
+            (/** @type {any} */ _e, /** @type {Context} */ cx) => {
+                cx.spawn(async (cx) => {
+                    await hc(['keys', address, ...keys]);
+                    this.ask.screen = null;
+                    this.readAsk(cx);
+                });
+            };
+        return v_flex()
+            .id('chat-blocked')
+            .mx(32)
+            .mb(8)
+            .gap(8)
+            .p(10)
+            .rounded(8)
+            .bg(t.raised)
+            .border_1()
+            .border_color(t.blocked)
+            .child(
                 h_flex()
-                    .id('chat-message-menu-copy')
-                    .h(26)
-                    .px(8)
+                    .gap(8)
                     .items_center()
-                    .rounded(5)
-                    .text_size(13)
-                    .text_color(text ? t.foreground : t.dim)
-                    .when(Boolean(text), (el) =>
-                        el
-                            .cursor_pointer()
-                            .hover((s) => s.bg(t.hover))
-                            .on_click((_event, cx) => {
-                                cx.write_to_clipboard(text ?? '');
-                                close(cx);
-                                this.flashNote(COPIED_NOTE, cx);
-                            }),
+                    .child(div().size(8).rounded(4).bg(t.blocked))
+                    .child(
+                        div()
+                            .font_semibold()
+                            .text_color(t.foreground)
+                            .child('Claude is asking'),
+                    ),
+            )
+            .when(Boolean(this.ask.screen), (el) =>
+                el.child(
+                    div()
+                        .id('chat-blocked-screen')
+                        .max_h(260)
+                        .overflow_y_scroll()
+                        .p(8)
+                        .rounded(6)
+                        .bg(t.background)
+                        .text_size(11)
+                        .font_family(
+                            String(settings().font_family ?? 'JetBrains Mono'),
+                        )
+                        .text_color(t.foreground)
+                        .child(
+                            TextView.markdown(
+                                'chat-blocked-text',
+                                `\`\`\`\n${this.ask.screen ?? ''}\n\`\`\``,
+                            ).selectable(true),
+                        ),
+                ),
+            )
+            .child(
+                h_flex()
+                    .gap(6)
+                    .flex_wrap()
+                    .children(
+                        ['1', '2', '3'].map((k) =>
+                            askButton(
+                                t,
+                                `chat-key-${k}`,
+                                k,
+                                keys(k),
+                                k === '1',
+                            ),
+                        ),
                     )
-                    .child('Copy message'),
+                    .child(
+                        askButton(t, 'chat-key-enter', 'Enter', keys('enter')),
+                    )
+                    .child(askButton(t, 'chat-key-esc', 'Esc', keys('esc')))
+                    .child(div().flex_1())
+                    .child(
+                        askButton(t, 'chat-to-terminal', 'Open terminal', () =>
+                            this.toTerminal(address),
+                        ),
+                    ),
+            );
+    }
+
+    /** the message a reply answers, one line over the quill: its first words, × drops it @param {Theme} t */
+    replyStrip(t) {
+        const { file } = this;
+        const text = (file && this.replies.get(file)) ?? '';
+        return h_flex()
+            .id('chat-reply')
+            .gap(8)
+            .items_center()
+            .mx(32)
+            .mb(6)
+            .px(8)
+            .py(4)
+            .rounded(6)
+            .border_l_2()
+            .border_color(t.accent)
+            .bg(t.raised)
+            .text_size(12)
+            .child(div().flex_none().text_color(t.accent).child('↩ Reply'))
+            .child(
+                div()
+                    .flex_1()
+                    .min_w(0)
+                    .truncate()
+                    .text_color(t.muted)
+                    .child(text.replace(/\s+/g, ' ').trim()),
+            )
+            .child(
+                div()
+                    .id('chat-reply-drop')
+                    .size(18)
+                    .flex()
+                    .flex_none()
+                    .items_center()
+                    .justify_center()
+                    .rounded_full()
+                    .text_color(t.muted)
+                    .cursor_pointer()
+                    .hover((s) => s.bg(t.hover).text_color(t.foreground))
+                    .tooltip('Drop the reply')
+                    .on_click((_event, cx) => {
+                        if (file) this.replies.delete(file);
+                        cx.notify();
+                    })
+                    .child('×'),
             );
     }
 
@@ -3188,6 +3419,7 @@ export default class Chat extends View {
         this.watch?.cancel();
         this.watch = null;
         this.model.clear();
+        this.askWatch.reset();
         this.heights.clear();
         fileRows.clear();
         toolFolds.clear();
@@ -3311,6 +3543,7 @@ export default class Chat extends View {
             // a replaced transcript names its own model and effort, or none yet: never the removed one's
             this.runsAt = NO_RUNS_AT;
             this.model.clear();
+            this.askWatch.reset();
             this.heights.clear();
             fileRows.clear();
             // nothing of the old rows may steer the new ones: a held place, a landing under way, the rows drawn
@@ -3328,6 +3561,7 @@ export default class Chat extends View {
         }
         if (this.runsAt !== ran && this.settlePick()) cx.notify();
         const { changed, removed } = this.model.add(lines);
+        this.askWatch.add(lines);
         this.learnSkills(lines);
         this.makePictures(cx);
         // his marked words showing as his message settle the mark in this same draw: they leave the quill as they land
@@ -3442,6 +3676,13 @@ export default class Chat extends View {
         const files = this.waitingPaths(file);
         if (!text && !files.length) return;
         if (!this.address) return this.say(NOT_IN_HERDR, cx);
+        // while a question card is up, his words are its «Type something» answer
+        if (text && typeAnswer(this.ask, text, cx)) {
+            this.quills.apply(file, { said: text, type: 'sent' });
+            return cx.notify();
+        }
+        // a reply goes now, never marked to join: its quote opens the message
+        if (this.replies.has(file)) return this.push(box, cx);
         const answer = this.magic.click(
             file,
             sidOf(file),
@@ -3505,7 +3746,12 @@ export default class Chat extends View {
         this.quills.apply(file, { said: text, type: 'sent' });
         // the files waiting go after the words, each path on its line as a terminal drop types it (FRM-613)
         const files = file ? this.attachments.take(file) : [];
-        const message = withPaths(text, files);
+        const replyTo = file ? this.replies.get(file) : undefined;
+        if (file) this.replies.delete(file);
+        const message = withPaths(
+            replyTo ? withReply(replyTo, text) : text,
+            files,
+        );
         // Claude Code queues a slash command with no text: the model takes its words from here to draw it waiting
         if (message.startsWith('/')) this.model.pushed(message, Date.now());
         this.say(note, cx);
@@ -3520,6 +3766,7 @@ export default class Chat extends View {
             // his words come back before what he typed since, and his files with them, never lost, on screen or not
             this.quills.apply(file, { said: text, type: 'returned' });
             if (file && files.length) this.attachments.add(file, files);
+            if (file && replyTo) this.replies.set(file, replyTo);
             if (this.file !== file) return;
             this.say(
                 `Not sent: ${sent.stderr.trim() || 'herdr refused it'}`,

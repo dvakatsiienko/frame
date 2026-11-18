@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { copyText, createMessageMenu, menuPlace } from './menu.js';
+import { copyText, createMessageMenu, menuPlace, withReply } from './menu.js';
 import type { Row } from './row-model.js';
 
 const press = { x: 400, y: 300 };
@@ -90,5 +90,13 @@ describe('where the menu sits', () => {
 
     test('pulled left near the right edge', () => {
         expect(menuPlace({ x: 750, y: 100 }, view, size).x).toBe(600);
+    });
+});
+
+describe('a reply', () => {
+    test('quotes every line of the message, then his words', () => {
+        expect(withReply('first\nsecond\n', 'yes')).toBe(
+            '> first\n> second\n\nyes',
+        );
     });
 });

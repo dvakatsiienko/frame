@@ -1,4 +1,5 @@
-// the right-click menu on a message (FRM-638 slice 7): «Copy message» copies it as written. herdr reports one
+// the right-click menu on a message (FRM-638 slice 7): «Copy message» copies it as written, «Reply» quotes it above
+// the quill and sends it before his next words. herdr reports one
 // right-click twice, on the list's item (which row) and on the list (where, in the list's own px), in either order:
 // whichever lands second completes the menu
 
@@ -51,3 +52,14 @@ export const menuPlace = (press, view, size) => ({
     x: Math.max(0, Math.min(press.x, view.w - size.w)),
     y: press.y + size.h > view.h ? Math.max(0, press.y - size.h) : press.y,
 });
+
+/** a message as a markdown quote, every line under «> » @param {string} text */
+export const quoted = (text) =>
+    text
+        .trim()
+        .split(/\r?\n/)
+        .map((l) => `> ${l}`)
+        .join('\n');
+
+/** what a reply sends: the message it answers quoted, then his words @param {string} replyTo @param {string} text */
+export const withReply = (replyTo, text) => `${quoted(replyTo)}\n\n${text}`;
