@@ -397,12 +397,13 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and his words, their 🍕 mark and his draft have one owner (`quill.js`): words a turn took leave the quill as they show in the chat and stay gone after a switch away and back (FRM-628 step 88, his ✓ 12:39)
   - and a message he pasted reads as his own words, the wrapper Claude Code puts around a paste gone; a tag he typed, or one inside what he pasted, stays (FRM-628)
   - decision: until the swap the two chats share no draft and the global keys (cmd-k and the rest) stay the old chat's; the hold's two timings are read from the old chat's settings (clio, 2026-11-16 21:50)
-- ⬜ a reply's files open in one click from rows under it (x-herdr-chat, FRM-587)
+- 🐞 a reply's files open in one click from rows under it (x-herdr-chat, FRM-587)
   - given a reply names a file by a bare path, a `~` path, a quoted or backslash-escaped path, a `file://` link or a markdown link to one
   - then each file gets one row under the reply, «🖼️ <name>» for a picture and «📂 <name>» for any other file, its whole path on hover, and a click opens it in its app (a png in Preview)
   - and a path inside a fenced block gets no row, a sentence's period or comma is not part of the path, and the same file twice is one row
   - and the link inside the text stays plain while herdr-app#894 is open: a handler inside a lazy-list row's text does nothing there
   - decision: the row draws an emoji, not a thumbnail, until FRM-638 slice 5 brings the new chat's picture plumbing (clio, 13:38)
+  - and nothing inside a reply's row carries a press or hover handler: one there blanked the whole list (herdr-app#894; clio's thread drew empty, 14:15). the click opens nothing yet: each file becomes its own list item, opened through the list's item click
 
 - ✅ the chat settings popover: his chat look in one place (x-herdr-chat-settings, FRM-641)
   - makes: the chat look in herdr's shared store, `chat.look`; «Text (all of herdr)» also writes `colors.foreground` in herdr's `settings.json`

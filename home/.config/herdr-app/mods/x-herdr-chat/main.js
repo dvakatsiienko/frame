@@ -1912,9 +1912,7 @@ export default class Chat extends View {
             itemSizes,
             (i) => {
                 const id = rows[rowAt(i)]?.id ?? `end-${i}`;
-                // the cut's upper half keeps the row's own key and text ids: a held place dropped at his next wheel
-                // step, or held again, keeps the same text views, so a selection in it never flickers (dima, 13:28)
-                if (i === cutAt) return id;
+                if (i === cutAt) return `${id}#above`;
                 return i === cutAt + 1 && cutAt >= 0 ? `${id}#below` : id;
             },
             (drawn) => {
@@ -1934,7 +1932,9 @@ export default class Chat extends View {
                     }
                     if (i === cutAt)
                         items.push(
-                            box.overflow_hidden().child(this.row(row, t, pre)),
+                            box
+                                .overflow_hidden()
+                                .child(this.row(row, t, `${pre}a-`)),
                         );
                     else if (cutAt >= 0 && i === cutAt + 1)
                         items.push(
@@ -2198,8 +2198,8 @@ export default class Chat extends View {
     }
 
     /**
-     * a file a reply names, under its text: a click opens it in its app, a png in Preview (FRM-587); its whole path on
-     * hover
+     * a file a reply names, under its text (FRM-587). no press or hover handler: one inside a list row blanks the whole
+     * list (herdr-app#894), so the click that opens it waits on its own list item
      * @param {{ label: string, path: string }} file @param {string} id @param {Theme} t
      */
     fileRow(file, id, t) {
@@ -2213,14 +2213,8 @@ export default class Chat extends View {
             .rounded(6)
             .border(1)
             .border_color(t.border)
-            .cursor_pointer()
             .text_size(12)
             .text_color(t.muted)
-            .hover((s) => s.bg(t.hover).text_color(t.foreground))
-            .tooltip(file.path)
-            .on_click(() => {
-                exec('open', [file.path]).catch(() => {});
-            })
             .child(isPicture(file.path) ? ICONS.picture : ICONS.file)
             .child(div().truncate().child(file.label));
     }
