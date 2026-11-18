@@ -455,6 +455,8 @@ retro (14:43 on):
 - 2026-11-16 · prompt-groom · 1 · 0 · PK-349/PK-436/PK-new-oladki/PK-new-herdr-tools groomed to 24 W-lines; --next failed for two new labels, used W1 fallback as clio said
 - 2026-11-16 · inbox-prep · 1 · 0 · inbox-helga.md whole-file write, 12 asks, check-inbox-prep 35/35 exit 0; no commit
 - 2026-11-16 · pocket-write · 1 · 0 · PK-349 +7, PK-437 +13, PK-438 +4 appended; PK-436 archived, its 2 lines moved to PK-349 W1011-W1012; raw drops PK-437 x8, PK-438 x1; prompt-groom --day green 14:14
+- 2026-11-18 · prompt-groom · 1 · 0 · PK-349:W1163..W1181, 19 lines, every sentence mapped, groomed to ~/.local/state/clio/grooms/2026-11-18-1108.groomed.md
+- 2026-11-18 · inbox-prep · 1 · 0 · 26/26 content lines, check-inbox-prep exit 0, 7 items, 7 asks, written to _hq/inbox-helga.md
 
 ## rounds
 
