@@ -317,26 +317,38 @@ describe('clockReads', () => {
             'f(`${a ? `x${Date.now()}` : 1}`);',
             [1],
         ],
-        // FRM-489 row 23: a backtick inside a regex literal opened a template and blanked the code after it
+        // FRM-489 row 23: a backtick inside a regex literal opened a template and blanked the code after it; each read
+        // sits on the regex's own line, where a misread reaches it
         [
             'a read after a regex literal holding a backtick',
-            'if (/^\\s*```/.test(line)) f();\ng(Date.now());',
-            [2],
+            'if (/^\\s*```/.test(line)) f(Date.now());',
+            [1],
         ],
         [
             'a read after a regex literal holding a quote',
-            'const q = /[\'"]/;\ng(Date.now());',
-            [2],
+            'const q = /[\'"]/; g(Date.now());',
+            [1],
         ],
         [
             'a read after a regex class holding a slash',
-            'const s = /[/`]/g;\ng(Date.now());',
-            [2],
+            'const s = /[/`]/g; g(Date.now());',
+            [1],
         ],
         [
-            'a read after a division',
-            'const h = a / 2 / b;\ng(Date.now());',
-            [2],
+            'a read after a regex a keyword opens',
+            'return /^`/.test(l) && g(Date.now());',
+            [1],
+        ],
+        ['a read after a division', 'const h = a / 2; g(Date.now());', [1]],
+        [
+            'a read after a JSX closer',
+            'const t = <T>a</T>; g(Date.now());',
+            [1],
+        ],
+        [
+            'a read after a self-closing tag',
+            'const b = <B {...p} />; g(Date.now());',
+            [1],
         ],
     ])('reds %s', (_, source, lines) => {
         expect(clockReads(source)).toEqual(lines);

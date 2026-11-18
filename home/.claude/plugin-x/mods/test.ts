@@ -168,7 +168,7 @@ function codeOnly(source: string) {
             const end = source.indexOf('*/', i + 2);
             const stop = end < 0 ? source.length : end + 2;
             for (; i < stop; i++) out += keep(source[i] as string);
-        } else if (c === '/' && REGEX_AFTER.test(out.trimEnd().at(-1) ?? '')) {
+        } else if (c === '/' && REGEX_AFTER.test(out.trimEnd())) {
             // a regex literal: its quotes, backticks and slashes inside a class are text (FRM-489 row 23)
             out += c;
             let isClass = false;
@@ -228,8 +228,10 @@ function codeOnly(source: string) {
     }
     return out;
 }
-// a `/` after one of these opens a regex, never a division: no value can end on them
-const REGEX_AFTER = /^$|[(,=:[!&|?{};+\-*%<>~^]/;
+// a `/` after one of these opens a regex, never a division: no value ends on them. `<` and `}` stay off, since a JSX
+// closer `</T>` and a self-closing `{...p} />` put a `/` there
+const REGEX_AFTER =
+    /(?:^|[(,=:[!&|?{;+\-*%>~^]|\b(?:return|typeof|case|in|of|await|yield|void|delete|else|do|throw|new))$/;
 const CLOCK_FALLBACK =
     /\$\.clock\s*\.\s*now\(\s*\)\s*\.catch\(\s*(?:\(\s*\)\s*=>\s*Date\.now\(\s*\)|Date\.now)\s*,?\s*\)/g;
 

@@ -118,6 +118,11 @@ async function session($: Engine, on: On) {
         if (cmd === 'sh') return out(`100\n${START}\n`);
         if (cmd === 'id')
             return out('dima:*:501:20::0:0:Dima:/home:/bin/zsh\n');
+        if (cmd === 'mv' && dirs.has(String(args[0]))) {
+            dirs.delete(String(args[0]));
+            dirs.add(String(args.at(-1)));
+            return out('');
+        }
         if (cmd === 'mv') {
             const [from, to] = args.slice(1);
             const text = files.get(String(from));
@@ -709,11 +714,27 @@ test('a stale lock a peer breaks first is never broken twice: the rows wait for 
         }
     };
     await $.session.end({ reason: 'clear', sessionId: A } as never);
-    expect([s.files.get(BACK), s.dirs.has(lock), s.files.has(JOINS)]).toEqual([
-        undefined,
-        true,
-        true,
-    ]);
+    expect([
+        s.files.get(BACK),
+        s.dirs.has(lock),
+        s.files.has(JOINS),
+        s.dirs.has(`${lock}.break`),
+    ]).toEqual([undefined, true, true, false]);
+});
+
+// a breaker a crash left is moved aside and gone, the stale lock waits for the next try
+test('a breaker a crash left is cleared, never left to block every later break', async ($, on) => {
+    const s = await session($, on);
+    const lock = `${JOINS}.lock`;
+    s.files.set(JOINS, row('j1', 'waits'));
+    for (const dir of [lock, `${lock}.break`]) {
+        s.dirs.add(dir);
+        s.mtimes.set(dir, s.clock.now() - 30_000);
+    }
+    await $.session.end({ reason: 'clear', sessionId: A } as never);
+    expect([...s.dirs].filter((d) => d.startsWith(`${lock}.break`))).toEqual(
+        [],
+    );
 });
 
 test('a hand-back the lock refused at /clear goes back at a later sweep', async ($, on) => {

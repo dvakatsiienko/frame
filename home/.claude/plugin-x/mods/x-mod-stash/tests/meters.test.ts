@@ -277,6 +277,22 @@ test('a message into an idle session brings the 4 s poll back at once', async ($
     expect(await fiveHour(ui)).toMatch(/52%$/);
 });
 
+test('a turn running past 5 min keeps the 4 s poll', async ($, on) => {
+    const { clock, files } = meters(on);
+    on('prompt.submit', (_$, e) => ({ text: e.text }));
+    await measure($, 39, 35);
+    const ui = await band($);
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'go',
+        wait: false,
+    });
+    await clock.advance(6 * 60_000);
+    reading(files, 52);
+    await clock.advance(4000);
+    expect(await fiveHour(ui)).toMatch(/52%$/);
+});
+
 test("the ctx row shows the fill and the engine's compaction point", async ($, on) => {
     meters(on);
     await measure($, 39, 35);

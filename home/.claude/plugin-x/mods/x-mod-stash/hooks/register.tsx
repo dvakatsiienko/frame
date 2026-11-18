@@ -4881,7 +4881,10 @@ async function takeJoinLock($: EngineInterface, lock: string) {
     const breaker = `${lock}.break`;
     if ((await $.process.run(['mkdir', breaker])).exitCode !== 0) {
         if (!(await isJoinLockStale($, breaker))) return false;
-        await $.process.run(['rmdir', breaker]);
+        // moved aside under a name of its own: a second waiter's move then fails, never removing a fresh breaker
+        const aside = `${breaker}.${proc?.pid ?? 0}.${await $.clock.now()}`;
+        if ((await $.process.run(['mv', breaker, aside])).exitCode === 0)
+            await $.process.run(['rmdir', aside]);
         return false;
     }
     try {
@@ -5107,6 +5110,8 @@ async function takeBandPresses($: EngineInterface) {
     const presses = bandPressLines(text, after, now).filter(
         (p) => !refused.includes(p.at),
     );
+    // his press from herdr is an event: the bookkeeping jobs tick at 4 s again
+    if (presses.length) await markActive($);
     for (const p of presses) {
         if (p.button === 'wind' && p.sid === sid) await setWind($, sid, p.on);
         if (p.button === 'hot' && p.sid === sid) {
@@ -7474,6 +7479,9 @@ async function takeHerdrRows($: EngineInterface) {
             ...windEditsOf(await $.store.get(WIND_TEXT_EDITS)),
             ...texts,
         });
+    // a row he typed in herdr is an event: the bookkeeping jobs tick at 4 s again
+    if (was && JSON.stringify(seen) !== JSON.stringify(was))
+        await markActive($);
     // an empty first read is a baseline too: the first row herdr writes after it is an edit
     if (!was || JSON.stringify(seen) !== JSON.stringify(was))
         await $.store.set(HERDR_SEEN, seen);
@@ -8070,7 +8078,7 @@ export const register: Register = (on) => {
                 await $.env.get('X_STASH_POLL_MS').catch(() => undefined),
             );
             const pollMs = asked >= POLL_MS ? asked : POLL_MS;
-            await markActive($);
+            await markActive($).catch(() => undefined);
             const tick = () =>
                 $.clock.after(pollMs, async () => {
                     const now = await $.clock.now();
@@ -8088,7 +8096,8 @@ export const register: Register = (on) => {
                     await absorbMarks($).catch(() => undefined);
                     await wakeForMarks($).catch(() => undefined);
                     await takeBandPresses($).catch(() => undefined);
-                    if (isBookkept) await pollShelf($);
+                    // pollShelf paces itself every third tick; a gate here would slow it twice over
+                    await pollShelf($);
                     await quietIdle($).catch(() => undefined);
                     if (isBookkept) await quietBooks($).catch(() => undefined);
                     await wakeForParkedLanes($).catch(() => undefined);
@@ -8103,7 +8112,8 @@ export const register: Register = (on) => {
                     }
                     // a fold or mobile mode is kept within one poll of its change
                     await keepState($).catch(() => undefined);
-                    if (isBookkept && (await isOpen($)))
+                    // speak's own controls move its play state: a press reads it fresh
+                    if (await isOpen($))
                         await refreshSpeaking($).catch(() => undefined);
                     tick();
                 });

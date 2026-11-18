@@ -7,6 +7,8 @@ const SID = 's7a7e000-aaaa';
 
 // a session as a hot reload finds it: the store as it was, and `$.state` holding what the old module kept there.
 // `calls` counts every file and process read, so a test can ask what a render did
+// the test poll every row steps by: a row stepping 4 s on it would cross no tick (FRM-555 review)
+const POLL = 60_000;
 async function reloaded(
     $: Engine,
     on: On,
@@ -35,7 +37,7 @@ async function reloaded(
     });
     // a minute's poll, read once (X_STASH_POLL_MS): its hour-long rows cross 60 ticks, not 900 (FRM-555 fix 3)
     on('env.get', (_$, e) => ({
-        value: e.name === 'X_STASH_POLL_MS' ? String(60_000) : '/home',
+        value: e.name === 'X_STASH_POLL_MS' ? String(POLL) : '/home',
     }));
     on('fs.list', () => {
         calls.io++;
@@ -110,7 +112,7 @@ test(
 test('the board draws with no file or process read', async ($, on) => {
     const s = await reloaded($, on, {}, {}, true);
 
-    await s.clock.advance(4000);
+    await s.clock.advance(POLL);
     const before = s.calls.io;
     await $.ui.mount({
         component: 'Pane',
@@ -132,17 +134,17 @@ test('the board draws with no file or process read', async ($, on) => {
 test("an open board's tick leaves the band's view unwritten", async ($, on) => {
     const state: Record<string, unknown> = {};
     const s = await reloaded($, on, state, {}, true);
-    await s.clock.advance(4000);
+    await s.clock.advance(POLL);
     const settled = JSON.stringify(state.view);
-    await s.clock.advance(3 * 4000);
+    await s.clock.advance(3 * POLL);
     expect(JSON.stringify(state.view)).toBe(settled);
 });
 
 test("an open board's ticks leave the board unwritten while nothing it shows changes", async ($, on) => {
     const state: Record<string, unknown> = {};
     const s = await reloaded($, on, state, {}, true);
-    await s.clock.advance(4000);
+    await s.clock.advance(POLL);
     const settled = JSON.stringify(state.board);
-    await s.clock.advance(3 * 4000);
+    await s.clock.advance(3 * POLL);
     expect(JSON.stringify(state.board)).toBe(settled);
 });
