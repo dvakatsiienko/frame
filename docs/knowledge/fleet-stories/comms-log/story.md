@@ -81,3 +81,17 @@ fed-by: incidents
 - **fix:** every look step opens with its surface and place: «in herdr's orbit», «in the quill», «cc's board, a thread's Terminal view (⌘⌥T)»; a change he cannot see on his daily surface says so first; crew-codie how-you-work § the look card carries the line
 - **home:** undefined
 - **source:** undefined
+
+## c6 · pace · - · siesta · undefined
+
+- **what:** replies kept listing clio's own small tails («one tail left», «my tails», «not 100% tail-free») and promising a list for him, instead of solving them unasked and reporting tail-free
+- **how:** replies at 13:19, 14:25, 14:36 and 14:49, each naming tails
+- **why:** the tails rule said solve today, and the replies still reported tails as open items for him to read
+- **when:** 11-18 13:19–14:50
+- **where:** the main thread
+- **who:** clio main, dima
+- **his words:** «Why do you write me this whenever, wherever? You could just close it and tell me that you're free.» · «You clean all your small chores by yourself instead of me pointing you to all your small tails and asking me to clean them. For today I already asked you about 10 or 12 times»
+- **shape:** tails handed back
+- **fix:** craft-pm: a tail of mine never reaches him as a list; solved in the turn it is found, then one line «tail-free»; only a tail needing his word goes to orbit
+- **home:** undefined
+- **source:** undefined
