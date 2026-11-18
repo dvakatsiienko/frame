@@ -92,7 +92,7 @@ import {
 } from './joins.js';
 import { createKeyPress } from './keypress.js';
 import { LOOK_KEY, lookOf } from './look.js';
-import { createMagic } from './magic.js';
+import { createMagic, retextWait } from './magic.js';
 import {
     MODELS,
     NO_RUNS_AT,
@@ -197,8 +197,6 @@ const SETTINGS_OVERLAY = {
 };
 // his settings, kept by the old chat's settings window until the new one moves in
 const SETTINGS_FILE = '.claude/shelf/herdr-settings/settings.json';
-// under a mark, the join row is rewritten this long after his last key
-const RETEXT_MS = 400;
 const SEND_SIZE = 28;
 const QUILL_ENTER = 'x_herdr_chat_quill_enter';
 const NOT_IN_HERDR = 'This thread does not run in herdr: nothing was sent';
@@ -2581,7 +2579,16 @@ export default class Chat extends View {
         if (this.magic.markOf(file)?.state !== 'pending' || !file) return;
         const at = Date.now();
         this.lastKeyAt = at;
-        cx.timer.after(RETEXT_MS, (later) => {
+        const text = box.value().trim();
+        if (!retextWait(text)) {
+            // the mark drops before the take-back's write, so 🍕 goes in this draw
+            cx.spawn(async (cx) => {
+                if (await this.magic.typed(file, '', this.joins)) cx.notify();
+            });
+            cx.notify();
+            return;
+        }
+        cx.timer.after(retextWait(text), (later) => {
             if (this.lastKeyAt !== at || this.file !== file) return;
             later.spawn(async (cx) => {
                 const isChanged = await this.magic.typed(

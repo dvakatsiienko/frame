@@ -22,6 +22,12 @@ import {
 const isTaken = (joins, id) =>
     Boolean(joins?.taken?.includes(id) || joins?.joined?.includes(id));
 
+/** words typed under a mark reach its join row once his keys rest this long */
+export const RETEXT_MS = 400;
+
+/** an emptied quill unmarks at once, so 🍕 goes the moment the words do (dima, 15:34); words wait for his keys to rest @param {string} text */
+export const retextWait = (text) => (text.trim() ? RETEXT_MS : 0);
+
 /**
  * @param {object} doors
  * @param {JoinIo} doors.io

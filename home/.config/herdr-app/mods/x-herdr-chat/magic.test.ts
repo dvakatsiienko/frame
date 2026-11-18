@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { JOIN_TAKE_MS } from './joins.js';
-import { createMagic } from './magic.js';
+import { RETEXT_MS, createMagic, retextWait } from './magic.js';
 import { createQuills } from './quill.js';
 
 const THREAD = '/t/a.jsonl';
@@ -189,6 +189,21 @@ describe('what he types on rides the same row', () => {
         await w.magic.typed(THREAD, '', ON);
         expect(w.magic.markOf(THREAD)).toBeNull();
         expect(w.rows()).toEqual([]);
+    });
+
+    // dima's wisp, 15:34: Enter marks 🍕, a full clear left 🍕 for about a second
+    test('an emptied quill drops its mark before the file write, so 🍕 goes at once', async () => {
+        const w = world();
+        await w.magic.click(THREAD, SID, 'also the tests', ON);
+        const done = w.magic.typed(THREAD, '', ON);
+        expect(w.magic.markOf(THREAD)).toBeNull();
+        await done;
+    });
+
+    test('an emptied quill waits for no rest of the keys, words still do', () => {
+        expect(retextWait('')).toBe(0);
+        expect(retextWait('   ')).toBe(0);
+        expect(retextWait('also')).toBe(RETEXT_MS);
     });
 
     test('words typed after a turn took the row stay his next message', async () => {
