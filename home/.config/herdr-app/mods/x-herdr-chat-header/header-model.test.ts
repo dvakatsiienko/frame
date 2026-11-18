@@ -61,6 +61,12 @@ describe('the thread on the left', () => {
         expect(headerOf(input()).place).toBe('~/frame');
     });
 
+    test('a thread at home prints ~', () => {
+        expect(
+            headerOf(input({ pane: { ...claude, cwd: '/Users/d' } })).place,
+        ).toBe('~');
+    });
+
     test('a title that already names the folder drops it', () => {
         const vim: PaneLike = {
             ...claude,
