@@ -114,15 +114,24 @@ export const PERMISSIONS = [
     { id: 'plan', label: 'Plan', shows: /plan mode on/ },
 ];
 
-/** the mode the thread runs in, from the last mode line on its screen; null with none @param {string} screen */
+/**
+ * the mode the thread runs in, from its footer: the last few lines with text, so a mode named in the conversation above
+ * a footer a dialog covers is never read as the thread's; null with none
+ * @param {string} screen
+ */
 export function permissionOf(screen) {
-    const lines = screen.split('\n');
-    for (let i = lines.length - 1; i >= 0; i--) {
-        const found = PERMISSIONS.find((p) => p.shows.test(lines[i] ?? ''));
+    const foot = screen
+        .split('\n')
+        .filter((line) => line.trim())
+        .slice(-FOOTER_LINES);
+    for (let i = foot.length - 1; i >= 0; i--) {
+        const found = PERMISSIONS.find((p) => p.shows.test(foot[i] ?? ''));
         if (found) return found.id;
     }
     return null;
 }
+
+const FOOTER_LINES = 3;
 
 /**
  * Shift+Tab until the mode line reads `mode`, one press per redraw seen. it stops on the mode it started in once the

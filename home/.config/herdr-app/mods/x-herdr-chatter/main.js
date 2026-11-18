@@ -184,6 +184,8 @@ import {
 import { RADIUS, TEXT, button } from './ui.js';
 
 const CLAUDE = `${home()}/.claude`;
+// the terminals a permission change is typing into: it outlives a thread switch, so a second pick never runs beside it
+const permissionBusy = new Set();
 // The chat's look, shared by every copy and kept across restarts; the ⚙ popup changes it.
 // size: the message text in px (the rest scales with it); font: "ui" or "mono" (the terminals');
 // width: "full" or "narrow" (a readable column); tools: "show" or "hide" the tool-call rows;
@@ -2172,7 +2174,7 @@ export default class ClaudeChat extends View {
         if (
             isBlocked ||
             this.pending?.address === address ||
-            this.permissionAsked
+            permissionBusy.has(address)
         ) {
             this.pickNote = isBlocked
                 ? 'Answer Claude first, then pick'
@@ -2673,7 +2675,7 @@ export default class ClaudeChat extends View {
     /** @param {string} mode @param {string} label @param {any} cx */
     pickPermission(mode, label, cx) {
         const { address } = this;
-        if (!address || this.permissionAsked) return;
+        if (!address || permissionBusy.has(address)) return;
         const isBlocked =
             agents().find((a) => a.address === address)?.status === 'blocked';
         // keys typed into a question would answer it, and keys mixed into a model or effort pick would land in its picker
@@ -2685,6 +2687,7 @@ export default class ClaudeChat extends View {
             cx.notify();
             return;
         }
+        permissionBusy.add(address);
         this.permissionAsked = mode;
         this.isPermsOpen = false;
         cx.notify();
@@ -2706,10 +2709,14 @@ export default class ClaudeChat extends View {
                 if (now !== mode)
                     this.pickNote = `${label} is not in this thread's Shift+Tab cycle`;
             } catch (error) {
-                if (this.address === address)
+                // keys may have gone before the failure: the mode shown is unknown until the picker reads it again
+                if (this.address === address) {
+                    this.permission = null;
                     this.pickNote =
                         error instanceof Error ? error.message : String(error);
+                }
             } finally {
+                permissionBusy.delete(address);
                 if (this.address === address) this.permissionAsked = null;
                 cx.notify();
             }

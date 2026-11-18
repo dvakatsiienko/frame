@@ -159,6 +159,19 @@ describe.each([
             expect(permissionOf('Select model')).toBeNull();
         });
 
+        test('a mode named in the conversation above a covered footer reads nothing', () => {
+            const screen = [
+                '⏺ I switched the thread: plan mode on (shift+tab to cycle)',
+                '',
+                '╭──────────────╮',
+                '│ Select model │',
+                '│ 1. Opus      │',
+                '╰──────────────╯',
+                '',
+            ].join('\n');
+            expect(permissionOf(screen)).toBeNull();
+        });
+
         // a fake thread: its mode line moves one step per Shift+Tab through `cycle`, redrawn `lag` screen reads later
         const thread = (
             cycle: string[],
