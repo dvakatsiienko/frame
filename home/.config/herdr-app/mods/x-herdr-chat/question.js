@@ -43,10 +43,10 @@ function press(view, keys) {
     };
 }
 
-// What's typed in the chat's box while a question shows: the "Type something" answer.
+// What's typed in the chat's box while a question shows: the "Type something" answer, its send's result.
 // False when no question card is up (then the quill sends as usual).
-/** @param {AskView} view @param {string} text @param {any} cx */
-export function typeAnswer(view, text, cx) {
+/** @param {AskView} view @param {string} text */
+export function typeAnswer(view, text) {
     const item = pending(view.items);
     const questions = item?.input?.questions ?? [];
     const w = where(view.screen, questions);
@@ -58,12 +58,17 @@ export function typeAnswer(view, text, cx) {
         false,
     );
     view.screen = null;
-    cx.spawn(async () => {
-        if (keys.length) await hc(['keys', address, ...keys]);
+    return (async () => {
+        if (keys.length) {
+            const moved = await hc(['keys', address, ...keys]);
+            if (moved.code !== 0) return moved;
+        }
         // Claude is blocked, so hc refuses to type unless forced.
-        await hc(sendArgs(address, text, ['--force']));
-    });
-    return true;
+        return hc(sendArgs(address, text, ['--force']));
+    })().catch((/** @type {unknown} */ error) => ({
+        code: 1,
+        stderr: String(error),
+    }));
 }
 
 // The card under the chat while Claude asks. Null when the screen doesn't match the question

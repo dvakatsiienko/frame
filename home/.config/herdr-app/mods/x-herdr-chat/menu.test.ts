@@ -124,6 +124,10 @@ describe('what a reply quotes', () => {
         expect(replyQuote(message, 'some other text')).toBe(message);
     });
 
+    test('the whole message for a lone copied word', () => {
+        expect(replyQuote(message, 'reply')).toBe(message);
+    });
+
     test('the whole message when nothing is copied', () => {
         expect(replyQuote(message, '  ')).toBe(message);
     });

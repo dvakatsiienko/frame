@@ -260,6 +260,8 @@ const NO_IMAGE = 'No image on the clipboard';
 const MENU_SIZE = { h: 60, w: 200 };
 // a blocked thread's screen is read this often while it asks, so the question card follows its cursor
 const ASK_READ_MS = 1000;
+// the settings folder is looked for again this often while it does not exist
+const SETTINGS_RETRY_MS = 10 * 1000;
 // about how wide a character of a reply is, in px: the fold counts a bubble's lines from its width
 const CHAR_PX = 7.5;
 /**
@@ -646,6 +648,9 @@ export default class Chat extends View {
     slashMenu = createSlashMenu();
     /** the right-click menu on a message (slice 7) */
     messageMenu = createMessageMenu();
+    /** the clipboard at the last right-click, and what of it a Reply may quote: only a fresh copy */
+    lastClip = '';
+    menuClip = '';
     /** the question Claude waits on, read off the transcript (slice 7) */
     askWatch = createAskWatch();
     /** what the question card reads and writes: the blocked thread's screen, where its cursor was, a fold @type {import('./question-read.js').AskView} */
@@ -701,7 +706,13 @@ export default class Chat extends View {
                 const watch = watchFolder(settingsDir());
                 this.applySettings(await readSettings());
                 cx.notify();
-                await watch;
+                // a folder not made yet is asked again later, so its first write is still read
+                await watch.catch(
+                    () =>
+                        new Promise((done) =>
+                            cx.timer.after(SETTINGS_RETRY_MS, () => done(null)),
+                        ),
+                );
             }
         });
         const box = TextareaState.new({});
@@ -2763,6 +2774,11 @@ export default class Chat extends View {
             .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
             .on_mouse_down('right', (event, cx) => {
                 const local = event.local_position ?? { x: 0, y: 0 };
+                // a Reply quotes the clipboard only when it changed since the last right-click: a copy from an hour
+                // ago is no selection of this message
+                const clip = cx.read_from_clipboard() ?? '';
+                this.menuClip = clip === this.lastClip ? '' : clip;
+                this.lastClip = clip;
                 this.messageMenu.open(event.position, {
                     x: local.x / zoom,
                     y: local.y / zoom,
@@ -2892,12 +2908,12 @@ export default class Chat extends View {
                 }),
             )
             .child(
-                item('reply', 'Reply', (cx) => {
+                item('reply', 'Reply', () => {
                     // the part he copied with ⌘C, else the whole message
                     if (this.file && text)
                         this.replies.set(
                             this.file,
-                            replyQuote(text, cx.read_from_clipboard() ?? ''),
+                            replyQuote(text, this.menuClip),
                         );
                     this.box?.focus();
                 }),
@@ -3469,6 +3485,13 @@ export default class Chat extends View {
         this.watch = null;
         this.model.clear();
         this.askWatch.reset();
+        // nothing of the old thread's ask or menu may act on the new one
+        Object.assign(this.ask, {
+            askFolded: null,
+            lastAsk: null,
+            screen: null,
+        });
+        this.messageMenu.close();
         this.openReplies.clear();
         this.heights.clear();
         fileRows.clear();
@@ -3728,9 +3751,22 @@ export default class Chat extends View {
         if (!text && !files.length) return;
         if (!this.address) return this.say(NOT_IN_HERDR, cx);
         // while a question card is up, his words are its «Type something» answer
-        if (text && typeAnswer(this.ask, text, cx)) {
+        const answering = text ? typeAnswer(this.ask, text) : false;
+        if (answering) {
             this.quills.apply(file, { said: text, type: 'sent' });
-            return cx.notify();
+            cx.notify();
+            cx.spawn(async (cx) => {
+                const sent = await answering;
+                if (sent.code === 0) return;
+                // a refused answer comes back to the quill, never lost
+                this.quills.apply(file, { said: text, type: 'returned' });
+                if (this.file === file)
+                    this.say(
+                        `Not sent: ${sent.stderr.trim() || 'herdr refused it'}`,
+                        cx,
+                    );
+            });
+            return;
         }
         // a reply goes now, never marked to join: its quote opens the message
         if (this.replies.has(file)) return this.push(box, cx);

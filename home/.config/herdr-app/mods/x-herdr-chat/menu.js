@@ -76,7 +76,8 @@ const squeezed = (text) => text.replace(/\s+/g, ' ').trim().toLowerCase();
  */
 export function replyQuote(message, copied) {
     const part = squeezed(copied);
-    if (!part) return message;
+    // a lone word is a stray copy far more often than a quote
+    if (part.split(' ').length < 2) return message;
     const isIn =
         squeezed(plainOf(message)).includes(part) ||
         squeezed(message).includes(part);
