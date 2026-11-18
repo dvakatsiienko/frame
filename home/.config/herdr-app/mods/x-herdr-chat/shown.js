@@ -76,5 +76,9 @@ export function asksActedOn(at) {
             at.effortAsk !== at.lastEffort &&
             isFreshAsk(at.effortAsk, at.now),
         isFocus: at.isShown && (!at.wasShown || at.isSwitched || isQuillAsked),
+        // a press counts as seen only on screen: the status bar shows the chat and writes the press in one tick, so a
+        // draw can see the press while the chat is still hidden
+        lastEffort: at.isShown ? at.effortAsk : at.lastEffort,
+        lastQuill: at.isShown ? at.quillAsk : at.lastQuill,
     };
 }

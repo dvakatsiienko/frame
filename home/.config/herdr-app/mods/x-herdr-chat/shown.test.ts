@@ -175,7 +175,23 @@ describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () =
         ).toBe(false);
     });
 
+    test('a ⌘⇧E seen first by a hidden draw still opens the picker once the chat is on screen', () => {
+        const hidden = asksActedOn({ ...at, effortAsk: 9_500, isShown: false });
+        const shown = asksActedOn({
+            ...at,
+            effortAsk: 9_500,
+            lastEffort: hidden.lastEffort,
+            wasShown: false,
+        });
+        expect(shown.isEffort).toBe(true);
+    });
+
     test('a quiet draw takes nothing', () => {
-        expect(asksActedOn(at)).toEqual({ isEffort: false, isFocus: false });
+        expect(asksActedOn(at)).toEqual({
+            isEffort: false,
+            isFocus: false,
+            lastEffort: null,
+            lastQuill: null,
+        });
     });
 });

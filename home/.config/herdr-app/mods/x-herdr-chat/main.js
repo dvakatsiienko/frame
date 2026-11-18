@@ -577,8 +577,8 @@ export default class Chat extends View {
             quillAsk,
             wasShown: this.wasShown,
         });
-        this.quillAsk = quillAsk;
-        this.effortAsk = effortAsk;
+        this.quillAsk = acts.lastQuill;
+        this.effortAsk = acts.lastEffort;
         this.wasShown = isShown;
         if (acts.isFocus)
             _cx.timer.after(50, () => {
