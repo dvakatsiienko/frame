@@ -228,6 +228,55 @@ test('an idle band takes the 5h reading another session wrote', async ($, on) =>
     expect(five?.text).toMatch(/52%$/);
 });
 
+// FRM-555 fix 2 (dima o58, o59): 5 min after the last event the bookkeeping jobs tick every 30 s, and any prompt brings
+// 4 s back at once (a prompt by its turn, a message or a tick by its event); the meter is one of them
+const reading = (files: Record<string, string>, used: number) => {
+    files[USAGE] = JSON.stringify({
+        rate_limits: {
+            five_hour: {
+                resets_at: (NOW + 3 * HOUR) / 1000,
+                used_percentage: used,
+            },
+        },
+    });
+};
+const fiveHour = async (ui: Awaited<ReturnType<typeof band>>) =>
+    (await ui.findAll({ type: 'Box' })).find((n) => n.key === 'meter:5h')?.text;
+
+test('an idle band 5 min past its last event takes a new 5h reading at the 30 s poll, not the 4 s one', async ($, on) => {
+    const { clock, files } = meters(on);
+    await measure($, 39, 35);
+    const ui = await band($);
+    await clock.advance(5 * 60_000 + 30_000);
+    reading(files, 52);
+    await clock.advance(8000);
+    const early = await fiveHour(ui);
+    await clock.advance(30_000);
+    expect([early, await fiveHour(ui)]).toEqual([
+        expect.stringMatching(/39%$/),
+        expect.stringMatching(/52%$/),
+    ]);
+});
+
+test('a message into an idle session brings the 4 s poll back at once', async ($, on) => {
+    const { clock, files } = meters(on);
+    on('session.receive', (_$, e) => ({ text: e.text }));
+    await measure($, 39, 35);
+    const ui = await band($);
+    await clock.advance(5 * 60_000 + 30_000);
+    // settle on an idle 30 s tick, so the next one is far past the 4 s the prompt must bring
+    reading(files, 45);
+    for (let i = 0; i < 10 && !/45%$/.test((await fiveHour(ui)) ?? ''); i++)
+        await clock.advance(4000);
+    await $.session.receive({
+        origin: { kind: 'task-notification' },
+        text: 'a job ended',
+    });
+    reading(files, 52);
+    await clock.advance(4000);
+    expect(await fiveHour(ui)).toMatch(/52%$/);
+});
+
 test("the ctx row shows the fill and the engine's compaction point", async ($, on) => {
     meters(on);
     await measure($, 39, 35);
