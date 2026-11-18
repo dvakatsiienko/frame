@@ -290,3 +290,44 @@ describe('a push of words still marked to join', () => {
         expect(await world().magic.release(THREAD, ON)).toBeNull();
     });
 });
+
+describe('his words arriving in the chat settle the mark at once', () => {
+    test('the joined words show as his message: the quill empties in the same draw', async () => {
+        const w = world();
+        await w.magic.click(THREAD, SID, 'what tails do you have atm?', ON);
+        expect(
+            w.magic.arrived(
+                THREAD,
+                ['what tails do you have atm?'],
+                'what tails do you have atm?',
+            ),
+        ).toEqual({ id: 'id-1', note: null, quill: '' });
+        expect(w.magic.markOf(THREAD)?.state).toBe('joined');
+    });
+
+    test('what he typed after them stays', async () => {
+        const w = world();
+        await w.magic.click(THREAD, SID, 'also the tests', ON);
+        expect(
+            w.magic.arrived(
+                THREAD,
+                ['also the tests'],
+                'also the tests\nand one more',
+            )?.quill,
+        ).toBe('and one more');
+    });
+
+    test('another message arriving leaves the mark waiting', async () => {
+        const w = world();
+        await w.magic.click(THREAD, SID, 'also the tests', ON);
+        expect(
+            w.magic.arrived(THREAD, ['something else'], 'also the tests'),
+        ).toBeNull();
+        expect(w.magic.markOf(THREAD)?.state).toBe('pending');
+    });
+
+    test('no mark, nothing to settle', () => {
+        const w = world();
+        expect(w.magic.arrived(THREAD, ['hi'], 'hi')).toBeNull();
+    });
+});

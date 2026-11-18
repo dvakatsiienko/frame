@@ -98,7 +98,34 @@ export function createMagic({ io, dir, store, newId }) {
         return { act: 'none', note: 'Still joining, try again' };
     }
 
+    /** a turn took the mark: it shows as taken, the quill keeps only what he typed after its words @param {Mark} mark @param {string} quill */
+    function taken(mark, quill) {
+        set({ ...mark, state: 'joined' });
+        const typed = quill.trim();
+        return {
+            id: mark.id,
+            note: null,
+            quill: typed.startsWith(mark.said)
+                ? typed.slice(mark.said.length).trimStart()
+                : null,
+        };
+    }
+
     return {
+        /**
+         * his marked words just arrived in the chat as his message: the mark settles in that same draw, so the words
+         * leave the quill the moment they show above it, never on the stash's later state write (dima, 12:20)
+         * @param {string} thread
+         * @param {string[]} arrived the texts of his messages the transcript just added
+         * @param {string} quill what the quill holds
+         * @returns {{ id: string, quill: string | null, note: string | null } | null}
+         */
+        arrived(thread, arrived, quill) {
+            const mark = marks.get(thread);
+            if (mark?.state !== 'pending') return null;
+            if (!arrived.some((text) => text.trim() === mark.said)) return null;
+            return taken(mark, quill);
+        },
         /**
          * a click on send. the mark is set, or taken off, before the first wait: draw at once, then await the answer
          * @param {string} thread the thread's transcript file
@@ -163,17 +190,8 @@ export function createMagic({ io, dir, store, newId }) {
             const mark = marks.get(thread);
             if (mark?.state !== 'pending') return null;
             const state = joinStatus(joins, mark.id, mark.at, io.now());
-            if (state === 'joined' || joins?.taken?.includes(mark.id)) {
-                set({ ...mark, state: 'joined' });
-                const typed = quill.trim();
-                return {
-                    id: mark.id,
-                    note: null,
-                    quill: typed.startsWith(mark.said)
-                        ? typed.slice(mark.said.length).trimStart()
-                        : null,
-                };
-            }
+            if (state === 'joined' || joins?.taken?.includes(mark.id))
+                return taken(mark, quill);
             if (state !== 'not taken') return null;
             drop(mark.id);
             // its row leaves the file too, so a stash that comes back never hands it in late

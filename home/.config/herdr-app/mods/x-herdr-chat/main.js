@@ -2303,6 +2303,16 @@ export default class Chat extends View {
         }
         if (this.runsAt !== ran && this.settlePick()) cx.notify();
         const { changed, removed } = this.model.add(lines);
+        // his marked words showing as his message settle the mark in this same draw: they leave the quill as they land
+        const added = new Set(changed);
+        const arrived = this.model.rows
+            .filter((r) => added.has(r.id) && r.kind === 'mine' && !r.isWaiting)
+            .map((r) => r.text);
+        if (arrived.length && this.box && this.file)
+            this.showSettled(
+                this.magic.arrived(this.file, arrived, this.box.value()),
+                cx,
+            );
         if (changed.length || removed || isRestart || hadError) cx.notify();
     }
 
@@ -2371,8 +2381,17 @@ export default class Chat extends View {
     settle(cx) {
         const { box, file } = this;
         if (!box || !file) return;
-        const settled = this.magic.settle(file, this.joins, box.value());
-        if (!settled) return;
+        this.showSettled(this.magic.settle(file, this.joins, box.value()), cx);
+    }
+
+    /**
+     * a settled mark on screen: the quill keeps what he typed after the taken words, the taken mark shows for a moment
+     * @param {{ id: string, quill: string | null, note: string | null } | null} settled
+     * @param {Context} cx
+     */
+    showSettled(settled, cx) {
+        const { box } = this;
+        if (!settled || !box) return;
         if (settled.quill !== null) this.setQuill(box, settled.quill);
         this.note = settled.note;
         // the taken mark shows for a moment, then the button rests
