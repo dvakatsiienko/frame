@@ -452,6 +452,31 @@ func TestDispatchKeepsTheTicketsWhatForTheLaneCard(t *testing.T) {
 	}
 }
 
+// FRM-649 step 117 (FRM-617 exit 7): a title that is only an earlier role name of this member («⚡ 🔧 mods | FRM-617»
+// from a hand rename) never pins its name past the next dispatch; a title dima typed stays
+func TestDispatchDropsATitleThatIsOnlyAnOldRoleName(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ title, want string }{
+		// the fixture ticket's lane: line says side
+		{"⚡ 🔧 mods | FRM-617", "🌗 🔧 mods | FRM-1"},
+		{"🌗 🔧 mods | FRM-555", "🌗 🔧 mods | FRM-1"},
+		{"mods codie, his name", "mods codie, his name"},
+	} {
+		server := dispatchServer(t, undispatched)
+		store := filepath.Join(t.TempDir(), "threads.json")
+		write(t, store, `{"v":1,"threads":[{"sessionId":"s1","role":"codie","area":"mods","ticket":"FRM-617","laneKind":"quick","title":"`+c.title+`"}]}`)
+		_, got := runLinear(t, server, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store},
+			"lane", "dispatch", "FRM-1", "--session", "s1", "--area", "mods", "--lane", "mods-9", "--apply")
+		written, err := readThreadStore(store)
+		if err != nil || got.code != 0 || len(written.Threads) != 1 {
+			t.Fatalf("exit %d, %v:\n%s", got.code, err, got.stdout)
+		}
+		if d := written.Threads[0].Display; d != c.want {
+			t.Errorf("title %q: display %q, want %q", c.title, d, c.want)
+		}
+	}
+}
+
 func TestTicketWhatCutsTheScopePrefix(t *testing.T) {
 	t.Parallel()
 	for _, c := range [][2]string{

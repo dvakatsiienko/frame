@@ -96,6 +96,23 @@ func sameName(a, b string) bool {
 	return key(a) == key(b)
 }
 
+// a title that only spells this member's role name for some ticket and lane mode («⚡ 🔧 mods | FRM-617», a hand rename
+// from an earlier chunk): a record written for a new chunk drops it, where a title dima typed stays (FRM-649)
+func isRoleName(t thread, title string) bool {
+	head, unit, isCut := strings.Cut(title, " | ")
+	if !isCut || unit == "" || strings.Contains(unit, " ") {
+		return false
+	}
+	t.Title, t.Ticket = "", unit
+	for _, kind := range []string{"", "side", "quick", "shift"} {
+		t.LaneKind = kind
+		if d, _, _ := strings.Cut(threadDisplay(t), " | "); sameName(d, head) {
+			return true
+		}
+	}
+	return false
+}
+
 // a renamed thread keeps its role's own display beside the title dima gave, so a reader that owns by name (a wing's
 // lane) still finds it after the rename
 func drawNames(t *thread) {
@@ -438,7 +455,10 @@ func writeThreadRecord(record thread, now time.Time, isMinted bool) error {
 		}
 		// a kind the call named (a dispatch reads it off the ticket) outranks the record's old one
 		record.LaneKind = cmp.Or(record.LaneKind, live.LaneKind)
-		record.Area, record.Title = cmp.Or(record.Area, live.Area), cmp.Or(record.Title, live.Title)
+		record.Area = cmp.Or(record.Area, live.Area)
+		if record.Title == "" && !isRoleName(record, live.Title) {
+			record.Title = live.Title
+		}
 		store.Threads = slices.Delete(store.Threads, i, i+1)
 	}
 	record.At = now.UnixMilli()
