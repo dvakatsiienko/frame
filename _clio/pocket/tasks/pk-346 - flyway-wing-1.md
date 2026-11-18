@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-18T13:40:00Z'
+updated_date: '2026-11-18T13:59:00Z'
 labels:
   - s
   - clio-wing-1
@@ -669,4 +669,6 @@ done 2026-11-18 15:40: f14 💤 PK-374 gates naming: one convention, one big swe
 done 2026-11-18 15:40: f18 halt retro today: measure the strays lane — model pick, spec shape for Sonnet 5.5 (dima 18:06)
 
 done 2026-11-18 15:40: f23 f18-strays 📅 strays lane measure: model pick, spec shape for Sonnet 5.5, at the stray-lane trial end — on: 2026-11-21
+
+15:59 speak lane riders (dima 15:58): first item the strays → stray sweep, x/go first, on Opus 5.5 (FRM-627:W34); then speak + chords move to bytes; then the mess hunt on speak (FRM-629:W25–W27); then speak wisps, then design
 <!-- SECTION:NOTES:END -->
