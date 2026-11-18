@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { needsHerdrTypes, verdict } from './herdr-mods-typecheck.ts';
+import {
+    checkedNames,
+    needsHerdrTypes,
+    verdict,
+} from './herdr-mods-typecheck.ts';
 
 describe('needsHerdrTypes', () => {
     it.each([
@@ -16,6 +20,23 @@ describe('needsHerdrTypes', () => {
         ["// import { View } from 'gpui-kit';\nexport const one = 1;", false],
     ])('%j → %s', (source, expected) => {
         expect(needsHerdrTypes(source)).toBe(expected);
+    });
+});
+
+// FRM-647: a mod declares a runtime global ES2022 leaves out (btoa) in its own .d.ts; herdr's two type files come in once
+describe('checkedNames', () => {
+    it('takes the js and the mod’s own declarations, never the copies herdr writes', () => {
+        expect(
+            checkedNames([
+                'main.js',
+                'globals.d.ts',
+                'gpui-kit.d.ts',
+                'herdr.d.ts',
+                'main.test.ts',
+                'mod.json',
+                'statusline.cjs',
+            ]),
+        ).toEqual(['main.js', 'globals.d.ts']);
     });
 });
 

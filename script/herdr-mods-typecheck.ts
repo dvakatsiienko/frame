@@ -26,6 +26,18 @@ export function needsHerdrTypes(source: string) {
     );
 }
 
+// herdr writes these two into a mod's folder; the gate passes herdr's own copies once, beside the files
+const HERDR_TYPE_FILES = new Set(['gpui-kit.d.ts', 'herdr.d.ts']);
+
+/** the files of a mod the gate checks: its js, and its own declarations of a runtime global ES2022 leaves out */
+export function checkedNames(names: string[]) {
+    return names.filter(
+        (name) =>
+            name.endsWith('.js') ||
+            (name.endsWith('.d.ts') && !HERDR_TYPE_FILES.has(name)),
+    );
+}
+
 export function verdict({ checked, mods, red, skippedFiles }: Tally) {
     if (red.length)
         return {
@@ -67,9 +79,9 @@ if (import.meta.main) {
             // resolves `./keypress.js` from the mod to `_shared/`
             const shared = sharedOf(root, mod);
             const sources = [
-                ...readdirSync(dir)
-                    .filter((name) => name.endsWith('.js'))
-                    .map((name) => join(dir, name)),
+                ...checkedNames(readdirSync(dir)).map((name) =>
+                    join(dir, name),
+                ),
                 ...shared,
             ];
             const files = hasHerdrTypes

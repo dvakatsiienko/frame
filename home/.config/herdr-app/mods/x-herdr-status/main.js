@@ -23,6 +23,33 @@ import {
     window,
 } from 'herdr';
 
+/** @typedef {import('gpui-kit').Context} Context */
+/** @typedef {import('gpui-kit').AsyncContext} AsyncContext */
+/** @typedef {import('gpui-kit').Color} Color */
+/** @typedef {Record<'accent' | 'ansi5' | 'background' | 'blocked' | 'border' | 'chrome' | 'dim' | 'foreground' | 'hover' | 'input' | 'muted' | 'popover', Color>} Theme */
+/** @typedef {import('herdr').ExecResult} ExecResult */
+/** @typedef {import('herdr').AgentInfo} AgentInfo */
+/** @typedef {import('herdr').PaneInfo} PaneInfo */
+/** @typedef {import('herdr').SpaceInfo} SpaceInfo */
+/** @typedef {{ ahead: number, behind: number, branch: string | null, dirty: number, oid: string | null, upstream: string | null }} GitInfo */
+/** @typedef {{ url: string, number: number, state: string, isDraft: boolean, title: string, head?: string }} Pr */
+/** @typedef {{ pr: Pr | null, error?: string, at?: number }} PrEntry */
+/** @typedef {{ id: string, name: string, local: string, created: number, config: string, root: string, changed?: string[] }} Box */
+/** @typedef {Box & { agents: AgentInfo[] }} BoxIn */
+/** @typedef {Record<string, string | null>} Baseline */
+/** @typedef {Awaited<ReturnType<typeof syncRepo>>} SyncResult */
+/** @typedef {ReturnType<typeof import('herdr').focused>} Focused */
+/** @typedef {{ x: number, y: number }} Anchor */
+/** @typedef {{ dirs: string[], prs?: Record<string, PrEntry>, status?: Record<string, GitInfo | null> }} RepoSet */
+/** @typedef {RepoSet & { name: string, root: string, shown?: string | null }} Workspace */
+/** @typedef {{ current: boolean, name: string, when: string }} Branch */
+/** @typedef {{ agentsHere: number, branches: Branch[], dirty: number, root: string }} BranchInfo */
+/** @typedef {{ key: string, name: string, pct: number, reset: boolean, resets: number | null, short: string | null, spend: string | null }} UsageWindow */
+/** @typedef {{ at?: number, rate_limits?: Record<string, { used_percentage?: number, resets_at?: number | string, used_usd?: number, limit_usd?: number, period?: string }> }} Usage */
+/** @typedef {{ folder: string, branch: string | null, oid: string | null | undefined }} PrQuery */
+/** @typedef {Omit<Extract<Forge, { kind: 'azure' }>, 'kind'> & { key: string, branch: string }} AzureQuery */
+/** @typedef {{ kind: 'azure', host: string, org?: string, project?: string, repo?: string, user?: string } | { kind: 'github' }} Forge */
+
 // x-herdr-status: the status bar, a clone of Herdr's workspace-status (0.1.10); changes: no agents count (the agents
 // list shows them; the "N sub-agents working" item went too, 2026-11-05: the chat's chips show them).
 // Also: "Folder" and "VS Code" open the focused terminal's folder (else the space's), on this
@@ -42,6 +69,7 @@ const CONTAINERS = 'chat.containers';
 // { "<workspace root, lowercase>": "<repo folder>" }. Unset = the focused terminal's repo.
 const SHOWN = 'status.shownRepo';
 
+/** @param {string} folder @param {'code' | 'folder'} what */
 function openFolder(folder, what) {
     const [cmd, args] =
         what === 'code'
@@ -53,7 +81,7 @@ function openFolder(folder, what) {
               ? ['cmd', ['/c', 'start', '', folder.replace(/\//g, '\\')]]
               : [os.platform() === 'darwin' ? 'open' : 'xdg-open', [folder]];
     exec(cmd, args).then(
-        (r) => {
+        (/** @type {ExecResult} */ r) => {
             if (what === 'code' && r.code)
                 notify({
                     body:
@@ -63,7 +91,7 @@ function openFolder(folder, what) {
                     title: "Couldn't open VS Code",
                 });
         },
-        (e) =>
+        (/** @type {unknown} */ e) =>
             notify({
                 body: String(e),
                 level: 'error',
@@ -73,6 +101,7 @@ function openFolder(folder, what) {
 }
 
 // A path with "." and ".." resolved (docker's mount sources look like "c:\x\harness-agent/..").
+/** @param {string} p */
 function resolvePath(p) {
     const parts = [];
     for (const s of String(p).split(/[\\/]+/)) {
@@ -81,17 +110,22 @@ function resolvePath(p) {
     }
     return WIN ? parts.join('\\') : '/' + parts.join('/');
 }
+/** @param {string} p */
 const pathKey = (p) => resolvePath(p).toLowerCase();
+/** @param {string} child @param {string} parent */
 const inside = (child, parent) => {
     const c = pathKey(child),
         p = pathKey(parent);
     return c === p || c.startsWith(p + (WIN ? '\\' : '/'));
 };
-const baseName = (p) => resolvePath(p).split(/[\\/]/).pop();
+/** @param {string} p */
+const baseName = (p) =>
+    /** @type {string} */ (resolvePath(p).split(/[\\/]/).pop());
 
 // One repo's branch, upstream, ahead/behind and changed files, from one `git status` (the call
 // Herdr's `spaces` list makes). core.filemode off: a repo cloned in a Linux container has it on,
 // and from Windows every file then looks changed (684 files in one repo, 2026-11-03).
+/** @param {string} folder @returns {Promise<GitInfo | null>} */
 async function gitStatus(folder) {
     try {
         const r = await exec(
@@ -109,6 +143,7 @@ async function gitStatus(folder) {
             { cwd: folder },
         );
         if (r.code) return null;
+        /** @type {GitInfo} */
         const info = {
             ahead: 0,
             behind: 0,
@@ -126,8 +161,10 @@ async function gitStatus(folder) {
                 info.upstream = line.slice(18).trim();
             else if (line.startsWith('# branch.ab ')) {
                 const [a, b] = line.slice(12).trim().split(' ');
-                info.ahead = Math.abs(parseInt(a, 10)) || 0;
-                info.behind = Math.abs(parseInt(b, 10)) || 0;
+                info.ahead =
+                    Math.abs(parseInt(/** @type {string} */ (a), 10)) || 0;
+                info.behind =
+                    Math.abs(parseInt(/** @type {string} */ (b), 10)) || 0;
             } else if (line.trim() && !line.startsWith('#')) info.dirty++;
         }
         return info;
@@ -138,13 +175,18 @@ async function gitStatus(folder) {
 
 // Fetch, then pull --ff-only when there's an upstream. Anything git refuses (diverged, changes in
 // the way) comes back as the note; the terminal is where that gets sorted.
+/** @param {string} folder */
 async function syncRepo(folder) {
+    /** @param {...string} args */
     const git = (...args) =>
-        exec('git', args, { cwd: folder }).catch((e) => ({
-            code: 1,
-            stderr: String(e),
-            stdout: '',
-        }));
+        exec('git', args, { cwd: folder }).catch(
+            (/** @type {unknown} */ e) => ({
+                code: 1,
+                stderr: String(e),
+                stdout: '',
+            }),
+        );
+    /** @param {ExecResult} r */
     const tail = (r) =>
         (r.stderr || r.stdout).trim().split('\n').slice(-3).join('\n');
     const repo = baseName(folder);
@@ -195,15 +237,17 @@ async function syncRepo(folder) {
 }
 
 // Where a repo's PRs live, from its origin's URL (read once per folder).
+/** @type {Map<string, string>} */
 const origins = new Map();
+/** @param {string} folder @returns {Promise<Forge | null>} */
 async function forgeOf(folder) {
     if (!origins.has(folder)) {
         const r = await exec('git', ['remote', 'get-url', 'origin'], {
             cwd: folder,
-        }).catch(() => ({ code: 1 }));
+        }).catch(() => /** @type {ExecResult} */ ({ code: 1 }));
         origins.set(folder, r.code ? '' : r.stdout.trim());
     }
-    const url = origins.get(folder);
+    const url = /** @type {string} */ (origins.get(folder));
     let m =
         /^https:\/\/(?:([^@/]+)@)?dev\.azure\.com\/([^/]+)\/([^/]+)\/_git\/([^/?#]+)/i.exec(
             url,
@@ -252,9 +296,13 @@ async function forgeOf(folder) {
 // view` (needs gh signed in). Azure DevOps: one PowerShell call for all of them (~2 s).
 // A merged or closed PR counts only while the branch is still at its last commit: a long-lived
 // branch (main, a shared lane) otherwise shows some old PR that once came from it.
+/** @param {PrQuery[]} list @returns {Promise<Record<string, PrEntry>>} */
 async function prsFor(list) {
+    /** @type {Record<string, PrEntry>} */
     const out = {};
+    /** @type {AzureQuery[]} */
     const azure = [];
+    /** @type {Record<string, string | null | undefined>} */
     const oids = {};
     await Promise.all(
         list.map(async ({ folder, branch, oid }) => {
@@ -281,7 +329,10 @@ async function prsFor(list) {
                     );
                     if (r.code === 0) {
                         const { headRefOid, ...pr } = JSON.parse(r.stdout);
-                        out[key].pr = { ...pr, head: headRefOid };
+                        /** @type {PrEntry} */ (out[key]).pr = {
+                            ...pr,
+                            head: headRefOid,
+                        };
                     }
                 } catch {} // no gh
             }
@@ -304,7 +355,11 @@ async function prsFor(list) {
             for (const res of JSON.parse(r.stdout.trim() || '[]'))
                 out[res.key] = { error: res.error, pr: res.pr ?? null };
         } catch (e) {
-            for (const a of azure) out[a.key].error = String(e);
+            for (const a of azure) {
+                /** @type {NonNullable<(typeof out)[string]>} */ (
+                    out[a.key]
+                ).error = String(e);
+            }
         }
     }
     for (const [key, res] of Object.entries(out)) {
@@ -319,6 +374,7 @@ async function prsFor(list) {
 // Running dev containers: [{ id, name, local (the folder it was opened on), root (what its
 // /workspace is on this computer: the bind mount with the shortest /workspace… target),
 // created (ms), config (its devcontainer.json on this computer, "" if unknown) }].
+/** @returns {Promise<Box[]>} */
 async function devContainers() {
     const ps = await exec('docker', [
         'ps',
@@ -337,15 +393,16 @@ async function devContainers() {
     if (r.code) return [];
     return r.stdout
         .split('\n')
-        .filter((l) => l.includes('|'))
-        .map((line) => {
-            const [id, name, local, created, config, mounts] = line
-                .trim()
-                .split('|');
+        .filter((/** @type {string} */ l) => l.includes('|'))
+        .map((/** @type {string} */ line) => {
+            const [id, name, local, created, config, mounts] =
+                /** @type {[string, string, string, string, string, string | undefined]} */ (
+                    line.trim().split('|')
+                );
             const work = (mounts ?? '')
                 .split(';')
                 .filter(Boolean)
-                .map((m) => m.split('>'))
+                .map((m) => /** @type {[string, string]} */ (m.split('>')))
                 .filter(([to]) => /^\/workspaces?(\/|$)/.test(to))
                 .sort((a, b) => a[0].length - b[0].length)[0];
             return {
@@ -369,6 +426,7 @@ async function devContainers() {
 // content differs from its baseline. Baselines: shared SPECS = { "<container id>": { "<file>":
 // hash | null } }, so a restart of Herdr doesn't take a changed file as the new baseline.
 const SPECS = 'status.boxSpecs';
+/** @param {string} s */
 function hash(s) {
     let h = 0x811c9dc5;
     for (let i = 0; i < s.length; i++) {
@@ -377,11 +435,14 @@ function hash(s) {
     }
     return (h >>> 0).toString(36);
 }
+/** @param {string} p */
 const dirOf = (p) =>
     p.slice(0, Math.max(p.lastIndexOf('\\'), p.lastIndexOf('/')));
 
 // { "<file>": hash } for the files in a folder (line endings ignored; folders in it skipped).
+/** @param {string} dir @returns {Promise<Record<string, string>>} */
 async function specOf(dir) {
+    /** @type {Record<string, string>} */
     const out = {};
     for (const name of await readdir(dir).catch(() => [])) {
         try {
@@ -398,6 +459,7 @@ async function specOf(dir) {
 
 // The files in a folder written after `since` (ms), or null when that can't be read. fs has no
 // stat here, so it's one shell call, made once per container.
+/** @param {string} dir @param {number} since @returns {Promise<string[] | null>} */
 async function writtenAfter(dir, since) {
     const r = await (WIN
         ? exec('powershell', [
@@ -412,32 +474,42 @@ async function writtenAfter(dir, since) {
               'sh',
               dir,
           ])
-    ).catch(() => ({ code: 1 }));
+    ).catch(() => /** @type {ExecResult} */ ({ code: 1 }));
     if (r.code) return null;
     return r.stdout
         .split('\n')
-        .map((l) => l.trim().split('|'))
-        .filter(([n, t]) => n && Number(t) > since)
-        .map(([n]) => n);
+        .map(
+            (/** @type {string} */ l) =>
+                /** @type {[string, string]} */ (l.trim().split('|')),
+        )
+        .filter(
+            (/** @type {[string, string]} */ [n, t]) => n && Number(t) > since,
+        )
+        .map((/** @type {[string, string]} */ [n]) => n);
 }
 
 // A file's hash as git had it checked out at `when` (ms): HEAD@{date} goes by the reflog, so a
 // branch switched since still answers with what was checked out then. null when git can't say
 // (not tracked, no repo). A file rewritten with the same content (a pull, a line-ending change)
 // is otherwise taken as changed: seen 2026-11-05 on a Dockerfile touched a week after the build.
+/** @param {string} dir @param {string} name @param {number} when @returns {Promise<string | null>} */
 async function committedAt(dir, name, when) {
     const r = await exec(
         'git',
         ['show', `HEAD@{${new Date(when).toISOString()}}:./${name}`],
         { cwd: dir },
-    ).catch(() => ({ code: 1 }));
+    ).catch(() => /** @type {ExecResult} */ ({ code: 1 }));
     return r.code ? null : hash(String(r.stdout).replace(/\r/g, ''));
 }
-const asked = new Set(); // "<id>|<file>": null baselines already asked of git this session
+/** @type {Set<string>} "<id>|<file>": null baselines already asked of git this session */
+const asked = new Set();
 
 // Sets each box's `changed` (the spec files that differ from its baseline, sorted).
+/** @param {Box[]} boxes */
 async function checkSpecs(boxes) {
-    const base = { ...(shared(SPECS) ?? {}) };
+    const base = {
+        .../** @type {Record<string, Baseline>} */ (shared(SPECS) ?? {}),
+    };
     let dirty = false;
     if (boxes.length)
         for (const id of Object.keys(base))
@@ -461,7 +533,9 @@ async function checkSpecs(boxes) {
             );
             dirty = true;
         }
-        for (const [n, h] of Object.entries(base[b.id])) {
+        for (const [n, h] of Object.entries(
+            /** @type {Baseline} */ (base[b.id]),
+        )) {
             if (h !== null || asked.has(`${b.id}|${n}`)) continue;
             asked.add(`${b.id}|${n}`);
             const then = await committedAt(dir, n, b.created);
@@ -470,7 +544,7 @@ async function checkSpecs(boxes) {
                 dirty = true;
             }
         }
-        const was = base[b.id];
+        const was = /** @type {Baseline} */ (base[b.id]);
         b.changed = [...new Set([...Object.keys(now), ...Object.keys(was)])]
             .filter((n) => was[n] !== now[n])
             .sort();
@@ -479,7 +553,9 @@ async function checkSpecs(boxes) {
 }
 
 // The repos in a workspace folder: it, if it is one, and each folder in it with a .git.
+/** @param {string} root @returns {Promise<string[]>} */
 async function reposIn(root) {
+    /** @type {string[]} */
     const found = [];
     if (await exists(`${root}/.git`).catch(() => false)) found.push(root);
     for (const name of (await readdir(root).catch(() => [])).sort((a, b) =>
@@ -494,7 +570,9 @@ async function reposIn(root) {
 
 // A repo's page: its top folder, local branches (most recent first), uncommitted changes and
 // how many agents work in it. null when it isn't a repo.
+/** @param {string} folder @returns {Promise<BranchInfo | null>} */
 async function branchInfo(folder) {
+    /** @param {...string} args */
     const git = (...args) =>
         exec('git', args, { cwd: folder }).catch(() => ({
             code: 1,
@@ -517,12 +595,14 @@ async function branchInfo(folder) {
         .trim()
         .split('\n')
         .filter(Boolean)
-        .map((l) => {
-            const [head, name, when] = l.split('|');
+        .map((/** @type {string} */ l) => {
+            const [head, name, when] = /** @type {[string, string, string]} */ (
+                l.split('|')
+            );
             return { current: head === '*', name, when };
         });
     const agentsHere = panes().filter(
-        (p) => p.status && p.cwd && inside(p.cwd, root),
+        (/** @type {PaneInfo} */ p) => p.status && p.cwd && inside(p.cwd, root),
     ).length;
     const dirty = status.stdout.trim().split('\n').filter(Boolean).length;
     return { agentsHere, branches, dirty, root };
@@ -537,6 +617,7 @@ const USAGE_DIR = () => `${appHome()}/data/x-herdr-status`;
 const USAGE_POPUP_W = 320;
 
 // { at, rate_limits: { five_hour: { used_percentage, resets_at (Unix s) }, seven_day: … } } | null
+/** @returns {Promise<Usage | null>} */
 async function readUsageFile() {
     try {
         return JSON.parse(await readFile(`${USAGE_DIR()}/usage.json`, 'utf8'));
@@ -545,18 +626,20 @@ async function readUsageFile() {
     }
 }
 
+/** @param {string} key */
 function limitName(key) {
     if (key === 'five_hour') return '5-hour limit';
     if (key === 'seven_day') return 'Weekly limit';
     if (key === 'spend_limit') return 'Spend limit';
     const m = /^seven_day_(.+)$/.exec(key);
     if (m)
-        return `Weekly limit · ${m[1].replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase())}`;
+        return `Weekly limit · ${/** @type {string} */ (m[1]).replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase())}`;
     return key.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
 }
 
 // Each window: { key, name, short, pct, resets (ms) | null, reset (true once resets has passed:
 // the saved % is then the old window's, so it shows 0), spend ("$x / $y …") }.
+/** @param {Usage | null} usage @returns {UsageWindow[]} */
 function usageWindows(usage) {
     return Object.entries(usage?.rate_limits ?? {})
         .filter(([, w]) => w && typeof w.used_percentage === 'number')
@@ -583,7 +666,15 @@ function usageWindows(usage) {
                 name: limitName(key),
                 pct: reset
                     ? 0
-                    : Math.max(0, Math.min(100, Math.round(w.used_percentage))),
+                    : Math.max(
+                          0,
+                          Math.min(
+                              100,
+                              Math.round(
+                                  /** @type {number} */ (w.used_percentage),
+                              ),
+                          ),
+                      ),
                 reset,
                 resets,
                 short,
@@ -600,6 +691,7 @@ function usageWindows(usage) {
 }
 
 // "3:10 PM", with the weekday when it isn't today ("Mon 9:00 AM").
+/** @param {number} ms */
 function clock(ms) {
     const d = new Date(ms),
         now = new Date();
@@ -611,6 +703,7 @@ function clock(ms) {
         : `${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]} ${time}`;
 }
 
+/** @param {number} ms */
 function ago(ms) {
     const s = Math.max(0, Math.round((Date.now() - ms) / 1000));
     if (s < 60) return 'just now';
@@ -619,9 +712,10 @@ function ago(ms) {
     return `${Math.round(s / 86400)} days ago`;
 }
 
+/** @param {UsageWindow} w */
 const resetText = (w) =>
     w.reset
-        ? `Reset at ${clock(w.resets)}`
+        ? `Reset at ${clock(/** @type {number} */ (w.resets))}`
         : w.resets
           ? `Resets at ${clock(w.resets)}`
           : '';
@@ -642,12 +736,16 @@ function blockOf(test) {
 }
 
 export default class WorkspaceStatus extends View {
+    /** @param {unknown} _props @param {Context} cx */
     init(_props, cx) {
+        /** @type {Record<string, PrEntry>} */
         this.prs = {}; // "<folder>|<branch>" → { pr, error?, at }
+        /** @type {Set<string>} */
         this.syncing = new Set(); // folders being synced
         const p = props() ?? {};
         if (p.repo) {
             // "+ New branch": a name box (shown on click), Enter = `git switch -c <name>` from the current branch.
+            /** @type {InputState} */
             this.newBox = InputState.new({
                 placeholder: 'New branch name, Enter to create',
             });
@@ -691,9 +789,13 @@ export default class WorkspaceStatus extends View {
                 }
             }
         });
+        /** @type {Record<string, GitInfo | null>} */
         this.git = {}; // folder -> { branch, upstream, ahead, behind, dirty } | null (not a repo)
+        /** @type {Box[]} */
         this.boxes = []; // devContainers()
+        /** @type {Record<string, string[]>} */
         this.dirs = {}; // workspace root → its repos
+        /** @type {Record<string, GitInfo | null>} */
         this.repos = {}; // repo folder → gitStatus (the workspace's repos)
         let ticks = 0;
         this.readBoxes(cx);
@@ -710,9 +812,13 @@ export default class WorkspaceStatus extends View {
     // Plan usage from statusline.cjs's file. The bar watches the folder and redraws only when a
     // number changes (or a window resets: it then shows 0 with no new payload); the popup rereads
     // every 5 s so its "updated … ago" moves on.
+    /** @param {Context} cx @param {boolean} watch */
     initUsage(cx, watch) {
+        /** @type {Usage | null} */
         this.usage = null;
+        /** @type {string} */
         this.usageSig = '';
+        /** @param {Context | AsyncContext} cx */
         const check = (cx) => {
             const s = JSON.stringify(
                 usageWindows(this.usage).map((w) => [
@@ -728,6 +834,7 @@ export default class WorkspaceStatus extends View {
                 cx.notify();
             }
         };
+        /** @param {Context | AsyncContext} cx */
         const read = (cx) =>
             cx.spawn(async (cx) => {
                 this.usage = await readUsageFile();
@@ -754,6 +861,7 @@ export default class WorkspaceStatus extends View {
             });
     }
 
+    /** @param {Anchor} anchor */
     openUsage(anchor) {
         const n = Math.max(1, usageWindows(this.usage).length);
         const height = 34 + n * 58 + 30 + 10;
@@ -771,9 +879,11 @@ export default class WorkspaceStatus extends View {
     }
 
     // Each limit: name, % used, a bar, when it resets; then how fresh the numbers are.
+    /** @param {Theme} t */
     usagePopup(t) {
         const uw = usageWindows(this.usage);
         const W = USAGE_POPUP_W - 10 - 16; // the bar's width: the popup less its padding
+        /** @param {number} pct */
         const tone = (pct) => (pct >= 90 ? t.blocked : t.accent);
         return v_flex()
             .w_full()
@@ -886,6 +996,7 @@ export default class WorkspaceStatus extends View {
     }
 
     // The bar's folder, read with git. Only redraws when something changed.
+    /** @param {Context} cx */
     readGit(cx) {
         const folder = this.folder;
         if (!folder || this.reading) return;
@@ -904,13 +1015,14 @@ export default class WorkspaceStatus extends View {
     }
 
     // The dev containers and their workspaces' repos, every 30 s (docker ~0.2 s, async).
+    /** @param {Context} cx */
     readBoxes(cx) {
         if (this.boxing) return;
         this.boxing = true;
         cx.spawn(async (cx) => {
             const boxes = await devContainers().catch(() => []);
             await checkSpecs(boxes).catch(() => {});
-            const dirs = {};
+            const dirs = /** @type {Record<string, string[]>} */ ({});
             for (const root of new Set(boxes.map((b) => b.root)))
                 dirs[pathKey(root)] = await reposIn(root);
             this.boxing = false;
@@ -927,6 +1039,7 @@ export default class WorkspaceStatus extends View {
     }
 
     // The shown workspace's repos, every 9 s (the bar's count and tooltip).
+    /** @param {Context} cx */
     readRepos(cx) {
         const ws = this.ws;
         if (!ws || this.readingRepos) return;
@@ -941,7 +1054,7 @@ export default class WorkspaceStatus extends View {
                     JSON.stringify(this.repos[dir] ?? null) !==
                     JSON.stringify(got[i])
                 ) {
-                    this.repos[dir] = got[i];
+                    this.repos[dir] = /** @type {GitInfo | null} */ (got[i]);
                     changed = true;
                 }
             });
@@ -951,6 +1064,7 @@ export default class WorkspaceStatus extends View {
 
     // Which dev container's workspace the bar shows: the focused agent's container, else one an
     // agent in this space runs in, else the container opened on (a parent of) the bar's folder.
+    /** @param {Focused} f @param {SpaceInfo | undefined} space @param {string} folder @returns {Workspace | null} */
     workspace(f, space, folder) {
         const b = this.box(f, space, folder);
         if (!b) return null;
@@ -961,9 +1075,13 @@ export default class WorkspaceStatus extends View {
     }
 
     // The dev container the bar is about (see workspace), with the agents running in it.
+    /** @param {Focused} f @param {SpaceInfo | undefined} space @param {string} folder @returns {BoxIn | null} */
     box(f, space, folder) {
         if (!this.boxes?.length) return null;
-        const map = shared(CONTAINERS) ?? {};
+        const map = /** @type {Record<string, string>} */ (
+            shared(CONTAINERS) ?? {}
+        );
+        /** @param {string | null | undefined} tok */
         const box = (tok) =>
             tok
                 ? this.boxes.find((b) => b.id.startsWith(tok) || b.name === tok)
@@ -972,18 +1090,23 @@ export default class WorkspaceStatus extends View {
         if (!b && space)
             b =
                 agents()
-                    .filter((a) => a.space === space.id)
-                    .map((a) => box(map[a.address]))
+                    .filter(
+                        (/** @type {AgentInfo} */ a) => a.space === space.id,
+                    )
+                    .map((/** @type {AgentInfo} */ a) => box(map[a.address]))
                     .find(Boolean) ?? null;
         if (!b && folder) b = this.boxes.find((x) => inside(folder, x.local));
         if (!b) return null;
-        const inIt = agents().filter((a) => box(map[a.address]) === b);
+        const inIt = agents().filter(
+            (/** @type {AgentInfo} */ a) => box(map[a.address]) === b,
+        );
         return { ...b, agents: inIt };
     }
 
     // Rebuild the dev container: a new tab running `devcontainer up --remove-existing-container`
     // on the folder it was opened from (the + entry's `devcontainer up` reuses the container, so
     // devcontainer.json changes never landed). It asks first: every agent in the container dies.
+    /** @param {BoxIn} b @param {SpaceInfo | undefined} space */
     rebuild(b, space) {
         const n = b.agents.length;
         const command = {
@@ -1015,6 +1138,7 @@ export default class WorkspaceStatus extends View {
     }
 
     // Sync one repo (its toast as before) or several (one toast for all).
+    /** @param {string[]} folders @param {Context} cx @param {(cx: AsyncContext) => void} [after] */
     sync(folders, cx, after) {
         folders = folders.filter((f) => !this.syncing.has(f));
         if (!folders.length) return;
@@ -1024,7 +1148,7 @@ export default class WorkspaceStatus extends View {
             const results = await Promise.all(folders.map(syncRepo));
             for (const f of folders) this.syncing.delete(f);
             if (results.length === 1) {
-                const [r] = results;
+                const [r] = /** @type {[SyncResult]} */ (results);
                 notify({
                     body: r.body,
                     level: r.ok
@@ -1061,21 +1185,28 @@ export default class WorkspaceStatus extends View {
         });
     }
 
+    /** @param {Context} cx */
     lookup(cx) {
         const key = this.key;
         if (
             !key ||
-            !(key.split('|')[0] in this.git) ||
+            !((key.split('|')[0] ?? '') in this.git) ||
             this.busy ||
             Date.now() - (this.prs[key]?.at ?? 0) < 60000
         )
             return;
         this.busy = true;
         cx.spawn(async (cx) => {
-            const [folder, branch] = key.split('|');
-            const got = (
-                await prsFor([{ branch, folder, oid: this.git[folder]?.oid }])
-            )[key];
+            const [folder, branch] = /** @type {[string, string]} */ (
+                key.split('|')
+            );
+            const got = /** @type {PrEntry} */ (
+                (
+                    await prsFor([
+                        { branch, folder, oid: this.git[folder]?.oid },
+                    ])
+                )[key]
+            );
             const changed =
                 JSON.stringify(this.prs[key]?.pr ?? null) !==
                 JSON.stringify(got.pr);
@@ -1086,9 +1217,11 @@ export default class WorkspaceStatus extends View {
     }
 
     // A popup's own reads while open (statuses every 4 s, PRs on open and every minute).
+    /** @param {RepoSet} ws @param {Context} cx */
     initRepos(ws, cx) {
         this.repos = { ...(ws.status ?? {}) };
         this.prs = { ...(ws.prs ?? {}) };
+        /** @param {Context} cx */
         const read = (cx) => {
             if (this.readingRepos) return;
             this.readingRepos = true;
@@ -1101,7 +1234,7 @@ export default class WorkspaceStatus extends View {
                         JSON.stringify(got[i]),
                 );
                 ws.dirs.forEach((d, i) => {
-                    this.repos[d] = got[i];
+                    this.repos[d] = /** @type {GitInfo | null} */ (got[i]);
                 });
                 if (changed) cx.notify();
                 if (Date.now() - (this.prsAt ?? 0) > 60000)
@@ -1113,6 +1246,7 @@ export default class WorkspaceStatus extends View {
         cx.timer.every(4000, read);
     }
 
+    /** @param {string[]} dirs @param {Context | AsyncContext} cx @param {boolean} [force] */
     readPrs(dirs, cx, force) {
         if (this.lookingUp && !force) return;
         this.lookingUp = true;
@@ -1121,9 +1255,9 @@ export default class WorkspaceStatus extends View {
             const list = dirs
                 .filter((d) => this.repos[d]?.branch)
                 .map((d) => ({
-                    branch: this.repos[d].branch,
+                    branch: /** @type {GitInfo} */ (this.repos[d]).branch,
                     folder: d,
-                    oid: this.repos[d].oid,
+                    oid: /** @type {GitInfo} */ (this.repos[d]).oid,
                 }));
             const got = await prsFor(list);
             for (const [k, v] of Object.entries(got))
@@ -1134,9 +1268,10 @@ export default class WorkspaceStatus extends View {
     }
 
     // The known PRs and statuses of some repos, to hand to the next popup so it shows them at once.
+    /** @param {string[]} dirs */
     handOver(dirs) {
-        const status = {},
-            prs = {};
+        const status = /** @type {Record<string, GitInfo>} */ ({}),
+            prs = /** @type {Record<string, PrEntry>} */ ({});
         for (const d of dirs) {
             const st = this.repos?.[d] ?? this.git?.[d];
             if (!st) continue;
@@ -1151,6 +1286,7 @@ export default class WorkspaceStatus extends View {
     // place). `anchor` = where the bar item is: the popup's bottom edge sits just above it (at the
     // pointer, popups ran off the window's bottom). They're sized to their content.
     // List: { repos: { root, name, dirs, focus } }. A repo's page: { repo: { dir, info }, back }.
+    /** @param {Workspace} ws @param {Anchor} anchor */
     openList(ws, anchor) {
         const height = 40 + Math.min(ws.dirs.length, 12) * ROW + 10;
         const h = this.handOver(ws.dirs);
@@ -1171,6 +1307,7 @@ export default class WorkspaceStatus extends View {
         });
     }
 
+    /** @param {string} dir @param {Workspace | null} back @param {Anchor} anchor @param {Context} cx */
     openPage(dir, back, anchor, cx) {
         cx.spawn(async () => {
             const info = await branchInfo(dir);
@@ -1206,7 +1343,12 @@ export default class WorkspaceStatus extends View {
                     repo: {
                         dir: info.root,
                         info,
-                        prs: pr ? { [`${info.root}|${st.branch}`]: pr } : {},
+                        prs: pr
+                            ? {
+                                  [`${info.root}|${/** @type {GitInfo} */ (st).branch}`]:
+                                      pr,
+                              }
+                            : {},
                         status: st ? { [info.root]: st } : {},
                     },
                 },
@@ -1217,14 +1359,18 @@ export default class WorkspaceStatus extends View {
 
     // Each repo of a dev container's workspace: name, branch (click = its page: switch, new
     // branch), ahead/behind, changes, PR, Sync; Sync all at the top. The bar's repo has a dot.
+    /** @param {Theme} t */
     repoList(t) {
-        const { repos: ws, anchor } = props();
+        const { repos: ws, anchor } =
+            /** @type {{ repos: Workspace, anchor: Anchor }} */ (props());
         const all = ws.dirs.filter((d) => this.repos[d]);
         const anySyncing = all.some((d) => this.syncing.has(d));
+        /** @param {Context | AsyncContext} cx */
         const after = (cx) => {
             this.reread?.(cx);
             this.readPrs(ws.dirs, cx, true);
         };
+        /** @param {string} dir */
         const row = (dir) => {
             const g = this.repos[dir];
             const name = baseName(dir);
@@ -1345,7 +1491,15 @@ export default class WorkspaceStatus extends View {
                         .flex_none()
                         .child(this.prLink(t, dir, g, false)),
                 )
-                .child(this.syncButton(t, dir, g, false, after));
+                .child(
+                    this.syncButton(
+                        t,
+                        dir,
+                        /** @type {GitInfo} */ (g),
+                        false,
+                        after,
+                    ),
+                );
         };
         return v_flex()
             .w_full()
@@ -1392,6 +1546,7 @@ export default class WorkspaceStatus extends View {
             );
     }
 
+    /** @param {GitInfo | null | undefined} g */
     counts(g) {
         return g
             ? [g.ahead > 0 && `↑${g.ahead}`, g.behind > 0 && `↓${g.behind}`]
@@ -1399,12 +1554,14 @@ export default class WorkspaceStatus extends View {
                   .join(' ')
             : '';
     }
+    /** @param {boolean} spin */
     syncIcon(spin) {
         const s = svg('mods/x-herdr-status/sync.svg').size(12);
         return spin ? s.spin(900) : s;
     }
 
     // A repo's PR: "#N" (or "PR #N" with `long`), a dim "…" while looking, "no PR".
+    /** @param {Theme} t @param {string} dir @param {GitInfo | null | undefined} g @param {boolean} long */
     prLink(t, dir, g, long) {
         const pr = g?.branch ? this.prs[`${dir}|${g.branch}`] : null;
         const name = baseName(dir);
@@ -1417,7 +1574,9 @@ export default class WorkspaceStatus extends View {
                 .id(`nopr-${name}`)
                 .text_color(t.dim)
                 .child(pr.error ? 'PR ?' : 'no PR')
-                .when(Boolean(pr.error), (s) => s.tooltip(pr.error));
+                .when(Boolean(pr.error), (s) =>
+                    s.tooltip(/** @type {string} */ (pr.error)),
+                );
         const state = pr.pr.isDraft ? 'draft' : pr.pr.state.toLowerCase();
         return h_flex()
             .id(`pr-${name}`)
@@ -1433,12 +1592,13 @@ export default class WorkspaceStatus extends View {
             )
             .hover((s) => s.text_color(t.foreground))
             .tooltip(`${pr.pr.title} (${state}) · open`)
-            .on_click((_e, cx) => cx.open_url(pr.pr.url))
+            .on_click((_e, cx) => cx.open_url(/** @type {Pr} */ (pr.pr).url))
             .child(svg('mods/workspace-chrome/git-compare.svg').size(12))
             .child(`${long ? 'PR ' : ''}#${pr.pr.number}`);
     }
 
     // Fetch, then pull --ff-only; with `label`, "Sync" / "syncing…" beside the icon.
+    /** @param {Theme} t @param {string} dir @param {GitInfo} g the status row, which `when(Boolean(g))` guards @param {boolean} label @param {(cx: AsyncContext) => void} after */
     syncButton(t, dir, g, label, after) {
         const syncing = this.syncing.has(dir);
         return h_flex()
@@ -1465,6 +1625,7 @@ export default class WorkspaceStatus extends View {
     }
 
     // After a switch or a new branch: back to the list (it reads the new branch), else close.
+    /** @param {Context | AsyncContext} cx */
     leavePage(cx) {
         const { back, anchor, overlay } = props();
         closeOverlay(overlay);
@@ -1472,6 +1633,7 @@ export default class WorkspaceStatus extends View {
     }
 
     // `git switch -c <name>` off the current branch (spaces become "-"); git's refusal shows in the popup.
+    /** @param {Context} cx */
     createBranch(cx) {
         const { repo } = props();
         const root = repo.dir;
@@ -1483,7 +1645,10 @@ export default class WorkspaceStatus extends View {
         cx.spawn(async (cx) => {
             const r = await exec('git', ['switch', '-c', name], {
                 cwd: root,
-            }).catch((e) => ({ code: 1, stderr: String(e) }));
+            }).catch(
+                (/** @type {unknown} */ e) =>
+                    /** @type {ExecResult} */ ({ code: 1, stderr: String(e) }),
+            );
             this.switching = null;
             if (r.code) {
                 this.error = (
@@ -1504,11 +1669,16 @@ export default class WorkspaceStatus extends View {
 
     // One repo's page: its upstream, ahead/behind, PR and Sync on top, then its local branches
     // (click = `git switch`; git's refusal shows here) and "New branch…". From the list, ‹ goes back.
+    /** @param {Theme} t */
     repoPage(t) {
-        const { repo, back, anchor, overlay } = props();
+        const { repo, back, anchor, overlay } =
+            /** @type {{ repo: { dir: string, info: BranchInfo }, back: Workspace | null, anchor: Anchor, overlay: string }} */ (
+                props()
+            );
         const { dir, info } = repo;
         const { branches, agentsHere, dirty } = info;
         const g = this.repos[dir];
+        /** @param {string} text @param {Color} color */
         const note = (text, color) =>
             div()
                 .px(8)
@@ -1519,6 +1689,7 @@ export default class WorkspaceStatus extends View {
                 .text_size(11.2)
                 .text_color(color)
                 .child(text);
+        /** @param {string} name @param {Context} cx */
         const pick = (name, cx) => {
             this.switching = name;
             this.error = null;
@@ -1526,7 +1697,13 @@ export default class WorkspaceStatus extends View {
             cx.spawn(async (cx) => {
                 const r = await exec('git', ['switch', name], {
                     cwd: dir,
-                }).catch((e) => ({ code: 1, stderr: String(e) }));
+                }).catch(
+                    (/** @type {unknown} */ e) =>
+                        /** @type {ExecResult} */ ({
+                            code: 1,
+                            stderr: String(e),
+                        }),
+                );
                 this.switching = null;
                 if (r.code) {
                     this.error = (
@@ -1563,7 +1740,10 @@ export default class WorkspaceStatus extends View {
                                 .tooltip('Back to the repos')
                                 .on_click(() => {
                                     closeOverlay(overlay);
-                                    this.openList(back, anchor);
+                                    this.openList(
+                                        /** @type {Workspace} */ (back),
+                                        anchor,
+                                    );
                                 })
                                 .child(
                                     svg(
@@ -1606,10 +1786,16 @@ export default class WorkspaceStatus extends View {
                             .child(this.prLink(t, dir, g, true)),
                     )
                     .child(
-                        this.syncButton(t, dir, g, true, (cx) => {
-                            this.reread?.(cx);
-                            this.readPrs([dir], cx, true);
-                        }),
+                        this.syncButton(
+                            t,
+                            dir,
+                            /** @type {GitInfo} */ (g),
+                            true,
+                            (cx) => {
+                                this.reread?.(cx);
+                                this.readPrs([dir], cx, true);
+                            },
+                        ),
                     ),
             )
             .when(agentsHere > 1, (el) =>
@@ -1635,7 +1821,7 @@ export default class WorkspaceStatus extends View {
                         .py(5)
                         .text_size(11.2)
                         .text_color(t.blocked)
-                        .child(this.error),
+                        .child(/** @type {string} */ (this.error)),
                 ),
             )
             .child(
@@ -1782,7 +1968,7 @@ export default class WorkspaceStatus extends View {
     }
 
     render() {
-        const t = theme();
+        const t = /** @type {Theme} */ (theme());
         if (props()?.repo) return this.repoPage(t);
         if (props()?.repos) return this.repoList(t);
         if (props()?.usage) return this.usagePopup(t);
@@ -1794,7 +1980,7 @@ export default class WorkspaceStatus extends View {
                   .map((w) => `${w.short} ${w.pct}%`)
                   .join(' · ')
             : uw.length
-              ? `${uw[0].pct}%`
+              ? `${/** @type {UsageWindow} */ (uw[0]).pct}%`
               : '';
         const usageTip = [
             ...uw.map(
@@ -1806,8 +1992,9 @@ export default class WorkspaceStatus extends View {
         ]
             .filter(Boolean)
             .join('\n');
-        const space = spaces().find((s) => s.active);
+        const space = spaces().find((/** @type {SpaceInfo} */ s) => s.active);
         const list = agents();
+        /** @param {string} icon @param {string} text */
         const label = (icon, text) =>
             h_flex()
                 .gap(6)
@@ -1816,6 +2003,7 @@ export default class WorkspaceStatus extends View {
                 .child(text);
         const folder =
             space && !space.machine ? focused()?.cwd || space.folder : '';
+        /** @param {string} id @param {string} icon @param {string} text @param {'code' | 'folder'} what */
         const button = (id, icon, text, what) =>
             label(icon, text)
                 .id(id)
@@ -1828,14 +2016,22 @@ export default class WorkspaceStatus extends View {
         const f = focused();
         // A dev container's workspace: all its repos in the popup, and on the bar the one picked
         // there (else the focused terminal's), by name.
-        const box = space && !space.machine ? this.box(f, space, folder) : null;
+        const box = /** @type {BoxIn} */ (
+            space && !space.machine ? this.box(f, space, folder) : null
+        );
         const ws = box ? this.workspace(f, space, folder) : null;
         const wsKey = ws ? `${ws.root}|${ws.dirs.join('|')}` : '';
         if (wsKey !== this.wsKey) {
+            /** @type {string | undefined} */
             this.wsKey = wsKey;
+            /** @type {Workspace | null | undefined} */
             this.ws = ws;
         } // readRepos reads this.ws
-        const picked = ws ? (shared(SHOWN) ?? {})[pathKey(ws.root)] : null;
+        const picked = ws
+            ? /** @type {Record<string, string>} */ (shared(SHOWN) ?? {})[
+                  pathKey(ws.root)
+              ]
+            : null;
         const shown = ws
             ? (ws.dirs.find((d) => picked && pathKey(d) === pathKey(picked)) ??
               ws.dirs.find((d) => inside(folder, d)) ??
@@ -1848,19 +2044,24 @@ export default class WorkspaceStatus extends View {
         const branch =
             g?.branch ||
             (gitDir === folder
-                ? (f?.pane && panes().find((p) => p.pane === f.pane)?.branch) ||
+                ? (f?.pane &&
+                      panes().find(
+                          (/** @type {PaneInfo} */ p) => p.pane === f.pane,
+                      )?.branch) ||
                   space?.branch
                 : null);
         this.key = gitDir && branch ? `${gitDir}|${branch}` : null;
-        const pr = this.key ? this.prs[this.key]?.pr : null;
+        const pr = /** @type {Pr} */ (this.key ? this.prs[this.key]?.pr : null);
         const prState = pr
             ? pr.isDraft
                 ? 'draft'
                 : pr.state.toLowerCase()
             : '';
-        const known = ws
-            ? ws.dirs.map((d) => [d, this.repos[d]]).filter(([, r]) => r)
-            : [];
+        const known = /** @type {[string, GitInfo][]} */ (
+            ws
+                ? ws.dirs.map((d) => [d, this.repos[d]]).filter(([, r]) => r)
+                : []
+        );
         const othersBehind = known
             .filter(([d]) => d !== shown)
             .reduce((s, [, r]) => s + r.behind, 0);
