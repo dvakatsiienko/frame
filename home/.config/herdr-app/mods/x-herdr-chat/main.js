@@ -3877,6 +3877,8 @@ export default class Chat extends View {
             h_flex()
                 .id('chat-find')
                 .key_context('ChatFind')
+                // a press anywhere else closes it (dima, 21:04)
+                .on_mouse_down_out((_e, cx) => this.closeFind(cx))
                 .on_action('x_herdr_chat_find_close', (_e, cx) =>
                     this.closeFind(cx),
                 )

@@ -183,24 +183,31 @@ function statusMark(t, status) {
  * @param {Theme} t @param {Control} c @param {string} paneId @param {(e: any, cx: any) => void} onClick
  */
 function controlButton(t, c, paneId, onClick) {
-    return h_flex()
-        .id(`head-${c.kind}-${paneId}`)
-        .h(24)
-        .when(c.hasText, (el) => el.px(7).gap(5))
-        .when(!c.hasText, (el) => el.w(24).justify_center())
-        .flex_none()
-        .items_center()
-        .rounded(6)
-        .cursor_pointer()
-        .text_color(c.isOn ? t.foreground : t.dim)
-        .when(c.isOn, (el) => el.bg(t.selected))
-        .hover((s) =>
-            s.bg(c.isOn ? t.selected : t.hover).text_color(t.foreground),
-        )
-        .when(!c.hasText, (el) => el.tooltip(c.label))
-        .on_click(onClick)
-        .child(svg(c.icon).size(14))
-        .when(c.hasText, (el) => el.child(c.label));
+    return (
+        h_flex()
+            .id(`head-${c.kind}-${paneId}`)
+            .h(24)
+            .when(c.hasText, (el) => el.px(7).gap(5))
+            .when(!c.hasText, (el) => el.w(24).justify_center())
+            .flex_none()
+            .items_center()
+            .rounded(6)
+            .cursor_pointer()
+            .text_color(c.isOn ? t.foreground : t.dim)
+            .when(c.isOn, (el) => el.bg(t.selected))
+            .hover((s) =>
+                s.bg(c.isOn ? t.selected : t.hover).text_color(t.foreground),
+            )
+            .when(!c.hasText, (el) => el.tooltip(c.label))
+            // search acts on the press, while the chat's find, closing on that same press outside it, still reads open:
+            // a click would land after the close and open it again
+            .when(c.kind === 'search', (el) =>
+                el.on_mouse_down('left', onClick),
+            )
+            .when(c.kind !== 'search', (el) => el.on_click(onClick))
+            .child(svg(c.icon).size(14))
+            .when(c.hasText, (el) => el.child(c.label))
+    );
 }
 
 /**
