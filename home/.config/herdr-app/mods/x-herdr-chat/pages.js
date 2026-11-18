@@ -7,17 +7,25 @@
 export function createPages(reader) {
     /** @type {Promise<string[]> | null} */
     let reading = null;
+    let isClosed = false;
 
     return {
+        /** the thread is left: a page still read lands as nothing, and none is asked again */
+        close() {
+            isClosed = true;
+        },
         isReading: () => reading !== null,
         /** whether the thread's first line is read: no page lies above */
         isStart: () => !reader.hasEarlier(),
         /** the next older page, or null while one is read or at the start @returns {Promise<string[]> | null} */
         next() {
-            if (reading || !reader.hasEarlier()) return null;
-            const read = reader.readEarlier().finally(() => {
-                reading = null;
-            });
+            if (isClosed || reading || !reader.hasEarlier()) return null;
+            const read = reader
+                .readEarlier()
+                .then((lines) => (isClosed ? [] : lines))
+                .finally(() => {
+                    reading = null;
+                });
             reading = read;
             return read;
         },

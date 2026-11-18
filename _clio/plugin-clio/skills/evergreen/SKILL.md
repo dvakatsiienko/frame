@@ -5,6 +5,8 @@ description: load when dima types /clio:evergreen, asks «updates?», «what's n
 
 # /clio:evergreen 🧬 — the news layer over renovate and brew
 
+📌 **what evergreen is for, in dima's words, is [references/the-want.md](references/the-want.md)**: read it first, every run, and check the report against it before it prints.
+
 renovate opens the PRs (`renovate.json` in `bytes` and `frame` holds the schedule and the automerge tiers). this skill is the half a bot cannot do: **read, judge,
 tell dima only what he would want to know, keep brew fresh, act on his word.** 🌲 is her commit
 prefix (renovate writes it), 🧬 her voice here. cadence: **wednesday, plus any renovate security PR** (dima
@@ -14,12 +16,12 @@ prefix (renovate writes it), 🧬 her voice here. cadence: **wednesday, plus any
 
 the boot digest seeds «🧬 evergreen turn» first under the flyways (`boot-prefetch.sh`), so the board's order carries it as the first work item (dima's o77).
 
-1. **boot turn** — beside the boot, the read starts in the background on the `helper` card (Sonnet 5.5, no fleet memory), its brief the path of [references/read.md](references/read.md); when it lands, `timeout 2400 brew upgrade` (pinned never) runs in the background, then `open -g -a 1Password` and `ssh-add -l` on its socket, since an upgrade once left signing refused, and `wishkeeper` reads the report for its own picks — fixes it would make, borrows it would take
-2. **evergreen turn** — the turn after the board, before anything else: the report whole in the chat with wishkeeper's picks folded in, the standing page republished, every borrow a line he can steer
-3. **his feedback** — he steers line by line
-4. **resolve** — the merge round runs at once, no ask: [references/merge-round.md](references/merge-round.md), its sweep, majors and red fixes all one stray batch; each borrow done in place, or a ticket, or a lane rider; the page republished with each chip at its landing (ticket, rider, skipped and why); `pnpm skill:evergreen-apps --mark` (the helper card never marks); the 🧬 pocket item set done
+1. **upgrade, no ask** — in the background: `timeout 2400 brew upgrade` (pinned never), then `open -g -a 1Password` and `ssh-add -l` on its socket (an upgrade once left signing refused); `pnpm update -g --latest`, `uv tool upgrade --all`; the merge round, [references/merge-round.md](references/merge-round.md): every green renovate pr, then one stray batch for the reds, the sweep and the no-break majors, both repos and the go modules; done = its finish line
+2. **read the delta** — clio writes the delta file (read.md § 1), then `researcher` cards (Opus 5.5), one per area, each briefed with [references/read.md](references/read.md) and [references/the-want.md](references/the-want.md); `wishkeeper` reads the joined report for its picks
+3. **the report** — whole in the chat in read.md § 4's shape, checked against the-want, the standing page republished, an action item only where it helps; then `pnpm skill:evergreen-apps --mark` and the 🧬 pocket item set done
+4. **his feedback** — he steers line by line; each action he picks is done in place, a ticket or a lane rider, the page's chip at its landing
 
-## the report — what clio does with the card's reply
+## the report — what clio does with the cards' replies
 
 - 📖 the report's shape and every judge rule live in [references/read.md](references/read.md) §§ 3–4; clio reads it before printing or reworking a report, never prints from memory
 - **every digest is also the artifact** (dima 2026-09-28: «let's have it as a habit part») —

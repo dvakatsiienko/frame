@@ -108,6 +108,15 @@ export function createFind() {
         open() {
             state = { ...state, isOpen: true };
         },
+        /** a page landed: the same query over the rows now loaded, the stepped hit kept @param {readonly Row[]} rows */
+        recount(rows) {
+            const was = state.hits[state.at];
+            const hits = hitsOf(rows, state.q);
+            const at = was
+                ? hits.findIndex((h) => h.id === was.id && h.n === was.n)
+                : -1;
+            state = { ...state, at: Math.max(0, at), hits };
+        },
         /** his settled query over the rows: the newest hit is shown @param {readonly Row[]} rows @param {string} q */
         search(rows, q) {
             state = { ...state, at: 0, hits: hitsOf(rows, q), q };

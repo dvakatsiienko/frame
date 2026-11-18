@@ -75,3 +75,16 @@ describe('older history comes a page at a time, from one owner (FRM-638 slice 6b
         expect(pages.isReading()).toBe(false);
     });
 });
+
+describe('a page for a thread he left (FRM-638 slice 6b)', () => {
+    test('a page still read when he switches threads lands as nothing, and none is asked after', async () => {
+        const reader = fakeReader(3);
+        const pages = createPages(reader);
+        const late = pages.next();
+        pages.close();
+        reader.land();
+        expect(await late).toEqual([]);
+        expect(pages.next()).toBeNull();
+        expect(reader.reads).toBe(1);
+    });
+});

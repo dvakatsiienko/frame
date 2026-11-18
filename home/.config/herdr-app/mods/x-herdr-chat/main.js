@@ -155,6 +155,21 @@ const NARROW = 820;
 const BUBBLE_SHARE = 0.8;
 // the room above and below each row, per spacing
 const ROW_PAD = { normal: 6, roomy: 10, tight: 3 };
+/** @type {Row} over a thread read back to its first line: no older page is left to ask for */
+const START_ROW = {
+    at: null,
+    delivery: null,
+    files: [],
+    id: 'start-of-thread',
+    isTurnStart: false,
+    isWaiting: false,
+    kind: 'start',
+    pictures: [],
+    replyId: null,
+    text: '',
+    tools: [],
+    version: 1,
+};
 // the ui font, as the old chat drew it
 const SANS = '.AppleSystemUIFont';
 // [TRACE-place] how long after an open the list's asks are traced
@@ -842,7 +857,11 @@ export default class Chat extends View {
             look.space,
             look.tools,
         ].join('|');
-        const rows = shownOf(this.model.rows, look);
+        const shown = shownOf(this.model.rows, look);
+        const rows =
+            this.isRead && shown.length && this.pages?.isStart()
+                ? [START_ROW, ...shown]
+                : shown;
         if (this.lookKey && lookKey !== this.lookKey) {
             // every row takes a new height at once: his place is held as a share of its message while they land
             this.widthGen += 1;
@@ -2756,6 +2775,14 @@ export default class Chat extends View {
      *   words, laid over the shown ones, flicker into his selection as he scrolls (dima, 13:51)
      */
     row(row, t, pre, isShown = true) {
+        if (row.kind === 'start')
+            return h_flex()
+                .w_full()
+                .justify_center()
+                .py(10)
+                .text_xs()
+                .text_color(t.muted)
+                .child('Start of thread');
         const { hits, isOpen } = this.find.state;
         const base = row.id.replace(/#.*$/, '');
         const hit = !isOpen
@@ -3062,6 +3089,7 @@ export default class Chat extends View {
         this.skills = new Map();
         this.pluginSkills = new Map();
         this.reader = null;
+        this.pages?.close();
         this.pages = null;
         this.file = null;
         this.address = null;
@@ -3500,7 +3528,17 @@ export default class Chat extends View {
             .border_color(t.border)
             .when(Boolean(count), (el) =>
                 el.child(
-                    div().px(6).text_size(12).text_color(t.muted).child(count),
+                    div()
+                        .id('find-count')
+                        .px(6)
+                        .text_size(12)
+                        .text_color(t.muted)
+                        .when(!this.pages?.isStart(), (el) =>
+                            el.tooltip(
+                                'Counts the history loaded so far: scroll up for older',
+                            ),
+                        )
+                        .child(count),
                 ),
             )
             .child(
@@ -3846,7 +3884,8 @@ export default class Chat extends View {
             `open ${this.file?.slice(-12)} saved=${JSON.stringify(place)} rows=${this.model.rows.length}`,
         );
         this.traceUntil = Date.now() + TRACE_MS;
-        if (!place) return;
+        // a place on the start row would read every page back to it: the thread opens at its newest instead
+        if (!place || place.id === START_ROW.id) return;
         // a place on a file row is found through its reply, the row the transcript holds
         const lineId = replyIdOf(place.id);
         const pages = this.pages;
@@ -3910,6 +3949,8 @@ export default class Chat extends View {
             this.learnSkills(lines);
             this.makePictures(cx);
             if (place) this.at.restore(place.id, place.offset);
+            if (this.find.state.isOpen)
+                this.find.recount(shownOf(this.model.rows, this.look));
             cx.notify();
         });
     }

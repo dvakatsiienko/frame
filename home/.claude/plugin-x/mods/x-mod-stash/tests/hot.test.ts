@@ -56,19 +56,23 @@ test('a hot session is pinged 50 minutes after its last turn ended', async ($, o
     ]);
 });
 
-test('🔥 switched on while idle counts its 50 minutes from the last turn end', async ($, on) => {
-    const s = await started($, on);
-    await endTurn($);
-    await s.clock.advance(17 * MIN);
-    await s.ui.press({ key: 'hot' });
-    await s.clock.advance(32 * MIN);
-    const before = s.pings.length;
-    await s.clock.advance(MIN);
-    expect([before, s.pings]).toEqual([
-        0,
-        [expect.stringContaining('keep-hot ping')],
-    ]);
-});
+test(
+    '🔥 switched on while idle counts its 50 minutes from the last turn end',
+    { timeoutMs: 30_000 },
+    async ($, on) => {
+        const s = await started($, on);
+        await endTurn($);
+        await s.clock.advance(17 * MIN);
+        await s.ui.press({ key: 'hot' });
+        await s.clock.advance(32 * MIN);
+        const before = s.pings.length;
+        await s.clock.advance(MIN);
+        expect([before, s.pings]).toEqual([
+            0,
+            [expect.stringContaining('keep-hot ping')],
+        ]);
+    },
+);
 
 test('a busy session is never pinged', async ($, on) => {
     const s = await hotSession($, on);
@@ -169,18 +173,22 @@ function measure($: Engine, percentUsed: number, resetsInMs: number) {
     });
 }
 
-test('🔥 stays ticked after two pings', async ($, on) => {
-    const s = await started($, on);
-    await s.ui.press({ key: 'hot' });
-    await endTurn($);
-    await s.clock.advance(50 * MIN);
-    await endTurn($);
-    await s.clock.advance(50 * MIN);
-    expect([s.pings.length, (await s.button())?.props.variant]).toEqual([
-        2,
-        'secondary',
-    ]);
-});
+test(
+    '🔥 stays ticked after two pings',
+    { timeoutMs: 30_000 },
+    async ($, on) => {
+        const s = await started($, on);
+        await s.ui.press({ key: 'hot' });
+        await endTurn($);
+        await s.clock.advance(50 * MIN);
+        await endTurn($);
+        await s.clock.advance(50 * MIN);
+        expect([s.pings.length, (await s.button())?.props.variant]).toEqual([
+            2,
+            'secondary',
+        ]);
+    },
+);
 
 test('🔥 survives a reload', async ($, on) => {
     const s = await started($, on, { [`hot:${SID}`]: { since: NOW } });

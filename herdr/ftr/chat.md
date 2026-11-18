@@ -403,6 +403,13 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then that reply shows its words with no `**`, backticks, fence lines, `#` or link addresses, its matches marked
   - and a query found only inside a link address counts no hit
   - decision: plain words, not rendered marks: rendered bold with word marks waits on herdr-app TextView highlight ranges (clio's upstream ask)
+- ✅ older history loads as he scrolls up (x-herdr-chat, FRM-638 slice 6b)
+  - given a thread longer than its first 4 MiB
+  - when he scrolls to within a screen of the top, then the next older page draws above, and the row he reads stays at its spot on screen, no jump, no blank frame (dima, 19:19: pages loaded back to the boot prompt, his line held)
+  - and scrolling on loads page after page, one read at a time however fast he scrolls, until the thread's start
+  - and once the first line is read a quiet «Start of thread» row sits at the top and no more is asked; a thread shorter than one page shows it at once
+  - and an open find re-counts when a page lands, its stepped match kept, and its «n / N» says on hover that it counts the history loaded so far
+  - and a page still read when he switches threads is dropped, never drawn into the other thread
 - 🔎 the new chat's / menu lists commands and every skill (x-herdr-chat, FRM-638 slice 6)
   - given the quill holds «/» at its start, or after a space or a line break, and part of a name
   - then a list over the quill shows Claude Code's commands, the thread's skills and its plugins' skills, filtered as he types

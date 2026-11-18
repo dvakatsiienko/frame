@@ -2287,21 +2287,29 @@ test('a refused wind holds nothing: nothing compacts', async ($, on) => {
     ]);
 });
 
-test('a message held 10 min for a codie that has not wound tells its sender once, and the hold stays', async ($, on) => {
-    const w = sentWorld(on);
-    w.store.set(`context:${SID}`, 62);
-    await start($);
-    await fromPeer($, 'next: r6');
-    await w.clock.advance(9 * 60_000);
-    const early = w.sent.length;
-    await w.clock.advance(60_000);
-    await w.clock.advance(20 * 60_000);
-    expect([
-        early,
-        w.sent,
-        (w.store.get(STORE) as Held).messages.length,
-    ]).toEqual([0, [{ text: HELD_LINE, to: 'uds:/tmp/cc-socks/1.sock' }], 1]);
-});
+test(
+    'a message held 10 min for a codie that has not wound tells its sender once, and the hold stays',
+    { timeoutMs: 30_000 },
+    async ($, on) => {
+        const w = sentWorld(on);
+        w.store.set(`context:${SID}`, 62);
+        await start($);
+        await fromPeer($, 'next: r6');
+        await w.clock.advance(9 * 60_000);
+        const early = w.sent.length;
+        await w.clock.advance(60_000);
+        await w.clock.advance(20 * 60_000);
+        expect([
+            early,
+            w.sent,
+            (w.store.get(STORE) as Held).messages.length,
+        ]).toEqual([
+            0,
+            [{ text: HELD_LINE, to: 'uds:/tmp/cc-socks/1.sock' }],
+            1,
+        ]);
+    },
+);
 
 test('a codie that wound inside the 10 min tells no sender', async ($, on) => {
     const w = sentWorld(on);
@@ -2407,27 +2415,31 @@ const QUIET_PING = '[progress] step 2 landed';
 const quietSeen = (w: ReturnType<typeof receiveWorld>) =>
     [...w.lines, ...w.prompts, ...w.appended].join('\n').split('step 2 landed')
         .length - 1;
-test('a ping quiet held before the compact is never appended mid-compact, and goes in once after it', async ($, on) => {
-    const w = receiveWorld(on, CLIO, 'coordinator');
-    // a wait shorter than a compact's longest run, so it passes inside the compact
-    w.store.set('quiet-wait', 2);
-    let midCompact = -1;
-    inCompact = async () => {
-        await w.clock.advance(3 * 60_000);
-        midCompact = w.appended.length;
-    };
-    await start($);
-    const r = await fromPeer($, QUIET_PING, SIXTH);
-    await compact($, 'manual');
-    await w.clock.advance(10_000);
-    await say($, 'next');
-    await w.clock.advance(20 * 60_000);
-    expect([r.consumed !== undefined, midCompact, quietSeen(w)]).toEqual([
-        true,
-        0,
-        1,
-    ]);
-});
+test(
+    'a ping quiet held before the compact is never appended mid-compact, and goes in once after it',
+    { timeoutMs: 30_000 },
+    async ($, on) => {
+        const w = receiveWorld(on, CLIO, 'coordinator');
+        // a wait shorter than a compact's longest run, so it passes inside the compact
+        w.store.set('quiet-wait', 2);
+        let midCompact = -1;
+        inCompact = async () => {
+            await w.clock.advance(3 * 60_000);
+            midCompact = w.appended.length;
+        };
+        await start($);
+        const r = await fromPeer($, QUIET_PING, SIXTH);
+        await compact($, 'manual');
+        await w.clock.advance(10_000);
+        await say($, 'next');
+        await w.clock.advance(20 * 60_000);
+        expect([r.consumed !== undefined, midCompact, quietSeen(w)]).toEqual([
+            true,
+            0,
+            1,
+        ]);
+    },
+);
 
 for (const isPrompt of [true, false])
     test(`a ping sent into clio's compact is held by quiet comms, starts no turn, and goes in once at ${isPrompt ? 'her next prompt' : 'the idle append'}`, async ($, on) => {

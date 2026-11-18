@@ -76,88 +76,79 @@ footer{padding-top:16px;font-size:13px;color:var(--muted);border-top:1px solid v
 
 <div class="wrap">
 <header>
-  <span class="eyebrow">🧬 evergreen · wed 18-11-2026</span>
-  <h1>What updated, and what we can take from it</h1>
-  <p class="lede">Two weeks in one read. Seven renovate PRs are open. The four green ones only wait for a merge. The two red bytes PRs are biome rules that newer versions turned on. Claude Code 2.1.327 brings Fable 5.2 and a <code>/status</code> list of broken skill and hook files.</p>
+  <span class="eyebrow">🧬 evergreen · wed 18 nov 2026 · the two weeks since 04 nov</span>
+  <h1>What updated, and what it does for you</h1>
+  <p class="lede">The first run on the new shape. Everything was upgraded first, then three readers on Opus 5.5 went through every release in between, judged against your own want list.</p>
   <div class="counts">
-    <span class="count"><b>7</b> renovate PRs open</span>
-    <span class="count"><b>2</b> red</span>
-    <span class="count"><b>~120</b> brew upgraded</span>
+    <span class="count"><b>~200</b> packages moved</span>
+    <span class="count"><b>7</b> renovate PRs merged</span>
+    <span class="count"><b>0</b> pno rows left in frame</span>
+    <span class="count"><b>2</b> held in bytes</span>
     <span class="count"><b>20</b> apps read</span>
-    <span class="count"><b>3</b> OS security releases</span>
   </div>
 </header>
 
 <section>
-  <div class="sec-head"><h2>🌟 Worth reading</h2><p>each with its borrow and where it stands</p></div>
-  <div class="stars">
-    <article class="card">
-      <div class="card-top"><h3><a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md">Claude Code</a></h3><span class="ver">2.1.319 → <span class="to">2.1.327</span></span></div>
-      <ul class="facts">
-        <li>Fable 5.2 (<code>claude-fable-5-2</code>) becomes the default Fable model, with 1M context.</li>
-        <li><code>/status</code> lists broken agent, skill, command and output-style files, and hook matchers that never match.</li>
-        <li>A mod's <code>Box</code> gets <code>overflowX="scroll"</code>, and its <code>Text</code> gets <code>maxLines</code> and <code>wrap="clip"</code>.</li>
-        <li><code>plugin.json</code> takes <code>engines["claude-code"]</code>. <code>claude plugin validate</code> now type-checks TypeScript hooks.</li>
-        <li><code>permissions.denyInsteadOfPrompting</code> refuses instead of asking.</li>
-        <li>Security fixes: zstd decoding, MCP OAuth refresh tokens leaking on a redirect, and a read-only Bash command that ran outside the sandbox.</li>
-      </ul>
-      <div class="borrow"><span class="k">borrow</span><span><code>engines</code> in plugin-x, and <code>/status</code> as the first check for a broken mod or skill. <span class="chip wait">dima's word</span></span></div>
-      <div class="borrow"><span class="k">borrow</span><span><code>denyInsteadOfPrompting</code> for unattended lanes. <span class="chip wait">dima's word</span></span></div>
-    </article>
-    <article class="card">
-      <div class="card-top"><h3><a href="https://github.com/nodejs/node/releases/tag/v26.13.1">Node</a></h3><span class="ver">fnm 26.13.0 · <span class="to">26.13.1</span></span></div>
-      <ul class="facts">
-        <li>A security release with 9 high CVEs, in http2 and TLS.</li>
-        <li>Brew's node is on 26.13.1. Your fnm default is still 26.13.0.</li>
-      </ul>
-      <div class="borrow"><span class="k">borrow</span><span><code>fnm install 26.13.1</code> as the default, then <code>toolchain:sync</code>. <span class="chip wait">dima's word</span></span></div>
-    </article>
-    <article class="card">
-      <div class="card-top"><h3><a href="https://www.raycast.com/changelog">Raycast</a></h3><span class="ver">2.5 → <span class="to">2.13</span></span></div>
-      <ul class="facts">
-        <li>Raycast MCP is a local server. It lets an agent search clipboard history, make snippets and quicklinks, and read browser tabs.</li>
-        <li>2.12 rebuilds the Calculator, 60× faster.</li>
-      </ul>
-      <div class="borrow"><span class="k">borrow</span><span>Raycast MCP as a door for agents. It would be a new MCP against our cli-first rule. <span class="chip wait">dima's word</span></span></div>
-    </article>
-    <article class="card">
-      <div class="card-top"><h3><a href="https://github.com/cli/cli/releases/tag/v2.105.0">gh</a></h3><span class="ver">2.103 → <span class="to">2.105</span></span></div>
-      <ul class="facts">
-        <li><code>gh event listen</code> waits on a PR review or a check suite finishing, with <code>--timeout</code>. It is a preview behind a waitlist.</li>
-        <li>gh already prints it as a hint in place of polling.</li>
-      </ul>
-      <div class="borrow"><span class="k">borrow</span><span>replace the polling in the merge round's waits. <span class="chip wait">dima's word</span></span></div>
-    </article>
+  <div class="sec-head"><h2>🤖 Claude Code and the agent tools</h2><p>2.1.319 → 2.1.327</p></div>
+  <div class="rows">
+    <div class="row"><div class="name">🌟 Code Mode</div><div><p>Claude writes a small script that makes many tool calls in one step: parallel commands, a filtered grep, one edit across files. Experimental, terminal only, and off while OpenTelemetry export is on. <a href="https://code.claude.com/docs/en/code-mode">docs</a></p></div></div>
+    <div class="row"><div class="name">🌟 Fable 5.2</div><div><p>The new default Fable: 1M context, $8 / $40 per million tokens. <a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md#21321">notes</a></p></div></div>
+    <div class="row"><div class="name">Sessions talk freely</div><div><p>The cap on messages one session sends another went from about 20 to 100,000, so the fleet no longer stalls on its own chatter.</p></div></div>
+    <div class="row"><div class="name"><code>/status</code> health check</div><div><p>Lists broken skill, agent and command files, ignored settings and hooks that never match.</p></div></div>
+    <div class="row"><div class="name">Snappier</div><div><p>First command starts sooner, lower idle CPU, and <code>/update-config</code> drops from 93k to 13k tokens of context.</p></div></div>
+    <div class="row"><div class="name">gh 2.105</div><div><p><code>gh event listen</code> waits for a review or a check to finish instead of polling. Preview behind a waitlist. <a href="https://github.com/cli/cli/releases/tag/v2.105.0">notes</a></p></div></div>
   </div>
 </section>
 
 <section>
-  <div class="sec-head"><h2>📦 The renovate round</h2><p>seven open: four ready, one waiting, two red</p></div>
+  <div class="sec-head"><h2>⚡ The frontend stack</h2><p>frame and bytes</p></div>
   <div class="rows">
-    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/frame/pull/158">frame minors</a><span class="ver">7 days</span></div><div><p>lipgloss 2.1 adds <code>table.FitContent()</code>, along with style-dictionary 5.8, pflag 1.1 and @excalidraw/cli 0.3. Clean, green. <span class="chip next">merge</span></p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/frame/pull/176">frame renovate action</a><span class="ver">→ <span class="to">46.3.13</span></span></div><div><p>Clean, green. <span class="chip next">merge</span></p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/bytes/pull/153">cn</a><span class="ver">→ <span class="to">0.5.2</span></span></div><div><p>Clean, green. <span class="chip next">merge</span></p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/bytes/pull/154">bytes renovate action</a><span class="ver">→ <span class="to">46.3.13</span></span></div><div><p>Every real check green. A cancelled skip-marker job is the only red. <span class="chip next">merge</span></p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/bytes/pull/152">bytes actions digests</a><span class="ver">7 days</span></div><div><p>Waits on renovate's stability-days check. <span class="chip wait">waiting</span></p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/bytes/pull/155">bytes minors</a><span class="ver">7 days</span></div><div><p>Red: ultracite 8.2.1 turns <code>noImportCycles</code> on. space-explorer-ui has a <code>Layout.tsx</code> ↔ <code>components/index.ts</code> cycle. <span class="chip wait">a fix on the branch</span></p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/bytes/pull/158">bytes patches</a><span class="ver">5 days</span></div><div><p>Red: biome 2.6.7 starts firing <code>useWhile</code> at <code>atelier/src/takes.ts:46</code>. <code>biome lint --write</code> fixes it. <span class="chip wait">a fix on the branch</span></p></div></div>
+    <div class="row"><div class="name">🌟 react-resizable-panels 4.23</div><div><p>Now a full docking layout: draggable tabs, floating panels, pop-out windows, a saveable layout. Fits atelier. <a href="https://github.com/bvaughn/react-resizable-panels/releases/tag/4.16.0">notes</a></p></div></div>
+    <div class="row"><div class="name">🌟 motion 14.14</div><div><p>Pinch-and-rotate gestures, and press handles double, long and repeat on its own. <a href="https://github.com/motiondivision/motion/blob/main/CHANGELOG.md">notes</a></p></div></div>
+    <div class="row"><div class="name">🌟 vitest 5.1</div><div><p><code>--last-failed</code> reruns only what broke, and failed browser tests show a trace timeline. <a href="https://github.com/vitest-dev/vitest/releases/tag/v5.1.0">notes</a></p></div></div>
+    <div class="row"><div class="name">playwright 1.65</div><div><p>Runs under Bun, and a <code>failures</code> reporter prints only what broke. <a href="https://github.com/microsoft/playwright/releases/tag/v1.65.0">notes</a></p></div></div>
+    <div class="row"><div class="name">vite react plugin 6.3</div><div><p>The React Compiler preset now runs on the parallel workers.</p></div></div>
+    <div class="row"><div class="name">biome 2.6.8</div><div><p>About 40 new rules, linting up to 61 % faster.</p></div></div>
+    <div class="row"><div class="name">tailwind 4.3.5</div><div><p>A native Turbopack loader for Next.</p></div></div>
+    <div class="row"><div class="name">prettier 3.10</div><div><p>An opt-in parser written in Zig.</p></div></div>
+    <div class="row"><div class="name">clerk 7.10</div><div><p>Signed-in sessions for AI agents.</p></div></div>
   </div>
-  <p class="quiet">The bots' waiting list is empty in both repos. FRM-465 check 5 stays open until bytes patches merge inside the 07:00–18:59 window. Waiting on your word in the dashboards: string-width 9, yaml v4, @hookform/resolvers 7, graphql-codegen major.</p>
+  <p class="quiet">Three majors went in with nothing to migrate: graphql-codegen 8, @hookform/resolvers 7 (only TypeBox changed, the login form validates on prod) and string-width 9. turbo moved only a patch: its 2.11 features came before this window.</p>
 </section>
 
 <section>
-  <div class="sec-head"><h2>🍺 Brew and the apps</h2><p>markers advanced after this read</p></div>
+  <div class="sec-head"><h2>🧰 Tools and apps</h2><p>brew, the clis, the self-updating apps</p></div>
   <div class="rows">
-    <div class="row"><div class="name"><a href="https://github.com/pnpm/pnpm/releases">pnpm</a><span class="ver">→ <span class="to">12.21.0</span></span></div><div><p>Peer-resolution fixes, and <code>pnpm store add</code> for offline frozen installs. Both repos still pin 12.16.1. <span class="chip next">toolchain:sync</span></p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/n8n-io/n8n/releases">n8n</a><span class="ver">→ <span class="to">2.48.5</span></span></div><div><p>Fixes executions that use global credentials being wrongly redacted.</p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/Unitech/pm2/releases/tag/v7.1.2">pm2</a><span class="ver">→ <span class="to">7.1.2</span></span></div><div><p>Breaking: apps with <code>filter_env: true</code> no longer inherit NODE_ENV or NODE_OPTIONS.</p></div></div>
-    <div class="row"><div class="name"><a href="https://linear.app/changelog">Linear</a><span class="ver">Nov 5–12</span></div><div><p>A branch with a prefix before the issue id now links to the issue.</p></div></div>
-    <div class="row"><div class="name"><a href="https://superwhisper.com/changelog">Superwhisper</a><span class="ver">→ <span class="to">3.3.1</span></span></div><div><p>Lives in the menu bar and imports Wispr Flow history.</p></div></div>
-    <div class="row"><div class="name">macOS, iOS, iPadOS</div><div><p>27.2.1 security releases on 09 Nov. The macOS marker missed it. <span class="chip next">marker to re-seed</span></p></div></div>
-    <div class="row"><div class="name">T3 Code cask</div><div><p>The upgrade failed: the cask looks for the Alpha app, and the app on disk is now the Beta. <span class="chip wait">dima's word</span></p></div></div>
+    <div class="row"><div class="name">🌟 Raycast 2.13</div><div><p>Its own MCP server for clipboard, snippets and tabs, and a calculator 60× faster. <a href="https://www.raycast.com/changelog">notes</a></p></div></div>
+    <div class="row"><div class="name">🌟 homerow 3.0</div><div><p>An on-device vision model labels buttons apps hide; labels keep the same keys. <a href="https://www.homerow.app/changelog">notes</a></p></div></div>
+    <div class="row"><div class="name">🌟 herdr 0.1.16</div><div><p>Find over a terminal's scrollback, and mods can scroll, set the title and badge the Dock.</p></div></div>
+    <div class="row"><div class="name">ctx7 0.12</div><div><p>Upgrade guides between two versions of a library.</p></div></div>
+    <div class="row"><div class="name">changedetection 0.70</div><div><p>An MCP server, with Claude Code sign-in.</p></div></div>
+    <div class="row"><div class="name">pnpm 12.21</div><div><p>Cold installs about 29 % faster on this mac.</p></div></div>
+    <div class="row"><div class="name">Obsidian 1.15.1</div><div><p>Relevance sort, accent-blind search, much faster search. URI callbacks need re-enabling per device.</p></div></div>
+    <div class="row"><div class="name">Superwhisper 3.3</div><div><p>Menu-bar app now, imports meetings from Wispr Flow and Granola.</p></div></div>
   </div>
-  <p class="quiet">Brew upgraded about 120 packages, and the signing key still answers. Also read, nothing to take: Cursor, Wispr Flow, Claude Desktop's release channel, Bartender 7.2, 1Password 8.12.46, Obsidian, Notion, Things, CleanShot X. Newton and Chrome markers need re-seeding.</p>
 </section>
 
-<footer>Sources: each project's release page or changelog, read 18-11-2026 by the evergreen read and its review.</footer>
+<section>
+  <div class="sec-head"><h2>🔒 Security</h2><p>all already applied</p></div>
+  <div class="rows">
+    <div class="row"><div class="name">node 26.13.1</div><div><p>9 high CVEs in http2 and TLS.</p></div></div>
+    <div class="row"><div class="name">Chrome 158</div><div><p>Fixes an exploit in the wild. Relaunch it.</p></div></div>
+    <div class="row"><div class="name">Claude Code</div><div><p>MCP sign-in token leak and a sandbox escape closed.</p></div></div>
+    <div class="row"><div class="name">next, git, go, undici</div><div><p>Patched; none of the next cache bugs touch bytes.</p></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><h2>💡 Worth doing</h2><p>your word each</p></div>
+  <div class="rows">
+    <div class="row"><div class="name">model card</div><div><p>Fable 5.2's price to $8 / $40. <span class="chip next">apply</span></p></div></div>
+    <div class="row"><div class="name">oxc peer range</div><div><p>bytes' React Compiler plugin is newer than its peer range allows. <span class="chip wait">dima's word</span></p></div></div>
+    <div class="row"><div class="name">Code Mode</div><div><p>Try it once on a repetitive edit. <span class="chip wait">dima's word</span></p></div></div>
+    <div class="row"><div class="name">gh event listen</div><div><p>Join the waitlist; our PR waits stop polling. <span class="chip wait">dima's word</span></p></div></div>
+  </div>
+</section>
+
+<footer>Read 18-11-2026 by three researcher cards on Opus 5.5, over the release notes of every version between the old and the new one.</footer>
 </div>

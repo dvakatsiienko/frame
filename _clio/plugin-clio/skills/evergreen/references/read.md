@@ -1,8 +1,10 @@
 # evergreen — gather, read, judge, report
 
-the `helper` card's whole brief (`clio:evergreen` day flow, step 1): run §§ 1–3, reply with the § 4 report.
+the brief of the `researcher` cards (Opus 5.5) that read the delta (`clio:evergreen` day flow, step 2): each card gets one area, runs §§ 2–3 over that area's rows of the delta file, and replies with its § 4 section; the judge is [the-want.md](the-want.md), read first. § 1 is clio's, before the cards.
 
-## 1. gather
+## 1. gather — the delta comes from what moved
+
+the read runs after the upgrades, never before (the merge round, `brew upgrade`, `pnpm update -g --latest`, `uv tool upgrade --all`, the go modules): the delta file is every package that moved since the last evergreen, `<name> <from> → <to>`, built from the merged prs, `git diff <last-evergreen>.. -- '**/package.json' go.mod`, the brew upgrade log, the pnpm -g and uv output and the apps reader. a missed run widens the range, never the lane list. the commands below find what still waits, for the merge round:
 
 ```
 gh pr list -R dvakatsiienko/<repo> --search 'author:app/x-renovate' --json number,title,headRefName,createdAt,statusCheckRollup,body
@@ -24,7 +26,7 @@ the lanes, one line each; a quiet lane prints nothing:
 - **go** — direct modules behind, notes read
 - **uv** — each tool's notes read
 - **toolchain** (dima, 2026-10-28) — node's notes read every run, upgraded only on his word when they bring something; pnpm always upgraded (brew owns it); after either, `pnpm -C ~/frame toolchain:sync` repins both repos
-- after the digest, clio runs `pnpm update -g --latest` and `uv tool upgrade --all`
+- `pnpm update -g --latest` needs `~/Library/pnpm/bin` on PATH in an agent shell, or it refuses (`ERR_PNPM_GLOBAL_BIN_DIR_NOT_IN_PATH`)
 
 **the apps lane** — the self-updating apps neither renovate nor brew reads. `_clio/evergreen/sources.json` is the index and the app list
 (one entry per app: changelog url, read shape, the `marker` = newest entry the last run saw); the
@@ -46,8 +48,7 @@ cut saves tokens, never the news (dima, 2026-10-14: «don't cut everything, or e
 crow: the 96-entry brew read was most of the 350k). the apps lane and renovate keep the full read; a line that
 says «notes unread» is a step skipped (dima 2026-09-28: «how this line is useful for me without
 knowing whats interesting new in a major?»). the read is heavy (31 entries = ~215k tokens,
-~7 min, 2026-09-28; ~350k and 10 min on 10-14), so it runs in the `helper` card (Sonnet 5.5), never a fork or a generic agent,
-returning the report as its reply (capped at the printed items, never a file write), with
+~7 min, 2026-09-28; ~350k and 10 min on 10-14), so it runs on `researcher` cards (Opus 5.5), one per area (claude code and the agent tools · the frontend stack in pnpm · brew and the clis · go, uv, pnpm -g · the apps lane), in parallel, never a fork; a Sonnet `helper` skimmed titles and skipped notes (2026-11-18, turbo 2.11 missed). each returns its section as its reply (capped at the printed items, never a file write), with
 `parallel-cli extract --full-content` as the first door. no notes anywhere → name the urls
 tried; for a major, diff the old and new npm tarballs (commands, flags) and label that inference.
 
@@ -103,45 +104,34 @@ between. a release post on the project's blog beats the github release body when
   a feature change is a 🟠 line with its facts, a rewrite or a capability we would use is a 🌟
   card with the borrow line.
 
-## 4. the report — cards, plain reply, never a fence
+## 4. the report — by area, a human read
 
 ```
-🧬 evergreen — <weekday dd-mm>, <n> majors open, <n> minors, <n> patches merged since <last>
+🧬 evergreen — <weekday dd mon>, the delta since <last run> (<n> days)
 
-🌟 <pkg> <from> → <to> — [repo #N](url) (+ [repo #M](url) when one release hits both), ci ✅
-- **brings** — …
-- **breaks** — nothing we use | <what>, <where>
-- **since** — <prev> shipped <date>, <n> months ago
-- 🔬 **deep** — 2–4 sentences with numbers. [source](url)
-- ➡️ merge | codie | hold
+🤖 claude code and the agent tools
+- 🌟 **<name> <from> → <to>** — what it does for him, in one plain line. [notes](url)
+- **<name> <from> → <to>** — one line
 
-🟠 <pkg> <from> → <to> — [repo #N](url), ci ✅
-- **brings** — …
-- **breaks** — …
-- ➡️ merge
+⚡ the frontend stack (react, vite, typescript, zod, query, turbo, tailwind…)
+- …
 
-🍺 brew — <n> formulae + <m> casks outdated, <pinned or none pinned>, <k> with news
-- 🟠 <formula> a → b — [notes](url)
-  - 1–4 facts: what is new, numbers, what broke
-  - 💡 **borrow** — …
-- + <k> more read, nothing to borrow
+🧰 brew and the clis
+- …
 
-📲 apps — <n> apps read, <k> with something to say
-- 🌟 <app> <entry> — [notes](url)
-  - 1–4 facts
-  - 💡 **borrow** — …
-- 🟠 <app> <entry> — [notes](url)
-  - 1–4 facts
+📲 the apps
+- …
 
-🍺 brew upgrade ran: <n> upgraded, <failures or none>
+🔒 security
+- <name> — what it closes, one line
 
-✅ applied: <borrow> — undo: <one line>   ← every `apply` borrow, run before the report
+💡 worth doing
+- <action> — why it helps, one line (only when it matters)
 
-(one orbit ask) the `ask` borrows: all except … ➡️ yes; merge round: <pkgs> ➡️ yes
+📦 <n> packages moved in <lanes>; <k> held: <pkg> (<why>)
 ```
 
-- the labels are fixed words in a fixed order so his eye lands on the same spot per card.
-- a red ci on any tier → ⚠️ on the card and ➡️ codie. age ≥ 7 days unmerged → `⏳ 9d` before
-  the name; the number is the reminder.
-- **pick, never paste.** the facts are the few a reader would want from the whole range; the
-  release page is one click for the rest.
+- 1–2 lines per item, what it does for him in plain words; a version jump without a feelable change never prints (the-want § hide)
+- 🌟 marks the few he would tell a friend about: a rewrite, a new capability he will use, a perf number
+- an area with nothing to show prints no heading; the count line names what was read, never the rows
+- **pick, never paste**: the release page is one click for the rest; he asks to dig deeper
