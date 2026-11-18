@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-18T09:57:00Z'
+updated_date: '2026-11-18T11:26:00Z'
 labels:
   - s
   - clio-main
@@ -1076,4 +1076,21 @@ PK-349:W1179 (2026-11-18 11:08, dima): standing for you: do not stash tails! sol
 PK-349:W1180 (2026-11-18 11:08, dima): ask me when you need me; do not postpone.
 
 PK-349:W1181 (2026-11-18 11:08, dima): use stray to help you solve stuff.
+
+PK-349:W1182 (2026-11-18 12:04, dima): the crow grade: what it is. once a week you grade five of crow's notes. remind me: what is the under-the-hood name of this weekly check, and when is it scheduled? a few days ago we fixed the names of your two weeklies (lost wishes check and one more) to the weekly-* naming format; how do we have the crow grade weekly like that too? i did not even know we had this weekly grader.
+PK-349:W1183 (2026-11-18 12:04, dima): grade these five, one word each (hit, meh or miss). i treat all of them as useful; i would find them even more useful if i knew whether we fixed all of these catches properly. ❓
+PK-349:W1184 (2026-11-18 12:04, dima): o11: where is the linked look card? ❓
+
+PK-349:W1185 (2026-11-06 16:19, dima): if a member hangs during a shift, the alarm goes to you and you're away; ➡️ let it wake me once, shifts only
+PK-349:W1186 (2026-11-06 16:19, dima): keep the idle subscription in clio:checkpoint? it is the only way exit notices reach me, and it costs no turn; ➡️ keep
+
+PK-349:W1187 (2026-11-12 22:56, dima): 🍀 flyway, fixed at the root (solve now): flyway stays readable for me. every 🌤️ siesta runs the flyway check; you solve the solvable stuff from flyway in place, as part of the siesta freebie. if flyway has nothing solvable right now, you seek freebies in other places
+
+PK-349:W1188 (2026-11-18 12:56, dima): the «11-06» in the f12 backlog: is it 6 Nov? how to keep prompts from being left in such a long unplaceable list
+
+PK-349:W1189 (2026-11-18 12:56, dima): unclear f12 lines: identify them, look at them yourself, and bring dima only the ones you cannot solve; discarding the worst ones is acceptable, he has too many things to solve
+
+PK-349:W1190 (2026-11-18 13:03, dima): the date format confuses him (mon-first); write clearer dates, like 6 Nov
+
+PK-349:W1191 (2026-11-18 13:14, dima): say «in quill» where the steps mean the quill box, not a vague reference; the joining-state hunt spread across places, so name the surface each step lives in
 <!-- SECTION:NOTES:END -->
