@@ -132,6 +132,8 @@ import {
 
 // label: the repo; name: the session's registry name, when it has one
 type Entry = StashEntry;
+// a card that only shows asks: their keys' prefix, no tick, replay, sound or steer (a lane member's, FRM-643)
+type ViewDoor = { prefix: string };
 // where an ask card's tick, replay and steer go, and the prefix its keys carry
 type AskDoor = {
     prefix: string;
@@ -811,22 +813,7 @@ async function storedSteer($: EngineInterface, key: string) {
     }
     if (key === 'plan:steer') return (await currentOrbit($)).plan?.steer;
     const step = /^lane:([^:]+):steer$/.exec(key);
-    if (step?.[1]) return (await laneSteers($))[step[1]]?.steer;
-    const member = /^lane:([^:]+):([^:]+):steer:(.+)$/.exec(key);
-    if (!member) return undefined;
-    const lane = ((await $.state.get(LANES)).value ?? []).find(
-        (l) => l.id === member[1],
-    );
-    const sid = lane?.members[member[2] as LaneRole];
-    if (!lane || !sid) return undefined;
-    const ask = ((await $.state.get(LANE_ASKS)).value?.[sid] ?? []).find(
-        (a) => a.id === member[3],
-    );
-    if (!ask) return undefined;
-    const mark = (await $.store
-        .get(markKey(lane.memberSids?.[member[2] as LaneRole] ?? sid, ask.id))
-        .catch(() => undefined)) as RemoteMark | undefined;
-    return mark ? steered(mark).steer : ask.steer;
+    return step?.[1] ? (await laneSteers($))[step[1]]?.steer : undefined;
 }
 async function holdsSteer($: EngineInterface, key: string, text: string) {
     return sameSteer(await storedSteer($, key), text);
@@ -866,18 +853,7 @@ async function isSentSteer($: EngineInterface, key: string) {
     if (own)
         return !!(await currentOrbit($)).asks.find((a) => a.id === own[1])
             ?.isLocked;
-    const member = /^lane:([^:]+):([^:]+):steer:(.+)$/.exec(key);
-    if (!member) return false;
-    const lane = ((await $.state.get(LANES)).value ?? []).find(
-        (l) => l.id === member[1],
-    );
-    const sid = lane?.members[member[2] as LaneRole];
-    return !!(
-        sid &&
-        ((await $.state.get(LANE_ASKS)).value?.[sid] ?? []).find(
-            (a) => a.id === member[3],
-        )?.isLocked
-    );
+    return false;
 }
 // a turn carried these boxes' text while he was away: it is sent, so a newer steer at his return offers nothing back
 function carried($: EngineInterface, keys: string[]) {
@@ -970,24 +946,8 @@ async function saveTyped(
         });
     }
     const step = /^lane:([^:]+):steer$/.exec(key);
-    if (step?.[1]) {
-        await changeLaneSteer($, step[1], (n) => ({ ...n, steer }));
-        return true;
-    }
-    const member = /^lane:([^:]+):([^:]+):steer:(.+)$/.exec(key);
-    if (!member) return false;
-    const [, laneId, role, askId] = member;
-    const lane = ((await $.state.get(LANES)).value ?? []).find(
-        (l) => l.id === laneId,
-    );
-    const sid = lane?.members[role as LaneRole];
-    if (!lane || !sid) return false;
-    const ask = ((await $.state.get(LANE_ASKS)).value?.[sid] ?? []).find(
-        (a) => a.id === askId,
-    );
-    if (!ask) return false;
-    const markSid = lane.memberSids?.[role as LaneRole] ?? sid;
-    await markRemote($, markSid, ask, { isSteerEdit: true, steer });
+    if (!step?.[1]) return false;
+    await changeLaneSteer($, step[1], (n) => ({ ...n, steer }));
     return true;
 }
 export type FieldView =
@@ -1134,11 +1094,6 @@ function askBox($: EngineInterface, a: OrbitAsk) {
         },
         value: heldOver(key) ?? a.shown ?? a.steer ?? '',
     };
-}
-function steerBox($: EngineInterface, prefix: string, a: OrbitAsk) {
-    return prefix === 'orbit'
-        ? askBox($, a)
-        : field($, `${prefix}:steer:${a.id}`, a.steer ?? '');
 }
 // what an ask's steer box mounts with after a write, always read off the stored ask: typing keeps what it showed; any
 // other change to the steer shows the new one, under a new key when the box already shows that text, since the surface
@@ -4032,45 +3987,13 @@ async function showLanes($: EngineInterface, lanes: StashLane[]) {
         const entry = (await $.store
             .get(PREFIX + sid)
             .catch(() => undefined)) as Entry | undefined;
-        const marks = await marksOf($, sid);
-        asks[member] = (entry?.items ?? []).map(steered).map((a) => {
-            const m = marks[a.id];
-            return m
-                ? {
-                      ...a,
-                      mark: m.mark,
-                      steer: m.steer,
-                  }
-                : a;
-        });
+        asks[member] = (entry?.items ?? []).map(steered);
     }
     const text = JSON.stringify({ asks, live });
     if (text === lanesShown) return;
     lanesShown = text;
     await $.state.set(LANES, live).catch(() => undefined);
     await $.state.set(LANE_ASKS, asks).catch(() => undefined);
-}
-
-// a mark or steer on a member's ask from a glide card: the store holds it until the member's own stash takes it in
-async function markRemote(
-    $: EngineInterface,
-    sid: string,
-    ask: PublishedAsk,
-    change: Omit<RemoteMark, 'at'>,
-) {
-    const key = markKey(sid, ask.id);
-    // a mark saved before the steer rename reads through steered(), or a cleared steer came back from its old `note`
-    const prior = steered(
-        ((await $.store.get(key).catch(() => undefined)) as
-            | RemoteMark
-            | undefined) ?? { mark: ask.mark, steer: ask.steer },
-    );
-    await $.store.set(key, {
-        ...prior,
-        ...change,
-        at: await $.clock.now(),
-    });
-    await showLanes($, await readLanes($));
 }
 
 // the lane steers dima took with 🛎️, as clio reads them; each leaves the lane once read
@@ -9162,7 +9085,7 @@ export const register: Register = (on) => {
                     const closedJSX = (
                         a: OrbitAsk,
                         i: number,
-                        door: AskDoor,
+                        door: AskDoor | ViewDoor,
                     ) => (
                         <Box
                             flexDirection='column'
@@ -9180,7 +9103,7 @@ export const register: Register = (on) => {
                     const askJSX = (
                         a: OrbitAsk,
                         i: number,
-                        door: AskDoor = ownDoor,
+                        door: AskDoor | ViewDoor = ownDoor,
                     ) =>
                         a.word ? (
                             closedJSX(a, i, door)
@@ -9226,72 +9149,77 @@ export const register: Register = (on) => {
                                     </Box>
                                 </Box>
                                 {/* the buttons lead, the steer follows them, on the line under the pick — never beside it (dima, 20:19; 20:23) */}
-                                <Box
-                                    alignItems='center'
-                                    flexDirection='row'
-                                    gap={1}
-                                    key={`${door.prefix}:row:${a.id}`}>
-                                    {/* a joined ask keeps both buttons; the held one reads 🔓 while the turn holds it (dima, 17:42) */}
-                                    {[
-                                        markJSX(a, 'accepted', door),
-                                        markJSX(a, 'rejected', door),
-                                    ]}
-                                    {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
-                                    {/* 🔊 reads what the card shows, no «pick» word (dima, 17:14) */}
-                                    {speakJSX(a.id, `${a.text}. ${a.pick}`)}
-                                    {a.isLocked ? (
-                                        a.steer ? (
-                                            <Box flexShrink={1} minWidth={0}>
-                                                <Text
-                                                    dimColor
-                                                    wrap='truncate-end'>
-                                                    {/* a sent steer leads with 💬, drawn for dima only: the model gets «his steer: …» (dima, 18:14) */}
-                                                    {`💬 «${a.steer}»`}
-                                                </Text>
-                                            </Box>
-                                        ) : null
-                                    ) : Input ? (
-                                        <Box
-                                            flexGrow={1}
-                                            flexShrink={1}
-                                            minWidth={0}>
-                                            <Input
-                                                key={
-                                                    steerBox($, door.prefix, a)
-                                                        .key
-                                                }
-                                                onInput={(value: string) => {
-                                                    steerBox(
-                                                        $,
-                                                        door.prefix,
-                                                        a,
-                                                    ).type(value, () => {
-                                                        return door.steer(
-                                                            a,
+                                {'mark' in door ? (
+                                    <Box
+                                        alignItems='center'
+                                        flexDirection='row'
+                                        gap={1}
+                                        key={`${door.prefix}:row:${a.id}`}>
+                                        {/* a joined ask keeps both buttons; the held one reads 🔓 while the turn holds it (dima, 17:42) */}
+                                        {[
+                                            markJSX(a, 'accepted', door),
+                                            markJSX(a, 'rejected', door),
+                                        ]}
+                                        {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
+                                        {/* 🔊 reads what the card shows, no «pick» word (dima, 17:14) */}
+                                        {speakJSX(a.id, `${a.text}. ${a.pick}`)}
+                                        {a.isLocked ? (
+                                            a.steer ? (
+                                                <Box
+                                                    flexShrink={1}
+                                                    minWidth={0}>
+                                                    <Text
+                                                        dimColor
+                                                        wrap='truncate-end'>
+                                                        {/* a sent steer leads with 💬, drawn for dima only: the model gets «his steer: …» (dima, 18:14) */}
+                                                        {`💬 «${a.steer}»`}
+                                                    </Text>
+                                                </Box>
+                                            ) : null
+                                        ) : Input ? (
+                                            <Box
+                                                flexGrow={1}
+                                                flexShrink={1}
+                                                minWidth={0}>
+                                                <Input
+                                                    key={askBox($, a).key}
+                                                    onInput={(
+                                                        value: string,
+                                                    ) => {
+                                                        askBox($, a).type(
                                                             value,
+                                                            () => {
+                                                                return door.steer(
+                                                                    a,
+                                                                    value,
+                                                                );
+                                                            },
                                                         );
-                                                    });
-                                                }}
-                                                onSubmit={(value: string) =>
-                                                    door.steer(a, value)
-                                                }
-                                                placeholder='steer'
-                                                value={
-                                                    steerBox($, door.prefix, a)
-                                                        .value
-                                                }
-                                            />
-                                        </Box>
-                                    ) : null}
-                                    {/* a locked row takes no steer, so it offers none */}
-                                    {a.isLocked
-                                        ? null
-                                        : keptJSX(
-                                              `${door.prefix}:steer:${a.id}`,
-                                          )}
-                                    {/* the steer comes first, the file link after it, at the row's end (dima's shot, 20:57) */}
-                                    {a.link ? askLinkJSX(a.id, a.link) : null}
-                                </Box>
+                                                    }}
+                                                    onSubmit={(value: string) =>
+                                                        door.steer(a, value)
+                                                    }
+                                                    placeholder='steer'
+                                                    value={askBox($, a).value}
+                                                />
+                                            </Box>
+                                        ) : null}
+                                        {/* a locked row takes no steer, so it offers none */}
+                                        {a.isLocked
+                                            ? null
+                                            : keptJSX(
+                                                  `${door.prefix}:steer:${a.id}`,
+                                              )}
+                                        {/* the steer comes first, the file link after it, at the row's end (dima's shot, 20:57) */}
+                                        {a.link
+                                            ? askLinkJSX(a.id, a.link)
+                                            : null}
+                                    </Box>
+                                ) : a.link ? (
+                                    <Box key={`${door.prefix}:row:${a.id}`}>
+                                        {askLinkJSX(a.id, a.link)}
+                                    </Box>
+                                ) : null}
                             </Box>
                         );
                     const orbitJSX = drawn('orbit', () => (
@@ -9477,8 +9405,6 @@ export const register: Register = (on) => {
                         const sid = lane.members[role];
                         if (!sid) return null;
                         const asks = laneAsks[sid] ?? [];
-                        // a mark goes to the session the member runs under now, which its own stash absorbs
-                        const markSid = lane.memberSids?.[role] ?? sid;
                         const card = `lane:${lane.id}:${role}`;
                         const isOpen = !isFolded(card);
                         const badge = memberBadge(role);
@@ -9506,27 +9432,7 @@ export const register: Register = (on) => {
                                 {isOpen
                                     ? asks.map((a, i) =>
                                           askJSX(a as OrbitAsk, i, {
-                                              // a press reads what was typed: the steer waiting for its pause saves first
-                                              mark: async (x, mark) => {
-                                                  await flushFields($);
-                                                  await markRemote(
-                                                      $,
-                                                      markSid,
-                                                      x,
-                                                      {
-                                                          mark:
-                                                              x.mark === mark
-                                                                  ? undefined
-                                                                  : mark,
-                                                      },
-                                                  );
-                                              },
                                               prefix: card,
-                                              steer: (x, value) =>
-                                                  markRemote($, markSid, x, {
-                                                      isSteerEdit: true,
-                                                      steer: steerOf(value),
-                                                  }),
                                           }),
                                       )
                                     : null}

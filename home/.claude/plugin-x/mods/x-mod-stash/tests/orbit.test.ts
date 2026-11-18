@@ -3821,7 +3821,6 @@ async function reload(
 }
 
 const LANES = '/home/.claude/shelf/lanes.json';
-const R3_CODIE = 'c9c9c9c9-codie';
 const glide = (members: Record<string, string> = {}, id = 'l9') => ({
     [LANES]: JSON.stringify({
         lanes: [
@@ -3857,28 +3856,6 @@ test('a glide steer box keeps what it mounted with across a reload', async ($, o
     const before = await boxValue(ui, 'lane:l9:steer');
     await reload($, ui, state, 'lane:l9');
     expect([before, await boxValue(ui, 'lane:l9:steer')]).toEqual(['', '']);
-});
-
-test("a lane member's steer box keeps what it mounted with across a reload", async ($, on) => {
-    const w = world(on, glide({ codie: R3_CODIE }));
-    w.store.set(`asks:${R3_CODIE}`, {
-        asks: ['cut the probe?'],
-        at: 1,
-        items: [{ id: 'o3', pick: 'cut it', text: 'cut the probe?' }],
-        label: 'frame',
-    });
-    const state = keptState(on);
-    await start($);
-    const ui = await board($);
-    await ui.press({ key: 'fold:lane:l9:codie' });
-    // a mocked state.set hides the write from the kit, so the board is drawn again by hand
-    await ui.redraw();
-    const key = 'lane:l9:codie:steer:o3';
-    await ui.input({ key, kind: 'change', text: 'keep it' });
-    await w.clock.advance(5_000);
-    const before = await boxValue(ui, key);
-    await reload($, ui, state, 'lane:l9:codie');
-    expect([before, await boxValue(ui, key)]).toEqual(['', '']);
 });
 
 test("an assumption's steer box keeps what it mounted with across a reload", async ($, on) => {
@@ -4842,23 +4819,6 @@ const SWITCH_KINDS = {
         const ui = await board($);
         await ui.redraw();
         return { key: `lane:${lane}:steer`, ui, w };
-    },
-    member: async ($: Engine, on: On) => {
-        const lane = `l${++switchRow}`;
-        const sid = `c9c9c9c9-${lane}`;
-        const w = world(on, glide({ codie: sid }, lane));
-        w.store.set(`asks:${sid}`, {
-            asks: ['cut the probe?'],
-            at: 1,
-            items: [{ id: 'o3', pick: 'cut it', text: 'cut the probe?' }],
-            label: 'frame',
-        });
-        keptState(on);
-        await start($);
-        const ui = await board($);
-        await ui.press({ key: `fold:lane:${lane}:codie` });
-        await ui.redraw();
-        return { key: `lane:${lane}:codie:steer:o3`, ui, w };
     },
 } as const;
 

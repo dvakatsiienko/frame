@@ -906,16 +906,6 @@ test("the board's top strip counts the asks waiting on dima, per member, a marke
     ]).toEqual(['🙋 3 asks wait for you· 🔧 codie 3', true]);
 });
 
-test('a tick on the card reads ✅ tick at once', async ($, on) => {
-    const w = world(on, { files: linked() });
-    published(w, CODIE, [ASK]);
-    await start($);
-    const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:codie' });
-    await ui.press({ key: 'lane:l1:codie:accepted:o3' });
-    expect(await subText(ui, 'codie')).toContain('✅ tick');
-});
-
 test('🛼 glide switched off draws no strip', async ($, on) => {
     const w = world(on, { files: linked() });
     published(w, CODIE, [ASK]);
@@ -950,29 +940,19 @@ test('a /clear records the id the session goes on under', async ($, on) => {
     });
 });
 
-test("unfolded, a subcard's rows are the member's own asks", async ($, on) => {
+// FRM-643: a member's asks reach dima through its coordinator; the subcard only shows them
+test("unfolded, a subcard draws the member's asks as a view: line and pick, no tick, replay, sound or steer", async ($, on) => {
     const w = world(on, { files: linked() });
     published(w, CODIE, [ASK]);
     await start($);
     const ui = await board($);
     await ui.press({ key: 'fold:lane:l1:codie' });
-    expect(await subText(ui, 'codie')).toMatch(
-        /o3: cut the second probe\?.*➡️ cut it.*tick.*replay/su,
-    );
-});
-
-test("a tick on the card waits in the store for the member's own stash", async ($, on) => {
-    const w = world(on, { files: linked() });
-    published(w, CODIE, [ASK]);
-    await start($);
-    const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:codie' });
-    await ui.press({ key: 'lane:l1:codie:accepted:o3' });
-    await w.clock.advance(5_000);
+    const text = (await subText(ui, 'codie')) ?? '';
+    expect(text).toMatch(/o3: cut the second probe\?.*➡️ cut it/su);
     expect([
-        (w.store.get(`marks:${CODIE}:o3`) as { mark?: string })?.mark,
-        await subText(ui, 'codie'),
-    ]).toEqual(['accepted', expect.stringContaining('✅ tick')]);
+        /tick|replay|🔊|steer/u.test(text),
+        await ui.find({ key: 'lane:l1:codie:accepted:o3' }),
+    ]).toEqual([false, undefined]);
 });
 
 async function memberWithAsk($: Engine, on: On) {
@@ -1302,22 +1282,6 @@ test('a lane steer ticked before the rename joins once, never again', async ($, 
     ]).toEqual([true, false]);
 });
 
-test('a glide mark saved before the steer rename clears for good when dima empties its steer', async ($, on) => {
-    const w = world(on, { files: linked() });
-    published(w, CODIE, [ASK]);
-    w.store.set(`marks:${CODIE}:o3`, { at: 1, mark: 'accepted', note: 'old' });
-    await start($);
-    const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:codie' });
-    await ui.input({ key: 'lane:l1:codie:steer:o3', kind: 'submit', text: '' });
-    const m = w.store.get(`marks:${CODIE}:o3`) as Record<string, unknown>;
-    expect([m.mark, m.steer, 'note' in m]).toEqual([
-        'accepted',
-        undefined,
-        false,
-    ]);
-});
-
 /* rider (clio's wisp, 18:01): a member is linked by its registry name, so its asks survive a /clear */
 
 const CODIE_NAME = '☕️ 🔧 codie: mods';
@@ -1364,22 +1328,6 @@ test("after a /clear mints a new session id, the card still shows the member's a
     await start($);
     const ui = await board($);
     expect(await subText(ui, 'codie')).toContain('1 ask');
-});
-
-test("a tick on the card reaches the member's session id of now", async ($, on) => {
-    const w = world(on, {
-        files: shelf(keptLane({ members: { codie: CODIE_NAME } })),
-        peers: [codieAt('n3n3n3n3-after-clear')],
-    });
-    published(w, 'n3n3n3n3-after-clear', [ASK]);
-    await start($);
-    const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:codie' });
-    await ui.press({ key: 'lane:l1:codie:accepted:o3' });
-    expect(
-        (w.store.get('marks:n3n3n3n3-after-clear:o3') as { mark?: string })
-            ?.mark,
-    ).toBe('accepted');
 });
 
 test('two live sessions under one name: the card follows the newer', async ($, on) => {
@@ -2028,23 +1976,6 @@ test('a card of seven steps draws all of them with no window label', async ($, o
     await linkedPlan($, w, 'x'.repeat(3) + ' '.repeat(4));
     await poll(w);
     expect(await laneText(ui)).not.toContain(' of 7');
-});
-
-test('a tick on the card after typing keeps the typed steer, not the published one', async ($, on) => {
-    const w = world(on, { files: linked() });
-    published(w, CODIE, [ASK]);
-    await start($);
-    const ui = await board($);
-    await ui.press({ key: 'fold:lane:l1:codie' });
-    await ui.input({
-        key: 'lane:l1:codie:steer:o3',
-        kind: 'change',
-        text: 'new words',
-    });
-    await ui.press({ key: 'lane:l1:codie:accepted:o3' });
-    expect(
-        (w.store.get(`marks:${CODIE}:o3`) as { steer?: string })?.steer,
-    ).toBe('new words');
 });
 
 test('a missing plan file keeps the last state marked «plan file gone»', async ($, on) => {
