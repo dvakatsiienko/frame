@@ -1,6 +1,6 @@
 ---
 status: open
-dates: 2026-11-13 → 2026-11-15
+dates: 2026-11-13 → 2026-11-18
 tickets: [FRM-630]
 tags: [comms, dima-graded]
 fed-by: incidents
@@ -39,3 +39,31 @@ fed-by: incidents
 - **fix:** the reply after a settled plan is one line, «the plan is in, moving», plus only what deviates or risks
 - **home:** habit-dima-comms (o153 trial)
 - **source:** FRM-630:W3; habit-dima-comms «A reply never restates what he settled» (o153, a trial to 11-20)
+
+## c3 · pace · - · hot · second sighting of c1: the rule alone did not hold, raise at the next comms review
+
+- **what:** the same shape as c1, one day later and with two lanes running: in 40 minutes clio printed 12 replies and put 17 asks on his board while he was still writing one answer; a board, a research print, a siesta card, a correction and three codie relays landed on him as one bunch; measured: 12 replies and 17 asks (his dictation reads «20 replies, 70 asks») between 14:05 and 14:46, with no sign of his presence after his 14:19 «i am here at kb now»; his own reply took him 30 minutes to write, and clio could not tell whether he was there
+- **how:** every member ping, subagent finish and background job woke a turn, and each turn ended in a reply to him plus new asks; the Stop hint «his items wait for his prompt» fired three times and each time clio answered it with one more reply
+- **why:** clio treated each event as a report turn; nothing held the asks back while he showed no sign of having read the last reply; she also poked his Chrome twice through agent-browser, which popped approval dialogs on him, with no word first
+- **when:** 14:05 boot prompt → 14:18 his mobile steers → 14:20–14:40 the bunch → 14:46 his reply
+- **where:** the main thread in herdr, his orbit board
+- **who:** clio main, dima; the mods and herdr codies, wishkeeper, the researcher and helga as the wakers
+- **his words:** «can you stop running away? read my yesterday incident from comms-log. what are you doing with agents-browser? i still slowly write you answer and you keep producing replies and do action items faster than i can even send my reply.» · «calmer pace pls!» · «you again folded out a whole bunch on me. i supposed we solve stuff one by one.» · «Log another comms issue case into the comms log. Properly describe what happened, how and why, and the numbers that you just showed: 20 replies, 70 asks in 40 minutes without seeing even one sign of my presence. You don't even know if I'm here and still writing a storm of asks on me» · «As you can measure, starting from my previous message to you, half an hour has passed. I've spent half an hour writing my previous reply.» · «solve one by one, do not rush, and rushing is not allowed.»
+- **shape:** ran ahead
+- **fix:** until he answers the last reply, a woken turn does clio own agreed work and prints nothing; one ask at a time reaches his board, the rest wait in the flyway; anything that touches his apps is said before it is tried
+- **home:** habit-dima-comms § his items move at his pace; FRM-630
+- **source:** FRM-630:W9, W12, W14, W15; c1
+
+## c4 · clarity · + after re-ask · siesta · undefined
+
+- **what:** a look ask named the codie's private step ids (S0+S1) and a «⌘⇧P hide» that did not exist; the rewrite as a plain card still told him nothing; only the third, a numbered «what you should see» list, landed
+- **how:** orbit look ask o2, twice reworded, then the reply's numbered list
+- **why:** the ask relayed the member's own labels instead of what changed in his view
+- **when:** 11-18 11:21–11:55
+- **where:** his board and the main thread
+- **who:** clio main, the herdr codie, dima
+- **his words:** «what is S0 + S1? i di not understand where to read from» · «currently, clarity of your requests is not good for me, i spend 80% of effort trying to understand what you want from me, isntead of actually testing what changed» · «↑ this description is better. 👍🏼 (log in comms-log - what i disliked and how i liked after re-asking)»
+- **shape:** cryptic ask
+- **fix:** a look ask names what he will see, part by part, never a member's step id; the herdr codie got the liked shape as its look-card template (11:55)
+- **home:** undefined
+- **source:** undefined
