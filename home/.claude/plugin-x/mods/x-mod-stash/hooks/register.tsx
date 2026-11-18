@@ -566,6 +566,8 @@ const ORBIT_PROPS = {
 let selfId: string | undefined;
 // the id a /clear left, until the next load reads the new one and writes the successor
 let clearedFrom: string | undefined;
+// the id the last /clear left, kept past the succ write: a message held under it is still this thread's
+let continuedFrom: string | undefined;
 // this session's own second wind as the store holds it, read at each load for the band's button
 let selfWind: StashWind['state'] | undefined;
 let isAutoWindOn = true;
@@ -1304,10 +1306,10 @@ const windStopped = (slug: string) =>
 const STEER_HOLD_AT = 55;
 // the compact and wind holds' store before FRM-583, read at the land, never written
 const STEER_HELD = 'steer-held:';
-// FRM-583: one held store for every reason a message waits, `held:<name>`, one entry per message id; release stays per
+// FRM-583: one held store for every reason a message waits, `held:<sid>`, one entry per message id; release stays per
 // reason: a compact or a wind hands its own to the first turn after it, quiet comms its own to the next prompt or the
-// idle append. held under the session's registry name, so a /clear or a resume, which mint a new session id, still
-// hand them over; a session with no name holds under its id
+// idle append. held under the session id, so a retitle while a message waits strands nothing (FRM-617 round 1); a /clear
+// mints a new id, so the id it cleared away from is read too, and `held:<name>`, the store before, once
 const HELD = 'held:';
 type HeldMessage = {
     id: string;
@@ -1327,8 +1329,13 @@ type HeldMessage = {
     deliveryTest?: string;
 };
 type HeldStore = { isCompacted?: true; messages: HeldMessage[] };
-// bySid: the id key a hold wrote while the registry name could not be read, read and cleared once the name is back
-type HeldKeys = { key: string; steers: string; quiet?: string; bySid?: string };
+// older: the held keys read and cleared at the next save, the name's (the store before) and the id a /clear left
+type HeldKeys = {
+    key: string;
+    steers: string;
+    quiet?: string;
+    older: string[];
+};
 
 // a message's id: the same delivery read from two stores is one message
 function heldId(m: { at: number; from: string; text: string }) {
@@ -1341,13 +1348,17 @@ function heldId(m: { at: number; from: string; text: string }) {
 async function heldKeys($: EngineInterface): Promise<HeldKeys | undefined> {
     const name = await sessionName($);
     const sid = await currentId($);
-    const own = name ? bare(name) : sid;
+    const own = sid ?? (name ? bare(name) : undefined);
     if (!own) return undefined;
+    const prior = clearedFrom ?? continuedFrom;
     return {
         key: HELD + own,
-        steers: STEER_HELD + own,
+        steers: STEER_HELD + (name ? bare(name) : own),
         ...(sid ? { quiet: QUIET_HELD + sid } : {}),
-        ...(sid && name ? { bySid: HELD + sid } : {}),
+        older: [
+            ...(sid && name ? [HELD + bare(name)] : []),
+            ...(sid && prior && prior !== sid ? [HELD + prior] : []),
+        ],
     };
 }
 
@@ -1372,11 +1383,9 @@ async function heldStore(
     const own = (await $.store.get(keys.key).catch(() => undefined)) as
         | Partial<HeldStore>
         | undefined;
-    const bySid = keys.bySid
-        ? ((await $.store.get(keys.bySid).catch(() => undefined)) as
-              | Partial<HeldStore>
-              | undefined)
-        : undefined;
+    const older = (await Promise.all(
+        keys.older.map((key) => $.store.get(key).catch(() => undefined)),
+    )) as (Partial<HeldStore> | undefined)[];
     const steers = (await $.store.get(keys.steers).catch(() => undefined)) as
         | { isCompacted?: true; steers?: Omit<HeldMessage, 'id'>[] }
         | undefined;
@@ -1386,7 +1395,7 @@ async function heldStore(
     const seen = new Set<string>();
     const messages = [
         ...(own?.messages ?? []),
-        ...(bySid?.messages ?? []),
+        ...older.flatMap((o) => o?.messages ?? []),
         ...(steers?.steers ?? []).map((m) => ({ ...m, id: heldId(m) })),
         ...(Array.isArray(quiet) ? (quiet as QuietPing[]) : [])
             .filter((p) => p.tag !== QUIET_NOTICE)
@@ -1396,7 +1405,9 @@ async function heldStore(
         .sort((a, b) => a.at - b.at);
     return {
         messages,
-        ...(own?.isCompacted || bySid?.isCompacted || steers?.isCompacted
+        ...(own?.isCompacted ||
+        older.some((o) => o?.isCompacted) ||
+        steers?.isCompacted
             ? { isCompacted: true as const }
             : {}),
     };
@@ -1413,7 +1424,8 @@ async function saveHeld($: EngineInterface, keys: HeldKeys, held: HeldStore) {
     if (!isSaved) return false;
     await $.store.delete(keys.steers).catch(() => undefined);
     if (keys.quiet) await $.store.delete(keys.quiet).catch(() => undefined);
-    if (keys.bySid) await $.store.delete(keys.bySid).catch(() => undefined);
+    for (const key of keys.older)
+        await $.store.delete(key).catch(() => undefined);
     return true;
 }
 
@@ -2096,12 +2108,16 @@ export const quietNote = (held: QuietPing[]) =>
         ),
     ].join('\n');
 
-// another session's quiet comms pings, for its row: the one store under its name, the old one under its id
+// another session's quiet comms pings, for its row: the one store under its id, the name's and the older one's before it
 async function quietPingsOf($: EngineInterface, name: string, sid: string) {
-    const own = (await $.store
-        .get(HELD + (name ? bare(name) : sid))
-        .catch(() => undefined)) as Partial<HeldStore> | undefined;
-    const held = (own?.messages ?? []).filter((m) => m.isQuiet);
+    const stores = (await Promise.all(
+        [HELD + sid, ...(name ? [HELD + bare(name)] : [])].map((key) =>
+            $.store.get(key).catch(() => undefined),
+        ),
+    )) as (Partial<HeldStore> | undefined)[];
+    const held = stores
+        .flatMap((s) => s?.messages ?? [])
+        .filter((m) => m.isQuiet);
     return held.length
         ? held.map(quietPingOf)
         : await $.store.get(QUIET_HELD + sid).catch(() => undefined);
@@ -4505,6 +4521,7 @@ async function load($: EngineInterface) {
         await $.store
             .set(SUCC + clearedFrom, { at: await $.clock.now(), sid: selfId })
             .catch(() => undefined);
+        continuedFrom = clearedFrom;
         clearedFrom = undefined;
     }
     // the band's 🔭 line: what this session's last reply said it waits on

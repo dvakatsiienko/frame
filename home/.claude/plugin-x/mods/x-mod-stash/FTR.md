@@ -505,7 +505,8 @@
   - and with nothing seen yet (a first poll, a reset store) the rows found are only noted, nothing written: nothing says they are newer than the 🎛️ values; a first poll that finds no row notes that too, so the first row herdr writes after it is taken
   - proof: tests/settings.test.ts::the wind and notice lines herdr wrote are the 🎛️ lines after one poll; ::the second wind switches herdr turned off are off in 🎛️ after one poll; ::a herdr notice line at or above the wind line is never taken; ::a herdr line out of range or not a number is never taken; ::a 🎛️ edit after a herdr edit stays until herdr edits that row again; ::rows found at a first poll, with nothing seen yet, are noted and write nothing; ::both lines lowered in herdr at once land together; ::a herdr line the rule refused never lands later over a 🎛️ edit; ::a first herdr edit after a poll that found no row is taken
 - ✅ a coordinator's message to a codie past 55 % context waits for its second wind (r5, dima's o23: «~50–60% is fine»)
-  - makes: an entry in the session's held store, `held:<registry name>`, the held messages in order, one by id; the old `steer-held:` key is read at the land, never written (FRM-583)
+  - makes: an entry in the session's held store, `held:<session id>`, the held messages in order, one by id; the old `steer-held:` and `held:<registry name>` keys and the id a /clear left are read at the land, never written (FRM-583, FRM-617)
+  - given a message held, when the thread is retitled or cleared before its compact, then the message still joins the first turn after it
   - decision: a held message keyed by registry name stays under the old key when the thread is renamed, and a ping held before the upgrade is not read by a resume under a new session id; accepted (clio, 2026-11-13: rare, and the 10-min «held, waiting» line tells its sender)
   - given a codie whose ctx meter reads 55 % or more, when 🦉 clio or a wing sends it a message, then the codie reads a second wind note naming the sender and its fill instead of the message, and its 🐦‍🔥 reads ✍️
   - and a next message while one is held starts no turn; every held message joins the first turn after the compact, once, in the order sent
@@ -991,7 +992,7 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
 - ✅ clio's row counts what waits, and opens it
   - given her stash holds n pings, then her row in the sessions card reads `🤫 n` beside the name; at 0 nothing
   - when dima presses `🤫 n`, then one dim line per held ping opens under her row — `🤫 <sender> · <age> ago: <first line>` — and a second press folds it; folded by default (dima's o34)
-  - source: her held store, `held:<registry name>`, its quiet comms entries; the old `quiet-held:<session>` key read at the land
+  - source: her held store, `held:<session id>`, its quiet comms entries; the old `quiet-held:<session>` and `held:<registry name>` keys read at the land
 - ✅ a broken hold never loses a ping (brief 6, dima's o49)
   - given anything inside clio's quiet hold throws
   - when a member's ping arrives
@@ -1205,7 +1206,7 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - proof: tests/quiet.test.ts::round 4 tells the coordinator the lane and the count, once, and warns the sender; ::the coordinator's line passes quiet comms and starts her turn; ::the past-the-cap line still fires across a compact and a reload, read from the shelf file; ::past the cap the line goes to the wing: the card names its codie as the registry does (+ a name it has since left, linked by id; its name, linked by an id it left; another codie linked by another id goes to main clio)
 - 🧭 a lane member's title follows its chunk
   - given a codie or sixth sense whose lane moved on to its next chunk, then its title names the new ticket: each chunk opens with the coordinator's `x lane dispatch`, which writes the record and renames the thread; the mod writes no title (FRM-617, clio's pick a, 2026-11-18)
-  - decision: held out of FRM-504 (clio 20:08): a retitle mid-lane strands what keys on the old name. the glide subcard's asks read the linked id since FRM-617; a held message under `held:<name>` still keys on the registry name, so a retitle while one waits strands it (open, FRM-649's to weigh). the probe stands: a hook's `sessionTitle` on UserPromptSubmit moves cc's registry name, a `--bg` member's too (2026-11-13)
+  - decision: held out of FRM-504 (clio 20:08): a retitle mid-lane strands what keys on the old name. the glide subcard's asks read the linked id since FRM-617; the held store keys on the session id since FRM-617's round 1, a /clear's old id read beside it, so a retitle while a message waits strands nothing. the probe stands: a hook's `sessionTitle` on UserPromptSubmit moves cc's registry name, a `--bg` member's too (2026-11-13)
 - and a `stash.rounds` switch off counts nothing, sends nothing and draws no line; proof: tests/quiet.test.ts::🎛️ rounds switched off: no count, no coordinator line, tests/switches.test.ts
 
 ## spawn hints — the board's name flag only

@@ -212,7 +212,7 @@ const quiet = ($: Engine, args: string) =>
 const held = (w: ReturnType<typeof world>) =>
     (w.contexts.at(-1) ?? []).filter((c) => c.startsWith('🤫 quiet comms'));
 // quiet comms' share of the one held store (FRM-583), keyed by clio's registry name
-const HELD = 'held:🦉clio';
+const HELD = `held:${SID}`;
 const stored = (w: ReturnType<typeof world>) =>
     (
         (w.store.get(HELD) as

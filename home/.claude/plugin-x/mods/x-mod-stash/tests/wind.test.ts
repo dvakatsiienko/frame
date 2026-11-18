@@ -26,6 +26,8 @@ let ingestRefusal: string | undefined;
 let submitRefusal: string | undefined;
 // the store refuses a write to the held store
 let isHeldRefused = false;
+// the id the session answers; a /clear row moves it
+let sidNow = SID;
 // the context % a step reads live, through $.session.usage
 let fillNow: number | undefined;
 
@@ -65,6 +67,7 @@ function world(
     ingestRefusal = undefined;
     submitRefusal = undefined;
     isHeldRefused = false;
+    sidNow = SID;
     fillNow = undefined;
     const prompts: string[] = [];
     const lines: string[] = [];
@@ -86,7 +89,7 @@ function world(
         store.delete(e.key);
         return { value: undefined };
     });
-    on('session.id', () => ({ value: SID }));
+    on('session.id', () => ({ value: sidNow }));
     on('env.get', () => ({ value: '/home' }));
     on('process.run', (_$, e) => {
         const isPeek = e.argv[1] === 'handoff' && e.argv[2] === 'peek';
@@ -1685,9 +1688,10 @@ test('a foreground command started after pending: none does not block the wind',
 
 // r5 (dima's o23): a coordinator's message to a codie past 55 % context waits for the codie's second wind
 const CLIO = '🦉 clio';
-// FRM-583: one held store, `held:<name>`, one entry per message id, for every reason a message waits; the old key's
-// lists are read at the land, so a fixture planted under it still holds
-const STORE = 'held:☕️🔧codie:mods';
+// FRM-583: one held store, `held:<sid>`, one entry per message id, for every reason a message waits; the old keys'
+// lists are read at the land, so a fixture planted under one still holds
+const STORE = `held:${SID}`;
+const NAME_HELD = 'held:☕️🔧codie:mods';
 const OLD_HELD = 'steer-held:☕️🔧codie:mods';
 type Held = { isCompacted?: true; messages: { id: string; text: string }[] };
 const receiveWorld = (on: On, name?: string, role = 'codie') => {
@@ -1749,6 +1753,68 @@ test("clio's message to a codie past 55 % becomes the wind note, and joins the f
             '🐦‍🔥 held for your second wind, delivered now — 🦉 clio (untagged): next: r6, then 12b',
         ],
     ]);
+});
+
+// FRM-617 round 1: a retitle while the message waits strands nothing, the store keys on the session id
+test('a message held before a retitle still joins the first turn after the compact', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'next: r6, then 12b');
+    w.files[`/home/.claude/sessions/${PID}.json`] = JSON.stringify({
+        name: '⚡ 🔧 mods | FRM-2',
+        pid: PID,
+    });
+    await say($, 'the rewritten ping', 'peer');
+    await compact($, 'plugin');
+    await say($, 'the ingest', 'skill');
+    await say($, 'later');
+    expect([delivered(w.lines), w.store.has(STORE)]).toEqual([
+        [
+            '🐦‍🔥 held for your second wind, delivered now — 🦉 clio (untagged): next: r6, then 12b',
+        ],
+        false,
+    ]);
+});
+
+test('a message held before a /clear joins the new conversation under its new id', async ($, on) => {
+    const w = receiveWorld(on);
+    on('session.end', (_$, e) => ({ sessionId: e.sessionId }));
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'next: r6, then 12b');
+    await $.session.end({ reason: 'clear', sessionId: SID } as never);
+    sidNow = 'w2w2w2w2-wind';
+    await say($, 'the rewritten ping', 'peer');
+    await compact($, 'plugin');
+    await say($, 'the ingest', 'skill');
+    await say($, 'later');
+    expect([
+        delivered(w.lines),
+        w.store.has(STORE),
+        w.store.has('held:w2w2w2w2-wind'),
+    ]).toEqual([
+        [
+            '🐦‍🔥 held for your second wind, delivered now — 🦉 clio (untagged): next: r6, then 12b',
+        ],
+        false,
+        false,
+    ]);
+});
+
+test('a message held under the name, the store before, joins once and its key goes', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(NAME_HELD, {
+        isCompacted: true,
+        messages: [{ at: NOW, from: CLIO, id: 'n1', text: 'next: r6' }],
+    });
+    await start($);
+    await say($, 'next');
+    await say($, 'and next');
+    expect([
+        w.lines.join('\n').split('next: r6').length - 1,
+        w.store.has(NAME_HELD),
+    ]).toEqual([1, false]);
 });
 
 test('the held message marks the wind as writing, so the board reads ✍️', async ($, on) => {
