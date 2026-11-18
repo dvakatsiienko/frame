@@ -398,6 +398,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and every matched message is tinted in his accent and keeps its markdown; the stepped one has an accent border and its words drawn plain with each match marked, the stepped match in full accent (dima's o2, 18:46)
   - decision: it searches the rows loaded so far, never pages further up
   - decision: words are marked only in the stepped row: herdr's text view takes no ranges, so a marked row loses its bold and reflows; the full fix is herdr's (the upstream ask, clio's)
+- ⬜ accepted, not wanted: the stepped reply shows its markdown source; rendered marks with no flicker wait on herdr-app TextView highlight ranges (x-herdr-chat, FRM-638:W131, dima's o14)
 - ✅ the new chat's / menu lists commands and every skill (x-herdr-chat, FRM-638 slice 6)
   - given the quill holds «/» at its start, or after a space or a line break, and part of a name
   - then a list over the quill shows Claude Code's commands, the thread's skills and its plugins' skills, filtered as he types
