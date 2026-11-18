@@ -720,6 +720,16 @@ const resetText = (w) =>
           ? `Resets at ${clock(w.resets)}`
           : '';
 
+/** whether a settings window, dialog or popup sits over the layout: no mod api lists them, the window's status does */
+async function isOverlayOpen() {
+    const status = await exec('herdr-app', ['status']).catch(() => null);
+    try {
+        return JSON.parse(status?.stdout ?? '').overlays?.length > 0;
+    } catch {
+        return false;
+    }
+}
+
 /** the first block of the shown layout whose content passes `test` @param {(content: any) => unknown} test */
 function blockOf(test) {
     /** @param {any} node @returns {any} */
@@ -763,6 +773,8 @@ export default class WorkspaceStatus extends View {
         cx.spawn(async () => {
             for (;;) {
                 const command = await nextCommand();
+                // ⌘F over an open settings window or dialog does nothing: find opens only on the chat in view (dima, 18:28)
+                if (command === 'find' && (await isOverlayOpen())) continue;
                 // ⌘F from any focus opens the chat's find; a terminal keeps its own ⌘F (keys.json's terminal section)
                 if (
                     command === 'quill' ||

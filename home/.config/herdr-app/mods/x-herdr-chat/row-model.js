@@ -257,6 +257,8 @@ function rowsOf(line) {
     const { content } = message;
     const blocks = (Array.isArray(content) ? content : []).filter(isRecord);
     if (entry.type === 'user') {
+        // a prompt a plugin submitted in his place, or a command it ran for him: Claude Code names who sent it
+        if (isRecord(entry.origin) && entry.origin.kind !== 'human') return [];
         // a paste's tags go after the check: a paste that opens with a tag of its own is still his
         const said = asTyped(saidIn(content));
         return said.trim() && !NOT_HIS_WORDS.test(said)

@@ -145,6 +145,23 @@ describe('which transcript lines become rows', () => {
         ['a compact summary', mine('summary', { isCompactSummary: true })],
         ['a task notice', mine('<task-notification> <task-id>1</task-id>')],
         ['an interruption note', mine('[Request interrupted by user]')],
+        // a prompt a plugin submitted in his place (dima, 18:28: «i want only human version»)
+        [
+            'a plugin’s prompt',
+            mine(
+                'The x-mod-stash plugin sent a message:\norbit: dima marked 2 asks',
+                {
+                    origin: { kind: 'plugin', name: 'x-mod-stash' },
+                },
+            ),
+        ],
+        [
+            'a command a plugin ran for him',
+            mine(
+                '<command-message>x:handoff-ingest</command-message>\n<command-name>/x:handoff-ingest</command-name>',
+                { origin: { kind: 'plugin', name: 'x-mod-stash' } },
+            ),
+        ],
         [
             'a tool result',
             entry('user', {
@@ -795,6 +812,12 @@ describe('a slash command he sent is his bubble, waiting and in history (dima, 1
         const model = createRowModel();
         model.add([ran(name, args)]);
         expect(shown(model)).toEqual([`mine: ${said}`]);
+    });
+
+    test('a line Claude Code marks as his stays his', () => {
+        const model = createRowModel();
+        model.add([mine('ship it', { origin: { kind: 'human' } })]);
+        expect(shown(model)).toEqual(['mine: ship it']);
     });
 
     test('a command the chat pushed waits as his bubble, though Claude Code queues it with no text', () => {
