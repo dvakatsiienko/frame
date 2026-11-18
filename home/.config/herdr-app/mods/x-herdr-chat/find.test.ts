@@ -133,3 +133,20 @@ describe('find over history as pages land (FRM-638 slice 6b)', () => {
         expect(findCount(find.state)).toBe('No match');
     });
 });
+
+describe('plain words keep what he reads (slice 6b review)', () => {
+    test('inline code and a mid-word __ keep their marks; a bare __init__ reads as markdown draws it, bold init', () => {
+        expect(
+            plainOf('call `__init__` and `a*b*c`, then __init__ and a__b__c'),
+        ).toBe('call __init__ and a*b*c, then init and a__b__c');
+        expect(hitsOf([row('d', 'see `__init__` here')], '__init__')).toEqual([
+            { id: 'd', n: 0 },
+        ]);
+    });
+
+    test('emphasis around code, a quoted heading and __bold__ drop their marks', () => {
+        expect(plainOf('*see `x` now*\n> ## Title\n__bold__ text')).toBe(
+            'see x now\nTitle\nbold text',
+        );
+    });
+});

@@ -17,16 +17,27 @@ export function plainOf(text) {
     return text
         .split('\n')
         .filter((line) => !/^\s*(```|~~~)/.test(line))
-        .map((line) =>
-            line
-                .replace(/^\s{0,3}#{1,6}\s+/, '')
+        .map((line) => {
+            // code is read as written: its spans step aside while the marks around them drop
+            /** @type {string[]} */
+            const codes = [];
+            const marked = line
                 .replace(/^\s{0,3}>\s?/, '')
+                .replace(/^\s{0,3}#{1,6}\s+/, '')
+                .replace(/(`+)([^`]*?)\1/g, (_all, _ticks, code) => {
+                    codes.push(code);
+                    return `\uE000${codes.length - 1}\uE000`;
+                })
                 .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
-                .replace(/`+([^`]*)`+/g, '$1')
-                .replace(/(\*\*|__)(?=\S)(.+?)(?<=\S)\1/g, '$2')
+                .replace(/\*\*(?=\S)(.+?)(?<=\S)\*\*/g, '$1')
+                .replace(/(^|[^\w_])__(?=\S)(.+?)(?<=\S)__(?![\w_])/g, '$1$2')
                 .replace(/(^|[^\w*])\*(?=\S)(.+?)(?<=\S)\*(?![\w*])/g, '$1$2')
-                .replace(/(^|[^\w_])_(?=\S)(.+?)(?<=\S)_(?![\w_])/g, '$1$2'),
-        )
+                .replace(/(^|[^\w_])_(?=\S)(.+?)(?<=\S)_(?![\w_])/g, '$1$2');
+            return marked.replace(
+                /\uE000(\d+)\uE000/g,
+                (_all, n) => codes[Number(n)] ?? '',
+            );
+        })
         .join('\n');
 }
 

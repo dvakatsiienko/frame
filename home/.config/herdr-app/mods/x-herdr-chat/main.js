@@ -3945,10 +3945,18 @@ export default class Chat extends View {
             if (this.pages !== pages || !lines?.length) return;
             this.readPlace();
             const place = this.at.place;
+            const height =
+                this.sizes[this.shownRows.findIndex((r) => r.id === place?.id)];
             this.model.addEarlier(lines);
             this.learnSkills(lines);
             this.makePictures(cx);
-            if (place) this.at.restore(place.id, place.offset);
+            // the page's last reply joined the row he reads: that row took the page's id and grew above him
+            const joined = place
+                ? this.model.rows[this.model.indexOf(place.id)]
+                : undefined;
+            if (place && joined && joined.id !== place.id && height)
+                this.at.restore(joined.id, 0, height - place.offset);
+            else if (place) this.at.restore(place.id, place.offset);
             if (this.find.state.isOpen)
                 this.find.recount(shownOf(this.model.rows, this.look));
             cx.notify();
