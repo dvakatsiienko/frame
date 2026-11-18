@@ -121,6 +121,44 @@ export function splitAtPlace(rows, sizes, place) {
 }
 
 /**
+ * a place below the view, landed in one frame (an older page drawn above it): the list brings an item from below only
+ * to the view's bottom, so the row under the view's bottom-to-be is cut there and its upper part asked for. null when
+ * that part reaches into the view or the thread ends first: the list goes to its end then
+ * @param {readonly { id: string }[]} rows
+ * @param {number[]} sizes every row's height, in order
+ * @param {{ id: string, offset: number }} place the message and the px of it above the view
+ * @param {number} viewH
+ * @param {number} viewTop how far the list is scrolled now
+ * @returns {{ sizes: number[], seekAt: number, cut: { at: number, offset: number } | null, top: number } | null}
+ */
+export function edgeSplit(rows, sizes, place, viewH, viewTop) {
+    const at = placeIndex(rows, place.id);
+    if (at < 0) return null;
+    const top = topOf(sizes, at) + Math.round(place.offset);
+    const mark = top + viewH;
+    let row = 0;
+    let rowTop = 0;
+    while (row < sizes.length && rowTop + (sizes[row] ?? 0) <= mark)
+        rowTop += sizes[row++] ?? 0;
+    if (row >= sizes.length) return null;
+    const offset = mark - rowTop;
+    const upper = offset > 0 ? row : row - 1;
+    if (topOf(sizes, upper) < viewTop + viewH) return null;
+    if (offset <= 0) return { cut: null, seekAt: upper, sizes, top };
+    return {
+        cut: { at: row, offset },
+        seekAt: row,
+        sizes: [
+            ...sizes.slice(0, row),
+            offset,
+            (sizes[row] ?? 0) - offset,
+            ...sizes.slice(row + 1),
+        ],
+        top,
+    };
+}
+
+/**
  * a saved place read back: the message and the px of it above the view
  * @param {string | null | undefined} text what the place was saved as
  * @returns {{ id: string, offset: number } | null}
