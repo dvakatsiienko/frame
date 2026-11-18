@@ -581,10 +581,12 @@ describe('his message knows when Claude Code read it (FRM-594)', () => {
     test('a remove that names another command reads nothing', () => {
         const model = createRowModel();
         model.add([taken('also the tests', 'human', 'c1')]);
+        const [row] = model.rows;
         const { changed } = model.add([
             removeOf('c2', '2026-11-16T16:46:19.000Z'),
         ]);
-        expect(model.rows[0]?.readAt ?? null).toBeNull();
+        expect(model.rows).toEqual([row]);
+        expect(row?.readAt).toBeNull();
         expect(changed).toEqual([]);
     });
 
@@ -598,9 +600,17 @@ describe('his message knows when Claude Code read it (FRM-594)', () => {
         expect(model.rows[0]?.readAt).toBe('2026-11-16T16:46:19.000Z');
     });
 
+    test('a remove loaded before the page holding its prompt still reads it', () => {
+        const model = createRowModel();
+        model.add([removeOf('c1', '2026-11-16T16:46:19.000Z'), reply('later')]);
+        model.addEarlier([taken('also the tests', 'human', 'c1')]);
+        expect(model.rows[0]?.readAt).toBe('2026-11-16T16:46:19.000Z');
+    });
+
     test('a prompt that started a turn has no read of its own: its stamp is the read', () => {
         const model = createRowModel();
         model.add([mine('start'), queueOp('dequeue')]);
+        expect(shown(model)).toEqual(['mine: start']);
         expect(model.rows[0]?.readAt ?? null).toBeNull();
     });
 
@@ -609,6 +619,7 @@ describe('his message knows when Claude Code read it (FRM-594)', () => {
         model.add([removeOf('c1', '2026-11-16T16:46:19.000Z')]);
         model.clear();
         model.add([taken('also the tests', 'human', 'c1')]);
-        expect(model.rows[0]?.readAt ?? null).toBeNull();
+        expect(shown(model)).toEqual(['mine: also the tests']);
+        expect(model.rows[0]?.readAt).toBeNull();
     });
 });

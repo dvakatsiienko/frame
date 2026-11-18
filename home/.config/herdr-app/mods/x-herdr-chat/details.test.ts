@@ -42,6 +42,21 @@ describe('a message reads one state and its own time (FRM-594)', () => {
         ).toBe('sent 15:10');
     });
 
+    test('a prompt a tool round took reads «sent» until the remove that took it lands', () => {
+        expect(
+            messageDetails(
+                {
+                    at: '2026-11-13T12:45:04Z',
+                    command: 'c1',
+                    isMine: true,
+                    isWaiting: false,
+                    readAt: null,
+                },
+                now,
+            ),
+        ).toBe('sent 14:45');
+    });
+
     test('a message from an earlier day carries its date', () => {
         expect(
             messageDetails(
@@ -54,6 +69,15 @@ describe('a message reads one state and its own time (FRM-594)', () => {
                 now,
             ),
         ).toBe('read Nov 12, 23:53');
+    });
+
+    test('today is his date, not UTC’s: past his midnight a message is today’s', () => {
+        expect(
+            messageDetails(
+                { at: '2026-11-12T22:30:00Z', isMine: false, isWaiting: false },
+                now,
+            ),
+        ).toBe('00:30');
     });
 
     test('a reply shows its time alone', () => {

@@ -93,38 +93,6 @@ function leavingAt(queue, op) {
     }
 }
 
-/** @typedef {Queued & { readAt: number }} Read */
-
-/**
- * the reads after one record: a tool round's `remove` or a turn end's `dequeue` that takes a message of his is the
- * moment Claude Code read it; ↑ pulling it back out (`popAll`) is none
- * @param {Read[]} reads @param {Queued[]} queue the queue before the record @param {any} op
- * @returns {Read[]}
- */
-export function readsAfter(reads, queue, op) {
-    if (op.operation !== 'remove' && op.operation !== 'dequeue') return reads;
-    const taken = queue[leavingAt(queue, op)];
-    const readAt = Date.parse(op.timestamp ?? '');
-    if (!taken || !isHisQueued(taken.text) || !readAt) return reads;
-    return [...reads.slice(-199), { ...taken, readAt }];
-}
-
-/**
- * when Claude Code read his message: the read whose words and send time match its row (cc stamps a mid-turn row with
- * its enqueue time); a row with no queue record, an idle send above all (clio's transcript, 14:15–14:18), was read when
- * it landed, so its own time; null only with no row time
- * @param {Read[]} reads @param {string} text @param {number} at
- */
-export function readTime(reads, text, at) {
-    const said = words(unwrapPastes(text));
-    const read = reads.find(
-        (r) =>
-            Math.abs(r.at - at) <= STAMP_SLACK_MS &&
-            words(asTyped(unwrapPastes(r.text))) === said,
-    );
-    return read?.readAt ?? (at || null);
-}
-
 // the tags Claude Code puts around a paste: an opening tag that starts a line, a closing tag that ends one, an id on
 // the opening and, in a user line, the same id on the closing
 const PASTE_TAG =

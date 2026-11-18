@@ -281,6 +281,7 @@ export function createRowModel() {
                 const lower = { ...first, tools: [...first.tools] };
                 if (join(last, lower)) {
                     Object.assign(first, {
+                        at: last.at,
                         id: last.id,
                         text: last.text,
                         tools: last.tools,

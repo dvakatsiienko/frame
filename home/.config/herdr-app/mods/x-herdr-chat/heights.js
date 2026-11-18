@@ -17,7 +17,8 @@ const REACH = 200;
 const TOOL_ROW_PX = 28;
 const LINE_PX = 21;
 const CHAR_PX = 7;
-const BUBBLE_PAD_PX = 30;
+// a bubble's padding and the details line under it (FRM-594)
+const BUBBLE_PAD_PX = 48;
 
 /**
  * a row's height before it is measured, from its text and the list's width
