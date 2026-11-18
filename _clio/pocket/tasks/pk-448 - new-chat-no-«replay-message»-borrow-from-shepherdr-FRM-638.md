@@ -23,4 +23,6 @@ raw drop (11-18 inbox, dima): a clarification on what not to borrow fromsheparde
 raw drop (11-18 inbox, dima): - cjat bubble: "replay message" feature. do not want it now.
 
 21:21 close: done — the new chat ships no «replay» (rewind) button, per his 11-18 verdict; FRM-638 decided line 184 holds it; Reply (quote) is a separate thing, out until herdr-app#1110 (FRM-638:W133)
+
+close: PK-448:W1 done — no replay button in the new chat (FRM-638 decided line 184)
 <!-- SECTION:NOTES:END -->
