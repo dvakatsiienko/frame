@@ -87,6 +87,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and files copied in Finder paste as their paths, the way a drop does, never as the file's icon; a text paste stays text
   - and a click on a pasted or dropped picture's preview opens it in macOS Preview, a dropped one as itself, never its small preview copy
   - decision: one path for paste and drop (dima's o49, 16:38); it replaces ctrl+v into Claude's prompt, whose × had to empty that prompt and lagged when he emptied it in the Terminal view (FRM-609)
+  - decision: in the new chat, a click or Enter with files waiting sends them at once with the words, «Sent: files go with a plain send, not a join», until a join carries paths (FRM-638 slice 5, the codie's interim, 16:31)
   - decision: the clipboard is read, never written (FRM-612)
   - decision: the preview row holds the previews alone, no caption and no Remove: each × takes its own (FRM-609, his 16:40 shot: «delete description, i know what it does»); Remove stays only beside a «🖼 N images» count with no previews, a dev container's
 - ⬜ the shared keys carry the x-herdr name

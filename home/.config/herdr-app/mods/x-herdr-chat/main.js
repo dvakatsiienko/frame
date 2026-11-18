@@ -14,9 +14,10 @@ import {
     v_flex,
     v_virtual_list,
 } from 'gpui-base';
-import { View, div, svg } from 'gpui-kit';
+import { View, div, image, svg } from 'gpui-kit';
 import {
     agents,
+    appHome,
     checking,
     closeOverlay,
     exec,
@@ -38,6 +39,14 @@ import {
     writeTextFile,
 } from 'herdr';
 
+import {
+    fileName,
+    isImagePath,
+    openInPreview,
+    pickFiles,
+    promptPath,
+} from './attach.js';
+import { createAttachments } from './attachments.js';
 import {
     AUTO_WIND_DOOR,
     DECK_BLOCK,
@@ -112,6 +121,13 @@ import { createQuills } from './quill.js';
 import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
 import { addressIn, sendBlocked, submitted } from './send.js';
+import {
+    deletePreviewCopies,
+    loadShots,
+    readClipboard,
+    saveFileShot,
+    saveShots,
+} from './shots.js';
 import { asksActedOn, isShownIn, pidFor, shownThread } from './shown.js';
 import { transcriptPath } from './thread.js';
 import { typedMarkdown } from './typed.js';
@@ -200,6 +216,22 @@ const SETTINGS_OVERLAY = {
 // his settings, kept by the old chat's settings window until the new one moves in
 const SETTINGS_FILE = '.claude/shelf/herdr-settings/settings.json';
 const SEND_SIZE = 28;
+// a picture waiting over the quill, and how long a paste's «nothing there» note stays
+const THUMB_SIZE = 56;
+const PASTE_NOTE_MS = 6000;
+const NO_IMAGE = 'No image on the clipboard';
+const FILES_PUSH = 'Sent: files go with a plain send, not a join';
+/** @type {import('./attachments.js').AttachmentsIo} */
+const ATTACH_IO = {
+    deleteCopies: (rels) => {
+        deletePreviewCopies(rels).catch(() => {});
+    },
+    makePreview: saveFileShot,
+    now: Date.now,
+    save: (store) => {
+        saveShots(store).catch(() => {});
+    },
+};
 const QUILL_ENTER = 'x_herdr_chat_quill_enter';
 const NOT_IN_HERDR = 'This thread does not run in herdr: nothing was sent';
 
@@ -421,6 +453,8 @@ export default class Chat extends View {
         this.typedNow = text;
         this.typedBefore = text;
     });
+    /** the files waiting over each thread's quill, by its transcript file; what waited comes back once the store is read */
+    attachments = createAttachments(appHome(), ATTACH_IO, {});
     /** where a message to the shown thread goes: its herdr address @type {string | null} */
     address = null;
     /** what the quill says about his last send: why it did not go, or why it went as a push @type {string | null} */
@@ -530,6 +564,16 @@ export default class Chat extends View {
             if (this.quillKeys.pressed() === 'repeat') return;
             if (act === 'push') this.push(box, cx);
             else if (act === 'click') this.click(box, cx);
+        });
+        // a paste with no text: the clipboard's image saved as a png, or files copied in Finder by their paths (FRM-613)
+        box.on('paste_other', (_event, cx) => this.pasteFiles(cx));
+        cx.spawn(async (cx) => {
+            this.attachments = createAttachments(
+                appHome(),
+                ATTACH_IO,
+                await loadShots(),
+            );
+            cx.notify();
         });
         box.on('blur', (_event, cx) => {
             this.quillKeys.blurred();
@@ -1801,6 +1845,7 @@ export default class Chat extends View {
                         .border(1)
                         .border_color(t.border)
                         .key_context('XChatQuill')
+                        .on_drop((e, cx) => this.addFiles(e?.paths ?? [], cx))
                         // Enter runs the send button's hold (FRM-628 W12): a tap joins on its release, a hold fills
                         // the disc and pushes; its repeats keep the one hold going
                         .on_action(QUILL_ENTER, (_event, cx) => {
@@ -1818,7 +1863,15 @@ export default class Chat extends View {
                             if (!e.modifiers.platform)
                                 this.quillKeys.modifiersReleased();
                         })
+                        .child(this.attachmentsRow(t))
                         .child(Textarea.new(box))
+                        .child(
+                            div()
+                                .absolute()
+                                .left(8)
+                                .bottom(10)
+                                .child(this.attachButton(t)),
+                        )
                         .child(
                             // the picker sits left of send, as shepherdr's does
                             div()
@@ -1830,6 +1883,139 @@ export default class Chat extends View {
                         .child(this.sendButton(box, t)),
                 )
         );
+    }
+
+    /** @param {Context} cx */
+    pasteFiles(cx) {
+        const file = this.file;
+        if (!file) return;
+        cx.spawn(async (cx) => {
+            const read = await readClipboard();
+            if (this.file !== file) return;
+            if (read && 'paths' in read) return this.addFiles(read.paths, cx);
+            if (read) this.attachments.paste(file, read.rel);
+            this.note = read ? null : NO_IMAGE;
+            if (!read)
+                cx.timer.after(PASTE_NOTE_MS, (cx) => {
+                    if (this.note === NO_IMAGE) this.note = null;
+                    cx.notify();
+                });
+            cx.notify();
+        });
+    }
+
+    /** dropped or picked files join the thread's attachments; a picture's preview draws once it is made @param {string[]} paths @param {Context} cx */
+    addFiles(paths, cx) {
+        const file = this.file;
+        if (!file || !paths.length) return;
+        cx.spawn(async (cx) => {
+            const adding = this.attachments.add(file, paths);
+            cx.notify();
+            await adding;
+            cx.notify();
+        });
+    }
+
+    /** + in the quill's bottom left: the mac's own picker, several files at once @param {Theme} t */
+    attachButton(t) {
+        return div()
+            .id('chat-attach')
+            .size(24)
+            .flex()
+            .items_center()
+            .justify_center()
+            .rounded_full()
+            .text_size(16)
+            .text_color(t.muted)
+            .cursor_pointer()
+            .hover((s) => s.bg(t.raised).text_color(t.foreground))
+            .tooltip('Attach files')
+            .on_click((_e, cx) => {
+                cx.spawn(async (cx) => this.addFiles(await pickFiles(), cx));
+            })
+            .child('+');
+    }
+
+    /**
+     * what waits over the quill: a 56 px preview per picture, a «📎 name» chip per other file, each with its ×
+     * (FRM-609: no caption, no Remove, each × takes its own)
+     * @param {Theme} t
+     */
+    attachmentsRow(t) {
+        const waiting = this.file ? this.attachments.of(this.file) : [];
+        const file = this.file;
+        /** @param {string} id @param {string} path */
+        const remove = (id, path) =>
+            div()
+                .id(id)
+                .absolute()
+                .top(3)
+                .right(3)
+                .size(18)
+                .flex()
+                .items_center()
+                .justify_center()
+                .rounded_full()
+                .bg(t.background)
+                .text_size(11)
+                .text_color(t.foreground)
+                .cursor_pointer()
+                .tooltip('Remove')
+                .on_click((_e, cx) => {
+                    cx.stop_propagation();
+                    if (file) this.attachments.remove(file, path);
+                    cx.notify();
+                })
+                .child('×');
+        return h_flex()
+            .gap(8)
+            .flex_wrap()
+            .items_center()
+            .when(waiting.length > 0, (el) => el.pb(8))
+            .children(
+                waiting.map(({ path, preview }, i) =>
+                    isImagePath(path)
+                        ? div()
+                              .id(`chat-thumb-${i}`)
+                              .size(THUMB_SIZE)
+                              .flex_none()
+                              .relative()
+                              .rounded(8)
+                              .overflow_hidden()
+                              .bg(t.raised)
+                              .border(1)
+                              .border_color(t.border)
+                              .cursor_pointer()
+                              .tooltip('Open in Preview')
+                              .on_click(() =>
+                                  openInPreview(
+                                      [path],
+                                      () => preview ?? '',
+                                      preview ?? '',
+                                  ),
+                              )
+                              .when(Boolean(preview), (el) =>
+                                  el.child(image(preview ?? '').size_full()),
+                              )
+                              .child(remove(`chat-thumb-x-${i}`, path))
+                        : h_flex()
+                              .id(`chat-file-${i}`)
+                              .relative()
+                              .gap(6)
+                              .items_center()
+                              .pl(8)
+                              .pr(26)
+                              .py(4)
+                              .rounded(8)
+                              .border(1)
+                              .border_color(t.border)
+                              .text_size(12)
+                              .text_color(t.muted)
+                              .tooltip(path)
+                              .child(`📎 ${fileName(path)}`)
+                              .child(remove(`chat-file-x-${i}`, path)),
+                ),
+            );
     }
 
     /**
@@ -2507,7 +2693,10 @@ export default class Chat extends View {
     click(box, cx) {
         const { file } = this;
         const text = box.value().trim();
-        if (!text || !file) return;
+        if (!file) return;
+        if (this.attachments.of(file).length)
+            return this.push(box, cx, FILES_PUSH);
+        if (!text) return;
         if (!this.address) return this.say(NOT_IN_HERDR, cx);
         const answer = this.magic.click(file, sidOf(file), text, this.joins);
         cx.notify();
@@ -2529,11 +2718,12 @@ export default class Chat extends View {
      * file first, so they never go twice
      * @param {import('gpui-base').TextareaState} box
      * @param {Context} cx
+     * @param {string | null} [note] why it went as a push
      */
-    push(box, cx) {
+    push(box, cx, note = null) {
         const { file } = this;
         const text = box.value().trim();
-        if (!text || !file) return;
+        if (!file || (!text && !this.attachments.of(file).length)) return;
         if (!this.address) return this.say(NOT_IN_HERDR, cx);
         cx.spawn(async (cx) => {
             // checked right before the mark comes off, so a refused push keeps his words marked
@@ -2545,7 +2735,7 @@ export default class Chat extends View {
             if (why) return this.say(why, cx);
             // the words go as the quill holds them once the row is out: an edit he made meanwhile is what he sends,
             // and the quill empties, never keeping words that already went
-            this.send(box.value().trim() || text, null, cx);
+            this.send(box.value().trim() || text, note, cx);
         });
     }
 
@@ -2563,17 +2753,23 @@ export default class Chat extends View {
         if (blocked) return this.say(blocked, cx);
         // what he typed while a mark was taken back stays: only the words sent leave
         this.quills.apply(file, { said: text, type: 'sent' });
+        // the files waiting go after the words, each path on its line as a terminal drop types it (FRM-613)
+        const files = file ? this.attachments.take(file) : [];
+        const message = [text, ...files.map(promptPath)]
+            .filter(Boolean)
+            .join('\n');
         this.say(note, cx);
         cx.spawn(async (cx) => {
-            const sent = await hc(sendArgs(address, text)).catch(
+            const sent = await hc(sendArgs(address, message)).catch(
                 (/** @type {unknown} */ error) => ({
                     code: 1,
                     stderr: String(error),
                 }),
             );
             if (sent.code === 0) return;
-            // his words come back before what he typed since, never lost, on screen or not
+            // his words come back before what he typed since, and his files with them, never lost, on screen or not
             this.quills.apply(file, { said: text, type: 'returned' });
+            if (file && files.length) this.attachments.add(file, files);
             if (this.file !== file) return;
             this.say(
                 `Not sent: ${sent.stderr.trim() || 'herdr refused it'}`,
