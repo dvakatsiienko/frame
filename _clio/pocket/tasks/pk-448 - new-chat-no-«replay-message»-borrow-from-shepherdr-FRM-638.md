@@ -1,0 +1,24 @@
+---
+id: PK-448
+title: 'new chat: no «replay message» borrow from shepherdr (FRM-638)'
+status: open
+assignee: []
+created_date: '2026-11-18T09:19:00Z'
+updated_date: '2026-11-18T09:19:00Z'
+labels:
+  - s
+dependencies: []
+priority: now
+type: task
+ordinal: 3100
+---
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+PK-448:W1 (2026-11-18 inbox, dima): do not borrow the chat-bubble "replay message" feature from sheparder; i do not want it now
+
+raw drop (11-18 inbox, dima): a clarification on what not to borrow fromsheparder:
+
+raw drop (11-18 inbox, dima): - cjat bubble: "replay message" feature. do not want it now.
+<!-- SECTION:NOTES:END -->
