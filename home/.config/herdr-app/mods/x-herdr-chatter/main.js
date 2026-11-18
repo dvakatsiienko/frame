@@ -112,6 +112,7 @@ import {
 import { listLines, withMarkers } from './lists.js';
 import { agents, inRender, panes, terminals } from './live.js';
 import { withPlainPaste } from './paste.js';
+import { PERMISSIONS, permissionIn, permissionOf } from './permissions.js';
 import * as ask from './question.js';
 import {
     QUEUED_IDLE_MS,
@@ -1943,6 +1944,12 @@ export default class ClaudeChat extends View {
         this.effort = kept.effort ?? null;
         this.drop = null;
         this.pickNote = null;
+        // the permission mode, read off the thread's screen each time the picker opens; asked: a pick on its way
+        /** @type {string | null} */
+        this.permission = null;
+        /** @type {string | null} */
+        this.permissionAsked = null;
+        this.isPermsOpen = false;
         // where he was reading this thread: kept in the cache across a tab switch, in localStorage across a reload
         const stored = kept.items ? null : keptScroll(address);
         /** @type {boolean} */
@@ -2502,6 +2509,8 @@ export default class ClaudeChat extends View {
                     : null;
                 this.pickNote =
                     o && !ready ? 'Answer Claude first, then pick' : null;
+                this.isPermsOpen = false;
+                if (isOpen) this.readPermission(cx);
                 this.focusEffort(cx);
                 cx.notify();
             })
@@ -2526,6 +2535,7 @@ export default class ClaudeChat extends View {
                         this.effortClose(cx);
                         this.box.focus();
                     })
+                    .relative()
                     .w(340)
                     .p(5)
                     .mb(8)
@@ -2538,8 +2548,144 @@ export default class ClaudeChat extends View {
                     .children(MODELS.map(([, label]) => row(label)))
                     .child(div().mx(4).my(4).h(1).bg(t.border))
                     .child(head('Reasoning'))
-                    .child(levels),
+                    .child(levels)
+                    .child(div().mx(4).my(4).h(1).bg(t.border))
+                    .child(this.permissionsRow(t, ready))
+                    .when(this.isPermsOpen, (el) =>
+                        el.child(this.permissionsMenu(t)),
+                    ),
             );
+    }
+
+    // shepherdr's row: «Permissions · Full access ›», its five modes in a small menu over the picker's foot
+    /** @param {any} t @param {boolean} ready */
+    permissionsRow(t, ready) {
+        const shown = this.permissionAsked ?? this.permission;
+        const label = PERMISSIONS.find((p) => p.id === shown)?.label ?? '…';
+        return h_flex()
+            .id('pick-permissions')
+            .gap(10)
+            .px(9)
+            .h(31)
+            .items_center()
+            .rounded(7)
+            .text_size(px(13))
+            .text_color(ready ? t.foreground : t.dim)
+            .when(this.isPermsOpen, (el) => el.bg(t.hover))
+            .when(ready, (el) =>
+                el
+                    .cursor_pointer()
+                    .hover((s) => s.bg(t.hover))
+                    .on_click((_e, cx) => {
+                        this.isPermsOpen = !this.isPermsOpen;
+                        cx.notify();
+                    }),
+            )
+            .child(div().flex_1().child('Permissions'))
+            .child(
+                div()
+                    .text_size(px(12))
+                    .text_color(this.permissionAsked ? t.accent : t.muted)
+                    .child(label),
+            )
+            .child(div().text_color(t.dim).child('›'));
+    }
+
+    /** @param {any} t */
+    permissionsMenu(t) {
+        const shown = this.permissionAsked ?? this.permission;
+        return v_flex()
+            .id('pick-permissions-menu')
+            .absolute()
+            .right(4)
+            .bottom(40)
+            .w(180)
+            .p(5)
+            .rounded(8)
+            .bg(t.popover)
+            .border(1)
+            .border_color(t.border)
+            .shadow_md()
+            .children(
+                PERMISSIONS.map(({ id, label }) =>
+                    h_flex()
+                        .id(`pick-permission-${id}`)
+                        .gap(10)
+                        .px(9)
+                        .h(29)
+                        .items_center()
+                        .rounded(6)
+                        .text_size(px(13))
+                        .text_color(id === shown ? t.foreground : t.muted)
+                        .cursor_pointer()
+                        .hover((s) => s.bg(t.hover).text_color(t.foreground))
+                        .on_click((_e, cx) =>
+                            id === shown
+                                ? this.closePermissions(cx)
+                                : this.pickPermission(id, label, cx),
+                        )
+                        .child(div().flex_1().child(label))
+                        .child(
+                            div()
+                                .w(14)
+                                .flex_none()
+                                .text_color(t.foreground)
+                                .child(id === shown ? '✓' : ''),
+                        ),
+                ),
+            );
+    }
+
+    /** @param {any} cx */
+    closePermissions(cx) {
+        this.isPermsOpen = false;
+        cx.notify();
+    }
+
+    /** the mode line at the foot of the thread's screen, read when the picker opens @param {any} cx */
+    readPermission(cx) {
+        const { address } = this;
+        if (!address) return;
+        cx.spawn(async (cx) => {
+            const out = await hc(['read', address]).catch(() => null);
+            if (this.address !== address || !out) return;
+            this.permission = permissionOf(out.stdout.replace(/\r/g, ''));
+            cx.notify();
+        });
+    }
+
+    // Shift+Tab in the thread until its mode line reads the mode picked: it applies live, mid-turn too (probed
+    // 2026-11-17 00:35), so nothing restarts; never while it asks, the keys would answer the question
+    /** @param {string} mode @param {string} label @param {any} cx */
+    pickPermission(mode, label, cx) {
+        const { address } = this;
+        if (!address || this.permissionAsked) return;
+        this.permissionAsked = mode;
+        this.isPermsOpen = false;
+        cx.notify();
+        cx.spawn(async (cx) => {
+            try {
+                const now = await permissionIn(mode, {
+                    keys: async (keys) => {
+                        await hc(['keys', address, ...keys]);
+                    },
+                    screen: async () =>
+                        (await hc(['read', address])).stdout.replace(/\r/g, ''),
+                    sleep: (ms) => cx.sleep(ms),
+                });
+                if (this.address !== address) return;
+                this.permission = now;
+                if (now !== mode)
+                    this.pickNote = `${label} is not in this thread's Shift+Tab cycle`;
+            } catch (error) {
+                if (this.address === address)
+                    this.pickNote =
+                        error instanceof Error ? error.message : String(error);
+            } finally {
+                if (this.address === address) this.permissionAsked = null;
+                cx.notify();
+            }
+        });
     }
 
     // a click in the menu: a model mid-conversation asks first (its cache is lost); with an effort too, the effort goes
