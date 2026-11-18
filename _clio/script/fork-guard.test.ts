@@ -489,6 +489,25 @@ describe('fork-guard fork-edit', () => {
         );
     });
 
+    test('a wing writes a repo it runs as its own, by Bash and by Edit, and no other main checkout', () => {
+        const own = mkdtempSync(join(tmpdir(), 'fg-own-'));
+        spawnSync('git', ['-C', own, 'init', '-q'], { env: gitEnv() });
+        process.env.FORK_GUARD_WING_REPOS = own;
+        try {
+            expect(edit(String(process.ppid), join(own, 'a.md'))).toBe('');
+            expect(bashIn(own, `echo x > ${own}/a.md`)).toBe('');
+            expect(bashIn(own, `git -C ${own} commit -m x -- a.md`)).toBe('');
+            expect(edit(String(process.ppid), join(repo, 'a.md'))).toContain(
+                'edits only inside',
+            );
+            expect(bashIn(own, `echo x > ${repo}/a.md`)).toContain(
+                'edits only inside',
+            );
+        } finally {
+            delete process.env.FORK_GUARD_WING_REPOS;
+        }
+    });
+
     test("main's .scratch takes a wing's spec, by Bash and by Edit", () => {
         expect(bashIn(tree, `echo x > ${repo}/.scratch/lane/spec.md`)).toBe('');
         expect(edit(String(process.ppid), join(repo, '.scratch/spec.md'))).toBe(

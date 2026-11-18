@@ -115,6 +115,9 @@ fork-edit | fork-bash)
 		file=$(jq -r '.tool_input.file_path // .tool_input.notebook_path // ""' <<<"$input")
 		# main's gitignored .scratch holds a lane's spec, whichever clio runs the lane; a wing logs its own flaws on the shared shelf
 		case "$file" in */.scratch/* | */shelf/flawlog/*) exit 0 ;; esac
+		# a repo a wing runs with dima as its own (his 17:37, 2026-11-18: lookout); the same list as check-fork-bash.ts's wingRepos
+		IFS=: read -ra own <<<"${FORK_GUARD_WING_REPOS-$HOME/projects/lookout}"
+		for r in "${own[@]}"; do [ -n "$r" ] && case "$file" in "$r"/*) exit 0 ;; esac; done
 		# a wing fixes its own handoff, the one whose name carries its token: wing1 for «wing 1»
 		case "$file" in */shelf/handoffs/*/*) ;; */shelf/handoffs/*)
 			name=$(jq -r '.name // ""' "${FORK_GUARD_SESSIONS:-$HOME/.claude/sessions}/$me.json" 2>/dev/null)

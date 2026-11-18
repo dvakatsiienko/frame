@@ -117,8 +117,15 @@ function repoTargets(c: Command, ctx: { home: string }) {
         : [];
 }
 
+// a repo a wing runs with dima as its own (his 17:37, 2026-11-18: lookout); FORK_GUARD_WING_REPOS is a test's override, colon-split
+export const wingRepos = (home: string) =>
+    (process.env.FORK_GUARD_WING_REPOS ?? `${home}/projects/lookout`)
+        .split(':')
+        .filter(Boolean);
+
 export function mainCheckoutWrite(command: string, cwd: string) {
     const ctx = { home: homedir() };
+    const own = wingRepos(ctx.home);
     const list = commandsDeep(command, cwd);
     const paths = [
         // main's gitignored .scratch holds a lane's spec, whichever clio runs the lane; a repo verb there still acts on main
@@ -127,7 +134,10 @@ export function mainCheckoutWrite(command: string, cwd: string) {
             .filter((p) => !p.includes('/.scratch/')),
         ...list.flatMap((c) => repoTargets(c, ctx)),
     ];
-    return paths.filter((p) => !p.includes('$')).find(isMainCheckout);
+    return paths
+        .filter((p) => !p.includes('$'))
+        .filter((p) => !own.some((r) => p === r || p.startsWith(`${r}/`)))
+        .find(isMainCheckout);
 }
 
 if (import.meta.main) {
