@@ -3,10 +3,10 @@ id: PK-454
 title: >-
   snoozed 🦥: a linear label for wanted work with no capacity now, beside
   someday
-status: open
+status: done
 assignee: []
 created_date: '2026-11-18T19:24:00Z'
-updated_date: '2026-11-18T19:25:00Z'
+updated_date: '2026-11-18T19:26:00Z'
 labels:
   - s
   - clio-wing-1
@@ -33,4 +33,6 @@ PK-454:W9 (2026-11-18 20:58, dima): 💤 clearly shows the snooze state and is r
 
 PK-454:W10 (2026-11-18 20:54, dima): o10: why do you ask for it? ❓
 PK-454:W11 (2026-11-18 20:54, dima): for the zzz ask, make a new Linear tag (🎙️ deck) compatible with the flyway: it means the same in the flyway and in Linear, with a similar or the same emoji
+
+close: 21:26 landed: label snoozed 🦥 in linear (set and lifted by dima or a clio on his ask), wired in lowtide shapes.md, peek-lanes, fleet-vibe strays, the tracker glossary; flyway later prefix 💤 → 🦥 (W1–W11 met; W10 answered in the 20:59 reply)
 <!-- SECTION:NOTES:END -->
