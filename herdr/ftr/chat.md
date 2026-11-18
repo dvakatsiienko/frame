@@ -2,72 +2,102 @@
 
 wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 
-- ⬜ lines he never typed fold out of his way (FRM-562:W17)
-  - given a thread's transcript holds a plugin's message (an orbit tick), a task notice, a synthetic «No response requested.», a command's output (hook lines after a compact, «Set effort level…» after a pick, its colour codes gone, «⌘ » before it) or the compact boundary («📦 Conversation compacted»)
-  - then each draws as one dim line that opens to its whole text on a click, and «System lines: Folded / Hidden / Shown» in ⚙ picks the look, Folded by default
-  - and a message he pasted reads as his plain text, the `<pasted_content>` tags gone; a system-reminder with an id attribute goes too
-  - and a command's output pasted inside his own words stays his message, never a system line
-  - decision: told apart by the entry (its `origin.kind`, a `<synthetic>` model, a `compact_boundary` row), and a command's output only by a row Claude Code wrote as that output alone, never by a tag found inside his text
-  - not checked: the after shot of his paste in clio's chat, which waits for his view on that tab
-- ⬜ a prompt he types while a turn runs draws in the chat
-  - given dima sends a thread a prompt while its turn is still running
-  - then it draws as his message at the place he sent it, a shot or a paste in it too, marked no differently
-  - and a peer's message or a task notice queued the same way does not draw as his
-  - decision: Claude Code writes such a prompt as a `queued_command` attachment with `origin.kind` human, never a user entry; the chat reads it as one
-- ⬜ a prompt pushed while a turn runs shows at once as his message, «sent» until the turn takes it
-  - given dima pushes a thread a message while its turn is still running
-  - then it draws at once at the log's end as his own message reading «sent», and «read» once Claude Code's own queue records it taken
-  - and a message carrying a picture or a quote draws once: the row shows his words, and the transcript's row replaces it (dima, 22:31: «message was duped»)
-  - and a thread that sat idle 5 s with the message never in its transcript drops it
-  - decision: no Queued strip and no «Send now» over the quill (dima, 19:37: «queued messages go to a Queued section I don't want»)
-  - decision: queued and joined are read from Claude Code's `queue-operation` records (enqueue, remove, dequeue, popAll), never guessed from his text
-  - decision: Claude Code holds a mid-turn message until the turn's next tool round, and the quill empties at once, so his 17:01 paste to wing 1 read as lost (dima, 17:20)
-  - and a press on «Still in Claude's box» («Take it», «Send as is») is the strip's alone: the message under it never forks
-- 🧭 a queued message comes back to the quill with its × (FRM-563)
-  - decision: the hidden × and its pull went with the Queued strip (FRM-564); FRM-563 builds the undo on his waiting row, after his 01:39 «looks ugly, and half baked»
-  - decision: the lost re-send was Claude Code's vim normal mode: ↑ there leaves the cursor on the last character, ctrl+u leaves it, and the re-send glued onto it («plum» queued as «plumm»); the chat presses `i` before ↑ (probed 2026-11-12)
-  - given a thread mid-turn holds his queued messages
-  - when dima clicks × on one before it joins
-  - then the thread never receives it and its text is back in his quill, before anything he had typed there
-  - and the others queued with it are sent again in their order
-  - and when Claude Code's prompt still holds text after the pull, nothing is sent: every pulled message is in his quill, the strip naming what was left
-  - and a message that joined first stays joined, the strip saying «It joined the turn first» for 4 s
-  - decision: a cross per message: ↑ in Claude Code's empty prompt pulls all of them, so the chat puts the one back and re-queues the rest (dima, o145, 2026-11-12)
+regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-638 end step); a line the new chat does not do yet stays ⬜ and names what is missing
+
+## the mod
+
+- ✅ the chat is ours by name: `x-herdr-chat`
+  - makes: `home/.config/herdr-app/mods/x-herdr-chat`, landed into `~/.config/herdr-app/mods/x-herdr-chat` by `herdr-mods:land`
+  - given `layouts/itrout.json` places `x-herdr-chat`
+  - then herdr places no zoo chat: `x-herdr-chatter` and `x-herdr-chatter-header` retired at FRM-638's end step (2026-11-18)
+  - decision: a new mod beside the old chat, moved in file by file under a strict type check, swapped in once at the end (dima, 2026-11-16 16:36: «pull only clean, decided features»)
+- ✅ the chat mod passes its own type check
+  - given `pnpm herdr-mods:typecheck`
+  - then x-herdr-chat exits 0, its test files included
+- ⬜ the chat mod has tests
+  - given its pure modules (the reader, the row model, the quill, joins, find, the fold)
+  - then each has a vitest file beside it, run by the commit gate
+- ⬜ a transcript past 64 MB draws
+  - then the chat reads it a slice at a time with `tail | head`, since herdr's readFile refuses a bigger file (a 93 MB thread drew empty under the old chat, 21:02)
+
+## the list — reading a thread
+
+- ⬜ the chat reads a thread, in a list that never moves without him (FRM-638, FRM-562:W18, W19)
+  - given the Chat view shows a thread
+  - then its transcript is drawn from its tail: his messages as bubbles on the right, replies as bubbles on the left with rich text and code blocks, a run of tool calls as one line that counts them by name (shot `~/.local/state/looks/FRM-638/1901-new-chat-overlay.png`)
+  - and it opens at the newest and follows it only while he sits at the end; a wheel step up stops following, and a small «↓» at the bottom right goes back
+  - and the end is the list's last line, read from the list itself: a step down that reaches it follows again, under a newest reply taller than the view too; a step that stops above it keeps him reading
+  - and a reply, a tool line, a peer or plugin line, a turn end, a resize or a reload of the mod never moves the text he reads; only his scroll to the end or the «↓» brings him back to following
+  - and a new line in the transcript changes only its own row; a long transcript opens at its last 4 MB
+  - and after a reload of the mod the message he was reading is on screen again, read in from above when it must be
+  - and a resize while following (the tray or a panel opening) keeps the newest message in view
+  - and while it finds the thread it says «Opening the thread…», then «Reading the thread…»; a transcript it cannot read shows why
+  - decision: herdr's lazy list with each row's height measured out of sight (after shepherdr's chat): the zoo chat drew all 60 rows every frame; a list row may hold no handler (a link handler inside one blanks the whole list), so a press acts by the row it landed on
+  - decision: a row's height comes from the measurer, never from the row drawn in the list: drawing far rows as empty boxes once looped a long message between 12 px and 1285 px and nearly froze herdr (15:26 probe)
+  - not checked: a fling by his hand
+- ✅ older history loads as he scrolls up (FRM-638 slice 6b)
+  - given a thread longer than its first 4 MiB
+  - when he scrolls to within a screen of the top, then the next older page draws above, and the row he reads stays at its spot on screen, no jump, no blank frame (dima, 19:19: pages loaded back to the boot prompt, his line held)
+  - and scrolling on loads page after page, one read at a time however fast he scrolls, until the thread's start
+  - and once the first line is read a quiet «Start of thread» row sits at the top and no more is asked; a thread shorter than one page shows it at once
+  - and a page still read when he switches threads is dropped, never drawn into the other thread
+  - decision: read on his ask, never all on open: the read of every slice, not the parse or the draw, took the time (2.1 s of 2.3 s, clio's 56 MB thread)
 - ⬜ his messages sit in bubbles on the right, Claude's on the left (FRM-562)
-  - given «Your messages» in the chat settings is Bubbles, the default
-  - then his words sit in an accent-tinted bubble on the right, Claude's in a quiet bubble on the left, each at most 80 % of the width; Box, Tint and Bar draw as before
+  - then his words sit in an accent-tinted bubble on the right, Claude's in a quiet bubble on the left
   - decision: their bubbles, after shepherdr's chat (dima, 21:13)
-- ⬜ a big thread opens at once on its newest part
-  - given a thread whose transcript is past 4 MB (clio's 56 MB, wing 1's 23 MB)
-  - when dima opens its tab
-  - then the newest messages draw within a moment (clio's: 3.9 s → 0.6 s to the first frame), and «Show earlier» at the top reads the next older part in above, his scroll place kept
-  - decision: read on his ask, never all on open: the read of every slice, not the parse or the draw, took the time (2.1 s of 2.3 s)
-- ⬜ the chat scrolls smoothly in a long thread (FRM-562)
-  - given a thread with every loaded message in its chat
-  - when dima flings it with the trackpad
-  - then herdr's own list scrolls it and draws only the messages on screen; a wheel step redraws nothing, and every press in a message (fork, the right-click menu, a fold, copy, a 📂 file) still works
-  - decision: herdr's lazy list with each row's height measured out of sight (after shepherdr's chat): the old column drew all 60 rows every frame and redrew the mod on every wheel event; before, his 8 s fling spent 16.3 % of herdr's main thread drawing (21:27)
-  - decision: a list row may hold no handler (a link handler inside one blanks the whole list, probe 21:23), so a press acts by the row it landed on, and the fork by where across the row
-  - not checked: the fling after, by his hand
+  - missing in the new chat: «Your messages» Box, Tint and Bar; the row left the look popover until the chat draws them (dima's o5, 2026-11-18)
 - ✅ **bold** and *italic* in replies draw bold and italic
   - given the chat's font is Sans
-  - then a reply's markdown bold reads bold (shot 1928)
+  - then a reply's markdown bold reads bold (shot 1928, the old chat)
   - decision: Sans is the system font: herdr's own UI font, Geist, ships one face and drew bold flat
 - 🐞 a triple click selects a reply's whole paragraph
   - given a reply's paragraph holds inline code and wraps
   - when he triple clicks a word in it
   - then the whole paragraph is selected; today only the clicked row is, since gpui-kit lays such a paragraph out a row at a time
   - decision: inline code keeps its chips, and the fix waits on gpui-kit (his tick, 18:35): [gpui-kit#3933](https://github.com/longbridge/gpui-kit/issues/3933)
-- ✅ the chat is ours by name: `x-herdr-chat`
-  - makes: `home/.config/herdr-app/mods/x-herdr-chat`, landed into `~/.config/herdr-app/mods/x-herdr-chat` by `herdr-mods:land`
-  - given `layouts/itrout.json` places `x-herdr-chat`
-  - then herdr places no zoo chat: `x-herdr-chatter` and `x-herdr-chatter-header` retired at FRM-638's end step (2026-11-18)
-- ⬜ a pasted image survives a chat reload
-  - given dima pasted a screenshot into a thread's box and has not sent it
-  - when the chat reloads
-  - then the image is still waiting with the next message, shown by its 56 px preview above the quill
-  - and a send or its × takes the preview away with the image
-  - decision: not built in FRM-556; his words: «same for screenshots attached in chatter» (PK-363:W355)
+- 🔎 the tool-call fold shows each call (FRM-638 slice 6, PK-432)
+  - given a reply turn ran tool calls in a row
+  - then one row reads «▸ 🛠️ N tool calls: Read 2, Bash 1», folded
+  - when he clicks it, then one row a call follows, its name and what it did (a path, a command, a pattern)
+  - and a click on one call opens it alone to its input, a second click closes it; every fold opens, whatever its count
+- ⬜ a long reply of an earlier turn folds behind «Show more» (FRM-638 slice 7, FRM-607)
+  - given «show more» on in the chat's settings window, then a reply past ~40 lines in an earlier turn shows its first ~24 and «▾ Show more · N more lines»; a click on it opens it whole where it is
+  - and the turn he reads now never folds, nor a search hit; off, every reply reads whole, and on again the same reply folds at once
+  - and every reply of an earlier turn still shows; only the tools between them fold
+  - decision: the fold waits for his next message, so a reply never collapses while he reads it (review, 00:54)
+  - decision: no «Show less» yet: a press inside a row blanks herdr's list (herdr-app#894), so the reply's own click opens it, and a second click would fold it under a text selection
+- ⬜ lines he never typed fold out of his way (FRM-562:W17)
+  - given a thread's transcript holds a plugin's message (an orbit tick), a task notice, a synthetic «No response requested.», a command's output or the compact boundary
+  - then each draws as one dim line that opens to its whole text on a click, and «System lines: Folded / Hidden / Shown» picks the look, Folded by default
+  - and a prompt a plugin sends in his place, or a command it runs for him, draws no bubble of his (dima, 18:28)
+  - and a message he pasted reads as his own words, the wrapper Claude Code puts around a paste gone; a tag he typed, or one inside what he pasted, stays (FRM-628)
+  - decision: told apart by the entry (its `origin.kind`, a `<synthetic>` model, a `compact_boundary` row), never by a tag found inside his text
+  - missing in the new chat: the dim fold and its «System lines» pick; the row left the look popover until the chat draws them (dima's o5, 2026-11-18)
+- ⬜ a message between threads reads as who sent it (FRM-562)
+  - given another thread sends this one a message
+  - then it reads «↪ who: words», the sender's name whole (🐦‍⬛ crow, never «🐦 ⬛»)
+  - decision: read from Claude Code's own record of the sender (`origin.kind: peer`), never from the message's text
+  - missing in the new chat: the one tinted folding line with a click to open, which the zoo chat drew
+- ✅ a message tells when it was sent and when Claude read it
+  - given a message in the chat
+  - then a small dim line under it holds one state and its own time, on his clock: his own message reads «sent 14:45» while Claude Code holds it, «read 14:46» once it took it off its queue; a reply reads its time alone (his shot, 2026-11-18 20:40: «read 20:38»)
+  - decision: one state, one time (his 17:16 shot: «only one state — sent or read. sent turns to read once reached an agent»)
+  - decision: always shown, not on hover: a row's renderer takes no handlers ([herdr-app#598](https://github.com/herdrdev/herdr-app/issues/598))
+- ⬜ a code block copies its command
+  - makes: the fence's exact text on the clipboard, no trailing newline
+  - given a reply holds a closed fence
+  - when dima clicks copy at the code block's top right
+  - then a paste gives the command; a fence under a 📋 ribbon is a copy block too
+  - decision: the prompt card that filled his quill is gone; a copy block carries anything he moves elsewhere (his o147 tick, 22:22)
+- ⬜ a right-click on a message copies it (FRM-638 slice 7)
+  - when he right-clicks a message, then a menu opens at the pointer with «Copy message»; a row with no message shows it dim; a click beside it or a scroll closes it
+  - when he picks it, then the message as written is on the clipboard and «Message copied» shows under the quill
+- 🧭 the right-click copies only the words he selected, the whole message when none (dima, 20:35; waits on herdr-app#1110: a mod cannot read a TextView's selection)
+- 🧭 Reply quotes only the words he selected, never a whole message (dima, 20:35; waits on herdr-app#1110)
+  - decision: Reply left the menu (dima, 20:35: «whole message quoting isn't useful»)
+
+## pictures and files
+
 - ⬜ a pasted image goes the way a dropped one does, by its path (FRM-613)
   - makes: the clipboard's image as `~/.config/herdr-app/data/x-herdr-chat/shots/shot-<ms>.png`
   - and that file is his shot: the chat never deletes it, sent or taken out of the box; only a scaled copy the chat made of a dropped picture is removed
@@ -77,192 +107,178 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and its × takes it at once, mid-turn too, and the next send carries no image
   - and a send puts its path after his text, and Claude reads it
   - and files copied in Finder paste as their paths, the way a drop does, never as the file's icon; a text paste stays text
+  - and a picture waiting over the quill is still there after the chat reloads
   - and a click on a picture's square, over the quill, under his message or in a reply's file row, opens the viewer over the chat on the whole picture: zoom out, its level (a click fits), zoom in, copy, open, Show in Finder, ← → with «n / N» among its siblings, ✕; keys ← → + − 0 ⌘C Esc (FRM-638 slice 5, W33/W35)
-  - and the viewer's open, or a ⌘-click on any picture square, starts CleanShot X annotate on the file, or Preview with the chatter setting «Open in CleanShot» off (FRM-587 W1, dima 16:59)
+  - and the viewer's open, or a ⌘-click on any picture square, starts CleanShot X annotate on the file, or Preview, as «open pictures in» says in the chat's settings window (FRM-587 W1, dima 16:59)
   - and every square is sharp and fills its frame: a 288 px cut of the picture's middle (dima 17:00, «too blurry»)
-  - and ⌘Enter, Enter or a click sends pictures with no words
-  - decision: one path for paste and drop (dima's o49, 16:38); it replaces ctrl+v into Claude's prompt, whose × had to empty that prompt and lagged when he emptied it in the Terminal view (FRM-609)
-  - and a click or Enter with files waiting marks them to join with the words (🍕): the join row carries each path on its own line after the words, a file added or × under the mark rides the same row, and the quill lets them go once a turn takes it (FRM-638 slice 5, his wisps 16:36 and 16:37)
   - and a message he sent draws its pictures under his words as squares, and its other files as «📎 name» chips, never as their paths or «[Image #N]» tokens; a reload brings them back (FRM-638 slice 5, his 16:35 shot)
   - decision: an inline picture is written once as `~/.config/herdr-app/data/x-herdr-chat/sent/<row>-<n>.<ext>` from the transcript's bytes, a joined one by path gets a scaled copy; no «🖼 N images» caption, the squares say it
   - decision: the clipboard is read, never written (FRM-612)
-  - decision: the preview row holds the previews alone, no caption and no Remove: each × takes its own (FRM-609, his 16:40 shot: «delete description, i know what it does»); Remove stays only beside a «🖼 N images» count with no previews, a dev container's
-- ✅ the chat mod passes its own type check
-  - given `pnpm herdr-mods:typecheck`
-  - then x-herdr-chat exits 0, its test files included
-- ⬜ the chat mod has tests
-  - given its pure helpers (`drafts.js`, the turn fold, the `hc send` reading)
-  - then each has a vitest file beside it, run by the commit gate
+  - decision: the preview row holds the previews alone, no caption and no Remove: each × takes its own (FRM-609, his 16:40 shot: «delete description, i know what it does»)
+- ⬜ files attach to the next message
+  - when dima presses + at the left of the lower card and picks files, or drops files on the quill
+  - then each shows as a «📎 name» chip above the quill, its path on hover, × takes it off; a picture shows in the preview row instead
+  - and a send puts each path on its own line after the text, spaces escaped the way a terminal drop types them
+  - decision: a drop looks like a paste, one preview row (dima, 14:09: «dnd does not shows preview»)
+- ⬜ a reply's files open in one click from rows under it (FRM-587)
+  - given a reply names a file by a bare path, a `~` path, a quoted or backslash-escaped path, a `file://` link or a markdown link to one
+  - then each file gets one row under the reply, «🖼️ <name>» for a picture and «📂 <name>» for any other file, its whole path on hover, and a click opens it in its app (a png in Preview, a folder in Finder)
+  - and a path inside a fenced block gets no row, a sentence's period or comma is not part of the path, and the same file twice is one row
+  - and a reply's pictures draw together as squares under it, the way his own do, and a click opens them in the viewer (FRM-638 slice 5, dima 16:59)
+  - decision: each file is its own row in the list, opened through the list's item click: a handler inside a row blanked the whole list; a link click inside the text waits on [herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894)
 
-- ⬜ a model switch mid-conversation asks first
-  - given a thread whose chat holds messages
-  - when dima picks another model in the quill's model menu
-  - then a card above the quill says the cache is lost and the next message re-reads the whole conversation, with «Switch to <model>» and «Keep the cache»
-  - and Switch runs the pick, answering Claude Code's own «Switch model?» with its Yes; a new thread switches at once
-- ⬜ Copy message says it copied
-  - when dima right-clicks a message and picks Copy message
-  - then the whole message as written is on the clipboard and «Message copied» shows above the quill for 1.5 s
+## the quill and send
+
+- ✅ the quill: he types, sends and joins a turn from it (FRM-638 slice 2, FRM-564)
+  - given the chat open on a thread, then the quill, a text box, sits under the list in its column and grows with his lines up to eight
+  - when he types, then his draft is kept for that thread: it is back after a reload of the chat and after a switch to another thread and back, the caret at its end (his look, 22:42)
+  - when he presses Enter or clicks the send button, then his words are marked to join the thread's turn and stay in the quill, the caret where it was, the button reading 🍕; a second press takes the mark off; once a turn took them they leave the quill and the button reads 😋 for a moment, then 🛎️ again
+  - and each thread keeps its own mark, settled from its thread's state whether that thread is open or not
+  - when he holds the send button or Enter, then after a 100 ms pause a disc fills the button over 1 s and the words go now: a turn starts; a release after the disc shows sends nothing; the chat's settings window sets both timings
+  - when he presses cmd+Enter in the focused quill, then the words go now, no disc (dima, 20:41: «cmd+enter — sends immediately»)
+  - and a slash command, or a thread that takes no joins, is sent that way on a plain press, and a line over the quill says why
+  - when a send is refused, or the thread does not run in herdr, then his words are back in the quill and a line over it says so
+  - and joins a thread never took come back to the quill when the thread ends, in the order he sent them
+  - and a message waiting in Claude Code's queue is his last row, an outline of his bubble with dim words, reading «sent HH:MM» under it, until the turn takes it; words that joined a turn are drawn as his messages
+  - and a picture waiting over the quill joins as its path and stays, as the words do, until a turn takes it
+  - and with the quill empty the button keeps its face: a click, Enter or a hold there does nothing, no disc (dima, 20:30)
+  - Shift+Enter breaks the line
+  - and one press of Enter acts once: a held Enter, or one press herdr reports twice, marks once (FRM-628)
+  - 🧭 and Enter never scrolls the quill: with the caret past the quill's view, Enter marks and the view stays where he left it (dima, 13:14: «enter only does 🍕 and does not scroll quill»)
+  - and while a model, effort or permission pick types into the thread, a push or a send waits: a line over the quill says «A switch is typing into this thread: send again in a moment» (FRM-628 step 93)
+  - and his words, their 🍕 mark and his draft have one owner (`quill.js`) (FRM-628 step 88, his ✓ 12:39)
+  - decision: a let-go after the disc starts sends nothing, a started hold he aborts being a changed mind (his o127 tick, 21:23)
+  - decision: no Queued strip and no «Send now» over the quill (dima, 19:37: «queued messages go to a Queued section I don't want»)
+- 🧭 a queued message comes back to the quill with its × (FRM-563)
+  - given a thread mid-turn holds his queued messages
+  - when dima clicks × on one before it joins
+  - then the thread never receives it and its text is back in his quill, before anything he had typed there
+  - and the others queued with it are sent again in their order
+  - decision: FRM-563 builds the undo on his waiting row, after his 01:39 «looks ugly, and half baked»
+  - decision: Claude Code's vim normal mode: the chat presses `i` before ↑ (probed 2026-11-12)
+- ✅ the quill is a stacked card with send in its corner
+  - then the text card rests on a narrower card holding + and the band's buttons; a round 🛎️ send sits in the text card's bottom right, the model and effort picker just left of it (shots 2026-11-18, the quill crops)
+  - and the quill shows no placeholder
+- 🔎 the / menu lists commands and every skill (FRM-638 slice 6, FRM-593)
+  - given the quill holds «/» at its start, or after a space or a line break, and part of a name
+  - then a list over the quill shows Claude Code's commands, the thread's skills and its plugins' skills, filtered as he types, a match on the part after the colon too
+  - and ↑ ↓ move the pick, Enter or Tab fills «/name » with the caret after it, Esc closes it for this word, a click on a row fills it too
+- ⬜ a slash command he sends is his message (FRM-638 slice 6)
+  - given he sends «/name args» from the quill
+  - then it shows as his bubble, as he typed it, waiting while the thread works and in history once it ran; no «Sent:» note (dima, 18:00, 18:01)
+- ⬜ inline code in the quill turns into a chip
+  - given dima types «use `ls` here»
+  - then `ls` draws as one monospace chip the caret skips and one delete removes, and the sent message reads «use `ls` here»
+  - missing in the new chat: not built yet
 - ⬜ Claude Code's suggestion shows as ghost text
   - given a thread done with its turn, Claude Code's own box holding its dim suggestion, his quill empty
-  - then a dim «Tab <suggestion>» line sits above the quill
-  - when dima presses Tab in the empty quill, or clicks the line
-  - then the suggestion fills his quill, ready to edit or send, and Claude Code's own box is emptied so a send never glues onto it; typing anything hides the line
-  - and a new session's «Try "…"» placeholder never shows as a suggestion, nor anything while the thread works or asks
-- ⬜ the working row times the turn
-  - given a thread at work
-  - then the row above the quill shows the spinner, what Claude Code says it does, and the time since his prompt in whole minutes («<1 min», «4 min», «1 h 05 min»)
-  - and it redraws once a minute, only while the shown thread works; a slash command or an interruption never restarts it
-  - decision: whole minutes, never seconds: each redraw rebuilds the chat and drops a text selection in progress (review, 00:05)
-- ⬜ effort and model switch while a turn runs
-  - given a thread at work, a reply streaming
-  - when dima picks another effort or model in the quill
-  - then Claude Code sets it for this session at once, the turn runs on, and the next reply uses the pick
-  - and a pick on its way reads in the accent, «Medium…», on the quill's label and inside the popover alike (the slider's level, the model's ✓), until a reply runs at it: Claude Code applies a mid-turn effort from its next request and writes no line for it (FRM-588:W7, dima 21:57 and 22:09; clio's 22:09:17 request ran at high inside a running turn)
-  - and the moment a reply first runs at his effort, the label and the slider's level flash solid orange for 2 s, then read plain: that reply's request is the first one sent at it (dima, 22:20 and 22:26); a pick made after a turn's last request reads plain once the turn ends, since the next turn starts at it (22:31)
-  - and a pick in vim's normal mode presses `i` first, and a pick whose picker never opened leaves nothing in Claude's prompt (FRM-588:W6)
-  - and the picker opens neither by click nor by ⌘⇧E while the thread asks him something, and a pick made before the question came never types into it: a note says to answer first
-  - proof: a throwaway Haiku thread took `/effort` mid-stream, «Set effort level to high (this session only)» (23:56); `/model` mid-stream, «Set model to Sonnet 5.5 for this session only», the next reply `claude-sonnet-5-5` (2026-11-13)
-- ⬜ ⌘⇧E picks the effort
+  - then a dim «Tab <suggestion>» line sits above the quill; Tab or a click fills his quill with it
+  - missing in the new chat: not built yet
+
+## model, effort and permissions
+
+- ⬜ ⌘⇧E picks the effort, the picker switches model and effort
   - given the Chat view shows a thread
-  - when dima presses ⌘⇧E
-  - then the quill's one picker opens, «Opus 5.5 · Medium ⌄» just left of send: the «Model» list (Fable, Opus, Sonnet, Haiku, the current one ✓ on the right) over the «Effort» slider, one thumb on a line with five small stops, Low to Max, resting on the current level
-  - and ⌘⇧E again applies only a stop the thumb moved to; a pick still landing refuses a second one until it lands
-  - and ← → slide the thumb, a click on a stop or a second ⌘⇧E (or Enter) closes it and applies, Esc closes it with nothing changed
-  - and a thread asking him something gets no popover, a note says to answer first
-  - decision: a popover, not a cycle: one press to look, arrows to pick, the key again to apply (dima's sketch, 2026-11-13 14:01); one thumb that slides, the stops only where it lands (14:17)
-- ⬜ the effort shows the thread's live value
-  - given a thread's last reply ran at an effort
-  - then the quill's effort reads that value, past the default in settings
-- ⬜ no thread strip above the chat: a thread's facts live in the band, its asks on the deck
-  - given a thread's tab is open in the Chat view
-  - then the chat starts right under the tab bar, with no strip of asks above it (shot 2021-strip-hidden)
-  - decision: the strip is gone (dima, 20:12: «can i have this dupe orbit killed? it eats UI»), lifting his 18:11 «keep for now»; its block is hidden by one `layout.hide` click, zoo.json untouched, and x-herdr-deck's `view: seat` copy draws and reads nothing
-- ⬜ the band sits right above the quill, slice 1 ([FRM-565](https://linear.app/x-com/issue/FRM-565))
-  - given a thread's tab is open in the Chat view
-  - then three rows above his quill read its «waiting on» line, the weekly usage and its context, as in his shot `~/.local/state/looks/PK-363/1811-dima-band-in-desktop-app.jpg`
-  - and a thread mid-turn or waiting on nothing shows an empty waiting-on row, a long one is cut with … and whole in its tooltip, and the rows keep one height so nothing moves
-  - and facts the deck has not published for over 2 min 15 s draw dimmed
-  - and the 5h line is off for now, back if he moves to the $100 plan (on $200 it is not shown)
-  - decision: the deck's mod reads the facts once and publishes them to herdr's shared state `x-herdr-deck.threads`, at once on a change and every 60 s; the chat reads only that key for its own thread
-- ⬜ the band's buttons, slice 2 (FRM-565)
-  - given a thread's tab in the Chat view
-  - then right of «wait» sit 🐦‍🔥 🔥 ⏰ 💨 🔓 🎛️ 🚦, emoji only, each word leading its tooltip (dima, 21:02); filled when on, 🔓 red when on
-  - and 🚦 shows and hides the deck by herdr's `layout.toggle` on its block, no layout file write (proof 2102: 9 threads before, hidden and after; his click «board confirmed to work»)
-  - and 🔓 reads the override store `x` reads; its click waits on the mods codie's proof row; 🎛️ waits on the settings view: greyed, the reason on hover
-- ⬜ 🍃 second wind auto on the band, right of 🐦‍🔥 (FRM-625)
-  - makes: the thread's `second-wind-auto` key, written by x-mod-stash's own door (`pnpm mods:set second-wind-auto <session id> on|off`), never by herdr
-  - given a thread's tab in the Chat view, then 🍃 sits right of 🐦‍🔥, its hover «second wind auto», filled while that thread's key reads on
-  - when dima clicks it, then the key flips through the door and the button shows what the door reads back; a failed write says so in a toast and the button keeps its state
-  - and it stays greyed until the door answered for the shown thread; a press on the cc band shows here within a minute
-  - given «Auto second wind» off in settings, then 🍃 is not on the band at all, as on the cc band
-  - decision: the door, never the press file — the spec's line; the key is asked on a new thread and once a minute, since no shelf file carries it yet
-- 🧭 a thread's status sits in the text box's bottom bar (FRM-610)
-  - given a thread working, then between + and the band's buttons a spinner, what it does, its turn clock and Stop; at the narrowest pane the line and clock clip, while Stop and the band's buttons stay whole
-  - given a thread idle, then the bar reads «○ Idle» (or its wait line), and the meters card above has no status row
-  - and a stuck turn hides Stop and says why in the line
-  - decision: dima's 15:36 «try», kept on his tick (o33, 15:42)
-- ⬜ wind, hot, waker and AFK pressed from the band (FRM-568)
-  - makes: one line `{at, button, on, sid?}` per press in `~/.claude/shelf/band-presses/band.jsonl`, lines older than a day trimmed
-  - given a thread's tab in the Chat view and its state file in `~/.claude/shelf/herdr-state/`
-  - when dima presses 🐦‍🔥 or 🔥, then that thread, and no other, takes it at its next poll; ⏰ and 💨 set every thread
-  - then the button fills at once and reads on from the state the stash writes back alone; a press the stash does not answer in 12 s gives the button its state back
-  - and its tooltip says the state in words first («keep hot: off.»), its on-since time with it; on is filled, off is plain, and no button fades but 🎛️, which does nothing yet (dima, 22:30: «i liked previous shape … remove dimming»)
-  - and a press sets the state the button asks for, never a flip
-  - decision: the button draws the state the stash wrote, never its last press, so a press from the cc band or a late line never leaves the two bands apart
-  - and ctx sits above week (dima, 21:00)
-  - decision: his crop (2054) approved at 20:59
-- ✅ a transcript past 64 MB draws: the chat reads it a slice at a time with `tail | head`, since herdr's readFile refuses a bigger file (a 93 MB thread drew empty, 21:02)
-- ✅ the quill's draft survives a chat reload
-  - given dima has typed into a thread's quill
-  - when the chat mod reloads
-  - then the quill shows his text again (proven in wing 1's tab, 16:57:57)
-- ✅ the quill's draft survives a thread switch
-  - given dima has typed into a thread's quill
-  - when he goes to another thread's tab and comes back
-  - then the quill shows his text, the caret at its end
-  - decision: a thread switch never writes a draft; only typing, a quote, a completion and a send write it, under the thread the quill shows (live 19:17:58)
-  - cause, proven: the switch ran inside render, and herdr refuses the caret set there, so the render failed midway: the quill took the new thread's draft while it kept the old thread's address, and the next switch wrote that under the old thread (the caret line came with FRM-556, the write with zoo's copy). the switch now runs in a task (live 19:21:41)
-  - proof: `herdr-app do tab.next` before the fix drew «This view could not be re-rendered… set_selected_range cannot run during render»; after it, no error, herdr-codie's band and transcript showed, and back on wing 1 its draft «t» was in the quill (shots 1921, 1922)
-- ⬜ every reply of an earlier turn stays open
-  - given a thread sent several replies between two of dima's messages (a peer's ping starts no turn)
-  - when that turn is no longer the last
-  - then each reply still shows, a long one its first lines with «Show more» (below); only the tools and notes between them fold into «▸ N tools»
-- ⬜ a long reply of an earlier turn shows its first lines, «Show more» opens it
-  - given a reply past about 40 lines, in a turn before dima's last message
-  - then its first ~24 lines show, and «▾ Show more · N more lines» under them; only those lines are laid out
-  - when dima presses Show more
-  - then the reply opens whole where it is, «▴ Show less» under it; Show less folds it and brings its start back into view
-  - and the replies after his last message never fold, a search hit shows whole, a cut code block still copies its whole text
-  - decision: the fold waits for his next message, so a reply never collapses while he reads it (review, 00:54)
-  - proof: a probe thread's turn with three reports and two tools, before «▸ 2 tools · 2 messages» and the last report only, after all three reports (shots 17:45); clio's session: 83 more replies drawn across its 32 turns, 18 at most in one
-  - decision: one settings row, «Earlier replies: Open / Folded», default Open (clio's ok on dima's «i see no list», 17:41); the old «Earlier turns: Fold / Show» row goes
-- 🧭 a «Show more» switch in herdr's settings turns the fold off (FRM-607)
-  - given «Show more» off in Settings › Chatter › replies
-  - when a reply past about 40 lines lands in an earlier turn
-  - then it reads whole, no «Show more» under it; turned back on, the same reply folds again at once
-  - and a settings file written before the switch reads it on, and his pick holds across a herdr reload
-- ⬜ one settings window, a page per mod (FRM-566)
-  - makes: `~/.claude/shelf/herdr-settings/settings.json`, `{v, rows}`: every row's value, defaults included, written at the chatter's start and on each change
-  - when dima presses 🎛️ in the chat band
-  - then the settings window opens as a modal over the chatter on its Chatter page: a nav of Chatter, Deck, Tabs and Claude Code mods, each row a title, a one-line why and one control
-  - and a change lands in the file at once, and a value off its row's range or options reads as the row's default
-  - and only rows that act are drawn: a Claude Code mods row joins once its mod reads it, added by the mods lane with its wiring (dima, o101)
-  - decision: the window lives in the chatter: a herdr mod cannot import a sibling mod's file, and only a mod placed at start can write every default (clio, 19:28)
-- ⬜ a «🐦‍🔥 second wind» group on the settings window's Claude Code mods page (FRM-625)
-  - makes: the rows `stash.second-wind`, `stash.second-wind-auto`, `stash.wind.notice`, `stash.wind.must` and the five note rows `stash.wind.text.notice`, `.at`, `.at.coordinator`, `.propose`, `.press` in `settings.json`, which x-mod-stash reads; herdr is a second editor, the truth stays in the mod
-  - given the group, then it holds Second wind and Auto second wind as switches, «Heads-up at» and «Second wind at» as steppers, each row with one short line under its title
-  - when he sets a notice line at or above the wind line, then the row says «🛑 not saved: the notice line (N) must sit below the wind line (M)» and the stored value stays
-  - given its five note boxes in the order a thread meets them, one per note the stash's store holds, each titled by when the thread reads it, with the live number of its line («At 55 % context: the heads-up», «At 65 % context: the must», «At 65 % context: the must, for Clio», «Past 65 % with a thread’s 🍃 off», «When you press 🐦‍🔥»; dima, 2026-11-16 20:51: «a lot of text but tell nothing», he typed into the wrong box), then each shows its full text: his row, else the default from the stash's store `~/.claude/shelf/second-wind.json`
-  - when he edits a note and presses Save, then the text lands in its row; the default saved unchanged leaves the row empty, and «Reset to default» empties it
-  - and a note that lost the word `second-wind` or `handoff` gets a red line under its box and still saves
+  - when dima presses ⌘⇧E, or clicks «Opus 5.5 · Medium ⌄» left of send
+  - then the picker opens: the «Model» list over the «Effort» slider, one thumb on five stops, Low to Max, resting on the thread's live level
+  - and ⌘⇧E again, Enter or a click on a stop applies; ← → slide the thumb; Esc closes with nothing changed
+  - and a pick mid-turn applies for this session at once and reads in the accent until a reply runs at it, then flashes solid for 2 s (FRM-588:W7)
+  - and a thread asking him something gets no picker, a note says to answer first
+  - decision: a popover, not a cycle: one press to look, arrows to pick, the key again to apply (dima's sketch, 2026-11-13 14:01)
+- ⬜ a model switch mid-conversation asks first
+  - when dima picks another model in a thread whose chat holds messages
+  - then a card above the quill says the cache is lost, with «Switch to <model>» and «Keep the cache»; a new thread switches at once
+- ⬜ Claude asking for a permission, answered in the chat (FRM-638 slice 7)
+  - given the thread blocked on a permission prompt, then a «Claude is asking» panel over the band shows its screen with 1 2 3 4, Enter, Esc and Open terminal
+  - decision: no question card: AskUserQuestion is denied in his settings.json, so none ever shows (the probe, 20:28)
+
+## the band and the status bar
+
+- ✅ a thread's status sits in the quill's bottom bar (FRM-610)
+  - given a thread working, then between + and the band's buttons a spinner, what it does, its turn clock in whole minutes («<1 min», «4 min») and Stop
+  - given a thread idle, then the bar reads «○ Idle» (shots 2026-11-18, the quill crops)
+  - decision: whole minutes, never seconds: each redraw drops a text selection in progress
+- ⬜ the meters sit right above the quill (FRM-565)
+  - then 🧠 context and 🫙 week bars sit over the quill, from the deck's shared `x-herdr-deck.threads`; facts older than 2 min 15 s draw dimmed
+  - and each bar turns amber at his level, set in the chat's settings window (60 % and 80 % by default)
+- ⬜ the band's buttons (FRM-565, FRM-568, FRM-625)
+  - makes: one line `{at, button, on, sid?}` per press in `~/.claude/shelf/band-presses/band.jsonl`
+  - then 🐦‍🔥 🍃 🔥 ⏰ 💨 🔓 🎛️ 🚦 sit on the lower card, emoji only, each word leading its tooltip; filled when on, 🔓 red when on
+  - and 🐦‍🔥 or 🔥 is taken by that thread alone; ⏰ and 💨 set every thread; the button draws the state the stash wrote back, never its last press
+  - and 🍃 flips the thread's `second-wind-auto` through x-mod-stash's own door, and is gone with «auto second wind» off
+  - and 🚦 shows and hides the deck by herdr's `layout.toggle`
+
+## the header row
+
+- ✅ the thread's top row (x-herdr-chat-header, FRM-638:W134–W137)
+  - given the Chat view or a Terminal pane, then one row reads the thread's name and folder on the left, then + (new tab), Files, Changes, search, ⚙ and the Chat | Terminal switch (shot `~/.local/state/looks/FRM-638/2110-chat-header.png`)
+  - and the ⚙ opens the chat look popover; search opens find, and a press anywhere outside an open find closes it
+  - and on a Terminal pane, hover adds split right, split down, zoom and close for that pane (his o2 tick)
+  - and a blocked thread shows «Needs you»; a working one shows no spinner (dima, 20:56: «i already have enough spinners»)
+  - and a chat with no thread yet keeps + Files Changes and the way to Terminal
+  - decision: built new, never copied from zoo's header (dima, 20:45); forking left out (dima: «forking … out of scope»)
+
+## find
+
+- 🔎 find in the chat (FRM-638 slice 6)
+  - given the chat shows a thread
+  - when he presses ⌘F anywhere in the window, or the header's search, then a find bar floats at the chat's top right with the keyboard in it, and no message moves (dima, 17:58, 18:39)
+  - and ⌘F over an open settings window, dialog or popup does nothing (dima, 18:28)
+  - and his query settles 150 ms, then «n / N» counts each match, any case, and the newest hit's row scrolls to the view's top
+  - and Enter or ↓ steps to the next older match, ⇧Enter or ↑ to the newer, wrapping
+  - and Esc, ✕ or a press anywhere outside the bar closes it and gives the keyboard back to the quill; a thread switch closes it (dima, 18:11, 18:18, 21:04)
+  - and an open find re-counts when an older page lands, and its «n / N» says on hover that it counts the history loaded so far
+  - decision: it searches the rows loaded so far, never pages further up
+- ✅ the stepped reply reads as plain words, its markdown marks dropped (FRM-638:W131, dima's o14)
+  - given find steps onto a reply holding bold, code, a fence, a heading or a link
+  - then that reply shows its words with no `**`, backticks, fence lines, `#` or link addresses, its matches marked
+  - decision: plain words, not rendered marks: rendered bold with word marks waits on herdr-app TextView highlight ranges
+- ⬜ wanted: find marks words inside the rendered reply, no flicker, its markdown kept, once [herdr-app#1231](https://github.com/herdrdev/herdr-app/issues/1231) ships (FRM-638:W131: plain words are accepted, not wanted)
+
+## settings
+
+- ✅ the chat look popover (x-herdr-chat-settings, FRM-641)
+  - makes: the chat look in herdr's shared store, `chat.look`; «Text (all of herdr)» also writes `colors.foreground` in herdr's `settings.json`
+  - given the header's ⚙ pressed, then a popover opens over the chat: a «Chat» heading with Reset, then text size, font, width, tool calls, «Text (all of herdr)» and spacing
+  - when he changes a row, then the chat redraws in it at once: Narrow keeps rows and the quill in an 820 px column; tool calls hidden leave the list; the message he was reading stays on the same line
+  - when he picks a colour for «Text (all of herdr)», then herdr's whole text takes it; Reset puts back the colour herdr had before his first pick
+  - decision: only the rows the chat acts on show (dima's o5, 2026-11-18); accent, his messages, background, system lines and earlier replies come back with their slices
+  - decision: the popover is its own mod, its rows as data (`rows.js`) and one typed reader of the store (`look.js`), copied into the chat and held equal by a test
+- ⬜ the chat's settings window (FRM-638 slice 7, W42, FRM-566)
+  - makes: `~/.claude/shelf/herdr-settings/settings.json`, `{v, rows}`
+  - when he presses 🎛️ on the band
+  - then the settings window opens in herdr's middle, shaped like shepherdr's: a page list on the left (chat, claude Code mods, keys), each row a title, one dim line and its control
+  - and a change lands in the file at once and the chat applies it; a value off its row's range reads as the default; a key no row reads is kept through every write
+  - and Esc, ✕ or a click beside the card closes it
+  - decision: the window lives in the chat: a herdr mod cannot import a sibling mod's file (clio, 19:28)
+- ⬜ a «🐦‍🔥 second wind» group on the claude Code mods page (FRM-625)
+  - makes: the rows `stash.second-wind`, `stash.second-wind-auto`, `stash.wind.notice`, `stash.wind.must` and the five note rows `stash.wind.text.notice`, `.at`, `.at.coordinator`, `.propose`, `.press`, which x-mod-stash reads
+  - given the group, then it holds the two switches, «heads-up at» and «second wind at» as steppers, and five note boxes titled by when a thread reads them, with the live number of its line
+  - when he sets the heads-up at or above the wind line, then the row says it was not saved
+  - when he edits a note and presses Save, then the text lands in its row; «Reset to default» empties it; a note that lost `second-wind` or `handoff` gets a red line and still saves
   - decision: a note saves on its button, never per key: a half-typed note must not reach a thread
-- ⬜ a «🪐 orbit» group of three note boxes on the Claude Code mods page (FRM-640)
-  - makes: the rows `stash.orbit.text.tick`, `stash.orbit.text.plan-stale`, `stash.orbit.text.lane-stale` in `settings.json`, which x-mod-stash reads at each nudge
-  - given the group below 🐦‍🔥 second wind, then it holds three note boxes, each titled by when a thread reads it («When you tick or steer an ask», «When a thread’s plan goes stale», «When a lane goes stale»), its why naming the placeholders it fills (`{n}`, `{id}`, `{title}`, `{tool}`)
-  - given a row empty, then its box shows the stash's built-in line, and that line saved unchanged leaves the row empty
-  - when he edits a box and presses Save, then the text lands in its row and the next matching nudge in any thread carries it; «Reset to default» empties the row
-  - 📌 the built-in line a box shows is a copy kept in `settings-model.js`: the stash writes no file of defaults for these three, so the copy can trail the mod's own text; an empty row always means the mod's text
-- ⬜ a «Lane idle alarm after» row on the Claude Code mods page (FRM-605 rider)
+- ⬜ a «🪐 orbit» group of three note boxes on the claude Code mods page (FRM-640)
+  - makes: the rows `stash.orbit.text.tick`, `stash.orbit.text.plan-stale`, `stash.orbit.text.lane-stale`, which x-mod-stash reads at each nudge
+  - given a row empty, then its box shows the stash's built-in line; Save lands an edit, «Reset to default» empties it
+  - 📌 the built-in line is a copy kept in `settings-model.js`; an empty row always means the mod's text
+- ⬜ a «lane idle alarm after» row on the claude Code mods page (FRM-605 rider)
   - makes: `stash.park.after` in `settings.json`, minutes, 10 by default, 5 to 60
+- ⬜ Apple's Metal HUD from the settings window
+  - when he turns «metal hud» on, then herdr's bundle default `MetalForceHudEnabled` turns on and macOS draws its frame-rate meter over herdr; off turns it off
+  - decision: herdr's own gpui-fps meter is refused in his window, Apple's HUD is the meter (dima, o1)
+
+## keys
+
 - ✅ x-herdr's keys (FRM-577)
   - makes: our entries in herdr's `keys.json` `global`, told apart by an `x-herdr-*` action; the file before each change kept in `data/x-herdr-chat/keys-before/`
   - given herdr focused, when dima presses ⌘K, then the Chat view comes forward and the caret sits in the quill
   - given herdr focused, when he presses ⌘E, then the deck shows or hides
-  - given a terminal pane focused, when he types «d» or «/», then the letter lands in the pane
-  - given a key of ours that herdr already binds, when the chatter starts, then a toast names herdr's action, herdr's key keeps working, and the Keys page marks ours refused
-  - and the settings window's Keys page lists ours, then herdr's own, each rebindable: a click on a key's cap takes the next chord, Esc gives up
-  - given he rebinds ⌘E to a free chord, then the new one toggles the deck and ⌘E does nothing; a chord already held is refused by name, a plain or ctrl-letter one as «types into a terminal»; his keys.json is kept in `keys-before/` before every write
-  - decision: our keys go to x-herdr-status, always placed: herdr calls a command of a mod it does not draw «unknown», and the chatter hides behind the Terminal view (his 21:27 shot)
-  - decision: our list is the source and the chatter writes it into his keys.json, since a key reaches a mod only through that file (herdr's guide § Keys); the keys moved off ⌘/ and ⌘D, which herdr holds (o104)
-- ⬜ Apple's Metal HUD from the settings window
-  - when he turns «Metal HUD» on, on the Chatter page
-  - then herdr's bundle default `MetalForceHudEnabled` turns on and macOS draws its frame-rate meter over herdr; off turns it off
-  - and a flip made in a shell shows in the row at the chatter's next load
-  - decision: herdr's own gpui-fps meter is refused in his window, Apple's HUD is the meter (dima, o1)
-- ⬜ the meters warn at his levels
-  - given «🧠 ctx turns amber at» and «🗓 week turns amber at» in the settings window, 60 % and 80 % by default
-  - then each bar turns amber once its share reaches its level
-  - and the groove reads in a dark palette as in a light one: the rail is the page's background with a quiet edge, the unlit cells one step up, no bright line over the bar (dima, 2026-11-16 17:37, on the playground: «looks off, make it pretty»; shots `looks/FRM-635/1737-meters-before-playground.png`, `1742-meters-after-crop.png`)
-  - not checked: the after look in the dark playground, until his next open
-- ⬜ once he scrolls up, nothing but his own hand moves his view (FRM-562:W18, W19)
-  - given he scrolled up in a thread's chat
-  - when a reply, a tool line, a peer or plugin line, a turn end, a store change, a resize or a reload of the mod arrives
-  - then the text he reads stays where it is; only his scroll to the end or a click on the «↓» pill brings him back to following
-  - and the end is the conversation's last screen of rows, never «the last row is on screen»: a step down inside a long last reply keeps him reading (dima, 2026-11-16 17:55: «fix it so nothing scrolls the chatter without me»)
-  - and a transcript read again (the first read after a reload, the same session re-read) keeps his place; only another conversation in the thread (a /clear, a resume) opens at its newest
-  - and a row he reads that a relay or a redraw replaced leaves him where he is, never at the newest; only a thread he comes back to whose row is gone opens at its newest (W83, 21:16: «i scroll myself»)
-  - and the pill is «↓» alone, small and muted at the view's bottom right; it counts what arrived since he left the bottom: «↓ 3» (his 17:55: «cut to ↓, smaller, out of center, less noisy»)
-  - and each thread keeps its place across a tab switch, and across a reload of the mod (by the message's transcript id)
-  - decision: «following» is a state he enters and leaves by his own scroll or click, never set by a redraw; the wheel only flips it (rows.js)
-  - not checked: by his hand in his window; a drag of the scrollbar does not leave following (herdr's list hands a mod no scroll offset)
-- ✅ a resize keeps the chat on its newest message
-  - given the chat is following, his own scroll at the end
-  - when the tray or a panel opens or closes
-  - then the newest message stays in view and no «↓» shows (shots 17:39, tray and Files open and closed)
-- ⬜ after a reload the caret sits at the draft's end
-  - given a draft came back after a reload
-  - when dima types on
-  - then his text goes after the draft, never in front of it
+  - given a key of ours that herdr already binds, then the keys page marks ours refused and herdr's key keeps working
+  - and the settings window's keys page lists ours, then herdr's own, each rebindable: a click on a key's cap takes the next chord, Esc gives up; cmd-enter is listed, never written into his keys.json
+  - decision: our keys go to x-herdr-status, always placed: herdr calls a command of a mod it does not draw «unknown»
+
+## the deck's steers (x-herdr-deck)
+
 - ⬜ a steer being typed survives a deck reload
   - given dima has typed into an ask's steer field
   - when x-herdr-deck reloads
@@ -270,205 +286,5 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ a sent steer stays in sight until the thread takes it
   - given dima typed a steer on an ask
   - when he presses 🛎️ tick or 🔁 replay
-  - then the steer stays under the ask as «↳ his text», selectable, and leaves once the thread's turn takes the press (the 🔒 draws)
+  - then the steer stays under the ask as «↳ his text», selectable, and leaves once the thread's turn takes the press
   - decision: his word, 22:54: «when i tick my steer text is hidden. do not hide it. instead, hide it when it slipstreamed»
-
-- ✅ a code block copies its command
-  - makes: the fence's exact text on the clipboard, no trailing newline
-  - given a reply holds a closed fence
-  - when dima clicks ⧉ copy at the code block's top right
-  - then the label reads ✓ copied for a moment and a paste gives the command (his hand, 16:04)
-  - and a fence still streaming draws no copy button; a fence under any 📋 ribbon, «copy → this thread» included, is a copy block, never a card that fills the quill
-  - decision: the prompt card that filled his quill is gone; a copy block carries anything he moves elsewhere (his o147 tick, 22:22)
-- ✅ the / menu lists every skill the thread can load
-  - given the thread's folder enables a plugin through the user, project or local settings
-  - when dima types «/» and part of a name
-  - then that plugin's skills show (clio's 22 `clio:` skills in main), a match on the part after the colon too («/boot» → `clio:boot`), and a disabled plugin's skills never show
-  - and a plugin whose manifest lists its skills (`.claude-plugin/plugin.json` `skills`) shows exactly those, so «/ret» offers `mattpocock-skills:retro`; its unlisted `deprecated/` and `in-progress/` never show
-  - proof: `skills.test.ts` over a fixture plugin tree, and a read of this mac's plugins: all 27 of matt's 1.3.2 skills, «ret» → `mattpocock-skills:retro` (FRM-593, 2026-11-13)
-- ⬜ inline code in the quill turns into a chip
-  - given dima types «use `ls` here»
-  - when the closing backtick lands
-  - then `ls` draws as one monospace chip the caret skips and one delete removes, and the sent message reads «use `ls` here»; three backticks open a fence and make no chip
-- ⬜ a message between threads folds to one line (FRM-562)
-  - given another thread sends this one a message, or this one sends one with SendMessage
-  - then it draws as one line, «🦉 clio → ⚡ 🔧 codie: herdr lane · first words · 21:39», tinted, even with tool rows hidden and in a folded turn; a click opens its whole text below it, a second click folds it
-  - and a message that lands both queued mid-turn and at a turn start draws once
-  - decision: read from Claude Code's own record of the sender (`origin.kind: peer`), never from the message's text
-- ⬜ a file a reply links opens from a row under it
-  - given a reply links a file with a `file://` url
-  - then a «📂 <name>» row sits under the reply, its whole path on hover, and a click opens it in its app (a png in Preview, a folder in Finder); a web link in the text opens in the browser as before
-  - decision: a link inside a list row can't take a click (no handler there, and TextView opens no file://), so each file gets its own row (dima's o81 «ok», 21:39); a link click inside the text waits on [herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894)
-- ⬜ a click on send marks his words to join the thread's next chance (FRM-564)
-  - given text in the quill, the thread busy or idle
-  - when dima clicks send or presses Enter
-  - then a join row lands in the thread's join file, no turn starts, the words stay in the quill and the button shows 🍕 (ready to join; 📥 until 2026-11-16, whose white blended with the white button)
-  - and what he types after the click rides the same row until a turn takes it
-  - and a second click before a turn took it takes the mark off: the row leaves the join file, the words stay
-  - and each thread keeps its own mark: marking words in another thread leaves this one's waiting, and a mark settles (taken, or «not taken» after a minute) from its thread's state whether that thread is open or not
-  - decision: one mark per thread, never one at a time (clio's call on W44, 21:16)
-  - and once a turn takes the row, its words leave the quill in the same frame the chat draws them (anything typed after its last write stays), the button shows 😋 (joined) for ~3 s, and the chat draws them as his own message, «sent» at the time the turn took them
-  - and a row listed nowhere a minute after the write, or a write refused, stays in the quill unmarked, the note saying why; after a chatter reload the mark and the words come back once
-  - and a picture waiting over the quill joins as its path and stays over the quill, as the words do, until a turn takes it; one dropped or removed while the words wait rides or leaves the same row
-  - and with the quill empty the button keeps its black face, no disabled look: a click, Enter or a hold there does nothing, no disc
-  - decision: no disabled state on send; an empty quill's press just does nothing (dima, 20:30)
-- ✅ a 1 s hold on send or Enter pushes, its disc filling (FRM-564)
-  - given text in the quill
-  - when dima holds send or Enter
-  - then after a short pause (100 ms, so a tap never shows it) a disc fills the button over 1 s and then the message pushes; Settings › Chatter › send sets both, words marked to join taken out of the join file first: a turn starts, as a send did before joins
-  - and a release before the disc starts joins, one after it sends nothing and marks nothing, Enter acting on its release, its repeats typing no newlines; a pointer that leaves the button or a window that loses focus cuts the hold: nothing is sent and the bar resets
-  - decision: a let-go after the disc starts sends nothing, a started hold he aborts being a changed mind (his o127 tick on clio's pick, 21:23)
-- ⬜ cmd-enter in the quill sends at once (FRM-564)
-  - given text in the focused quill
-  - when dima presses cmd-enter
-  - then the message pushes at once, no disc, words marked to join taken out of the join file first: a turn starts
-  - decision: dima, 20:41: «cmd+enter — sends immediately», only while the quill holds focus
-- ⬜ a send that cannot join pushes and says why (FRM-564)
-  - given a slash command in the quill, or a thread whose join queue is switched off
-  - when dima clicks send
-  - then it pushes, and a note beside the quill reads «Sent: a slash command starts a turn» or «Sent: joins are off for this thread» for 6 s
-- ⬜ joins a thread never took come back when it ends (FRM-564)
-  - given a thread archived or killed with his joins still waiting
-  - then each text comes back to the quill once, in the order he sent it, after what he typed there, and a note reads «Back from <thread>: it ended before joining»
-  - and a row the thread joined before it ended does not come back
-- ⬜ cmd-enter is listed with the x-herdr keys (FRM-564)
-  - then the Keys page lists it, refused by name when herdr binds cmd-enter, never written into his keys.json
-- ✅ a message tells when it was sent and when Claude read it
-  - given a message in the chat
-  - then a small dim line under it holds one state and its own time, on his clock, a date before it from an earlier day: his own message reads «sent 14:45» while Claude Code holds it, «read 14:46» once it took it off its queue (at a tool round or the turn's end; a row with no queue record, an idle send above all, at its own time); a reply reads its time alone, under its last part when it is cut into parts
-  - and a pushed message Claude Code still holds reads «sent 15:10» at the log's end
-  - decision: one state, one time (his 17:16 shot: «only one state — sent or read. sent turns to read once reached an agent»); the time is the shown state's own, so it never needs a second; «read» replaced «received», which showed the send time and looked instant though the turn took the message seconds later
-  - decision: always shown, not on hover: a tooltip inside a lazy-list row never showed for him, beside his bubble (15:51) or on its strip (16:27: «no, i do not see it»); a row's renderer takes no handlers ([herdr-app#598](https://github.com/herdrdev/herdr-app/issues/598)); clio's fallback, 16:27
-- ⬜ a reply answers one message
-  - given a message in the chat
-  - when dima right-clicks it and picks Reply
-  - then an «↩ Reply» strip above the quill shows the message's first words, × drops it
-  - and the next send goes with the message quoted («> » lines) before his text
-  - decision: Reply replaces «Quote message in chat», which pasted the quote into the quill; right-click, since a lazy-list row takes no hover (herdr-app#598)
-- ⬜ files attach to the next message
-  - given a thread's box in the Chat view
-  - when dima presses + at the left of the lower card and picks files, or drops files on the quill
-  - then each shows as a «📎 name» chip above the quill, its path on hover, × takes it off
-  - and a picture (png, jpg, gif, webp) shows in the pasted images' preview row instead, read «sent with your message», Remove takes it off
-  - and Send puts each path on its own line after the text, spaces escaped the way a terminal drop types them
-  - decision: a drop looks like a paste, one preview row (dima, 14:09: «dnd does not shows preview»)
-  - decision: a dev container's box shows no + (its Claude cannot read a mac path)
-- ⬜ the quill is a stacked card with send in its corner
-  - given the chat shows its quill
-  - then the text card, rounder and with a soft shadow, rests on a narrower card holding + and the band's buttons; a round 🛎️ send (↑ until 2026-11-16; the chain reads 🛎️ → 🍕 → 😋, as orbit's) sits in the text card's bottom right, lit once text is typed, the model and effort picker just left of it, and the text uses the full width above one button-high bottom row
-  - and the quill shows no placeholder; Enter still sends
-  - and a hover on the lit 🛎️ turns it ink, and it spins from the press until the thread has the message (FRM-562 part B)
-  - decision: his word, 15:15: «still eats space» on a right gutter; the bottom row is the one herdr allows (Textarea has no per-line inset)
-- ✅ the chat holds still at the bottom
-  - given a long chat scrolled to its newest message
-  - when a trackpad's momentum presses past the end, or a reply streams in
-  - then nothing redraws for the wheel and the view stays pinned (probe: 157 overscroll events, 0 redraws, 15:02; shot 1605)
-  - decision: a row's height comes from the measurer, never from the row drawn in the list: drawing far rows as empty boxes once looped a long message between 12 px and 1285 px and nearly froze herdr in wing 1 (15:26 probe)
-
-- ⬜ the new chat reads a thread, in a list that never moves without him (x-herdr-chat, FRM-638)
-  - given `x-herdr-chat` opened as an overlay (`herdr-app do mod.open '{"name":"x-herdr-chat"}'`; it sits in no layout yet) while the old chat shows a thread
-  - then that thread's transcript is drawn from its tail: his messages as bubbles on the right, replies as bubbles on the left with rich text and code blocks, a run of tool calls as one line that counts them by name (shot `~/.local/state/looks/FRM-638/1901-new-chat-overlay.png`)
-  - and it opens at the newest and follows it only while he sits at the end; a wheel step up stops following, and a small «↓» at the bottom right goes back
-  - and the end is the list's last line, read from the list itself: a step down that reaches it follows again, under a newest reply taller than the view too; a step that stops above it keeps him reading
-  - and a new line in the transcript changes only its own row; a long transcript opens at its last 4 MB
-  - and after a reload of the mod the message he was reading is on screen again, read in from above when it must be
-  - and while it finds the thread it says «Opening the thread…», then «Reading the thread…»; a transcript it cannot read shows why
-  - decision: a new mod beside the old chat, moved in file by file under a strict type check, swapped in once at the end (dima, 2026-11-16 16:36: «pull only clean, decided features»)
-
-- 🔎 find in the new chat (x-herdr-chat, FRM-638 slice 6)
-  - given the chat shows a thread
-  - when he presses ⌘F anywhere in the window, the deck or an orbit steer box included, then a find bar floats at the chat's top right with the keyboard in it, and no message moves (dima, 17:58, 18:39)
-  - and ⌘F over an open settings window, dialog or popup does nothing (dima, 18:28)
-  - and his query settles 150 ms, then «n / N» counts each match, any case, and the newest hit's row scrolls to the view's top
-  - and Enter or ↓ steps to the next older match, ⇧Enter or ↑ to the newer, wrapping; the ↑ ↓ buttons do the same
-  - and Esc anywhere in the window or ✕ closes the bar and gives the keyboard back to the quill; a thread switch closes it; it opens empty each time (dima, 18:11, 18:18)
-  - and the bar is one pill lifted off the chat, its ↑ ↓ ✕ on a pill of their own, as the picture viewer's tools (dima, 18:46)
-  - and every matched message is tinted in his accent and keeps its markdown; the stepped one has an accent border and its words drawn plain with each match marked, the stepped match in full accent (dima's o2, 18:46)
-  - decision: it searches the rows loaded so far, never pages further up
-  - decision: words are marked only in the stepped row: herdr's text view takes no ranges, so a marked row loses its bold and reflows; the full fix is herdr's (the upstream ask, clio's)
-- ✅ the stepped reply reads as plain words, its markdown marks dropped (x-herdr-chat, FRM-638:W131, dima's o14)
-  - given find steps onto a reply holding bold, code, a fence, a heading or a link
-  - then that reply shows its words with no `**`, backticks, fence lines, `#` or link addresses, its matches marked
-  - and a query found only inside a link address counts no hit
-  - decision: plain words, not rendered marks: rendered bold with word marks waits on herdr-app TextView highlight ranges (clio's upstream ask)
-- ⬜ wanted: find marks words inside the rendered reply, no flicker, its markdown kept, once [herdr-app#1231](https://github.com/herdrdev/herdr-app/issues/1231) ships (FRM-638:W131: plain words are accepted, not wanted)
-- ✅ older history loads as he scrolls up (x-herdr-chat, FRM-638 slice 6b)
-  - given a thread longer than its first 4 MiB
-  - when he scrolls to within a screen of the top, then the next older page draws above, and the row he reads stays at its spot on screen, no jump, no blank frame (dima, 19:19: pages loaded back to the boot prompt, his line held)
-  - and scrolling on loads page after page, one read at a time however fast he scrolls, until the thread's start
-  - and once the first line is read a quiet «Start of thread» row sits at the top and no more is asked; a thread shorter than one page shows it at once
-  - and an open find re-counts when a page lands, its stepped match kept, and its «n / N» says on hover that it counts the history loaded so far
-  - and a page still read when he switches threads is dropped, never drawn into the other thread
-- 🔎 the new chat's / menu lists commands and every skill (x-herdr-chat, FRM-638 slice 6)
-  - given the quill holds «/» at its start, or after a space or a line break, and part of a name
-  - then a list over the quill shows Claude Code's commands, the thread's skills and its plugins' skills, filtered as he types
-  - and ↑ ↓ move the pick, Enter or Tab fills «/name » with the caret after it, Esc closes it for this word, a click on a row fills it too
-- 🔎 the tool-call fold shows each call (x-herdr-chat, FRM-638 slice 6, PK-432)
-  - given a reply turn ran tool calls in a row
-  - then one row reads «▸ 🛠️ N tool calls: Read 2, Bash 1», folded
-  - when he clicks it, then one row a call follows, its name and what it did (a path, a command, a pattern)
-  - and a click on one call opens it alone to its input, a second click closes it; every fold opens, whatever its count
-- ⬜ a slash command he sends is his message (x-herdr-chat, FRM-638 slice 6)
-  - given he sends «/name args» from the quill
-  - then it shows as his bubble, as he typed it, waiting while the thread works and in history once it ran; no «Sent:» note (dima, 18:00, 18:01)
-  - and a prompt a plugin sends in his place, or a command it runs for him, draws no bubble of his (dima, 18:28)
-- ✅ the new chat's quill: he types, sends and joins a turn from it (x-herdr-chat, FRM-638 slice 2)
-  - given the new chat open on a thread, then the quill, a text box, sits under the list in its column and grows with his lines up to eight
-  - when he types, then his draft is kept for that thread: it is back after the chat closes and opens again (his look, 22:42)
-  - when he presses Enter or clicks the send button, then his words are marked to join the thread's turn and stay in the quill, one line, the caret where it was, the button reading 🍕; a second press takes the mark off; once a turn took them they leave the quill and the button reads 😋 for a moment, then 🛎️ again
-  - when he holds the send button or presses cmd+Enter, then the words go now and a turn starts; a slash command, or a thread that takes no joins, is sent that way on a plain press, and a line over the quill says why
-  - when a send is refused, or the thread does not run in herdr, then his words are back in the quill and a line over it says so
-  - and a message waiting in Claude Code's queue is his last row, an outline of his bubble with dim words, reading «sent HH:MM» under it, until the turn takes it; words that joined a turn are drawn as his messages
-  - Shift+Enter breaks the line
-  - and one press of Enter acts once: a held Enter, or one press herdr reports twice, marks once and its let-go leaves the mark on; a slow tap (~150 ms) marks once (FRM-628)
-  - 🧭 and Enter never scrolls the quill: with the caret past the quill's view, Enter marks and the view stays where he left it (dima, 13:14: «enter only does 🍕 and does not scroll quill»)
-  - and a release on send joins until he can see the disc: a 100 ms pause, then 15 % of the fill (150 ms at the default 1 s hold); let go after that, nothing is sent
-  - decision: a changed mind counts from a disc he can see, never a sliver: a 110–250 ms press did nothing (FRM-628 step 92, keeping his o127)
-  - and while a model, effort or permission pick types into the thread, a push or a send waits: his words stay, marked or not, and a line over the quill says «A switch is typing into this thread: send again in a moment» (FRM-628 step 93)
-  - and his words, their 🍕 mark and his draft have one owner (`quill.js`): words a turn took leave the quill as they show in the chat and stay gone after a switch away and back (FRM-628 step 88, his ✓ 12:39)
-  - and a message he pasted reads as his own words, the wrapper Claude Code puts around a paste gone; a tag he typed, or one inside what he pasted, stays (FRM-628)
-  - decision: until the swap the two chats share no draft and the global keys (cmd-k and the rest) stay the old chat's (clio, 2026-11-16 21:50); the hold's two timings come from the one settings file through the new chat's own store module (FRM-638 slice 7)
-- ⬜ a reply's files open in one click from rows under it (x-herdr-chat, FRM-587)
-  - given a reply names a file by a bare path, a `~` path, a quoted or backslash-escaped path, a `file://` link or a markdown link to one
-  - then each file gets one row under the reply, «🖼️ <name>» for a picture and «📂 <name>» for any other file, and a click opens it in its app (a png in Preview)
-  - and a path inside a fenced block gets no row, a sentence's period or comma is not part of the path, and the same file twice is one row
-  - and the link inside the text stays plain while herdr-app#894 is open: a handler inside a lazy-list row's text does nothing there
-  - and a reply's pictures draw together as squares under it, the way his own do, and a click opens them in the viewer (FRM-638 slice 5, dima 16:59)
-  - and each file is its own row in the list, opened through the list's item click: a press or hover handler inside a row blanked the whole list (herdr-app#894; clio's thread drew empty, 14:15)
-
-- ✅ the chat settings popover: his chat look in one place (x-herdr-chat-settings, FRM-641)
-  - makes: the chat look in herdr's shared store, `chat.look`; «Text (all of herdr)» also writes `colors.foreground` in herdr's `settings.json`
-  - given the old chat's ⚙ pressed, then a 360 × 556 popover opens over the chat, drawn by `x-herdr-chat-settings`: a «Chat» heading with Reset, then one row per choice (text size, font, width, spacing, tool calls, system lines, earlier replies, your messages, background, text, accent)
-  - when he changes a row, then both chats show it at once, and the popover shows the new value
-  - when he picks a colour for «Text (all of herdr)», then herdr's whole text takes it; Reset puts back the colour herdr had before his first pick
-  - and a herdr reload alone never writes herdr's `settings.json`
-  - decision: the popover is its own mod, one mod per part, its rows as data (`rows.js`) and one typed reader of the store (`look.js`), copied into the new chat and held equal by a test, since a mod cannot import a sibling's file (FRM-641 spec)
-- ✅ the new chat follows the chat look (x-herdr-chat, FRM-641)
-  - given the new chat open on a thread
-  - when he changes text size, font, width, spacing or tool calls in the chat settings popover
-  - then the new chat redraws in it at once: Narrow keeps rows and the quill in an 820 px column, Full gives them the chat's width; tool calls hidden leave the list
-  - and the message he was reading stays at the top of the view, on the same line: his place is kept as a share of the message, so a rewrap moves nothing (his look, 23:33–23:53)
-  - and a tool call hidden while it sat at the top hands the place to the next row shown
-  - 📌 until the swap the new chat is a modal overlay and the ⚙ sits under it: his look ran as close, change, reopen; one reopen at 23:44 opened at the newest, not seen again in four rounds
-- ⬜ the new chat's own settings window (x-herdr-chat, FRM-638 slice 7, W42)
-  - given the new chat open on a thread
-  - when he presses 🎛️ on the chat's band
-  - then the new chat's own settings window opens in herdr's middle, shaped like shepherdr's: a page list on the left (Chat, Claude Code mods, Keys), each row a title, one dim line and a switch or a − value + on the right
-  - and every row reads the value he set, from the one settings file both chats share (`~/.claude/shelf/herdr-settings/settings.json`); a row the new chat does not act on yet (Show more) stays the old chat's and is kept through every write here
-  - when he changes a row, then the new chat applies it at once (the file is watched), and the old chat reads the same value
-  - and Esc, ✕ or a click beside the card closes it; the Keys page rebinds a key as the old window did
-  - and no line of the new chat reads another mod's file or opens another mod's window
-- ⬜ a right-click on a message copies it (x-herdr-chat, FRM-638 slice 7)
-  - when he right-clicks a message in the new chat, then a menu opens at the pointer with «Copy message»; a row with no message shows it dim; a click beside it or a scroll closes it
-  - when he picks it, then the message as written is on the clipboard and «Message copied» shows under the quill
-- 🧭 the right-click copies only the words he selected, the whole message when none (dima, 20:35; waits on herdr-app#1110: a mod cannot read a TextView's selection)
-- 🧭 Reply quotes only the words he selected, never a whole message (dima, 20:35: «whole message quoting isn't useful»; waits on herdr-app#1110)
-  - decision: Reply left the menu: whole-message quoting, or a ⌘C-then-Reply detour, is no better than pasting into the quill himself (dima, 20:35)
-- ⬜ Claude asking for a permission, answered in the new chat (x-herdr-chat, FRM-638 slice 7)
-  - given the thread blocked on a permission prompt, then a «Claude is asking» panel over the band shows its screen with 1 2 3 4, Enter, Esc and Open terminal
-  - decision: no question card: AskUserQuestion is denied in his settings.json, so none ever shows (the probe, 20:28)
-- ⬜ a long reply of an earlier turn folds behind «Show more» (x-herdr-chat, FRM-638 slice 7)
-  - given «Show more» on in the chat's settings, then a reply past ~40 lines in an earlier turn shows its first ~24 and «▾ Show more · N more lines»; a click on it opens it whole where it is
-  - and the turn he reads now never folds, nor a search hit; off, every reply reads whole
-  - decision: no «Show less» yet: a press inside a row blanks herdr's list (herdr-app#894), so the reply's own click opens it, and a second click would fold it under a text selection
-
