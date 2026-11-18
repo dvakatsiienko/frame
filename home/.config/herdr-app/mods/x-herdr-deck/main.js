@@ -33,6 +33,7 @@ import {
     hotPresses,
     inListOrder,
     isPressSettled,
+    linkOf,
     literalAngles,
     nextThreads,
     pendingPresses,
@@ -239,6 +240,8 @@ export default class Deck extends View {
         // layouts/x-herdr-layout.json: renaming it means a layout edit, never done while a thread holds focus
         /** @type {Map<string, number>} each ask id label's drawn width */
         this.labelW = new Map();
+        /** the ask whose linked file shows under it, and that file's text, or why it could not be read @type {{ id: string, text: string | null, problem: string | null } | null} */
+        this.linkShown = null;
         this.isThread = props()?.view === 'seat';
         if (this.isThread) return;
         /** @type {Row[]} */
@@ -824,6 +827,12 @@ export default class Deck extends View {
                         ),
                     ),
                 )
+                .when(Boolean(linkOf(ask.link)), (el) =>
+                    el.child(this.linkLine(t, ask, `link-${i}-${j}`)),
+                )
+                .when(Boolean(ask.id) && this.linkShown?.id === ask.id, (el) =>
+                    el.child(this.linkPreview(t, `linked-${i}-${j}`)),
+                )
                 .when(Boolean(ask.id), (el) =>
                     el.child(
                         h_flex()
@@ -952,6 +961,88 @@ export default class Deck extends View {
                         ),
                 )
         );
+    }
+
+    /**
+     * the ask's link, one line under its pick (FRM-645: a hands-ask carries a look card): a web or app link opens
+     * outside, a file shows its text under the ask, a second click folds it
+     * @param {Theme} t @param {Ask} ask @param {string} id
+     */
+    linkLine(t, ask, id) {
+        const shown = linkOf(ask.link);
+        const isOpen = this.linkShown?.id === ask.id;
+        return h_flex()
+            .id(id)
+            .gap(6)
+            .items_center()
+            .text_size(SIZE.secondary)
+            .text_color(t.accent)
+            .cursor_pointer()
+            .hover((st) => st.underline())
+            .tooltip(
+                shown?.kind === 'file'
+                    ? `${isOpen ? 'fold' : 'show'} ${ask.link}`
+                    : `open ${ask.link}`,
+            )
+            .on_click((_e, cx) => {
+                const link = ask.link ?? '';
+                if (shown?.kind !== 'file') {
+                    cx.spawn(async () => {
+                        await exec('open', [link]).catch(
+                            /** @returns {null} */ () => null,
+                        );
+                    });
+                    return;
+                }
+                if (isOpen) {
+                    this.linkShown = null;
+                    cx.notify();
+                    return;
+                }
+                const askId = ask.id ?? '';
+                this.linkShown = { id: askId, problem: null, text: null };
+                cx.notify();
+                cx.spawn(async (cx) => {
+                    const path = link.replace(/^~\//, `${home()}/`);
+                    const text = await readTextFile(path).catch(
+                        /** @returns {null} */ () => null,
+                    );
+                    if (this.linkShown?.id !== askId) return;
+                    this.linkShown = {
+                        id: askId,
+                        problem:
+                            typeof text === 'string'
+                                ? null
+                                : `cannot read ${shown.label}`,
+                        text: typeof text === 'string' ? text : null,
+                    };
+                    cx.notify();
+                });
+            })
+            .child('🔗')
+            .child(shown?.label ?? '')
+            .child(
+                div()
+                    .text_color(t.dim)
+                    .child(isOpen ? '▾' : '▸'),
+            );
+    }
+
+    /** the linked file's text under its ask, read as markdown and selectable @param {Theme} t @param {string} id */
+    linkPreview(t, id) {
+        const shown = this.linkShown;
+        return v_flex()
+            .p(10)
+            .rounded(6)
+            .bg(t.background)
+            .child(
+                shown?.text != null
+                    ? prose(id, shown.text, t.foreground, SIZE.secondary)
+                    : div()
+                          .text_size(SIZE.small)
+                          .text_color(t.dim)
+                          .child(shown?.problem ?? 'reading…'),
+            );
     }
 
     /** @param {Theme} t @param {Row} s @param {Ask} ask @param {string} id */

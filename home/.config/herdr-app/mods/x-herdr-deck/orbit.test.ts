@@ -12,6 +12,7 @@ import {
     hotPresses,
     inListOrder,
     isPressSettled,
+    linkOf,
     literalAngles,
     nextThreads,
     pendingPresses,
@@ -41,6 +42,7 @@ const ask: Ask = {
     id: 'o1',
     isGated: false,
     isLocked: false,
+    link: null,
     mark: null,
     pick: 'yes',
     text: 'push FRM-1',
@@ -60,6 +62,26 @@ describe('the panel reads the state file the stash writes', () => {
             ],
         };
         expect(asksOf(state).map((a) => a.isGated)).toEqual([true, false]);
+    });
+
+    test('an ask’s link comes with it: the linked look card he opens', () => {
+        const state = {
+            asks: [
+                {
+                    id: 'o2',
+                    link: '/Users/dima/.local/state/looks/FRM-638/look.md',
+                    text: 'look: the new chat',
+                },
+            ],
+        };
+        expect(asksOf(state)[0]?.link).toBe(
+            '/Users/dima/.local/state/looks/FRM-638/look.md',
+        );
+    });
+
+    test('a link that is no string is none', () => {
+        const state = { asks: [{ id: 'o3', link: 7, text: 'x' }] };
+        expect(asksOf(state)[0]?.link).toBeNull();
     });
 
     test('a session with no state file yet has no asks and no phases', () => {
@@ -827,5 +849,24 @@ describe('⌘⇧K picks the asker it ticks', () => {
         expect(
             tickAllThread([], { hovered: null, picked: null, shown: 'clio' }),
         ).toBe(null);
+    });
+});
+
+describe('an ask’s link, as the card draws it', () => {
+    test.each([
+        ['https://github.com/a/b/pull/9', { kind: 'web', label: 'github.com' }],
+        [
+            '/Users/dima/.local/state/looks/FRM-638/look.md',
+            { kind: 'file', label: 'look.md' },
+        ],
+        ['/Users/dima/look card.md', { kind: 'file', label: 'look card.md' }],
+        ['obsidian://open?vault=x&file=y', { kind: 'web', label: 'obsidian' }],
+        ['~/notes/a.md', { kind: 'file', label: 'a.md' }],
+    ])('%s', (link, shown) => {
+        expect(linkOf(link)).toEqual(shown);
+    });
+
+    test.each(['', '   ', 'just words', null])('«%s» draws no link', (link) => {
+        expect(linkOf(link)).toBeNull();
     });
 });

@@ -2,7 +2,7 @@
 // alone writes for it (`~/.claude/shelf/orbit-ticks/<sid>.jsonl`, one press per line), which x-mod-stash reads at the
 // session's next turn (FRM-552)
 
-/** @typedef {{ id: string | null, text: string, pick: string | null, mark: string | null, isGated: boolean, isLocked: boolean }} Ask */
+/** @typedef {{ id: string | null, text: string, pick: string | null, link: string | null, mark: string | null, isGated: boolean, isLocked: boolean }} Ask */
 /** @typedef {{ id: string, verdict: 'tick' | 'replay' | 'untick', steer?: string, text?: string, at: number }} Press */
 
 /**
@@ -23,11 +23,32 @@ export function asksOf(state) {
                     id: a.id,
                     isGated: a.isGated === true,
                     isLocked: a.isLocked === true,
+                    link: typeof a.link === 'string' ? a.link : null,
                     mark: a.mark ?? null,
                     pick: a.pick ?? null,
                     text: a.text,
                 }),
         );
+}
+
+/**
+ * an ask's link as the card draws it: a web page by its host, an app link by its app (its scheme), a file by its name;
+ * words that
+ * are none of these draw nothing
+ * @param {string | null} link
+ * @returns {{ kind: 'web' | 'file', label: string } | null}
+ */
+export function linkOf(link) {
+    const text = link?.trim() ?? '';
+    if (/^(\/|~\/)/.test(text))
+        return { kind: 'file', label: text.slice(text.lastIndexOf('/') + 1) };
+    const url = /^([a-z][a-z0-9+.-]*):\/\/([^/?#]*)/i.exec(text);
+    if (!url) return null;
+    const scheme = (url[1] ?? '').toLowerCase();
+    return {
+        kind: 'web',
+        label: /^https?$/.test(scheme) && url[2] ? url[2] : scheme,
+    };
 }
 
 /**
