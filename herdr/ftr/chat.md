@@ -387,6 +387,13 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and while it finds the thread it says «Opening the thread…», then «Reading the thread…»; a transcript it cannot read shows why
   - decision: a new mod beside the old chat, moved in file by file under a strict type check, swapped in once at the end (dima, 2026-11-16 16:36: «pull only clean, decided features»)
 
+- ⬜ find in the new chat (x-herdr-chat, FRM-638 slice 6)
+  - given the chat shows a thread
+  - when he presses ⌘F, then a find bar opens at the chat's top with the keyboard in it
+  - and his query settles 150 ms, then «n / N» counts the rows holding it, any case, and the newest hit's row scrolls to the view's top
+  - and Enter steps to the next older hit, ⇧Enter to the newer, wrapping; ↑ ↓ buttons do the same
+  - and Esc or ✕ closes the bar and gives the keyboard back to the quill; a thread switch closes it
+  - decision: it searches the rows loaded so far, never pages further up
 - ⬜ the new chat's / menu lists commands and every skill (x-herdr-chat, FRM-638 slice 6)
   - given the quill holds «/» at its start, or after a space or a line break, and part of a name
   - then a list over the quill shows Claude Code's commands, the thread's skills and its plugins' skills, filtered as he types
