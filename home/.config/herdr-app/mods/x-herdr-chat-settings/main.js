@@ -47,7 +47,7 @@ export default class ChatSettings extends View {
      */
     init(_props, _cx) {
         const look = lookOf(shared(LOOK_KEY));
-        for (const key of /** @type {const} */ (['bg', 'fg'])) {
+        for (const key of /** @type {const} */ (['fg'])) {
             const box = InputState.new({
                 placeholder: '#hex',
                 value: HEX.test(look[key]) ? look[key] : '',
@@ -191,7 +191,7 @@ export default class ChatSettings extends View {
                         )
                         .tooltip(name)
                         .on_click(() => {
-                            this.pick(row.key === 'fg' ? 'fg' : 'bg', choice);
+                            this.pick('fg', choice);
                             box?.set_value(HEX.test(choice) ? choice : '');
                         }),
                 ),

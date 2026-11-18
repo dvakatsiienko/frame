@@ -176,6 +176,39 @@ describe('the buttons each view shows', () => {
     });
 });
 
+describe('a chat with no thread yet', () => {
+    test('keeps the tab buttons, so the row never strands him', () => {
+        expect(kinds(input({ pane: null }))).toEqual([
+            'new-tab',
+            'files',
+            'changes',
+            'search',
+        ]);
+    });
+
+    test('keeps the way to Terminal', () => {
+        expect(headerOf(input({ pane: null })).hasSwitch).toBe(true);
+    });
+
+    test('shows no name', () => {
+        expect(headerOf(input({ pane: null })).name).toBe('');
+    });
+});
+
+describe('a mod pane, which has no program', () => {
+    test('shows its title', () => {
+        const files: PaneLike = {
+            pane: 'p9',
+            terminal: null,
+            title: 'Files',
+            zoomed: false,
+        };
+        expect(headerOf(input({ pane: files, view: 'terminal' })).name).toBe(
+            'Files',
+        );
+    });
+});
+
 describe('what a press does', () => {
     const at = {
         isFindOpen: false,
@@ -189,6 +222,16 @@ describe('what a press does', () => {
         expect(pressOf('split-right', at)).toEqual([
             { run: ['pane.split', { direction: 'right', pane: 'p1' }] },
         ]);
+    });
+
+    test('the switch with no thread only shows the other view', () => {
+        expect(pressOf('switch', { ...at, pane: null })).toEqual([
+            { run: ['layout.select', { child: 'main', stack: 'views' }] },
+        ]);
+    });
+
+    test('a pane button with no pane does nothing', () => {
+        expect(pressOf('close', { ...at, pane: null })).toEqual([]);
     });
 
     test('close names this pane', () => {

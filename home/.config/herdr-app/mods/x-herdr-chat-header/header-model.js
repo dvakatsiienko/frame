@@ -6,12 +6,12 @@
 /** @typedef {'split-right' | 'split-down' | 'zoom' | 'close' | 'new-tab' | Panel | 'search' | 'settings'} ControlKind */
 /** @typedef {ControlKind | 'switch'} PressKind */
 /**
- * the fields of herdr's PaneInfo the row reads
- * @typedef {{ pane: string, terminal: string | null, title: string, cwd: string | null, status: string | null,
- *   app: string | null, zoomed: boolean, program: { name: string, agent: boolean, shell: boolean } }} PaneLike
+ * the fields of herdr's PaneInfo the row reads; a mod pane has no program, cwd or status
+ * @typedef {{ pane: string, terminal: string | null, title: string, cwd?: string | null, status?: string | null,
+ *   app?: string | null, zoomed: boolean, program?: { name: string, agent: boolean, shell: boolean } }} PaneLike
  */
 /**
- * @typedef {{ view: View, pane: PaneLike, home: string, panels: string[], shownPanel: Panel | null,
+ * @typedef {{ view: View, pane: PaneLike | null, home: string, panels: string[], shownPanel: Panel | null,
  *   hasTabButtons: boolean, isFirstOfTab: boolean, isFindOpen: boolean, hasViews: boolean }} HeaderInput
  */
 /** @typedef {{ kind: ControlKind, label: string, icon: string, isOn: boolean, isHoverOnly: boolean, hasText: boolean }} Control */
@@ -20,7 +20,7 @@
  * one thing a press does: a herdr command, a popup to open, or an ask to the chat on screen
  * @typedef {{ run: [string, Record<string, unknown>] } | { overlay: { mod: string, kind: 'popup', width: number, height: number } } | { ask: 'find' | 'escape' }} Effect
  */
-/** @typedef {{ pane: PaneLike, stack: string | undefined, other: string | undefined, shownPanel: Panel | null, isFindOpen: boolean }} PressInput */
+/** @typedef {{ pane: PaneLike | null, stack: string | undefined, other: string | undefined, shownPanel: Panel | null, isFindOpen: boolean }} PressInput */
 
 const PANE_ICON = 'mods/pane';
 const CHROME_ICON = 'mods/workspace-chrome';
@@ -33,12 +33,12 @@ const PANELS = [
 
 /** an agent shows its thread's title, a shell its program (its title is a prompt), anything else its title @param {PaneLike} p */
 function threadName(p) {
-    if (p.program.agent) return p.title || p.program.name;
-    if (p.program.shell) return p.program.name;
-    return p.title || p.program.name || 'shell';
+    if (p.program?.agent) return p.title || p.program.name;
+    if (p.program?.shell) return p.program.name;
+    return p.title || p.program?.name || 'shell';
 }
 
-/** a folder from home as ~ @param {string | null} cwd @param {string} home */
+/** a folder from home as ~ @param {string | null | undefined} cwd @param {string} home */
 function homeRelative(cwd, home) {
     if (!cwd) return '';
     if (cwd === home) return '~';
@@ -53,7 +53,7 @@ const placeBeside = (name, folder) =>
         ? ''
         : folder;
 
-/** @param {string | null} status @returns {Header['status']} */
+/** @param {string | null | undefined} status @returns {Header['status']} */
 const statusMark = (status) =>
     status === 'blocked' || status === 'done' ? status : null;
 
@@ -72,15 +72,19 @@ const control = (kind, label, icon, is = {}) => ({
     ...is,
 });
 
-/** the row for one thread @param {HeaderInput} at @returns {Header} */
+/**
+ * the row for one thread; above a chat with no thread yet only the tab's buttons and the way to Terminal, so the row
+ * never strands him
+ * @param {HeaderInput} at @returns {Header}
+ */
 export function headerOf(at) {
     const p = at.pane;
-    const name = threadName(p);
-    const isClaude = p.app === 'claude-code';
+    const name = p ? threadName(p) : '';
+    const isClaude = p?.app === 'claude-code';
     const isTerminal = at.view === 'terminal';
     /** @type {Control[]} */
     const controls = [];
-    if (isTerminal) {
+    if (isTerminal && p) {
         const hover = { isHoverOnly: true };
         controls.push(
             control(
@@ -128,16 +132,17 @@ export function headerOf(at) {
         );
     return {
         controls,
-        hasSwitch: at.hasViews && isClaude,
+        hasSwitch: at.hasViews && (isClaude || !isTerminal),
         name,
-        place: placeBeside(name, homeRelative(p.cwd, at.home)),
-        status: statusMark(p.status),
+        place: p ? placeBeside(name, homeRelative(p.cwd, at.home)) : '',
+        status: statusMark(p?.status),
     };
 }
 
 /** what a press runs, in order @param {PressKind} kind @param {PressInput} at @returns {Effect[]} */
 export function pressOf(kind, at) {
-    const pane = at.pane.pane;
+    const pane = at.pane?.pane;
+    if (!pane && isPaneKind(kind)) return [];
     switch (kind) {
         case 'split-right':
             return [{ run: ['pane.split', { direction: 'right', pane }] }];
@@ -179,7 +184,7 @@ export function pressOf(kind, at) {
             return [
                 {
                     overlay: {
-                        height: 556,
+                        height: 352,
                         kind: 'popup',
                         mod: 'x-herdr-chat-settings',
                         width: 360,
@@ -188,12 +193,12 @@ export function pressOf(kind, at) {
             ];
         case 'switch':
             return [
-                ...(at.pane.terminal
+                ...(at.pane?.terminal
                     ? [
                           /** @type {Effect} */ ({
                               run: [
                                   'pane.focus',
-                                  { terminal: at.pane.terminal },
+                                  { terminal: at.pane?.terminal },
                               ],
                           }),
                       ]
@@ -224,6 +229,13 @@ export function shownPanelIn(tree) {
     if (!panel || panel.hidden) return null;
     return PANELS.find((p) => p.kind === body?.active)?.kind ?? null;
 }
+
+/** @param {PressKind} kind */
+const isPaneKind = (kind) =>
+    kind === 'split-right' ||
+    kind === 'split-down' ||
+    kind === 'zoom' ||
+    kind === 'close';
 
 /** whether a stack with this id is in the layout @param {unknown} tree @param {string | undefined} id */
 export const hasNode = (tree, id) => Boolean(id && findNode(tree, id));

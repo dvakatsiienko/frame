@@ -27,7 +27,7 @@ import {
 
 /** @typedef {import('gpui-kit').Color} Color */
 /** @typedef {Record<'background' | 'blocked' | 'border' | 'dim' | 'done' | 'foreground' | 'hover' | 'selected' | 'surface', Color>} Theme */
-/** @typedef {import('./header-model.js').PaneLike & { tab: string, program: import('herdr').Program }} Pane */
+/** @typedef {import('./header-model.js').PaneLike & { tab: string, program?: import('herdr').Program }} Pane */
 /** @typedef {import('./header-model.js').Control} Control */
 /** @typedef {import('./header-model.js').PressKind} PressKind */
 
@@ -47,7 +47,7 @@ export default class ChatHeader extends View {
         return all.find((x) => x.pane === p.pane) ?? null;
     }
 
-    /** @param {PressKind} kind @param {Pane} pane @param {boolean} isFindOpen */
+    /** @param {PressKind} kind @param {Pane | null} pane @param {boolean} isFindOpen */
     press(kind, pane, isFindOpen) {
         const { stack, other } = props() ?? {};
         const effects = pressOf(kind, {
@@ -78,8 +78,6 @@ export default class ChatHeader extends View {
             .border_color(t.border)
             .text_size(12);
         const pane = this.thread();
-        // no thread yet: the bare row keeps its height, so nothing under it moves when one comes
-        if (!pane) return row;
         const tree = layout();
         const { isFindOpen } = chatShownOf(shared(CHAT_SHOWN));
         const head = headerOf({
@@ -87,13 +85,13 @@ export default class ChatHeader extends View {
             hasViews: hasNode(tree, stack),
             home: home(),
             isFindOpen,
-            isFirstOfTab:
-                panes().find((x) => x.tab === pane.tab)?.pane === pane.pane,
+            isFirstOfTab: pane ? isTabLead(pane) : true,
             pane,
             panels: panelsEnabled(shared('workspace.panels')),
             shownPanel: shownPanelIn(tree),
             view,
         });
+        const paneId = pane?.pane ?? 'none';
         const shown = head.controls.filter(
             (c) => !c.isHoverOnly || this.isHovered,
         );
@@ -108,11 +106,11 @@ export default class ChatHeader extends View {
                 this.isHovered = isHovered;
                 cx.notify();
             })
-            .when(view === 'terminal', (el) =>
-                el.on_click(() => run('pane.focus', { pane: pane.pane })),
+            .when(view === 'terminal' && Boolean(pane), (el) =>
+                el.on_click(() => run('pane.focus', { pane: pane?.pane })),
             )
-            .when(Boolean(pane.program.icon), (el) =>
-                el.child(programIcon(t, pane.program)),
+            .when(Boolean(pane?.program?.icon), (el) =>
+                el.child(programIcon(t, pane?.program)),
             )
             .child(
                 div()
@@ -135,16 +133,14 @@ export default class ChatHeader extends View {
                 el.child(statusMark(t, head.status)),
             )
             .children(
-                shown.map((c) =>
-                    controlButton(t, c, pane.pane, onPress(c.kind)),
-                ),
+                shown.map((c) => controlButton(t, c, paneId, onPress(c.kind))),
             )
             .when(head.hasSwitch, (el) =>
                 el.child(
                     viewSwitch(
                         t,
                         view === 'chat' ? 'chat' : 'terminal',
-                        pane.pane,
+                        paneId,
                         onPress('switch'),
                     ),
                 ),
@@ -152,10 +148,16 @@ export default class ChatHeader extends View {
     }
 }
 
-/** @param {Theme} t @param {import('herdr').Program} program */
+/** the pane that draws its tab's buttons: the zoomed one while a pane is zoomed, else the tab's first @param {Pane} pane */
+function isTabLead(pane) {
+    const tab = panes().filter((x) => x.tab === pane.tab);
+    return (tab.find((x) => x.zoomed) ?? tab[0])?.pane === pane.pane;
+}
+
+/** @param {Theme} t @param {import('herdr').Program | undefined} program */
 function programIcon(t, program) {
-    const path = program.icon ?? '';
-    return program.tint
+    const path = program?.icon ?? '';
+    return program?.tint
         ? svg(path).size(14).flex_none().text_color(t.dim)
         : image(path).w(14).h(14).flex_none();
 }
