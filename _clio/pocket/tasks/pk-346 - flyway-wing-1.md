@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-18T14:14:00Z'
+updated_date: '2026-11-18T18:43:00Z'
 labels:
   - s
   - clio-wing-1
@@ -19,15 +19,15 @@ ordinal: 1001
 - [ ] #1 f4 agent-desktop test drive beside computer-use (o106), Accessibility by his hand
 - [ ] #2 f5 FRM-407 fresh-eyes: its trial round on speak v2's first screen pr, then the verdict
 - [ ] #3 f6 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed
-- [ ] #4 f7 FRM-516 crow per thread: the week's read (W15, W21), then close
-- [ ] #5 f8 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop
-- [ ] #6 f10 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks
-- [ ] #7 f19 wishkeeper-cache: one big measure over the trial's whole 5 min week, then the 1 h arm
-- [ ] #8 f22 wing 1 opens on his word: evergreen → refresh-readaloud → refresh fable 5.2 → refresh designer, then speak v2
-- [ ] #9 f25 speak v2 with dima: bytes move → mess hunt (FRM-629:W26–W27) → wisps → design; FRM-497 rides it
+- [ ] #4 f8 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop
+- [ ] #5 f10 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks
+- [ ] #6 f19 wishkeeper-cache: one big measure over the trial's whole 5 min week, then the 1 h arm
+- [ ] #7 f25 speak v2 with dima: bytes move → mess hunt (FRM-629:W26–W27) → wisps → design; FRM-497 rides it
+- [ ] #8 f27 refreshes on his word: refresh-readaloud → refresh fable 5.2 → refresh designer, then speak v2 (his plan)
+- [ ] #9 f28 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-20
 - [ ] #10 f24 📅 strays lane measure: model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-21
-- [ ] #11 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #12 f11 💤 evergreen, two weeks in one: frame#158, bytes#152–#155, FRM-465 exit 5 — later: dima, with wing 1
+- [ ] #11 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
+- [ ] #12 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
 - [ ] #13 f15 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
 - [ ] #14 f16 💤 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
 - [ ] #15 f17 💤 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
@@ -675,4 +675,12 @@ done 2026-11-18 15:40: f23 f18-strays 📅 strays lane measure: model pick, spec
 done 2026-11-18 16:14: f3 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) (FRM-497 Todo)
 
 16:14 correction to the 15:59 rider note: the strays → stray sweep is no speak-lane item, the stray solved it as a freebie (FRM-627:W36); f3 now carries the speak order
+
+done 2026-11-18 20:17: f11 💤 evergreen, two weeks in one: frame#158, bytes#152–#155, FRM-465 exit 5 — later: dima, with wing 1 (FRM-465 Todo)
+
+done 2026-11-18 20:22: f22 wing 1 opens on his word: evergreen → refresh-readaloud → refresh fable 5.2 → refresh designer, then speak v2
+
+done 2026-11-18 20:42: f7 FRM-516 crow per thread: the week's read (W15, W21), then close (FRM-516 Todo)
+
+reopened 20:43: f7 FRM-516 week's read, re-added as a 📅 line on 2026-11-20 (its ⏰ due date); not done
 <!-- SECTION:NOTES:END -->
