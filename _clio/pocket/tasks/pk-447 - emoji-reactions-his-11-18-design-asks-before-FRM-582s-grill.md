@@ -4,7 +4,7 @@ title: 'emoji reactions: his 11-18 design asks before FRM-582''s grill'
 status: open
 assignee: []
 created_date: '2026-11-18T09:19:00Z'
-updated_date: '2026-11-18T09:25:00Z'
+updated_date: '2026-11-18T09:42:00Z'
 labels:
   - s
 dependencies: []
@@ -97,4 +97,6 @@ PK-447:W17 (2026-11-18 inbox, dima): 🎉🥳🎊🪅🪩: start with these to r
 PK-447:W18 (2026-11-18 inbox, dima): how does an emoji reach you? will what we put in emoji strings become part of your message history sent whole each turn, in the special field where slipstreamed joined messages fold in, shaped: user message …, agent message …, our-special-mods-slipstream-field: second wind, orbit, emojis? ← here? ❓ (W10 refolded)
 
 PK-447:W19 (2026-11-18 inbox, dima): emojis searchable, please; search expands the list; the grid keeps most-tapped first — propose how to measure and log it ❓ (W9, W11 refolded)
+
+PK-447:W20 (2026-11-18 11:40, dima): 🐢 is debatable as an emoji; instead, or both: a nudge button that tells the selected herdr thread «you rush, slow down», and the emoji pointing at the message where i lag, so you see how far you ran from me: wait until i finish replying, read what you answered after it, then help me catch up gradually
 <!-- SECTION:NOTES:END -->
