@@ -387,6 +387,11 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and while it finds the thread it says «Opening the thread…», then «Reading the thread…»; a transcript it cannot read shows why
   - decision: a new mod beside the old chat, moved in file by file under a strict type check, swapped in once at the end (dima, 2026-11-16 16:36: «pull only clean, decided features»)
 
+- ⬜ the tool-call fold shows each call (x-herdr-chat, FRM-638 slice 6, PK-432)
+  - given a reply turn ran tool calls in a row
+  - then one row reads «▸ 🛠️ N tool calls: Read 2, Bash 1», folded
+  - when he clicks it, then one row a call follows, its name and what it did (a path, a command, a pattern)
+  - and a click on one call opens it alone to its input, a second click closes it; every fold opens, whatever its count
 - ✅ the new chat's quill: he types, sends and joins a turn from it (x-herdr-chat, FRM-638 slice 2)
   - given the new chat open on a thread, then the quill, a text box, sits under the list in its column and grows with his lines up to eight
   - when he types, then his draft is kept for that thread: it is back after the chat closes and opens again (his look, 22:42)

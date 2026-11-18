@@ -12,4 +12,6 @@ export const ICONS = {
     sendRest: '🛎️',
     /** the send button for a moment after a turn took the words */
     sendTaken: '😋',
+    /** a run of tool calls, folded (PK-432:W3) */
+    tools: '🛠️',
 };

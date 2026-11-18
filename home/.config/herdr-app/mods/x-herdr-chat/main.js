@@ -134,6 +134,7 @@ import {
 } from './shots.js';
 import { asksActedOn, isShownIn, pidFor, shownThread } from './shown.js';
 import { transcriptPath } from './thread.js';
+import { createToolFolds, isCallRow, withCallRows } from './tool-folds.js';
 import { typedMarkdown } from './typed.js';
 import { openViewer, viewerAfter, viewerCount, viewerLevel } from './viewer.js';
 
@@ -161,13 +162,18 @@ const fileRows = new Map();
  * @param {readonly Row[]} rows @param {import('./look.js').Look} look
  */
 const shownOf = (rows, look) =>
-    withFileRows(
-        look.tools === 'hide'
-            ? rows.filter((row) => row.kind !== 'tool')
-            : rows,
-        home(),
-        fileRows,
+    withCallRows(
+        withFileRows(
+            look.tools === 'hide'
+                ? rows.filter((row) => row.kind !== 'tool')
+                : rows,
+            home(),
+            fileRows,
+        ),
+        toolFolds,
     );
+// which tool-call folds and calls are open (PK-432)
+const toolFolds = createToolFolds();
 // his reading place is saved this long after his last scroll step
 const PLACE_SAVE_MS = 600;
 // how long after a held place was last asked for the list stays unseen: its landing takes two frames, and a
@@ -2435,6 +2441,12 @@ export default class Chat extends View {
             .track_scroll(this.scroll)
             // a file row opens its file in its app, a png in Preview (FRM-587)
             .on_item_click((key, cx) => {
+                const id = key.replace(/#(?:above|below)$/, '');
+                if (rows.find((r) => r.id === id)?.kind === 'tool') {
+                    toolFolds.toggle(id);
+                    cx.notify();
+                    return;
+                }
                 const opened = this.picturesAt(rows, key);
                 if (opened)
                     return this.showPictures(opened.files, opened.at, cx);
@@ -2576,16 +2588,7 @@ export default class Chat extends View {
                         .child(el),
                 );
         if (row.kind === 'file') return column(this.fileRow(row, t));
-        if (row.kind === 'tool')
-            return column(
-                h_flex()
-                    .gap(6)
-                    .items_center()
-                    .text_size(12)
-                    .text_color(t.dim)
-                    .child(div().size(6).rounded(3).bg(t.dim))
-                    .child(div().truncate().child(row.text)),
-            );
+        if (row.kind === 'tool') return column(this.toolRow(row, t, pre));
         const most = Math.max(
             240,
             Math.floor(
@@ -2668,6 +2671,50 @@ export default class Chat extends View {
                 )
                 .child(this.detailsLine(row, t)),
         );
+    }
+
+    /**
+     * a run of tool calls, folded behind 🛠️; opened, each call is a row that opens alone to its input (PK-432,
+     * FRM-638:W23). no press handler in here: the list's item click toggles it (herdr-app#894)
+     * @param {Row} row @param {Theme} t @param {string} pre
+     */
+    toolRow(row, t, pre) {
+        const isOpen = toolFolds.isOpen(row.id);
+        const line = (/** @type {string} */ mark, /** @type {string} */ text) =>
+            h_flex()
+                .gap(6)
+                .items_center()
+                .text_size(12)
+                .text_color(t.dim)
+                .cursor_pointer()
+                .child(div().flex_none().w(12).child(mark))
+                .child(div().truncate().child(text));
+        if (!isCallRow(row.id))
+            return line(isOpen ? '▾' : '▸', `${ICONS.tools} ${row.text}`);
+        const [call] = row.calls ?? [];
+        return v_flex()
+            .pl(18)
+            .gap(4)
+            .child(line(isOpen ? '▾' : '▸', row.text))
+            .when(isOpen && Boolean(call), (el) =>
+                el.child(
+                    div()
+                        .ml(18)
+                        .px(10)
+                        .py(6)
+                        .rounded(6)
+                        .bg(t.raised)
+                        .border(1)
+                        .border_color(t.border)
+                        .text_size(12)
+                        .child(
+                            TextView.markdown(
+                                `${pre}${row.id}@${row.version}`,
+                                `\`\`\`json\n${call?.input ?? ''}\n\`\`\``,
+                            ).selectable(true),
+                        ),
+                ),
+            );
     }
 
     /**
@@ -2803,6 +2850,7 @@ export default class Chat extends View {
         this.model.clear();
         this.heights.clear();
         fileRows.clear();
+        toolFolds.clear();
         this.reader = null;
         this.file = null;
         this.address = null;

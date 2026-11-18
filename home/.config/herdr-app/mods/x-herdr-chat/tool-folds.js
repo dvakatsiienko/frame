@@ -1,0 +1,47 @@
+// the tool-call folds (PK-432, FRM-638:W23): a run of tool calls is one folded row; opened, each call is a row of its
+// own, and a call opens alone to show its input. one owner for what is open; the list draws what `withCallRows` gives.
+
+/** @typedef {import('./row-model.js').Row} Row */
+
+const CALL = '#call-';
+
+/** a call's row: its tool row's id and its place @param {string} id */
+export const isCallRow = (id) => id.includes(CALL);
+
+export function createToolFolds() {
+    /** @type {Set<string>} */
+    const open = new Set();
+    return {
+        clear: () => open.clear(),
+        /** @param {string} id a tool row's or a call row's */
+        isOpen: (id) => open.has(id),
+        /** a click on a fold or a call: it opens, or closes, alone @param {string} id */
+        toggle(id) {
+            if (!open.delete(id)) open.add(id);
+        },
+    };
+}
+
+/**
+ * the rows with each open tool row's calls after it, one row a call, each with its own open state in its version, so
+ * a call that opens is measured again
+ * @param {readonly Row[]} rows @param {ReturnType<typeof createToolFolds>} folds @returns {Row[]}
+ */
+export function withCallRows(rows, folds) {
+    return rows.flatMap((row) => {
+        if (row.kind !== 'tool' || !folds.isOpen(row.id)) return [row];
+        const calls = (row.calls ?? []).map((call, i) => {
+            const id = `${row.id}${CALL}${i}`;
+            return {
+                ...row,
+                calls: [call],
+                id,
+                text: call.arg ? `${call.name} ${call.arg}` : call.name,
+                tools: [call.name],
+                version: folds.isOpen(id) ? 2 : 1,
+            };
+        });
+        // an open fold draws ▾, so it is drawn again: a half step no closed version reaches
+        return [{ ...row, version: row.version + 0.5 }, ...calls];
+    });
+}

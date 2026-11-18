@@ -25,7 +25,46 @@ import { claudeQueueAfter, isHisQueued, unwrapPastes } from './queued.js';
  * @property {Delivery | null} delivery his message's one state and that state's time (FRM-594); null on any other row
  * @property {Picture[]} pictures the pictures his message sent, drawn under his words (FRM-638 slice 5)
  * @property {string[]} files the other files his message sent, by path
+ * @property {Call[]} [calls] a tool row's calls, in order (PK-432)
  */
+
+/**
+ * one tool call as its row shows it: the name, the argument that says what it did, and its whole input to peek
+ * @typedef {{ name: string, arg: string, input: string }} Call
+ */
+
+// the input keys that say what a call did, the first one present wins
+const ARG_KEYS = [
+    'file_path',
+    'command',
+    'pattern',
+    'path',
+    'url',
+    'description',
+    'query',
+    'prompt',
+    'skill',
+];
+// a peek shows this much of a call's input: a Write's whole file never lays out
+const INPUT_PEEK = 4000;
+
+/** @param {string} name @param {unknown} input @returns {Call} */
+export function callOf(name, input) {
+    const fields = isRecord(input) ? input : {};
+    const key =
+        ARG_KEYS.find((k) => typeof fields[k] === 'string' && fields[k]) ??
+        Object.keys(fields).find((k) => typeof fields[k] === 'string');
+    const arg = key ? (String(fields[key]).split('\n')[0] ?? '') : '';
+    const whole = JSON.stringify(fields, null, 2);
+    return {
+        arg,
+        input:
+            whole.length > INPUT_PEEK
+                ? `${whole.slice(0, INPUT_PEEK)}\n…`
+                : whole,
+        name,
+    };
+}
 
 /**
  * a picture his message sent: Claude Code keeps a pasted or dropped one inline as its bytes, a join names it by path
@@ -220,7 +259,12 @@ function rowsOf(line) {
     if (block?.type === 'text' && textOf(block.text).trim())
         return [row('reply', textOf(block.text))];
     if (block?.type === 'tool_use' && textOf(block.name))
-        return [row('tool', textOf(block.name))];
+        return [
+            {
+                ...row('tool', textOf(block.name)),
+                calls: [callOf(textOf(block.name), block.input)],
+            },
+        ];
     return [];
 }
 
@@ -246,6 +290,7 @@ function join(upper, lower) {
     if (!upper || upper.kind !== lower.kind) return false;
     if (upper.kind === 'tool') {
         upper.tools.push(...lower.tools);
+        upper.calls = [...(upper.calls ?? []), ...(lower.calls ?? [])];
         upper.text = toolLine(upper.tools);
     } else if (
         upper.kind === 'reply' &&
@@ -404,6 +449,7 @@ export function createRowModel() {
                 if (join(last, lower)) {
                     Object.assign(first, {
                         at: last.at,
+                        calls: last.calls,
                         id: last.id,
                         text: last.text,
                         tools: last.tools,
