@@ -107,6 +107,7 @@ import {
 import { createKeyPress } from './keypress.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { createMagic, retextWait } from './magic.js';
+import { copyText, createMessageMenu, menuPlace } from './menu.js';
 import { createPages } from './pages.js';
 import {
     MODELS,
@@ -246,6 +247,10 @@ const THUMB_SIZE = 56;
 const SENT_THUMB = 96;
 const PASTE_NOTE_MS = 6000;
 const NO_IMAGE = 'No image on the clipboard';
+// the right-click menu's size, one row; its note under the quill once a message is copied
+const MENU_SIZE = { h: 34, w: 200 };
+const COPIED_NOTE = 'Message copied';
+const COPIED_NOTE_MS = 1500;
 // each save waits for the one before it, so an older store never lands last
 let shotsSaved = Promise.resolve();
 /** @type {import('./attachments.js').AttachmentsIo} */
@@ -602,6 +607,8 @@ export default class Chat extends View {
     findTyped = 0;
     /** the / menu over the quill (slice 6) */
     slashMenu = createSlashMenu();
+    /** the right-click menu on a message (slice 7) */
+    messageMenu = createMessageMenu();
     /** the thread's skills, from its transcript's listing @type {Map<string, string>} */
     skills = new Map();
     /** the skills of the plugins its folder enables @type {Map<string, string>} */
@@ -2648,6 +2655,14 @@ export default class Chat extends View {
             },
         )
             .track_scroll(this.scroll)
+            // a right-click names the row first; the list's own handler below then opens the menu where it was
+            .on_item_secondary_click((key, event) => {
+                const id = key.replace(/#(?:above|below)$/, '');
+                this.messageMenu.hit(
+                    event.position,
+                    copyText(rows.find((r) => r.id === id)),
+                );
+            })
             // a file row opens its file in its app, a png in Preview (FRM-587)
             .on_item_click((key, cx) => {
                 const id = key.replace(/#(?:above|below)$/, '');
@@ -2666,6 +2681,14 @@ export default class Chat extends View {
         return div()
             .id('chat-list')
             .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
+            .on_mouse_down('right', (event, cx) => {
+                const local = event.local_position ?? { x: 0, y: 0 };
+                this.messageMenu.open(event.position, {
+                    x: local.x / zoom,
+                    y: local.y / zoom,
+                });
+                cx.notify();
+            })
             .relative()
             .flex_1()
             .min_h(0)
@@ -2686,6 +2709,10 @@ export default class Chat extends View {
                 cx.notify();
             })
             .on_scroll_wheel((event, cx) => {
+                if (this.messageMenu.state) {
+                    this.messageMenu.close();
+                    cx.notify();
+                }
                 const step = this.at.wheel(
                     (event.delta?.y ?? 0) / zoom,
                     this.shownRows,
@@ -2702,6 +2729,9 @@ export default class Chat extends View {
             })
             .child(list)
             .child(this.measurer(booked, t, `m${this.widthGen}-`))
+            .when(Boolean(this.messageMenu.state), (el) =>
+                el.child(this.messageMenuView(t)),
+            )
             .when(!this.at.follow, (el) =>
                 el.child(
                     div()
@@ -2726,6 +2756,68 @@ export default class Chat extends View {
                         }),
                 ),
             );
+    }
+
+    /** the right-click menu: «Copy message», dim when the press was on no message @param {Theme} t */
+    messageMenuView(t) {
+        const menu = this.messageMenu.state;
+        const text = menu?.text ?? null;
+        const place = menuPlace(
+            { x: menu?.x ?? 0, y: menu?.y ?? 0 },
+            { h: this.viewH, w: this.width || NARROW },
+            MENU_SIZE,
+        );
+        /** @param {Context} cx */
+        const close = (cx) => {
+            this.messageMenu.close();
+            cx.notify();
+        };
+        return v_flex()
+            .id('chat-message-menu')
+            .absolute()
+            .left(place.x)
+            .top(place.y)
+            .w(MENU_SIZE.w)
+            .p(4)
+            .rounded(8)
+            .bg(t.popover)
+            .border_1()
+            .border_color(t.border)
+            .shadow_md()
+            .on_mouse_down_out((_event, cx) => close(cx))
+            .child(
+                h_flex()
+                    .id('chat-message-menu-copy')
+                    .h(26)
+                    .px(8)
+                    .items_center()
+                    .rounded(5)
+                    .text_size(13)
+                    .text_color(text ? t.foreground : t.dim)
+                    .when(Boolean(text), (el) =>
+                        el
+                            .cursor_pointer()
+                            .hover((s) => s.bg(t.hover))
+                            .on_click((_event, cx) => {
+                                cx.write_to_clipboard(text ?? '');
+                                close(cx);
+                                this.flashNote(COPIED_NOTE, cx);
+                            }),
+                    )
+                    .child('Copy message'),
+            );
+    }
+
+    /** a line under the quill that leaves on its own @param {string} note @param {Context} cx */
+    flashNote(note, cx) {
+        this.note = note;
+        const shown = ++this.noteSerial;
+        cx.timer.after(COPIED_NOTE_MS, (cx) => {
+            if (this.note === note && this.noteSerial === shown)
+                this.note = null;
+            cx.notify();
+        });
+        cx.notify();
     }
 
     /**
