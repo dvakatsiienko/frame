@@ -506,9 +506,12 @@ export default class Chat extends View {
             this.quills.apply(this.file, { text, type: 'typed' });
             box.set_selected_range({ end: caret, start: caret });
             const at = Date.now();
-            // a beat later, so this press's key-down, which herdr tells after the submit, has landed
+            const { file } = this;
+            // a beat later, so this press's key-down, which herdr tells after the submit, has landed; a thread switched
+            // in that beat never gets the other thread's words
             cx.timer.after(1, (cx) => {
                 if (this.quillKeys.submitted(at) === 'repeat') return;
+                if (this.file !== file) return;
                 if (act === 'push') this.push(box, cx);
                 else if (act === 'click') this.click(box, cx);
             });

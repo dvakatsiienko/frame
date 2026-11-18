@@ -61,6 +61,14 @@ describe('one press of Enter acts once, a held one too (FRM-628)', () => {
         });
     });
 
+    // 8469d9d2: one press flipped 🍕 and 🛎️ back and forth, seen twice
+    test('one press seen as two submits acts once: its key-down acted already', () => {
+        const key = createKeyPress();
+        key.down(1_000, false);
+        key.submitted(1_000);
+        expect(key.submitted(1_002)).toBe('repeat');
+    });
+
     test('a repeat never ends the press: the next held repeat still does nothing', () => {
         const key = createKeyPress();
         key.submitted(1_000);

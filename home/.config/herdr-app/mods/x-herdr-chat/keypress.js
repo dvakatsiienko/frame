@@ -9,7 +9,7 @@ export const KEY_PAIR_MS = 60;
 export const KEY_REPEAT_MS = 180;
 
 export function createKeyPress() {
-    /** @type {{ at: number, isHeld: boolean } | null} */
+    /** @type {{ at: number, isHeld: boolean, hasActed: boolean } | null} */
     let down = null;
     let isUp = true;
     /** @type {number | null} */
@@ -17,7 +17,7 @@ export function createKeyPress() {
     return {
         /** @param {number} at @param {boolean} isHeld the key-down's own repeat flag */
         down(at, isHeld) {
-            down = { at, isHeld };
+            down = { at, hasActed: false, isHeld };
         },
         /** ⌘ let go ends a ⌘Enter, whose Enter key-up macOS never sends */
         modifiersUp() {
@@ -31,11 +31,13 @@ export function createKeyPress() {
         submitted(at) {
             const isRepeat =
                 down && Math.abs(at - down.at) < KEY_PAIR_MS
-                    ? down.isHeld
+                    ? down.isHeld || down.hasActed
                     : !isUp && lastAt !== null && at - lastAt < KEY_REPEAT_MS;
             lastAt = at;
             if (isRepeat) return 'repeat';
             isUp = false;
+            // one press seen as two submits: its key-down acts once
+            if (down) down.hasActed = true;
             return 'act';
         },
         up() {
