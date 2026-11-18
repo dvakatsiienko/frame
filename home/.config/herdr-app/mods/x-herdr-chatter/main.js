@@ -184,8 +184,9 @@ import {
 import { RADIUS, TEXT, button } from './ui.js';
 
 const CLAUDE = `${home()}/.claude`;
-// the terminals a permission change is typing into: it outlives a thread switch, so a second pick never runs beside it
-const permissionBusy = new Set();
+// the terminals a pick is typing keys into, model, effort or permission: it outlives a thread switch, so a second pick
+// never types beside it
+const typingInto = new Set();
 // The chat's look, shared by every copy and kept across restarts; the ⚙ popup changes it.
 // size: the message text in px (the rest scales with it); font: "ui" or "mono" (the terminals');
 // width: "full" or "narrow" (a readable column); tools: "show" or "hide" the tool-call rows;
@@ -2174,7 +2175,7 @@ export default class ClaudeChat extends View {
         if (
             isBlocked ||
             this.pending?.address === address ||
-            permissionBusy.has(address)
+            typingInto.has(address)
         ) {
             this.pickNote = isBlocked
                 ? 'Answer Claude first, then pick'
@@ -2573,7 +2574,7 @@ export default class ClaudeChat extends View {
             );
     }
 
-    // shepherdr's row: «Permissions · Full access ›», its five modes in a small menu over the picker's foot
+    // shepherdr's row: «Permissions · Bypass permissions ›», its five modes listed under it, named as Claude Code names them
     /** @param {any} t @param {boolean} ready */
     permissionsRow(t, ready) {
         const shown = this.permissionAsked ?? this.permission;
@@ -2675,7 +2676,7 @@ export default class ClaudeChat extends View {
     /** @param {string} mode @param {string} label @param {any} cx */
     pickPermission(mode, label, cx) {
         const { address } = this;
-        if (!address || permissionBusy.has(address)) return;
+        if (!address || typingInto.has(address)) return;
         const isBlocked =
             agents().find((a) => a.address === address)?.status === 'blocked';
         // keys typed into a question would answer it, and keys mixed into a model or effort pick would land in its picker
@@ -2687,7 +2688,7 @@ export default class ClaudeChat extends View {
             cx.notify();
             return;
         }
-        permissionBusy.add(address);
+        typingInto.add(address);
         this.permissionAsked = mode;
         this.isPermsOpen = false;
         cx.notify();
@@ -2716,7 +2717,7 @@ export default class ClaudeChat extends View {
                         error instanceof Error ? error.message : String(error);
                 }
             } finally {
-                permissionBusy.delete(address);
+                typingInto.delete(address);
                 if (this.address === address) this.permissionAsked = null;
                 cx.notify();
             }

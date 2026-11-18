@@ -132,8 +132,9 @@ const METER_CELLS = 48;
 const CHIP_SIZE = 26;
 // his quill's two cards sit one layer under it, a little narrower, flush against it (the old chat's PK-384 pick)
 const NEST_INSET = 14;
-// the terminals a permission change is typing into: it outlives a thread switch, so a second pick never runs beside it
-const permissionBusy = new Set();
+// the terminals a pick is typing keys into, model, effort or permission: it outlives a thread switch, so a second pick
+// never types beside it
+const typingInto = new Set();
 
 /** @param {Theme} t @param {'top' | 'bottom'} side */
 const nestedCard = (t, side) => {
@@ -990,10 +991,10 @@ export default class Chat extends View {
         if (
             this.statusNow() === 'blocked' ||
             this.pending ||
-            permissionBusy.has(address)
+            typingInto.has(address)
         ) {
             this.pickNote =
-                this.pending || permissionBusy.has(address)
+                this.pending || typingInto.has(address)
                     ? 'One switch at a time: wait for this one to land'
                     : 'Answer Claude first, then pick';
             cx.notify();
@@ -1002,6 +1003,7 @@ export default class Chat extends View {
         this.closePick();
         this.pending = { kind, until: Date.now() + PICK_WAIT_MS, value };
         this.pickNote = null;
+        typingInto.add(address);
         cx.notify();
         cx.spawn(async (cx) => {
             try {
@@ -1039,6 +1041,8 @@ export default class Chat extends View {
                     this.pickNote =
                         error instanceof Error ? error.message : String(error);
                 }
+            } finally {
+                typingInto.delete(address);
             }
             cx.notify();
         });
@@ -1296,7 +1300,7 @@ export default class Chat extends View {
             );
     }
 
-    /** shepherdr's row: «Permissions · Full access ›», its five modes in a small menu over the picker's foot @param {Theme} t @param {boolean} ready */
+    /** shepherdr's row: «Permissions · Bypass permissions ›», its five modes listed under it, named as Claude Code names them @param {Theme} t @param {boolean} ready */
     permissionsRow(t, ready) {
         const shown = this.permissionAsked ?? this.permission;
         const label = PERMISSIONS.find((p) => p.id === shown)?.label ?? '…';
@@ -1396,7 +1400,7 @@ export default class Chat extends View {
      */
     pickPermission(mode, label, cx) {
         const { address } = this;
-        if (!address || permissionBusy.has(address)) return;
+        if (!address || typingInto.has(address)) return;
         const isBlocked =
             agents().find((a) => a.address === address)?.status === 'blocked';
         // keys typed into a question would answer it, and keys mixed into a model or effort pick would land in its picker
@@ -1408,7 +1412,7 @@ export default class Chat extends View {
             cx.notify();
             return;
         }
-        permissionBusy.add(address);
+        typingInto.add(address);
         this.permissionAsked = mode;
         this.isPermsOpen = false;
         cx.notify();
@@ -1437,7 +1441,7 @@ export default class Chat extends View {
                         error instanceof Error ? error.message : String(error);
                 }
             } finally {
-                permissionBusy.delete(address);
+                typingInto.delete(address);
                 if (this.address === address) this.permissionAsked = null;
                 cx.notify();
             }

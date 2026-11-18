@@ -5,11 +5,11 @@
 export const PERMISSIONS = [
     {
         id: 'bypassPermissions',
-        label: 'Full access',
+        label: 'Bypass permissions',
         shows: /bypass permissions on/,
     },
     { id: 'auto', label: 'Auto', shows: /auto mode on/ },
-    { id: 'default', label: 'Ask', shows: /manual mode on/ },
+    { id: 'default', label: 'Default', shows: /manual mode on/ },
     { id: 'acceptEdits', label: 'Accept edits', shows: /accept edits on/ },
     { id: 'plan', label: 'Plan', shows: /plan mode on/ },
 ];

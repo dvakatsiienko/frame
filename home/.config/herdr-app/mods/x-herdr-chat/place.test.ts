@@ -13,7 +13,8 @@ const REPLY = 4;
 /** rows 0–2 fill a screen above; row 3 is a one-line tool row, row 4 the long reply he reads */
 const thread = () => [300, 300, 300, 28, 800, 300, 300, 300, 300];
 
-function createSim(heights: number[], viewH = 600, zoom = 1) {
+function createSim(heights: number[], startH = 600, zoom = 1) {
+    let viewH = startH;
     const place = createPlace();
     const rows = heights.map((_, i) => ({ id: `r${i}` }));
     let sizes = [...heights];
@@ -99,6 +100,11 @@ function createSim(heights: number[], viewH = 600, zoom = 1) {
         moveUnseen(px: number) {
             scrollTop += px;
             clamp();
+            frame();
+        },
+        /** the list's own height changes: the band, the bottom card or the picker under it grew or shrank */
+        reshape(height: number) {
+            viewH = height;
             frame();
         },
         /** a new width: every height is guessed again and his place is held, as main.js does */
@@ -282,6 +288,25 @@ describe('the kept place against the true one', () => {
 });
 
 describe('nothing moves the view without him', () => {
+    test('the cards under the list grow, then shrink back, while he reads mid-thread: the view stays on his line', () => {
+        const sim = createSim(thread());
+        readInto(sim, 405, 37);
+        const before = sim.truth();
+        sim.reshape(520);
+        expect(sim.truth()).toEqual(before);
+        sim.reshape(600);
+        expect(sim.truth()).toEqual(before);
+        expect(sim.isFollowing()).toBe(false);
+    });
+
+    test('the cards under the list grow while he follows: he still follows, the newest row in view', () => {
+        const sim = createSim(thread());
+        sim.reshape(520);
+        sim.append(120);
+        expect(sim.isFollowing()).toBe(true);
+        expect(sim.truth()).toEqual(createSim([...thread(), 120], 520).truth());
+    });
+
     test.each([
         ['a message', [120]],
         ['a reply’s line', [640]],

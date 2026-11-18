@@ -130,6 +130,30 @@ describe("a pick runs in Claude Code's own picker", () => {
             "Claude's model picker didn't open",
         );
     });
+
+    const listed = 'Select model\n   1. Default  x\n ❯ 3. Opus 5.5  x\n';
+
+    test('a model gone from the list once its picker opened gets no row keys', async () => {
+        const door = io(['', listed, 'Select model\n']);
+        await expect(pickIn('model', 'Opus 5.5', door)).rejects.toThrow(
+            "Opus 5.5 isn't in Claude's /model list",
+        );
+        expect(door.sent.flat()).not.toContain('home');
+    });
+
+    test('a cursor that lands on another row closes the picker, no pick', async () => {
+        const door = io([
+            '',
+            listed,
+            listed,
+            'Select model\n ❯ 2. Sonnet 5.5  x\n',
+        ]);
+        await expect(pickIn('model', 'Opus 5.5', door)).rejects.toThrow(
+            "Couldn't select Opus 5.5",
+        );
+        expect(door.sent.at(-1)).toEqual(['esc']);
+        expect(door.sent.flat()).not.toContain('s');
+    });
 });
 
 // x-herdr-chatter carries a copy until the swap (a mod cannot import a sibling): both run every row
