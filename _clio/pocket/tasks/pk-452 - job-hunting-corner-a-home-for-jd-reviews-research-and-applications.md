@@ -4,7 +4,7 @@ title: 'job hunting corner: a home for jd reviews, research and applications'
 status: open
 assignee: []
 created_date: '2026-11-18T14:16:00Z'
-updated_date: '2026-11-18T14:35:00Z'
+updated_date: '2026-11-18T15:04:00Z'
 labels:
   - m
   - clio-wing-1
@@ -70,4 +70,15 @@ PK-452:W14 (2026-11-18 16:33, dima): how to research? a full research per JD is 
 PK-452:W15 (2026-11-18 16:33, dima): every research is logged, in a very good format: every single place i already applied to, plus the time last peeked at, the time last searched, the comms with each company (my applications, or a data log if the comms went further than applying), and the hiring progress history
 PK-452:W16 (2026-11-18 16:33, dima): everything is a durable record: if i tell you i am on step 2 of the hr process, the next spawn knows it
 PK-452:W17 (2026-11-18 16:33, dima): you can also do job hunting with me; i plan to run the flow with you the first few times, since you know the system and what i do best; we sharpen the flow, then i can run a dedicated clean cc there, without you
+
+PK-452:W18 (2026-11-18 17:04, dima, o17 steer): yes, its own private repo, as an exception, in the place you suggest, pushed to github; you, clio from frame, are aware of that project and we maintain it fully
+PK-452:W19 (2026-11-18 17:04, dima): the knowledge part of the job data stays relevant; we refresh it next time, not in today's grill; now we only create the place for the activity we are grilling on
+PK-452:W20 (2026-11-18 17:04, dima): q2: why the AGENTS.md-only way? i thought a skill would be more flexible; we start with AGENTS.md, it is easier to start this way; the skill version is for later ❓
+PK-452:W21 (2026-11-18 17:04, dima): i am mostly interested in shaping the history log properly at this point
+PK-452:W22 (2026-11-18 17:04, dima): move and merge the two folders from /Users/dima/projects/cw into the new place
+PK-452:W23 (2026-11-18 17:04, dima): q3: let's try the three research tiers
+PK-452:W24 (2026-11-18 17:04, dima): q4: yes, full coverage, easy to query and very well structured; himalaya too: when someone replies to me, or i reply, it is logged
+PK-452:W25 (2026-11-18 17:04, dima): q5: yes, exactly; once everything is migrated, delete the moved job data from projects/cw
+PK-452:W26 (2026-11-18 17:04, dima): remind me what the targets, stop list, pay ranges and positioning currently say
+PK-452:W27 (2026-11-18 17:04, dima): a top 7 over the new job project spot: a pretty, short vibe name for it
 <!-- SECTION:NOTES:END -->
