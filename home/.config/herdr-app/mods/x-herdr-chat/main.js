@@ -71,7 +71,7 @@ import {
     pickerLabel,
     slideEffort,
 } from './effort.js';
-import { fileLinks, isPicture, unlinkFiles } from './files.js';
+import { fileAt, isPicture, unlinkFiles, withFileRows } from './files.js';
 import { placeOf } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
@@ -123,9 +123,21 @@ const SANS = '.AppleSystemUIFont';
 // [TRACE-place] how long after an open the list's asks are traced
 const TRACE_MS = 8000;
 
-/** the rows the list draws: the model's, less tool calls when he hides them @param {readonly Row[]} rows @param {import('./look.js').Look} look */
+// a reply's file rows, made once per reply version (files.js)
+/** @type {Map<string, { version: number, files: Row[] }>} */
+const fileRows = new Map();
+/**
+ * the rows the list draws: the model's, less tool calls when he hides them, each reply's files after it
+ * @param {readonly Row[]} rows @param {import('./look.js').Look} look
+ */
 const shownOf = (rows, look) =>
-    look.tools === 'hide' ? rows.filter((row) => row.kind !== 'tool') : rows;
+    withFileRows(
+        look.tools === 'hide'
+            ? rows.filter((row) => row.kind !== 'tool')
+            : rows,
+        home(),
+        fileRows,
+    );
 // his reading place is saved this long after his last scroll step
 const PLACE_SAVE_MS = 600;
 // how long after a held place was last asked for the list stays unseen: its landing takes two frames, and a
@@ -382,8 +394,6 @@ export default class Chat extends View {
     lookKey = '';
     /** the rows the list draws: the model's, less tool calls he hides @type {readonly Row[]} */
     shownRows = [];
-    /** the files each reply names, by row, read once per version @type {Map<string, { version: number, files: { label: string, path: string }[] }>} */
-    replyFiles = new Map();
     /** [TRACE-place] the list's asks are traced until then, after an open */
     traceUntil = 0;
     /** until then the list is not shown: a held place is still landing as real heights arrive */
@@ -1953,6 +1963,11 @@ export default class Chat extends View {
             },
         )
             .track_scroll(this.scroll)
+            // a file row opens its file in its app, a png in Preview (FRM-587)
+            .on_item_click((key) => {
+                const path = fileAt(rows, key);
+                if (path) exec('open', [path]).catch(() => {});
+            })
             .size_full();
         return div()
             .id('chat-list')
@@ -2087,6 +2102,7 @@ export default class Chat extends View {
                         .py(ROW_PAD[this.look.space] ?? ROW_PAD.normal)
                         .child(el),
                 );
+        if (row.kind === 'file') return column(this.fileRow(row, t));
         if (row.kind === 'tool')
             return column(
                 h_flex()
@@ -2178,33 +2194,18 @@ export default class Chat extends View {
                                                   ).selectable(isShown),
                                               ),
                             ),
-                        )
-                        .children(
-                            this.filesOf(row).map((file, i) =>
-                                this.fileRow(file, `${id}-file-${i}`, t),
-                            ),
                         ),
                 ),
         );
     }
 
-    /** the files a reply names, read again only when its text grew @param {Row} row */
-    filesOf(row) {
-        const had = this.replyFiles.get(row.id);
-        if (had?.version === row.version) return had.files;
-        const files = fileLinks(row.text, home());
-        this.replyFiles.set(row.id, { files, version: row.version });
-        return files;
-    }
-
     /**
-     * a file a reply names, under its text (FRM-587). no press or hover handler: one inside a list row blanks the whole
-     * list (herdr-app#894), so the click that opens it waits on its own list item
-     * @param {{ label: string, path: string }} file @param {string} id @param {Theme} t
+     * a file a reply names, its own row under the reply (FRM-587): the list's item click opens it. no press or hover
+     * handler in here, one inside a list row blanks the whole list (herdr-app#894)
+     * @param {Row} row @param {Theme} t
      */
-    fileRow(file, id, t) {
+    fileRow(row, t) {
         return h_flex()
-            .id(id)
             .gap(6)
             .items_center()
             .self_start()
@@ -2213,10 +2214,11 @@ export default class Chat extends View {
             .rounded(6)
             .border(1)
             .border_color(t.border)
+            .cursor_pointer()
             .text_size(12)
             .text_color(t.muted)
-            .child(isPicture(file.path) ? ICONS.picture : ICONS.file)
-            .child(div().truncate().child(file.label));
+            .child(isPicture(row.path ?? '') ? ICONS.picture : ICONS.file)
+            .child(div().truncate().child(row.text));
     }
 
     /**

@@ -82,3 +82,55 @@ export const unlinkFiles = (text) =>
                   ),
         )
         .join('');
+
+/** @typedef {import('./row-model.js').Row} Row */
+
+/**
+ * the rows with each reply's files after it, one row a file: a click inside a list row blanks the list
+ * (herdr-app#894), so a file is its own item and the list's item click opens it. a file row keeps its object while
+ * its reply's version holds, so its measured height is kept
+ * @param {readonly Row[]} rows
+ * @param {string} home his home, for a `~` path
+ * @param {Map<string, { version: number, files: Row[] }>} cache the file rows made so far, by reply
+ * @returns {Row[]}
+ */
+export function withFileRows(rows, home, cache) {
+    /** @type {Row[]} */
+    const out = [];
+    for (const row of rows) {
+        out.push(row);
+        if (row.kind !== 'reply') continue;
+        let had = cache.get(row.id);
+        if (had?.version !== row.version) {
+            had = {
+                files: fileLinks(row.text, home).map((file, i) => ({
+                    at: row.at,
+                    id: `${row.id}#file-${i}`,
+                    isTurnStart: false,
+                    isWaiting: false,
+                    kind: /** @type {const} */ ('file'),
+                    path: file.path,
+                    replyId: null,
+                    text: file.label,
+                    tools: [],
+                    version: row.version,
+                })),
+                version: row.version,
+            };
+            cache.set(row.id, had);
+        }
+        out.push(...had.files);
+    }
+    return out;
+}
+
+/**
+ * the file a list click names, by the key the list reported: a cut half's key carries a suffix
+ * @param {readonly Row[]} rows @param {string} key
+ * @returns {string | null}
+ */
+export function fileAt(rows, key) {
+    const id = key.replace(/#(?:above|below)$/, '');
+    const row = rows.find((r) => r.id === id);
+    return row?.kind === 'file' ? (row.path ?? null) : null;
+}

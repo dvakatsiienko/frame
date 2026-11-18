@@ -1,7 +1,7 @@
 // each row's measured height, kept by the row's id and version: the list is handed exact sizes, so a row that changes
 // moves nothing above it, and only the rows near the view are measured in a frame.
 
-/** @typedef {{ id: string, version: number, kind: 'mine' | 'reply' | 'tool', text: string }} Measured */
+/** @typedef {{ id: string, version: number, kind: 'mine' | 'reply' | 'tool' | 'file', text: string }} Measured */
 /** @typedef {{ start: number, end: number }} Range */
 
 // herdr's list refuses a taller row

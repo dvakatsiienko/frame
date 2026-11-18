@@ -10,7 +10,8 @@ import { claudeQueueAfter, isHisQueued, unwrapPastes } from './queued.js';
 /**
  * @typedef {object} Row
  * @property {string} id the uuid of the row's first transcript line
- * @property {'mine' | 'reply' | 'tool'} kind
+ * @property {'mine' | 'reply' | 'tool' | 'file'} kind `file`: a file a reply names, drawn under it (files.js)
+ * @property {string} [path] a file row's file
  * @property {string} text his words, the reply's markdown, or the line naming a run of tool calls
  * @property {string | null} at when its line was written, as the transcript stamps it
  * @property {number} version 1 at birth, one more each time the text changes

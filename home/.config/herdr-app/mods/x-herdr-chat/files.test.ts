@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { fileLinks, unlinkFiles } from './files.js';
+import { fileAt, fileLinks, unlinkFiles, withFileRows } from './files.js';
 
 const HOME = '/Users/dima';
 
@@ -87,5 +87,66 @@ describe('a file:// link in the text reads plain while herdr-app#894 is open', (
     test('a link inside code and a web link stay as written', () => {
         const text = '`[a](file:///tmp/a)` [w](https://x.dev)';
         expect(unlinkFiles(text)).toBe(text);
+    });
+});
+
+describe("a reply's files are rows of their own in the list, so a click on one can open it (FRM-587)", () => {
+    const reply = (id: string, text: string, version = 1) => ({
+        at: null,
+        id,
+        isTurnStart: false,
+        isWaiting: false,
+        kind: 'reply' as const,
+        replyId: null,
+        text,
+        tools: [],
+        version,
+    });
+
+    test('each file a reply names follows it as a file row', () => {
+        const rows = withFileRows(
+            [reply('r1', 'see /tmp/a.png and /tmp/b.md')],
+            HOME,
+            new Map(),
+        );
+        expect(rows.map((r) => [r.kind, r.id, r.text, r.path])).toEqual([
+            ['reply', 'r1', 'see /tmp/a.png and /tmp/b.md', undefined],
+            ['file', 'r1#file-0', 'a.png', '/tmp/a.png'],
+            ['file', 'r1#file-1', 'b.md', '/tmp/b.md'],
+        ]);
+    });
+
+    test('his own messages and tool rows get no file rows', () => {
+        const mine = { ...reply('m1', '/tmp/a.png'), kind: 'mine' as const };
+        expect(withFileRows([mine], HOME, new Map())).toEqual([mine]);
+    });
+
+    test('a file row keeps its object while its reply does not change, so its height is kept', () => {
+        const cache = new Map();
+        const first = withFileRows([reply('r1', '/tmp/a.png')], HOME, cache);
+        const again = withFileRows([reply('r1', '/tmp/a.png')], HOME, cache);
+        expect(again[1]).toBe(first[1]);
+    });
+
+    test('a reply that grew is read again', () => {
+        const cache = new Map();
+        withFileRows([reply('r1', '/tmp/a.png')], HOME, cache);
+        const grown = withFileRows(
+            [reply('r1', '/tmp/a.png /tmp/c.md', 2)],
+            HOME,
+            cache,
+        );
+        expect(grown.map((r) => r.id)).toEqual([
+            'r1',
+            'r1#file-0',
+            'r1#file-1',
+        ]);
+    });
+
+    test('a click names its file through the row key, a cut half included', () => {
+        const rows = withFileRows([reply('r1', '/tmp/a.png')], HOME, new Map());
+        expect(fileAt(rows, 'r1#file-0')).toBe('/tmp/a.png');
+        expect(fileAt(rows, 'r1#file-0#below')).toBe('/tmp/a.png');
+        expect(fileAt(rows, 'r1')).toBeNull();
     });
 });
