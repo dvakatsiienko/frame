@@ -139,10 +139,12 @@ describe('a ⌘K or ⌘⇧E press is acted on only while fresh', () => {
 describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () => {
     const at = {
         effortAsk: null,
+        escapeAsk: null,
         findAsk: null,
         isShown: true,
         isSwitched: false,
         lastEffort: null,
+        lastEscape: null,
         lastFind: null,
         lastQuill: null,
         now: 10_000,
@@ -201,9 +203,11 @@ describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () =
     test('a quiet draw takes nothing', () => {
         expect(asksActedOn(at)).toEqual({
             isEffort: false,
+            isEscape: false,
             isFind: false,
             isFocus: false,
             lastEffort: null,
+            lastEscape: null,
             lastFind: null,
             lastQuill: null,
         });
@@ -213,10 +217,12 @@ describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () =
 describe('⌘F from anywhere in the window opens the chat on screen’s find (dima, 17:58)', () => {
     const at = {
         effortAsk: null,
+        escapeAsk: null,
         findAsk: 9_500,
         isShown: true,
         isSwitched: false,
         lastEffort: null,
+        lastEscape: null,
         lastFind: null,
         lastQuill: null,
         now: 10_000,
@@ -238,5 +244,34 @@ describe('⌘F from anywhere in the window opens the chat on screen’s find (di
 
     test('a ⌘F the chat slept through is dropped', () => {
         expect(asksActedOn({ ...at, now: 20_000 }).isFind).toBe(false);
+    });
+});
+
+describe('Esc from anywhere in the window closes the chat’s viewer or find (dima, 18:18)', () => {
+    const at = {
+        effortAsk: null,
+        escapeAsk: 9_500,
+        findAsk: null,
+        isShown: true,
+        isSwitched: false,
+        lastEffort: null,
+        lastEscape: null,
+        lastFind: null,
+        lastQuill: null,
+        now: 10_000,
+        quillAsk: null,
+        wasShown: true,
+    };
+
+    test('a fresh Esc is acted on by the chat on screen', () => {
+        expect(asksActedOn(at).isEscape).toBe(true);
+    });
+
+    test('a hidden chat closes nothing', () => {
+        expect(asksActedOn({ ...at, isShown: false }).isEscape).toBe(false);
+    });
+
+    test('the same Esc is acted on once', () => {
+        expect(asksActedOn({ ...at, lastEscape: 9_500 }).isEscape).toBe(false);
     });
 });

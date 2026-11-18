@@ -459,6 +459,8 @@ export default class Chat extends View {
     quillAsk = null;
     /** ⌘F's last ask, pressed anywhere in the window (the status bar takes the key and writes the time) @type {unknown} */
     findAsk = null;
+    /** Esc's last ask from outside the chat (the status bar takes the key and writes the time) @type {unknown} */
+    escapeAsk = null;
     /** ⌘⇧E's last ask @type {unknown} */
     effortAsk = null;
     /** the pid this chat last named in `chat.shown`: its thread on screen, null hidden @type {number | null | undefined} */
@@ -792,12 +794,15 @@ export default class Chat extends View {
         const quillAsk = shared('chat.quill') ?? null;
         const effortAsk = shared('chat.effort') ?? null;
         const findAsk = shared('chat.find') ?? null;
+        const escapeAsk = shared('chat.escape') ?? null;
         const acts = asksActedOn({
             effortAsk,
+            escapeAsk,
             findAsk,
             isShown,
             isSwitched,
             lastEffort: this.effortAsk,
+            lastEscape: this.escapeAsk,
             lastFind: this.findAsk,
             lastQuill: this.quillAsk,
             now: Date.now(),
@@ -807,7 +812,15 @@ export default class Chat extends View {
         this.quillAsk = acts.lastQuill;
         this.effortAsk = acts.lastEffort;
         this.findAsk = acts.lastFind;
+        this.escapeAsk = acts.lastEscape;
         this.wasShown = isShown;
+        // Esc pressed anywhere in the window closes the viewer, or find when no viewer shows (dima, 18:18)
+        if (acts.isEscape && (this.viewer || this.find.state.isOpen))
+            _cx.timer.after(0, (later) =>
+                this.viewer
+                    ? this.viewerStep('close', later)
+                    : this.closeFind(later),
+            );
         if (acts.isFind && !this.viewer)
             _cx.timer.after(0, (later) => this.openFind(later));
         if (acts.isFocus && !this.viewer)
@@ -2132,9 +2145,7 @@ export default class Chat extends View {
                                     .text_color(t.foreground)
                                     .cursor_pointer()
                                     .hover((style) => style.bg(t.border))
-                                    .tooltip(
-                                        "Stop Claude's turn (Esc in the thread)",
-                                    )
+                                    .tooltip("Stop Claude's turn")
                                     .child('Stop')
                                     .on_click((_event, cx) => this.stop(cx)),
                             ),

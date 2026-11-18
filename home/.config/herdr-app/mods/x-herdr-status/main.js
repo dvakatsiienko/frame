@@ -784,6 +784,9 @@ export default class WorkspaceStatus extends View {
                             stack: chat.content.props.stack,
                         });
                     setShared(`chat.${command}`, Date.now());
+                } else if (command === 'escape') {
+                    // the chat on screen closes its viewer or find; no view is switched for it
+                    setShared('chat.escape', Date.now());
                 } else if (command === 'tickall') {
                     setShared('deck.tickAll', Date.now());
                 } else if (command === 'deck') {
