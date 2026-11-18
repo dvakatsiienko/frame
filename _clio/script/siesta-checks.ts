@@ -44,6 +44,7 @@ function main(home: string, since: string) {
         auditCodie(home, since),
         gatesDrift(home),
         vmDown(home, since),
+        fleetChromePages(home),
         gateBudget(home),
         retros(home),
     ];
@@ -163,6 +164,39 @@ function gatesDrift(home: string) {
                   )
                   .join('\n')
             : `${hooks.length} hook(s), every one on the page`,
+    };
+}
+
+// a fleet Chrome page left open after its read: one billing tab burned ~90 % cpu for 6 h and redded every lane's gate (2026-11-18)
+function fleetChromePages(home: string) {
+    const name = 'fleet chrome';
+    if (!existsSync(path.join(home, '.local/state/fleet-chrome')))
+        return { exit: 0, name, output: 'no fleet Chrome profile here' };
+    const out = spawnSync(
+        'curl',
+        ['-sf', '-m', '3', 'http://127.0.0.1:9333/json'],
+        { encoding: 'utf8' },
+    );
+    if (out.status !== 0)
+        return {
+            exit: 0,
+            name,
+            output: 'the fleet Chrome is down, no page open',
+        };
+    const open = (
+        JSON.parse(out.stdout) as { type: string; url: string; id: string }[]
+    ).filter((t) => t.type === 'page' && t.url !== 'about:blank');
+    return {
+        exit: open.length ? 1 : 0,
+        name,
+        output: open.length
+            ? open
+                  .map(
+                      (t) =>
+                          `🔴 open: ${t.url.slice(0, 90)} — close it: curl -sf http://127.0.0.1:9333/json/close/${t.id}`,
+                  )
+                  .join('\n')
+            : 'only a blank page open',
     };
 }
 

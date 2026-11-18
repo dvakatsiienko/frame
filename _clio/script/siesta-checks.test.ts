@@ -133,6 +133,7 @@ describe('siesta-checks', () => {
             '## audit-codie',
             '## gates drift',
             '## vm down',
+            '## fleet chrome',
             '## gate budget',
             '## retros',
         ]);
