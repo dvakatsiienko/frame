@@ -466,7 +466,7 @@
   - when `x brief check <brief> --repo <path>` runs
   - then it fails and names each one with its line; a thing the brief asks to build passes when `(new)` follows it
 - ✅ `x brief check` lints the exit lines
-  - given a rate with no n, an exit line with no surface, an exit line into `_clio/`, a relayed approval with no time, jev with no budget, «clio pushes» under an `x:` skill whose `SKILL.md` names `x lane push`, or a «reuse» with no «keep» on its line
+  - given a rate with no n, an exit line with no surface, a path into `_clio/` on any line (the fence naming `_clio/` alone passes; FRM-617), a relayed approval with no time, jev with no budget, «clio pushes» under an `x:` skill whose `SKILL.md` names `x lane push`, or a «reuse» with no «keep» on its line
   - when it runs
   - then each finding names its line and the rule
 - ⬜ `x brief check` flags a mod path with no `plugin-authoring`

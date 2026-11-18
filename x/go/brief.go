@@ -41,12 +41,14 @@ var (
 	rate       = regexp.MustCompile(`\d+(?:\.\d+)?\s?%`)
 	sampleSize = regexp.MustCompile(`(?i)\bn\s*(?:=|≥|>=|>)\s*\d|\bminimum n\b|\bn of\b|\bof\s+\d+\b|\bout of\b|\d+\s*/\s*\d+|\b\d+\s+(?:runs?|calls?|samples?|sessions?|prs?|tickets?|briefs?)\b`)
 	surface    = regexp.MustCompile("`[^`]+`|https?://|localhost:\\d+|:\\d{2,5}\\b")
-	relayed    = regexp.MustCompile(`(?i)\bdima\b[^.\n]{0,24}\b(?:approved|approves|said yes|agreed|signed off|ok'?d)\b`)
-	stampTime  = regexp.MustCompile(`\b\d{1,2}:\d{2}\b|\d{4}-\d{2}-\d{2}`)
-	newMark    = regexp.MustCompile(`^\s*\((?:new|to build)\)`)
-	fileLike   = regexp.MustCompile(`^[\w.@~-]+\.(?:md|mdx|ts|tsx|js|mjs|go|json|jsonc|sh|zsh|yml|yaml|toml|swift|css|html|txt|plist|py|svg|png)$`)
-	lineRef    = regexp.MustCompile(`(:\d+(?:-\d+)?|#[\w-]+)$`)
-	npmScoped  = regexp.MustCompile(`^@[a-z0-9][\w.-]*/[a-z0-9][\w.-]*(?:@[\w.^~-]+)?$`)
+	// a path into clio's home; the fence naming `_clio/` alone is no path into it
+	clioPath  = regexp.MustCompile(`(?:^|[^\w])_clio/[\w.-]`)
+	relayed   = regexp.MustCompile(`(?i)\bdima\b[^.\n]{0,24}\b(?:approved|approves|said yes|agreed|signed off|ok'?d)\b`)
+	stampTime = regexp.MustCompile(`\b\d{1,2}:\d{2}\b|\d{4}-\d{2}-\d{2}`)
+	newMark   = regexp.MustCompile(`^\s*\((?:new|to build)\)`)
+	fileLike  = regexp.MustCompile(`^[\w.@~-]+\.(?:md|mdx|ts|tsx|js|mjs|go|json|jsonc|sh|zsh|yml|yaml|toml|swift|css|html|txt|plist|py|svg|png)$`)
+	lineRef   = regexp.MustCompile(`(:\d+(?:-\d+)?|#[\w-]+)$`)
+	npmScoped = regexp.MustCompile(`^@[a-z0-9][\w.-]*/[a-z0-9][\w.-]*(?:@[\w.^~-]+)?$`)
 	// a cc slash command (`/clear`, `/clio:boot`) is one segment from the root: never a path to check
 	slashCommandToken = regexp.MustCompile(`^/[a-z][\w:-]*$`)
 	// a file or dir of one mod, never the mods dir alone: a fence names that
@@ -415,8 +417,8 @@ func lint(lines []briefLine, skill func(name string) string) []finding {
 		if line.exit && !surface.MatchString(line.group) {
 			found = append(found, finding{line.n, "lint", "exit line", "names no surface: a file, a port or a command in backticks"})
 		}
-		if line.exit && strings.Contains(line.group, "_clio/") {
-			found = append(found, finding{line.n, "lint", "_clio/", "codie's exit line never points into _clio/"})
+		if clioPath.MatchString(text) {
+			found = append(found, finding{line.n, "lint", "_clio/", "a member brief never points into _clio/: a chore there is clio's or a card's"})
 		}
 		if relayed.MatchString(text) && !stampTime.MatchString(text) {
 			found = append(found, finding{line.n, "lint", "dima's approval", "a relayed approval is quoted with its time"})
