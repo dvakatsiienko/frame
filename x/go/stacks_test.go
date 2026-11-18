@@ -217,6 +217,8 @@ const (
 func stackedMergeWorld(t *testing.T, base, lower string) *mergeWorld {
 	t.Helper()
 	w := newMergeWorld(t, "script/foo.ts")
+	// the async merge's poll sleeps 2 s a round; the fake clock counts it against the budget without waiting
+	w.env = append(w.env, "X_FAKE_SLEEP=1")
 	w.hub.mu.Lock()
 	defer w.hub.mu.Unlock()
 	w.hub.pages[repoPath+"/pulls/8"] = `{"mergeable":true,"mergeable_state":"clean","number":8,"title":"part 2","state":"open","merged":false,"body":"b",

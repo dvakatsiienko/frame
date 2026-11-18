@@ -384,7 +384,7 @@ func TestRevertDoesNotWaitOutABackgroundChild(t *testing.T) {
 	main, _, tree := revertWorld(t)
 	started := time.Now()
 
-	got := revert(t, main, "sh", "-c", "sleep 25 & "+greenOnHead+"echo '--- FAIL: TestNewOne (0.00s)'; echo '--- FAIL: TestNewTwo (0.00s)'; exit 1")
+	got := revert(t, main, "sh", "-c", greenOnHead+"sleep 25 & echo '--- FAIL: TestNewOne (0.00s)'; echo '--- FAIL: TestNewTwo (0.00s)'; exit 1")
 
 	if elapsed := time.Since(started); got.code != 0 || elapsed > 20*time.Second {
 		t.Fatalf("exit %d after %s, want the proof in under 20 s:\n%s", got.code, elapsed, got.stdout)

@@ -13,20 +13,23 @@ func TestEveryVerbHasHelpAndSchema(t *testing.T) {
 	t.Parallel()
 	dir := repo(t)
 	for _, verb := range verbs {
-		help := xIn(t, dir, nil, append(strings.Fields(verb.Name), "--help", "--json")...)
-		if help.code != 0 || help.data["usage"] != verb.Usage {
-			t.Errorf("%s --help: exit %d, usage %v", verb.Name, help.code, help.data["usage"])
-		}
-		schema := xIn(t, dir, nil, append([]string{"schema"}, strings.Fields(verb.Name)...)...)
-		listed, _ := schema.data["verbs"].([]any)
-		if schema.code != 0 || len(listed) == 0 || listed[0].(map[string]any)["name"] != verb.Name {
-			t.Errorf("schema %s: exit %d, %d entries", verb.Name, schema.code, len(listed))
-			continue
-		}
-		flags, _ := listed[0].(map[string]any)["flags"].(map[string]any)
-		if _, offers := flags["apply"]; offers != verb.NeedsApply {
-			t.Errorf("schema %s offers --apply: %v, but it publishes: %v", verb.Name, offers, verb.NeedsApply)
-		}
+		t.Run(verb.Name, func(t *testing.T) {
+			t.Parallel()
+			help := xIn(t, dir, nil, append(strings.Fields(verb.Name), "--help", "--json")...)
+			if help.code != 0 || help.data["usage"] != verb.Usage {
+				t.Errorf("%s --help: exit %d, usage %v", verb.Name, help.code, help.data["usage"])
+			}
+			schema := xIn(t, dir, nil, append([]string{"schema"}, strings.Fields(verb.Name)...)...)
+			listed, _ := schema.data["verbs"].([]any)
+			if schema.code != 0 || len(listed) == 0 || listed[0].(map[string]any)["name"] != verb.Name {
+				t.Errorf("schema %s: exit %d, %d entries", verb.Name, schema.code, len(listed))
+				return
+			}
+			flags, _ := listed[0].(map[string]any)["flags"].(map[string]any)
+			if _, offers := flags["apply"]; offers != verb.NeedsApply {
+				t.Errorf("schema %s offers --apply: %v, but it publishes: %v", verb.Name, offers, verb.NeedsApply)
+			}
+		})
 	}
 }
 
