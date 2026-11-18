@@ -67,7 +67,7 @@ You are a fleet member, a session clio summoned or briefed. Your role skill says
 **the loop**
 - the lane opens at codie's first commit
 - rounds run codie ↔ sixth sense: clio hears nothing per round, and codie carries `clean`
-- the cap is 3 rounds with a P0 or P1 finding, scope growth resets the count, and the stop goes to clio
+- the cap is 3 rounds with a P0 or P1 finding (a round's first line: «round N on <sha> (FRM-N) · P0/P1: n»), scope growth resets it, the stop goes to clio
 - a dispute goes to clio, both sides in one message
 - after `clean`, clio merges; the look card reaches dima, never a review request
 - sixth sense's posts are `crew-sixth-sense/posting.md`; a side lane records its clean by `watch-pr.sh --verified` too; codie's done comment says «verified clean, round N»
