@@ -36,6 +36,9 @@ function world(
     // `x lane plan-steps <path>`'s answer per plan path; a path with none fails the run, as x would
     const steps: Record<string, unknown[] | undefined> = {};
     const planRuns: string[] = [];
+    // `x lane show <lane> --json`'s record per lane; a lane with none fails the run, as x would
+    const shows: Record<string, unknown> = {};
+    const showRuns: string[] = [];
     files[`/home/.claude/sessions/${PID}.json`] = JSON.stringify({
         name,
         pid: PID,
@@ -70,6 +73,23 @@ function world(
         value: { internal: false, name: null, remote: null, root: '/tmp' },
     }));
     on('process.run', (_$, e) => {
+        if (e.argv[1] === 'lane' && e.argv[2] === 'show') {
+            showRuns.push(e.argv[3] ?? '');
+            const record = shows[e.argv[3] ?? ''];
+            return {
+                value: {
+                    exitCode: record ? 0 : 1,
+                    isStderrTruncated: false,
+                    isStdoutTruncated: false,
+                    stderr: '',
+                    stdout: JSON.stringify(
+                        record
+                            ? { data: record, ok: true }
+                            : { error: 'no live thread', ok: false },
+                    ),
+                },
+            };
+        }
         if (e.argv[1] === 'lane' && e.argv[2] === 'plan-steps') {
             const path = e.argv[3] ?? '';
             planRuns.push(path);
@@ -144,7 +164,17 @@ function world(
     on('turn.complete', () => ({ text: '' }));
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
-    return { clock, contexts, files, planRuns, steps, store, texts };
+    return {
+        clock,
+        contexts,
+        files,
+        planRuns,
+        showRuns,
+        shows,
+        steps,
+        store,
+        texts,
+    };
 }
 
 const start = ($: Engine) =>
@@ -2219,6 +2249,101 @@ test('a live codie dispatched into a lane with a plan opens its card on the next
         ['step 2', false],
         ['step 3', false],
     ]);
+});
+
+// FRM-649 exit 2 (FRM-616:W36–W38): the card's title is the lane record's «<scope> — <what>», never the plan's heading
+test("a dispatched lane's card reads «<scope> — <what>» from x lane show, the heading only when the record has none", async ($, on) => {
+    const w = world(
+        on,
+        dispatched([{ lane: 'mods-lane-9', pid: 5001, sessionId: CODIE }]),
+    );
+    titled(w, marked('x  '));
+    w.shows['mods-lane-9'] = {
+        lane: 'mods-lane-9',
+        members: { [CODIE]: 'codie' },
+        scope: 'mods',
+        what: 'one ask counter, cards from the lane record',
+    };
+    await start($);
+    await poll(w);
+    // the card opens under its record's title, never the heading first
+    const opened = kept(w).find((l) => !l.endedAt)?.title;
+    await poll(w);
+    const cards = kept(w).filter((l) => !l.endedAt);
+    expect([
+        opened,
+        cards.map((l) => [l.title, l.members.codie]),
+        w.showRuns,
+    ]).toEqual([
+        'mods — one ask counter, cards from the lane record',
+        [['mods — one ask counter, cards from the lane record', CODIE_NAME]],
+        // read once for the dispatch, never each poll
+        ['mods-lane-9'],
+    ]);
+});
+
+test('the sixth sense x lane show names joins the card beside the codie, once it runs', async ($, on) => {
+    const SIXTH_SID = 'sx6sx6sx-sixth';
+    const setup = dispatched([
+        { lane: 'mods-lane-9', pid: 5001, sessionId: CODIE },
+    ]);
+    const w = world(on, {
+        ...setup,
+        peers: [
+            ...setup.peers,
+            codieAt(SIXTH_SID, { name: '⚡ 🔎 mods | FRM-9', pid: 5002 }),
+        ],
+    });
+    titled(w, marked('x  '));
+    w.shows['mods-lane-9'] = {
+        lane: 'mods-lane-9',
+        members: { [CODIE]: 'codie', [SIXTH_SID]: 'sixth-sense' },
+        scope: 'mods',
+        what: 'one ask counter',
+    };
+    await start($);
+    await poll(w);
+    await poll(w);
+    const card = kept(w).find((l) => !l.endedAt);
+    expect([card?.members.codie, card?.members['sixth-sense']]).toEqual([
+        CODIE_NAME,
+        '⚡ 🔎 mods | FRM-9',
+    ]);
+});
+
+test("a lane's next dispatch retitles its open card from the record", async ($, on) => {
+    const w = world(
+        on,
+        dispatched([{ lane: 'mods-lane-9', pid: 5001, sessionId: CODIE }]),
+    );
+    titled(w, marked('x  '));
+    w.shows['mods-lane-9'] = {
+        lane: 'mods-lane-9',
+        members: { [CODIE]: 'codie' },
+        scope: 'mods',
+        what: 'the first chunk',
+    };
+    await start($);
+    await poll(w);
+    // the next dispatch rewrites the codie's record: a new time, the next ticket
+    w.shows['mods-lane-9'] = {
+        lane: 'mods-lane-9',
+        members: { [CODIE]: 'codie' },
+        scope: 'mods',
+        what: 'the next chunk',
+    };
+    Object.assign(
+        w.files,
+        dispatched([
+            { at: 2, lane: 'mods-lane-9', pid: 5001, sessionId: CODIE },
+        ]).files,
+    );
+    await poll(w);
+    expect(
+        kept(w)
+            .filter((l) => !l.endedAt)
+            .map((l) => l.title),
+    ).toEqual(['mods — the next chunk']);
 });
 
 test('a dispatch opens no card for a gone codie, a record with no lane, or a lane with no plan', async ($, on) => {

@@ -205,7 +205,6 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 	plan.clean, plan.unlocks = nil, nil
 	var notes []string
 	found, terr := laneTrees(main, repo, id, laneRefs{pr, headRef, headSha, mergedHead, commits, underReview})
-	var swept []string
 	for _, tree := range found {
 		switch {
 		case tree.reason == "" && tree.staleLock != "":
@@ -215,9 +214,6 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		case tree.reason == "":
 			plan.clean = append(plan.clean, tree.path)
 			notes = append(notes, home(tree.path)+" is clean, decamped on --apply")
-			continue
-		case tree.swept:
-			swept = append(swept, home(tree.path)+" stays: "+tree.reason)
 			continue
 		}
 		notes = append(notes, home(tree.path)+" stays: "+tree.reason)
@@ -232,8 +228,6 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		trees.ok, trees.detail, trees.fix = false, strings.Join(notes, "; "), "x lane landed "+id+" --apply"
 	case len(notes) > 0:
 		trees.ok, trees.detail = false, strings.Join(notes, "; ")
-	case len(swept) > 0:
-		trees.detail = strings.Join(swept, "; ")
 	}
 	lines = append(lines, trees)
 	lines = append(lines, worktreeBranchesLine(main, id, plan))
@@ -710,10 +704,9 @@ func landedIssue(flags Flags, id string) (landedRead, error) {
 	return read, nil
 }
 
-// swept: a quick lane's verify-<sha> tree whose sha is on main, any lane's: it never holds this lane's landing
+// a tree of this lane's only: another lane's verify tree may still be under its review, its sha on main or not (FRM-649)
 type laneTree struct {
 	path, reason string
-	swept        bool
 	// why the tree's lock is stale, when that lock alone held it: unlocked on --apply
 	staleLock string
 }
@@ -765,7 +758,6 @@ func unmergedChunks(repo, spec, id string) []string {
 // the root rule: no change in git status, no file in .scratch/, every commit on an origin ref or in the merged pr.
 // a lane tree is a codie/<ticket>-* branch or the pr's head ref; a detached one is sixth sense's verify tree,
 // named verify-pr-<n> (frame), verify-<ticket> (any other repo) or sitting at the pr's head
-var verifySha = regexp.MustCompile(`^verify-[0-9a-f]{7,40}$`)
 
 // the merged worktree- branches no tree holds go on --apply, by decamp's main-holds rule and lease; one main lacks stays,
 // named, never holding the landing: it is any session's, never this lane's (FRM-553)
@@ -820,9 +812,7 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 			return short != "" && strings.HasPrefix(sha, short)
 		})
 		verify := detached && (name == "verify-"+id || (refs.pr != "" && name == "verify-pr-"+refs.pr) || (refs.headSha != "" && sha == refs.headSha) || atCommit)
-		// any quick lane's verify tree once its sha is on main: its lane landed, so nothing reviews it any more (FRM-553)
-		swept := !verify && !ours && detached && verifySha.MatchString(name) && onMain(main, sha)
-		if !strings.HasPrefix(resolved(path), under) || !(ours || verify || swept) {
+		if !strings.HasPrefix(resolved(path), under) || !(ours || verify) {
 			continue
 		}
 		// a lock whose pid is gone keeps no tree: landed unlocks it, named, on --apply; a reused pid only names the unlock
@@ -833,10 +823,7 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 		if stale != "" {
 			entry.locked = false
 		}
-		reason := treeStay(entry, main, selves, sha)
-		if !swept {
-			reason = treeStay(entry, main, selves, mergedHead)
-		}
+		reason := treeStay(entry, main, selves, mergedHead)
 		if stale != "" && reason != "" {
 			reason += ", its lock is stale, " + stale + ": git worktree unlock " + path
 			stale = ""
@@ -844,7 +831,7 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 		if verify && refs.underReview {
 			reason = strings.TrimSuffix("its lane is still under review, "+reason, ", ")
 		}
-		trees = append(trees, laneTree{path, reason, swept, stale})
+		trees = append(trees, laneTree{path, reason, stale})
 	}
 	return trees, nil
 }

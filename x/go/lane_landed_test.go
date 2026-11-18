@@ -962,6 +962,31 @@ func TestLandedReadsAQuickLaneMergedAndDecampsItsVerifyTree(t *testing.T) {
 	}
 }
 
+// FRM-649: another lane's verify tree stays though its sha is on main: that lane may still be reviewing it (the herdr
+// lane's verify-ba8bcd9 had a live sixth sense in it, 2026-11-18)
+func TestLandedKeepsAnotherLanesVerifyTreeOnMain(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD~1")
+	gitT(t, w.repo, "reset", "-q", "--hard", "HEAD~1")
+	write(t, filepath.Join(w.repo, "q.txt"), "the quick change\n")
+	gitT(t, w.repo, "add", "q.txt")
+	gitT(t, w.repo, "commit", "-q", "-m", "🔧 x-mod-guard: a rule refuses (FRM-1)", "-m", "Agent: codie · Claude Sonnet 5.5")
+	write(t, filepath.Join(w.repo, "other.txt"), "another lane\n")
+	gitT(t, w.repo, "add", "other.txt")
+	gitT(t, w.repo, "commit", "-q", "-m", "🔧 herdr: another lane's step (FRM-12)")
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+	other := gitT(t, w.repo, "rev-parse", "HEAD")
+	verify := filepath.Join(w.repo, ".claude/worktrees/verify-"+other[:7])
+	gitT(t, w.repo, "worktree", "add", "-q", "--detach", verify, other)
+
+	envelope, _ := w.landed(t, "--apply")
+
+	if !exists(verify) {
+		t.Errorf("another lane's verify-<sha> tree was decamped:\n%s", linesOf(envelope))
+	}
+}
+
 func TestLandedRefusesAPrThatIsNotTheTickets(t *testing.T) {
 	t.Parallel()
 	cases := []struct {

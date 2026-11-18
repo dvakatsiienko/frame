@@ -325,8 +325,9 @@ func TestLandedApplyKeepsAndNamesABranchItCannotTake(t *testing.T) {
 	}
 }
 
-// FRM-553 exit 3d: landed clears a clean verify-<sha> tree on main and a merged worktree- branch; a dirty one stays, named
-func TestLandedApplyClearsLandedVerifyTreesAndWorktreeBranches(t *testing.T) {
+// FRM-553 exit 3d: landed clears a merged worktree- branch; FRM-649 reversed its sweep of every verify-<sha> tree on main,
+// which took another lane's tree while its sixth sense still worked in it: a tree not this lane's stays, clean or dirty
+func TestLandedApplyClearsWorktreeBranchesAndKeepsOtherLanesVerifyTrees(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
 	w.withPnpm(t, "exit 0")
@@ -345,9 +346,8 @@ func TestLandedApplyClearsLandedVerifyTreesAndWorktreeBranches(t *testing.T) {
 
 	got := w.landedAfterMerge(t, "--apply")
 
-	gone := exists(clean) || w.onClone(t, "worktree-x")
-	if gone || !exists(dirty) || !strings.Contains(got.stdout, "worktree-x gone") || !strings.Contains(got.stdout, "verify-"+onMain[:9]+" stays") {
-		t.Fatalf("exit %d, clean %v, dirty %v, worktree-x %v: want the clean tree and the branch gone, named, the dirty tree kept, named\n%s",
+	if !exists(clean) || !exists(dirty) || w.onClone(t, "worktree-x") || !strings.Contains(got.stdout, "worktree-x gone") {
+		t.Fatalf("exit %d, clean %v, dirty %v, worktree-x %v: want the branch gone, named, both trees kept\n%s",
 			got.code, exists(clean), exists(dirty), w.onClone(t, "worktree-x"), got.stdout)
 	}
 }

@@ -123,7 +123,10 @@ async function started(
         }));
     const pings: string[] = [];
     on('session.id', () => ({ value: SID }));
-    on('env.get', () => ({ value: '/home' }));
+    // a slow poll over 50 min of mock time: the ping keeps its own timer, and 750 ticks a row timed out at load (FRM-649)
+    on('env.get', (_$, e) => ({
+        value: e.name === 'X_STASH_POLL_MS' ? String(60_000) : '/home',
+    }));
     on('ui.log', () => ({ value: undefined }));
     on('session.repo', () => ({
         value: { internal: false, name: null, remote: null, root: '/tmp' },
@@ -326,7 +329,10 @@ test("a keep-hot ping's one-character reply keeps the 🔭 wait the last real re
         return { value: undefined };
     });
     on('session.id', () => ({ value: SID }));
-    on('env.get', () => ({ value: '/home' }));
+    // a slow poll over 50 min of mock time: the ping keeps its own timer, and 750 ticks a row timed out at load (FRM-649)
+    on('env.get', (_$, e) => ({
+        value: e.name === 'X_STASH_POLL_MS' ? String(60_000) : '/home',
+    }));
     on('ui.log', () => ({ value: undefined }));
     on('classic.Stop', () => ({}));
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));

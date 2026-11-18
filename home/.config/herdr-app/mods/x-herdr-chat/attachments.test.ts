@@ -160,4 +160,12 @@ describe('what waited comes back whole, from one owner (sixth sense, slice 5 rou
             't1 files': ['data/x-herdr-chat/shots/shot-9.png', pasted],
         });
     });
+
+    test('a file both loaded and added again before the load waits once and saves once', async () => {
+        const { files, io } = setup();
+        files.paste('t1', pasted);
+        await files.restore({ 't1 files': [pasted] });
+        expect(files.of('t1')).toHaveLength(1);
+        expect(io.save).toHaveBeenLastCalledWith({ 't1 files': [pasted] });
+    });
 });

@@ -5,6 +5,8 @@
 
 import { mkdir, readdir, writeFile } from 'fs/promises';
 import {
+    Input,
+    InputState,
     Popover,
     TextView,
     Textarea,
@@ -89,6 +91,7 @@ import {
     unlinkFiles,
     withFileRows,
 } from './files.js';
+import { FIND_SETTLE_MS, createFind, findCount } from './find.js';
 import { placeOf } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
@@ -574,6 +577,11 @@ export default class Chat extends View {
     pickKeys = null;
     /** the picture viewer over the chat, null when closed @type {import('./viewer.js').ViewerState | null} */
     viewer = null;
+    /** find in the chat (slice 6) */
+    find = createFind();
+    /** @type {import('gpui-base').InputState | null} */
+    findBox = null;
+    findTyped = 0;
     /** the / menu over the quill (slice 6) */
     slashMenu = createSlashMenu();
     /** the thread's skills, from its transcript's listing @type {Map<string, string>} */
@@ -676,6 +684,32 @@ export default class Chat extends View {
                 action: QUILL_ENTER,
                 context: 'XChatQuill > Input',
                 keystroke: 'enter',
+            },
+        ]);
+        // find: ⌘F from anywhere in the chat opens its bar; in the bar Enter steps older, ⇧Enter newer, Esc closes
+        const findBox = InputState.new({ placeholder: 'Find in this chat' });
+        findBox.on('change', (_event, cx) => {
+            const at = ++this.findTyped;
+            cx.timer.after(FIND_SETTLE_MS, (later) => {
+                if (this.findTyped !== at) return;
+                this.find.search(this.shownRows, findBox.value());
+                this.showHit(this.find.current(), later);
+            });
+        });
+        findBox.on('submit', (event, cx) =>
+            this.showHit(this.find.step(event.shift ? 'newer' : 'older'), cx),
+        );
+        this.findBox = findBox;
+        cx.bind_keys([
+            {
+                action: 'x_herdr_chat_find',
+                context: 'XChat',
+                keystroke: 'cmd-f',
+            },
+            {
+                action: 'x_herdr_chat_find_close',
+                context: 'ChatFind',
+                keystroke: 'escape',
             },
         ]);
         // the / menu's keys, only while it shows (its wrapper carries `ChatSlash` then)
@@ -790,6 +824,8 @@ export default class Chat extends View {
         const root = v_flex()
             .size_full()
             .min_h(0)
+            .key_context('XChat')
+            .on_action('x_herdr_chat_find', (_e, cx) => this.openFind(cx))
             // ⌘ held at a click on a picture opens it in his desktop app, not the viewer
             .on_modifiers_changed((e) => {
                 this.isCmdHeld = Boolean(e.modifiers.platform);
@@ -827,6 +863,7 @@ export default class Chat extends View {
                             .on_click(() => closeOverlay(overlay)),
                     ),
             );
+        if (this.find.state.isOpen) root.child(this.findBar(t));
         if (rows.length) {
             if (this.error)
                 root.child(
@@ -2915,8 +2952,9 @@ export default class Chat extends View {
         this.file = null;
         this.address = null;
         this.note = null;
-        // the viewer belongs to the thread it opened on
+        // the viewer and find belong to the thread they opened on
         this.viewer = null;
+        this.find.close();
         this.viewerAsk += 1;
         this.joins = null;
         // no button shows or presses a thread no longer on screen; the fleet's facts stay
@@ -3276,6 +3314,90 @@ export default class Chat extends View {
         if (row?.kind !== 'file') return null;
         const files = row.pictures.flatMap((p) => this.sent.pathOf(p) ?? []);
         return files.length ? { at: 0, files } : null;
+    }
+
+    /** ⌘F: the bar opens with the keyboard in it @param {Context} cx */
+    openFind(cx) {
+        this.find.open();
+        cx.timer.after(16, () => this.findBox?.focus());
+        cx.notify();
+    }
+
+    /** @param {Context} cx */
+    closeFind(cx) {
+        this.find.close();
+        this.findTyped += 1;
+        this.box?.focus();
+        cx.notify();
+    }
+
+    /** a hit's row scrolls in at the view's top @param {string | null} id @param {Context} cx */
+    showHit(id, cx) {
+        if (id) this.at.restore(id, 0);
+        cx.notify();
+    }
+
+    /** the find bar over the chat: his query, «n / N», the steps and ✕ @param {Theme} t */
+    findBar(t) {
+        const count = findCount(this.find.state);
+        /** @param {string} id @param {string} glyph @param {string} hint @param {(cx: Context) => void} act */
+        const button = (id, glyph, hint, act) =>
+            div()
+                .id(id)
+                .h(24)
+                .min_w(24)
+                .flex()
+                .items_center()
+                .justify_center()
+                .rounded(6)
+                .cursor_pointer()
+                .hover((style) => style.bg(t.border))
+                .tooltip(hint)
+                .on_click((_e, cx) => act(cx))
+                .child(glyph);
+        return h_flex()
+            .id('chat-find')
+            .key_context('ChatFind')
+            .on_action('x_herdr_chat_find_close', (_e, cx) =>
+                this.closeFind(cx),
+            )
+            .flex_none()
+            .w_full()
+            .px(18)
+            .py(6)
+            .gap(6)
+            .items_center()
+            .border_b(1)
+            .border_color(t.border)
+            .child(
+                div()
+                    .flex_1()
+                    .child(
+                        Input.new(
+                            /** @type {import('gpui-base').InputState} */ (
+                                this.findBox
+                            ),
+                        ),
+                    ),
+            )
+            .child(
+                div().min_w(64).text_size(12).text_color(t.muted).child(count),
+            )
+            .child(
+                button('chat-find-newer', '↑', 'Newer match (⇧Enter)', (cx) =>
+                    this.showHit(this.find.step('newer'), cx),
+                ),
+            )
+            .child(
+                button('chat-find-older', '↓', 'Older match (Enter)', (cx) =>
+                    this.showHit(this.find.step('older'), cx),
+                ),
+            )
+            .child(
+                button('chat-find-close', '✕', 'Close (Esc)', (cx) =>
+                    this.closeFind(cx),
+                ),
+            );
     }
 
     /** what the / menu shows now */
