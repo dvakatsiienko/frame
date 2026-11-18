@@ -88,6 +88,7 @@ import {
     JOINED_SHOWN_MS,
     JOINS_DIR,
     JOIN_TAKE_MS,
+    enterHoldStep,
     holdSend,
 } from './joins.js';
 import { createKeyPress } from './keypress.js';
@@ -434,13 +435,11 @@ export default class Chat extends View {
     joins = null;
     /** the pending wait for a change in the threads' state folder @type {import('herdr').FolderWatch | null} */
     stateWatch = null;
-    /** a press on send under way @type {{ at: number } | null} */
+    /** a press on send under way @type {import('./joins.js').Hold | null} */
     hold = null;
     holdFill = 0;
     /** @type {{ cancel: () => void } | null} */
     holdTask = null;
-    /** the hold under way is Enter's, so its key-up ends it */
-    isHoldByEnter = false;
     /** how long a hold takes to push: his two settings rows */
     timing = { delay: HOLD_DELAY_MS, push: HOLD_PUSH_MS };
     /** how full a meter gets before it warns: his two settings rows, their defaults until read */
@@ -533,8 +532,8 @@ export default class Chat extends View {
         });
         box.on('blur', (_event, cx) => {
             this.quillKeys.blurred();
-            // a quill that lost focus cuts Enter's hold; a hold on the send button is the pointer's to end
-            if (this.isHoldByEnter) this.holdStep(box, 'cancel', cx);
+            const event = enterHoldStep(this.hold, 'blur');
+            if (event) this.holdStep(box, event, cx);
         });
         this.box = box;
         this.pickKeys = cx.focus_handle();
@@ -1804,16 +1803,15 @@ export default class Chat extends View {
                         // Enter runs the send button's hold (FRM-628 W12): a tap joins on its release, a hold fills
                         // the disc and pushes; its repeats keep the one hold going
                         .on_action(QUILL_ENTER, (_event, cx) => {
-                            if (this.quillKeys.pressed() !== 'act') return;
-                            this.press(box, cx);
-                            this.isHoldByEnter = this.hold !== null;
+                            if (this.quillKeys.pressed() === 'act')
+                                this.press(box, cx, 'enter');
                         })
                         // the box never tells Enter's key-down (FRM-628 round 2 trace): its key-up ends a press
                         .on_key_up((e, cx) => {
                             if (e.key !== 'enter') return;
                             this.quillKeys.released();
-                            if (this.isHoldByEnter)
-                                this.holdStep(box, 'release', cx);
+                            const event = enterHoldStep(this.hold, 'keyUp');
+                            if (event) this.holdStep(box, event, cx);
                         })
                         .on_modifiers_changed((e) => {
                             if (!e.modifiers.platform)
@@ -2617,12 +2615,13 @@ export default class Chat extends View {
      * a press on send starts the hold: a release before its delay is a click, a hold to its end pushes
      * @param {import('gpui-base').TextareaState} box
      * @param {Context} cx
+     * @param {import('./joins.js').Hold['by']} [by]
      */
-    press(box, cx) {
+    press(box, cx, by = 'pointer') {
         // an empty quill has nothing to send: no hold, no disc
         if (!box.value().trim() || !this.file) return;
         this.cancelHold();
-        this.hold = holdSend(null, 'press', Date.now(), this.timing).hold;
+        this.hold = holdSend(null, 'press', Date.now(), this.timing, by).hold;
         this.holdTask = cx.timer.every(33, (later) =>
             this.holdStep(box, 'tick', later),
         );
@@ -2655,7 +2654,6 @@ export default class Chat extends View {
         this.holdTask = null;
         this.hold = null;
         this.holdFill = 0;
-        this.isHoldByEnter = false;
     }
 
     /** the quill holds the shown thread's draft, the caret after it; no thread, an empty quill */

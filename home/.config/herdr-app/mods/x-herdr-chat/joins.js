@@ -103,19 +103,33 @@ export const DISC_SEEN_FILL = 0.15;
 // a tap shorter than this always joins: a 0 delay would start the disc at the press and leave no tap at all
 export const HOLD_DELAY_MIN_MS = 50;
 
+/** a press on send under way, and what started it @typedef {{ at: number, by: 'pointer' | 'enter' }} Hold */
+
+/**
+ * Enter's key-up releases a hold and the quill's blur cancels it, only a hold Enter started (FRM-628 W12), so a hold on
+ * the send button stays the pointer's; Enter's first action presses, its repeats keep the one hold
+ * @param {Hold | null} hold @param {'keyUp' | 'blur'} input @returns {'release' | 'cancel' | null}
+ */
+export function enterHoldStep(hold, input) {
+    if (hold?.by !== 'enter') return null;
+    return input === 'keyUp' ? 'release' : 'cancel';
+}
+
 /**
  * a press on send, step by step: a release before the disc shows (HOLD_DELAY_MS, then DISC_SEEN_FILL of its fill) joins, one
  * after it does nothing, a hold that reaches it pushes once, and a hold
  * cut short (focus loss, a blur, the pointer gone) does nothing; `fill` is the bar, 0 to 1
- * @param {{ at: number } | null} hold @param {'press' | 'tick' | 'release' | 'cancel'} event @param {number} now
+ * @param {Hold | null} hold @param {'press' | 'tick' | 'release' | 'cancel'} event @param {number} now
  * @param {{ delay: number, push: number }} [timing] his settings, the defaults above when unset
- * @returns {{ hold: { at: number } | null, act: 'join' | 'push' | null, fill: number }}
+ * @param {Hold['by']} [by] what started a press: the send button's pointer, or Enter in the quill
+ * @returns {{ hold: Hold | null, act: 'join' | 'push' | null, fill: number }}
  */
 export function holdSend(
     hold,
     event,
     now,
     { delay, push } = { delay: HOLD_DELAY_MS, push: HOLD_PUSH_MS },
+    by = 'pointer',
 ) {
     // a setting at 0 or not a number never kills a tap or pushes on the first tick
     const timing = {
@@ -125,7 +139,7 @@ export function holdSend(
         ),
         push: Math.max(1, Number.isFinite(push) ? push : HOLD_PUSH_MS),
     };
-    if (event === 'press') return { act: null, fill: 0, hold: { at: now } };
+    if (event === 'press') return { act: null, fill: 0, hold: { at: now, by } };
     if (!hold || event === 'cancel') return { act: null, fill: 0, hold: null };
     // a tap joins; a hold he lets go once he saw its disc is changed mind, nothing sent or marked (dima's o127, 21:23);
     // one let go after the disc filled pushes, though no tick saw it full yet

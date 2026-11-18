@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
+import { createKeyPress } from '../_shared/keypress.js';
 import {
     DISC_SEEN_FILL,
     HOLD_DELAY_MS,
@@ -9,6 +10,7 @@ import {
     appendJoin,
     backTexts,
     dropJoin,
+    enterHoldStep,
     holdSend,
     joinStatus,
     joinedTexts,
@@ -393,5 +395,89 @@ describe('round 1 of the sixth sense: a join row is never lost, never doubled', 
                 push: Number.NaN,
             }).act,
         ).toBeNull();
+    });
+});
+
+// FRM-628 W12 (slice 07): Enter in the quill runs the send button's hold; its events, from the box's action, key-up and
+// blur, each move only a hold Enter started
+describe('a held Enter runs the hold, a tap joins', () => {
+    type Input = { at: number; on: 'enter' | 'keyUp' | 'blur' | 'tick' };
+    /** the quill's wiring on a fake clock: what each input sent, in order */
+    function run(
+        inputs: Input[],
+        start: ReturnType<typeof holdSend>['hold'] = null,
+    ) {
+        const keys = createKeyPress();
+        let hold = start;
+        const acts: string[] = [];
+        for (const { at, on } of inputs) {
+            if (on === 'keyUp') keys.released();
+            if (on === 'blur') keys.blurred();
+            const event =
+                on === 'enter'
+                    ? keys.pressed() === 'act' && 'press'
+                    : on === 'tick'
+                      ? hold && 'tick'
+                      : enterHoldStep(hold, on);
+            if (!event) continue;
+            const step = holdSend(hold, event, at, undefined, 'enter');
+            hold = step.hold;
+            if (step.act) acts.push(step.act);
+        }
+        return { acts, hold };
+    }
+
+    test('a tap joins on its key-up', () => {
+        expect(
+            run([
+                { at: 0, on: 'enter' },
+                { at: 40, on: 'keyUp' },
+            ]).acts,
+        ).toEqual(['join']);
+    });
+
+    test('a held Enter, its repeats one hold, pushes once the disc fills', () => {
+        const end = HOLD_DELAY_MS + HOLD_PUSH_MS;
+        const { acts } = run([
+            { at: 0, on: 'enter' },
+            { at: 150, on: 'enter' },
+            { at: 165, on: 'enter' },
+            { at: end, on: 'tick' },
+            { at: end + 20, on: 'keyUp' },
+        ]);
+        expect(acts).toEqual(['push']);
+    });
+
+    test('let go once the disc showed, nothing is sent', () => {
+        expect(
+            run([
+                { at: 0, on: 'enter' },
+                { at: 600, on: 'keyUp' },
+            ]).acts,
+        ).toEqual([]);
+    });
+
+    test('a quill that loses focus cuts Enter’s hold', () => {
+        const { acts, hold } = run([
+            // before the disc shows, where a let-go would join
+            { at: 0, on: 'enter' },
+            { at: 40, on: 'blur' },
+            { at: 60, on: 'keyUp' },
+        ]);
+        expect(acts).toEqual([]);
+        expect(hold).toBeNull();
+    });
+
+    test('a hold on the send button never hears Enter’s key-up or the quill’s blur', () => {
+        const pointer = holdSend(null, 'press', 0, undefined, 'pointer').hold;
+        expect(
+            run(
+                [
+                    { at: 300, on: 'blur' },
+                    { at: 400, on: 'keyUp' },
+                ],
+                pointer,
+            ).hold,
+        ).toEqual(pointer);
     });
 });
