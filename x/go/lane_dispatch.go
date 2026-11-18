@@ -34,6 +34,8 @@ type dispatchTicket struct {
 	laneKind string
 	// the lane the dispatch names, else its 🚀 line's
 	lane string
+	// its title past the scope prefix
+	what string
 }
 
 type dispatchPlan struct {
@@ -55,6 +57,7 @@ type dispatchLookup struct {
 	Issue struct {
 		ID          string                      `json:"id"`
 		Identifier  string                      `json:"identifier"`
+		Title       string                      `json:"title"`
 		Description *string                     `json:"description"`
 		State       struct{ Name, Type string } `json:"state"`
 		Delegate    *named                      `json:"delegate"`
@@ -91,7 +94,7 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	for _, id := range args {
 		var found dispatchLookup
 		if err := r.Step("read "+id, "its labels, state, delegate and sign", func() (string, error) {
-			data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { id identifier description state { name type } delegate { name }
+			data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { id identifier title description state { name type } delegate { name }
 				labels(first: 100) { nodes { id name } } team { states { nodes { id name } } } }
 				users(filter: { name: { eqIgnoreCase: "codie" } }) { nodes { id name } } }`, map[string]any{"id": id})
 			if err != nil {
@@ -185,7 +188,7 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 		return dispatchTicket{}, &Fail{Refused: true, Msg: id + " carries neither the signed label nor a 🚀 dispatched line: its sign is missing", Next: "x linear read " + id}
 	}
 
-	ticket := dispatchTicket{ID: id, uuid: issue.ID, laneKind: laneKindOf(body), input: map[string]any{}}
+	ticket := dispatchTicket{ID: id, uuid: issue.ID, laneKind: laneKindOf(body), what: ticketWhat(issue.Title), input: map[string]any{}}
 	mark := func(name string, missing bool, detail string) {
 		status := "set"
 		if missing {
@@ -376,7 +379,7 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 		if sid == "" {
 			continue
 		}
-		record := thread{SessionID: sid, Role: role, Lane: plan.Tickets[0].lane, LaneKind: recordLaneKind(kind, sid), Ticket: plan.Tickets[0].ID, Area: area}
+		record := thread{SessionID: sid, Role: role, Lane: plan.Tickets[0].lane, LaneKind: recordLaneKind(kind, sid), Ticket: plan.Tickets[0].ID, Area: area, What: plan.Tickets[0].what}
 		if record.Lane != "" {
 			record.Coordinator = dispatcher
 		}
@@ -423,6 +426,11 @@ func recordLaneKind(kind, sid string) string {
 	}
 	return "side"
 }
+
+// a ticket title's scope prefix, `x-mod-stash: ` or `x + x-mod-stash: `: names joined by « + », then a colon
+var scopePrefix = regexp.MustCompile(`^[\w.-]+(?: \+ [\w.-]+)*: `)
+
+func ticketWhat(title string) string { return scopePrefix.ReplaceAllString(title, "") }
 
 // one dispatch is one lane: the lane --lane or the tickets' 🚀 lines name, "" when none does
 func agreeingLanes(tickets []dispatchTicket) (string, error) {

@@ -40,7 +40,7 @@ func dispatchServer(t *testing.T, s dispatchState) *fakeLinear {
 			delegate = `{"name":"` + s.delegate + `"}`
 		}
 		description, _ := json.Marshal(s.body)
-		return `{"data":{"issue":{"id":"uuid-1","identifier":"FRM-1","description":` + string(description) + `,"state":{"name":"` + s.state + `","type":"` + stateTypes[s.state] + `"},"project":{"name":"cli"},"delegate":` + delegate +
+		return `{"data":{"issue":{"id":"uuid-1","identifier":"FRM-1","title":"x-mod-stash: one ask counter, cards from the lane record","description":` + string(description) + `,"state":{"name":"` + s.state + `","type":"` + stateTypes[s.state] + `"},"project":{"name":"cli"},"delegate":` + delegate +
 			`,"labels":{"nodes":[` + strings.Join(labels, ",") + `]},"team":{"states":{"nodes":[{"id":"s-todo","name":"Todo"},{"id":"s-ip","name":"In Progress"}]}}},` +
 			`"users":{"nodes":[{"id":"u-codie","name":"codie"}]}}}`
 	})
@@ -426,6 +426,45 @@ func TestDispatchWritesTheRecordOfEachThreadItNames(t *testing.T) {
 	}
 	if shown["s1"] != "🌗 🔧 cli | FRM-1" || shown["s2"] != "🌗 🔎 cli | FRM-1" || len(shown) != 2 {
 		t.Errorf("records %v, want s1 as codie and s2 as sixth sense on cli-3 | FRM-1", shown)
+	}
+}
+
+// FRM-649 exit 2 (FRM-616:W36): a dispatch keeps the ticket's title, its scope prefix cut, on every member it moves, and
+// x lane show prints it as the lane's what, so the glide card titles «<scope> — <what>» with no hand edit
+func TestDispatchKeepsTheTicketsWhatForTheLaneCard(t *testing.T) {
+	t.Parallel()
+	server := dispatchServer(t, undispatched)
+	store := filepath.Join(t.TempDir(), "threads.json")
+	write(t, store, `{"v":1,"threads":[{"sessionId":"s1","role":"codie"},{"sessionId":"s2","role":"sixth-sense"}]}`)
+	_, got := runLinear(t, server, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store},
+		"lane", "dispatch", "FRM-1", "--session", "s1", "--area", "cli", "--sixth-sense", "s2", "--lane", "cli-9", "--apply")
+	written, err := readThreadStore(store)
+	if err != nil || got.code != 0 {
+		t.Fatalf("exit %d, %v:\n%s", got.code, err, got.stdout)
+	}
+	whats := map[string]string{}
+	for _, th := range written.Threads {
+		whats[th.SessionID] = th.What
+	}
+	record, _ := laneOf("cli-9", written.Threads)
+	if whats["s1"] != "one ask counter, cards from the lane record" || whats["s2"] != whats["s1"] || record.What != whats["s1"] {
+		t.Errorf("whats %v, lane what %q, want the title past «x-mod-stash: » on both and on the lane", whats, record.What)
+	}
+}
+
+func TestTicketWhatCutsTheScopePrefix(t *testing.T) {
+	t.Parallel()
+	for _, c := range [][2]string{
+		{"x-mod-stash: one ask counter", "one ask counter"},
+		{"x + x-mod-stash: one lane record, one shown name", "one lane record, one shown name"},
+		{"mods: test sessions stay sandboxed — settings untouched", "test sessions stay sandboxed — settings untouched"},
+		{"a title with no scope", "a title with no scope"},
+		{"herdr ux revamp — one record per lane: sidebar", "herdr ux revamp — one record per lane: sidebar"},
+		{"", ""},
+	} {
+		if got := ticketWhat(c[0]); got != c[1] {
+			t.Errorf("ticketWhat(%q) = %q, want %q", c[0], got, c[1])
+		}
 	}
 }
 

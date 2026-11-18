@@ -13,6 +13,7 @@ type laneRecord struct {
 	Mode        string `json:"mode,omitempty"`
 	Ticket      string `json:"ticket,omitempty"`
 	Coordinator string `json:"coordinator,omitempty"`
+	What        string `json:"what,omitempty"`
 	// session id → role, so a replaced member still running beside its successor keeps its row
 	Members map[string]string `json:"members"`
 }
@@ -45,6 +46,7 @@ func laneOf(lane string, threads []thread) (laneRecord, bool) {
 		record.Mode = cmp.Or(record.Mode, t.LaneKind)
 		record.Ticket = cmp.Or(record.Ticket, t.Ticket)
 		record.Coordinator = cmp.Or(record.Coordinator, t.Coordinator)
+		record.What = cmp.Or(record.What, t.What)
 	}
 	return record, len(members) > 0
 }

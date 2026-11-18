@@ -34,10 +34,12 @@ type thread struct {
 	Wing        int    `json:"wing,omitempty"`
 	Area        string `json:"area,omitempty"`
 	Title       string `json:"title,omitempty"`
-	Fallback    bool   `json:"fallback,omitempty"`
-	Display     string `json:"display"`
-	RoleName    string `json:"roleName,omitempty"`
-	At          int64  `json:"at,omitempty"`
+	// what the dispatched ticket builds: its title past the scope prefix, the glide card's «<scope> — <what>»
+	What     string `json:"what,omitempty"`
+	Fallback bool   `json:"fallback,omitempty"`
+	Display  string `json:"display"`
+	RoleName string `json:"roleName,omitempty"`
+	At       int64  `json:"at,omitempty"`
 }
 
 type threadStore struct {
