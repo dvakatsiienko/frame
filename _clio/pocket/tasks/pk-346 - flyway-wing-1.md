@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-18T09:25:00Z'
+updated_date: '2026-11-18T13:31:00Z'
 labels:
   - s
   - clio-wing-1
@@ -24,18 +24,17 @@ ordinal: 1001
 - [ ] #6 f6 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed
 - [ ] #7 f7 FRM-516 crow per thread: the week's read (W15, W21), then close
 - [ ] #8 f8 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop
-- [ ] #9 f9 FRM-534 kill rule: the week's push reds per kind on test-commit.log
-- [ ] #10 f10 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks
-- [ ] #11 f19 wishkeeper-cache: one big measure over the trial's whole 5 min week, then the 1 h arm
-- [ ] #12 f22 wing 1 opens on his word: evergreen → refresh-readaloud → refresh fable 5.2 → refresh designer, then speak v2
-- [ ] #13 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #14 f11 💤 evergreen, two weeks in one: frame#158, bytes#152–#155, FRM-465 exit 5 — later: dima, with wing 1
-- [ ] #15 f13 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #16 f14 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #17 f15 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #18 f16 💤 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #19 f17 💤 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #20 f21 💤 PK-362 steamac vm disk 256 → 192 gb — later: dima, his vet
+- [ ] #9 f10 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks
+- [ ] #10 f19 wishkeeper-cache: one big measure over the trial's whole 5 min week, then the 1 h arm
+- [ ] #11 f22 wing 1 opens on his word: evergreen → refresh-readaloud → refresh fable 5.2 → refresh designer, then speak v2
+- [ ] #12 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #13 f11 💤 evergreen, two weeks in one: frame#158, bytes#152–#155, FRM-465 exit 5 — later: dima, with wing 1
+- [ ] #14 f13 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #15 f14 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #16 f15 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #17 f16 💤 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #18 f17 💤 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #19 f21 💤 PK-362 steamac vm disk 256 → 192 gb — later: dima, his vet
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -661,4 +660,6 @@ done 2026-11-13 13:57: f2 ⏳ FRM-551 vm reads: stopped by main's halt tonight, 
 18:09 f18 detail (dima 18:06): at today's halt retro, measure how useful the strays lane was today; compare against a full-scale lane on Opus 5.5, and against a stray run on Opus 5.5 medium; judge whether the model pick fit each job; judge whether the strays specs had the right shape for Sonnet 5.5 (it wants very clear, well-scoped specs: mechanical work plus a little reasoning, not as good as Opus)
 
 done 2026-11-15 17:24: f20 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima, his vet (PK-358 done)
+
+done 2026-11-18 15:31: f9 FRM-534 kill rule: the week's push reds per kind on test-commit.log (FRM-534 Done)
 <!-- SECTION:NOTES:END -->
