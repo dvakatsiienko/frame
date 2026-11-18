@@ -89,7 +89,7 @@ alias cc='claude --remote-control "💻 cc"'
 cc-herdr() {
   local t
   t=$(hc run --bg --no-parent --no-notify --json --name "cc-$(date +%H%M%S)" --cwd "${1:-$HOME/frame}" -- \
-    claude --remote-control "💻 cc" | jq -er .address) || { echo "cc-herdr: hc run gave no terminal" >&2; return 1; }
+    claude -n "💻 cc" --remote-control "💻 cc" | jq -er .address) || { echo "cc-herdr: hc run gave no terminal" >&2; return 1; }
   node ~/frame/home/.claude/plugin-x/skills/herdr/scripts/thread-tab.ts "$t" '💻 cc' >/dev/null \
     || { echo "cc-herdr: $t runs but got no herdr tab" >&2; return 1; }
   echo "💻 cc is open in herdr as $t"
