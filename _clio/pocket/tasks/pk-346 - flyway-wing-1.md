@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-18T18:43:00Z'
+updated_date: '2026-11-18T18:48:00Z'
 labels:
   - s
   - clio-wing-1
@@ -25,13 +25,14 @@ ordinal: 1001
 - [ ] #7 f25 speak v2 with dima: bytes move → mess hunt (FRM-629:W26–W27) → wisps → design; FRM-497 rides it
 - [ ] #8 f27 refreshes on his word: refresh-readaloud → refresh fable 5.2 → refresh designer, then speak v2 (his plan)
 - [ ] #9 f28 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-20
-- [ ] #10 f24 📅 strays lane measure: model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-21
+- [ ] #10 f30 📅 strays lane verdict (FRM-586): model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-20
 - [ ] #11 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
 - [ ] #12 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
 - [ ] #13 f15 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
 - [ ] #14 f16 💤 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
 - [ ] #15 f17 💤 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
 - [ ] #16 f21 💤 PK-362 steamac vm disk 256 → 192 gb — later: dima, his vet
+- [ ] #17 f29 💤 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -683,4 +684,8 @@ done 2026-11-18 20:22: f22 wing 1 opens on his word: evergreen → refresh-reada
 done 2026-11-18 20:42: f7 FRM-516 crow per thread: the week's read (W15, W21), then close (FRM-516 Todo)
 
 reopened 20:43: f7 FRM-516 week's read, re-added as a 📅 line on 2026-11-20 (its ⏰ due date); not done
+
+done 2026-11-18 20:48: f24 📅 strays lane measure: model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-21
+
+20:48: f24 re-dated 2026-11-21 → 2026-11-20, the trial's until (crow's catch: three dates given)
 <!-- SECTION:NOTES:END -->
