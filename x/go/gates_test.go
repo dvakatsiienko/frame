@@ -319,6 +319,7 @@ func TestModsEditTestGateReadsTheOverlaysBytesNeverTheTrees(t *testing.T) {
 		t.Errorf("a gate missed the overlay's bytes: exit %d\n%s", got.code, got.stdout)
 	}
 	write(t, filepath.Join(dir, modHooks), "// OVERLAY in the tree alone\n")
+	xIn(t, dir, env, "mods", "edit", "pull", "--over", modHooks)
 	edited(t, dir, env, modHooks, "// no marker\n")
 	if got := xIn(t, dir, env, "mods", "edit", "test"); got.code != 1 {
 		t.Errorf("a gate read the tree over the overlay: exit %d\n%s", got.code, got.stdout)
@@ -460,9 +461,10 @@ func TestModsChainRunsAModsTestsOnce(t *testing.T) {
 func TestModsChainRerunsBytesTheOverlayNeverTested(t *testing.T) {
 	t.Parallel()
 	dir, env, tests := modsChain(t)
-	edited(t, dir, env, modHooks, "export const register = () => 1;\n")
+	copied := pullCopy(t, dir, env, modHooks)
+	write(t, copied, "export const register = () => 1;\n")
 	testOverlay(t, dir, env)
-	edited(t, dir, env, modHooks, "export const register = () => 2;\n")
+	write(t, copied, "export const register = () => 2;\n")
 	pushOverlay(t, dir, env)
 	commitHooks(t, dir, env)
 	if n := tests(); n != 2 {

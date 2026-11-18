@@ -51,7 +51,9 @@ func TestModsEditKeepsOneScratchPerSession(t *testing.T) {
 	write(t, copyB, "green, edited by b\n")
 	baseB := readFile(t, filepath.Join(rootB, scratchBase, modTestA))
 
-	pullCopy(t, dir, a, modTestA)
+	if got := xIn(t, dir, a, "mods", "edit", "pull", "--over", modTestA); got.code != 0 {
+		t.Fatalf("a's re-pull over its own edit: exit %d\n%s", got.code, got.stdout)
+	}
 
 	if readFile(t, copyB) != "green, edited by b\n" || readFile(t, filepath.Join(rootB, scratchBase, modTestA)) != baseB {
 		t.Errorf("a's pull moved b's copy or its base: copy %q", readFile(t, copyB))

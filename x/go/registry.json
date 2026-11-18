@@ -1581,6 +1581,12 @@
                     "name": "paths"
                 }
             ],
+            "flags": {
+                "over": {
+                    "description": "pull over a scratch copy that holds an edit, dropping that edit",
+                    "type": "boolean"
+                }
+            },
             "name": "mods edit pull",
             "needsApply": false,
             "purpose": "copy live mod files into scratch, where a bg session may edit them",

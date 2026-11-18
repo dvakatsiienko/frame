@@ -63,7 +63,7 @@ func modsRepo() (string, string, error) {
 	return repo, scratchRoot(repo), nil
 }
 
-func modsEditPull(r *Run, args []string, _ Flags) (any, error) {
+func modsEditPull(r *Run, args []string, flags Flags) (any, error) {
 	repo, scratch, err := modsRepo()
 	if err != nil {
 		return nil, err
@@ -79,11 +79,18 @@ func modsEditPull(r *Run, args []string, _ Flags) (any, error) {
 	var copies []string
 	if err := r.Step("pull", "copying into scratch", func() (string, error) {
 		pulled := readPulled(scratch)
+		paths := make([]string, 0, len(args))
 		for _, arg := range args {
 			path, err := modsRepoPath(repo, arg)
 			if err != nil {
 				return "", err
 			}
+			if flags["over"] != true && holdsEdit(scratch, path) {
+				return "", &Fail{Refused: true, Msg: path + " holds an edit in scratch; a pull would overwrite it, nothing pulled", Next: "x mods edit pull --over " + path}
+			}
+			paths = append(paths, path)
+		}
+		for _, path := range paths {
 			from, to := filepath.Join(repo, path), filepath.Join(scratch, path)
 			if exists(from) {
 				if err := copyFile(from, to); err != nil {
@@ -93,6 +100,8 @@ func modsEditPull(r *Run, args []string, _ Flags) (any, error) {
 					return "", err
 				}
 			} else if err := os.MkdirAll(filepath.Dir(to), 0o755); err != nil {
+				return "", err
+			} else if err := os.Remove(to); err != nil && !errors.Is(err, fs.ErrNotExist) {
 				return "", err
 			}
 			if !slices.Contains(pulled, path) {
@@ -374,11 +383,11 @@ func modsPushPlan(repo, scratch string, changed, added []string) error {
 		now, nowErr := os.ReadFile(target)
 		switch {
 		case err != nil && nowErr == nil:
-			return &Fail{Refused: true, Msg: path + " exists in the repo but was never pulled; nothing written", Next: "x mods edit pull " + path}
+			return &Fail{Refused: true, Msg: path + " exists in the repo but was never pulled; nothing written" + keepEdit(scratch, path), Next: "x mods edit pull --over " + path}
 		case err == nil && nowErr != nil:
-			return &Fail{Refused: true, Msg: path + " is gone from the repo since the pull; nothing written", Next: "x mods edit pull " + path}
+			return &Fail{Refused: true, Msg: path + " is gone from the repo since the pull; nothing written" + keepEdit(scratch, path), Next: "x mods edit pull --over " + path}
 		case err == nil && !bytes.Equal(base, now):
-			return &Fail{Refused: true, Msg: path + " changed in the repo since the pull; nothing written", Next: "x mods edit pull " + path}
+			return &Fail{Refused: true, Msg: path + " changed in the repo since the pull; nothing written" + keepEdit(scratch, path), Next: "x mods edit pull --over " + path}
 		}
 	}
 	return nil
@@ -745,6 +754,21 @@ func touchedMods(paths []string) []string {
 	return mods
 }
 
+// a pull --over drops the edit, so a drift refusal says where the edit sits before it sends there
+func keepEdit(scratch, path string) string {
+	return "; to keep your edit, copy " + filepath.Join(scratch, path) + " aside, pull --over, then apply it again"
+}
+
+// a scratch copy holds an edit when its bytes differ from its pulled base, or it has none; a missing copy holds none
+func holdsEdit(scratch, path string) bool {
+	body, err := os.ReadFile(filepath.Join(scratch, path))
+	if err != nil {
+		return false
+	}
+	base, err := os.ReadFile(filepath.Join(scratch, scratchBase, path))
+	return err != nil || !bytes.Equal(base, body)
+}
+
 // every scratch file whose bytes differ from its pulled base, or that has none
 func changedScratch(scratch string) []string {
 	var changed []string
@@ -762,9 +786,7 @@ func changedScratch(scratch string) []string {
 		if rel == scratchPulled || rel == scratchTested {
 			return nil
 		}
-		base, err := os.ReadFile(filepath.Join(scratch, scratchBase, rel))
-		body, _ := os.ReadFile(path)
-		if err != nil || !bytes.Equal(base, body) {
+		if holdsEdit(scratch, rel) {
 			changed = append(changed, filepath.ToSlash(rel))
 		}
 		return nil

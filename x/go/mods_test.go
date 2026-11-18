@@ -389,22 +389,17 @@ func TestModsEditHeaderCountsWhatTheOverlayDiffersIn(t *testing.T) {
 	}
 }
 
-// a pull refused on its second path has copied its first with no `.pulled` row: the base alone says it was pulled
-func TestModsEditHeaderCountsADeleteAfterARefusedPull(t *testing.T) {
+// a pull refused on its second path copies none, its first included
+func TestModsEditPullRefusedOnItsSecondPathCopiesNone(t *testing.T) {
 	t.Parallel()
 	dir, env := modsFixture(t)
 	if got := xIn(t, dir, env, "mods", "edit", "pull", modTestA, "../out"); got.code == 0 {
 		t.Fatalf("the pull took a path outside the repo\n%s", got.stdout)
 	}
 	scratch, _ := xIn(t, dir, env, "mods", "edit", "status").data["scratch"].(string)
-	if err := os.Remove(filepath.Join(scratch, modTestA)); err != nil {
-		t.Fatal(err)
-	}
 
-	code, stdout, stderr := xBoth(t, dir, env, "mods", "edit", "status")
-
-	if code != 0 || !strings.Contains(stderr, "overlay 1 path differs: "+modTestA+"\n") {
-		t.Fatalf("exit %d\n%s\n%s", code, stdout, stderr)
+	if exists(filepath.Join(scratch, modTestA)) || exists(filepath.Join(scratch, scratchBase, modTestA)) {
+		t.Errorf("a refused pull copied its first path")
 	}
 }
 
@@ -623,8 +618,8 @@ func TestModsEditPushWritesNothingWhenOnePathCannotLand(t *testing.T) {
 		setup      func(t *testing.T, dir string, env []string)
 	}{
 		{"an unpulled file in scratch", "was never pulled", func(t *testing.T, dir string, env []string) {
-			copyA := pullCopy(t, dir, env, modTestA)
-			write(t, filepath.Join(filepath.Dir(copyA), "c.test.ts"), "green\n")
+			copyB := pullCopy(t, dir, env, modTestB)
+			write(t, filepath.Join(filepath.Dir(copyB), "c.test.ts"), "green\n")
 		}},
 		{"a target that is a directory", "is a directory", func(t *testing.T, dir string, env []string) {
 			copyC := pullCopy(t, dir, env, modsDir+"m/tests/c.test.ts")
