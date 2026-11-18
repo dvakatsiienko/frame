@@ -115,3 +115,22 @@ func TestModsEditPullOverOfAGoneFileDropsItsBase(t *testing.T) {
 		t.Errorf("a stale base refused the new file: exit %d\n%s", got.code, got.stdout)
 	}
 }
+
+// a copy pull cannot read may hold an edit, so a plain pull leaves it alone
+func TestModsEditPullRefusesAnUnreadableCopy(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	copied := pullCopy(t, dir, env, modTestA)
+	write(t, copied, "green, edited\n")
+	if err := os.Chmod(copied, 0o200); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(copied, 0o644) })
+
+	got := xIn(t, dir, env, "mods", "edit", "pull", modTestA)
+	_ = os.Chmod(copied, 0o644)
+
+	if got.code == 0 || readFile(t, copied) != "green, edited\n" {
+		t.Errorf("a plain pull ran over an unreadable copy: exit %d, copy %q\n%s", got.code, readFile(t, copied), got.stdout)
+	}
+}

@@ -766,11 +766,12 @@ func keepEdit(scratch, path string) string {
 	return "; to keep your edit, copy " + filepath.Join(scratch, path) + " aside, pull --over, then apply it again"
 }
 
-// a scratch copy holds an edit when its bytes differ from its pulled base, or it has none; a missing copy holds none
+// a scratch copy holds an edit when its bytes differ from its pulled base, or it has none; only a missing copy holds none,
+// so a copy that cannot be read counts as edited
 func holdsEdit(scratch, path string) bool {
 	body, err := os.ReadFile(filepath.Join(scratch, path))
 	if err != nil {
-		return false
+		return !errors.Is(err, fs.ErrNotExist)
 	}
 	base, err := os.ReadFile(filepath.Join(scratch, scratchBase, path))
 	return err != nil || !bytes.Equal(base, body)
