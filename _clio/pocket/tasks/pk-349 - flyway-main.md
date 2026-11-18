@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T23:21:00Z'
+updated_date: '2026-11-18T09:57:00Z'
 labels:
   - s
   - clio-main
@@ -1038,4 +1038,42 @@ done 2026-11-17 00:41: f41 glide subcard as a read-only view of member asks (o67
 done 2026-11-17 00:53: f40 autopilot: shape grill-borrow rounds 1–3 into one ticket via clio:shape-idea, his «shaped» at the end
 
 done 2026-11-17 01:21: f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+
+PK-349:W1163 (2026-11-18 11:08, dima): /clio:boot cc-20261022-pm-revamp-halt
+
+PK-349:W1164 (2026-11-18 11:08, dima): as planned, mods lane should be ready to dispatch; if it is, summon it right away, same for herdr.
+
+PK-349:W1165 (2026-11-18 11:08, dima): handoffs from everyone piled up.
+
+PK-349:W1166 (2026-11-18 11:08, dima): why? last time they were forgotten to be ingested? if yes, i think it is not good. ❓
+
+PK-349:W1167 (2026-11-18 11:08, dima): tell everyone to ingest (map correctly who ingests what) and tell them to take care of all unsolved tails.
+
+PK-349:W1168 (2026-11-18 11:08, dima): you, with boot: tell where you are, what gated reminders are unlocked today? ❓
+
+PK-349:W1169 (2026-11-18 11:08, dima): emojis in herdr are undergrilled; i feel we can ship some crap if we do not take care of this feature design first.
+
+PK-349:W1170 (2026-11-18 11:08, dima): it is to be processed before i ask you to summon wing.
+
+PK-349:W1171 (2026-11-18 11:08, dima): just in case: no fable 5.2 for now! (fable 5.2 returns from next monday)
+
+PK-349:W1172 (2026-11-18 11:08, dima): notes: move all test drive dates +1 day; yesterday i was resting, there was no activity.
+
+PK-349:W1173 (2026-11-18 11:08, dima): evergreen: you do not do it. i plan to do it either today with your wing, or later.
+
+PK-349:W1174 (2026-11-18 11:08, dima): wing 1 is not summoned right away until you are clear (i say).
+
+PK-349:W1175 (2026-11-18 11:08, dima): what i want from you? steady mods and herdr lane pace.
+
+PK-349:W1176 (2026-11-18 11:08, dima): you should have no tails.
+
+PK-349:W1177 (2026-11-18 11:08, dima): you must be clear i can maintain your wing; lots of researches piled up for it: evergreen, refresh-readaloud, refresh fable 5.2 knowledge, refresh designer skill, only after speakapp v2.
+
+PK-349:W1178 (2026-11-18 11:08, dima): so you should distract me as little as possible.
+
+PK-349:W1179 (2026-11-18 11:08, dima): standing for you: do not stash tails! solve them.
+
+PK-349:W1180 (2026-11-18 11:08, dima): ask me when you need me; do not postpone.
+
+PK-349:W1181 (2026-11-18 11:08, dima): use stray to help you solve stuff.
 <!-- SECTION:NOTES:END -->
