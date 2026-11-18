@@ -439,7 +439,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and while a model, effort or permission pick types into the thread, a push or a send waits: his words stay, marked or not, and a line over the quill says «A switch is typing into this thread: send again in a moment» (FRM-628 step 93)
   - and his words, their 🍕 mark and his draft have one owner (`quill.js`): words a turn took leave the quill as they show in the chat and stay gone after a switch away and back (FRM-628 step 88, his ✓ 12:39)
   - and a message he pasted reads as his own words, the wrapper Claude Code puts around a paste gone; a tag he typed, or one inside what he pasted, stays (FRM-628)
-  - decision: until the swap the two chats share no draft and the global keys (cmd-k and the rest) stay the old chat's; the hold's two timings are read from the old chat's settings (clio, 2026-11-16 21:50)
+  - decision: until the swap the two chats share no draft and the global keys (cmd-k and the rest) stay the old chat's (clio, 2026-11-16 21:50); the hold's two timings come from the one settings file through the new chat's own store module (FRM-638 slice 7)
 - ⬜ a reply's files open in one click from rows under it (x-herdr-chat, FRM-587)
   - given a reply names a file by a bare path, a `~` path, a quoted or backslash-escaped path, a `file://` link or a markdown link to one
   - then each file gets one row under the reply, «🖼️ <name>» for a picture and «📂 <name>» for any other file, and a click opens it in its app (a png in Preview)
@@ -462,3 +462,11 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and the message he was reading stays at the top of the view, on the same line: his place is kept as a share of the message, so a rewrap moves nothing (his look, 23:33–23:53)
   - and a tool call hidden while it sat at the top hands the place to the next row shown
   - 📌 until the swap the new chat is a modal overlay and the ⚙ sits under it: his look ran as close, change, reopen; one reopen at 23:44 opened at the newest, not seen again in four rounds
+- ⬜ the new chat's own settings window (x-herdr-chat, FRM-638 slice 7, W42)
+  - given the new chat open on a thread
+  - when he presses 🎛️ on the chat's band
+  - then the new chat's own settings window opens in herdr's middle, shaped like shepherdr's: a page list on the left (Chat, Claude Code mods, Keys), each row a title, one dim line and a switch or a − value + on the right
+  - and every row reads the value he set, from the one settings file both chats share (`~/.claude/shelf/herdr-settings/settings.json`); a row the new chat does not act on yet (Show more) stays the old chat's and is kept through every write here
+  - when he changes a row, then the new chat applies it at once (the file is watched), and the old chat reads the same value
+  - and Esc, ✕ or a click beside the card closes it; the Keys page rebinds a key as the old window did
+  - and no line of the new chat reads another mod's file or opens another mod's window

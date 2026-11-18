@@ -126,6 +126,8 @@ import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
 import { addressIn, sendBlocked, submitted } from './send.js';
 import { SENT_DIR, createSentPictures } from './sent-pictures.js';
+import { readSettings, settingsDir } from './settings-io.js';
+import { createSettingsWindow, settingsOverlay } from './settings-window.js';
 import {
     copyPicture,
     deletePreviewCopies,
@@ -237,16 +239,6 @@ const SHOWN_LOOK_MS = 2000;
 // the operator override changes with no event herdr watches, and a deck that stopped publishing changes nothing: the
 // band's facts that age are read again this often
 const BAND_AGE_MS = 5000;
-// the old chat's settings window, opened as it opens it until the new one moves in
-const SETTINGS_OVERLAY = {
-    height: 0.74,
-    kind: /** @type {const} */ ('dialog'),
-    mod: 'x-herdr-chatter',
-    props: { settingsWindow: 'chatter' },
-    width: 0.6,
-};
-// his settings, kept by the old chat's settings window until the new one moves in
-const SETTINGS_FILE = '.claude/shelf/herdr-settings/settings.json';
 const SEND_SIZE = 28;
 // a picture waiting over the quill, and how long a paste's «nothing there» note stays
 const THUMB_SIZE = 56;
@@ -586,6 +578,8 @@ export default class Chat extends View {
     isPickOpen = false;
     /** a picture's open button starts CleanShot's annotate, else Preview (`chatter.pictures.cleanshot`) */
     isCleanShot = true;
+    /** the settings window this copy draws, when the gear opened it @type {{ render: () => any } | null} */
+    settingsWindow = null;
     isCmdHeld = false;
     noteSerial = 0;
     /** the effort slider while the picker is open @type {import('./effort.js').EffortPopover | null} */
@@ -625,6 +619,25 @@ export default class Chat extends View {
      * @param {import('gpui-kit').AsyncContext} cx
      */
     init(_props, cx) {
+        if (props()?.settingsWindow) {
+            this.settingsWindow = createSettingsWindow(
+                {
+                    overlay: props().overlay,
+                    page: String(props().settingsWindow),
+                },
+                cx,
+            );
+            return;
+        }
+        // his settings rows, read at start and at every change of their folder, so a change applies at once
+        cx.spawn(async (cx) => {
+            for (;;) {
+                const watch = watchFolder(settingsDir());
+                this.applySettings(await readSettings());
+                cx.notify();
+                await watch;
+            }
+        });
         const box = TextareaState.new({});
         box.set_auto_grow(1, 8);
         box.on('change', (_event, cx) => {
@@ -786,6 +799,7 @@ export default class Chat extends View {
 
     /** @param {Context} _cx */
     render(_cx) {
+        if (this.settingsWindow) return this.settingsWindow.render();
         const t = /** @type {Theme} */ (theme());
         // the chat finds its own thread, as the old chat did; on screen it names it for the deck's ⌘⇧K, hidden it names none
         const { stack, self } = props() ?? {};
@@ -2220,7 +2234,7 @@ export default class Chat extends View {
             return;
         }
         if (btn.key === 'settings') {
-            openOverlay(SETTINGS_OVERLAY);
+            openOverlay(settingsOverlay('chatter'));
             return;
         }
         if (btn.key === 'auto') {
@@ -3234,6 +3248,20 @@ export default class Chat extends View {
         if (changed.length || removed || isRestart || hadError) cx.notify();
     }
 
+    /** his settings rows as the chat uses them @param {Record<string, unknown>} values */
+    applySettings(values) {
+        this.timing = {
+            delay: Number(values['chatter.send.holdDelay']),
+            push: Number(values['chatter.send.holdPush']),
+        };
+        this.isCleanShot = values['chatter.pictures.cleanshot'] === true;
+        this.meterWarn = {
+            ctx: Number(values['chatter.meter.ctx.warn']),
+            week: Number(values['chatter.meter.week.warn']),
+        };
+        this.hasAutoWind = values['stash.second-wind-auto'] === true;
+    }
+
     /**
      * the shown thread's state, read at each change of the state folder: its joins settle the quill's mark
      * @param {string} file the thread's transcript
@@ -3242,22 +3270,6 @@ export default class Chat extends View {
      */
     async watchState(file, turn, cx) {
         const dir = `${home()}/${STATE_DIR}`;
-        const settings = await readTextFile(`${home()}/${SETTINGS_FILE}`)
-            .then((text) => JSON.parse(text ?? 'null')?.rows)
-            .catch(() => null);
-        if (this.stateTurn !== turn) return;
-        this.timing = {
-            delay: Number(
-                settings?.['chatter.send.holdDelay'] ?? HOLD_DELAY_MS,
-            ),
-            push: Number(settings?.['chatter.send.holdPush'] ?? HOLD_PUSH_MS),
-        };
-        this.isCleanShot = settings?.['chatter.pictures.cleanshot'] !== false;
-        this.meterWarn = {
-            ctx: Number(settings?.['chatter.meter.ctx.warn'] ?? 60),
-            week: Number(settings?.['chatter.meter.week.warn'] ?? 80),
-        };
-        this.hasAutoWind = settings?.['stash.second-wind-auto'] !== false;
         /** @param {string} path */
         const readJson = (path) =>
             readTextFile(path)
