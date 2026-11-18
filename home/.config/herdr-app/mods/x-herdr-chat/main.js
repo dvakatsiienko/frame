@@ -2061,7 +2061,7 @@ export default class Chat extends View {
                                             Date.now() + SETTLE_MS;
                                     cx.notify();
                                 })
-                                .child(this.row(row, t, pre)),
+                                .child(this.row(row, t, pre, false)),
                         ),
                     ),
             );
@@ -2071,8 +2071,10 @@ export default class Chat extends View {
      * @param {Row} row
      * @param {Theme} t
      * @param {string} pre what tells this copy's rich text from the measured copy's
+     * @param {boolean} [isShown] the copy on screen: the hidden measured copy takes no part in a selection, or its
+     *   words, laid over the shown ones, flicker into his selection as he scrolls (dima, 13:51)
      */
-    row(row, t, pre) {
+    row(row, t, pre, isShown = true) {
         const column = (/** @type {import('gpui-kit').Element} */ el) =>
             h_flex()
                 .w_full()
@@ -2129,7 +2131,7 @@ export default class Chat extends View {
                                 TextView.markdown(
                                     id,
                                     typedMarkdown(row.text),
-                                ).selectable(true),
+                                ).selectable(isShown),
                             ),
                     )
                     .when(row.isWaiting, (el) =>
@@ -2161,7 +2163,7 @@ export default class Chat extends View {
                                         ? TextView.markdown(
                                               `${id}-${i}`,
                                               block.text,
-                                          ).selectable(true)
+                                          ).selectable(isShown)
                                         : div()
                                               .px(10)
                                               .py(8)
@@ -2173,7 +2175,7 @@ export default class Chat extends View {
                                                   TextView.markdown(
                                                       `${id}-${i}`,
                                                       `\`\`\`${block.lang}\n${block.text}\n\`\`\``,
-                                                  ).selectable(true),
+                                                  ).selectable(isShown),
                                               ),
                             ),
                         )
