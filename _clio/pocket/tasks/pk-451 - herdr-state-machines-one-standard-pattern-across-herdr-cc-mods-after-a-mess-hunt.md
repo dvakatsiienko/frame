@@ -31,4 +31,6 @@ PK-451:W4 (2026-11-18 13:34, dima, o28 steer): how do you propose to have the co
 ticket: FRM-648
 
 close: 13:46 shaped into FRM-648, its W-lines moved there
+
+close: PK-451:W1, W2, W3, W4 moved to FRM-648:W1–W4
 <!-- SECTION:NOTES:END -->
