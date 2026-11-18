@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'vitest';
 
-import { isFreshAsk, isShownIn, pidFor, shownThread } from './shown.js';
+import {
+    asksActedOn,
+    isFreshAsk,
+    isShownIn,
+    pidFor,
+    shownThread,
+} from './shown.js';
 
 const claude = (address: string, tab: string) => ({
     address,
@@ -112,7 +118,7 @@ describe('whether the chat is on screen: its child is the stack’s shown one', 
     });
 
     test('a chat in no stack is always on screen', () => {
-        expect(isShownIn(tree, undefined, undefined)).toBe(true);
+        expect(isShownIn(tree, undefined, 'chat')).toBe(true);
     });
 });
 
@@ -127,5 +133,49 @@ describe('a ⌘K or ⌘⇧E press is acted on only while fresh', () => {
 
     test('no press at all is nothing', () => {
         expect(isFreshAsk(null, 10_000)).toBe(false);
+    });
+});
+
+describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () => {
+    const at = {
+        effortAsk: null,
+        isShown: true,
+        isSwitched: false,
+        lastEffort: null,
+        lastQuill: null,
+        now: 10_000,
+        quillAsk: null,
+        wasShown: true,
+    };
+
+    test('a hidden chat answers no ⌘⇧E: the chat on screen opens its own picker', () => {
+        expect(
+            asksActedOn({ ...at, effortAsk: 9_500, isShown: false }).isEffort,
+        ).toBe(false);
+    });
+
+    test('a chat on screen opens its picker on a fresh ⌘⇧E', () => {
+        expect(asksActedOn({ ...at, effortAsk: 9_500 }).isEffort).toBe(true);
+    });
+
+    test('the same ⌘⇧E is acted on once', () => {
+        expect(
+            asksActedOn({ ...at, effortAsk: 9_500, lastEffort: 9_500 })
+                .isEffort,
+        ).toBe(false);
+    });
+
+    test('the quill takes the keyboard when the chat comes on screen', () => {
+        expect(asksActedOn({ ...at, wasShown: false }).isFocus).toBe(true);
+    });
+
+    test('a hidden chat never takes the keyboard, ⌘K or not', () => {
+        expect(
+            asksActedOn({ ...at, isShown: false, quillAsk: 9_500 }).isFocus,
+        ).toBe(false);
+    });
+
+    test('a quiet draw takes nothing', () => {
+        expect(asksActedOn(at)).toEqual({ isEffort: false, isFocus: false });
     });
 });

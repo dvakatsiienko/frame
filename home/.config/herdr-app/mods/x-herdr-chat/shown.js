@@ -59,3 +59,22 @@ const ASK_FRESH_MS = 2000;
 /** @param {unknown} ask the press's time, as the status bar wrote it @param {number} now */
 export const isFreshAsk = (ask, now) =>
     typeof ask === 'number' && now - ask < ASK_FRESH_MS;
+
+/**
+ * what a draw does about the keyboard and the picker: only the chat on screen acts, so a hidden one never opens a
+ * second picker on the same thread. the quill takes the keyboard when the chat comes on screen, on a thread switch
+ * and on a fresh ⌘K; a fresh ⌘⇧E not acted on yet opens the picker on the effort, or applies it
+ * @param {{ isShown: boolean, wasShown: boolean, isSwitched: boolean, quillAsk: unknown, lastQuill: unknown,
+ *   effortAsk: unknown, lastEffort: unknown, now: number }} at
+ */
+export function asksActedOn(at) {
+    const isQuillAsked =
+        at.quillAsk !== at.lastQuill && isFreshAsk(at.quillAsk, at.now);
+    return {
+        isEffort:
+            at.isShown &&
+            at.effortAsk !== at.lastEffort &&
+            isFreshAsk(at.effortAsk, at.now),
+        isFocus: at.isShown && (!at.wasShown || at.isSwitched || isQuillAsked),
+    };
+}

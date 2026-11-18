@@ -101,7 +101,7 @@ import { sendArgs } from './queued.js';
 import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
 import { SUBMIT_REST_MS, addressIn, submitted } from './send.js';
-import { isFreshAsk, isShownIn, pidFor, shownThread } from './shown.js';
+import { asksActedOn, isShownIn, pidFor, shownThread } from './shown.js';
 import { transcriptPath } from './thread.js';
 import { typedMarkdown } from './typed.js';
 
@@ -565,24 +565,31 @@ export default class Chat extends View {
         // the keyboard comes to the quill when the chat comes on screen, on a thread switch and on ⌘K: a click on a tab
         // gives it to that tab's hidden terminal. ⌘⇧E opens the picker on the effort, a second press applies it. a press
         // the chat slept through is dropped, never acted on late
-        const now = Date.now();
         const quillAsk = shared('chat.quill') ?? null;
-        const isQuillAsked =
-            quillAsk !== this.quillAsk && isFreshAsk(quillAsk, now);
+        const effortAsk = shared('chat.effort') ?? null;
+        const acts = asksActedOn({
+            effortAsk,
+            isShown,
+            isSwitched,
+            lastEffort: this.effortAsk,
+            lastQuill: this.quillAsk,
+            now: Date.now(),
+            quillAsk,
+            wasShown: this.wasShown,
+        });
         this.quillAsk = quillAsk;
-        if (isShown && (!this.wasShown || isSwitched || isQuillAsked))
+        this.effortAsk = effortAsk;
+        this.wasShown = isShown;
+        if (acts.isFocus)
             _cx.timer.after(50, () => {
                 if (!this.isPickOpen) this.box?.focus();
             });
-        this.wasShown = isShown;
-        const effortAsk = shared('chat.effort') ?? null;
-        if (effortAsk !== this.effortAsk && isFreshAsk(effortAsk, now))
+        if (acts.isEffort)
             _cx.timer.after(0, (later) => {
                 const isOpening = !this.isPickOpen;
                 this.applyEffort(later);
                 if (isOpening && this.isPickOpen) this.readPermission(later);
             });
-        this.effortAsk = effortAsk;
         const look = lookOf(shared(LOOK_KEY));
         const lookKey = [
             look.size,
