@@ -130,6 +130,21 @@ describe('the watcher lands a save only when herdr-app check passes', () => {
         expect(readFileSync(join(landed, 'main.js'), 'utf8')).toBe(next);
     });
 
+    // macroscope's find (FRM-617 lane): a mod.json caught mid-save threw out of the watcher and ended it
+    test('a broken mod.json is held, and the watch lands the next good save', async () => {
+        const { env, landed, source } = fixture();
+        run(env, 'probe');
+        const until = watching(env);
+        await until('watching', 5000);
+        writeFileSync(join(source, 'probe/mod.json'), '{ "place": ');
+        expect(await until('held', 8000)).toContain('mod.json');
+        writeFileSync(join(source, 'probe/mod.json'), '{ "place": "none" }\n');
+        const next = GOOD.replace('"ok"', '"after"');
+        writeFileSync(join(source, 'probe/main.js'), next);
+        expect(await until('landed', 8000)).toContain('probe landed');
+        expect(readFileSync(join(landed, 'main.js'), 'utf8')).toBe(next);
+    });
+
     test('a broken save is held and never reaches herdr', async () => {
         const { env, landed, source } = fixture();
         const until = watching(env);

@@ -116,7 +116,7 @@ function newest(mod: string) {
 
 /**
  * what a mod lands, by name: its own files herdr reads, then each shared file its mod.json lists; a reason string when
- * a listed file is missing or the mod keeps its own copy of one, which would drift
+ * its mod.json is not valid json, a listed file is missing, or the mod keeps its own copy of one, which would drift
  */
 function filesOf(mod: string): Map<string, string> | string {
     const source = join(sourceRoot, mod);
@@ -125,9 +125,15 @@ function filesOf(mod: string): Map<string, string> | string {
             .filter((e) => e.isFile() && isLanded(e.name))
             .map((e) => [e.name, join(source, e.name)] as const),
     );
-    const listed: unknown = JSON.parse(
-        readFileSync(join(source, 'mod.json'), 'utf8'),
-    ).shared;
+    let listed: unknown;
+    try {
+        listed = JSON.parse(
+            readFileSync(join(source, 'mod.json'), 'utf8'),
+        ).shared;
+    } catch (err) {
+        // a mod.json caught mid-save is a reason to hold, never a throw that ends the watcher
+        return `${mod}/mod.json is not valid json: ${err instanceof Error ? err.message : err}`;
+    }
     for (const name of Array.isArray(listed) ? listed.map(String) : []) {
         if (files.has(name))
             return `${mod} keeps its own ${name}, which ${SHARED}/ holds: trash the copy`;
