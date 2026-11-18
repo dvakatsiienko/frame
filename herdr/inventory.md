@@ -27,7 +27,7 @@ sources: `~/.config/herdr-app/installed.json` (what herdr ships and replaces on 
 
 - a herdr update: only its shipped list above; our clones keep their 0.1.9/0.1.10 base and take no upstream fix (each clone's `cloned_from` names the base to diff against)
 
-## set aside, never deleted
+## set aside
 
-- `~/.config/herdr-app/data/backups/layouts-before-itrout-20261118/`: egg-basket and x-herdr-layout as they were before the end step; the retired `x-herdr-chatter` and `x-herdr-chatter-header` in the macOS Trash, and in git history
-- `~/.local/state/herdr-aside/`: the zoo-era mods (`zoo`, `my-pane`, `quick-term`, `my-status`, `my-new-menu`, `agents-list`, `zoo-agents`, `claude-chat`, `zoo-spaces`, `agent-board`) and each layout file as it was before a rename
+- `~/.config/herdr-app/data/backups/layouts-before-itrout-20261118/`: egg-basket as it was before it became iTrout
+- zoo is gone from his system (dima, 2026-11-18: «clean all zoo's crap»): `~/.local/state/herdr-aside/` (the zoo-era mods and layout copies), `x-herdr-layout`, `x-herdr-chatter`, `x-herdr-chatter-header` and their data dirs sit in the macOS Trash; the mods also in git history
