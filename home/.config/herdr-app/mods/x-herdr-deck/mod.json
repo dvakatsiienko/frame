@@ -1,1 +1,1 @@
-{ "place": "none", "title": "x-herdr deck" }
+{ "place": "none", "shared": ["keypress.js"], "title": "x-herdr deck" }

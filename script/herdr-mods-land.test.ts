@@ -139,3 +139,57 @@ describe('the watcher lands a save only when herdr-app check passes', () => {
         expect(existsSync(join(landed, 'main.js'))).toBe(false);
     });
 });
+
+// FRM-648: code two mods share lives once in `_shared/`; a mod lists what it takes in its mod.json `shared`
+describe('a mod takes its shared files from _shared/', () => {
+    const KEYS = 'export const key = 1;\n';
+    function withShared() {
+        const made = fixture();
+        mkdirSync(join(made.source, '_shared'));
+        writeFileSync(join(made.source, '_shared/keypress.js'), KEYS);
+        writeFileSync(
+            join(made.source, 'probe/mod.json'),
+            '{ "place": "none", "shared": ["keypress.js"] }\n',
+        );
+        return made;
+    }
+
+    test('a land copies each shared file the mod lists', () => {
+        const { env, landed } = withShared();
+        expect(run(env, 'probe').status).toBe(0);
+        expect(readFileSync(join(landed, 'keypress.js'), 'utf8')).toBe(KEYS);
+    });
+
+    test('a change in _shared/ lands again', () => {
+        const { env, landed, source } = withShared();
+        run(env, 'probe');
+        writeFileSync(
+            join(source, '_shared/keypress.js'),
+            'export const key = 2;\n',
+        );
+        expect(run(env, 'probe').stdout).toContain('copy keypress.js');
+        expect(readFileSync(join(landed, 'keypress.js'), 'utf8')).toContain(
+            '2',
+        );
+    });
+
+    test('a listed file missing from _shared/ is refused, nothing landed', () => {
+        const { env, landed, source } = withShared();
+        writeFileSync(
+            join(source, 'probe/mod.json'),
+            '{ "place": "none", "shared": ["gone.js"] }\n',
+        );
+        const out = run(env, 'probe');
+        expect(out.status).toBe(1);
+        expect(out.stderr).toContain('gone.js');
+        expect(existsSync(join(landed, 'main.js'))).toBe(false);
+    });
+
+    test('a mod keeping its own copy of a shared file is refused: the copy would drift', () => {
+        const { env, source } = withShared();
+        writeFileSync(join(source, 'probe/keypress.js'), KEYS);
+        const out = run(env, 'probe');
+        expect(out.status).toBe(1);
+        expect(out.stderr).toContain('keypress.js');
+    });
+});

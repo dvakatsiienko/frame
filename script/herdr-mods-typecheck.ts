@@ -63,9 +63,15 @@ if (import.meta.main) {
     try {
         for (const mod of strictMods(root)) {
             const dir = join(root, mod);
-            const sources = readdirSync(dir)
-                .filter((name) => name.endsWith('.js'))
-                .map((name) => join(dir, name));
+            // a shared file lands beside the mod's own (herdr-mods:land), so it is checked as the mod's, and `rootDirs`
+            // resolves `./keypress.js` from the mod to `_shared/`
+            const shared = sharedOf(root, mod);
+            const sources = [
+                ...readdirSync(dir)
+                    .filter((name) => name.endsWith('.js'))
+                    .map((name) => join(dir, name)),
+                ...shared,
+            ];
             const files = hasHerdrTypes
                 ? sources
                 : sources.filter(
@@ -86,6 +92,7 @@ if (import.meta.main) {
                         noEmit: true,
                         noUncheckedIndexedAccess: true,
                         paths: { herdr: [herdrTypes[1]] },
+                        rootDirs: [dir, join(root, '_shared')],
                         skipLibCheck: true,
                         strict: true,
                         target: 'ES2022',
@@ -106,6 +113,16 @@ if (import.meta.main) {
     const { isRed, line } = verdict(tally);
     console.log(line);
     process.exit(isRed ? 1 : 0);
+}
+
+/** the `_shared/` files a mod's mod.json lists */
+function sharedOf(root: string, mod: string) {
+    const listed: unknown = JSON.parse(
+        readFileSync(join(root, mod, 'mod.json'), 'utf8'),
+    ).shared;
+    return (Array.isArray(listed) ? listed.map(String) : []).map((name) =>
+        join(root, '_shared', name),
+    );
 }
 
 function strictMods(root: string) {

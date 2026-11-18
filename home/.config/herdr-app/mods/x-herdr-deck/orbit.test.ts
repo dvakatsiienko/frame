@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
-import { createKeyPress } from './keypress.js';
+import { createKeyPress } from '../_shared/keypress.js';
 import {
     type Ask,
     SENT_MS,

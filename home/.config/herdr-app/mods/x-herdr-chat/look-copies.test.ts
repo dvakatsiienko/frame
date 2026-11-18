@@ -15,15 +15,3 @@ describe('one reader of his look in every mod that reads it', () => {
         );
     });
 });
-
-describe('one key module in every mod with a text box', () => {
-    test('the chat’s copy is the deck’s file', () => {
-        const here = dirname(fileURLToPath(import.meta.url));
-        expect(readFileSync(join(here, 'keypress.js'), 'utf8')).toBe(
-            readFileSync(
-                join(here, '..', 'x-herdr-deck', 'keypress.js'),
-                'utf8',
-            ),
-        );
-    });
-});

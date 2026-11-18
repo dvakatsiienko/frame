@@ -7,13 +7,15 @@ import {
     existsSync,
     lstatSync,
     mkdirSync,
+    mkdtempSync,
     readFileSync,
     readdirSync,
     renameSync,
+    rmSync,
     statSync,
     watch,
 } from 'node:fs';
-import { homedir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 // both roots move for a test's fixture home; herdr itself reads HERDR_APP_HOME the same way
@@ -27,6 +29,8 @@ const targetRoot = join(
 // a save settles this long before it lands, so an editor's burst of writes reaches his window as one
 const SETTLE_MS = 400;
 const SWEEP_MS = 1000;
+// code two mods share lives once here; a mod lists what it takes in its mod.json `shared` (herdr/docs/adr/0002)
+const SHARED = '_shared';
 
 const args = process.argv.slice(2);
 const named = args.filter((a) => !a.startsWith('--'));
@@ -60,11 +64,14 @@ function watchMods(mods: string[]) {
             clearTimeout(timer);
             timer = setTimeout(() => {
                 seen = newest(mod);
-                const checked = spawnSync(
-                    'herdr-app',
-                    ['check', join(sourceRoot, mod)],
-                    { encoding: 'utf8' },
-                );
+                const staged = stage(mod);
+                const checked =
+                    typeof staged === 'string'
+                        ? { status: 1, stderr: staged, stdout: '' }
+                        : spawnSync('herdr-app', ['check', staged.dir], {
+                              encoding: 'utf8',
+                          });
+                if (typeof staged !== 'string') staged.done();
                 if (checked.status !== 0) {
                     const why = `${checked.stdout}${checked.stderr}`
                         .trim()
@@ -77,9 +84,17 @@ function watchMods(mods: string[]) {
                 land(mod, false);
             }, SETTLE_MS);
         };
-        watch(join(sourceRoot, mod), { recursive: true }, (_event, file) => {
-            if (file && isLanded(String(file).split('/').pop() ?? '')) settle();
-        });
+        for (const folder of [mod, SHARED].filter((f) =>
+            existsSync(join(sourceRoot, f)),
+        ))
+            watch(
+                join(sourceRoot, folder),
+                { recursive: true },
+                (_event, file) => {
+                    if (file && isLanded(String(file).split('/').pop() ?? ''))
+                        settle();
+                },
+            );
         // FSEvents drops some saves (a write right after the watch starts, a rename over the file): a sweep by mtime
         // lands what the events missed
         setInterval(() => {
@@ -93,13 +108,48 @@ function watchMods(mods: string[]) {
 }
 
 function newest(mod: string) {
+    const files = filesOf(mod);
+    return typeof files === 'string'
+        ? Date.now()
+        : Math.max(0, ...[...files.values()].map((p) => statSync(p).mtimeMs));
+}
+
+/**
+ * what a mod lands, by name: its own files herdr reads, then each shared file its mod.json lists; a reason string when
+ * a listed file is missing or the mod keeps its own copy of one, which would drift
+ */
+function filesOf(mod: string): Map<string, string> | string {
     const source = join(sourceRoot, mod);
-    return Math.max(
-        0,
-        ...readdirSync(source, { withFileTypes: true })
+    const files = new Map(
+        readdirSync(source, { withFileTypes: true })
             .filter((e) => e.isFile() && isLanded(e.name))
-            .map((e) => statSync(join(source, e.name)).mtimeMs),
+            .map((e) => [e.name, join(source, e.name)] as const),
     );
+    const listed: unknown = JSON.parse(
+        readFileSync(join(source, 'mod.json'), 'utf8'),
+    ).shared;
+    for (const name of Array.isArray(listed) ? listed.map(String) : []) {
+        if (files.has(name))
+            return `${mod} keeps its own ${name}, which ${SHARED}/ holds: trash the copy`;
+        const path = join(sourceRoot, SHARED, name);
+        if (!existsSync(path))
+            return `${mod} lists ${name}, missing from ${SHARED}/`;
+        files.set(name, path);
+    }
+    return files;
+}
+
+/** the mod as herdr would read it, its shared files beside its own, in a temp folder `herdr-app check` can read */
+function stage(mod: string) {
+    const files = filesOf(mod);
+    if (typeof files === 'string') return files;
+    const dir = join(mkdtempSync(join(tmpdir(), 'herdr-mods-land-')), mod);
+    mkdirSync(dir);
+    for (const [name, path] of files) copyFileSync(path, join(dir, name));
+    return {
+        dir,
+        done: () => rmSync(join(dir, '..'), { force: true, recursive: true }),
+    };
 }
 
 // what herdr reads; tests, types and editor config stay in frame
@@ -128,15 +178,18 @@ function land(mod: string, isDry: boolean) {
         );
         return false;
     }
-    const changed = readdirSync(source, { withFileTypes: true })
-        .filter((e) => e.isFile() && isLanded(e.name))
-        .map((e) => e.name)
+    const files = filesOf(mod);
+    if (typeof files === 'string') {
+        console.error(`herdr-mods:land: ${files}`);
+        return false;
+    }
+    const changed = [...files.keys()]
         .filter((name) => {
             const now = join(target, name);
             return (
                 isLink ||
                 !existsSync(now) ||
-                !readFileSync(now).equals(readFileSync(join(source, name)))
+                !readFileSync(now).equals(readFileSync(files.get(name) ?? ''))
             );
         })
         // main.js lands last: herdr reloads a mod when its main.js changes, and a main.js landed before a new file it
@@ -169,7 +222,7 @@ function land(mod: string, isDry: boolean) {
     // each file lands whole: written beside its target, then renamed over it, so herdr never reads half a file
     for (const name of changed) {
         const temp = join(target, `.${name}.landing`);
-        copyFileSync(join(source, name), temp);
+        copyFileSync(files.get(name) ?? '', temp);
         renameSync(temp, join(target, name));
     }
     console.log(

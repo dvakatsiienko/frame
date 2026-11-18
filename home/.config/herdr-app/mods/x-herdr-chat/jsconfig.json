@@ -12,6 +12,7 @@
         "moduleResolution": "bundler",
         "noEmit": true,
         "noUncheckedIndexedAccess": true,
+        "rootDirs": [".", "../_shared"],
         "strict": true,
         "strictNullChecks": true,
         "target": "ES2022"
