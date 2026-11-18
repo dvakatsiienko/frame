@@ -61,9 +61,9 @@ their head.
 - **A test that spawns a paid or networked script runs a copy with the spender stubbed**, never the
   real path.
 
-## state, time and events
+## state
 
-code that holds state, waits on time or reads events (keys, watchers, polls) reads [review-lessons.md](references/review-lessons.md) first: one owner per fact, settle on an answer never a timeout, a fake-clock row per timing window.
+code that holds state reads [state.md](references/state.md) first: one owner per fact, named states, changes only through events, a timer that dies with its state; code that waits on time or reads events also reads [review-lessons.md](references/review-lessons.md).
 
 ## a trap that costs hours
 
