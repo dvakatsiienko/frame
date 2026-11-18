@@ -700,7 +700,7 @@ func TestBriefSummonRoleFlagTakesOnlyAStandingRole(t *testing.T) {
 // FRM-579 security review: an area word reaches the printed argv, so only a word of scopes.json passes (FRM-600)
 func TestBriefSummonTakesNoAreaThatIsNotAScope(t *testing.T) {
 	t.Parallel()
-	for i, area := range []string{"x';touch${IFS}pwned;'#", "Dima's Lab", "$(id)", "Mods", "stray", "fleet"} {
+	for i, area := range []string{"x';touch${IFS}pwned;'#", "Dima's Lab", "$(id)", "Mods", "strays", "fleet"} {
 		// the name is no word: a test dir takes the test's name, so a subtest is named by its number
 		t.Run("area "+strconv.Itoa(i), func(t *testing.T) {
 			t.Parallel()
@@ -710,7 +710,7 @@ func TestBriefSummonTakesNoAreaThatIsNotAScope(t *testing.T) {
 			got := w.summonWith(t, codieArgv(w.repo, w.brief(t, goodBrief, true)), []string{"--apply", "--area", area}, "X_THREADS="+store, "X_SESSIONS="+t.TempDir())
 
 			written, _ := readThreadStore(store)
-			if got.code != 2 || !strings.Contains(got.stdout, "one of: chords, cli, herdr, mods, speak, strays, trophy-sys") || len(written.Threads) != 0 {
+			if got.code != 2 || !strings.Contains(got.stdout, "one of: chords, cli, herdr, mods, speak, stray, trophy-sys") || len(written.Threads) != 0 {
 				t.Errorf("exit %d, records %+v, want a usage refusal naming the table's words:\n%s", got.code, written.Threads, got.stdout)
 			}
 		})
@@ -749,9 +749,9 @@ func TestBriefSummonRefusesANameThatIsNotTheDrawnOne(t *testing.T) {
 		want        string
 	}{
 		{"a name typed by hand", "🌗 🔧 codie: FRM-1", nil, "x draws «🌗 🔧 cli | FRM-1»"},
-		{"the project word when an area is given", "🌗 🔧 cli | FRM-1", []string{"--area", "strays"}, "x draws «🌗 🐕 strays | chores»"},
+		{"the project word when an area is given", "🌗 🔧 cli | FRM-1", []string{"--area", "stray"}, "x draws «🌗 🐕 stray | chores»"},
 		{"the drawn name", "🌗 🔧 cli | FRM-1", nil, ""},
-		{"the drawn name of an area", "🌗 🐕 strays | chores", []string{"--area", "strays"}, ""},
+		{"the drawn name of an area", "🌗 🐕 stray | chores", []string{"--area", "stray"}, ""},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
@@ -853,7 +853,7 @@ esac
 	return w
 }
 
-const quickCodie = `{"sessionId":"s1","role":"codie","lane":"chores","laneKind":"quick","ticket":"FRM-1","area":"strays"}`
+const quickCodie = `{"sessionId":"s1","role":"codie","lane":"chores","laneKind":"quick","ticket":"FRM-1","area":"stray"}`
 
 func TestThreadRenameMovesTheRecordTheTabAndTheCcName(t *testing.T) {
 	t.Parallel()
@@ -861,7 +861,7 @@ func TestThreadRenameMovesTheRecordTheTabAndTheCcName(t *testing.T) {
 		name, key string
 		noTab     bool
 	}{
-		{"by display name", "⚡ 🐕 strays | chores", false},
+		{"by display name", "⚡ 🐕 stray | chores", false},
 		{"by session id", "s1", false},
 		{"a terminal in no tab gets one first", "s1", true},
 	} {
@@ -869,23 +869,23 @@ func TestThreadRenameMovesTheRecordTheTabAndTheCcName(t *testing.T) {
 			t.Parallel()
 			w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, c.noTab, 0)
 
-			got := xIn(t, t.TempDir(), asCaller(t, w.env, "coordinator"), "thread", "rename", c.key, "⚡ 🐕 strays | renamed")
+			got := xIn(t, t.TempDir(), asCaller(t, w.env, "coordinator"), "thread", "rename", c.key, "⚡ 🐕 stray | renamed")
 
 			written, _ := readThreadStore(w.store)
 			sent, _ := os.ReadFile(w.hcLog)
 			tabs, _ := os.ReadFile(w.tabs)
-			if card, _ := got.data["card"].(map[string]any); card["name"] != "⚡ 🐕 strays | renamed" {
+			if card, _ := got.data["card"].(map[string]any); card["name"] != "⚡ 🐕 stray | renamed" {
 				t.Errorf("the card block %v, want the full new name for the claude apps' card", got.data["card"])
 			}
-			if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Title != "⚡ 🐕 strays | renamed" {
+			if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Title != "⚡ 🐕 stray | renamed" {
 				t.Fatalf("exit %d, records %+v, want the title taken:\n%s", got.code, written.Threads, got.stdout)
 			}
-			if string(sent) != "send t9 /rename ⚡ 🐕 strays | renamed\n" {
+			if string(sent) != "send t9 /rename ⚡ 🐕 stray | renamed\n" {
 				t.Errorf("hc was told %q, want the cc /rename", sent)
 			}
-			wantTab := `rename {"id":"tbA","name":"⚡ 🐕 strays | renamed"}` + "\n"
+			wantTab := `rename {"id":"tbA","name":"⚡ 🐕 stray | renamed"}` + "\n"
 			if c.noTab {
-				wantTab = `keep {"terminal":"t9","place":"tab"}` + "\n" + `rename {"id":"tbNew","name":"⚡ 🐕 strays | renamed"}` + "\n"
+				wantTab = `keep {"terminal":"t9","place":"tab"}` + "\n" + `rename {"id":"tbNew","name":"⚡ 🐕 stray | renamed"}` + "\n"
 			}
 			if string(tabs) != wantTab {
 				t.Errorf("herdr-app was told %q, want %q", tabs, wantTab)
@@ -898,7 +898,7 @@ func TestThreadRenameRefusesADisplayTwoThreadsDraw(t *testing.T) {
 	t.Parallel()
 	w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`,`+strings.Replace(quickCodie, `"s1"`, `"s2"`, 1)+`]}`, false, false, 0)
 
-	got := xIn(t, t.TempDir(), asCaller(t, w.env, "coordinator"), "thread", "rename", "⚡ 🐕 strays | chores", "⚡ 🐕 strays | renamed")
+	got := xIn(t, t.TempDir(), asCaller(t, w.env, "coordinator"), "thread", "rename", "⚡ 🐕 stray | chores", "⚡ 🐕 stray | renamed")
 
 	written, _ := readThreadStore(w.store)
 	tabs, _ := os.ReadFile(w.tabs)
@@ -911,10 +911,10 @@ func TestThreadRenameFailsNamingThePlaceThatDidNotTakeTheName(t *testing.T) {
 	t.Parallel()
 	w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, true, false, 0)
 
-	got := xIn(t, t.TempDir(), asCaller(t, w.env, "coordinator"), "thread", "rename", "s1", "⚡ 🐕 strays | renamed")
+	got := xIn(t, t.TempDir(), asCaller(t, w.env, "coordinator"), "thread", "rename", "s1", "⚡ 🐕 stray | renamed")
 
 	written, _ := readThreadStore(w.store)
-	if got.code != 1 || !strings.Contains(got.stdout, "not yet in herdr tab") || !strings.Contains(got.next, "herdr-app do tab.rename") || written.Threads[0].Title != "⚡ 🐕 strays | renamed" {
+	if got.code != 1 || !strings.Contains(got.stdout, "not yet in herdr tab") || !strings.Contains(got.next, "herdr-app do tab.rename") || written.Threads[0].Title != "⚡ 🐕 stray | renamed" {
 		t.Errorf("exit %d next %q, want a failure naming the herdr tab and its command, the record renamed:\n%s", got.code, got.next, got.stdout)
 	}
 }
@@ -926,12 +926,12 @@ func TestThreadRenameKeepsItsCallerGate(t *testing.T) {
 	codie := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, 0)
 	dima := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, 0)
 
-	byCodie := xIn(t, t.TempDir(), asCaller(t, codie.env, "codie"), "thread", "rename", "s1", "⚡ 🐕 strays | renamed")
-	byDima := scriptX(t, dima.env, "thread", "rename", "s1", "⚡ 🐕 strays | renamed")
+	byCodie := xIn(t, t.TempDir(), asCaller(t, codie.env, "codie"), "thread", "rename", "s1", "⚡ 🐕 stray | renamed")
+	byDima := scriptX(t, dima.env, "thread", "rename", "s1", "⚡ 🐕 stray | renamed")
 
 	refused, _ := readThreadStore(codie.store)
 	renamed, _ := readThreadStore(dima.store)
-	if byCodie.code != 1 || !strings.Contains(byCodie.stdout, "only the coordinator or dima") || refused.Threads[0].Title != "" || byDima.code != 0 || renamed.Threads[0].Title != "⚡ 🐕 strays | renamed" {
+	if byCodie.code != 1 || !strings.Contains(byCodie.stdout, "only the coordinator or dima") || refused.Threads[0].Title != "" || byDima.code != 0 || renamed.Threads[0].Title != "⚡ 🐕 stray | renamed" {
 		t.Errorf("a codie: exit %d, title %q; dima's terminal: exit %d, title %q:\n%s\n%s", byCodie.code, refused.Threads[0].Title, byDima.code, renamed.Threads[0].Title, byCodie.stdout, byDima.out)
 	}
 }
@@ -951,10 +951,10 @@ func TestThreadRenameWaitsForAnIdleThread(t *testing.T) {
 			t.Parallel()
 			w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, c.busy)
 
-			got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "X_RENAME_WAIT=0.5"), "coordinator"), "thread", "rename", "s1", "⚡ 🐕 strays | renamed")
+			got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "X_RENAME_WAIT=0.5"), "coordinator"), "thread", "rename", "s1", "⚡ 🐕 stray | renamed")
 
 			sent, _ := os.ReadFile(w.hcLog)
-			wantSent := "send t9 /rename ⚡ 🐕 strays | renamed\n"
+			wantSent := "send t9 /rename ⚡ 🐕 stray | renamed\n"
 			if c.wantCode != 0 {
 				wantSent = ""
 			}
@@ -968,7 +968,7 @@ func TestThreadRenameWaitsForAnIdleThread(t *testing.T) {
 // dima 15:28: a thread still busy after the nudge delay is asked once to end its turn, renamed once idle, then told to resume
 func TestThreadRenameAsksABusyThreadToEndItsTurn(t *testing.T) {
 	t.Parallel()
-	const name = "⚡ 🐕 strays | renamed"
+	const name = "⚡ 🐕 stray | renamed"
 	for _, c := range []struct {
 		name     string
 		busy     int
@@ -996,7 +996,7 @@ func TestThreadRenameAsksABusyThreadToEndItsTurn(t *testing.T) {
 // a nudged thread is told to resume however its rename ended: a send that failed, a draft in its box, the deadline
 func TestThreadRenameResumesANudgedThreadWhateverBecameOfTheRename(t *testing.T) {
 	t.Parallel()
-	const name = "⚡ 🐕 strays | renamed"
+	const name = "⚡ 🐕 stray | renamed"
 	for _, c := range []struct {
 		name, wantSent, wantSay string
 		knobs                   []string
@@ -1024,7 +1024,7 @@ func TestThreadRenameRetriesATabRenameRightAfterAKeep(t *testing.T) {
 	t.Parallel()
 	w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, true, 0)
 
-	got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "TAB_FAILS=2"), "coordinator"), "thread", "rename", "s1", "⚡ 🐕 strays | renamed")
+	got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "TAB_FAILS=2"), "coordinator"), "thread", "rename", "s1", "⚡ 🐕 stray | renamed")
 
 	tabs, _ := os.ReadFile(w.tabs)
 	renames := strings.Count(string(tabs), "rename {")
@@ -1153,17 +1153,17 @@ func TestBriefSummonTakesTheLaneKindFromAFlag(t *testing.T) {
 		name, kind, typed string
 		wantCode          int
 	}{
-		{"quick", "quick", "⚡ 🐕 strays | chores", 0},
-		{"side beats nothing", "side", "🌗 🐕 strays | chores", 0},
-		{"a kind that is no mode", "later", "🌗 🐕 strays | chores", 2},
-		{"a name without the mode", "quick", "🐕 strays | chores", 1},
+		{"quick", "quick", "⚡ 🐕 stray | chores", 0},
+		{"side beats nothing", "side", "🌗 🐕 stray | chores", 0},
+		{"a kind that is no mode", "later", "🌗 🐕 stray | chores", 2},
+		{"a name without the mode", "quick", "🐕 stray | chores", 1},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			w := newSummonWorld(t)
 			command := strings.Replace(codieArgv(w.repo, w.brief(t, strings.Replace(goodBrief, "lane: side\n", "", 1), true)), "🌗 🔧 cli | FRM-1", c.typed, 1)
 
-			got := w.summonWith(t, command, []string{"--apply", "--area", "strays", "--lane-kind", c.kind}, "X_THREADS="+filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS="+t.TempDir())
+			got := w.summonWith(t, command, []string{"--apply", "--area", "stray", "--lane-kind", c.kind}, "X_THREADS="+filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS="+t.TempDir())
 
 			if got.code != c.wantCode || (c.wantCode == 0 && got.data["display"] != c.typed) {
 				t.Errorf("exit %d display %v, want exit %d and %q:\n%s", got.code, got.data["display"], c.wantCode, c.typed, got.stdout)
@@ -1177,7 +1177,7 @@ func TestThreadRenameDoesNotRetryATabThatWasAlreadyThere(t *testing.T) {
 	t.Parallel()
 	w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, 0)
 
-	got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "TAB_FAILS=2"), "coordinator"), "thread", "rename", "s1", "⚡ 🐕 strays | renamed")
+	got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "TAB_FAILS=2"), "coordinator"), "thread", "rename", "s1", "⚡ 🐕 stray | renamed")
 
 	tabs, _ := os.ReadFile(w.tabs)
 	if got.code != 1 || strings.Count(string(tabs), "rename {") != 1 {

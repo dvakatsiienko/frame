@@ -9,8 +9,8 @@ import { parseThreadTabArgs } from './thread-tab.ts';
 
 describe('parseThreadTabArgs', () => {
     it('takes a terminal and a name', () => {
-        expect(parseThreadTabArgs(['t7b', '⚡ 🐕 strays | chores'])).toEqual({
-            name: '⚡ 🐕 strays | chores',
+        expect(parseThreadTabArgs(['t7b', '⚡ 🐕 stray | chores'])).toEqual({
+            name: '⚡ 🐕 stray | chores',
             terminal: 't7b',
         });
     });

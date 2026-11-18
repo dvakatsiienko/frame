@@ -560,7 +560,7 @@ func TestDispatchGivesARoleOnlyFromTheCoordinatorToAKnownThread(t *testing.T) {
 func TestDispatchNamesTheThreadByItsScope(t *testing.T) {
 	t.Parallel()
 	for _, c := range []struct{ area, want string }{
-		{"strays", "⚡ 🐕 strays | chores"},
+		{"stray", "⚡ 🐕 stray | chores"},
 		{"mods", "⚡ 🔧 mods | FRM-1"},
 	} {
 		t.Run(c.area, func(t *testing.T) {
@@ -598,7 +598,7 @@ func TestDispatchRefusesAThreadWithNoScopeFromTheTable(t *testing.T) {
 
 			_, got := runDispatch(t, server, append([]string{"FRM-1", "--session", "s1", "--lane", "cli-3", "--apply"}, c.extra...)...)
 
-			if got.code != 2 || !strings.Contains(got.stdout, "chords, cli, herdr, mods, speak, strays, trophy-sys") || len(mutations(server)) != 0 {
+			if got.code != 2 || !strings.Contains(got.stdout, "chords, cli, herdr, mods, speak, stray, trophy-sys") || len(mutations(server)) != 0 {
 				t.Errorf("exit %d with %d linear writes, want a usage refusal naming the table before any write:\n%s", got.code, len(mutations(server)), got.stdout)
 			}
 		})
@@ -628,8 +628,8 @@ esac
 	}
 	env := asCaller(t, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions, "X_HC=" + filepath.Join(bin, "hc")}, "coordinator")
 
-	envelope, plan = runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--lane", "chores", "--area", "strays")
-	_, applied = runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--lane", "chores", "--area", "strays", "--apply")
+	envelope, plan = runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--lane", "chores", "--area", "stray")
+	_, applied = runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--lane", "chores", "--area", "stray", "--apply")
 
 	written, _ = readThreadStore(store)
 	sent, _ = os.ReadFile(log)
@@ -641,12 +641,12 @@ func TestDispatchDrawsTheModeOfTheTicketsLaneLine(t *testing.T) {
 	t.Parallel()
 	above := strings.Replace(dispatchAbove, "lane: side", "lane: quick", 1)
 
-	plan, got, envelope, written, sent := dispatchOntoRecord(t, signedBody(above, "", above)+"\n⸻ 🪪 stamp — please keep 🙏", `{"v":1,"threads":[{"sessionId":"s1","role":"codie","laneKind":"side","area":"strays"}]}`)
+	plan, got, envelope, written, sent := dispatchOntoRecord(t, signedBody(above, "", above)+"\n⸻ 🪪 stamp — please keep 🙏", `{"v":1,"threads":[{"sessionId":"s1","role":"codie","laneKind":"side","area":"stray"}]}`)
 
-	if plan.code != 4 || !strings.Contains(jsonOf(envelope["plan"]), "s1 → ⚡ 🐕 strays | chores") {
-		t.Errorf("a dry run: exit %d, want the plan to say «s1 → ⚡ 🐕 strays | chores»:\n%s", plan.code, plan.stdout)
+	if plan.code != 4 || !strings.Contains(jsonOf(envelope["plan"]), "s1 → ⚡ 🐕 stray | chores") {
+		t.Errorf("a dry run: exit %d, want the plan to say «s1 → ⚡ 🐕 stray | chores»:\n%s", plan.code, plan.stdout)
 	}
-	if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Display != "⚡ 🐕 strays | chores" || written.Threads[0].LaneKind != "quick" || string(sent) != "send t9 /rename ⚡ 🐕 strays | chores\n" {
+	if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Display != "⚡ 🐕 stray | chores" || written.Threads[0].LaneKind != "quick" || string(sent) != "send t9 /rename ⚡ 🐕 stray | chores\n" {
 		t.Errorf("exit %d, records %+v, hc was told %q, want ⚡ in the record and the rename:\n%s", got.code, written.Threads, sent, got.stdout)
 	}
 }
@@ -657,8 +657,8 @@ func TestDispatchOfATicketWithNoLaneLineKeepsTheRecordsMode(t *testing.T) {
 	noLine := strings.Replace(dispatchAbove, "lane: side\n\n", "", 1)
 	body := signedBody(noLine, "", noLine) + "\n⸻ 🪪 stamp — please keep 🙏"
 	for _, c := range []struct{ name, record, kind, display string }{
-		{"a quick record stays quick", `{"v":1,"threads":[{"sessionId":"s1","role":"codie","laneKind":"quick","area":"strays"}]}`, "quick", "⚡ 🐕 strays | chores"},
-		{"a record with no mode starts side", `{"v":1,"threads":[{"sessionId":"s1","role":"codie","area":"strays"}]}`, "side", "🌗 🐕 strays | chores"},
+		{"a quick record stays quick", `{"v":1,"threads":[{"sessionId":"s1","role":"codie","laneKind":"quick","area":"stray"}]}`, "quick", "⚡ 🐕 stray | chores"},
+		{"a record with no mode starts side", `{"v":1,"threads":[{"sessionId":"s1","role":"codie","area":"stray"}]}`, "side", "🌗 🐕 stray | chores"},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
@@ -706,7 +706,7 @@ func TestDispatchRefusesTicketsWhoseLaneLinesDisagree(t *testing.T) {
 					`"labels":{"nodes":[{"id":"l-signed","name":"signed"}]},"team":{"states":{"nodes":[{"id":"s-ip","name":"In Progress"}]}}},"users":{"nodes":[{"id":"u-codie","name":"codie"}]}}}`
 			})
 
-			envelope, got := runDispatch(t, server, "FRM-1", "FRM-2", "--session", "s1", "--area", "strays", "--lane", "chores")
+			envelope, got := runDispatch(t, server, "FRM-1", "FRM-2", "--session", "s1", "--area", "stray", "--lane", "chores")
 
 			said := jsonOf(envelope["error"])
 			if c.isRefused != (got.code == 2) || (c.isRefused && !(strings.Contains(said, "FRM-1: side") && strings.Contains(said, "FRM-2: quick"))) {

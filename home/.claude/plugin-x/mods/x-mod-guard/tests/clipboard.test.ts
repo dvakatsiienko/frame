@@ -253,7 +253,7 @@ const SIGNS: readonly (readonly [string, Seat, boolean])[] = [
     ['a codie record and no registry row', { role: 'codie' }, true],
     ['no record, a name carrying 🔧', { name: '⚡ 🔧 mods | FRM-612' }, true],
     ['no record, a name carrying 🔎', { name: '⚡ 🔎 mods | main' }, true],
-    ['no record, a name carrying 🐕', { name: '⚡ 🐕 strays | chores' }, true],
+    ['no record, a name carrying 🐕', { name: '⚡ 🐕 stray | chores' }, true],
     ['no record, a name starting «probe»', { name: 'probe a' }, true],
     [
         'a coordinator record whose name carries 🔧',

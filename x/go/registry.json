@@ -311,7 +311,7 @@
             ],
             "flags": {
                 "area": {
-                    "description": "the lane's scope word the thread record draws, e.g. cli, mods, strays; none keeps the ticket's linear project word",
+                    "description": "the lane's scope word the thread record draws, e.g. cli, mods, stray; none keeps the ticket's linear project word",
                     "type": "string",
                     "value": "word"
                 },
@@ -733,7 +733,7 @@
             ],
             "flags": {
                 "area": {
-                    "description": "the lane's scope word its display draws, e.g. cli, mods, strays; none keeps the ticket's linear project word",
+                    "description": "the lane's scope word its display draws, e.g. cli, mods, stray; none keeps the ticket's linear project word",
                     "type": "string",
                     "value": "word"
                 },

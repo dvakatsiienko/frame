@@ -36,7 +36,7 @@ var roles = func() []role {
 }()
 
 // every scope a lane member's thread names, by its word: an emoji that replaces its role's mark, and a unit that replaces
-// its ticket; a new scope is one line here. strays draws «⚡ 🐕 strays | chores»
+// its ticket; a new scope is one line here. stray draws «⚡ 🐕 stray | chores»
 //
 //go:embed scopes.json
 var scopesJSON []byte
