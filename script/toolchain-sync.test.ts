@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { type Deps, toolchainSync } from './toolchain-sync.ts';
+import { type Deps, parseFnmList, toolchainSync } from './toolchain-sync.ts';
 
 const apps = ['cv', 'financial', 'trophy-sys'];
 let root = '';
@@ -71,6 +71,7 @@ const deps = (
     readVercel: () => Record<string, string>,
     install = vi.fn(),
     fnm: Deps['fnm'] = {
+        current: 'v26.13.1',
         installed: () => ({ default: 'v26.13.1', versions: ['v26.13.1'] }),
         uninstall: vi.fn(),
     },
@@ -188,7 +189,11 @@ describe('--check', () => {
 });
 
 describe('prune old fnm nodes', () => {
-    const fnm = (uninstall: Deps['fnm']['uninstall']): Deps['fnm'] => ({
+    const fnm = (
+        uninstall: Deps['fnm']['uninstall'],
+        current = 'v26.13.1',
+    ): Deps['fnm'] => ({
+        current,
         installed: () => ({
             default: 'v26.13.1',
             versions: ['v22.23.1', 'v26.13.0', 'v26.13.1'],
@@ -218,6 +223,7 @@ describe('prune old fnm nodes', () => {
     it('removes nothing when no installed version is the default', () => {
         const uninstall = vi.fn();
         const noDefault: Deps['fnm'] = {
+            current: 'v26.13.1',
             installed: () => ({
                 default: '',
                 versions: ['v22.23.1', 'v26.13.0'],
@@ -231,5 +237,69 @@ describe('prune old fnm nodes', () => {
         );
 
         expect(uninstall).not.toHaveBeenCalled();
+    });
+
+    it('keeps the node it runs on and pinned, which is not the default', () => {
+        const uninstall = vi.fn();
+
+        toolchainSync(
+            false,
+            deps('26', () => allOn('26'), vi.fn(), fnm(uninstall, 'v26.13.0')),
+        );
+
+        expect(uninstall.mock.calls).toEqual([['v22.23.1']]);
+    });
+
+    it('warns on a failed uninstall, goes on to the next one and still exits 0', () => {
+        const uninstall = vi.fn((version: string) => {
+            if (version === 'v22.23.1') throw new Error('EBUSY');
+        });
+        vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const code = toolchainSync(
+            false,
+            deps('26', () => allOn('26'), vi.fn(), fnm(uninstall)),
+        );
+
+        expect([code, uninstall.mock.calls]).toEqual([
+            0,
+            [['v22.23.1'], ['v26.13.0']],
+        ]);
+        expect(console.warn).toHaveBeenCalledWith(
+            expect.stringContaining('could not remove v22.23.1'),
+        );
+    });
+
+    it('says so when no default is named, and removes nothing', () => {
+        toolchainSync(
+            false,
+            deps('26', () => allOn('26'), vi.fn(), {
+                current: 'v26.13.1',
+                installed: () => ({ default: '', versions: ['v22.23.1'] }),
+                uninstall: vi.fn(),
+            }),
+        );
+
+        expect(console.log).toHaveBeenCalledWith(
+            'fnm: no default, nothing removed',
+        );
+    });
+});
+
+describe('parseFnmList reads fnm list as it prints it', () => {
+    it.each([
+        ['* system\n', { default: '', versions: [] }],
+        [
+            '* v22.23.1\n* v26.13.1 default\n* system\n',
+            { default: 'v26.13.1', versions: ['v22.23.1', 'v26.13.1'] },
+        ],
+        [
+            '* v26.13.1 lts-latest, default\n* system\n',
+            { default: 'v26.13.1', versions: ['v26.13.1'] },
+        ],
+        ['* v24.12.0\n', { default: '', versions: ['v24.12.0'] }],
+        ['', { default: '', versions: [] }],
+    ])('%j', (text, want) => {
+        expect(parseFnmList(text)).toEqual(want);
     });
 });

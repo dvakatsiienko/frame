@@ -142,30 +142,51 @@ export function toolchainSync(check: boolean, deps: Deps) {
         for (const write of writes) write();
         deps.install(repo);
     }
-    // the default is the one node fnm keeps; with none named among the installed, nothing is known safe and nothing goes
+    // fnm keeps its default and the node this run executes on (it just pinned it); with no default named nothing is known safe
     const { default: keep, versions } = deps.fnm.installed();
-    for (const version of keep && versions.includes(keep)
-        ? versions.filter((v) => v !== keep)
+    if (!keep) console.log('fnm: no default, nothing removed');
+    for (const version of keep
+        ? versions.filter((v) => v !== keep && v !== deps.fnm.current)
         : []) {
-        if (!check) deps.fnm.uninstall(version);
-        console.log(`fnm: ${check ? 'would remove' : 'removed'} ${version}`);
+        try {
+            if (!check) deps.fnm.uninstall(version);
+            console.log(
+                `fnm: ${check ? 'would remove' : 'removed'} ${version}`,
+            );
+        } catch (error) {
+            // the sync itself is done; a node that will not go is a warning, never a failed run
+            console.warn(
+                `fnm: could not remove ${version} (${error instanceof Error ? error.message : String(error)})`,
+            );
+        }
     }
     return check && drift > 0 ? 1 : 0;
 }
 
-// `fnm list` prints `* v26.13.1 default`, one row per node and `* system`; no fnm reads as nothing installed
-function readFnm() {
-    const list = spawnSync('fnm', ['list'], { encoding: 'utf8' });
-    const rows = (list.stdout ?? '').split('\n').flatMap((row) => {
-        const match = row.match(/^\*?\s*(v\d[\w.-]*)(\s+default)?\b/);
+// `fnm list` prints one row per node, `* v26.13.1 lts-latest, default` (the default word anywhere after the version), and `* system`
+export function parseFnmList(text: string) {
+    const rows = text.split('\n').flatMap((row) => {
+        const match = row.match(/^\*?\s*(v\d[\w.-]*)(.*)$/);
         return match?.[1]
-            ? [{ isDefault: Boolean(match[2]), version: match[1] }]
+            ? [
+                  {
+                      isDefault: /\bdefault\b/.test(match[2] ?? ''),
+                      version: match[1],
+                  },
+              ]
             : [];
     });
     return {
         default: rows.find((row) => row.isDefault)?.version ?? '',
         versions: rows.map((row) => row.version),
     };
+}
+
+// no fnm reads as nothing installed
+function readFnm() {
+    return parseFnmList(
+        spawnSync('fnm', ['list'], { encoding: 'utf8' }).stdout ?? '',
+    );
 }
 
 // `vercel project ls` prints one row per project, its node version the last column; the cli writes the table to stderr
@@ -196,6 +217,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     process.exit(
         toolchainSync(process.argv.includes('--check'), {
             fnm: {
+                current: process.version,
                 installed: readFnm,
                 uninstall: (version) =>
                     execFileSync('fnm', ['uninstall', version], {
@@ -233,6 +255,8 @@ export interface Deps {
     pnpmVersion: string;
     /** the fnm-installed node versions (`v26.13.1`, never `system`) and the default one; the removal of one */
     fnm: {
+        /** the node this run executes on, which is also the one it pins: never removed */
+        current: string;
         installed: () => { default: string; versions: string[] };
         uninstall: (version: string) => void;
     };
