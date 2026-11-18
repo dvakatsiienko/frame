@@ -91,7 +91,12 @@ import {
     unlinkFiles,
     withFileRows,
 } from './files.js';
-import { FIND_SETTLE_MS, createFind, findCount } from './find.js';
+import { FIND_SETTLE_MS, createFind, findCount, findSpans } from './find.js';
+
+// the word marks probe (dima, 17:46): while find is open a matched message draws as plain words with each match
+// marked, its markdown styling off until find closes. false puts back the whole-message tint
+const FIND_WORDS = true;
+
 import { placeOf } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
@@ -2722,7 +2727,8 @@ export default class Chat extends View {
             ? null
             : this.find.current() === row.id
               ? 'current'
-              : hits.includes(row.id) || hits.includes(base)
+              : !FIND_WORDS &&
+                  hits.some((h) => h.id === row.id || h.id === base)
                 ? 'match'
                 : null;
         const column = (/** @type {import('gpui-kit').Element} */ el) =>
@@ -2782,10 +2788,11 @@ export default class Chat extends View {
                                 )
                                 .when(row.isWaiting, (el) => el.opacity(0.6))
                                 .child(
-                                    TextView.markdown(
-                                        id,
-                                        typedMarkdown(row.text),
-                                    ).selectable(isShown),
+                                    this.markedText(row, t) ??
+                                        TextView.markdown(
+                                            id,
+                                            typedMarkdown(row.text),
+                                        ).selectable(isShown),
                                 ),
                         ),
                     )
@@ -2806,27 +2813,32 @@ export default class Chat extends View {
                         .gap(8)
                         .rounded(12)
                         .bg(t.raised)
+                        .when(Boolean(this.markedText(row, t)), (el) =>
+                            el.child(this.markedText(row, t) ?? ''),
+                        )
                         .children(
-                            splitBlocks(unlinkFiles(row.text)).map(
-                                (block, i) =>
-                                    block.kind === 'text'
-                                        ? TextView.markdown(
-                                              `${id}-${i}`,
-                                              block.text,
-                                          ).selectable(isShown)
-                                        : div()
-                                              .px(10)
-                                              .py(8)
-                                              .rounded(8)
-                                              .bg(t.background)
-                                              .border(1)
-                                              .border_color(t.border)
-                                              .child(
-                                                  TextView.markdown(
-                                                      `${id}-${i}`,
-                                                      `\`\`\`${block.lang}\n${block.text}\n\`\`\``,
-                                                  ).selectable(isShown),
-                                              ),
+                            (this.markedText(row, t)
+                                ? []
+                                : splitBlocks(unlinkFiles(row.text))
+                            ).map((block, i) =>
+                                block.kind === 'text'
+                                    ? TextView.markdown(
+                                          `${id}-${i}`,
+                                          block.text,
+                                      ).selectable(isShown)
+                                    : div()
+                                          .px(10)
+                                          .py(8)
+                                          .rounded(8)
+                                          .bg(t.background)
+                                          .border(1)
+                                          .border_color(t.border)
+                                          .child(
+                                              TextView.markdown(
+                                                  `${id}-${i}`,
+                                                  `\`\`\`${block.lang}\n${block.text}\n\`\`\``,
+                                              ).selectable(isShown),
+                                          ),
                             ),
                         ),
                 )
@@ -3474,6 +3486,50 @@ export default class Chat extends View {
                 } catch {
                     // half a line never reaches here: the reader hands over whole lines
                 }
+    }
+
+    /**
+     * the word marks probe: a matched message as plain words, every match in a soft accent, the stepped one in full
+     * accent; null when find is closed or the row holds no match
+     * @param {Row} row @param {Theme} t
+     */
+    markedText(row, t) {
+        const { isOpen, q, hits } = this.find.state;
+        if (!FIND_WORDS || !isOpen || !hits.some((h) => h.id === row.id))
+            return null;
+        const current = this.find.currentHit();
+        return v_flex().children(
+            findSpans(row.text, q).map((line) =>
+                h_flex()
+                    .flex_wrap()
+                    .children(
+                        line.flatMap((span) =>
+                            span.match === null
+                                ? span.text
+                                      .split(/(?<=\s)/)
+                                      .map((word) => div().child(word))
+                                : [
+                                      div()
+                                          .rounded(3)
+                                          .px(1)
+                                          .bg(
+                                              current?.id === row.id &&
+                                                  current.n === span.match
+                                                  ? t.accent
+                                                  : tint(t.accent, '4d'),
+                                          )
+                                          .when(
+                                              current?.id === row.id &&
+                                                  current.n === span.match,
+                                              (el) =>
+                                                  el.text_color(t.background),
+                                          )
+                                          .child(span.text),
+                                  ],
+                        ),
+                    ),
+            ),
+        );
     }
 
     /** what the / menu shows now: the caret is read off the box, so a caret moved off the word closes it */

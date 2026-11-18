@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { createFind, findCount, hitsOf } from './find.js';
+import { createFind, findCount, findSpans, hitsOf } from './find.js';
 
 const row = (id: string, text: string) => ({ id, text }) as never;
 const rows = [
@@ -12,7 +12,11 @@ const rows = [
 
 describe('find in the chat (FRM-638 slice 6)', () => {
     test('hits are the rows holding the query, any case, newest first', () => {
-        expect(hitsOf(rows, 'viewer')).toEqual(['d', 'c', 'a']);
+        expect(hitsOf(rows, 'viewer').map((h) => h.id)).toEqual([
+            'd',
+            'c',
+            'a',
+        ]);
         expect(hitsOf(rows, '  ')).toEqual([]);
     });
 
@@ -49,5 +53,28 @@ describe('find in the chat (FRM-638 slice 6)', () => {
         find.search(rows, 'tests');
         find.close();
         expect(find.state).toEqual({ at: 0, hits: [], isOpen: false, q: '' });
+    });
+});
+
+describe('find steps match by match (word marks probe)', () => {
+    test('two matches in one row are two hits, in reading order', () => {
+        expect(hitsOf([row('x', 'slice and Slice')], 'slice')).toEqual([
+            { id: 'x', n: 0 },
+            { id: 'x', n: 1 },
+        ]);
+    });
+});
+
+describe('a matched message cut into words and marks (word marks probe)', () => {
+    test('every match is its own span, numbered in the message, any case, lines kept', () => {
+        expect(findSpans('Slice 6 and slice 7\nno', 'slice')).toEqual([
+            [
+                { match: 0, text: 'Slice' },
+                { match: null, text: ' 6 and ' },
+                { match: 1, text: 'slice' },
+                { match: null, text: ' 7' },
+            ],
+            [{ match: null, text: 'no' }],
+        ]);
     });
 });

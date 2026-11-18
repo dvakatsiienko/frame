@@ -2,19 +2,64 @@
 // view hands each query and key here and draws `state`.
 
 /** @typedef {import('./row-model.js').Row} Row */
-/** @typedef {{ isOpen: boolean, q: string, hits: string[], at: number }} FindState hits by row id, newest first */
+/** @typedef {{ id: string, n: number }} Hit one match: its row, and its place among that row's matches */
+/** @typedef {{ isOpen: boolean, q: string, hits: Hit[], at: number }} FindState hits newest row first, each row's in reading order */
 
 // his query settles this long before the rows are searched: each search redraws the hit's place
 export const FIND_SETTLE_MS = 150;
 
-/** the rows holding `q`, any case, newest first; none for an empty query @param {readonly Row[]} rows @param {string} q */
+/**
+ * every match of `q`, any case: the newest row first, a row's matches in reading order; none for an empty query
+ * @param {readonly Row[]} rows @param {string} q @returns {Hit[]}
+ */
 export function hitsOf(rows, q) {
     const needle = q.trim().toLowerCase();
     if (!needle) return [];
-    return rows
-        .filter((r) => r.text.toLowerCase().includes(needle))
-        .map((r) => r.id)
-        .reverse();
+    return [...rows].reverse().flatMap((r) => {
+        const text = r.text.toLowerCase();
+        /** @type {Hit[]} */
+        const hits = [];
+        for (
+            let at = text.indexOf(needle);
+            at >= 0;
+            at = text.indexOf(needle, at + needle.length)
+        )
+            hits.push({ id: r.id, n: hits.length });
+        return hits;
+    });
+}
+
+/**
+ * a matched message cut into plain words and its matches, line by line, for the word marks probe (dima, 17:46): each
+ * match carries its place among the message's matches
+ * @param {string} text @param {string} q
+ * @returns {{ text: string, match: number | null }[][]}
+ */
+export function findSpans(text, q) {
+    const needle = q.trim().toLowerCase();
+    let n = 0;
+    return text.split('\n').map((line) => {
+        /** @type {{ text: string, match: number | null }[]} */
+        const spans = [];
+        const lower = line.toLowerCase();
+        let from = 0;
+        for (
+            let at = needle ? lower.indexOf(needle) : -1;
+            at >= 0;
+            at = lower.indexOf(needle, from)
+        ) {
+            if (at > from)
+                spans.push({ match: null, text: line.slice(from, at) });
+            spans.push({
+                match: n++,
+                text: line.slice(at, at + needle.length),
+            });
+            from = at + needle.length;
+        }
+        if (from < line.length || !spans.length)
+            spans.push({ match: null, text: line.slice(from) });
+        return spans;
+    });
 }
 
 /** «2 / 5», «no match» or nothing before a query @param {FindState} state */
@@ -33,7 +78,9 @@ export function createFind() {
             state = { at: 0, hits: [], isOpen: false, q: '' };
         },
         /** the hit shown now */
-        current: () => state.hits[state.at] ?? null,
+        current: () => state.hits[state.at]?.id ?? null,
+        /** the hit shown now, its row and its place in it */
+        currentHit: () => state.hits[state.at] ?? null,
         open() {
             state = { ...state, isOpen: true };
         },
@@ -53,7 +100,7 @@ export function createFind() {
             if (!n) return null;
             const at = (state.at + (way === 'older' ? 1 : n - 1)) % n;
             state = { ...state, at };
-            return state.hits[at] ?? null;
+            return state.hits[at]?.id ?? null;
         },
     };
 }
