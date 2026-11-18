@@ -4,7 +4,7 @@ title: 'emoji reactions: his 11-18 design asks before FRM-582''s grill'
 status: open
 assignee: []
 created_date: '2026-11-18T09:19:00Z'
-updated_date: '2026-11-18T09:19:00Z'
+updated_date: '2026-11-18T09:25:00Z'
 labels:
   - s
 dependencies: []
@@ -89,4 +89,12 @@ raw drop (11-18 inbox, dima): 	- overall, emoji feature is always tricky. how to
 raw drop (11-18 inbox, dima): 	- idea: cc loud chat (claude desktop app) have this feature builtin into the app - it auto-reacts to my messages and can see how i react to message bubbles with emojies. how do you think - can you create a query (prompt) for it, so i copypaste. it sould fully tell cloud chat what we are about to code with this emoji feature, and ask cloud thread to fully describe how he sees this feature from inside? to learn best parts of emojies system, and borrow to our emojies.
 
 raw drop (11-18 inbox, dima): 	- is it worth to research for prior art? maybe research about how to implement such feature (best practices) can bring some interesting and useful insights to fulfill my wish fully? note: if you agree, the research is best to do right before we are abot implement (dispatch) emojies feature. required: research with me, i want to know research insights myself, and decide what we borrow/apply to our system and what's not.
+
+PK-447:W16 (2026-11-18 inbox, dima): propose the top 7 emojis; he is not sure on 🏎️🚄🛤️ as «go», meaning «dima reads and approves your plan as sound, please move on» ❓ (W2 refolded)
+
+PK-447:W17 (2026-11-18 inbox, dima): 🎉🥳🎊🪅🪩: start with these to react to his messages when he brings good news, or when you are happy about his progress making the fleet prettier (W4 refolded)
+
+PK-447:W18 (2026-11-18 inbox, dima): how does an emoji reach you? will what we put in emoji strings become part of your message history sent whole each turn, in the special field where slipstreamed joined messages fold in, shaped: user message …, agent message …, our-special-mods-slipstream-field: second wind, orbit, emojis? ← here? ❓ (W10 refolded)
+
+PK-447:W19 (2026-11-18 inbox, dima): emojis searchable, please; search expands the list; the grid keeps most-tapped first — propose how to measure and log it ❓ (W9, W11 refolded)
 <!-- SECTION:NOTES:END -->
