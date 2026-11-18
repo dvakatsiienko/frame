@@ -1,6 +1,6 @@
 {
     "chain": {
-        "en": ["elevenlabs", "kokoro", "fish", "system"],
+        "en": ["kokoro", "fish", "system", "elevenlabs"],
         "ru": ["elevenlabs", "system"],
         "uk": ["elevenlabs", "system"]
     },
@@ -36,11 +36,18 @@
             }
         },
         "kokoro": {
-            "favourites": ["af_heart"],
-            "gain": 2.1,
+            "favourites": [
+                "af_heart",
+                "af_bella",
+                "af_jessica",
+                "af_nova",
+                "af_alloy"
+            ],
+            "gain": 1.5,
             "speed": 1,
             "voice": {
-                "*": "af_heart"
+                "*": "af_heart",
+                "en": "af_heart"
             }
         },
         "system": {
