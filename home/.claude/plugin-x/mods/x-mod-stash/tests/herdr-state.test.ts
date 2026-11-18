@@ -770,3 +770,25 @@ test('a hand-back keeps a line this side could not read, as herdr wrote it', asy
         `${row('j1', 'ok')}{"id":"j2","text":"half\n`,
     );
 });
+
+test("an ask's link rides its row in the state file beside its pick", async ($, on) => {
+    const s = await session($, on);
+    await orbit($, {
+        asks: [
+            {
+                link: 'https://linear.app/x-com/issue/FRM-1',
+                pick: 'yes',
+                text: 'ship it',
+            },
+            { pick: 'no', text: 'hold it' },
+        ],
+        op: 'add',
+    });
+    const asks = (s.read(A) as { asks: { link?: string }[] }).asks;
+    expect(asks[0]).toMatchObject({
+        id: 'o1',
+        link: 'https://linear.app/x-com/issue/FRM-1',
+        pick: 'yes',
+    });
+    expect(asks[1]?.link).toBeUndefined();
+});
