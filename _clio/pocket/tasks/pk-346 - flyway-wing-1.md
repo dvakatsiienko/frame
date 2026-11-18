@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-18T19:17:00Z'
+updated_date: '2026-11-18T19:24:00Z'
 labels:
   - s
   - clio-wing-1
@@ -700,4 +700,6 @@ done 2026-11-18 21:17: f21 💤 PK-362 steamac vm disk 256 → 192 gb — later:
 done 2026-11-18 21:17: f29 💤 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first») (FRM-650 Todo)
 
 21:17: the 💤 later lines re-added with 🦥 (dima 21:04, one emoji with the snoozed label), their text unchanged
+
+21:24: the five «done 21:17» lines above are moves, not done: f15 → f31, f16 → f32, f17 → f33, f21 → f34, f29 → f35, the 🦥 prefix swap (wishkeeper's catch)
 <!-- SECTION:NOTES:END -->
