@@ -21,4 +21,6 @@ PK-449:W1 (2026-11-18 inbox, dima): every cc builds only agentic friendly shipme
 raw drop (11-18 inbox, dima): 1. important general fleet rule for any cc: we build only agentic friendly shipments. agentic friendly out by default. maintain your project files, keep code in a tidy shape. no scrimped messy files. applies to any code that does not disallow agentic friendly flows by its design.
 
 close: landed in x:guide-code § complete means whole (5401a944), dima's o9 tick 11:56
+
+close: PK-449:W1 done — the line in x:guide-code (5401a944)
 <!-- SECTION:NOTES:END -->
