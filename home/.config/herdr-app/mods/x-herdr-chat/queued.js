@@ -16,6 +16,8 @@ const words = (text) => text.replace(/\s+/g, ' ').trim();
 // as he typed it, `/x …`, or its queued card never clears (his 18:37 wisp)
 /** @param {string} text */
 export const asTyped = (text) => {
+    // only a line Claude Code wrote for a command opens with its tags; his words that quote one stay his
+    if (!/^<command-(?:message|name)>/.test(text)) return text;
     const name = /<command-name>([^<]*)<\/command-name>/.exec(text)?.[1];
     if (!name) return text;
     const args =

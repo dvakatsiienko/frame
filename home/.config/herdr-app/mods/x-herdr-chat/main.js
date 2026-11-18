@@ -3063,6 +3063,7 @@ export default class Chat extends View {
         this.viewer = null;
         this.find.close();
         this.findTyped += 1;
+        this.findBox = this.newFindBox();
         this.viewerAsk += 1;
         this.joins = null;
         // no button shows or presses a thread no longer on screen; the fleet's facts stay

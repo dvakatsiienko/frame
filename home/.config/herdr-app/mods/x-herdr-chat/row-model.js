@@ -331,6 +331,18 @@ export function createRowModel() {
     /** the slash commands this chat typed in: Claude Code queues one with no text @type {{ text: string, at: number }[]} */
     let pushes = [];
 
+    /** a command that ran at once was never queued: its push goes, so no later textless enqueue takes its words
+     * @param {string} line */
+    function dropRanPush(line) {
+        if (!pushes.length || !line.includes('<command-name>')) return;
+        try {
+            const said = asTyped(saidIn(JSON.parse(line)?.message?.content));
+            pushes = pushes.filter((p) => p.text.trim() !== said);
+        } catch {
+            // half a line never reaches here: the reader hands over whole lines
+        }
+    }
+
     /** the command a textless enqueue at `at` holds, or no text: a peer's message is queued the same way @param {number} at */
     function takePushed(at) {
         const i = pushes.findIndex(
@@ -396,6 +408,7 @@ export function createRowModel() {
             const changed = new Set();
             for (const line of lines) {
                 if (!line.startsWith(QUEUE_RECORD)) {
+                    dropRanPush(line);
                     for (const id of fold([line], rows)) changed.add(id);
                     continue;
                 }
@@ -498,6 +511,7 @@ export function createRowModel() {
             waiting = new Map();
             takenAt.clear();
             rowOfCommand.clear();
+            pushes = [];
         },
         /** where the row holding the transcript line `id` sits, -1 when it is not loaded @param {string} id */
         indexOf(id) {

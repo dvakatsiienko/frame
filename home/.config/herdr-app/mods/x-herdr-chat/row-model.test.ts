@@ -837,6 +837,29 @@ describe('a slash command he sent is his bubble, waiting and in history (dima, 1
         expect(waiting(model)).toEqual([]);
     });
 
+    test('a command that ran at once takes its push along: a peer’s textless enqueue after it stays unseen (wisphunter, slice 6)', () => {
+        const model = createRowModel();
+        model.pushed('/cmt', Date.parse('2026-11-18T15:53:02.000Z'));
+        model.add([ran('/cmt', '')]);
+        model.add([queueOp('enqueue', undefined, '2026-11-18T15:53:03.000Z')]);
+        expect(waiting(model)).toEqual([]);
+    });
+
+    test('a thread switch forgets the pushes of the thread before (wisphunter, slice 6)', () => {
+        const model = createRowModel();
+        model.pushed('/cmt', Date.parse('2026-11-18T15:53:02.000Z'));
+        model.clear();
+        model.add([queueOp('enqueue', undefined, '2026-11-18T15:53:02.500Z')]);
+        expect(waiting(model)).toEqual([]);
+    });
+
+    test('his words that quote a command tag mid-line stay as he typed them (wisphunter, slice 6)', () => {
+        const said = 'why does <command-name>/x</command-name> show up?';
+        const model = createRowModel();
+        model.add([mine(said)]);
+        expect(shown(model)).toEqual([`mine: ${said}`]);
+    });
+
     test('once the turn takes it, the waiting bubble gives way to its row in history', () => {
         const model = createRowModel();
         model.pushed('/cmt', Date.parse('2026-11-18T15:53:02.000Z'));
