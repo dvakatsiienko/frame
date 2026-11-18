@@ -1917,6 +1917,58 @@ export function parkedWakeMs(row: unknown) {
 
 let parkedReadAt = 0;
 const parkedUnreadLogged = new Map<string, string>();
+// a chunk this close to its end with nothing signed after it is what a parked lane wakes its clio for (FRM-602)
+const PARKED_STEPS_LEFT = 2;
+const SIGNED_READ_MS = 10 * 60_000;
+const signedReads = new Map<string, { at: number; isSigned: boolean }>();
+
+// whether linear says a ticket is signed, read through x at most once per ticket in 10 min; undefined when x cannot read it
+async function isSigned($: EngineInterface, ticket: string, now: number) {
+    const kept = signedReads.get(ticket);
+    if (kept && now - kept.at < SIGNED_READ_MS) return kept.isSigned;
+    const run = await $.process
+        .run(['x', 'linear', 'read', ticket, '--json'], {
+            cwd: await $.env.get('HOME'),
+            timeoutMs: 8000,
+        })
+        .catch(() => undefined);
+    try {
+        const labels = (
+            JSON.parse(run?.stdout ?? '') as {
+                data?: { tickets?: { labels?: unknown }[] };
+            }
+        ).data?.tickets?.[0]?.labels;
+        if (run?.exitCode !== 0 || !Array.isArray(labels)) throw new Error();
+        const isSigned = labels.includes('signed');
+        signedReads.set(ticket, { at: now, isSigned });
+        return isSigned;
+    } catch {
+        await $.ui.log(
+            `x-mod-stash: x linear read ${ticket} failed; the parked lane waits`,
+        );
+        return undefined;
+    }
+}
+
+// the line a parked lane wakes its clio with, or none: its chunk is more than two steps from its end, or the next chunk
+// is signed (its codie goes on), or linear cannot say
+async function parkedNudge(
+    $: EngineInterface,
+    lane: StashLane,
+    now: number,
+): Promise<string | undefined> {
+    const chunk = lane.items[lane.current]?.ticket;
+    const rest = lane.items.slice(lane.current);
+    const left = rest.filter((x) => x.ticket === chunk).length;
+    if (left > PARKED_STEPS_LEFT) return undefined;
+    const head = `«${lane.title}» (${lane.id}): ${left} step${left === 1 ? '' : 's'} left in ${chunk ?? 'its chunk'}`;
+    const next = rest.find((x) => x.ticket && x.ticket !== chunk)?.ticket;
+    if (!next) return `${head}, nothing queued, sign the next`;
+    const signed = await isSigned($, next, now);
+    return signed === false
+        ? `${head}; next chunk ${next} is unsigned`
+        : undefined;
+}
 async function wakeForParkedLanes($: EngineInterface) {
     const now = await $.clock.now();
     if (now - parkedReadAt < LEDGER_EVERY_MS) return;
@@ -1979,9 +2031,11 @@ async function wakeForParkedLanes($: EngineInterface) {
         const key = `${PARKED_WOKE}${lane.id}`;
         const woke = (await $.store.get(key)) as number | undefined;
         if (woke !== undefined && woke >= at) continue;
+        const nudge = await parkedNudge($, lane, now);
+        if (!nudge) continue;
         const r = await selfSubmit(
             $,
-            `🅿️ parked lane: «${lane.title}» has open steps and its members sat idle ${minutes} min. what can run now? a wait needs its deadline named, or the next step goes out.`,
+            `🅿️ parked lane: ${nudge}; its members sat idle ${minutes} min.`,
         ).catch(() => undefined);
         if (!r || r.drop) {
             isBusy = false;

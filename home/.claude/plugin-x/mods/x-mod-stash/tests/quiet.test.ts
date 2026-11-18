@@ -1482,6 +1482,8 @@ function alarmWorld(
         files = {} as Record<string, string>,
         isTestChild = false,
         lastWrite = (): number | undefined => undefined,
+        // `x linear read <id> --json`'s labels per ticket; a ticket with none fails the read, as a linear outage would
+        labels = {} as Record<string, string[]>,
         notify = 'no-surface',
         also = [] as (typeof codiePeer)[],
         osascript = 0,
@@ -1504,6 +1506,15 @@ function alarmWorld(
             }
             if (argv[0] === 'sh' && String(argv[2]).includes('SendMessage'))
                 return sends.join('\n');
+            if (argv[0] === 'x' && argv[1] === 'linear' && argv[2] === 'read') {
+                const got = labels[String(argv[3])];
+                return got
+                    ? JSON.stringify({
+                          data: { tickets: [{ id: argv[3], labels: got }] },
+                          ok: true,
+                      })
+                    : 1;
+            }
             if (
                 argv[0] === 'sh' &&
                 [peer, ...also].some((p) => p.sessionId === argv[5])
@@ -1560,6 +1571,7 @@ function silentWorld(
         card = {} as object,
         dropSubmit = (_t: string): boolean => false,
         files = {} as Record<string, string>,
+        labels = {} as Record<string, string[]>,
         peer = codiePeer,
         wait = 1,
     } = {},
@@ -1570,6 +1582,7 @@ function silentWorld(
         also,
         dropSubmit,
         files,
+        labels,
         lastWrite: () => spoke.at,
         peer,
     });
@@ -1883,6 +1896,72 @@ test('a lane whose members sit idle 10 min wakes its clio once, no shift needed'
     });
     await w.clock.advance(5 * MIN);
     expect([early, parkedWakes(w).length]).toEqual([0, 1]);
+});
+
+// FRM-602 decided: the wake fires only near a chunk's end with nothing signed to go to, never on idle time alone
+const steps = (...tickets: string[]) => ({
+    items: tickets.map((ticket, i) => ({
+        done: false,
+        text: `step ${i + 1}`,
+        ticket,
+    })),
+});
+const idleLane = async (
+    $: Engine,
+    w: { clock: { advance: (ms: number) => Promise<void> } },
+) => {
+    await start($);
+    await w.clock.advance(11 * MIN);
+};
+
+test('a parked lane two steps from its end whose next chunk is signed wakes nobody', async ($, on) => {
+    const w = silentWorld(on, {
+        card: steps('FRM-1', 'FRM-1', 'FRM-2'),
+        labels: { 'FRM-2': ['agent', 'signed'] },
+        wait: 60,
+    });
+    await idleLane($, w);
+    expect(parkedWakes(w)).toEqual([]);
+});
+
+test('a parked lane two steps from its end whose next chunk is unsigned wakes once, naming the lane and the ticket', async ($, on) => {
+    const w = silentWorld(on, {
+        card: steps('FRM-1', 'FRM-1', 'FRM-2'),
+        labels: { 'FRM-2': ['agent'] },
+        wait: 60,
+    });
+    await idleLane($, w);
+    expect(parkedWakes(w)).toEqual([
+        expect.stringContaining(
+            '«mods lane» (l1): 2 steps left in FRM-1; next chunk FRM-2 is unsigned',
+        ),
+    ]);
+});
+
+test('a parked lane more than two steps from its chunk end wakes nobody', async ($, on) => {
+    const w = silentWorld(on, {
+        card: steps('FRM-1', 'FRM-1', 'FRM-1', 'FRM-2'),
+        labels: { 'FRM-2': ['agent'] },
+        wait: 60,
+    });
+    await idleLane($, w);
+    expect(parkedWakes(w)).toEqual([]);
+});
+
+test('a parked lane with nothing queued past its chunk wakes once: nothing queued, sign the next', async ($, on) => {
+    const w = silentWorld(on, { card: steps('FRM-1', 'FRM-1'), wait: 60 });
+    await idleLane($, w);
+    expect(parkedWakes(w)).toEqual([
+        expect.stringContaining(
+            '«mods lane» (l1): 2 steps left in FRM-1, nothing queued, sign the next',
+        ),
+    ]);
+});
+
+test('a parked lane whose next chunk linear cannot read wakes nobody', async ($, on) => {
+    const w = silentWorld(on, { card: steps('FRM-1', 'FRM-2'), wait: 60 });
+    await idleLane($, w);
+    expect(parkedWakes(w)).toEqual([]);
 });
 
 test('a member speaking again re-arms the parked wake', async ($, on) => {
