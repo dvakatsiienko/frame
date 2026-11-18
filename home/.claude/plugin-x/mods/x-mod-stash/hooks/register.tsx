@@ -3794,7 +3794,8 @@ async function laneShown(
 
 // a dispatch opens its lane's card (FRM-602): x's record of a live codie names the lane, whose plan file holds the steps,
 // and the clio that dispatched it, whose session opens the card; a record with no dispatching clio (a summon's) opens
-// none. a lane any card ever followed opens none again, and the newest live codie dispatched into a lane holds its link
+// none. a lane whose card ended after its newest dispatch opens none again, and the newest live codie dispatched into a
+// lane holds its link
 async function openDispatchedLanes($: EngineInterface) {
     const self = await selfLive($);
     const label =
@@ -3871,7 +3872,8 @@ async function openDispatchedLanes($: EngineInterface) {
                 );
             continue;
         }
-        if (onPlan.length) continue;
+        // a card ended before this dispatch frees the plan for a new one; one ended after it closed the lane for good
+        if (onPlan.some((l) => (l.endedAt ?? 0) >= (codie.at ?? 0))) continue;
         const text = await $.fs.read(path).catch(() => undefined);
         if (text === undefined) continue;
         const title =
