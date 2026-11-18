@@ -55,7 +55,7 @@ caps), so a drag-and-drop view needs its own checks for those.
 - 🚫 no playwright/puppeteer for a check — by decision: ~700 ms cold start, a pinned browser cache,
   nothing the verbs above miss (an app may ship one for its own output, as atelier's shots do). A flaky element wants `wait <sel>` then the action, never a script.
 
-## the fleet Chrome — any page behind a sign-in (macroscope billing)
+## the fleet Chrome — any page behind a sign-in (a billing page)
 
 a second Chrome with its own profile and debug port; observed 2026-11-16 on one mac: no approval dialog, focus stays with dima. `--auto-connect` to his own Chrome is no longer used.
 
