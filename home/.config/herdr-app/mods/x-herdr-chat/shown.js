@@ -36,3 +36,26 @@ export function pidFor(address, ps, sessions) {
     }
     return null;
 }
+
+/**
+ * whether the chat is on screen: in a layout stack, its child is the one shown (the first while none was picked); a
+ * chat in no stack always is
+ * @param {unknown} tree the shown layout @param {string | undefined} stack @param {string | undefined} self
+ */
+export function isShownIn(tree, stack, self) {
+    if (!stack) return true;
+    /** @param {any} node @returns {any} */
+    const find = (node) =>
+        node?.id === stack
+            ? node
+            : (node?.children ?? []).map(find).find(Boolean);
+    const node = find(tree);
+    return (node?.active ?? node?.children?.[0]?.id) === self;
+}
+
+// a ⌘K or ⌘⇧E press the status bar wrote this long ago is still acted on: one the chat slept through is dropped
+const ASK_FRESH_MS = 2000;
+
+/** @param {unknown} ask the press's time, as the status bar wrote it @param {number} now */
+export const isFreshAsk = (ask, now) =>
+    typeof ask === 'number' && now - ask < ASK_FRESH_MS;

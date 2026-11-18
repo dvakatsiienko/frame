@@ -38,5 +38,16 @@ export function createDrafts(store) {
                 return '';
             }
         },
+        /**
+         * the quill shows `text` and the draft holds it: the box tells no change for a write made from code, so a quill
+         * a turn emptied, kept only on screen, came back full after a switch away and back (11-18 11:59)
+         * @param {{ set_value: (text: string) => unknown }} box
+         * @param {string | null} thread
+         * @param {string} text
+         */
+        put(box, thread, text) {
+            box.set_value(text);
+            this.keep(thread, text);
+        },
     };
 }

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { pidFor, shownThread } from './shown.js';
+import { isFreshAsk, isShownIn, pidFor, shownThread } from './shown.js';
 
 const claude = (address: string, tab: string) => ({
     address,
@@ -78,5 +78,54 @@ describe('a terminal’s Claude, by the terminal id in its environment', () => {
 
     test('a terminal no Claude runs in reads none', () => {
         expect(pidFor('t9', ps, [9001, 9002])).toBeNull();
+    });
+});
+
+describe('whether the chat is on screen: its child is the stack’s shown one', () => {
+    const tree = {
+        children: [
+            {
+                active: 'main',
+                children: [{ id: 'chat' }, { id: 'old-chat' }, { id: 'main' }],
+                id: 'views',
+            },
+        ],
+        id: 'root',
+    };
+
+    test('the stack shows another child: the chat is hidden', () => {
+        expect(isShownIn(tree, 'views', 'chat')).toBe(false);
+    });
+
+    test('the stack shows the chat', () => {
+        expect(isShownIn(tree, 'views', 'main')).toBe(true);
+    });
+
+    test('a stack with no shown child yet shows its first', () => {
+        const fresh = {
+            children: [
+                { children: [{ id: 'chat' }, { id: 'main' }], id: 'views' },
+            ],
+            id: 'root',
+        };
+        expect(isShownIn(fresh, 'views', 'chat')).toBe(true);
+    });
+
+    test('a chat in no stack is always on screen', () => {
+        expect(isShownIn(tree, undefined, undefined)).toBe(true);
+    });
+});
+
+describe('a ⌘K or ⌘⇧E press is acted on only while fresh', () => {
+    test('a press from the last two seconds is acted on', () => {
+        expect(isFreshAsk(9_000, 10_000)).toBe(true);
+    });
+
+    test('a press the chat slept through is dropped', () => {
+        expect(isFreshAsk(7_000, 10_000)).toBe(false);
+    });
+
+    test('no press at all is nothing', () => {
+        expect(isFreshAsk(null, 10_000)).toBe(false);
     });
 });

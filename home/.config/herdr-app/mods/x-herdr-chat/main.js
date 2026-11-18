@@ -101,7 +101,7 @@ import { sendArgs } from './queued.js';
 import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
 import { SUBMIT_REST_MS, addressIn, submitted } from './send.js';
-import { pidFor, shownThread } from './shown.js';
+import { isFreshAsk, isShownIn, pidFor, shownThread } from './shown.js';
 import { transcriptPath } from './thread.js';
 import { typedMarkdown } from './typed.js';
 
@@ -161,6 +161,8 @@ const AUTO_WIND_DOOR_MS = 10 * 1000;
 const APPLIED_FLASH_MS = 2000;
 // a pick that shows no change by then says so
 const PICK_WAIT_MS = 12000;
+// how often the shown thread's session is looked up again, as the old chat's tick did
+const SHOWN_LOOK_MS = 2000;
 // the operator override changes with no event herdr watches, and a deck that stopped publishing changes nothing: the
 // band's facts that age are read again this often
 const BAND_AGE_MS = 5000;
@@ -353,10 +355,14 @@ export default class Chat extends View {
     pid = null;
     /** the terminal of the thread shown @type {string | null} */
     shownAddress = null;
-    /** ⌘K's last ask (the status bar takes the key and writes the time); undefined before the first draw @type {unknown} */
-    quillAsk = undefined;
+    /** ⌘K's last ask (the status bar takes the key and writes the time) @type {unknown} */
+    quillAsk = null;
     /** ⌘⇧E's last ask @type {unknown} */
-    effortAsk = undefined;
+    effortAsk = null;
+    /** the pid this chat last named in `chat.shown`: its thread on screen, null hidden @type {number | null | undefined} */
+    namedPid = undefined;
+    /** whether the chat was on screen at the last draw */
+    wasShown = false;
     /** @type {string | null} */
     file = null;
     /** the pid the open thread was opened for; undefined before the first @type {number | null | undefined} */
@@ -517,6 +523,10 @@ export default class Chat extends View {
         );
         // a check draws one frame and must read no thread
         if (checking()) return;
+        // a Claude whose session file came after its tab, or a /resume in the same pane: the thread is looked up again
+        cx.timer.every(SHOWN_LOOK_MS, (later) =>
+            this.showThread(this.shownAddress, later),
+        );
         this.ageBand(cx);
         cx.timer.every(BAND_AGE_MS, (later) => this.ageBand(later));
         cx.spawn(async (cx) => {
@@ -538,39 +548,41 @@ export default class Chat extends View {
     /** @param {Context} _cx */
     render(_cx) {
         const t = /** @type {Theme} */ (theme());
-        // ⌘K puts the caret in the quill; ⌘⇧E opens the picker on the effort, a second press applies it. a press older than
-        // 2 s (the chat sat hidden) is dropped, never acted on late; the first draw only takes note of them
-        const quillAsk = shared('chat.quill') ?? null;
-        if (quillAsk !== this.quillAsk) {
-            const isFirst = this.quillAsk === undefined;
-            this.quillAsk = quillAsk;
-            if (!isFirst)
-                _cx.timer.after(50, () => {
-                    if (!this.isPickOpen) this.box?.focus();
-                });
-        }
-        const effortAsk = shared('chat.effort') ?? null;
-        if (effortAsk !== this.effortAsk) {
-            const isFirst = this.effortAsk === undefined;
-            this.effortAsk = effortAsk;
-            if (
-                !isFirst &&
-                typeof effortAsk === 'number' &&
-                Date.now() - effortAsk < 2000
-            )
-                _cx.timer.after(0, (later) => {
-                    const isOpening = !this.isPickOpen;
-                    this.applyEffort(later);
-                    if (isOpening && this.isPickOpen)
-                        this.readPermission(later);
-                });
-        }
-        // the chat finds its own thread, as the old chat did, and names it for the deck's ⌘⇧K
+        // the chat finds its own thread, as the old chat did; on screen it names it for the deck's ⌘⇧K, hidden it names none
+        const { stack, self } = props() ?? {};
+        const isShown = isShownIn(layout(), stack, self);
         const address = shownThread(agents(), focused(), this.shownAddress);
-        if (address !== this.shownAddress) {
+        const isSwitched = address !== this.shownAddress;
+        if (isSwitched) {
             this.shownAddress = address;
             _cx.timer.after(0, (later) => this.showThread(address, later));
         }
+        const named = isShown ? this.pid : null;
+        if (named !== this.namedPid) {
+            this.namedPid = named;
+            _cx.timer.after(0, () => setShared('chat.shown', { pid: named }));
+        }
+        // the keyboard comes to the quill when the chat comes on screen, on a thread switch and on ⌘K: a click on a tab
+        // gives it to that tab's hidden terminal. ⌘⇧E opens the picker on the effort, a second press applies it. a press
+        // the chat slept through is dropped, never acted on late
+        const now = Date.now();
+        const quillAsk = shared('chat.quill') ?? null;
+        const isQuillAsked =
+            quillAsk !== this.quillAsk && isFreshAsk(quillAsk, now);
+        this.quillAsk = quillAsk;
+        if (isShown && (!this.wasShown || isSwitched || isQuillAsked))
+            _cx.timer.after(50, () => {
+                if (!this.isPickOpen) this.box?.focus();
+            });
+        this.wasShown = isShown;
+        const effortAsk = shared('chat.effort') ?? null;
+        if (effortAsk !== this.effortAsk && isFreshAsk(effortAsk, now))
+            _cx.timer.after(0, (later) => {
+                const isOpening = !this.isPickOpen;
+                this.applyEffort(later);
+                if (isOpening && this.isPickOpen) this.readPermission(later);
+            });
+        this.effortAsk = effortAsk;
         const look = lookOf(shared(LOOK_KEY));
         const lookKey = [
             look.size,
@@ -2130,7 +2142,7 @@ export default class Chat extends View {
      * @param {string | null} address @param {Context} cx
      */
     showThread(address, cx) {
-        cx.spawn(async () => {
+        cx.spawn(async (cx) => {
             let pid = null;
             if (address)
                 try {
@@ -2147,11 +2159,14 @@ export default class Chat extends View {
                         sessions.join(','),
                     ]);
                     pid = pidFor(address, ps.stdout, sessions);
-                } catch {}
+                } catch {
+                    // a read that failed says nothing: the thread shown stays, the next look tries again
+                    return;
+                }
             if (address !== this.shownAddress || pid === this.pid) return;
             this.pid = pid;
-            setShared('chat.shown', { pid });
             this.wake();
+            cx.notify();
         });
     }
 
@@ -2530,7 +2545,7 @@ export default class Chat extends View {
      * @param {string} text
      */
     setQuill(box, text) {
-        box.set_value(text);
+        this.drafts.put(box, this.file, text);
         this.typedNow = text;
         this.typedBefore = text;
     }
