@@ -1,7 +1,9 @@
 ---
-status: frozen
+status: parked
 until: 2026-11-16
 ---
+
+owner: clio wing 1, the performance topic; parked on dima's o70 (2026-11-01), the plugin off since 2026-10-05; a revival is his word
 
 # jev compaction — fast-jev-compaction on clio checkpoints, vs the built-in summary
 
