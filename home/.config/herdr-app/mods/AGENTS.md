@@ -21,6 +21,7 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 - hot reload is smooth or not done: at once, no flicker, no shifted tabs, no lost text
 - he lives in the Chat view: a thing he must see or click is drawn there, never only in Terminal view
 - a ux fix he wants herdr-wide lands its rule in `herdr/PRODUCT.md` § the values the same turn; later builds follow it
+- state: `x:guide-code` § state
 
 ## for a sixth sense
 
@@ -50,4 +51,4 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 
 - a `hc run --no-parent` thread has no tab until `skills/herdr/scripts/thread-tab.ts` gives it one
 - vim normal mode has no screen marker: empty Claude's prompt via `clearKeys` (chatter `queued.js`)
-- a helper green in vitest can lack a herdr global (`TextEncoder`); `check` renders one frame: after a landing, shoot a view that ran it
+- a helper green in vitest can lack a herdr global (`TextEncoder`); `check` renders one frame: shoot a view that ran it

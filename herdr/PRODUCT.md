@@ -60,6 +60,7 @@ dima's words:
   - one block, one mod: each part he sees (antenna, glide, orbit, the chat) is its own mod, drawn whole in whatever block holds it; where it sits is the layout json's alone
   - a part reads its facts from one shared store (`x`'s record as json, the stash's files, `shared()`), never from a sibling part
   - each part draws a narrow form below its min width, so a move to a thin column needs no code
+- **every machine follows one state pattern**: one owner per fact, named states, changes only through events, a timer that dies with its state, a view drawn from the one owned state; `x:guide-code` § state holds the rules, `docs/adr/0002-one-state-pattern.md` the why (FRM-648)
 - **no ring on a pressed or focused button**: hover is its only feedback; a text field keeps its focus ring
 - **a tooltip only on an action with no text** (an emoji or icon button), a few words naming what it does; never one that repeats the text in view
 
