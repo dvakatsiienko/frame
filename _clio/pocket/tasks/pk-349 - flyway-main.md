@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-18T20:31:00Z'
+updated_date: '2026-11-18T20:34:00Z'
 labels:
   - s
   - clio-main
@@ -1119,4 +1119,9 @@ PK-349:W1199 (2026-11-18 22:19, dima): FRM-590 — what does this ticket do in t
 PK-349:W1200 (2026-11-18 22:19, dima): I resumed speak v2 (🎙️ wispr: «speak EV2») with the wing. I am not glad with today's results: we only solved Evergreen and prepared my job-application lookout spot. I planned more: finish the speak recipe refresh with wing 1, refresh Fable 5 knowledge of the fleet, and refresh the designer. It is postponed to tomorrow.
 
 22:31 PK-349:W1200 (2026-11-18 22:19, dima): I resumed speak EV2 with the wing. I am not glad with today's results: we only solved Evergreen and prepared my job-application lookout spot. I planned more: finish the speak recipe refresh with wing 1, refresh Fable 5 knowledge of the fleet, and refresh the designer. It is postponed to tomorrow.
+
+22:34 perf + FRM-590 (22:33):
+PK-349:W1201 (2026-11-18 22:33, dima): perf (FRM-555 test speed): closed board and 60 s poll don't make tests wait longer. Tests run on a fake clock, so an hour of test time passes instantly; a slower poll only means fewer ticks to compute. codie measured one hour-long test going from 2.17 to 0.18 CPU seconds, but nobody has measured the whole suite. The real risk is weaker coverage: fewer tests would run the live 4 s poll. Nothing gets built until codie measures the whole suite and lists the tests that would lose that coverage.
+PK-349:W1202 (2026-11-18 22:33, dima): perf: I agree with Wade's decision to implement something that is worth it. Ask codie to measure properly, consult Crow and Wink 1, and decide what to do in this area, or to do nothing at all.
+PK-349:W1203 (2026-11-18 22:33, dima): FRM-590: I think it is nice to help. Evolve yourself two times. If you think it is still worth it and will help, I approve it: move it to the CLI chunk sequence from CC mods.
 <!-- SECTION:NOTES:END -->
