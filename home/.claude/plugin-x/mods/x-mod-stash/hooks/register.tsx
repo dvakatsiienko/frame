@@ -3961,7 +3961,12 @@ async function followPlans($: EngineInterface) {
             ...(s.ticket ? { ticket: s.ticket } : {}),
         }));
         const items: LaneItem[] = steps.length ? steps : lane.items;
-        const current = items.findIndex((x) => !x.isDone);
+        // «we are here» is the first open step of the ticket the card runs; an older chunk's open close line is passed
+        // over (clio's ruling, FRM-649 step 132), the plan's first open line when none of its steps carry that ticket
+        const runs = items.some((x) => x.ticket && x.ticket === lane.ticket);
+        const current = items.findIndex(
+            (x) => !x.isDone && (!runs || x.ticket === lane.ticket),
+        );
         const at = current < 0 ? items.length : current;
         const isSame =
             !lane.isPlanGone &&

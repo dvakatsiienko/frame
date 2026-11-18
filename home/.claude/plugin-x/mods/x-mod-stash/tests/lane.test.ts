@@ -1793,6 +1793,29 @@ test('a tick in the plan file moves the card to the first unticked line on the n
     expect(kept(w)[0]?.current).toBe(2);
 });
 
+// FRM-649 step 132 (clio's ruling, 20:00): «we are here» is the first open step of the ticket the card runs; an older
+// chunk's open close line stays open and is passed over
+for (const [name, title, at] of [
+    ['the ticket the card runs', 'mods — FRM-9 the idle poll', 2],
+    ['its plan when the title runs no ticket', 'mods lane', 0],
+] as const)
+    test(`a plan card points at the first open step of ${name}`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        plant(w, [
+            [' ', 'FRM-1', 'FRM-1 reviewed and closed'],
+            ['x', 'FRM-9', 'measure first'],
+            [' ', 'FRM-9', 'the idle poll'],
+        ]);
+        await create($, {
+            items: undefined,
+            plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+            title,
+        });
+        await poll(w);
+        expect(kept(w)[0]?.current).toBe(at);
+    });
+
 test('a plan with a step line holding no ticket id is refused, naming that line', async ($, on) => {
     const w = world(on);
     await start($);
