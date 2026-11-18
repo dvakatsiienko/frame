@@ -2452,19 +2452,6 @@ async function roundsLocked<T>(
         await $.process.run(['rmdir', lock]);
     }
 }
-// the chunk a lane member is on: its lane plan's first open step x does not hold under «## not greenlit», as the glide
-// card reads it; a read x failed keeps the last good one. a lane with no plan file keys on x's record (`gone`); a plan
-// with no current chunk keys on nothing (clio, 20:42), so a next chunk's round 1 never lands on the summon's ticket
-async function chunkTicket($: EngineInterface, home: string, lane: string) {
-    const path = `${home}/.local/state/x/lanes/${lane}/lane-plan.md`;
-    const read = await readPlanSteps($, path);
-    if ('state' in read && read.state === 'gone') return 'gone';
-    const steps =
-        'steps' in read
-            ? read.steps
-            : (planParses.get(path)?.steps as PlanSteps | undefined);
-    return steps?.find((s) => !s.done && !s.held)?.ticket;
-}
 async function laneRoundLine(
     $: EngineInterface,
     e: Record<string, unknown>,
@@ -2478,11 +2465,11 @@ async function laneRoundLine(
     if (self?.role !== 'codie' || !self.lane) return undefined;
     if (await isToCoordinator($, to)) return undefined;
     const home = (await $.env.get('HOME')) ?? '';
-    // the plan's chunk, so a next chunk starts at 1 though x's record keeps the summon's ticket
-    const chunk = await chunkTicket($, home, self.lane);
-    if (chunk === undefined)
-        return `round ${round.n} on ${round.sha} not counted (the lane plan names no current chunk): resend the same line once it does`;
-    const lane = `${self.lane} | ${chunk === 'gone' ? (self.ticket ?? '') : chunk}`;
+    // the lane record's ticket, as the card reads it: each chunk opens with clio's dispatch, which moves it (FRM-617 exit
+    // 4), where a plan's first open step could be an old chunk's leftover (a false «round 9» on FRM-605, FRM-649)
+    if (!self.ticket)
+        return `round ${round.n} on ${round.sha} not counted (x's record names no ticket): resend the same line once clio's dispatch writes one`;
+    const lane = `${self.lane} | ${self.ticket}`;
     const now = await $.clock.now();
     // a count that could not be taken says so: a silent miss is a cap nobody hears
     const taken = await roundsLocked($, home, async () => {
@@ -3661,6 +3648,92 @@ async function cliosWaiting($: EngineInterface) {
     return waiting;
 }
 
+// FRM-649 (FRM-616:W10): one ask counter for the fleet, `ask-counter` in $.store, read and bumped under a lock dir beside
+// the shelf (the joins' rule: no compare-and-swap exists); with no `asks:` key in the store no thread holds an open ask,
+// so the count starts at 1 again, past any id this thread still draws. undefined: the lock stayed held; a host that runs
+// no process (a test world) mints unlocked
+const ASK_COUNTER = 'ask-counter';
+async function mintAsks($: EngineInterface, count: number, drawn: string[]) {
+    const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';
+    const lock = `${home}/.claude/shelf/ask-counter.lock`;
+    let isLocked = true;
+    for (let tries = 0; ; tries++) {
+        const took = await takeJoinLock($, lock).catch(() => undefined);
+        if (took === undefined) {
+            isLocked = false;
+            break;
+        }
+        if (took) break;
+        if (tries === 20) return undefined;
+        // a process sleep spends none of the hook's 10 s budget, where $.clock.sleep would (engine.md)
+        await $.process.run(['sleep', '0.1']);
+    }
+    try {
+        const isHeld = (await $.store.keys()).some((k) => k.startsWith(PREFIX));
+        const kept = (await $.store.get(ASK_COUNTER).catch(() => undefined)) as
+            | { next?: unknown }
+            | undefined;
+        let next = isHeld && typeof kept?.next === 'number' ? kept.next : 1;
+        while (
+            Array.from({ length: count }, (_, i) => `o${next + i}`).some((id) =>
+                drawn.includes(id),
+            )
+        )
+            next++;
+        await $.store.set(ASK_COUNTER, { next: next + count });
+        return next;
+    } finally {
+        if (isLocked) await $.process.run(['rmdir', lock]);
+    }
+}
+
+// FRM-649 (FRM-616:W36–W38): a lane card's title is x's lane record, «<scope> — <what>», read once per dispatch of its
+// codie (the record's id, time and ticket), never each poll; title undefined when x has no record or it names no what;
+// sixth: the sixth sense x's record names, linked beside the codie
+type LaneShown = { title?: string; sixth?: string };
+const laneShowns = new Map<string, LaneShown & { key: string }>();
+async function laneShown(
+    $: EngineInterface,
+    codie: ThreadRecord & { lane: string },
+): Promise<LaneShown> {
+    const key = `${codie.sessionId}|${codie.at ?? 0}|${codie.ticket ?? ''}`;
+    const kept = laneShowns.get(codie.lane);
+    if (kept?.key === key) return kept;
+    const run = await $.process
+        .run(['x', 'lane', 'show', codie.lane, '--json'], {
+            cwd: await $.env.get('HOME'),
+            timeoutMs: 4000,
+        })
+        .catch(() => undefined);
+    let title: string | undefined;
+    let sixth: string | undefined;
+    try {
+        const record = (
+            JSON.parse(run?.stdout ?? '') as {
+                data?: { scope?: unknown; what?: unknown; members?: unknown };
+            }
+        ).data;
+        if (
+            run?.exitCode === 0 &&
+            record?.members &&
+            typeof record.members === 'object'
+        )
+            sixth = Object.entries(record.members).find(
+                ([, role]) => role === 'sixth-sense',
+            )?.[0];
+        if (
+            run?.exitCode === 0 &&
+            typeof record?.scope === 'string' &&
+            typeof record.what === 'string' &&
+            record.scope &&
+            record.what
+        )
+            title = `${record.scope} — ${record.what}`;
+    } catch {}
+    laneShowns.set(codie.lane, { key, sixth, title });
+    return { sixth, title };
+}
+
 // a dispatch opens its lane's card (FRM-602): x's record of a live codie names the lane, whose plan file holds the steps,
 // and the clio that dispatched it, whose session opens the card; a record with no dispatching clio (a summon's) opens
 // none. a lane any card ever followed opens none again, and the newest live codie dispatched into a lane holds its link
@@ -3700,6 +3773,31 @@ async function openDispatchedLanes($: EngineInterface) {
             (l) => l.plan?.replace(/^~(?=\/)/, home) === path,
         );
         const open = onPlan.find((l) => !l.endedAt);
+        const shown = await laneShown($, codie);
+        if (open && shown.title && open.title !== shown.title)
+            await orbitCall(
+                $,
+                { act: 'edit', id: open.id, op: 'glide', title: shown.title },
+                false,
+            );
+        const sixth = shown.sixth;
+        if (
+            open &&
+            sixth &&
+            open.linkedIds?.['sixth-sense'] !== sixth &&
+            live.some((r) => r.base.sid === sixth)
+        )
+            await orbitCall(
+                $,
+                {
+                    act: 'link',
+                    id: open.id,
+                    op: 'glide',
+                    role: 'sixth-sense',
+                    session: sixth,
+                },
+                false,
+            );
         if (open) {
             if (bare(open.members.codie ?? '') !== bare(member.base.name))
                 await orbitCall(
@@ -3719,10 +3817,12 @@ async function openDispatchedLanes($: EngineInterface) {
         const text = await $.fs.read(path).catch(() => undefined);
         if (text === undefined) continue;
         const title =
+            shown.title ||
             text
                 .match(/^# (.+)$/m)?.[1]
                 ?.replace(/\s+—\s+lane plan\s*$/, '')
-                .trim() || codie.lane;
+                .trim() ||
+            codie.lane;
         const made = await orbitCall(
             $,
             { act: 'create', op: 'glide', plan, title },
@@ -7702,15 +7802,31 @@ async function orbitCall(
             deny: 'orbit plan: step is your lane step now, a whole number from 0, as your brief numbers it',
         };
     const lines = await readNumber($, 'lines');
+    const asked =
+        input.op === 'add' && Array.isArray(input.asks) ? input.asks.length : 0;
     const op = await inMarking(async () => {
+        const current = await currentOrbit($);
+        // an add's ids come from the fleet's one counter; the thread's own `next` keeps counting its assumptions
+        const minted = asked
+            ? await mintAsks(
+                  $,
+                  asked,
+                  current.asks.map((a) => a.id),
+              )
+            : current.next;
+        if (minted === undefined)
+            return {
+                deny: 'orbit add: the ask counter is held by another thread past 2 s; add the ask again in a moment',
+            };
         const made = orbitOp(
-            await currentOrbit($),
+            { ...current, next: minted },
             input,
             isTurn,
             lines,
             isAmended,
         );
         if ('deny' in made) return made;
+        if (asked) made.orbit = { ...made.orbit, next: current.next };
         await saveOrbit($, made.orbit);
         // a follow asks a new question: his tick on the old one is no longer his word on it (S3); one step with the save, so
         // a press lands wholly before both or after both

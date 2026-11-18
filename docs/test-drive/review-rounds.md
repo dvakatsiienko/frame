@@ -149,6 +149,10 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-18 · FRM-617 · wisphunter, spec-axis card (Opus 5.5) · 3; 3 real fixed (`lane show` dropped a second member of one role, took a sixth sense's stale ticket by sid order, the joiner compare missed a name with no space left) · useful
 - 2026-11-18 · FRM-617 · wisphunter, plain card (Opus 5.5) · 5; 3 real fixed (the two `lane show` ones again, two lanes sharing an old member name swapped asks on the card), 1 not reproduced (a dispatch wiping a coordinator: the fixture kept it with and without the fix), 1 nit fixed (invisible literal joiners) · useful
 - 2026-11-18 · FRM-617 · macroscope, budget · 0 in the chunk's files, 1 in the herdr lane's `script/herdr-mods-land.ts` · noise
+- 2026-11-18 · FRM-622 · wisphunter, spec-axis card (Opus 5.5) · 3; 3 real fixed (a redirected `hc run` let another command's json claim a terminal, a kill by name read a stale address, a caller could hand `childEnv` the real HOME with every test green) · useful
+- 2026-11-18 · FRM-622 · wisphunter, plain + security card (Opus 5.5) · 3; 3 real fixed by one rework (a `false &&` or `; echo` forge, a `--bg` past `--`, the stale name), the output read replaced by a `lead=` label · useful
+- 2026-11-18 · FRM-622 · macroscope, budget · 2; 1 real fixed (the same forge, high), 1 in the herdr lane's `x-herdr-chat/shots.js:64` · useful
+- 2026-11-18 · FRM-622 · sixth sense · clean at round 1 on 82a37fe2, 12 probes, 0 broke; its one find a doc gap (mods `AGENTS.md` § mods:live named no sandbox HOME), fixed as a rider
 
 ## verdict
 - 2026-11-12 · frame#172, FRM-572 chunk 2 (cli wisps): clean at 3 rounds · wishkeeper found 1 high (a UTC lock stamp read every live holder as gone), sixth sense round 2 found 1 P1 (a `ps` that did not run read as gone); both fixed, red-proven · ci reviewer: not named

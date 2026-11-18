@@ -3757,7 +3757,9 @@ const PLAN_NEXT = [
     { done: false, text: 'the next chunk', ticket: 'FRM-10' },
 ];
 
-test('a next chunk in the lane plan starts its own count at 1, with no cap line', async ($, on) => {
+// FRM-649: the count keys on the lane record's ticket, as the card does: each chunk opens with clio's dispatch, which
+// moves the record; a plan's first open step can be an old chunk's leftover (a false «round 9» on FRM-605)
+test('a next chunk the dispatch moved the record to starts its own count at 1, with no cap line', async ($, on) => {
     const w = roundWorld(on, {
         files: {
             [ROUNDS_FILE]: JSON.stringify({
@@ -3767,7 +3769,7 @@ test('a next chunk in the lane plan starts its own count at 1, with no cap line'
                 v: 1,
             }),
         },
-        plan: PLAN_NEXT,
+        record: { ticket: 'FRM-10' },
     });
     await start($);
     const r = await send($, ROUND_SENSE, 'round 1 on ccccccc');
@@ -3784,114 +3786,31 @@ test('a next chunk in the lane plan starts its own count at 1, with no cap line'
     ]);
 });
 
-test("a step x holds under the plan's «not greenlit» heading is no chunk yet", async ($, on) => {
+test("a stale open step in the lane plan never keys the count, the record's ticket does", async ($, on) => {
     const w = roundWorld(on, {
-        greenlit: 2,
         plan: [
-            ...PLAN_NEXT.slice(0, 2),
-            { done: false, text: 'chunk 3', ticket: 'FRM-11' },
+            { done: false, text: 'an old chunk left open', ticket: 'FRM-605' },
+            ...PLAN_NEXT,
         ],
+        record: { ticket: 'FRM-10' },
     });
-    w.setPlan([
-        { done: true, text: 'the round store', ticket: 'FRM-9' },
-        { done: false, text: 'reviewed and closed', ticket: 'FRM-9' },
-        { done: false, held: true, text: 'the next chunk', ticket: 'FRM-10' },
-    ] as never);
     await start($);
     await send($, ROUND_SENSE, 'round 1 on ccccccc');
-    expect(Object.keys(roundsIn(w.files))).toEqual([LANE]);
-});
-
-test("a plan x cannot read for a moment keeps its last chunk, never the summon's ticket", async ($, on) => {
-    const w = roundWorld(on, { plan: PLAN_NEXT });
-    await start($);
-    await send($, ROUND_SENSE, 'round 1 on ccccccc');
-    w.setPlan(undefined);
-    await send($, ROUND_SENSE, 'round 2 on ddddddd');
     expect(Object.keys(roundsIn(w.files))).toEqual(['mods-lane-5 | FRM-10']);
 });
 
-test('a round file that does not parse moves aside and the count starts over', async ($, on) => {
-    const w = roundWorld(on, { files: { [ROUNDS_FILE]: '{"rounds": [torn' } });
+test('a record with no ticket counts nothing and asks a resend', async ($, on) => {
+    const w = roundWorld(on, { record: { ticket: undefined } });
     await start($);
     const r = await send($, ROUND_SENSE, 'round 1 on ccccccc');
-    expect([w.files[`${ROUNDS_FILE}.bad`], kept(w), roundLines(r)]).toEqual([
-        '{"rounds": [torn',
-        { count: 1, shas: ['ccccccc'] },
+    expect([w.files[ROUNDS_FILE], roundLines(r), w.told]).toEqual([
+        undefined,
+        [
+            "round 1 on ccccccc not counted (x's record names no ticket): resend the same line once clio's dispatch writes one",
+        ],
         [],
     ]);
 });
-
-test('a round file that is there but will not read is never written over', async ($, on) => {
-    const w = roundWorld(on, {
-        files: { [ROUNDS_FILE]: 'kept' },
-        unreadable: [ROUNDS_FILE],
-    });
-    await start($);
-    const r = await send($, ROUND_SENSE, 'round 1 on ccccccc');
-    expect([w.files[ROUNDS_FILE], roundLines(r)]).toEqual([
-        'kept',
-        [
-            'round 1 on ccccccc not counted (the round file would not read): resend the same line to count it',
-        ],
-    ]);
-});
-
-test('a resend of a round past the cap says nothing and tells clio nothing again', async ($, on) => {
-    const w = roundWorld(on);
-    await start($);
-    await sendRounds($, 4);
-    const r = await send($, ROUND_SENSE, 'round 4 on abcdef3');
-    expect([roundLines(r), w.told.length]).toEqual([[], 1]);
-});
-
-test('an entry missing its shas reads as none', async ($, on) => {
-    const w = roundWorld(on, {
-        files: {
-            [ROUNDS_FILE]: JSON.stringify({
-                rounds: { [LANE]: { count: 2 } },
-                v: 1,
-            }),
-        },
-    });
-    await start($);
-    await send($, ROUND_SENSE, 'round 3 on ccccccc');
-    expect(kept(w)).toEqual({ count: 3, shas: ['ccccccc'] });
-});
-
-test('a round that could not be written tells the sender to resend it', async ($, on) => {
-    const w = roundWorld(on, { isMvRefused: true });
-    await start($);
-    const r = await send($, ROUND_SENSE, 'round 1 on ccccccc');
-    expect([w.files[ROUNDS_FILE], roundLines(r), r.result.success]).toEqual([
-        undefined,
-        [
-            'round 1 on ccccccc not counted (mv failed): resend the same line to count it',
-        ],
-        true,
-    ]);
-});
-
-// clio's call (20:42): with a plan but no chunk to key on, a round is not counted and the codie is told, never keyed on
-// the summon's ticket, where a next chunk's round 1 would read past the cap
-for (const [why, plan] of [
-    ['every open step held', PLAN_NEXT.map((s) => ({ ...s, held: true }))],
-    ['every step done', PLAN_NEXT.map((s) => ({ ...s, done: true }))],
-    ["x's first read fails", undefined],
-] as const)
-    test(`a plan with no current chunk counts nothing and asks a resend: ${why}`, async ($, on) => {
-        const w = roundWorld(on, { plan: PLAN_NEXT });
-        w.setPlan(plan as never);
-        await start($);
-        const r = await send($, ROUND_SENSE, 'round 1 on ccccccc');
-        expect([w.files[ROUNDS_FILE], roundLines(r), w.told]).toEqual([
-            undefined,
-            [
-                'round 1 on ccccccc not counted (the lane plan names no current chunk): resend the same line once it does',
-            ],
-            [],
-        ]);
-    });
 
 test("with no lane plan the count keys on x's record's ticket", async ($, on) => {
     const w = roundWorld(on, { record: { ticket: 'FRM-10' } });

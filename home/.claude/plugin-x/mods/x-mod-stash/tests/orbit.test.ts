@@ -4737,11 +4737,18 @@ async function switchThread($: Engine, w: Clocked, ui: Board, awayMs = 0) {
 
 // each row its own ask or lane id: module memory survives between tests
 let switchRow = 2000;
-const orbitSeed = () => ({ asks: [], next: ++switchRow, turns: 1 });
+// a row's own ask ids: module memory outlives a test, so its ask takes an id no other row used, through the fleet counter
+// (FRM-649) when the row's store is passed
+const orbitSeed = (store?: Map<string, unknown>) => {
+    const seed = { asks: [], next: ++switchRow, turns: 1 };
+    store?.set('ask-counter', { next: seed.next });
+    store?.set('asks:another-thread', { asks: ['its ask'], items: [] });
+    return seed;
+};
 
 async function askBoxOnBoard($: Engine, on: On) {
     const w = world(on);
-    const seed = orbitSeed();
+    const seed = orbitSeed(w.store);
     const state = keptState(on, { orbit: seed });
     await start($);
     const ui = await board($);
@@ -4842,7 +4849,7 @@ for (const [when, beforeMs] of [
 
     test(`an ask's save $.state refused ${when} draws on across two switches, and lands at the next chance`, async ($, on) => {
         const w = world(on);
-        const seed = orbitSeed();
+        const seed = orbitSeed(w.store);
         const state: Record<string, unknown> = { orbit: seed };
         let version = 0;
         let isDown = false;
@@ -5099,9 +5106,9 @@ test('a text a remount held over never draws again once the store took it and th
     expect(boxes.map((n) => n.props.value)).toEqual(['']);
 });
 
-function refusingOrbit(on: On) {
+function refusingOrbit(on: On, store: Map<string, unknown>) {
     const down = { isDown: false };
-    const state: Record<string, unknown> = { orbit: orbitSeed() };
+    const state: Record<string, unknown> = { orbit: orbitSeed(store) };
     let version = 0;
     on('state.get', (_$, e) => ({
         value: { value: state[e.key], version: e.key in state ? ++version : 0 },
@@ -5116,7 +5123,7 @@ function refusingOrbit(on: On) {
 
 test('a held text that lands keeps drawing, and more words typed over it never reset the box', async ($, on) => {
     const w = world(on);
-    const { down, state } = refusingOrbit(on);
+    const { down, state } = refusingOrbit(on, w.store);
     const id = `o${(state.orbit as { next: number }).next}`;
     await start($);
     const ui = await board($);
@@ -5138,7 +5145,7 @@ test('a held text that lands keeps drawing, and more words typed over it never r
 
 test('a held text the store refused three times leaves the box for the offer, and never draws over new words', async ($, on) => {
     const w = world(on);
-    const { down, state } = refusingOrbit(on);
+    const { down, state } = refusingOrbit(on, w.store);
     const id = `o${(state.orbit as { next: number }).next}`;
     await start($);
     const ui = await board($);
@@ -5260,7 +5267,7 @@ test('a reloaded module takes back what he left, and his return offers it over a
 /* FRM-531 sixth sense, round 1 */
 test('a second steer refused after a sent one cleared keeps drawing, and lands at the next chance', async ($, on) => {
     const w = world(on);
-    const { down, state } = refusingOrbit(on);
+    const { down, state } = refusingOrbit(on, w.store);
     const id = `o${(state.orbit as { next: number }).next}`;
     await start($);
     const ui = await board($);
@@ -5314,8 +5321,8 @@ test('a text sent before he left is not offered back over a newer steer', async 
 });
 
 test('a text Enter saved, its timer dropped by a reload, is not offered beside itself', async ($, on) => {
-    world(on);
-    const seed = orbitSeed();
+    const { store } = world(on);
+    const seed = orbitSeed(store);
     const state = keptState(on, { orbit: seed });
     await start($);
     const ui = await board($);
@@ -5352,8 +5359,8 @@ for (const [kind, setUp] of Object.entries(SWITCH_KINDS))
     });
 
 test("a return's first draw ahead of a slow save at the detach reads every word", async ($, on) => {
-    world(on);
-    const seed = orbitSeed();
+    const { store } = world(on);
+    const seed = orbitSeed(store);
     const state: Record<string, unknown> = { orbit: seed };
     let version = 0;
     let isHeld = false;
@@ -5510,4 +5517,76 @@ test('of a herdr tick and his untick read together, the untick wins', async ($, 
         press({ at: at + 1, id: 'o1', verdict: 'untick' });
     await say($, 'go on');
     expect(joined(w.contexts).join('\n')).not.toMatch(/o1 🛎️/);
+});
+
+// FRM-649 exit 1 (FRM-616:W10): one ask counter for the fleet, minted under a lock dir beside the shelf, so two threads
+// asking at once never both hand out o1; it starts at 1 again once no thread holds an open ask
+const lockDirs = (on: On, isHeld = false) => {
+    const dirs = new Set<string>(
+        isHeld ? ['/home/.claude/shelf/ask-counter.lock'] : [],
+    );
+    on('process.run', (_$, e) => {
+        const [cmd, path = ''] = e.argv;
+        const isTaken = cmd === 'mkdir' && !dirs.has(path);
+        if (isTaken) dirs.add(path);
+        if (cmd === 'rmdir') dirs.delete(path);
+        return {
+            value: {
+                exitCode: cmd === 'mkdir' && !isTaken ? 1 : 0,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout: '',
+            },
+        };
+    });
+    return dirs;
+};
+
+test("an ask takes the fleet's next id while another thread holds an open one", async ($, on) => {
+    const w = world(on);
+    const dirs = lockDirs(on);
+    w.store.set('ask-counter', { next: 5 });
+    w.store.set('asks:other-thread', {
+        asks: ['its ask'],
+        items: [{ id: 'o4' }],
+    });
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes'], ['trash the probe', 'yes']);
+    expect([
+        await asksShown(ui),
+        w.store.get('ask-counter'),
+        dirs.size,
+    ]).toEqual([['o5', 'o6'], { next: 7 }, 0]);
+});
+
+test('with no open ask anywhere the count starts at 1 again', async ($, on) => {
+    const w = world(on);
+    lockDirs(on);
+    w.store.set('ask-counter', { next: 9 });
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    expect(await asksShown(ui)).toEqual(['o1']);
+});
+
+test('a restart skips an id this thread still draws, a resolved ask dimmed for one more turn', async ($, on) => {
+    world(on);
+    lockDirs(on);
+    await start($);
+    const ui = await board($);
+    await say($, 'go');
+    await add($, ['push FRM-1', 'yes']);
+    await orbit($, { ids: ['o1'], op: 'resolve', words: { o1: 'landed' } });
+    await add($, ['rename the band', 'later']);
+    expect(await asksShown(ui)).toEqual(['o1', 'o2']);
+});
+
+test('a counter lock another thread holds refuses the add, never mints a local id', async ($, on) => {
+    world(on);
+    lockDirs(on, true);
+    await start($);
+    const r = (await add($, ['push FRM-1', 'yes'])) as { deny?: string };
+    expect(r.deny).toMatch(/ask counter is held/);
 });

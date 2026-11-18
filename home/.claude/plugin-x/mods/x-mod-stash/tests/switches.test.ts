@@ -217,7 +217,16 @@ const SCENARIOS: Record<string, Scenario> = {
         arm: async ($) => {
             await endTurn($);
         },
-        fire: (_$, w) => w.clock.advance(50 * MIN),
+        // the ping lands 50 min after the turn's end: settle on its line a minute at a time, each its own call, so no one
+        // advance runs past the 10 s hook budget at load (FRM-649: 5 min steps still did at load 25)
+        fire: async (_$, w) => {
+            for (
+                let i = 0;
+                i < 60 && !w.lines.some((l) => /^turn: .*keep-hot/.test(l));
+                i++
+            )
+                await w.clock.advance(MIN);
+        },
         trace: /^turn: .*keep-hot/,
     },
     'stash.joins': {
