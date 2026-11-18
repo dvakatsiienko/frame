@@ -35,6 +35,7 @@ function main(home: string, since: string) {
         dispatchQueue(home),
         nestedTickets(home),
         script(scripts, 'close net', 'close-net', []),
+        script(scripts, 'tails', 'tails-check', []),
         script(scripts, 'blueprint drift', 'blueprint-drift', [
             '--since',
             since,

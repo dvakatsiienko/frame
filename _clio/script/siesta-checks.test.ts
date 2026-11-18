@@ -20,6 +20,7 @@ const CHECKS = [
     'flyway-done',
     'wish-cover',
     'close-net',
+    'tails-check',
     'blueprint-drift',
     'helper-count',
 ];
@@ -126,6 +127,7 @@ describe('siesta-checks', () => {
             '## dispatch queue',
             '## nested tickets',
             '## close net',
+            '## tails',
             '## blueprint drift',
             '## helper count',
             '## audit-codie',
