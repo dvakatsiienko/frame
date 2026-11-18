@@ -47,7 +47,7 @@ export function stampBody(
             ? `✍️ signed ${today} · body ${hash}`
             : kind === 're-signed'
               ? `✍️ re-signed ${today} — ${what} · body ${hash}`
-              : `✏️ changed ${today} — ${what}, no re-sign: tiny · body ${hash}`;
+              : `✏️ changed ${today} — ${what}${/re-sign/.test(what) ? '' : ', no re-sign: tiny'} · body ${hash}`;
     const signed = body.includes(`\n${HEADING}`)
         ? body.slice(above.length).trimEnd()
         : `${HEADING}\n`;

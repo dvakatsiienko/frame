@@ -53,4 +53,16 @@ describe('stampBody', () => {
             ),
         ).toContain('✏️ changed 2026-11-06 — a typo, no re-sign: tiny · body ');
     });
+
+    test('a change that names its own re-sign is never called tiny', () => {
+        expect(
+            stampBody(
+                'b\n\n## signed\n',
+                'changed',
+                'scope grows: a re-sign grill before its build',
+                '2026-11-18',
+                hashOf,
+            ),
+        ).not.toContain('tiny');
+    });
 });
