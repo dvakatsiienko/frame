@@ -101,7 +101,7 @@ import { sendArgs } from './queued.js';
 import { createQuills } from './quill.js';
 import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
-import { addressIn, submitted } from './send.js';
+import { addressIn, sendBlocked, submitted } from './send.js';
 import { asksActedOn, isShownIn, pidFor, shownThread } from './shown.js';
 import { transcriptPath } from './thread.js';
 import { typedMarkdown } from './typed.js';
@@ -2461,6 +2461,9 @@ export default class Chat extends View {
         const text = box.value().trim();
         if (!text || !file) return;
         if (!this.address) return this.say(NOT_IN_HERDR, cx);
+        // checked before the mark comes off, so a refused push keeps his words marked
+        const blocked = sendBlocked(this.address, typingInto);
+        if (blocked) return this.say(blocked, cx);
         cx.spawn(async (cx) => {
             const why = await this.magic.release(file, this.joins);
             if (this.file !== file) return;
@@ -2481,6 +2484,8 @@ export default class Chat extends View {
     send(text, note, cx) {
         const { address, file } = this;
         if (!address) return;
+        const blocked = sendBlocked(address, typingInto);
+        if (blocked) return this.say(blocked, cx);
         // what he typed while a mark was taken back stays: only the words sent leave
         this.quills.apply(file, { said: text, type: 'sent' });
         this.say(note, cx);

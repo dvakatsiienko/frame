@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { addressIn, submitted } from './send.js';
+import { addressIn, sendBlocked, submitted } from './send.js';
 
 describe('the thread a message goes to is the one its Claude runs in', () => {
     test('the address is read from the process line herdr started it with', () => {
@@ -84,5 +84,18 @@ describe('Enter acts on what he typed, Shift+Enter keeps writing', () => {
             act: null,
             text: '',
         });
+    });
+});
+
+// the review's W72: a send during a model pick typed into Claude Code's picker, and the effort changed for every model
+describe('a send waits while a pick types into the same thread (FRM-628)', () => {
+    test('a model, effort or permission pick typing there: the words stay, and he is told why', () => {
+        expect(sendBlocked('t1', new Set(['t1']))).toBe(
+            'A switch is typing into this thread: send again in a moment',
+        );
+    });
+
+    test('a pick typing into another thread holds nothing here', () => {
+        expect(sendBlocked('t1', new Set(['t2']))).toBeNull();
     });
 });

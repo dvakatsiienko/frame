@@ -55,3 +55,13 @@ function oneBreakMoreAt(value, before) {
         ? at
         : -1;
 }
+
+/**
+ * why a send must wait: a pick typing its keys into the thread would get his words mixed into Claude Code's picker
+ * @param {string} address the thread's terminal @param {Set<string>} typingInto the terminals a pick types into
+ * @returns {string | null}
+ */
+export const sendBlocked = (address, typingInto) =>
+    typingInto.has(address)
+        ? 'A switch is typing into this thread: send again in a moment'
+        : null;
