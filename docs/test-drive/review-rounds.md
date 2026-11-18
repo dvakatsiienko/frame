@@ -146,6 +146,9 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-18 · FRM-643, mods-lane-7 quick lane on main (15acb8fd..1b0ee344), the lane card's member asks a read-only view, the strip on the clios' own asks, the marks store out: no sixth sense · local reviews 2
 - 2026-11-18 · FRM-602 park nudge · wisphunter, plain card (Opus 5.5) · 4 real, all fixed (done steps counted as left, an interleaved run counted in, a ticketless card never waking, a failed read re-run each minute) · useful
 - 2026-11-18 · FRM-602 park nudge, mods-lane-7 quick lane on main (90f2bb26..03cf7c4f): no sixth sense · local reviews 1; no macroscope round (one per chunk, spent on the dispatch half)
+- 2026-11-18 · FRM-617 · wisphunter, spec-axis card (Opus 5.5) · 3; 3 real fixed (`lane show` dropped a second member of one role, took a sixth sense's stale ticket by sid order, the joiner compare missed a name with no space left) · useful
+- 2026-11-18 · FRM-617 · wisphunter, plain card (Opus 5.5) · 5; 3 real fixed (the two `lane show` ones again, two lanes sharing an old member name swapped asks on the card), 1 not reproduced (a dispatch wiping a coordinator: the fixture kept it with and without the fix), 1 nit fixed (invisible literal joiners) · useful
+- 2026-11-18 · FRM-617 · macroscope, budget · 0 in the chunk's files, 1 in the herdr lane's `script/herdr-mods-land.ts` · noise
 
 ## verdict
 - 2026-11-12 · frame#172, FRM-572 chunk 2 (cli wisps): clean at 3 rounds · wishkeeper found 1 high (a UTC lock stamp read every live holder as gone), sixth sense round 2 found 1 P1 (a `ps` that did not run read as gone); both fixed, red-proven · ci reviewer: not named

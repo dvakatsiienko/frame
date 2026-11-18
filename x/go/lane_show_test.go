@@ -3,6 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -14,7 +17,15 @@ func TestLaneShowDerivesALaneFromItsThreads(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	written.Threads = append(written.Threads, thread{SessionID: "sid-plain", Role: "sixth-sense", Lane: "cli lane 8", Coordinator: "clio-main", At: written.Threads[0].At})
+	// a sixth sense the last dispatch left out, its ticket the chunk before, its sid sorting ahead of the codie's; and a
+	// replaced codie still running beside its successor
+	sessions := strings.TrimPrefix(env[0], "X_SESSIONS=")
+	for _, sid := range []string{"sid-a-sixth", "sid-old-codie"} {
+		write(t, filepath.Join(sessions, sid+".json"), fmt.Sprintf(`{"sessionId":%q,"pid":%d,"cwd":"/w"}`, sid, os.Getpid()))
+	}
+	written.Threads = append(written.Threads,
+		thread{SessionID: "sid-a-sixth", Role: "sixth-sense", Lane: "cli lane 8", Ticket: "FRM-1", Coordinator: "clio-main", At: written.Threads[0].At},
+		thread{SessionID: "sid-old-codie", Role: "codie", Lane: "cli lane 8", At: written.Threads[0].At})
 	raw, _ := json.Marshal(written)
 	write(t, store, string(raw))
 
@@ -22,8 +33,8 @@ func TestLaneShowDerivesALaneFromItsThreads(t *testing.T) {
 		lane, want string
 		code       int
 	}{
-		{lane: "cli lane 8", want: "cli side FRM-570 clio-main map[codie:sid-codie sixth-sense:sid-plain]"},
-		{lane: "mods 6", want: "mods quick FRM-574 <nil> map[sixth-sense:sid-launching]"},
+		{lane: "cli lane 8", want: "cli side FRM-570 clio-main map[sid-a-sixth:sixth-sense sid-codie:codie sid-old-codie:codie]"},
+		{lane: "mods 6", want: "mods quick FRM-574 <nil> map[sid-launching:sixth-sense]"},
 		{lane: "no such lane", code: 1},
 	} {
 		got := xIn(t, t.TempDir(), env, "lane", "show", c.lane)

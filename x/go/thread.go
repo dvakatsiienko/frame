@@ -85,12 +85,11 @@ func storePathOf(isFixtureOn bool, fixture string, isXTest bool, real string) st
 // from roles.json; no record reads as unknown
 func threadDisplay(t thread) string { return displayFrom(roles, t) }
 
-// one name to the eye: a registry name that lost an emoji's joiner or variation selector («🐦 ⬛ crow») is its display's
-// («🐦‍⬛ crow»), a joiner reading as the space cc leaves in its place
+// one name to the eye: a registry name that lost an emoji's joiner or variation selector («🐦 ⬛ crow», «🐦⬛ crow») is
+// its display's («🐦‍⬛ crow»); spacing never tells two fleet names apart
 func sameName(a, b string) bool {
 	key := func(s string) string {
-		s = strings.NewReplacer("‍", " ", "️", "").Replace(s)
-		return strings.Join(strings.Fields(s), " ")
+		return strings.Join(strings.Fields(strings.NewReplacer("\u200d", "", "\ufe0f", "").Replace(s)), "")
 	}
 	return key(a) == key(b)
 }

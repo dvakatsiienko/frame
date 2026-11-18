@@ -264,21 +264,23 @@ func briefSummonPlan(r *Run, args []string, flags Flags) (any, error) {
 	// the ticket's lane: line is the mode, the one lane dispatch reads, so a member is born with the name its
 	// dispatch would draw; --lane-kind says it for a thread with no ticket, or one whose ticket names none. a brief naming
 	// no spec takes the lane of the ticket's 🚀 line, so a member summoned onto a dispatched ticket is born in it
-	if record.Ticket != "" && (kind == "" || record.Lane == "") {
-		var read, lane string
+	var lane string
+	if kind == "" && record.Ticket != "" {
 		if err := r.Step("lane kind", "the lane: and 🚀 lines of "+record.Ticket, func() (string, error) {
-			read, lane, err = ticketLane(flags, record.Ticket)
-			return cmp.Or(read, "none named"), err
-		}); err == nil {
-			kind, record.Lane = cmp.Or(kind, read), cmp.Or(record.Lane, lane)
-		} else if kind == "" {
+			kind, lane, err = ticketLane(flags, record.Ticket)
+			return cmp.Or(kind, "none named"), err
+		}); err != nil {
 			next := "x brief summon " + quote(command) + " --area " + area + " --lane-kind <side|quick|shift>"
 			if flags["apply"] == true {
 				next += " --apply"
 			}
 			return nil, &Fail{Msg: record.Ticket + "'s lane: line was not read, so the name has no mode: " + err.Error(), Next: next}
 		}
+	} else if record.Ticket != "" && record.Lane == "" {
+		// the mode is given, so the lane is a best-effort read: a linear miss leaves the member laneless, never refused
+		_, lane, _ = ticketLane(flags, record.Ticket)
 	}
+	record.Lane = cmp.Or(record.Lane, lane)
 	record.LaneKind = cmp.Or(kind, laneKindOf(text))
 	// a sixth sense's inline argv names no lane kind: with none on its ticket it takes its lane's, from the codie record
 	if record.LaneKind == "" && record.Lane != "" {

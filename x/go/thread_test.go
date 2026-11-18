@@ -323,10 +323,10 @@ func TestAFallbackSeatWritesNoRecord(t *testing.T) {
 func TestThreadListReadsANameThatLostItsJoinerAsTheDisplay(t *testing.T) {
 	t.Parallel()
 	sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
-	for sid, name := range map[string]string{"sid-crow": "🐦 ⬛ crow", "sid-codie": "an old name"} {
+	for sid, name := range map[string]string{"sid-crow": "🐦 ⬛ crow", "sid-crow-joined": "🐦⬛ crow", "sid-codie": "an old name"} {
 		write(t, filepath.Join(sessions, sid+".json"), fmt.Sprintf(`{"sessionId":%q,"pid":%d,"name":%q,"cwd":"/w"}`, sid, os.Getpid(), name))
 	}
-	write(t, store, `{"v":1,"threads":[{"sessionId":"sid-crow","role":"adviser"},{"sessionId":"sid-codie","role":"codie","laneKind":"quick","ticket":"FRM-1","area":"cli"}]}`)
+	write(t, store, `{"v":1,"threads":[{"sessionId":"sid-crow","role":"adviser"},{"sessionId":"sid-crow-joined","role":"adviser"},{"sessionId":"sid-codie","role":"codie","laneKind":"quick","ticket":"FRM-1","area":"cli"}]}`)
 
 	got := xIn(t, t.TempDir(), []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}, "thread", "list")
 
@@ -338,7 +338,7 @@ func TestThreadListReadsANameThatLostItsJoinerAsTheDisplay(t *testing.T) {
 	for _, th := range written.Threads {
 		names[th.SessionID] = th.Name
 	}
-	if names["sid-crow"] != "🐦‍⬛ crow" || names["sid-codie"] != "an old name" {
+	if names["sid-crow"] != "🐦‍⬛ crow" || names["sid-crow-joined"] != "🐦‍⬛ crow" || names["sid-codie"] != "an old name" {
 		t.Errorf("names %q, want crow's set to its display and the codie's kept", names)
 	}
 }
