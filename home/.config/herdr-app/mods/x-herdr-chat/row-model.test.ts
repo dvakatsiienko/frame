@@ -883,3 +883,11 @@ describe('his own text stays whole (coderabbit, slice 5)', () => {
         expect(model.rows[0]?.text).toBe(said);
     });
 });
+
+describe('a message another terminal sent with hc send', () => {
+    test('shows its words under who sent it, never the wrapper', () => {
+        const model = createRowModel();
+        model.add([mine('<hc from="t7z herdr-codie">Run this command</hc>')]);
+        expect(shown(model)).toEqual(['mine: ↪ herdr-codie: Run this command']);
+    });
+});

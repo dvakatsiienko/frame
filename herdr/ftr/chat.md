@@ -470,15 +470,15 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when he changes a row, then the new chat applies it at once (the file is watched), and the old chat reads the same value
   - and Esc, ✕ or a click beside the card closes it; the Keys page rebinds a key as the old window did
   - and no line of the new chat reads another mod's file or opens another mod's window
-- ⬜ a right-click on a message: Copy message and Reply (x-herdr-chat, FRM-638 slice 7)
-  - when he right-clicks a message in the new chat, then a menu opens at the pointer: «Copy message», «Reply»; a row with no message shows both dim; a click beside it or a scroll closes it
-  - when he picks Copy message, then the message as written is on the clipboard and «Message copied» shows under the quill
-  - when he selects words, presses ⌘C and picks Reply on that message, then a «↩ Reply» strip over the quill holds only those words; nothing copied from it quotes the whole message; × drops it
-  - and his next send goes at once, never a join, the quote first under «> »; a refused send keeps the reply
-  - decision: herdr gives a mod no read of a selection (herdr-app#1110), so ⌘C hands it over; a copy icon under each message waits for FRM-582 (W64)
-- ⬜ Claude asking, answered in the new chat (x-herdr-chat, FRM-638 slice 7)
-  - given the thread blocked on an AskUserQuestion, then its card sits over the band: the question, its options, Next or Submit, the keys pressed in the thread; words typed in the quill answer «Type something»
-  - given it blocked on anything else (a permission), then a «Claude is asking» panel shows its screen with 1 2 3, Enter, Esc and Open terminal
+- ⬜ a right-click on a message copies it (x-herdr-chat, FRM-638 slice 7)
+  - when he right-clicks a message in the new chat, then a menu opens at the pointer with «Copy message»; a row with no message shows it dim; a click beside it or a scroll closes it
+  - when he picks it, then the message as written is on the clipboard and «Message copied» shows under the quill
+- 🧭 the right-click copies only the words he selected, the whole message when none (dima, 20:35; waits on herdr-app#1110: a mod cannot read a TextView's selection)
+- 🧭 Reply quotes only the words he selected, never a whole message (dima, 20:35: «whole message quoting isn't useful»; waits on herdr-app#1110)
+  - decision: Reply left the menu: whole-message quoting, or a ⌘C-then-Reply detour, is no better than pasting into the quill himself (dima, 20:35)
+- ⬜ Claude asking for a permission, answered in the new chat (x-herdr-chat, FRM-638 slice 7)
+  - given the thread blocked on a permission prompt, then a «Claude is asking» panel over the band shows its screen with 1 2 3 4, Enter, Esc and Open terminal
+  - decision: no question card: AskUserQuestion is denied in his settings.json, so none ever shows (the probe, 20:28)
 - ⬜ a long reply of an earlier turn folds behind «Show more» (x-herdr-chat, FRM-638 slice 7)
   - given «Show more» on in the chat's settings, then a reply past ~40 lines in an earlier turn shows its first ~24 and «▾ Show more · N more lines»; a click on it opens it whole where it is
   - and the turn he reads now never folds, nor a search hit; off, every reply reads whole

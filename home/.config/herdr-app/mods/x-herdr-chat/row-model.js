@@ -97,6 +97,7 @@ const QUEUE_RECORD = '{"type":"queue-operation"';
 const PUSH_TAKE_MS = 5000;
 const PUSH_SLACK_MS = 1000;
 // a user line that is not his words: a command's echo or output, a task notice, an interruption note
+const HC_SENT = /^<hc from="(?:\S+ )?([^"]*)">([\s\S]*)<\/hc>$/;
 const NOT_HIS_WORDS =
     /^\s*(?:<(?!pasted_content\b)[\w-]+>|\[Request interrupted)/;
 
@@ -262,6 +263,18 @@ function rowsOf(line) {
         if (isRecord(entry.origin) && entry.origin.kind !== 'human') return [];
         // a paste's tags go after the check: a paste that opens with a tag of its own is still his
         const said = asTyped(saidIn(content));
+        // a message another terminal typed in with `hc send`: its words, under who sent it, never the wrapper
+        const sent = HC_SENT.exec(said.trim());
+        if (sent)
+            return [
+                {
+                    ...his(
+                        `↪ ${sent[1] || 'another terminal'}: ${(sent[2] ?? '').trim()}`,
+                        content,
+                    ),
+                    isTurnStart: true,
+                },
+            ];
         return said.trim() && !NOT_HIS_WORDS.test(said)
             ? [{ ...his(unwrapPastes(said), content), isTurnStart: true }]
             : [];

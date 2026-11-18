@@ -73,6 +73,7 @@ import {
     turnClock,
     withPress,
 } from './band.js';
+import { screenTail } from './blocked.js';
 import { splitBlocks } from './blocks.js';
 import { messageDetails } from './details.js';
 import {
@@ -108,13 +109,7 @@ import {
 import { createKeyPress } from './keypress.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { createMagic, retextWait } from './magic.js';
-import {
-    copyText,
-    createMessageMenu,
-    menuPlace,
-    replyQuote,
-    withReply,
-} from './menu.js';
+import { copyText, createMessageMenu, menuPlace } from './menu.js';
 import { createPages } from './pages.js';
 import {
     MODELS,
@@ -128,8 +123,6 @@ import {
     runsAtAfter,
 } from './picker.js';
 import { createPlace } from './place.js';
-import { card, typeAnswer } from './question.js';
-import { createAskWatch, screenTail } from './question-read.js';
 import { sendArgs } from './queued.js';
 import { createQuills } from './quill.js';
 import { createReader } from './reader.js';
@@ -257,7 +250,7 @@ const SENT_THUMB = 96;
 const PASTE_NOTE_MS = 6000;
 const NO_IMAGE = 'No image on the clipboard';
 // the right-click menu's size, one row; its note under the quill once a message is copied
-const MENU_SIZE = { h: 60, w: 200 };
+const MENU_SIZE = { h: 34, w: 200 };
 // a blocked thread's screen is read this often while it asks, so the question card follows its cursor
 const ASK_READ_MS = 1000;
 // the settings folder is looked for again this often while it does not exist
@@ -648,31 +641,14 @@ export default class Chat extends View {
     slashMenu = createSlashMenu();
     /** the right-click menu on a message (slice 7) */
     messageMenu = createMessageMenu();
-    /** the clipboard at the last right-click, and what of it a Reply may quote: only a fresh copy */
-    lastClip = '';
-    menuClip = '';
-    /** the question Claude waits on, read off the transcript (slice 7) */
-    askWatch = createAskWatch();
-    /** what the question card reads and writes: the blocked thread's screen, where its cursor was, a fold @type {import('./question-read.js').AskView} */
-    ask = {
-        address: '',
-        askFolded: null,
-        button: (t, id, label, onClick, strong) =>
-            askButton(t, id, label, onClick, strong),
-        items: [],
-        lastAsk: null,
-        screen: null,
-        tick: () => {},
-        toTerminal: () => {},
-    };
+    /** a blocked thread's ask as its screen shows it (a permission), read while it waits @type {string | null} */
+    blockedScreen = null;
     /** his «Show more» switch: a long reply of an earlier turn shows its first lines (FRM-607) */
     isShowMore = true;
     /** the long replies he opened with Show more, by row id @type {Set<string>} */
     openReplies = new Set();
     /** the rows of the turn he reads now, which never fold @type {Set<string>} */
     currentTurn = new Set();
-    /** the message a reply answers, by thread: one line above the quill, sent quoted before his words @type {Map<string, string>} */
-    replies = new Map();
     /** the thread's skills, from its transcript's listing @type {Map<string, string>} */
     skills = new Map();
     /** the skills of the plugins its folder enables @type {Map<string, string>} */
@@ -856,8 +832,6 @@ export default class Chat extends View {
         cx.timer.every(SHOWN_LOOK_MS, (later) =>
             this.showThread(this.shownAddress, later),
         );
-        this.ask.tick = (later) => this.readAsk(later);
-        this.ask.toTerminal = (address) => this.toTerminal(address);
         cx.timer.every(ASK_READ_MS, (later) => this.readAsk(later));
         this.ageBand(cx);
         cx.timer.every(BAND_AGE_MS, (later) => this.ageBand(later));
@@ -1047,7 +1021,6 @@ export default class Chat extends View {
                     .text_color(t.muted)
                     .child(this.note),
             );
-        if (this.replies.has(this.file)) root.child(this.replyStrip(t));
         if (this.pickNote)
             root.child(
                 div()
@@ -2774,11 +2747,6 @@ export default class Chat extends View {
             .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
             .on_mouse_down('right', (event, cx) => {
                 const local = event.local_position ?? { x: 0, y: 0 };
-                // a Reply quotes the clipboard only when it changed since the last right-click: a copy from an hour
-                // ago is no selection of this message
-                const clip = cx.read_from_clipboard() ?? '';
-                this.menuClip = clip === this.lastClip ? '' : clip;
-                this.lastClip = clip;
                 this.messageMenu.open(event.position, {
                     x: local.x / zoom,
                     y: local.y / zoom,
@@ -2906,29 +2874,15 @@ export default class Chat extends View {
                     cx.write_to_clipboard(text ?? '');
                     this.flashNote(COPIED_NOTE, cx);
                 }),
-            )
-            .child(
-                item('reply', 'Reply', () => {
-                    // the part he copied with ⌘C, else the whole message
-                    if (this.file && text)
-                        this.replies.set(
-                            this.file,
-                            replyQuote(text, this.menuClip),
-                        );
-                    this.box?.focus();
-                }),
             );
     }
 
-    /** the blocked thread's ask, read off its screen: the question card reads where its cursor is @param {Context} cx */
+    /** a blocked thread's ask, read off its screen each second while it waits @param {Context} cx */
     readAsk(cx) {
         const { address } = this;
-        const isBlocked = Boolean(address) && this.statusNow() === 'blocked';
-        this.ask.address = address ?? '';
-        this.ask.items = this.askWatch.items();
-        if (!isBlocked || !address) {
-            if (this.ask.screen !== null) {
-                this.ask.screen = null;
+        if (!address || this.statusNow() !== 'blocked') {
+            if (this.blockedScreen !== null) {
+                this.blockedScreen = null;
                 cx.notify();
             }
             return;
@@ -2937,8 +2891,8 @@ export default class Chat extends View {
             const read = await hc(['read', address]).catch(() => null);
             if (this.address !== address || !read || read.code !== 0) return;
             const screen = screenTail(read.stdout);
-            if (screen === this.ask.screen) return;
-            this.ask.screen = screen;
+            if (screen === this.blockedScreen) return;
+            this.blockedScreen = screen;
             cx.notify();
         });
     }
@@ -2951,14 +2905,8 @@ export default class Chat extends View {
         if (address) runCommand('pane.focus', { terminal: address });
     }
 
-    /**
-     * Claude asking: its question as a card, or anything else it asks (a permission) as its screen with the keys that
-     * answer it
-     * @param {Theme} t
-     */
+    /** Claude asking (a permission): its screen with the keys that answer it @param {Theme} t */
     blockedPanel(t) {
-        const asking = card(this.ask, t, (n) => n);
-        if (asking) return asking;
         const address = this.address ?? '';
         /** @param {string[]} keys */
         const keys =
@@ -2966,7 +2914,7 @@ export default class Chat extends View {
             (/** @type {any} */ _e, /** @type {Context} */ cx) => {
                 cx.spawn(async (cx) => {
                     await hc(['keys', address, ...keys]);
-                    this.ask.screen = null;
+                    this.blockedScreen = null;
                     this.readAsk(cx);
                 });
             };
@@ -2992,7 +2940,7 @@ export default class Chat extends View {
                             .child('Claude is asking'),
                     ),
             )
-            .when(Boolean(this.ask.screen), (el) =>
+            .when(Boolean(this.blockedScreen), (el) =>
                 el.child(
                     div()
                         .id('chat-blocked-screen')
@@ -3009,7 +2957,7 @@ export default class Chat extends View {
                         .child(
                             TextView.markdown(
                                 'chat-blocked-text',
-                                `\`\`\`\n${this.ask.screen ?? ''}\n\`\`\``,
+                                `\`\`\`\n${this.blockedScreen ?? ''}\n\`\`\``,
                             ).selectable(true),
                         ),
                 ),
@@ -3039,53 +2987,6 @@ export default class Chat extends View {
                             this.toTerminal(address),
                         ),
                     ),
-            );
-    }
-
-    /** the message a reply answers, one line over the quill: its first words, × drops it @param {Theme} t */
-    replyStrip(t) {
-        const { file } = this;
-        const text = (file && this.replies.get(file)) ?? '';
-        return h_flex()
-            .id('chat-reply')
-            .gap(8)
-            .items_center()
-            .mx(32)
-            .mb(6)
-            .px(8)
-            .py(4)
-            .rounded(6)
-            .border_l_2()
-            .border_color(t.accent)
-            .bg(t.raised)
-            .text_size(12)
-            .child(div().flex_none().text_color(t.accent).child('↩ Reply'))
-            .child(
-                div()
-                    .flex_1()
-                    .min_w(0)
-                    .truncate()
-                    .text_color(t.muted)
-                    .child(text.replace(/\s+/g, ' ').trim()),
-            )
-            .child(
-                div()
-                    .id('chat-reply-drop')
-                    .size(18)
-                    .flex()
-                    .flex_none()
-                    .items_center()
-                    .justify_center()
-                    .rounded_full()
-                    .text_color(t.muted)
-                    .cursor_pointer()
-                    .hover((s) => s.bg(t.hover).text_color(t.foreground))
-                    .tooltip('Drop the reply')
-                    .on_click((_event, cx) => {
-                        if (file) this.replies.delete(file);
-                        cx.notify();
-                    })
-                    .child('×'),
             );
     }
 
@@ -3484,13 +3385,8 @@ export default class Chat extends View {
         this.watch?.cancel();
         this.watch = null;
         this.model.clear();
-        this.askWatch.reset();
         // nothing of the old thread's ask or menu may act on the new one
-        Object.assign(this.ask, {
-            askFolded: null,
-            lastAsk: null,
-            screen: null,
-        });
+        this.blockedScreen = null;
         this.messageMenu.close();
         this.openReplies.clear();
         this.heights.clear();
@@ -3616,7 +3512,6 @@ export default class Chat extends View {
             // a replaced transcript names its own model and effort, or none yet: never the removed one's
             this.runsAt = NO_RUNS_AT;
             this.model.clear();
-            this.askWatch.reset();
             this.heights.clear();
             fileRows.clear();
             // nothing of the old rows may steer the new ones: a held place, a landing under way, the rows drawn
@@ -3634,7 +3529,6 @@ export default class Chat extends View {
         }
         if (this.runsAt !== ran && this.settlePick()) cx.notify();
         const { changed, removed } = this.model.add(lines);
-        this.askWatch.add(lines);
         this.learnSkills(lines);
         this.makePictures(cx);
         // his marked words showing as his message settle the mark in this same draw: they leave the quill as they land
@@ -3750,26 +3644,6 @@ export default class Chat extends View {
         const files = this.waitingPaths(file);
         if (!text && !files.length) return;
         if (!this.address) return this.say(NOT_IN_HERDR, cx);
-        // while a question card is up, his words are its «Type something» answer
-        const answering = text ? typeAnswer(this.ask, text) : false;
-        if (answering) {
-            this.quills.apply(file, { said: text, type: 'sent' });
-            cx.notify();
-            cx.spawn(async (cx) => {
-                const sent = await answering;
-                if (sent.code === 0) return;
-                // a refused answer comes back to the quill, never lost
-                this.quills.apply(file, { said: text, type: 'returned' });
-                if (this.file === file)
-                    this.say(
-                        `Not sent: ${sent.stderr.trim() || 'herdr refused it'}`,
-                        cx,
-                    );
-            });
-            return;
-        }
-        // a reply goes now, never marked to join: its quote opens the message
-        if (this.replies.has(file)) return this.push(box, cx);
         const answer = this.magic.click(
             file,
             sidOf(file),
@@ -3833,12 +3707,7 @@ export default class Chat extends View {
         this.quills.apply(file, { said: text, type: 'sent' });
         // the files waiting go after the words, each path on its line as a terminal drop types it (FRM-613)
         const files = file ? this.attachments.take(file) : [];
-        const replyTo = file ? this.replies.get(file) : undefined;
-        if (file) this.replies.delete(file);
-        const message = withPaths(
-            replyTo ? withReply(replyTo, text) : text,
-            files,
-        );
+        const message = withPaths(text, files);
         // Claude Code queues a slash command with no text: the model takes its words from here to draw it waiting
         if (message.startsWith('/')) this.model.pushed(message, Date.now());
         this.say(note, cx);
@@ -3853,7 +3722,6 @@ export default class Chat extends View {
             // his words come back before what he typed since, and his files with them, never lost, on screen or not
             this.quills.apply(file, { said: text, type: 'returned' });
             if (file && files.length) this.attachments.add(file, files);
-            if (file && replyTo) this.replies.set(file, replyTo);
             if (this.file !== file) return;
             this.say(
                 `Not sent: ${sent.stderr.trim() || 'herdr refused it'}`,
