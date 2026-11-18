@@ -18,9 +18,7 @@ describe('nothing drawn inside a list row carries a handler', () => {
         (name) => {
             const body = methodBody(name);
             expect(body.length).toBeGreaterThan(100);
-            expect(body).not.toMatch(
-                /\.(?:on_click|on_mouse_down|on_mouse_up|hover)\(/,
-            );
+            expect(body).not.toMatch(/\.(?:on_\w+|tooltip|hover)\(/);
         },
     );
 });

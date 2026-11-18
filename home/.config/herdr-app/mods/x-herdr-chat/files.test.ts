@@ -1,6 +1,13 @@
 import { describe, expect, test } from 'vitest';
 
-import { fileAt, fileLinks, unlinkFiles, withFileRows } from './files.js';
+import {
+    fileAt,
+    fileLinks,
+    openArgs,
+    replyIdOf,
+    unlinkFiles,
+    withFileRows,
+} from './files.js';
 
 const HOME = '/Users/dima';
 
@@ -25,10 +32,23 @@ describe("a reply's files each get one row (FRM-587)", () => {
         ]);
     });
 
-    test('a file:// link gives its label and its decoded path', () => {
+    // wisphunter 14:30: a link's own label hid which file a click opens
+    test('a file:// link is named by its file, never its label', () => {
         expect(
             fileLinks('see [the shot](file:///Users/dima/a%20b.png)', HOME),
-        ).toEqual([{ label: 'the shot', path: '/Users/dima/a b.png' }]);
+        ).toEqual([{ label: 'a b.png', path: '/Users/dima/a b.png' }]);
+    });
+
+    test('a path with a line number gets its row', () => {
+        expect(
+            fileLinks(
+                'see /Users/dima/frame/x/main.js:2105 and /tmp/a.ts:4-9',
+                HOME,
+            ),
+        ).toEqual([
+            { label: 'main.js', path: '/Users/dima/frame/x/main.js' },
+            { label: 'a.ts', path: '/tmp/a.ts' },
+        ]);
     });
 
     test('a file:// autolink reads as its file name', () => {
@@ -148,5 +168,31 @@ describe("a reply's files are rows of their own in the list, so a click on one c
         expect(fileAt(rows, 'r1#file-0')).toBe('/tmp/a.png');
         expect(fileAt(rows, 'r1#file-0#below')).toBe('/tmp/a.png');
         expect(fileAt(rows, 'r1')).toBeNull();
+    });
+});
+
+describe('a file that would run is shown in Finder, never opened (wisphunter 14:30)', () => {
+    test.each([
+        '/tmp/x.command',
+        '/Applications/Mail.app',
+        '/tmp/run.tool',
+        '/tmp/a.pkg',
+    ])('%s is revealed', (path) =>
+        expect(openArgs(path)).toEqual(['-R', path]),
+    );
+
+    test('a picture or a document opens in its app', () => {
+        expect(openArgs('/tmp/a.png')).toEqual(['/tmp/a.png']);
+        expect(openArgs('/tmp/notes.md')).toEqual(['/tmp/notes.md']);
+    });
+});
+
+describe('a reading place saved on a file row is found by its reply (wisphunter 14:30)', () => {
+    test('a file row names its reply', () => {
+        expect(replyIdOf('r1#file-2')).toBe('r1');
+    });
+
+    test('any other row is its own', () => {
+        expect(replyIdOf('r1')).toBe('r1');
     });
 });

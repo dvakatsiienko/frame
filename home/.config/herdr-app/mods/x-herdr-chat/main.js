@@ -71,7 +71,14 @@ import {
     pickerLabel,
     slideEffort,
 } from './effort.js';
-import { fileAt, isPicture, unlinkFiles, withFileRows } from './files.js';
+import {
+    fileAt,
+    isPicture,
+    openArgs,
+    replyIdOf,
+    unlinkFiles,
+    withFileRows,
+} from './files.js';
 import { placeOf } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
@@ -1966,7 +1973,7 @@ export default class Chat extends View {
             // a file row opens its file in its app, a png in Preview (FRM-587)
             .on_item_click((key) => {
                 const path = fileAt(rows, key);
-                if (path) exec('open', [path]).catch(() => {});
+                if (path) exec('open', openArgs(path)).catch(() => {});
             })
             .size_full();
         return div()
@@ -2265,6 +2272,7 @@ export default class Chat extends View {
         this.watch = null;
         this.model.clear();
         this.heights.clear();
+        fileRows.clear();
         this.reader = null;
         this.file = null;
         this.address = null;
@@ -2366,6 +2374,7 @@ export default class Chat extends View {
             this.runsAt = NO_RUNS_AT;
             this.model.clear();
             this.heights.clear();
+            fileRows.clear();
             // nothing of the old rows may steer the new ones: a held place, a landing under way, the rows drawn
             this.at.reset();
         }
@@ -2661,9 +2670,11 @@ export default class Chat extends View {
         );
         this.traceUntil = Date.now() + TRACE_MS;
         if (!place) return;
+        // a place on a file row is found through its reply, the row the transcript holds
+        const lineId = replyIdOf(place.id);
         for (
             let page = 0;
-            this.model.indexOf(place.id) < 0 &&
+            this.model.indexOf(lineId) < 0 &&
             reader.hasEarlier() &&
             page < PLACE_PAGES;
             page++
@@ -2673,7 +2684,7 @@ export default class Chat extends View {
             this.model.addEarlier(lines);
         }
         // the saved line may sit inside a folded row: the place is that row
-        const at = this.model.indexOf(place.id);
+        const at = this.model.indexOf(lineId);
         const row = this.model.rows[at];
         this.trace(
             `restore at=${at} kind=${row?.kind} tools=${this.look.tools}`,
@@ -2681,12 +2692,22 @@ export default class Chat extends View {
         if (!row) return;
         // a row he hides now (a tool call) hands the place to the next one shown
         const shown = shownOf(this.model.rows, this.look);
+        const fileRow = shown.find((r) => r.id === place.id && r !== row);
+        if (fileRow) {
+            this.at.restore(fileRow.id, place.offset);
+            this.settleUntil = Date.now() + SETTLE_MS;
+            cx.notify();
+            return;
+        }
         const next = shown.includes(row)
             ? row
             : this.model.rows.slice(at + 1).find((r) => shown.includes(r));
         this.trace(`restore next=${next?.id.slice(0, 8)}`);
         if (!next) return;
-        this.at.restore(next.id, next === row ? place.offset : 0);
+        this.at.restore(
+            next.id,
+            next === row && lineId === place.id ? place.offset : 0,
+        );
         this.settleUntil = Date.now() + SETTLE_MS;
         cx.notify();
     }

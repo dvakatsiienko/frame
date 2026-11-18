@@ -37,23 +37,25 @@ export function fileLinks(text, home) {
     const prose = unfenced.replace(/`[^`\n]*`/g, '');
     /** @type {Map<string, string>} */
     const found = new Map();
-    /** @param {string} path @param {string} [label] */
-    const add = (path, label) => {
+    // a row is named by its file, never a link's label: the label could hide what a click opens
+    /** @param {string} path */
+    const add = (path) => {
         const full = path.replace(/^~(?=\/)/, home);
-        if (found.has(full)) return;
-        found.set(full, label || full.split('/').pop() || full);
+        if (!found.has(full)) found.set(full, full.split('/').pop() || full);
     };
     for (const m of prose.matchAll(FILE_LINK)) {
         const path = filePath(m[2] ?? m[3] ?? '');
-        if (path) add(path, m[1]?.trim());
+        if (path) add(path);
     }
     for (const m of unfenced.matchAll(QUOTED_PATH)) {
         const path = m[1] ?? '';
         if (HAS_EXTENSION.test(path)) add(path);
     }
     for (const m of unfenced.matchAll(BARE_PATH)) {
+        // a sentence's last mark, and a `path:line` reference's line, are not part of the path
         const path = (m[1] ?? '')
             .replace(/[.,;:!?]+$/, '')
+            .replace(/(?::\d+)+(?:-\d+)?$/, '')
             .replace(/\\ /g, ' ');
         if (HAS_EXTENSION.test(path)) add(path);
     }
@@ -134,3 +136,13 @@ export function fileAt(rows, key) {
     const row = rows.find((r) => r.id === id);
     return row?.kind === 'file' ? (row.path ?? null) : null;
 }
+
+// a file that would run, or a folder that is an app: a click shows it in Finder instead of opening it
+const RUNS =
+    /(?:\.(?:app|command|terminal|tool|workflow|pkg|mpkg|scpt|sh)|\/[^/.]+)$/i;
+
+/** the `open` arguments for a file row's click: a file that would run is revealed in Finder @param {string} path */
+export const openArgs = (path) => (RUNS.test(path) ? ['-R', path] : [path]);
+
+/** the row a saved reading place names: a file row's place is found through its reply @param {string} id */
+export const replyIdOf = (id) => id.replace(/#file-\d+$/, '');
