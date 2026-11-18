@@ -108,7 +108,13 @@ import {
 import { createKeyPress } from './keypress.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { createMagic, retextWait } from './magic.js';
-import { copyText, createMessageMenu, menuPlace, withReply } from './menu.js';
+import {
+    copyText,
+    createMessageMenu,
+    menuPlace,
+    replyQuote,
+    withReply,
+} from './menu.js';
 import { createPages } from './pages.js';
 import {
     MODELS,
@@ -2886,8 +2892,13 @@ export default class Chat extends View {
                 }),
             )
             .child(
-                item('reply', 'Reply', () => {
-                    if (this.file && text) this.replies.set(this.file, text);
+                item('reply', 'Reply', (cx) => {
+                    // the part he copied with ⌘C, else the whole message
+                    if (this.file && text)
+                        this.replies.set(
+                            this.file,
+                            replyQuote(text, cx.read_from_clipboard() ?? ''),
+                        );
                     this.box?.focus();
                 }),
             );

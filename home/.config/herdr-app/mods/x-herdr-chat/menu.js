@@ -3,6 +3,8 @@
 // right-click twice, on the list's item (which row) and on the list (where, in the list's own px), in either order:
 // whichever lands second completes the menu
 
+import { plainOf } from './find.js';
+
 /** @typedef {import('./row-model.js').Row} Row */
 /** @typedef {{ x: number, y: number }} Point */
 /** @typedef {{ at: Point, text: string | null, x: number, y: number }} Menu `at` the press in window px, x and y in the list's */
@@ -63,3 +65,20 @@ export const quoted = (text) =>
 
 /** what a reply sends: the message it answers quoted, then his words @param {string} replyTo @param {string} text */
 export const withReply = (replyTo, text) => `${quoted(replyTo)}\n\n${text}`;
+
+/** @param {string} text */
+const squeezed = (text) => text.replace(/\s+/g, ' ').trim().toLowerCase();
+
+/**
+ * what a reply quotes: the part of the message he copied (herdr lets a mod read no selection, so ⌘C hands it over),
+ * else the whole message; a copy from anywhere else quotes the whole
+ * @param {string} message as written @param {string} copied the clipboard's text now
+ */
+export function replyQuote(message, copied) {
+    const part = squeezed(copied);
+    if (!part) return message;
+    const isIn =
+        squeezed(plainOf(message)).includes(part) ||
+        squeezed(message).includes(part);
+    return isIn ? copied.trim() : message;
+}

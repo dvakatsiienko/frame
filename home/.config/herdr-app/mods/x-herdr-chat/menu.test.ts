@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'vitest';
 
-import { copyText, createMessageMenu, menuPlace, withReply } from './menu.js';
+import {
+    copyText,
+    createMessageMenu,
+    menuPlace,
+    replyQuote,
+    withReply,
+} from './menu.js';
 import type { Row } from './row-model.js';
 
 const press = { x: 400, y: 300 };
@@ -98,5 +104,27 @@ describe('a reply', () => {
         expect(withReply('first\nsecond\n', 'yes')).toBe(
             '> first\n> second\n\nyes',
         );
+    });
+});
+
+describe('what a reply quotes', () => {
+    const message = 'First **bold** line.\n\nSecond part of\nthe reply.';
+
+    test('the part he copied, as the screen shows it', () => {
+        expect(replyQuote(message, 'bold line')).toBe('bold line');
+    });
+
+    test('a part that wraps across lines', () => {
+        expect(replyQuote(message, 'part of the reply')).toBe(
+            'part of the reply',
+        );
+    });
+
+    test('the whole message when the copy came from elsewhere', () => {
+        expect(replyQuote(message, 'some other text')).toBe(message);
+    });
+
+    test('the whole message when nothing is copied', () => {
+        expect(replyQuote(message, '  ')).toBe(message);
     });
 });
