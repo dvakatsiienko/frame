@@ -59,7 +59,7 @@ import {
 
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('gpui-kit').Color} Color */
-/** @typedef {Record<string, Color>} Theme */
+/** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'canvas' | 'dim' | 'foreground' | 'hover' | 'idle' | 'muted' | 'raised' | 'solid' | 'solid_foreground' | 'surface' | 'working', Color>} Theme */
 /** @typedef {import('./orbit.js').Ask} Ask */
 /** @typedef {{ asks: Ask[], context: number | null, hot: { since: number } | null, model: string | null, name: string, pending: Map<string, import('./orbit.js').Press['verdict']>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
 
@@ -150,6 +150,8 @@ async function sessions(shelf) {
 
 // how long a key that did nothing says why under its steer box
 const KEY_NOTE_MS = 3000;
+// how long a press given up by time says so: long enough to be seen when he looks back at the board
+const GIVEN_UP_NOTE_MS = 30 * 1000;
 
 // a steer he is typing outlives a reload of this mod: localStorage is kept across a copy's restart
 /** @param {string} key */
@@ -211,8 +213,6 @@ const line = (color, size) =>
         .text_size(size)
         .text_color(color);
 
-// TextView is the one element whose text can be selected, so anything worth reading aloud goes through it.
-/** @param {string} id @param {string} markdown @param {Color} color @param {number} size */
 // blank room at a line's start, `width` px wide at `size` px text: em spaces, then sixth-of-an-em spaces for the rest;
 // both are unicode spaces markdown keeps, where it drops leading ascii ones
 /** @param {number} width @param {number} size */
@@ -222,6 +222,8 @@ const leadingRoom = (width, size) => {
     return ' '.repeat(ems) + ' '.repeat(sixths);
 };
 
+// TextView is the one element whose text can be selected, so anything worth reading aloud goes through it.
+/** @param {string} id @param {string} markdown @param {Color} color @param {number} size */
 const prose = (id, markdown, color, size) =>
     TextView.markdown(id, literalAngles(markdown))
         .selectable()
