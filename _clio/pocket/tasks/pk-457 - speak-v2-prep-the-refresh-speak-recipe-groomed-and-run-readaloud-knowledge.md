@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T14:42:00Z'
+updated_date: '2026-11-19T14:56:00Z'
 labels:
   - s
   - clio-wing-1
@@ -37,4 +37,10 @@ PK-457:W17 (2026-11-19 16:38, dima): i have quite a list of voices in the speak 
 PK-457:W18 (2026-11-19 16:38, dima): during kokoro updates, ensure its voices survive, my favourites especially, and most importantly af_heart: i like this one the most; it sometimes sounds even better than elevenlabs and fish's voice (sarah).
 PK-457:W19 (2026-11-19 16:38, dima): note: fish's sarah is also nice, i like it.
 kept: 2026-11-19 — the main lane's current scope: the recipe groom and run, today; BYT-126, FRM-642 and FRM-288 own the build after it
+
+PK-457:W20 (2026-11-19 16:54, dima): kokoro wish: make it easier to update. why can't we update it via brew, for example, or pnpm update? how is it actually installed? i want evergreen to be able to check for its updates, and an easy upgrade door.
+PK-457:W21 (2026-11-19 16:54, dima): what better recipe name could we have, given my wishes, what we have in the speak app and what we plan for it? ❓
+PK-457:W22 (2026-11-19 16:54, dima): q2: yes, but there is a catch: i don't have a huge amount of time for a long exploratory build, because i also want to resume my cv once we're done with the speak app, so i can resume my job search.
+PK-457:W23 (2026-11-19 16:54, dima): q6: where does the researched knowledge land, especially the read-aloud app building best practices? for you (architecting) and for codies (implementation), so everyone uses the useful knowledge at all phases? ❓
+moved: W11 → FRM-668:W5 (dima 16:54, phase 2)
 <!-- SECTION:NOTES:END -->
