@@ -1,7 +1,6 @@
 // x-herdr-chat: the Chat view, built new in place of zoo's chat (FRM-638). it reads the thread shown,
 // drawn as his messages, replies and one line per tool call, in a list that never moves without him, over the quill,
-// his text box. the rules live in their own files, each tested with no herdr: reader.js, row-model.js, heights.js,
-// follow.js, place.js, quill.js, send.js, magic.js.
+// his text box. this file builds the views and composes them; MODULES.md names the module that owns each part.
 
 import { mkdir, readdir, writeFile } from 'fs/promises';
 import { h_flex, v_flex } from 'gpui-base';
