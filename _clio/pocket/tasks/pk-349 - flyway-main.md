@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T12:41:00Z'
+updated_date: '2026-11-19T12:51:00Z'
 labels:
   - s
   - clio-main
@@ -18,9 +18,10 @@ ordinal: 1000
 <!-- AC:BEGIN -->
 - [ ] #1 f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look
 - [ ] #2 f46 TS LSP check each siesta until the halt: are both codies calling LSP, from their transcripts
-- [ ] #3 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #4 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #5 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #3 f47 wing 1 summon: tell it the stray runs Opus 5.5 today and takes harder chores (his 14:5x)
+- [ ] #4 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #5 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #6 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1147,4 +1148,6 @@ PK-349:W1213 (2026-11-19 14:12, dima): memory-by-surface - wtf is it? propose ac
 PK-349:W1214 (2026-11-19 14:12, dima): print waiting jev lines: what's there? ❓
 
 PK-349:W1216 (2026-11-19 14:33, dima, herdr-typed): ts lsp - so both codies can use it? herdr too? tell both: standing rule for today: use typescript lsp and measure its effectiveness and usefulness. both codies must use typescript lsp during the day. their job - measure it so we know use it and wire it or drop it. you - measure on your side. #standing
+
+PK-349:W1217 (2026-11-19 14:52, dima, herdr-typed): since stray is opus now (don't change it), it can solve more complicated tasks then (fyi) — remember this during the day, and tell wing 1 when you summon it, so it also remembers it for the whole day. #standing
 <!-- SECTION:NOTES:END -->
