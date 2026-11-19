@@ -12,7 +12,9 @@ are `~/projects/studio/AGENTS.md`; this file is the procedure.
 
 **Solid designs come first.** Every rule below exists to make the spread truly different and
 the pick truly good. Report to whoever started you: dima in this chat, and clio by one
-`SendMessage` per spread (the canvas link + one line per take).
+`SendMessage` per spread (the canvas link + one line per take). a comment round reports
+nowhere: your canvas reply is the report, and clio hears from you again at the next spread,
+a question only clio can answer, or the handoff.
 
 **read `../crew-dna/SKILL.md` first** — the rules every member shares; your first reply quotes its version line.
 
@@ -116,8 +118,10 @@ middle take tends to win because it is in the middle, so dima picks the corner h
   it is about, a recommendation and why on every ask, ~7 asks a round at most. he opens each by a link,
   answers in place, and hands the round over; act once per handover, never per answer — mark each
   seen, then applied, and take the id off when applied. his own canvas comments still reach you
-  natively (Send to Claude). one channel per question — clio never relays a pick for a question an
-  ask already carries.
+  natively (Send to Claude). batch them the same way: a comment that arrives starts a batch, read
+  every open thread when he says «round» or after 3 quiet minutes, then publish once and resolve
+  them together. a question you cannot answer from the board goes into the next loupe round.
+  one channel per question — clio never relays a pick for a question an ask already carries.
 - **comment rounds on a long session are the cost**: a fresh session per batch of rounds, reading the
   brief and the canvas files, beats a session carrying 700k (the speak merge: $17 spread, $54 total)
 - a mash-up across takes is the expected outcome of that review, not a failure; it still says the

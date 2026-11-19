@@ -79,7 +79,7 @@ The questions, drop any the prep settled:
 7. references — up to 3 links with **what exactly to take** from each, yours or his; first, his
    taste or an experiment: a) the brief's References names `~/projects/studio/taste.md` b) it
    stays unread, so a new style can come (dima, 2026-11-12: a pointer, never loaded by default)
-8. do and don't lines — 5 candidates each (don'ts start from the AI look, Inter and Space Grotesk among them unless the brief names one: cc's design default since 2.1.321), ticked by default;
+8. do and don't lines — 5 candidates each (don'ts start from the AI look), ticked by default; the type line offers Inter, cc's design default since 2.1.321 and fine by dima, beside two other strong faces;
    the brief needs ≥3 of each, and he marks the **hard** ones
 9. states — the takes draw the ideal state + one more and the rest go on the pick, or all
    states now
