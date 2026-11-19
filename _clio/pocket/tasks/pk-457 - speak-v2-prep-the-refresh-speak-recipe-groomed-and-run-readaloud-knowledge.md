@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T15:02:00Z'
+updated_date: '2026-11-19T15:10:00Z'
 labels:
   - s
   - clio-wing-1
@@ -47,4 +47,6 @@ moved: W11 → FRM-668:W5 (dima 16:54, phase 2)
 PK-457:W24 (2026-11-19 17:02, dima): i thought our evergreen also refreshes python and uv. does it? or is kokoro installed locally in the speak app and not globally, and that's why evergreen misses it? ❓
 PK-457:W25 (2026-11-19 17:02, dima): how, then, do we keep it properly updated in an easy way: checked at each evergreen, and updated if updates are present? ❓
 PK-457:W26 (2026-11-19 17:02, dima): ok, let's keep refresh-speak for brevity. i actually like «refresh-readaloud»: it is a more precise and more versatile name. for now keep refresh-speak; change to readaloud if we grow this area into something bigger, later.
+
+moved: W20 → FRM-669:W1, W18 → FRM-669:W2 (dima o10, 17:09)
 <!-- SECTION:NOTES:END -->
