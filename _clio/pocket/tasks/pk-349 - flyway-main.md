@@ -1135,4 +1135,13 @@ PK-349:W1206 (2026-11-19 13:33, dima): you today - all tails should be solved an
 done 2026-11-19 14:00: f45 keep/verify-pr-153: 7 vm-go-test fixes never landed; a stray chore rebases, tests, lands them (his o3, 23:35)
 
 PK-349:W1215 (2026-11-19 14:21, dima): numbers are good, drop reminder.
+
+PK-349:W1207 (2026-11-19 14:12, dima): tell what's up with o4? ❓
+PK-349:W1208 (2026-11-19 14:12, dima): let's solve dated reminders. tell in short about each: wtf is it, what it waits for, and propose actions.
+PK-349:W1209 (2026-11-19 14:12, dima): o4: fable 5.2 research is later by me and wing 1, not you.
+PK-349:W1210 (2026-11-19 14:12, dima): wishkeeper, tell what it is there? ❓
+PK-349:W1211 (2026-11-19 14:12, dima): i thought we already did this.
+PK-349:W1212 (2026-11-19 14:12, dima): if there are new interesting numbers, tell me.
+PK-349:W1213 (2026-11-19 14:12, dima): memory-by-surface - wtf is it? propose actions. ❓
+PK-349:W1214 (2026-11-19 14:12, dima): print waiting jev lines: what's there? ❓
 <!-- SECTION:NOTES:END -->
