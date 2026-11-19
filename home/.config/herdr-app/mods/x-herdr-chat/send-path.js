@@ -70,7 +70,7 @@ function isWindowActive() {
  *   pushed: (text: string, at: number) => void,
  *   say: (note: string | null, cx: Context) => void,
  *   typingInto: Set<string>,
- *   isWorking: () => boolean,
+ *   isInTurn: () => boolean,
  * }} deps the shown thread's transcript and terminal, the quill's box, every thread's quill and its waiting files,
  *   the row model told of a slash command it will see queued, the note under the quill, and the threads a send or a
  *   pick types into now (one owner: the chat), and whether the shown thread is in a turn
@@ -84,7 +84,7 @@ export function createSendPath({
     pushed,
     say,
     typingInto,
-    isWorking,
+    isInTurn,
 }) {
     /** the marks of the magic send: words waiting in the quill to join a turn */
     const magic = createMagic({
@@ -204,7 +204,7 @@ export function createSendPath({
         const message = withPaths(text, files);
         // Claude Code queues a slash command with no text: the model takes its words from here to draw it waiting
         if (message.startsWith('/')) pushed(message, Date.now());
-        say(sentNote(message, note, isWorking()), cx);
+        say(sentNote(message, note, isInTurn()), cx);
         cx.spawn(async (cx) => {
             const sent = await hc(sendArgs(address, message)).catch(
                 (/** @type {unknown} */ error) => ({

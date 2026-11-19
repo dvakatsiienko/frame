@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { addressIn, sendBlocked, sentNote, submitted } from './send.js';
+import { addressIn, inTurn, sendBlocked, sentNote, submitted } from './send.js';
 
 describe('the thread a message goes to is the one its Claude runs in', () => {
     test('the address is read from the process line herdr started it with', () => {
@@ -121,4 +121,10 @@ describe('a / command sent while the thread works says it waits (dima, 18 Nov 23
             sentNote('ship it', 'pushed: no turn to join', true),
         ]).toEqual([null, 'pushed: no turn to join']);
     });
+});
+
+test('a thread working or blocked on an ask is in a turn; idle or done is not (FRM-659 round 3)', () => {
+    expect(
+        ['working', 'blocked', 'idle', 'done', undefined].map(inTurn),
+    ).toEqual([true, true, false, false, false]);
 });

@@ -71,10 +71,16 @@ export const sendBlocked = (address, typingInto) =>
 export const SLASH_WAITS = 'runs after this turn';
 
 /**
- * the note under the quill once a message went: a / command sent while the thread works says it waits, an idle thread
- * runs it now; plain words keep the note their send gave
- * @param {string} message @param {string | null} note @param {boolean} isWorking
+ * the note under the quill once a message went: a / command sent while the thread is in a turn (working, or blocked on
+ * an ask) says it waits; an idle thread runs it now; plain words keep the note their send gave
+ * @param {string} message @param {string | null} note @param {boolean} isInTurn
  * @returns {string | null}
  */
-export const sentNote = (message, note, isWorking) =>
-    message.startsWith('/') && isWorking ? `a / command ${SLASH_WAITS}` : note;
+export const sentNote = (message, note, isInTurn) =>
+    message.startsWith('/') && isInTurn ? `a / command ${SLASH_WAITS}` : note;
+
+/**
+ * whether a thread is in a turn by herdr's status: working, or blocked on an ask mid-turn; a / command waits for its end
+ * @param {string | null | undefined} status
+ */
+export const inTurn = (status) => status === 'working' || status === 'blocked';

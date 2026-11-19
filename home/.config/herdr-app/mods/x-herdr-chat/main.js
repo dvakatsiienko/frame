@@ -35,6 +35,7 @@ import { createPickers } from './pickers.js';
 import { createPictureViewer } from './picture-viewer.js';
 import { createQuill } from './quill-view.js';
 import { createRowModel } from './row-model.js';
+import { inTurn } from './send.js';
 import { createSendPath } from './send-path.js';
 import { SENT_DIR, createSentPictures } from './sent-pictures.js';
 import { readSettings, settingsDir } from './settings-io.js';
@@ -118,7 +119,7 @@ export default class Chat extends View {
     /** the send path: the magic send's marks, the hold, a send that did not go coming back */
     sendPath = createSendPath({
         attachments: this.quill.attachments,
-        isWorking: () => this.statusNow() === 'working',
+        isInTurn: () => inTurn(this.statusNow()),
         pushed: (text, at) => this.model.pushed(text, at),
         quillBox: () => this.quill.box(),
         quills: this.quill.quills,
