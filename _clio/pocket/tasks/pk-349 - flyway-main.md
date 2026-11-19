@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T15:38:00Z'
+updated_date: '2026-11-19T15:51:00Z'
 labels:
   - s
   - clio-main
@@ -1177,4 +1177,10 @@ done 2026-11-19 17:38: f47 wing 1 summon: tell it the stray runs Opus 5.5 today 
 done 2026-11-19 17:38: f51 crow:unvetted counts unvetted plan-critique findings, so the Stop hook catches them (stray chore)
 
 done 2026-11-19 17:38: f52 merge gate misread a cd-ed command: bytes#162 read as frame#162 (16:50); a stray fix
+
+17:51 wishes, 17:46 groom (orbit ask origin, shape-idea round 1 at .scratch/orbit-origin/grill-1-proposal.md):
+PK-349:W1231 (2026-11-19 17:46, dima): I didn't see the 7names by the way
+PK-349:W1232 (2026-11-19 17:46, dima): No, aside from you, the asks are also created by your wings and sometimes by Codie and by Verifier, from what I saw. Also I can start a plain CC without you and it can also use Orbit and should if you are not present.
+PK-349:W1233 (2026-11-19 17:46, dima): You're partially right too. You're the main coordinator so most of the asks come from you or from A Wing. I think 95% or even 98% of them. Maybe let's shape this idea right away because I think it would improve my comms very much but I'd be careful with this. I don't want to build anything redundant or any deadweight. Also I want a precise build.
+PK-349:W1234 (2026-11-19 17:46, dima): I assume, for it to work, some parts of CC mods will need to be implemented, right, and Herdr mods. Let's then design proper updates and Orbit extension functionality. What doors do you need to have it working very well? You need a tool to set an initiator for an ask? Where, then, to have a habit that describes how everything that I've asked for works inside the Orbit mod itself that tells you the system prompt of itself? Or global memory? I lean toward it's the Orbit mod itself. ❓
 <!-- SECTION:NOTES:END -->
