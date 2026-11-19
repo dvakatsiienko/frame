@@ -100,7 +100,7 @@ const caps = {
     },
     'x/go/lane_landed.go': { cap: 1_398, why: 'lane landed and its decamp' },
     'x/go/merge_auto.go': {
-        cap: 1_744,
+        cap: 1_707,
         why: 'merge-auto: the gates and the merge',
     },
     'x/go/merge_auto_test.go': {

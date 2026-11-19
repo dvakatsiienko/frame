@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -787,39 +786,9 @@ func stoppedOn(tree string) string {
 	return ""
 }
 
-// the shas a branch was judged at: its delete leases on them, so a push since the read survives
-type branchTips struct{ local, remote string }
-
 // why a branch must stay, "" when it may go: a tree on it, or a commit carried does not vouch for
 func branchStay(main, ref, uncarried string, carried func(sha string) bool) (string, branchTips) {
-	var tips branchTips
-	listed, err := mustGitIn(main, "worktree", "worktree", "list", "--porcelain")
-	if err != nil {
-		return "the worktree list did not read", tips
-	}
-	for _, e := range worktreesOf(listed) {
-		if e.branch == ref || (e.detached && stoppedOn(e.path) == ref) {
-			return "a tree holds it, " + home(e.path), tips
-		}
-	}
-	if local, _ := gitIn(main, "rev-parse", "--verify", "-q", "refs/heads/"+ref); local.ok {
-		if !carried(local.out) {
-			return "the local branch holds a commit " + uncarried, tips
-		}
-		tips.local = local.out
-	}
-	sha, err := remoteBranch(main, ref)
-	if err != nil {
-		return "origin did not read", tips
-	}
-	if sha != "" {
-		_, _ = gitIn(main, "fetch", "-q", "origin", ref)
-		if !carried(sha) {
-			return "origin holds a commit " + uncarried, tips
-		}
-		tips.remote = sha
-	}
-	return "", tips
+	return branchStayUnless(main, ref, uncarried, carried, nil)
 }
 
 func branchDrop(main, ref string, tips branchTips) string {
@@ -839,14 +808,8 @@ func branchDrop(main, ref string, tips branchTips) string {
 
 // an open pr based on the branch would close with it
 func laneBranchWhy(as, main, slug, ref, head string) (string, branchTips) {
-	var open []struct {
-		Number int `json:"number"`
-	}
-	if _, err := ghFetch(as, githubBase()+"/repos/"+slug+"/pulls?state=open&base="+url.QueryEscape(ref), &open); err != nil {
-		return "the open prs based on it did not read", branchTips{}
-	}
-	if len(open) > 0 {
-		return fmt.Sprintf("#%d is based on it", open[0].Number), branchTips{}
+	if why := openPrOnBase(as, slug, ref); why != "" {
+		return why, branchTips{}
 	}
 	return branchStay(main, ref, "the merge did not carry", func(sha string) bool {
 		return sha == head || ok(gitIn(main, "merge-base", "--is-ancestor", sha, head))

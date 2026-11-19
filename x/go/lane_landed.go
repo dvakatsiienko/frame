@@ -48,7 +48,7 @@ type landedPlan struct {
 	openClosing string
 	// the merged pr's branch, when one stands; --apply takes it
 	mergedRef, mergedHead, ghRepo string
-	// the merged lane-family branches, each with the tips its delete leases on (none: read again after its tree goes)
+	// the merged lane-family branches, each with the tips its delete leases on
 	worktreeDrops []worktreeDrop
 }
 
@@ -1326,7 +1326,7 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 	var takenBranches []string
 	for _, drop := range plan.worktreeDrops {
 		_ = r.Step("branch", drop.ref, func() (string, error) {
-			note := dropMergedBranch(plan.main, drop)
+			note := branchDrop(plan.main, drop.ref, drop.tips)
 			takenBranches = append(takenBranches, note)
 			return note, nil
 		})

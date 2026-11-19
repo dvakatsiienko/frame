@@ -222,14 +222,18 @@ func laneSpecSection(repo, id string) (paths []string, section string) {
 		main, _ := filepath.Glob(filepath.Join(filepath.Dir(common), ".scratch", "*", "spec.md"))
 		specs = append(specs, main...)
 	}
-	head := specHead(id)
+	// an h2 of the id wins: a spec titled «# FRM-N — …» keeps its chunk under «## FRM-N …»
+	h2, h1 := specHeadAt("##", id), specHeadAt("#", id)
 	for _, spec := range specs {
 		raw, err := os.ReadFile(spec)
 		if err != nil {
 			continue
 		}
 		text := string(raw)
-		at := head.FindStringIndex(text)
+		at := h2.FindStringIndex(text)
+		if at == nil {
+			at = h1.FindStringIndex(text)
+		}
 		if at == nil {
 			continue
 		}
@@ -238,7 +242,7 @@ func laneSpecSection(repo, id string) (paths []string, section string) {
 			continue
 		}
 		rest := text[at[1]:]
-		next := nextHeading
+		next := nextH1OrH2
 		if strings.HasPrefix(text[at[0]:], "# ") {
 			next = nextH1
 		}
@@ -251,12 +255,17 @@ func laneSpecSection(repo, id string) (paths []string, section string) {
 }
 
 // a spec heading of id, an h1 or an h2, a joint one included: `## FRM-436 + FRM-424 — …` heads both tickets' section
-func specHead(id string) *regexp.Regexp {
-	return regexp.MustCompile(`(?m)^##? (?:(?:FRM|BYT|PK)-\d+ \+ )*` + regexp.QuoteMeta(id) + `\b.*$`)
+func specHead(id string) *regexp.Regexp { return specHeadAt("##?", id) }
+
+func specHeadAt(marks, id string) *regexp.Regexp {
+	return regexp.MustCompile(`(?m)^` + marks + ` (?:(?:FRM|BYT|PK)-\d+ \+ )*` + regexp.QuoteMeta(id) + `\b.*$`)
 }
 
-// an h1 section runs to the next h1, so its own h2s (its exit lines) stay inside it; an h2 one to the next h2
-var nextH1 = regexp.MustCompile(`(?m)^# `)
+// an h1 section runs to the next h1, so its own h2s stay inside it; an h2 one to the next h2 or h1
+var (
+	nextH1     = regexp.MustCompile(`(?m)^# `)
+	nextH1OrH2 = regexp.MustCompile(`(?m)^##? `)
+)
 
 // xCommandFindings checks every `x …` command the exit lines name against the registry, statically:
 // nothing in the ticket runs. a span the ticket marks (new) is exempt, and so is a flag marked (new)

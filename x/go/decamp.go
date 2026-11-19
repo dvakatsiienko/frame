@@ -170,11 +170,9 @@ func listStale(r *Run) (any, error) {
 				continue
 			}
 			seconds, _ := strconv.ParseInt(at, 10, 64)
-			merged := mainCarries(main)(name)
-			if !merged {
-				tip, _ := mergedPrTip(asDima, main, name)
-				merged = tip != ""
-			}
+			// a tree on it says nothing of its merge: the listing reads every tree as gone
+			why, _ := mergedBranchStay(asDima, main, name, func(string) bool { return true })
+			merged := why == ""
 			branches = append(branches, staleBranch{name, merged, fmt.Sprintf("%dd", (clock().Unix()-seconds)/86400)})
 		}
 		return plural(len(branches), "branch"), nil

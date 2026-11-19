@@ -97,3 +97,57 @@ func TestDecampListStaleReadsASquashAsMerged(t *testing.T) {
 		t.Fatalf("exit %d: want the squash merged and keep/open not\n%s", got.code, got.stdout)
 	}
 }
+
+// a merged layer an open pr still sits on stays: deleting a base closes the pr above it
+func TestLandedApplyKeepsAMergedBranchAnOpenPrIsBasedOn(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	tip := w.sideBranch(t, "codie/FRM-2-low", "a lower layer")
+	w.hub.pages[repoPath+"/commits/"+tip+"/pulls"] = `[{"number":6,"merged_at":"2026-11-19T12:00:00Z","head":{"ref":"codie/FRM-2-low"}}]`
+	w.hub.pages[repoPath+"/pulls"] = `[{"number":9}]`
+
+	got := w.landedAfterMerge(t, "--apply")
+
+	if !w.onClone(t, "codie/FRM-2-low") || !w.onOrigin(t, "codie/FRM-2-low") || !strings.Contains(got.stdout, "codie/FRM-2-low stays: #9 is based on it") {
+		t.Fatalf("exit %d: want codie/FRM-2-low kept, named with #9\n%s", got.code, got.stdout)
+	}
+}
+
+// a clean tree landed decamps frees its branch only when main or a merged pr carries the branch
+func TestLandedNamesATreeHeldBranchMainLacksAsStaying(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	w.sideBranch(t, "codie/FRM-1-wip", "pushed, never merged")
+	tree := filepath.Join(w.clone, ".claude/worktrees/wip")
+	gitT(t, w.clone, "worktree", "add", "-q", tree, "codie/FRM-1-wip")
+
+	got := w.landedAfterMerge(t)
+
+	if !strings.Contains(got.stdout, "codie/FRM-1-wip stays: the local branch holds a commit main lacks") || strings.Contains(got.stdout, "codie/FRM-1-wip merged") {
+		t.Fatalf("exit %d: want the plan to keep codie/FRM-1-wip, named\n%s", got.code, got.stdout)
+	}
+}
+
+// git cherry skips merge commits: a merge carrying its own edit is work main lacks
+func TestDecampListStaleReadsAnEvilMergeAsNotMerged(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.sideBranch(t, "codie/FRM-3-src", "one")
+	fork := strings.TrimSpace(gitT(t, w.seed, "rev-parse", "origin/main"))
+	w.squashOntoMain(t, "codie/FRM-3-src")
+	gitT(t, w.seed, "switch", "-q", "-c", "keep/merge", fork)
+	gitT(t, w.seed, "merge", "-q", "--no-ff", "--no-commit", "codie/FRM-3-src")
+	write(t, filepath.Join(w.seed, "evil.txt"), "an edit only the merge holds\n")
+	gitT(t, w.seed, "add", "evil.txt")
+	gitT(t, w.seed, "commit", "-q", "-m", "a merge with its own edit")
+	gitT(t, w.seed, "push", "-q", "origin", "keep/merge")
+	gitT(t, w.clone, "fetch", "-q", "origin", "keep/merge:keep/merge")
+	w.hub.pages[repoPath+"/commits/"+strings.TrimSpace(gitT(t, w.seed, "rev-parse", "HEAD"))+"/pulls"] = `[]`
+
+	got := xIn(t, w.clone, w.env, "lane", "decamp", "--list-stale")
+
+	if !strings.Contains(got.stdout, `"name":"keep/merge","merged":false`) {
+		t.Fatalf("exit %d: want keep/merge not merged\n%s", got.code, got.stdout)
+	}
+}

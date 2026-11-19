@@ -20,15 +20,28 @@ func TestLandedReadsAnH1SpecInTheLanesOwnRepo(t *testing.T) {
 	}
 }
 
-// an h1 section keeps its own h2s, its exit lines among them, and stops at the next h1
+// an h1 section, with no h2 of its id, keeps its own h2s and stops at the next h1
 func TestAnH1SpecSectionRunsToTheNextH1(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
-	write(t, filepath.Join(dir, ".scratch/f/spec.md"), "# the lane\n\n# BYT-9\n\n### decisions\n\n## BYT-9 exit lines\n\n1. the line\n\n# BYT-10\n\n1. not this\n")
+	write(t, filepath.Join(dir, ".scratch/f/spec.md"), "# the lane\n\n# BYT-9\n\n### exit lines\n\n1. the line\n\n## notes\n\nkept\n\n# BYT-10\n\n1. not this\n")
 
 	paths, section := laneSpecSection(dir, "BYT-9")
 
-	if len(paths) != 1 || !strings.Contains(section, "1. the line") || strings.Contains(section, "not this") {
+	if len(paths) != 1 || !strings.Contains(section, "kept") || strings.Contains(section, "not this") {
 		t.Fatalf("paths %v, section:\n%s", paths, section)
+	}
+}
+
+// a spec titled with the id as its h1 keeps its chunk under the id's h2, which ends at the next h1
+func TestAnH2SpecHeadingWinsOverAnH1Title(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	write(t, filepath.Join(dir, ".scratch/f/spec.md"), "# FRM-9 — the lane\n\nsolution prose\n\n## FRM-9 — exit lines\n\n1. the line\n\n# FRM-10\n\n1. not this\n")
+
+	_, section := laneSpecSection(dir, "FRM-9")
+
+	if !strings.Contains(section, "1. the line") || strings.Contains(section, "solution prose") || strings.Contains(section, "not this") {
+		t.Fatalf("section:\n%s", section)
 	}
 }
