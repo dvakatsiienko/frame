@@ -111,8 +111,19 @@ export async function saveKeys(text, keys) {
         await writeTextFile(`${dir}/keys.json-${stamp}`, text, null);
     }
     await writeTextFile(keysPath(), `${JSON.stringify(keys, null, 2)}\n`, text);
+    // the save drops every mod's bind_keys: the keys door reloads each x-herdr mod, this one too (FRM-569)
+    const reloaded = await exec('pnpm', ['exec', 'node', KEYS_DOOR, 'reload'], {
+        cwd: `${home()}/frame`,
+        timeout: 10 * 1000,
+    });
+    if (reloaded.code !== 0)
+        throw new Error(
+            `saved, mods not reloaded: ${reloaded.stderr.trim() || 'the keys door failed'}`,
+        );
     return true;
 }
+
+const KEYS_DOOR = 'home/.claude/plugin-x/skills/herdr/scripts/keys-change.ts';
 
 /**
  * what the Keys page draws, read from his keys.json: ours where they sit now (a refused one keyless), then herdr's own

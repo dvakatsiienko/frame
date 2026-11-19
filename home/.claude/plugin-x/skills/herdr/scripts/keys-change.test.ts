@@ -73,7 +73,59 @@ describe('planKeysChange', () => {
     });
 });
 
+describe('planKeysChange, the edges (wisphunter 17:53)', () => {
+    it('sets a binding with args, as layout.select needs', () => {
+        const command = {
+            args: { child: 'chat', stack: 'views' },
+            command: 'layout.select',
+        };
+        const { text } = planKeysChange(
+            real,
+            { command, key: 'cmd-alt-shift-n', scope: 'global' },
+            mods,
+        );
+        expect(JSON.parse(text).global['cmd-alt-shift-n']).toEqual(command);
+    });
+
+    it('leaves a file without the scope unchanged on a remove', () => {
+        const bare = '{\n  "global": {\n    "cmd-q": "app.quit"\n  }\n}\n';
+        const plan = planKeysChange(
+            bare,
+            { command: null, key: 'cmd-f', scope: 'terminal' },
+            mods,
+        );
+        expect(plan.text).toBe(bare);
+    });
+
+    it('reloads only, writing nothing, for a keys.json saved elsewhere', () => {
+        expect(planKeysChange(real, null, mods).steps).toEqual([
+            { kind: 'reload', mod: 'x-herdr-agents' },
+            { kind: 'reload', mod: 'x-herdr-chat' },
+            { kind: 'reload', mod: 'x-herdr-deck' },
+        ]);
+    });
+});
+
 describe('parseKeysChangeArgs', () => {
+    it('takes a binding with args as json', () => {
+        expect(
+            parseKeysChangeArgs([
+                'set',
+                'global',
+                'cmd-alt-shift-n',
+                '{"command":"layout.select","args":{"stack":"views"}}',
+            ]),
+        ).toEqual({
+            command: { args: { stack: 'views' }, command: 'layout.select' },
+            key: 'cmd-alt-shift-n',
+            scope: 'global',
+        });
+    });
+
+    it('takes a bare reload', () => {
+        expect(parseKeysChangeArgs(['reload'])).toBe('reload');
+    });
+
     it('takes a binding to set', () => {
         expect(
             parseKeysChangeArgs(['set', 'global', 'cmd-alt-y', 'app.help']),
@@ -95,6 +147,9 @@ describe('parseKeysChangeArgs', () => {
         [['remove', 'global', 'cmd-f', 'extra']],
         [['set', 'global', '', 'app.help']],
         [['drop', 'global', 'cmd-f']],
+        [['set', 'global', 'cmd-y', '{"args":{}}']],
+        [['set', 'global', 'cmd-y', '{not json']],
+        [['reload', 'global']],
     ])('refuses %j', (argv) => {
         expect(parseKeysChangeArgs(argv)).toBeNull();
     });

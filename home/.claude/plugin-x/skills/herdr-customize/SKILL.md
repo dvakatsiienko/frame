@@ -5,7 +5,7 @@ description: Load BEFORE changing herdr itself — a herdr mod, a herdr layout, 
 
 # herdr-customize — building inside dima's herdr
 
-a mod is JavaScript that describes native GPUI elements; Rust draws them. no HTML, no CSS, no web view, no Node APIs. layouts, keys and settings are JSON, hot-reloaded on save. load `x:herdr` too: its doors (`shot`, `status`) are this loop's proof.
+a mod is JavaScript that describes native GPUI elements; Rust draws them. no HTML, no CSS, no web view, no Node APIs. layouts, keys and settings are JSON, hot-reloaded on save; a key changes only through `x:herdr`'s `scripts/keys-change.ts`, since a bare `keys.json` save kills the x-herdr mods' keys. load `x:herdr` too: its doors (`shot`, `status`) are this loop's proof.
 
 ## 0 · read the truth for this version first
 
