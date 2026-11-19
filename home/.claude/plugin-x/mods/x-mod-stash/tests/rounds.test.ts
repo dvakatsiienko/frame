@@ -31,6 +31,7 @@ for (const [line, chunk] of [
 for (const line of [
     'FRM-638 slice 6b round 2 on 1dc7e6cb · P0/P1: 1',
     'slice 12c final on adb1fbef',
+    'BYT-12 slice 10A round 3 on 0abc1234 · P0/P1: 1',
 ])
     test(`a lettered slice leading «${line}» still reads its round`, () => {
         expect(roundOf(line)?.sha).toBe(line.match(/[0-9a-f]{8}/)?.[0]);

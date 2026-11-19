@@ -328,7 +328,7 @@ export function noticeOf(
 export const ticketOf = (name: string) =>
     name.match(/\b(?:FRM|BYT)-\d+\b/)?.[0];
 
-const ROUND_LEAD = String.raw`(?:(?:\[\w+\]|[A-Z]{2,5}-\d+:?|#\d+|slice\s+\d+[a-z]?|coder:|sixth sense,|final(?:\s+[—–-])?)\s+)*`;
+const ROUND_LEAD = String.raw`(?:(?:\[\w+\]|[A-Z]{2,5}-\d+:?|#\d+|slice\s+\d+[a-zA-Z]?|coder:|sixth sense,|final(?:\s+[—–-])?)\s+)*`;
 const ROUND_HEAD = new RegExp(
     String.raw`^${ROUND_LEAD}round\s+(\d+)\b[^\n]*?(?:\bon\s+\**([0-9a-f]{7,40})|\b((?=[0-9a-f]*\d)[0-9a-f]{7,40}))\b`,
 );
