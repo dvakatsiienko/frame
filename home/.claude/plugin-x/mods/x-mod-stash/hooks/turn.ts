@@ -37,8 +37,68 @@ const state: TurnState = {
 };
 export const turn: Readonly<TurnState> = state;
 
-export function patchTurn(patch: Partial<TurnState>) {
-    Object.assign(state, patch);
+// when the last main turn ended: 🔥 switched on while idle counts its 50 min from here, so the ping lands inside the cache's hour
+const ENDED = { key: 'ended', plugin: 'x-mod-stash' } as const;
+
+// a start or a reload takes back what `$.state` kept: the last end, and a turn a mid-turn reload found running
+export function restoreTurn(
+    endedAt: number | undefined,
+    kept?: {
+        afk?: boolean;
+        isBusy: boolean;
+        isPinged: boolean;
+        isUserTurn: boolean;
+    },
+) {
+    state.endedAt = endedAt;
+    if (!kept) return;
+    Object.assign(state, {
+        isBusy: kept.isBusy,
+        isUserTurn: kept.isUserTurn,
+        pinged: kept.isPinged,
+        turnAfk: kept.afk,
+    });
+}
+export const bookkeep = (now: number) => {
+    state.bookkeptAt = now;
+};
+export const setPrimed = (isPrimed: boolean) => {
+    state.isPrimed = isPrimed;
+};
+export const setTurnAfk = (afk: boolean) => {
+    state.turnAfk = afk;
+};
+export const markWork = () => {
+    state.isWorkTurn = true;
+};
+export const markWrapAsked = () => {
+    state.isWrapAsked = true;
+};
+export const markNudged = () => {
+    state.isNudged = true;
+};
+// a stop hook reads the wrap_up marks once: the next stop starts clean
+export const clearWrap = () => {
+    state.isWrapAsked = false;
+    state.gridQs = [];
+};
+// the main turn completed: idle at once, its end stamped once the bookkeeping after it is done
+export const endBusy = () => {
+    state.isBusy = false;
+};
+export async function endStop($: EngineInterface, endedAt: number) {
+    state.endedAt = endedAt;
+    await $.state.set(ENDED, endedAt).catch(() => undefined);
+    await keepTurn($);
+}
+// a submit that never became a turn: the session is idle again
+export async function idleTurn($: EngineInterface) {
+    state.isBusy = false;
+    await keepTurn($);
+}
+export async function endUserTurn($: EngineInterface) {
+    state.isUserTurn = false;
+    await keepTurn($);
 }
 
 // a turn starts: dima's, a peer's or the mod's own; every per-turn mark resets
@@ -96,7 +156,7 @@ export async function startTurn(
     prepare: () => Promise<boolean>,
 ) {
     beginTurn(isUser, isPing);
-    patchTurn({ turnAfk: await prepare() });
+    state.turnAfk = await prepare();
     await keepTurn($);
 }
 
@@ -110,8 +170,7 @@ export async function selfSubmit(
 ) {
     await startTurn($, false, isPing, prepare);
     return $.prompt.submit({ text }).catch(async (err: unknown) => {
-        patchTurn({ isBusy: false });
-        await keepTurn($);
+        await idleTurn($);
         throw err;
     });
 }

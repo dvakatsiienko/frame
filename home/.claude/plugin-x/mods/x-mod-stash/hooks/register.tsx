@@ -239,12 +239,22 @@ import {
 import { cleanTree, drawn } from './tree.ts';
 import {
     addGridQs,
+    bookkeep,
+    clearWrap,
     countTool,
+    endBusy,
+    endStop,
+    endUserTurn,
+    idleTurn,
     isTurnBusy,
-    keepTurn,
     markActive,
-    patchTurn,
+    markNudged,
+    markWork,
+    markWrapAsked,
+    restoreTurn,
     selfSubmit,
+    setPrimed,
+    setTurnAfk,
     startTurn,
     turn,
 } from './turn.ts';
@@ -1751,8 +1761,7 @@ async function quietSilentMembers($: EngineInterface, now: number) {
                 () => prepareTurn($),
             ).catch(() => undefined);
             if (!r || r.drop) {
-                patchTurn({ isBusy: false });
-                await keepTurn($);
+                await idleTurn($);
                 await armHot($);
                 continue;
             }
@@ -1910,8 +1919,7 @@ async function wakeForParkedLanes($: EngineInterface) {
             () => prepareTurn($),
         ).catch(() => undefined);
         if (!r || r.drop) {
-            patchTurn({ isBusy: false });
-            await keepTurn($);
+            await idleTurn($);
             await armHot($);
             continue;
         }
@@ -5110,8 +5118,7 @@ async function paceTick($: EngineInterface) {
         ).catch(() => undefined);
         if (r && !r.drop) await paceSent($, sid, due.stored);
         else {
-            patchTurn({ isBusy: false });
-            await keepTurn($);
+            await idleTurn($);
             await armHot($);
         }
         await $.store.delete(PACE_CLAIM + sid);
@@ -5490,8 +5497,7 @@ async function hotLate($: EngineInterface) {
         () => undefined,
     );
     if (r && !r.drop) return;
-    patchTurn({ isBusy: false });
-    await keepTurn($);
+    await idleTurn($);
     await armHot($);
 }
 
@@ -5936,7 +5942,7 @@ async function orbitCall(
                     .catch(() => undefined);
             }
         await writeLanes($, mergeLanes(before, lanes, await readLanes($)));
-        patchTurn({ isWorkTurn: true });
+        markWork();
         return { result: op.result };
     }
     // the turn as $.state holds it: a call that lands before a mid-turn reload's start reads a default isBusy
@@ -6061,19 +6067,11 @@ export const register: Register = (on) => {
                 $.ui.log('x-mod-stash: the orbit tool was not registered'),
             );
         cap = kept.cap ?? undefined;
-        patchTurn({ endedAt: kept.ended ?? undefined });
+        // a mid-turn reload: the turn goes on, busy, and the band keeps what only it held
+        restoreTurn(kept.ended ?? undefined, kept.turn ?? undefined);
         await pruneEnded($).catch(() => undefined);
         const stored = hotOf(await $.store.get(HOT + identity.selfId));
         hot = stored && { since: turn.endedAt ?? stored.since };
-        // a mid-turn reload: the turn goes on, busy, and the band keeps what only it held
-        if (kept.turn) {
-            patchTurn({
-                isBusy: kept.turn.isBusy,
-                isUserTurn: kept.turn.isUserTurn,
-                pinged: kept.turn.isPinged,
-                turnAfk: kept.turn.afk,
-            });
-        }
         // a reload drops the release timer: a compact-held list waiting for it goes in once the session is idle; armed after
         // a mid-turn reload's busy flag is back, so it never submits into a running turn
         armRelease($, COMPACT_SETTLE_MS);
@@ -6124,7 +6122,7 @@ export const register: Register = (on) => {
                         turn.isBusy ||
                         now - turn.activeAt < IDLE_AFTER_MS ||
                         now - turn.bookkeptAt >= IDLE_POLL_MS;
-                    if (isBookkept) patchTurn({ bookkeptAt: now });
+                    if (isBookkept) bookkeep(now);
                     await takeHerdrRows($).catch(() => undefined);
                     await syncWindStore($).catch(() => undefined);
                     // an open board's view carries the tick's clock, so its «ago» times move on their own
@@ -6258,7 +6256,7 @@ export const register: Register = (on) => {
             : told?.line;
         const isFirst =
             orbitNow().turns === 0 && !orbitNow().plan && !turn.isPrimed;
-        patchTurn({ isPrimed: true });
+        setPrimed(true);
         // the lanes speak only in clio's thread: a lane stale after LANE_STALE of her turns, and dima's steer on a current step
         // riding her next prompt once, from any board
         const isOwner = await isLaneOwner($);
@@ -6439,8 +6437,7 @@ export const register: Register = (on) => {
         const red = e.stop_hook_active
             ? undefined
             : await stopRed($, e.last_assistant_message ?? '');
-        patchTurn({ isWrapAsked: false });
-        patchTurn({ gridQs: [] });
+        clearWrap();
         // a keep-hot ping's one-character reply never clears what the session waits on; it only stamps the warm cache
         const was = turn.pinged
             ? ((await $.store
@@ -6461,8 +6458,7 @@ export const register: Register = (on) => {
             await $.store
                 .set(REPLY + e.session_id, reply)
                 .catch(() => undefined);
-        patchTurn({ isUserTurn: false });
-        await keepTurn($);
+        await endUserTurn($);
         await load($);
         return red ? { ...r, block: red } : r;
     });
@@ -6472,7 +6468,7 @@ export const register: Register = (on) => {
         const r = await next(e);
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
-        patchTurn({ isBusy: false });
+        endBusy();
         await joinsLocked(() =>
             settleJoins($, !e.isAborted && e.reason !== 'error'),
         ).catch(() => undefined);
@@ -6483,9 +6479,7 @@ export const register: Register = (on) => {
         await windAfterTurn($).catch(() => undefined);
         armRelease($, WIND_DELAY_MS);
         const endedAt = await $.clock.now();
-        patchTurn({ endedAt });
-        await $.state.set(ENDED, endedAt).catch(() => undefined);
-        await keepTurn($);
+        await endStop($, endedAt);
         await seatDefaults($).catch(() => undefined);
         // a stop on the 5h cap waits for the reset; any other end clears it. the cap ends the turn with an empty answer,
         // so an error end reads the transcript's last entry for the cap text and the reset it names (FRM-488)
@@ -8797,7 +8791,7 @@ export const register: Register = (on) => {
         await refreshThreads($);
         if (e.reason === 'clear' || e.reason === 'resume') {
             // the process outlives a /clear, so the next conversation is primed again: no session.start fires for it
-            patchTurn({ isPrimed: false });
+            setPrimed(false);
             forgetTold();
             // the process goes on under a new id with no session.start: the next read takes it fresh
             endIdentity(e.sessionId);
@@ -8883,14 +8877,14 @@ export const register: Register = (on) => {
             (e.tool as string) === WRAP_UP_TOOL &&
             oneLine((e as Record<string, unknown>).ask)
         )
-            patchTurn({ isWrapAsked: true });
+            markWrapAsked();
         if (
             isWork(
                 e.tool as string,
                 (e as { command?: unknown }).command as string | undefined,
             )
         )
-            patchTurn({ isWorkTurn: true });
+            markWork();
         const notes: string[] = [];
         const sent = send
             ? await quietSendEnd($, send, r.result).catch(() => undefined)
@@ -8908,7 +8902,7 @@ export const register: Register = (on) => {
             if (round) notes.push(round);
         }
         if (turn.turnAfk !== undefined && turn.turnAfk !== afk) {
-            patchTurn({ turnAfk: afk });
+            setTurnAfk(afk);
             if (isOn('stash.afk')) notes.push(afk ? AWAY_NOTE : BACK_NOTE);
         }
         if (
@@ -8965,7 +8959,7 @@ export const register: Register = (on) => {
             turn.isWorkTurn &&
             !(o.plan && o.plan.at >= o.turns + 1 - PLAN_QUIET_TURNS)
         ) {
-            patchTurn({ isNudged: true });
+            markNudged();
             notes.push(
                 o.plan
                     ? `phases not set for ${PLAN_QUIET_TURNS + 1} turns — update them with ${ORBIT_TOOL} plan`
