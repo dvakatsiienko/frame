@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T19:27:00Z'
+updated_date: '2026-11-19T19:37:00Z'
 labels:
   - s
   - clio-main
@@ -1213,4 +1213,6 @@ done 2026-11-19 21:27: f49 TS LSP plan (W1224–W1228): retros in, weigh usefuln
 done 2026-11-19 21:27: f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look (FRM-642 Todo)
 
 21:27 f46, f49 done: TS LSP dropped, 9e88d5ec (dima's o1); f39 done: the designer refresh ran in wing 1 today, speak v2 lives in wing 1's flyway f25 (dima 21:15: «tomorrow you only run lanes while i take wing 1»)
+
+PK-349:W1242 (2026-11-19 13:42, dima): yesterday, very late in the evening before the halt, during peek-lanes for herdr or mods, you said the herdr or mods stats ticket is very similar to my ticket about a complete measurement solution, and I explained to you thoroughly why it is indeed very similar. — its home: FRM-650 (measuring, one solution), wing 1's f35, folded at that grill
 <!-- SECTION:NOTES:END -->
