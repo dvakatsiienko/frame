@@ -5,13 +5,12 @@
 
 import { mkdir, readdir, writeFile } from 'fs/promises';
 import {
-    TextView,
     VirtualListScrollHandle,
     h_flex,
     v_flex,
     v_virtual_list,
 } from 'gpui-base';
-import { View, div, image } from 'gpui-kit';
+import { View, div } from 'gpui-kit';
 import {
     agents,
     appHome,
@@ -30,29 +29,18 @@ import {
     watchFolder,
 } from 'herdr';
 
-import { fileName } from './attach.js';
 import { STATE_DIR } from './band.js';
 import { createBand } from './band-view.js';
 import { createBlockedPanel } from './blocked-panel.js';
-import { splitBlocks } from './blocks.js';
 import { CHAT_SHOWN } from './chat-asks.js';
-import { messageDetails } from './details.js';
-import {
-    fileAt,
-    isSentRow,
-    openArgs,
-    replyIdOf,
-    unlinkFiles,
-    withFileRows,
-} from './files.js';
-import { findSpans } from './find.js';
+import { openArgs, replyIdOf } from './files.js';
 import { createFindBar } from './find-bar.js';
-import { replyFold } from './fold.js';
 import { placeOf } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { copyText, createMessageMenu, menuPlace } from './menu.js';
+import { createMessageRows } from './message-row.js';
 import { createPages } from './pages.js';
 import { createPickers } from './pickers.js';
 import { createPictureViewer } from './picture-viewer.js';
@@ -69,14 +57,6 @@ import { saveSquareThumb } from './shots.js';
 import { asksActedOn, isShownIn, pidFor, shownThread } from './shown.js';
 import { loadableSkills } from './skills.js';
 import { sidOf, transcriptPath } from './thread.js';
-import { tint } from './tint.js';
-import {
-    createToolFolds,
-    isCallRow,
-    isCardRow,
-    withCallRows,
-} from './tool-folds.js';
-import { typedMarkdown } from './typed.js';
 
 /** @typedef {import('./chat-types.js').Color} Color */
 /** @typedef {import('./chat-types.js').Context} Context */
@@ -84,11 +64,8 @@ import { typedMarkdown } from './typed.js';
 /** @typedef {import('./row-model.js').Row} Row */
 /** @typedef {import('./chat-types.js').Theme} Theme */
 
-// the readable column of a narrow look (the old chat's), and the share of the column a bubble may take
+// the readable column of a narrow look (the old chat's)
 const NARROW = 820;
-const BUBBLE_SHARE = 0.8;
-// the room above and below each row, per spacing
-const ROW_PAD = { normal: 6, roomy: 10, tight: 3 };
 /** @type {Row} over a thread read back to its first line: no older page is left to ask for */
 const START_ROW = {
     at: null,
@@ -109,26 +86,6 @@ const SANS = '.AppleSystemUIFont';
 // [TRACE-place] how long after an open the list's asks are traced
 const TRACE_MS = 8000;
 
-// a reply's file rows, made once per reply version (files.js)
-/** @type {Map<string, { version: number, files: Row[] }>} */
-const fileRows = new Map();
-/**
- * the rows the list draws: the model's, less tool calls when he hides them, each reply's files after it
- * @param {readonly Row[]} rows @param {import('./look.js').Look} look
- */
-const shownOf = (rows, look) =>
-    withCallRows(
-        withFileRows(
-            look.tools === 'hide'
-                ? rows.filter((row) => row.kind !== 'tool')
-                : rows,
-            home(),
-            fileRows,
-        ),
-        toolFolds,
-    );
-// which tool-call folds and calls are open (PK-432)
-const toolFolds = createToolFolds();
 // his reading place is saved this long after his last scroll step
 const PLACE_SAVE_MS = 600;
 // how long after a held place was last asked for the list stays unseen: its landing takes two frames, and a
@@ -144,16 +101,12 @@ const SHOWN_LOOK_MS = 2000;
 // the operator override changes with no event herdr watches, and a deck that stopped publishing changes nothing: the
 // band's facts that age are read again this often
 const BAND_AGE_MS = 5000;
-// a picture his message sent or a reply names, a square under the words
-const SENT_THUMB = 96;
 // the right-click menu's size, one row; its note under the quill once a message is copied
 const MENU_SIZE = { h: 34, w: 200 };
 // a blocked thread's screen is read this often while it asks, so the question card follows its cursor
 const ASK_READ_MS = 1000;
 // the settings folder is looked for again this often while it does not exist
 const SETTINGS_RETRY_MS = 10 * 1000;
-// about how wide a character of a reply is, in px: the fold counts a bubble's lines from its width
-const CHAR_PX = 7.5;
 const COPIED_NOTE = 'Message copied';
 const COPIED_NOTE_MS = 1500;
 /** @type {import('./sent-pictures.js').SentIo} */
@@ -360,10 +313,16 @@ export default class Chat extends View {
     });
     /** his «Show more» switch: a long reply of an earlier turn shows its first lines (FRM-607) */
     isShowMore = true;
-    /** the long replies he opened with Show more, by row id @type {Set<string>} */
-    openReplies = new Set();
-    /** the rows of the turn he reads now, which never fold @type {Set<string>} */
-    currentTurn = new Set();
+    /** each row as drawn, and the rows the list shows of the model's */
+    rows = createMessageRows({
+        column: () => this.column(),
+        find: () => this.findBar.find,
+        heights: this.heights,
+        isShowMore: () => this.isShowMore,
+        look: () => this.look,
+        room: () => Math.min(this.width || NARROW, this.column()),
+        sent: this.sent,
+    });
 
     /** wakes the loop that opens the thread shown: a draw starts no work itself */
     wake = () => {};
@@ -591,7 +550,7 @@ export default class Chat extends View {
             look.space,
             look.tools,
         ].join('|');
-        const shown = shownOf(this.model.rows, look);
+        const shown = this.rows.shown(this.model.rows, look);
         const rows =
             this.isRead && shown.length && this.pages?.isStart()
                 ? [START_ROW, ...shown]
@@ -763,14 +722,8 @@ export default class Chat extends View {
      */
     list(rows, t, cx) {
         const zoom = Number(settings().zoom) || 1;
-        let turnAt = 0;
-        rows.forEach((r, i) => {
-            if (r.kind === 'mine' && r.isTurnStart) turnAt = i;
-        });
-        this.currentTurn = new Set(
-            rows.slice(Math.max(0, turnAt)).map((r) => r.id),
-        );
-        const booked = this.booked(rows);
+        this.rows.markTurn(rows);
+        const booked = this.rows.booked(rows);
         const sizes = this.heights.sizes(booked, (row) =>
             guessHeight(row, Math.min(this.width || NARROW, this.column())),
         );
@@ -823,7 +776,7 @@ export default class Chat extends View {
                         items.push(
                             box
                                 .overflow_hidden()
-                                .child(this.row(row, t, `${pre}a-`)),
+                                .child(this.rows.row(row, t, `${pre}a-`)),
                         );
                     else if (cutAt >= 0 && i === cutAt + 1)
                         items.push(
@@ -833,10 +786,10 @@ export default class Chat extends View {
                                     .top(-cutOffset)
                                     .left(0)
                                     .w_full()
-                                    .child(this.row(row, t, `${pre}b-`)),
+                                    .child(this.rows.row(row, t, `${pre}b-`)),
                             ),
                         );
-                    else items.push(box.child(this.row(row, t, pre)));
+                    else items.push(box.child(this.rows.row(row, t, pre)));
                 }
                 return items;
             },
@@ -852,24 +805,12 @@ export default class Chat extends View {
             })
             // a file row opens its file in its app, a png in Preview (FRM-587)
             .on_item_click((key, cx) => {
-                const id = key.replace(/#(?:above|below)$/, '');
-                const pressed = rows.find((r) => r.id === id);
-                if (pressed?.kind === 'tool') {
-                    toolFolds.toggle(id);
-                    cx.notify();
-                    return;
-                }
-                // a folded reply opens whole where it is
-                if (pressed && this.foldOf(pressed)) {
-                    this.openReplies.add(id);
-                    cx.notify();
-                    return;
-                }
-                const opened = this.picturesAt(rows, key);
-                if (opened)
-                    return this.pictures.show(opened.files, opened.at, cx);
-                const path = fileAt(rows, key);
-                if (path) exec('open', openArgs(path)).catch(() => {});
+                const press = this.rows.press(rows, key);
+                if (press?.kind === 'redraw') cx.notify();
+                else if (press?.kind === 'pictures')
+                    this.pictures.show(press.files, press.at, cx);
+                else if (press?.kind === 'file')
+                    exec('open', openArgs(press.path)).catch(() => {});
             })
             .size_full();
         return div()
@@ -1066,296 +1007,10 @@ export default class Chat extends View {
                                             Date.now() + SETTLE_MS;
                                     cx.notify();
                                 })
-                                .child(this.row(row, t, pre, false)),
+                                .child(this.rows.row(row, t, pre, false)),
                         ),
                     ),
             );
-    }
-
-    /**
-     * @param {Row} row
-     * @param {Theme} t
-     * @param {string} pre what tells this copy's rich text from the measured copy's
-     * @param {boolean} [isShown] the copy on screen: the hidden measured copy takes no part in a selection, or its
-     *   words, laid over the shown ones, flicker into his selection as he scrolls (dima, 13:51)
-     */
-    row(row, t, pre, isShown = true) {
-        if (row.kind === 'start')
-            return h_flex()
-                .w_full()
-                .justify_center()
-                .py(10)
-                .text_xs()
-                .text_color(t.muted)
-                .child('Start of thread');
-        const { hits, isOpen } = this.findBar.find.state;
-        const base = row.id.replace(/#.*$/, '');
-        const hit = !isOpen
-            ? null
-            : this.findBar.find.current() === row.id
-              ? 'current'
-              : hits.some((h) => h.id === row.id || h.id === base)
-                ? 'match'
-                : null;
-        const column = (/** @type {import('gpui-kit').Element} */ el) =>
-            h_flex()
-                .w_full()
-                .justify_center()
-                .child(
-                    div()
-                        .w_full()
-                        .max_w(this.column() + 36)
-                        .px(18)
-                        .py(ROW_PAD[this.look.space] ?? ROW_PAD.normal)
-                        .rounded(10)
-                        .border(2)
-                        .border_color(tint(t.background, '00'))
-                        // find marks every row it matched, the one shown in his accent (dima, 17:34)
-                        .when(hit === 'match', (e) =>
-                            e.bg(tint(t.accent, '1f')),
-                        )
-                        .when(hit === 'current', (e) =>
-                            e.bg(tint(t.accent, '38')).border_color(t.accent),
-                        )
-                        .child(el),
-                );
-        if (row.kind === 'file') return column(this.fileRow(row, t));
-        if (row.kind === 'tool')
-            return column(this.toolRow(row, t, pre, isShown));
-        const most = Math.max(
-            240,
-            Math.floor(
-                Math.min(this.width || NARROW, this.column()) * BUBBLE_SHARE,
-            ),
-        );
-        const id = `${pre}${row.id}@${row.version}`;
-        const fold = this.lookOf(row) === 'fold' ? this.foldOf(row) : null;
-        if (row.kind === 'mine')
-            return column(
-                v_flex()
-                    .w_full()
-                    .items_end()
-                    .gap(2)
-                    .when(Boolean(row.text) || row.isWaiting, (el) =>
-                        el.child(
-                            div()
-                                .max_w(most)
-                                .px(12)
-                                .py(8)
-                                .rounded(12)
-                                // a waiting message is an outline of his bubble, its words dim, until a turn takes it
-                                .bg(
-                                    row.isWaiting
-                                        ? t.background
-                                        : tint(t.accent, '33'),
-                                )
-                                .border(1)
-                                .border_color(
-                                    tint(t.accent, row.isWaiting ? '99' : '4d'),
-                                )
-                                .when(row.isWaiting, (el) => el.opacity(0.6))
-                                .child(
-                                    this.markedText(row, t, isShown) ??
-                                        TextView.markdown(
-                                            id,
-                                            typedMarkdown(row.text),
-                                        ).selectable(isShown),
-                                ),
-                        ),
-                    )
-                    .when(!row.pictures.length && !row.files.length, (el) =>
-                        el.child(this.detailsLine(row, t)),
-                    ),
-            );
-        return column(
-            v_flex()
-                .w_full()
-                .items_start()
-                .gap(2)
-                .child(
-                    v_flex()
-                        .max_w(most)
-                        .px(12)
-                        .py(8)
-                        .gap(8)
-                        .rounded(12)
-                        .bg(t.raised)
-                        .when(Boolean(this.markedText(row, t, isShown)), (el) =>
-                            el.child(this.markedText(row, t, isShown) ?? ''),
-                        )
-                        .children(
-                            (this.markedText(row, t, isShown)
-                                ? []
-                                : (fold?.shown ??
-                                  splitBlocks(unlinkFiles(row.text)))
-                            ).map((block, i) =>
-                                block.kind === 'text'
-                                    ? TextView.markdown(
-                                          `${id}-${i}`,
-                                          block.text,
-                                      ).selectable(isShown)
-                                    : div()
-                                          .px(10)
-                                          .py(8)
-                                          .rounded(8)
-                                          .bg(t.background)
-                                          .border(1)
-                                          .border_color(t.border)
-                                          .child(
-                                              TextView.markdown(
-                                                  `${id}-${i}`,
-                                                  `\`\`\`${block.lang}\n${block.text}\n\`\`\``,
-                                              ).selectable(isShown),
-                                          ),
-                            ),
-                        )
-                        // the line he clicks to open it: the list's item click does, herdr-app#894 keeps a press
-                        // handler out of a row
-                        .when(Boolean(fold), (el) =>
-                            el.child(
-                                div()
-                                    .text_size(12)
-                                    .text_color(t.accent)
-                                    .cursor_pointer()
-                                    .child(
-                                        `▾ Show more · ${fold?.hidden ?? 0} more lines`,
-                                    ),
-                            ),
-                        ),
-                )
-                .child(this.detailsLine(row, t)),
-        );
-    }
-
-    /**
-     * a run of tool calls, folded behind 🛠️; opened, each call is a row that opens alone to its input (PK-432,
-     * FRM-638:W23); an open call's json card is a row of its own, so a selection's release in it never closes the call
-     * (FRM-659:W4). no press handler in here: the list's item click opens and closes (herdr-app#894)
-     * @param {Row} row @param {Theme} t @param {string} pre
-     */
-    toolRow(row, t, pre, isShown = true) {
-        const isOpen = toolFolds.isOpen(row.id);
-        const line = (/** @type {string} */ mark, /** @type {string} */ text) =>
-            h_flex()
-                .gap(6)
-                .items_center()
-                .text_size(12)
-                .text_color(t.dim)
-                .cursor_pointer()
-                .child(div().flex_none().w(12).child(mark))
-                .child(div().truncate().child(text));
-        if (isCardRow(row.id))
-            return div()
-                .pl(36)
-                .child(
-                    div()
-                        .px(10)
-                        .py(6)
-                        .rounded(6)
-                        .bg(t.raised)
-                        .border(1)
-                        .border_color(t.border)
-                        .text_size(12)
-                        .child(
-                            TextView.markdown(
-                                `${pre}${row.id}@${row.version}`,
-                                `\`\`\`json\n${row.calls?.[0]?.input ?? ''}\n\`\`\``,
-                            ).selectable(isShown),
-                        ),
-                );
-        if (!isCallRow(row.id))
-            return line(isOpen ? '▾' : '▸', `${ICONS.tools} ${row.text}`);
-        return div()
-            .pl(18)
-            .child(line(isOpen ? '▾' : '▸', row.text));
-    }
-
-    /**
-     * the pictures and files a message carries: a square per picture, a chip per file; his on the right, a reply's on
-     * the left. no press or hover handler, one inside a list row blanks the whole list (herdr-app#894)
-     * @param {Row} row @param {Theme} t
-     */
-    sentFiles(row, t) {
-        return h_flex()
-            .gap(6)
-            .flex_wrap()
-            .when(isSentRow(row.id), (el) => el.justify_end())
-            .max_w(this.column())
-            .children(
-                row.pictures.map((picture) => {
-                    const rel = this.sent.relOf(picture);
-                    return div()
-                        .size(SENT_THUMB)
-                        .flex_none()
-                        .flex()
-                        .items_center()
-                        .justify_center()
-                        .rounded(8)
-                        .overflow_hidden()
-                        .bg(t.raised)
-                        .border(1)
-                        .border_color(t.border)
-                        .text_color(t.dim)
-                        .child(rel ? image(rel).size_full() : ICONS.picture);
-                }),
-            )
-            .children(
-                row.files.map((path) =>
-                    div()
-                        .px(8)
-                        .py(3)
-                        .rounded(6)
-                        .border(1)
-                        .border_color(t.border)
-                        .text_size(12)
-                        .text_color(t.muted)
-                        .child(`📎 ${fileName(path)}`),
-                ),
-            );
-    }
-
-    /**
-     * the dim line under a bubble, one state and its own time (FRM-594): always drawn, a tooltip in a list row never
-     * showed for him (herdr-app#598)
-     * @param {Row} row @param {Theme} t
-     */
-    detailsLine(row, t) {
-        const details = messageDetails(row, Date.now());
-        return div()
-            .px(4)
-            .text_size(12)
-            .text_color(t.muted)
-            .when(details !== null, (el) => el.child(details ?? ''));
-    }
-
-    /**
-     * a file a reply names, its own row under the reply (FRM-587): the list's item click opens it. no press or hover
-     * handler in here, one inside a list row blanks the whole list (herdr-app#894)
-     * @param {Row} row @param {Theme} t
-     */
-    fileRow(row, t) {
-        if (isSentRow(row.id))
-            return v_flex()
-                .w_full()
-                .items_end()
-                .gap(2)
-                .child(this.sentFiles(row, t).cursor_pointer())
-                .child(this.detailsLine(row, t));
-        if (row.pictures.length) return this.sentFiles(row, t).cursor_pointer();
-        return h_flex()
-            .gap(6)
-            .items_center()
-            .self_start()
-            .px(8)
-            .py(3)
-            .rounded(6)
-            .border(1)
-            .border_color(t.border)
-            .cursor_pointer()
-            .text_size(12)
-            .text_color(t.muted)
-            .child(ICONS.file)
-            .child(div().truncate().child(row.text));
     }
 
     /**
@@ -1404,10 +1059,8 @@ export default class Chat extends View {
         // nothing of the old thread's ask or menu may act on the new one
         this.blocked.clear();
         this.messageMenu.close();
-        this.openReplies.clear();
+        this.rows.clearThread();
         this.heights.clear();
-        fileRows.clear();
-        toolFolds.clear();
         this.quill.clearThread();
         this.reader = null;
         this.pages?.close();
@@ -1515,7 +1168,7 @@ export default class Chat extends View {
             this.pickers.restart();
             this.model.clear();
             this.heights.clear();
-            fileRows.clear();
+            this.rows.clearFiles();
             // nothing of the old rows may steer the new ones: a held place, a landing under way, the rows drawn
             this.at.reset();
         }
@@ -1595,118 +1248,13 @@ export default class Chat extends View {
 
     /** his messages' pictures get their files; each row draws its own once made @param {Context} cx */
     makePictures(cx) {
-        const pictures = shownOf(this.model.rows, this.look).flatMap((r) =>
-            r.kind === 'file' ? r.pictures : [],
-        );
+        const pictures = this.rows
+            .shown(this.model.rows, this.look)
+            .flatMap((r) => (r.kind === 'file' ? r.pictures : []));
         if (!pictures.some((p) => !this.sent.relOf(p))) return;
         cx.spawn(async (cx) => {
             if (await this.sent.make(pictures)) cx.notify();
         });
-    }
-
-    /**
-     * a click on a message's or a reply's pictures: the pictures it opens, whole, the first shown; ← → reach the rest
-     * @param {readonly Row[]} rows @param {string} key @returns {{ files: string[], at: number } | null}
-     */
-    picturesAt(rows, key) {
-        const row = rows.find(
-            (r) => r.id === key.replace(/#(?:above|below)$/, ''),
-        );
-        // his words select on a click; only the squares' own row opens the viewer
-        if (row?.kind !== 'file') return null;
-        const files = row.pictures.flatMap((p) => this.sent.pathOf(p) ?? []);
-        return files.length ? { at: 0, files } : null;
-    }
-
-    /**
-     * how a row draws when not plain: find's word marks over the stepped row only, keyed by the query; every other
-     * match keeps its markdown under a tint, since a marked row loses its bold and reflows (dima's o2, 18:46)
-     * @param {Row} row
-     */
-    lookOf(row) {
-        const { isOpen, q } = this.findBar.find.state;
-        if (isOpen && this.findBar.find.current() === row.id)
-            return `find:${q}`;
-        return this.foldOf(row) ? 'fold' : undefined;
-    }
-
-    /**
-     * how a reply folds now: only a long one of an earlier turn, while his switch is on and he has not opened it; a
-     * search hit shows whole
-     * @param {Row} row
-     */
-    foldOf(row) {
-        if (row.kind !== 'reply' || this.openReplies.has(row.id)) return null;
-        const { isOpen } = this.findBar.find.state;
-        if (isOpen && this.findBar.find.state.hits.some((h) => h.id === row.id))
-            return null;
-        const width =
-            Math.min(this.width || NARROW, this.column()) * BUBBLE_SHARE;
-        return replyFold(
-            splitBlocks(unlinkFiles(row.text)),
-            Math.floor(Math.max(240, width) / CHAR_PX),
-            {
-                isEarlierTurn: !this.currentTurn.has(row.id),
-                isShowMoreOn: this.isShowMore,
-            },
-        );
-    }
-
-    /** the rows as the height book keys them: a row drawn another way is measured apart @param {readonly Row[]} rows */
-    booked(rows) {
-        return rows.map((row) => {
-            const look = this.lookOf(row);
-            return look ? { ...row, look } : row;
-        });
-    }
-
-    /**
-     * the stepped row as plain words, every match in a soft accent, the stepped one in full accent; null for any
-     * other row, or while its marked height is not measured yet
-     * @param {Row} row @param {Theme} t
-     */
-    markedText(row, t, isShown = true) {
-        const look = this.lookOf(row);
-        // the shown copy waits for its marked height, so the list never draws it at the plain one and jumps
-        if (
-            !look?.startsWith('find:') ||
-            (isShown && !this.heights.has({ ...row, look }))
-        )
-            return null;
-        const { q } = this.findBar.find.state;
-        const current = this.findBar.find.currentHit();
-        return v_flex().children(
-            findSpans(row.text, q).map((line) =>
-                h_flex()
-                    .flex_wrap()
-                    .children(
-                        line.flatMap((span) =>
-                            span.match === null
-                                ? span.text
-                                      .split(/(?<=\s)/)
-                                      .map((word) => div().child(word))
-                                : [
-                                      div()
-                                          .rounded(3)
-                                          .px(1)
-                                          .bg(
-                                              current?.id === row.id &&
-                                                  current.n === span.match
-                                                  ? t.accent
-                                                  : tint(t.accent, '4d'),
-                                          )
-                                          .when(
-                                              current?.id === row.id &&
-                                                  current.n === span.match,
-                                              (el) =>
-                                                  el.text_color(t.background),
-                                          )
-                                          .child(span.text),
-                                  ],
-                        ),
-                    ),
-            ),
-        );
     }
 
     /** @param {string} file */
@@ -1753,7 +1301,7 @@ export default class Chat extends View {
         );
         if (!row) return;
         // a row he hides now (a tool call) hands the place to the next one shown
-        const shown = shownOf(this.model.rows, this.look);
+        const shown = this.rows.shown(this.model.rows, this.look);
         const fileRow = shown.find((r) => r.id === place.id && r !== row);
         if (fileRow) {
             this.at.restore(fileRow.id, place.offset);
@@ -1805,7 +1353,7 @@ export default class Chat extends View {
             else if (place) this.at.restore(place.id, place.offset);
             if (this.findBar.find.state.isOpen)
                 this.findBar.find.recount(
-                    shownOf(this.model.rows, this.look),
+                    this.rows.shown(this.model.rows, this.look),
                     first && first.id !== firstId
                         ? { from: firstId, to: first.id }
                         : null,
