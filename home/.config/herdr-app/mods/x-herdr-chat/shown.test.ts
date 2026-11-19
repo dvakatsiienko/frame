@@ -88,6 +88,16 @@ describe('a terminal’s Claude, by the terminal id in its environment', () => {
         expect(pidFor('t93', both, [2210, 83284])).toBe(83284);
     });
 
+    // FRM-659 round 1: the thread restarted while the hook's child still ran, so the child had been up longer
+    test('a print-mode Claude never takes the terminal, even up longer than a restarted thread', () => {
+        const both = [
+            ' 2210       03:10 claude -p --model opus HC_TERMINAL_ID=t93',
+            ' 5100       00:20 claude -n clio HC_TERMINAL_ID=t93',
+            ' 5200       09:00 claude --print hi HC_TERMINAL_ID=t93',
+        ].join('\n');
+        expect(pidFor('t93', both, [2210, 5100, 5200])).toBe(5100);
+    });
+
     test('a thread up for days outranks one up for hours', () => {
         const both = [
             ' 2210    23:59:59 claude HC_TERMINAL_ID=t5',

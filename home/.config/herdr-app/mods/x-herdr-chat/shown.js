@@ -26,7 +26,8 @@ export function shownThread(agents, focus, shown) {
 /**
  * the session pid of the Claude in a terminal: the process whose environment names it (`ps eww -o
  * pid=,etime=,command=` over the session pids), never a process with no session file. a Claude its hooks start (crow's
- * `claude -p`) inherits the terminal id and writes a session file too, so the one up longest is the terminal's own
+ * `claude -p`) inherits the terminal id and writes a session file too: a print-mode Claude is never the terminal's own,
+ * and of the rest the one up longest is
  * @param {string} address @param {string} ps @param {number[]} sessions
  * @returns {number | null}
  */
@@ -34,11 +35,13 @@ export function pidFor(address, ps, sessions) {
     let found = null;
     let longest = -1;
     for (const line of ps.split('\n')) {
-        const [, pid, etime] = /^\s*(\d+)\s+(\S+)\s/.exec(line) ?? [];
+        const [, pid, etime, command = ''] =
+            /^\s*(\d+)\s+(\S+)\s+(.*)$/.exec(line) ?? [];
         const up = secondsUp(etime ?? '');
         if (
             sessions.includes(Number(pid)) &&
             addressIn(line) === address &&
+            !isPrintMode(command) &&
             up > longest
         ) {
             found = Number(pid);
@@ -47,6 +50,13 @@ export function pidFor(address, ps, sessions) {
     }
     return found;
 }
+
+/**
+ * a Claude run for one answer (`-p`, `--print`): its flags stand before the environment ps prints after the command
+ * @param {string} command
+ */
+const isPrintMode = (command) =>
+    /\s(?:-p|--print)(?:\s|$)/.test(` ${command.split(/\s\w+=/)[0]}`);
 
 /** ps's `etime`, `[[dd-]hh:]mm:ss`, in seconds @param {string} etime */
 function secondsUp(etime) {

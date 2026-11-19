@@ -14,7 +14,7 @@
         "noEmit": true,
         "noUncheckedIndexedAccess": true,
         "paths": {
-            "herdr": ["../../../../../../.config/herdr-app/herdr.d.ts"]
+            "herdr": ["/Users/dima/.config/herdr-app/herdr.d.ts"]
         },
         "rootDirs": [".", "../_shared"],
         "strict": true,
@@ -25,6 +25,6 @@
         "*.js",
         "*.d.ts",
         "../_shared/*.js",
-        "../../../../../../.config/herdr-app/gpui-kit.d.ts"
+        "/Users/dima/.config/herdr-app/gpui-kit.d.ts"
     ]
 }
