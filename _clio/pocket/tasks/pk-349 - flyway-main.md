@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T12:58:00Z'
+updated_date: '2026-11-19T13:10:00Z'
 labels:
   - s
   - clio-main
@@ -19,9 +19,10 @@ ordinal: 1000
 - [ ] #1 f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look
 - [ ] #2 f46 TS LSP check each siesta until the halt: are both codies calling LSP, from their transcripts
 - [ ] #3 f47 wing 1 summon: tell it the stray runs Opus 5.5 today and takes harder chores (his 14:5x)
-- [ ] #4 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #5 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #6 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #4 f48 TS LSP re-vendor lands → report what is new to dima, tell both lanes (his 15:09)
+- [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #6 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #7 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1152,4 +1153,8 @@ PK-349:W1216 (2026-11-19 14:33, dima, herdr-typed): ts lsp - so both codies can 
 PK-349:W1217 (2026-11-19 14:52, dima, herdr-typed): since stray is opus now (don't change it), it can solve more complicated tasks then (fyi) — remember this during the day, and tell wing 1 when you summon it, so it also remembers it for the whole day. #standing
 
 PK-349:W1218 (2026-11-19 14:41, dima, herdr-typed): add a habit, so any wishes like this, like not doable because herdr can't do them — you auto fold there, without me asking. ← (landed: craft-pm, 4a7f3a42)
+
+PK-349:W1219 (2026-11-19 15:09, dima, herdr-typed): wow, update it! as next stray's chore. after ts lsp is refreshed - report what's interesting we have after the update, and tell the lanes that we updated and what's new there, so they use the new version.
+
+PK-349:W1220 (2026-11-19 14:59, dima, herdr-typed): once it's done with FRM-663, make sure it searches for it too (refresh if we can move to the marketplace lsp version already).
 <!-- SECTION:NOTES:END -->
