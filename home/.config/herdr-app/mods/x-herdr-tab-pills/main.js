@@ -164,6 +164,25 @@ export default class TabPills extends View {
                 .map((x) => x.terminal);
             const name = pillName(c, [p?.terminal, ...others], names);
             const isCloseShown = c.active || this.hovered === c.id;
+            const words = () =>
+                h_flex()
+                    .flex_1()
+                    .min_w(0)
+                    .gap(6)
+                    .truncate()
+                    .child(
+                        div()
+                            .flex_shrink(1)
+                            .min_w(0)
+                            .truncate()
+                            .text_color(c.active ? t.foreground : t.muted)
+                            .child(name.label),
+                    )
+                    .when(Boolean(where) && !name.isThread, (el) =>
+                        el.child(
+                            div().truncate().text_color(t.dim).child(where),
+                        ),
+                    );
             return this.drag
                 .item(
                     own(h_flex()),
@@ -172,6 +191,17 @@ export default class TabPills extends View {
                         item: { id: c.id },
                         key: `pill-${c.id}`,
                         label: name.label,
+                        look: () =>
+                            h_flex()
+                                .size_full()
+                                .min_w(0)
+                                .pl(5)
+                                .pr(6)
+                                .gap(9)
+                                .items_center()
+                                .text_size(13)
+                                .child(tile(t, p))
+                                .child(words()),
                         places: space.tabs.length,
                         targetFor: () => i,
                     },
@@ -212,26 +242,7 @@ export default class TabPills extends View {
                     }),
                 )
                 .child(tile(t, p))
-                .child(
-                    h_flex()
-                        .flex_1()
-                        .min_w(0)
-                        .gap(6)
-                        .truncate()
-                        .child(
-                            div()
-                                .flex_shrink(1)
-                                .min_w(0)
-                                .truncate()
-                                .text_color(c.active ? t.foreground : t.muted)
-                                .child(name.label),
-                        )
-                        .when(Boolean(where) && !name.isThread, (el) =>
-                            el.child(
-                                div().truncate().text_color(t.dim).child(where),
-                            ),
-                        ),
-                )
+                .child(words())
                 .child(
                     div()
                         .id(`pill-close-${c.id}`)

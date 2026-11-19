@@ -14,7 +14,8 @@ const FALLBACK_SIZE = 30;
 /**
  * the press, measured: its item, where its element starts in the window and its size along the axis
  * @template T
- * @typedef {{ item: T, start: number, size: number, label: string, places: number }} Held
+ * @typedef {{ item: T, start: number, size: number, label: string, places: number,
+ *   look?: () => import('gpui-kit').Element }} Held
  */
 
 /** @typedef {Record<'raised' | 'selected' | 'border' | 'foreground', import('gpui-kit').Color>} DragTheme */
@@ -69,7 +70,7 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
         ghost(t) {
             const s = drag.state();
             if (s.name !== 'dragging' && s.name !== 'settling') return null;
-            const { label, size, start } = s.item;
+            const { label, look, size, start } = s.item;
             const offset =
                 s.name === 'dragging'
                     ? along(s.pointer) - along(s.at)
@@ -81,7 +82,6 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
                 .spring(axis === 'y' ? 'top' : 'left')
                 .flex()
                 .items_center()
-                .px(8)
                 .rounded(axis === 'y' ? 8 : 13)
                 .border_1()
                 .border_color(t.border)
@@ -91,7 +91,9 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
                 .text_color(t.foreground)
                 .truncate()
                 .cursor_grabbing()
-                .child(label);
+                // the item's own look when it gives one, so a pill keeps its tile and status while dragged (dima, 16:45)
+                .when(!look, (el) => el.px(8).child(label))
+                .when(Boolean(look), (el) => el.child(look?.() ?? label));
             return axis === 'y'
                 ? ghost.left(0).right(0).h(size).top(at)
                 : ghost.top(0).bottom(0).w(size).left(at);
@@ -105,11 +107,12 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
          * @template {import('gpui-kit').Element} E
          * @param {E} el
          * @param {{ key: string, item: T | null, from: number, places: number, targetFor: (held: T) => number | null,
-         *   label: string }} it `item` null: it lifts nothing
+         *   label: string, look?: () => import('gpui-kit').Element }} it `item` null: it lifts nothing;
+         *   `look` draws the ghost as the item looks, else the ghost is its label
          * @param {DragTheme} t
          * @returns {E}
          */
-        item(el, { from, item, key, label, places, targetFor }, t) {
+        item(el, { from, item, key, label, look, places, targetFor }, t) {
             const s = drag.state();
             const mine = s.name !== 'idle' && s.key === key;
             const at = s.name === 'idle' ? null : targetFor(s.item.item);
@@ -156,6 +159,7 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
                     {
                         item,
                         label,
+                        look,
                         places,
                         size: box
                             ? axis === 'y'
