@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T11:53:00Z'
+updated_date: '2026-11-19T12:00:00Z'
 labels:
   - s
   - clio-main
@@ -17,10 +17,9 @@ ordinal: 1000
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look
-- [ ] #2 f45 keep/verify-pr-153: 7 vm-go-test fixes never landed; a stray chore rebases, tests, lands them (his o3, 23:35)
-- [ ] #3 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #4 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #5 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #2 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #3 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #4 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1132,4 +1131,6 @@ done 2026-11-18 22:53: f44 when dima is back: show where his not-possible herdr 
 PK-349:W1204 (2026-11-19 13:33, dima): mods and herdr lanes up.
 PK-349:W1205 (2026-11-19 13:33, dima): wing 1 later when i say.
 PK-349:W1206 (2026-11-19 13:33, dima): you today - all tails should be solved and new ones not created - solve in place.
+
+done 2026-11-19 14:00: f45 keep/verify-pr-153: 7 vm-go-test fixes never landed; a stray chore rebases, tests, lands them (his o3, 23:35)
 <!-- SECTION:NOTES:END -->
