@@ -452,3 +452,11 @@ export async function pressHot(
     if (sid === (await currentId($))) await followHot($, view);
     await view.load();
 }
+
+// a 💨 press whose write failed: the key goes back to what the press read
+export async function restoreAfk(
+    $: EngineInterface,
+    was: { at?: number; on?: boolean; wakerBefore?: boolean } | undefined,
+) {
+    await $.store.set(AFK_KEY, was ?? { on: false }).catch(() => undefined);
+}

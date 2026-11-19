@@ -17,6 +17,7 @@ export type Reply = {
 };
 // how far this session read herdr's ticks file for it: the `at` of the newest press taken, one key per session id
 export const HERDR_READ = 'herdr-read:';
+// 💨 and ⏰ stay here with 🔥: keep-warm writes them, session-record copies them into the fleet's shelf
 export const AFK_KEY = 'afk';
 export const REPLY = 'reply:';
 // the model and effort of a session's main loop, as its last model request named them
