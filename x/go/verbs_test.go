@@ -215,6 +215,45 @@ func TestHoldUnstagedHoldsANestedRepo(t *testing.T) {
 	}
 }
 
+// a peer that writes a held path while the hooks run keeps its write; the held version waits in the held dir
+func TestHoldUnstagedKeepsAWriteThatLandedDuringTheHold(t *testing.T) {
+	t.Parallel()
+	for _, path := range []string{"tracked.txt", "wip/draft.txt"} {
+		t.Run(path, func(t *testing.T) {
+			dir, _ := gatedRepo(t, "mkdir -p wip && echo peer > "+path)
+
+			got := xIn(t, dir, nil, "lane", "commit", "--hold-unstaged", message(t), "--", "readme.txt")
+
+			if body := read(t, filepath.Join(dir, path)); body != "peer\n" {
+				t.Fatalf("the restore wrote %q over the peer's write", body)
+			}
+			if got.code != 1 || !strings.Contains(got.stdout, "committed ") || !strings.Contains(got.stdout, path+" changed during the hold") {
+				t.Errorf("exit %d, want the kept write named: %s", got.code, got.stdout)
+			}
+			held, _ := filepath.Glob(filepath.Join(dir, ".git/x-held/*", path))
+			if len(held) != 1 || read(t, held[0]) == "peer\n" {
+				t.Errorf("held copies %v, want the held version kept in the held dir", held)
+			}
+		})
+	}
+}
+
+// a path a live peer holds in x-mod-holds stays in the tree: its holder may write it at any moment
+func TestHoldUnstagedLeavesAPathALivePeerHolds(t *testing.T) {
+	t.Parallel()
+	dir, seen := gatedRepo(t, "exit 0")
+	store := holdsStoreOf(t, filepath.Join(dir, "tracked.txt"), false, map[string]any{"idleSince": nil})
+
+	got := xIn(t, dir, []string{"X_HOLDS=" + store, "CLAUDE_CODE_SESSION_ID=mine"}, "lane", "commit", "--hold-unstaged", message(t), "--", "readme.txt")
+
+	if got.code != 0 || read(t, seen) != "wip edit\n" {
+		t.Fatalf("exit %d, the hook saw %q: want the peer's file left in place: %s", got.code, read(t, seen), got.stdout)
+	}
+	if left := fmt.Sprint(got.data["leftForPeers"]); left != "[tracked.txt]" || read(t, filepath.Join(dir, "wip/draft.txt")) != "wip\n" {
+		t.Errorf("left %s: want the peer's path named and the free one held and restored: %s", left, got.stdout)
+	}
+}
+
 func TestHoldUnstagedKeepsADeletionDeleted(t *testing.T) {
 	t.Parallel()
 	dir, seen := gatedRepo(t, "test -e gone.txt || exit 1; exit 0")

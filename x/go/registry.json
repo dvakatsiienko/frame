@@ -141,7 +141,7 @@
                     "type": "boolean"
                 },
                 "hold-unstaged": {
-                    "description": "hold the unstaged and untracked files outside the named paths aside while the hooks run, then put them back byte for byte",
+                    "description": "hold the unstaged and untracked files outside the named paths aside while the hooks run, then put them back byte for byte; a path a live peer holds stays in place, and a write that landed during the hold is never overwritten",
                     "type": "boolean"
                 },
                 "repo": {

@@ -124,9 +124,16 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
                         : s.from > s.to && at >= s.to && at < s.from
                           ? slot
                           : 0;
+            // a drop that moved reorders the rows in the same frame the slides end, and the two cancel out: animated, the
+            // rows would swing out a slot and back (dima's 16:32 video), so they settle at once. a cancel slides home
+            const isSliding =
+                s.name === 'dragging' ||
+                (s.name === 'settling' && s.to === s.from);
             const placed = el
                 .relative()
-                .transition(axis === 'y' ? 'top' : 'left', SLIDE_MS)
+                .when(isSliding, (el) =>
+                    el.transition(axis === 'y' ? 'top' : 'left', SLIDE_MS),
+                )
                 .transition('opacity', SLIDE_MS)
                 .when(axis === 'y', (el) => el.top(slide))
                 .when(axis === 'x', (el) => el.left(slide))
