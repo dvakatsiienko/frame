@@ -14,6 +14,11 @@
             ".ts": "typescript",
             ".tsx": "typescriptreact"
         },
+        "initializationOptions": {
+            "tsserver": {
+                "useSyntaxServer": "never"
+            }
+        },
         "startupTimeout": 60000,
         "workspaceFolder": "${CLAUDE_PROJECT_DIR}"
     }
