@@ -38,7 +38,8 @@ linear api "query { initiative(id: \"$INIT\") { name status description content 
   ([(if ($mainLive[0].project.name // "") as $top | ([$steps[0].p, "fleet", "mods: cc", "mods: herdr"] | index($top)) == null then "the main road top (\($mainLive[0].name // "none")) is off the now step and the fleet" else empty end),
     (if ($unqueued | length) > 0 then "open milestones missing from the queue: \($unqueued | join(", "))" else empty end),
     (if ($ghosts | length) > 0 then "queue lines matching no milestone: \($ghosts | join(", "))" else empty end)]) as $issues |
-  ([($mainLive[:2] + $sideLive[:3])[].project.name] | unique) as $hot |
+  # a project whose ticket a lane is working (In Progress) is hot too, wherever its milestone sits in the queue (dima o2, 2026-11-19)
+  ([($mainLive[:2] + $sideLive[:3])[].project.name] + [$d.projectMilestones.nodes[] | select(any(.issues.nodes[]; .state.type == "started")) | .project.name] | unique) as $hot |
   ([($mainLive + $sideLive)[].project.name] | unique) as $queued |
   ([$d.initiative.projects.nodes[] | .name as $p
     | (if ($hot | index($p)) != null then "In Progress" elif ($queued | index($p)) != null then "Planned" else "Backlog" end) as $want
