@@ -44,6 +44,8 @@ the build knowledge for speak: the practices, the bar, the architecture calls an
 ## engines and free tiers
 
 - the leaders on Artificial Analysis: Eleven v4 and v4 Turbo, Qwen-Audio-3.1-TTS-Plus, Cartesia Sonic 3.6, Speechify Simba 3.5; Fish S2.1 Pro, speak's fish engine, is #24 (read through a summarizer, ?) ([aa](https://artificialanalysis.ai/text-to-speech/leaderboard))
+- dima's blind booth, 2026-11-19, one tech line, loudness-matched: kokoro af_heart 5/5; Speechify simba-3.5 geffen_32 and harper_32 4/5 (alike to his ear), kristy 3.5, bwyneth 3.4 ([FRM-288](https://linear.app/x-com/issue/FRM-288) W40–W41)
+- Speechify returns word speech marks (start and end ms) on every `/v1/audio/speech` answer, probed 2026-11-19
 - Speechify API: 500k characters a month free, commercial use allowed, 333k of Simba 3.5 from 2026-11-21, word timestamps included ([pricing](https://speechify.ai/pricing), [speech marks](https://docs.speechify.ai/build/guides/text-to-speech/speech-marks.md))
 - fish `s2.1-pro-free`: fair use, no hard cap; its end date reads 2026-11-30 or 2026-08-31 in the same post, so it is unclear ([blog](https://fish.audio/blog/s2-1-pro-free-api/), [docs](https://docs.fish.audio/developer-guide/models-pricing/pricing-and-rate-limits.md))
 - Google Cloud Chirp 3 HD: 1M characters a month, uk-UA and ru-RU, billing enabled ([pricing](https://cloud.google.com/text-to-speech/pricing))
