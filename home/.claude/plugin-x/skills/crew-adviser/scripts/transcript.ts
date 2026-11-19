@@ -2,6 +2,7 @@ import { globSync, readFileSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
+// lib.ts imports this module back: read its bindings inside functions only, a top-level read is a load-time TDZ crash
 import { STATE_DIR, type Usage, pad, tokensIn } from './lib.ts';
 
 const DELTA_MAX_CHARS = 60_000;
