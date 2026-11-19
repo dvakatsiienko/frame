@@ -25,9 +25,18 @@
         "module": "ES2022",
         "moduleResolution": "bundler",
         "noEmit": true,
+        "paths": {
+            "herdr": ["../../../../../../.config/herdr-app/herdr.d.ts"]
+        },
         "strict": true,
         "strictNullChecks": false,
         "target": "ES2022"
     },
-    "exclude": ["*.test.ts"]
+    "exclude": ["*.test.ts"],
+    "include": [
+        "*.js",
+        "*.d.ts",
+        "../_shared/*.js",
+        "../../../../../../.config/herdr-app/gpui-kit.d.ts"
+    ]
 }

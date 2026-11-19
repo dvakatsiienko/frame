@@ -12,9 +12,18 @@
         "moduleResolution": "bundler",
         "noEmit": true,
         "noUncheckedIndexedAccess": true,
+        "paths": {
+            "herdr": ["../../../../../../.config/herdr-app/herdr.d.ts"]
+        },
         "rootDirs": [".", "../_shared"],
         "strict": true,
         "strictNullChecks": true,
         "target": "ES2022"
-    }
+    },
+    "include": [
+        "*.js",
+        "*.d.ts",
+        "../_shared/*.js",
+        "../../../../../../.config/herdr-app/gpui-kit.d.ts"
+    ]
 }
