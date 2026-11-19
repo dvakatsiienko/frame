@@ -1,6 +1,32 @@
 import { describe, expect, test } from 'vitest';
 
-import { KEPT_PAGE_MS, keepPage, pageOnOpen } from './settings-page.js';
+import { settingsOverlay } from '../_shared/chat-asks.js';
+import {
+    KEPT_PAGE_MS,
+    escapeAct,
+    keepPage,
+    pageOnOpen,
+} from './settings-page.js';
+
+// dima, 19 Nov 19:11: «esc cancels rebinding process (and do not close settings - only cancel rebinding), and
+// followup esc closes settings»; herdr closes a dialog on Esc before the mod sees it (probe 19:43), a window never
+describe('Esc in settings', () => {
+    test('while a key records, Esc cancels the rebind only', () => {
+        expect(escapeAct('cmd-k')).toBe('cancel');
+    });
+
+    test('with nothing recording, Esc closes the window', () => {
+        expect(escapeAct(null)).toBe('close');
+    });
+
+    test('settings opens as a window herdr never closes on Esc, one at a time', () => {
+        expect(settingsOverlay('dock')).toMatchObject({
+            key: 'x-herdr-settings',
+            kind: 'window',
+            props: { settingsWindow: 'dock' },
+        });
+    });
+});
 
 function store() {
     const kept: Record<string, string> = {};

@@ -6,6 +6,9 @@
 
 export const KEPT_PAGE_MS = 10 * 1000;
 
+/** what Esc does in settings: a key recording gives the rebind up, else the window closes @param {string | null} recording */
+export const escapeAct = (recording) => (recording ? 'cancel' : 'close');
+
 /** @param {string} overlay */
 const pageKey = (overlay) => `x-herdr-settings.page:${overlay}`;
 

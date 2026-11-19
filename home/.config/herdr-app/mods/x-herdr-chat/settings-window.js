@@ -23,7 +23,7 @@ import {
     rowWords,
     settingRows,
 } from './settings-model.js';
-import { keepPage, pageOnOpen } from './settings-page.js';
+import { escapeAct, keepPage, pageOnOpen } from './settings-page.js';
 import {
     noteHint,
     noteShown,
@@ -59,6 +59,8 @@ export function createSettingsWindow(at, cx) {
         pending: /** @type {Record<string, unknown>} */ ({}),
         recording: /** @type {string | null} */ (null),
         values: /** @type {Record<string, unknown>} */ ({}),
+        /** the window's own keys: Esc, wherever focus sits inside it */
+        windowKeys: cx.focus_handle(),
     };
     // a box per note row, made here since a text state is never made while drawing
     for (const r of settingRows) {
@@ -74,6 +76,8 @@ export function createSettingsWindow(at, cx) {
         s.keys = keysView((await readKeys()).keys);
         cx.notify();
     });
+    // the window takes the keyboard once it is drawn, so its first Esc closes it
+    cx.timer.after(50, () => s.windowKeys.focus());
     cx.spawn(async (/** @type {any} */ cx) => {
         const hud = await metalHudNow().catch(() => null);
         await writeSettings(
@@ -225,7 +229,7 @@ export function createSettingsWindow(at, cx) {
  *   keys: KeysShown, keysNote: string, keyCapture: any, recording: string | null,
  *   change: (key: string, value: unknown, cx: any) => void, close: () => void, pickPage: (id: string, cx: any) => void,
  *   recordKey: (keystroke: string, cx: any) => void, saveNote: (key: string, isReset: boolean, cx: any) => void,
- *   startRecording: (key: string, cx: any) => void }} WindowState
+ *   startRecording: (key: string, cx: any) => void, windowKeys: any }} WindowState
  */
 
 /** @param {any} t @param {WindowState} w */
@@ -251,14 +255,29 @@ function settingsWindow(t, w) {
         )
         .child(nav(t, w, page.id))
         .child(content(t, w, page));
-    return div()
-        .id('chat-settings-root')
-        .size_full()
-        .flex()
-        .items_center()
-        .justify_center()
-        .on_click(() => w.close())
-        .child(card);
+    return (
+        div()
+            .id('chat-settings-root')
+            .size_full()
+            .flex()
+            .items_center()
+            .justify_center()
+            .track_focus(w.windowKeys)
+            // a window drags by any press it does not stop: this card never moves under a click
+            .on_mouse_down(
+                'left',
+                (/** @type {any} */ _e, /** @type {any} */ cx) =>
+                    cx.stop_propagation(),
+            )
+            .on_key_down((/** @type {any} */ e, /** @type {any} */ cx) => {
+                if (e.keystroke !== 'escape') return;
+                if (escapeAct(w.recording) === 'close') w.close();
+                else w.recordKey('escape', cx);
+                cx.stop_propagation();
+            })
+            .on_click(() => w.close())
+            .child(card)
+    );
 }
 
 /** @param {any} t @param {WindowState} w @param {string} at */

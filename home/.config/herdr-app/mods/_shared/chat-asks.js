@@ -24,11 +24,16 @@ export function chatShownOf(value) {
     };
 }
 
-/** the overlay the chat's gear opens: herdr's middle, the card the chat draws @param {string} page */
+/**
+ * the settings window: herdr's middle, the card the chat draws. a window, since herdr closes a dialog on Esc before
+ * the mod sees it and the Keys page's Esc must cancel a rebind first (probe, 19 Nov 19:43); its key keeps one open
+ * @param {string} page
+ */
 export const settingsOverlay = (page) => ({
     frame: /** @type {const} */ ('none'),
     height: 0.92,
-    kind: /** @type {const} */ ('dialog'),
+    key: 'x-herdr-settings',
+    kind: /** @type {const} */ ('window'),
     mod: 'x-herdr-chat',
     props: { settingsWindow: page },
     width: 860,

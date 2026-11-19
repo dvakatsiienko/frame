@@ -255,8 +255,10 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - when he presses 🎛️ on the band, or ⌘⇧, anywhere (⌘, stays herdr's own settings)
   - then x-herdr-settings opens in herdr's middle, shaped like shepherdr's: a page list on the left (general, dock, chat, claude code mods, keys; the band opens dock, ⌘⇧, general), each row a title, one dim line and its control
   - and a change lands in the file at once and the chat applies it; a value off its row's range reads as the default; a key no row reads is kept through every write
-  - and Esc, ✕ or a click beside the card closes it
+  - and Esc, ✕ or a click beside the card closes it; while a key records on the keys page, Esc gives the rebind up and leaves the window open, and the next Esc closes it (dima, 19 Nov 19:11)
+  - and ⌘⇧, opens it right after a herdr restart, with nothing opened first (dima, 19 Nov 19:11)
   - decision: the window lives in the chat: a herdr mod cannot import a sibling mod's file (clio, 19:28)
+  - decision: it opens as a herdr window, one at a time by its key: herdr closes a dialog on Esc before the mod sees it (probe, 19 Nov 19:43), a window never (his o21 tick)
 - ⬜ a «🐦‍🔥 second wind» group on the claude Code mods page (FRM-625)
   - makes: the rows `stash.second-wind`, `stash.second-wind-auto`, `stash.wind.notice`, `stash.wind.must` and the five note rows `stash.wind.text.notice`, `.at`, `.at.coordinator`, `.propose`, `.press`, which x-mod-stash reads
   - given the group, then it holds the two switches, «heads-up at» and «second wind at» as steppers, and five note boxes titled by when a thread reads them, with the live number of its line
