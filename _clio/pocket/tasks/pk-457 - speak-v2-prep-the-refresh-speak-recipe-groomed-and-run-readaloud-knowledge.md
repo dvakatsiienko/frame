@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T14:56:00Z'
+updated_date: '2026-11-19T15:02:00Z'
 labels:
   - s
   - clio-wing-1
@@ -43,4 +43,8 @@ PK-457:W21 (2026-11-19 16:54, dima): what better recipe name could we have, give
 PK-457:W22 (2026-11-19 16:54, dima): q2: yes, but there is a catch: i don't have a huge amount of time for a long exploratory build, because i also want to resume my cv once we're done with the speak app, so i can resume my job search.
 PK-457:W23 (2026-11-19 16:54, dima): q6: where does the researched knowledge land, especially the read-aloud app building best practices? for you (architecting) and for codies (implementation), so everyone uses the useful knowledge at all phases? ❓
 moved: W11 → FRM-668:W5 (dima 16:54, phase 2)
+
+PK-457:W24 (2026-11-19 17:02, dima): i thought our evergreen also refreshes python and uv. does it? or is kokoro installed locally in the speak app and not globally, and that's why evergreen misses it? ❓
+PK-457:W25 (2026-11-19 17:02, dima): how, then, do we keep it properly updated in an easy way: checked at each evergreen, and updated if updates are present? ❓
+PK-457:W26 (2026-11-19 17:02, dima): ok, let's keep refresh-speak for brevity. i actually like «refresh-readaloud»: it is a more precise and more versatile name. for now keep refresh-speak; change to readaloud if we grow this area into something bigger, later.
 <!-- SECTION:NOTES:END -->
