@@ -20,5 +20,6 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a mod whose `jsconfig.json` sets `strictNullChecks` to true (today: `x-herdr-chat`, `x-herdr-chat-settings`, `x-herdr-deck`)
   - when the command runs, alone or inside `pnpm typecheck` (the commit gate and ci run that)
   - then every `.js` file of the mod is checked against herdr's own type files, and one line says how many mods and files were clean; a type error exits 1 and names its file (proven: a planted error refused a commit's dry run, 2026-11-16)
-  - and where herdr is not installed (ci), only the files that import their siblings alone are checked, and the line says how many were left out; a run that checked no file is red
+  - and where herdr is not installed (ci), each file that imports herdr, or imports such a file at any depth, is left out and named in the line, and the rest are checked; a run that checked no file is red (FRM-659: ci went green again, 2026-11-19)
+  - and a mod folder holding its own `gpui-kit.d.ts` or `herdr.d.ts` turns it red, naming the file; the land refuses that mod too
 
