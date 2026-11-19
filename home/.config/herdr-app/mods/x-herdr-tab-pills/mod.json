@@ -4,5 +4,6 @@
         "version": "0.1.16"
     },
     "place": "none",
+    "shared": ["drag.js", "drag-view.js", "tab-drops.js"],
     "title": "Tab pills"
 }

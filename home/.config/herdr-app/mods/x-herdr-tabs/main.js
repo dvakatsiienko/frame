@@ -23,8 +23,10 @@ import {
     window,
 } from 'herdr';
 
+import { createListDrag } from './drag-view.js';
 import { tabLabel } from './label.js';
 import { firstTab } from './strip.js';
+import { tabDrops } from './tab-drops.js';
 
 // the agents list reads each session name and publishes it here (address → name); one reader, one naming rule
 const NAMES_KEY = 'x-herdr-agents.names';
@@ -105,7 +107,13 @@ function find(node, id) {
 
 export default class Tabs extends View {
     init(_props, cx) {
-        this.pressed = null;
+        // a press lifts a tab, a drag reorders, a click selects (FRM-664)
+        this.tabKeys = cx.focus_handle();
+        this.drag = createListDrag({
+            axis: 'x',
+            focus: () => this.tabKeys,
+            ...tabDrops,
+        });
         // the first tab drawn, the bar's width, and the active tab seen last: one swipe moves `first` by one tab
         this.first = 0;
         this.barW = 0;
@@ -263,7 +271,7 @@ export default class Tabs extends View {
             // Chrome-style: a tab is as wide as its content (up to 200, active 240) and the others shrink together as
             // tabs are added, down to 110 px, where its badge and a readable name both stay (dima, 20:28); past that the
             // bar scrolls sideways. The active one keeps its name.
-            return (
+            return this.drag.item(
                 h_flex()
                     .id(`tab-${c.id}`)
                     .h(29)
@@ -282,23 +290,11 @@ export default class Tabs extends View {
                     .bg(c.active ? t.raised : t.chrome)
                     .text_color(c.active ? t.foreground : t.muted)
                     .hover((s) => s.bg(t.hover))
+                    // a double-click renames; a press, drag and click run through the shared drag (FRM-664)
                     .on_mouse_down('left', (e, cx) => {
                         cx.stop_propagation();
-                        this.pressed = i;
                         if (e.click_count === 2)
                             run('tab.rename', { id: c.id });
-                    })
-                    .on_mouse_up('left', () => {
-                        const from = this.pressed;
-                        this.pressed = null;
-                        if (from !== null && from !== i)
-                            run('tab.move', {
-                                id: shown[from].id,
-                                index:
-                                    space.tabs.findIndex((x) => x.id === c.id) +
-                                    1,
-                            });
-                        else run('tab.select', { id: c.id });
                     })
                     // herdr's own tab menu on every tab (dima, o80)
                     .on_mouse_down('right', () =>
@@ -368,7 +364,13 @@ export default class Tabs extends View {
                                 })
                                 .child(svg('mods/pane/close.svg').size(12)),
                         ),
-                    )
+                    ),
+                `tab-${c.id}`,
+                { id: c.id },
+                i,
+                () => i,
+                label,
+                t,
             );
         };
         const root = layout(),
@@ -428,13 +430,11 @@ export default class Tabs extends View {
             .bg(t.chrome)
             .border_b(1)
             .border_color(t.border)
-            .on_mouse_up('left', () => {
-                this.pressed = null;
-            })
             .on_scroll_wheel(swipe)
             .child(
-                h_flex()
-                    .id('tab-scroll')
+                // the drag's zone: leaving the strip springs a dragged tab home
+                this.drag
+                    .zone(h_flex().id('tab-scroll').relative())
                     .flex_1()
                     .min_w(0)
                     .h_full()
@@ -450,7 +450,8 @@ export default class Tabs extends View {
                         shown
                             .slice(this.first)
                             .map((c, j) => item(c, j + this.first)),
-                    ),
+                    )
+                    .children([this.drag.ghost(t)].filter(Boolean)),
             )
             .child(
                 button('tab-new', '+', () =>

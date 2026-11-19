@@ -28,6 +28,7 @@
         "paths": {
             "herdr": ["/Users/dima/.config/herdr-app/herdr.d.ts"]
         },
+        "rootDirs": [".", "../_shared"],
         "strict": true,
         "strictNullChecks": false,
         "target": "ES2022"

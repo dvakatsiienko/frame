@@ -18,7 +18,9 @@ import {
     window as win,
 } from 'herdr';
 
+import { createListDrag } from './drag-view.js';
 import { closeAsks, closeWords, leadPane, pillName, swallow } from './pills.js';
+import { tabDrops } from './tab-drops.js';
 
 // the agents list reads each session name and publishes it here (address → name); one reader, one naming rule
 const NAMES_KEY = 'x-herdr-agents.names';
@@ -91,7 +93,15 @@ function own(el) {
 }
 
 export default class TabPills extends View {
-    init() {
+    /** @param {unknown} _props @param {import('gpui-kit').Context} cx */
+    init(_props, cx) {
+        // a press lifts a pill, a drag reorders the tabs, a click selects (FRM-664)
+        this.tabKeys = cx.focus_handle();
+        this.drag = createListDrag({
+            axis: 'x',
+            focus: () => this.tabKeys,
+            ...tabDrops,
+        });
         /** @type {string | null} the pill under the pointer: its × shows */
         this.hovered = null;
     }
@@ -135,6 +145,7 @@ export default class TabPills extends View {
     render() {
         // herdr's theme colours are hex strings; gpui-kit's style setters want its Color
         const t = /** @type {Theme} */ (theme());
+        const dragTheme = /** @type {import('./drag-view.js').DragTheme} */ (t);
         const space = spaces().find((p) => p.active);
         if (!space) return div();
         const all = panes();
@@ -143,8 +154,8 @@ export default class TabPills extends View {
             shared(NAMES_KEY)
         );
 
-        /** @param {(typeof space.tabs)[number]} c */
-        const pill = (c) => {
+        /** @param {(typeof space.tabs)[number]} c @param {number} i */
+        const pill = (c, i) => {
             const p = leadPane(all, c.id);
             const where = folder(p?.cwd);
             const others = all
@@ -152,7 +163,16 @@ export default class TabPills extends View {
                 .map((x) => x.terminal);
             const name = pillName(c, [p?.terminal, ...others], names);
             const isCloseShown = c.active || this.hovered === c.id;
-            return own(h_flex())
+            return this.drag
+                .item(
+                    own(h_flex()),
+                    `pill-${c.id}`,
+                    { id: c.id },
+                    i,
+                    () => i,
+                    name.label,
+                    dragTheme,
+                )
                 .id(`pill-${c.id}`)
                 .flex_shrink(1)
                 .w(260)
@@ -176,7 +196,6 @@ export default class TabPills extends View {
                     else if (this.hovered === c.id) this.hovered = null;
                     cx.notify();
                 })
-                .on_click(() => run('tab.select', { id: c.id }))
                 .on_mouse_down('right', () =>
                     openOverlay({
                         kind: 'popup',
@@ -212,6 +231,8 @@ export default class TabPills extends View {
                 .child(
                     div()
                         .id(`pill-close-${c.id}`)
+                        // its press is its own: it never lifts the pill
+                        .on_mouse_down('left', swallow)
                         .size(20)
                         .flex()
                         .flex_none()
@@ -278,15 +299,22 @@ export default class TabPills extends View {
                         ),
                 )
                 .child(
-                    h_flex()
-                        .flex_shrink(1)
-                        .min_w(0)
-                        .h(36)
-                        .p(3)
-                        .gap(3)
-                        .rounded(16)
-                        .bg(t.chrome)
-                        .children(space.tabs.map(pill)),
+                    // the drag's zone: leaving the tray springs a dragged pill home
+                    this.drag
+                        .zone(
+                            h_flex()
+                                .id('pills-tray')
+                                .relative()
+                                .flex_shrink(1)
+                                .min_w(0)
+                                .h(36)
+                                .p(3)
+                                .gap(3)
+                                .rounded(16)
+                                .bg(t.chrome),
+                        )
+                        .children(space.tabs.map(pill))
+                        .children([this.drag.ghost(dragTheme)].filter(Boolean)),
                 )
                 .child(div().flex_1())
         );
