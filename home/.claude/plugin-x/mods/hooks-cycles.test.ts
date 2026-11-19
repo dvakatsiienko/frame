@@ -5,8 +5,9 @@ import { describe, expect, it } from 'vitest';
 // a mod's hooks files import downward only: a module that imports back up the chain loads half-built, so a split
 // out of register.tsx keeps every hooks folder free of import cycles (FRM-662 exit 2)
 const HERE = import.meta.dirname;
+// a bare `import './x.ts';` loads its file as surely as a named one
 const IMPORT =
-    /^\s*(?:import|export)\b[^'"]*?\bfrom\s+['"](\.{1,2}\/[^'"]+)['"]/gm;
+    /^\s*(?:import|export)\b(?:[^'"]*?\bfrom)?\s*['"](\.{1,2}\/[^'"]+)['"]/gm;
 
 function hooksFiles(dir: string): string[] {
     return readdirSync(dir, { withFileTypes: true }).flatMap((d) => {
@@ -60,17 +61,19 @@ describe('a mod imports downward only', () => {
         expect(cycleIn(graph)).toEqual(['/a.ts', '/b.ts', '/a.ts']);
     });
 
-    it('reads import and export-from lines, never a string in code', () => {
+    it('reads import, bare import and export-from lines, never a string in code', () => {
         const source = [
             "import { a } from './a.ts';",
             "import type { B } from '../b.ts';",
             "export { c } from './c.ts';",
+            "import './e.ts';",
             "const s = 'from ./d.ts';",
         ].join('\n');
         expect(importsOf('/m/hooks/x.ts', source)).toEqual([
             '/m/hooks/a.ts',
             '/m/b.ts',
             '/m/hooks/c.ts',
+            '/m/hooks/e.ts',
         ]);
     });
 
