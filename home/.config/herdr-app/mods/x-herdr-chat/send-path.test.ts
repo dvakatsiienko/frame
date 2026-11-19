@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
 vi.mock('herdr', () => ({
     exec: vi.fn(async () => ({ code: 0, stderr: '', stdout: '' })),

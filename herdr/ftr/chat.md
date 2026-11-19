@@ -136,7 +136,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and each thread keeps its own mark, settled from its thread's state whether that thread is open or not
   - when he holds the send button or Enter, then after a 100 ms pause a disc fills the button over 1 s and the words go now: a turn starts; a release after the disc shows sends nothing; x-herdr-settings sets both timings
   - when he presses cmd+Enter in the focused quill, then the words go now, no disc (dima, 20:41: «cmd+enter — sends immediately»)
-  - and a slash command, or a thread that takes no joins, is sent that way on a plain press, and a line over the quill says why
+  - and a thread that takes no joins is sent that way on a plain press, and a line over the quill says why; a slash command marks 🍕 and joins like any words (dima's a) tick, 19 Nov 17:37)
   - when a send is refused, or the thread does not run in herdr, then his words are back in the quill and a line over it says so
   - and a message waiting in Claude Code's queue is his last row, an outline of his bubble with dim words, reading «sent HH:MM» under it, until the turn takes it; words that joined a turn are drawn as his messages
   - and a picture waiting over the quill joins as its path and stays, as the words do, until a turn takes it
@@ -170,7 +170,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
 - ⬜ a slash command he sends is his message (FRM-638 slice 6)
   - given he sends «/name args» from the quill
   - then it shows as his bubble, as he typed it, waiting while the thread works and in history once it ran; no «Sent:» note (dima, 18:00, 18:01)
-  - and sent while the thread works, its row reads «sent HH:MM» like any message, with no note under the quill (dima, 19 Nov 17:28: «can you remove this?»)
+  - and Enter marks it 🍕 and it joins the turn as his words, like any message; a hold or cmd+Enter sends it now, its row reading «sent HH:MM» with no note under the quill (dima, 19 Nov 17:28: «make it work like any other message from a quill», his a) tick 17:37)
 - ⬜ inline code in the quill turns into a chip
   - given dima types «use `ls` here»
   - then `ls` draws as one monospace chip the caret skips and one delete removes, and the sent message reads «use `ls` here»

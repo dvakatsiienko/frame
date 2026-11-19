@@ -124,8 +124,6 @@ export function createMagic({ io, dir, quills, newId }) {
         async click(thread, sid, text, joins, files = []) {
             const had = quills.markOf(thread);
             if (had?.state === 'pending') return unmark(had, joins);
-            // a slash command starts a turn of its own: it never joins, and its bubble says it was sent
-            if (text.startsWith('/')) return { act: 'push', note: null };
             const why = pushReason(sid ? joins : null);
             if (why || !sid) return { act: 'push', note: why };
             /** @type {Mark} */

@@ -117,14 +117,13 @@ describe('a click on send marks the words to join the turn', () => {
         expect(w.magic.markOf(THREAD)?.state).toBe('pending');
     });
 
-    test('a slash command starts a turn: nothing is marked, nothing said, its bubble is the reply (dima, 18:01)', async () => {
+    test('a slash command goes like any message: marked, 🍕 under the quill (dima, 19 Nov 17:28)', async () => {
         const w = world();
-        expect(await w.magic.click(THREAD, SID, '/compact', ON)).toEqual({
-            act: 'push',
+        expect(await w.magic.click(THREAD, SID, '/x:cmt y', ON)).toEqual({
+            act: 'marked',
             note: null,
         });
-        expect(w.magic.markOf(THREAD)).toBeNull();
-        expect(w.rows()).toEqual([]);
+        expect(w.magic.markOf(THREAD)?.said).toBe('/x:cmt y');
     });
 
     test('a thread whose joins are off gets a plain send', async () => {
