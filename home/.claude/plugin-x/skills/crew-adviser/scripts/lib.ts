@@ -1116,7 +1116,7 @@ export function decisionOf(
             dir = resolve(dir, words[1].replace(/^~(?=\/)/, homedir()));
         const [head, verb, act] = words;
         if (head === 'gh' && verb === 'pr' && act === 'merge')
-            return { args: words.slice(3), kind: 'merge' };
+            return { args: words.slice(3), cwd: dir, kind: 'merge' };
         // a merge goes through x since FRM-427, often behind a `timeout N`; with no --apply it only plans
         const at = words[0] === 'timeout' ? 2 : 0;
         if (
@@ -1127,7 +1127,7 @@ export function decisionOf(
             // an --override-off/--override-on call names no pr, so it merges nothing
             mergeSelectors(words.slice(at + 3)).selector
         )
-            return { args: words.slice(at + 3), kind: 'merge' };
+            return { args: words.slice(at + 3), cwd: dir, kind: 'merge' };
         if (head === 'claude' && words.includes('--bg'))
             return { kind: 'spawn' };
         if (isPaidCall(words, dir, bodies)) return { kind: 'paid', what };
@@ -1947,7 +1947,7 @@ export interface TranscriptEntry {
 }
 
 export type Decision =
-    | { kind: 'merge'; args: string[] }
+    | { kind: 'merge'; args: string[]; cwd: string }
     | { kind: 'spawn' }
     | { kind: 'proposal'; path: string }
     | { kind: 'paid' | 'post' | 'close'; what: string }

@@ -165,6 +165,20 @@ describe('a merge in the coordinator session', () => {
         ).toEqual([true]);
     });
 
+    test('reads the pr in the dir the command cds into, not the session’s', async () => {
+        const fixture = home();
+        mkdirSync(join(fixture.dir, 'bytes'));
+        writeFileSync(
+            join(fixture.dir, 'bin/gh'),
+            `#!/bin/bash\n[ "$(basename "$PWD")" = bytes ] && repo=bytes || repo=frame\necho "{\\"number\\":162,\\"headRefOid\\":\\"c1c1c1c1aaaa\\",\\"url\\":\\"https://github.com/dvakatsiienko/$repo/pull/162\\"}"\n`,
+        );
+        const { lines } = crow(fixture.socket, 'none');
+        await hook(fixture, 'cd bytes && x lane merge-auto 162 --apply');
+        expect(
+            lines.map((line) => / · merge (\S+) · /.exec(line)?.[1]),
+        ).toEqual(['dvakatsiienko/bytes#162']);
+    });
+
     test('carries crow’s note into the merge as one context line', async () => {
         const fixture = home();
         crow(fixture.socket, 'hold: two commits past the clean');

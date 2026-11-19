@@ -89,7 +89,7 @@ async function act(
         case undefined:
             return;
         case 'merge':
-            return merge(decision.args, transcriptPath, input.cwd);
+            return merge(decision.args, transcriptPath, decision.cwd);
         case 'spawn':
             return noWaitWake('spawn', transcriptPath);
         case 'post':
