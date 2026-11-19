@@ -102,7 +102,7 @@ export async function endUserTurn($: EngineInterface) {
 }
 
 // a turn starts: dima's, a peer's or the mod's own; every per-turn mark resets
-export function beginTurn(isUser: boolean, isPing: boolean) {
+function beginTurn(isUser: boolean, isPing: boolean) {
     Object.assign(state, {
         gridQs: [],
         isBusy: true,
@@ -129,7 +129,7 @@ export async function markActive($: EngineInterface) {
     state.activeAt = await $.clock.now();
 }
 
-export async function keepTurn($: EngineInterface) {
+async function keepTurn($: EngineInterface) {
     await $.state
         .set(TURN, {
             afk: state.turnAfk,
