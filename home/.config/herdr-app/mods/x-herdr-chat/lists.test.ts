@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { listLines, withMarkers } from './lists.js';
+import { listLines, pastedText, withMarkers } from './lists.js';
 
 describe('a list pasted from the chat gets its markers back (dima, 23:38)', () => {
     const source = [
@@ -43,5 +43,28 @@ describe('a list pasted from the chat gets its markers back (dima, 23:38)', () =
         expect(withMarkers(before, after, lines)).toBe(
             `${before}- a short bullet\n1. a numbered step\n`,
         );
+    });
+});
+
+describe('a paste into the quill reads plain with its lists kept (FRM-659 wisp: lost in the swap)', () => {
+    const messages = ['- **first** item\n- second item'];
+
+    test('links read as labels, marks go, and list lines get their markers back', () => {
+        expect(
+            pastedText(
+                'note: ',
+                'note: see [the doc](https://x.y) and `code`\nfirst item\nsecond item',
+                messages,
+            ),
+        ).toBe('note: see the doc and code\n- first item\n- second item');
+    });
+
+    test('a typed character is left as typed', () => {
+        expect(pastedText('a', 'a*', messages)).toBe('a*');
+    });
+
+    test('a paste already fixed comes back unchanged, so setting it ends there', () => {
+        const fixed = 'x\n- first item\n- second item';
+        expect(pastedText('', fixed, messages)).toBe(fixed);
     });
 });

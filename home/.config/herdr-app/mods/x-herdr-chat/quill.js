@@ -163,8 +163,9 @@ export function createQuills(store, onWrite = () => {}) {
     /** @param {string} text */
     function write(text) {
         if (!shown || shown.box.value() === text) return;
-        shown.box.set_value(text);
+        // told first: the box's change for this write must read as ours, never as a paste of his
         onWrite(text);
+        shown.box.set_value(text);
     }
 
     /** @param {string | null} thread @returns {Quill} */
@@ -209,8 +210,8 @@ export function createQuills(store, onWrite = () => {}) {
             if (thread === null) quills.delete(null);
             shown = { box, thread };
             const { text } = get(thread);
-            if (box.value() !== text) box.set_value(text);
             onWrite(text);
+            if (box.value() !== text) box.set_value(text);
             return text;
         },
     };

@@ -2,7 +2,7 @@
 // each message's source, so a paste into its quill puts back the marker of every line that is a list item's text
 // (dima, 23:38, the probe's variant E)
 
-import { plainText } from './paste.js';
+import { plainText, withPlainPaste } from './paste.js';
 
 const ITEM = /^(\s*)([-*+]|\d+[.)])\s+(.+)$/;
 const FENCE = /^\s*(```|~~~)/;
@@ -61,4 +61,16 @@ export function withMarkers(was, now, lines) {
         .map((piece) => lines.get(piece.trim()) ?? piece)
         .join('\n');
     return now.slice(0, start) + fixed + now.slice(now.length - end);
+}
+
+/**
+ * the quill after a change, a paste in it made plain and its list lines given their markers back (his «i want only
+ * lists rich format pasted»); only an insert of more than one character is a paste, so a typed key stays as typed
+ * @param {string} was the quill before the change
+ * @param {string} now the quill after it
+ * @param {string[]} markdowns the shown thread's messages, as written
+ */
+export function pastedText(was, now, markdowns) {
+    if (now.length <= was.length + 1) return now;
+    return withMarkers(was, withPlainPaste(was, now), listLines(markdowns));
 }

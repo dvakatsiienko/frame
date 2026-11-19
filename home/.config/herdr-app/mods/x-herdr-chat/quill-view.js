@@ -11,6 +11,7 @@ import { createAttachments } from './attachments.js';
 import { ICONS } from './icons.js';
 import { enterHoldStep } from './joins.js';
 import { createKeyPress } from './keypress.js';
+import { pastedText } from './lists.js';
 import { createQuills } from './quill.js';
 import { submitted } from './send.js';
 import {
@@ -55,8 +56,10 @@ const ATTACH_IO = {
  *   showPictures: (files: string[], at: number, cx: Context) => void,
  *   say: (note: string | null, cx: Context) => void,
  *   flash: (note: string, ms: number, cx: Context) => void,
+ *   messages: () => string[],
  * }} deps the shown thread's transcript, the chat's column width, the pickers drawn in the quill, the send path, the
- *   picture viewer, and the note under the quill: said, or shown for a while
+ *   picture viewer, the note under the quill (said, or shown for a while), and the thread's messages as written, where a
+ *   paste finds its list markers
  */
 export function createQuill({
     shownFile,
@@ -66,6 +69,7 @@ export function createQuill({
     showPictures,
     say,
     flash,
+    messages,
 }) {
     /** the box: herdr draws its text itself, so a key typed in it draws nothing of ours; made at start @type {import('gpui-base').TextareaState | null} */
     let box = null;
@@ -95,7 +99,14 @@ export function createQuill({
         const made = TextareaState.new({});
         made.set_auto_grow(1, 8);
         made.on('change', (_event, cx) => {
-            const now = made.value();
+            const typed = made.value();
+            // a paste reads plain, its list lines with their markers back, written through the quill's owner; the box's
+            // change for that write is ours and keeps it
+            const now = pastedText(typedNow, typed, messages());
+            if (now !== typed) {
+                quills.apply(shownFile(), { text: now, type: 'typed' });
+                return cx.notify();
+            }
             // a change told twice is one change
             if (now !== typedNow) {
                 typedBefore = typedNow;

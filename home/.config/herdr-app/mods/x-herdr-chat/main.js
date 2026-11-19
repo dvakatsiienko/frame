@@ -101,6 +101,10 @@ export default class Chat extends View {
     quill = createQuill({
         column: () => this.list.column(),
         flash: (note, ms, cx) => this.flashNote(note, cx, ms),
+        messages: () =>
+            this.model.rows
+                .filter((r) => r.kind === 'mine' || r.kind === 'reply')
+                .map((r) => r.text),
         pickersView: (t) => this.pickers.view(t),
         say: (note, cx) => this.say(note, cx),
         sendPath: () => this.sendPath,
