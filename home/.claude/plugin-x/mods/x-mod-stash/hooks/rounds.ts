@@ -51,7 +51,7 @@ export function roundKeyOf(
 // the key after one round, `severe` the P0 and P1 count its line named; undefined for a resend, its sha long or short
 export function roundTaken(
     kept: LaneRounds,
-    round: { n: number; sha: string },
+    round: { isFinal?: boolean; n: number; sha: string },
     severe: number | undefined,
     at: number,
 ): LaneRounds | undefined {
@@ -61,9 +61,11 @@ export function roundTaken(
         )
     )
         return undefined;
-    // a round 1 opens a new chunk on its key, so a count left from before starts over (the herdr lane's 8 of 18 Nov);
-    // past it a lane may open past round 1, and a number sent is never read back as less
-    const was: Omit<LaneRounds, 'shas'> = round.n === 1 ? { count: 0 } : kept;
+    // a «round 1» opens a new chunk on its key, so a count left from before starts over (the herdr lane's 8 of 18 Nov);
+    // a bare «final on <sha>» reads as 1 yet may follow rounds, so it never resets (wisphunter on 25430ab6); past it a
+    // lane may open past round 1, and a number sent is never read back as less
+    const was: Omit<LaneRounds, 'shas'> =
+        round.n === 1 && !round.isFinal ? { count: 0 } : kept;
     const count = Math.max(round.n, was.count + 1);
     const clean = (was.clean ?? 0) + (severe === 0 ? 1 : 0);
     return {

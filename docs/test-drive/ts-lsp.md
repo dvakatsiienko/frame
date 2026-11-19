@@ -59,6 +59,8 @@ beat grep or lost to it.
 - 2026-11-12 · wing 1, a real ask for FRM-579 (every reader of x-mod-stash's `isWing`): `findReferences` 5 sites in 1 call, `rg -n '\bisWing\b'` the same 5 · tie on a single-file symbol; the touch also printed 5 false TS5097 errors (`.ts` import extensions) because the server misses the mod's own tsconfig, so its diagnostics on mod files are noise
 - 2026-11-12 · wing 1, the extension's count at its end date · 3 `LSP` tool calls in 1,360 transcripts touched since 11-04 (grep `"name":"LSP","input"` over `~/.claude/projects`) · the verdict is due today, his call
 - 2026-11-12 · dima's steer, the third extension, to 11-19: «push the reminder +7 days, still no time to revisit this ts-lsp» (o41)
+- 2026-11-19 · FRM-656 mods codie, the move of the round count out of `register.tsx` · not used for the move itself: 3 functions with one caller each, `grep -n` named every site; a miss of the brief's trial, said so
+- 2026-11-19 · FRM-656 mods codie · `findReferences` on `roundTaken` (`rounds.ts`): 10 sites in 3 files, `rg -n roundTaken` the same 10 · tie; the first call at the line above the name answered «no references», so the position must sit on the name · useful: n (grep was as fast) · the touch printed false TS5097 and «cannot find module» errors on scratch copies, the same noise as 11-12
 
 ## the reminder, moved here (2026-10-11, o139)
 

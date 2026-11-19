@@ -345,7 +345,7 @@ export function roundOf(message: string) {
     const m = head.match(ROUND_HEAD);
     if (m) return { n: Number(m[1]), sha: m[2] ?? m[3] ?? '' };
     const sha = head.match(FINAL_HEAD)?.[1];
-    return sha ? { n: 1, sha } : undefined;
+    return sha ? { isFinal: true, n: 1, sha } : undefined;
 }
 
 // the chunk a round's first line names, «round 3 on <sha> (FRM-638 slice 5, …)»: the cap is per chunk, and x's record can

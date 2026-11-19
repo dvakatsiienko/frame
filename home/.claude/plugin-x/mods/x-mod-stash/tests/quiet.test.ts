@@ -3952,7 +3952,7 @@ test("18 Nov's herdr round lines count per chunk: no round 6, only slice 5's unk
                 (v as { count: number }).count,
             ]),
         ),
-        r.flatMap(roundLines).filter((l) => /\bround 6\b/.test(l)),
+        r.flatMap(roundLines),
         w.told.map((t) => t.text),
     ]).toEqual([
         {
@@ -3962,7 +3962,10 @@ test("18 Nov's herdr round lines count per chunk: no round 6, only slice 5's unk
             'mods-lane-5 | FRM-648': 3,
             'mods-lane-5 | FRM-648 slice 12b': 4,
         },
-        [],
+        [
+            'round 4 in this chunk not known clean, this one unknown (no «P0/P1: n» in its line), past the cap of 3: the coordinator has the count and says go on or stop; nothing is refused, keep working',
+            'round 3 in this chunk not known clean, this one unknown (no «P0/P1: n» in its line): a next one is past the cap of 3',
+        ],
         [
             `[escalate] round 4 of mods-lane-5 | FRM-638 slice 5, past the cap of 3, from ${ROUND_CODIE} (this round unknown: its line named no «P0/P1: n», ask for the count): ask dima «go on, or stop the lane»`,
         ],
@@ -4062,7 +4065,7 @@ test('a round that could not be written tells the sender to resend it', async ($
 });
 
 // the cap counts rounds with a P0 or P1 (crew-dna § the loop): a line naming «P0/P1: 0» is a clean round, a line naming
-// none reads as one with findings, the safe side; four rounds with one P1 among them reach no cap
+// none is unknown, counted toward the cap; four rounds with one P1 among them reach no cap
 const fourRounds = async ($: Engine, severe: string[]) => {
     const out = [];
     for (const [i, p] of severe.entries())

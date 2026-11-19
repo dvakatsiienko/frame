@@ -64,6 +64,17 @@ test('a round 1 on a new sha opens its key fresh, the old shas kept for a resend
     ]);
 });
 
+test('a bare final after rounds never opens its key fresh', () => {
+    expect(
+        roundTaken(
+            { count: 4, shas: ['a1', 'b2', 'c3', 'd4'] },
+            { isFinal: true, n: 1, sha: 'e5' },
+            2,
+            5,
+        )?.count,
+    ).toBe(5);
+});
+
 test('a later round still never reads back as less than the count kept', () => {
     expect(
         roundTaken({ count: 3, shas: ['a1'] }, { n: 2, sha: 'b2' }, 1, 5)
