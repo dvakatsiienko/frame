@@ -82,6 +82,25 @@ describe('a land copies a mod into herdr', () => {
     });
 });
 
+// FRM-659: `herdr-app check` writes herdr's type files into the folder it checks, so the land checks a staged copy
+// itself, and a check run on a frame folder never has to happen
+describe('a land checks a staged copy first', () => {
+    test('a mod that fails the check lands nothing and says why', () => {
+        const { env, landed, source } = fixture();
+        writeFileSync(join(source, 'probe/main.js'), 'this is not js (\n');
+        const out = run(env, 'probe');
+        expect(out.status).toBe(1);
+        expect(out.stderr).toContain('check failed: syntax error');
+        expect(existsSync(landed)).toBe(false);
+    });
+
+    test('a dry land runs the check too', () => {
+        const { env, source } = fixture();
+        writeFileSync(join(source, 'probe/main.js'), 'this is not js (\n');
+        expect(run(env, 'probe', '--dry').status).toBe(1);
+    });
+});
+
 // FRM-659: a mod folder holding herdr's type files kept drifted copies beside the code; the check reads herdr's own
 describe('a mod folder keeping its own herdr type file is refused', () => {
     test.each(['gpui-kit.d.ts', 'herdr.d.ts'])('%s', (name) => {

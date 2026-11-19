@@ -7,7 +7,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a mod in `home/.config/herdr-app/mods/<mod>`
   - when the command runs
   - then herdr reloads that mod live, with no restart (proven on fleet-board, 16:20:39)
+  - and it first runs `herdr-app check` on a staged copy: a failed check lands nothing and says why; `--dry` checks and copies nothing
   - decision: a real folder, not a link: herdr reloads a real folder on save and never a link
+  - decision: the check never runs on the frame folder: it writes herdr's `gpui-kit.d.ts` and a `jsconfig.json` into the folder it checks (FRM-659)
 - ✅ `pnpm herdr-mods:land --watch` lands every save in frame
   - given the watcher runs (it prints its pid; stop it by that pid)
   - when a mod file in frame is saved and `herdr-app check` passes on it

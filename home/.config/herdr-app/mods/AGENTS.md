@@ -30,8 +30,8 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 
 ## the loop after every change
 
-- `herdr-app check <mod dir>`, `herdr-app status`, `herdr-app shot <png>`, then read the shot
-- edit in frame; `pnpm herdr-mods:land --watch` lands each save `herdr-app check` passes into herdr's folder, live; a link never does
+- `pnpm herdr-mods:land <mod> --dry` (a staged check: a bare `herdr-app check` writes herdr's types in), `herdr-app status`, `herdr-app shot`, read it
+- edit in frame; `pnpm herdr-mods:land --watch` lands each save whose staged check passes, live; a link never does
 - a change he can see lands live under `--watch` while he watches (dima 2026-11-17: «the cost of doing the wrong thing is higher»); one that only fixes code lands once at its job's end; «landing now» in the ping
 - a landing restarts the mod and stalls his chats: none for a probe while he types
 - a herdr restart is his hand alone: it can lose his typed prompt

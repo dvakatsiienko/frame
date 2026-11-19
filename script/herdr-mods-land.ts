@@ -37,7 +37,9 @@ const SHARED = '_shared';
 const args = process.argv.slice(2);
 const named = args.filter((a) => !a.startsWith('--'));
 if (args.includes('--help') || (!named.length && !args.includes('--watch'))) {
-    console.log('usage: pnpm herdr-mods:land <mod> [--dry]');
+    console.log(
+        'usage: pnpm herdr-mods:land <mod> [--dry]   (--dry: check a staged copy, copy nothing)',
+    );
     console.log('       pnpm herdr-mods:land --watch [mod…]');
     console.log(
         `  copies ${sourceRoot}/<mod> into ${targetRoot}/<mod>, changed files only; --watch lands each save that passes herdr-app check`,
@@ -66,24 +68,14 @@ function watchMods(mods: string[]) {
             clearTimeout(timer);
             timer = setTimeout(() => {
                 seen = newest(mod);
-                const staged = stage(mod);
-                const checked =
-                    typeof staged === 'string'
-                        ? { status: 1, stderr: staged, stdout: '' }
-                        : spawnSync('herdr-app', ['check', staged.dir], {
-                              encoding: 'utf8',
-                          });
-                if (typeof staged !== 'string') staged.done();
-                if (checked.status !== 0) {
-                    const why = `${checked.stdout}${checked.stderr}`
-                        .trim()
-                        .split('\n')[0];
+                const why = checkStaged(mod);
+                if (why) {
                     console.log(
                         `herdr-mods:land: ${stamp()} ${mod} held, check failed: ${why}`,
                     );
                     return;
                 }
-                land(mod, false);
+                land(mod, false, true);
             }, SETTLE_MS);
         };
         for (const folder of [mod, SHARED].filter((f) =>
@@ -150,6 +142,24 @@ function filesOf(mod: string): Map<string, string> | string {
     return files;
 }
 
+/**
+ * `herdr-app check` on the mod as herdr would read it, in a temp folder: the check writes herdr's type files and a
+ * jsconfig.json into the folder it checks, so it never runs on the frame folder. the first line of why it failed, or
+ * null
+ */
+function checkStaged(mod: string) {
+    const staged = stage(mod);
+    if (typeof staged === 'string') return staged;
+    const checked = spawnSync('herdr-app', ['check', staged.dir], {
+        encoding: 'utf8',
+    });
+    staged.done();
+    return checked.status === 0
+        ? null
+        : `${checked.stdout}${checked.stderr}`.trim().split('\n')[0] ||
+              'herdr-app check failed';
+}
+
 /** the mod as herdr would read it, its shared files beside its own, in a temp folder `herdr-app check` can read */
 function stage(mod: string) {
     const files = filesOf(mod);
@@ -174,7 +184,8 @@ function isLanded(name: string) {
     );
 }
 
-function land(mod: string, isDry: boolean) {
+/** @param isChecked the watcher checked this save's staged copy already */
+function land(mod: string, isDry: boolean, isChecked = false) {
     const source = join(sourceRoot, mod);
     const target = join(targetRoot, mod);
     if (!existsSync(join(source, 'mod.json'))) {
@@ -192,6 +203,11 @@ function land(mod: string, isDry: boolean) {
     const files = filesOf(mod);
     if (typeof files === 'string') {
         console.error(`herdr-mods:land: ${files}`);
+        return false;
+    }
+    const why = isChecked ? null : checkStaged(mod);
+    if (why) {
+        console.error(`herdr-mods:land: ${mod} check failed: ${why}`);
         return false;
     }
     const changed = [...files.keys()]

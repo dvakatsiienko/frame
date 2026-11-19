@@ -21,7 +21,7 @@ sed -n '/^## Mods/,/^## herdr-core/p' ~/.config/herdr-app/AGENTS.md
 ## the loop, every save
 
 ```sh
-herdr-app check ~/.config/herdr-app/mods/<name>    # a folder path, never the bare name
+pnpm -C ~/frame herdr-mods:land <name> --dry       # staged check: a bare one writes types in
 herdr-app status                                   # mod and file errors the window holds
 herdr-app shot /tmp/<name>.png                     # then read the png
 ```
