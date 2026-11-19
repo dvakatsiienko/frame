@@ -239,12 +239,13 @@ import {
 import { cleanTree, drawn } from './tree.ts';
 import {
     addGridQs,
-    beginTurn,
     countTool,
     isTurnBusy,
     keepTurn,
     markActive,
     patchTurn,
+    selfSubmit,
+    startTurn,
     turn,
 } from './turn.ts';
 import {
@@ -1746,6 +1747,8 @@ async function quietSilentMembers($: EngineInterface, now: number) {
             const r = await selfSubmit(
                 $,
                 `🚨 quiet comms: ${words}; check it, and break the hang if it is one.`,
+                false,
+                () => prepareTurn($),
             ).catch(() => undefined);
             if (!r || r.drop) {
                 patchTurn({ isBusy: false });
@@ -1903,6 +1906,8 @@ async function wakeForParkedLanes($: EngineInterface) {
         const r = await selfSubmit(
             $,
             `🅿️ parked lane: ${nudge}; its members sat idle ${minutes} min.`,
+            false,
+            () => prepareTurn($),
         ).catch(() => undefined);
         if (!r || r.drop) {
             patchTurn({ isBusy: false });
@@ -2617,6 +2622,8 @@ async function wakeForMarks($: EngineInterface) {
         void selfSubmit(
             $,
             joinText(due, tickSentence(await orbitTexts($), due.length)),
+            false,
+            () => prepareTurn($),
         ).catch(() => undefined);
 }
 
@@ -4724,17 +4731,19 @@ async function releaseHeldSteers(
     const steers = await takeHeld($, keys, isDue);
     if (!steers.length) return;
     // through selfSubmit, so the released turn reads busy: a keep-hot ping or a wake never lands inside it
-    await selfSubmit($, heldText(steers)).catch(async (err: unknown) => {
-        // a refused submit hands the list back ahead of what landed since, flagged, so the next release takes it
-        await quietLocked(async () => {
-            const now = await heldStore($, keys);
-            await saveHeld($, keys, {
-                isCompacted: true,
-                messages: [...steers, ...now.messages],
+    await selfSubmit($, heldText(steers), false, () => prepareTurn($)).catch(
+        async (err: unknown) => {
+            // a refused submit hands the list back ahead of what landed since, flagged, so the next release takes it
+            await quietLocked(async () => {
+                const now = await heldStore($, keys);
+                await saveHeld($, keys, {
+                    isCompacted: true,
+                    messages: [...steers, ...now.messages],
+                });
             });
-        });
-        throw err;
-    });
+            throw err;
+        },
+    );
     await tellDelivered($, steers);
     const quiet = steers.filter((m) => m.isQuiet).map(quietPingOf);
     if (quiet.length)
@@ -4994,7 +5003,7 @@ async function armWake($: EngineInterface) {
             | undefined;
         if (waker?.on !== true || !(await partsShown($))('stash.waker')) return;
         $.ui.log('x-mod-stash waker: resumed the session after the 5h reset');
-        await selfSubmit($, RESUME);
+        await selfSubmit($, RESUME, false, () => prepareTurn($));
     });
 }
 
@@ -5096,7 +5105,9 @@ async function paceTick($: EngineInterface) {
     if (!due || !(await paceClaim($, sid))) return;
     isPaceSending = true;
     try {
-        const r = await selfSubmit($, due.line).catch(() => undefined);
+        const r = await selfSubmit($, due.line, false, () =>
+            prepareTurn($),
+        ).catch(() => undefined);
         if (r && !r.drop) await paceSent($, sid, due.stored);
         else {
             patchTurn({ isBusy: false });
@@ -5361,24 +5372,12 @@ async function pressSwitch(
     await publish($);
 }
 
-// every turn starts here: dima's and a peer's through prompt.submit, the mod's own through selfSubmit
-async function startTurn($: EngineInterface, text: string, isUser: boolean) {
-    beginTurn(isUser, text === PING);
+// the wiring's share of every turn start: a ping armed before it never fires, the poll's state is read fresh, and the
+// turn keeps whether dima is afk
+async function prepareTurn($: EngineInterface) {
     hotGen++;
     await load($);
-    patchTurn({ turnAfk: afk });
-    await keepTurn($);
-}
-
-// the mod's own prompt (the keep-hot ping, the waker's resume, a wake for marks) skips this plugin's prompt.submit hook
-// (mods AGENTS, probe (d)), so its turn starts here; a submit the engine refuses leaves the session idle again
-async function selfSubmit($: EngineInterface, text: string) {
-    await startTurn($, text, false);
-    return $.prompt.submit({ text }).catch(async (err: unknown) => {
-        patchTurn({ isBusy: false });
-        await keepTurn($);
-        throw err;
-    });
+    return afk;
 }
 
 async function saveHot($: EngineInterface) {
@@ -5465,7 +5464,7 @@ async function armHot($: EngineInterface) {
         if (!(await partsShown($))('stash.hot')) return;
         if (await isWindowSpent($)) return;
         $.ui.log('x-mod-stash keep-hot: pinged the idle session');
-        await selfSubmit($, PING);
+        await selfSubmit($, PING, true, () => prepareTurn($));
     });
 }
 
@@ -5487,7 +5486,9 @@ async function hotLate($: EngineInterface) {
     if (lateWindow === m.resetsAt) return;
     lateWindow = m.resetsAt;
     $.ui.log('x-mod-stash keep-hot: the last ping before the reset');
-    const r = await selfSubmit($, PING).catch(() => undefined);
+    const r = await selfSubmit($, PING, true, () => prepareTurn($)).catch(
+        () => undefined,
+    );
     if (r && !r.drop) return;
     patchTurn({ isBusy: false });
     await keepTurn($);
@@ -6206,7 +6207,7 @@ export const register: Register = (on) => {
             await $.state.set(MOBILE, false).catch(() => undefined);
         // prompt.submit fires when a prompt is queued (engine.md): one queued behind a running turn is no turn of its own yet
         const isQueued = turn.isBusy;
-        await startTurn($, e.text, isUser);
+        await startTurn($, isUser, e.text === PING, () => prepareTurn($));
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
         const at = new Date(await $.clock.now());
         const offset = -at.getTimezoneOffset() / 60;

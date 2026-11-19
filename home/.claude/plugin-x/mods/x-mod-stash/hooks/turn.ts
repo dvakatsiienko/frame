@@ -86,3 +86,32 @@ export async function isTurnBusy($: EngineInterface) {
         state.isBusy
     );
 }
+
+// every turn starts here: dima's and a peer's through prompt.submit, the mod's own through selfSubmit; `prepare` is the
+// wiring's share, answering whether dima is afk
+export async function startTurn(
+    $: EngineInterface,
+    isUser: boolean,
+    isPing: boolean,
+    prepare: () => Promise<boolean>,
+) {
+    beginTurn(isUser, isPing);
+    patchTurn({ turnAfk: await prepare() });
+    await keepTurn($);
+}
+
+// the mod's own prompt (the keep-hot ping, the waker's resume, a wake for marks) skips this plugin's prompt.submit hook
+// (mods AGENTS, probe (d)), so its turn starts here; a submit the engine refuses leaves the session idle again
+export async function selfSubmit(
+    $: EngineInterface,
+    text: string,
+    isPing: boolean,
+    prepare: () => Promise<boolean>,
+) {
+    await startTurn($, false, isPing, prepare);
+    return $.prompt.submit({ text }).catch(async (err: unknown) => {
+        patchTurn({ isBusy: false });
+        await keepTurn($);
+        throw err;
+    });
+}
