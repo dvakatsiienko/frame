@@ -1232,11 +1232,10 @@
             },
             "name": "fleet ops",
             "needsApply": false,
-            "purpose": "agent ops off the transcripts: tokens and wall time per ticket, clio's code edits, boot cost, size misses",
+            "purpose": "agent ops off the transcripts: tokens and wall time per ticket, clio's code edits, boot cost",
             "replaces": ["script/agent-ops.ts"],
             "touches": [
-                "~/.claude/projects/ — the session transcripts, one level deep",
-                "linear's graphql api — the estimate and state of each ticket codie worked in the window"
+                "~/.claude/projects/ — the session transcripts, one level deep"
             ]
         },
         {

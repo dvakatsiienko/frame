@@ -43,9 +43,6 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **raw head** — a head no x door covers and no shell basic, run 5 times or more: a verb candidate
 - **bare run** — a `claude … --safe-mode` call in a Bash command: a cc session our setup cannot touch
 - **false fire** — a crew skill (`x:crew-codie`, `x:crew-sixth-sense`) loaded with no earlier message naming it; its opposite is **brief-led**
-- **codie turn** — one assistant message in codie's transcript, summed over every codie session of a ticket. 📌 `fleet-vibe` calls this unit a step; the name stays because clio's pm skill writes the size lines in it
-- **size** — a ticket's estimate as the fleet says it: XS, S or M, for linear's 1, 2, 3. XS and S each have a **size line** in codie turns (XS under 80, S under 400); M has none
-- **size miss** — a closed ticket whose codie turns reached its size line
 
 ## events
 
