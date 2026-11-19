@@ -34,8 +34,8 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
     });
     /** the zone's window origin along the axis, measured on every move over it */
     let origin = 0;
-    /** the terminal that had the keyboard before a drag took it */
-    /** @type {string | null} */
+    /** the pane that had the keyboard before a drag took it; a drag takes it only when it can give it back */
+    /** @type {{ pane: string } | { terminal: string } | null} */
     let gaveFocus = null;
     const along = (/** @type {{ x: number, y: number }} */ p) =>
         axis === 'y' ? p.y : p.x;
@@ -45,15 +45,14 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
         const s = drag.state();
         if (s.name !== 'settling') return backToIdle();
         cx.timer.after(SETTLE_MS, (cx) => {
-            if (drag.settled(s.token)) {
-                backToIdle();
-                cx.notify();
-            }
+            const isEnded = drag.settled(s.token);
+            backToIdle();
+            if (isEnded) cx.notify();
         });
     };
     const backToIdle = () => {
         if (drag.state().name !== 'idle' || gaveFocus === null) return;
-        run('pane.focus', { terminal: gaveFocus });
+        run('pane.focus', gaveFocus);
         gaveFocus = null;
     };
     /** @param {Context} cx */
@@ -161,6 +160,8 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
                     from,
                     e.position,
                 );
+                // a press while the last drop settled ends it: the keyboard goes back now, not on its timer
+                backToIdle();
                 cx.notify();
             });
         },
@@ -183,8 +184,13 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
                     const now = drag.state();
                     if (now.name !== 'dragging') return cx.notify();
                     if (was === 'pressed') {
-                        gaveFocus = focused()?.terminal ?? null;
-                        focus().focus();
+                        const had = focused();
+                        gaveFocus = had?.pane
+                            ? { pane: had.pane }
+                            : had?.terminal
+                              ? { terminal: had.terminal }
+                              : null;
+                        if (gaveFocus) focus().focus();
                     }
                     drag.over(
                         placeAt(

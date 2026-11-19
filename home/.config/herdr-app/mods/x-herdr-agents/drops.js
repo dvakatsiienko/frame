@@ -7,8 +7,8 @@ import { moved } from './order.js';
 
 /**
  * what a press drags
- * @typedef {{ kind: 'pin' }
- *   | { kind: 'mine' }
+ * @typedef {{ kind: 'pin', address: string }
+ *   | { kind: 'mine', address: string }
  *   | { kind: 'tab', space: string, tab: string }
  *   | { kind: 'space', id: string, machine: string | null }} Dragged
  */
@@ -59,21 +59,20 @@ export function targetOf(item, spot) {
 export function drop(item, from, to, cx) {
     switch (item.kind) {
         case 'pin': {
+            // by its address: a row that went mid-drag shifts the places, never what moves
             const shown = cx.shownPins;
-            const from_ = shown[from];
             const to_ = shown[to];
-            if (from_ === undefined || to_ === undefined) return;
+            if (to_ === undefined) return;
             cx.setPins([
-                ...moved(shown, from_, to_),
+                ...moved(shown, item.address, to_),
                 ...cx.pins.filter((p) => !shown.includes(p)),
             ]);
             return;
         }
         case 'mine': {
-            const from_ = cx.shownMine[from];
             const to_ = cx.shownMine[to];
-            if (from_ === undefined || to_ === undefined) return;
-            cx.setOrder(moved(cx.order, from_, to_));
+            if (to_ === undefined) return;
+            cx.setOrder(moved(cx.order, item.address, to_));
             return;
         }
         case 'tab': {
@@ -88,6 +87,59 @@ export function drop(item, from, to, cx) {
             if (at >= 0) run('space.move', { id: item.id, index: at + 1 });
             return;
         }
+        default: {
+            /** @type {never} */
+            const unhandled = item;
+            return unhandled;
+        }
+    }
+}
+
+/**
+ * the rows drawn, kind by kind, in order: a drag's places count only these. a folded group draws none of its rows;
+ * the narrow rail draws every row and no header
+ * @param {{ id: string, space?: string | null, members: { address: string, space: string, tab: string }[] }[]} groups
+ * @param {{ folded: Set<string>, pins: string[], isYours: boolean, isNarrow: boolean }} view
+ * @returns {Pick<DropContext, 'shownMine' | 'shownPins' | 'shownSpaces' | 'shownTabs'>}
+ */
+export function shownOf(groups, { folded, isNarrow, isYours, pins }) {
+    const drawn = groups
+        .filter((g) => isNarrow || !folded.has(g.id))
+        .flatMap((g) => g.members);
+    const unpinned = drawn.filter((a) => !pins.includes(a.address));
+    /** @type {Record<string, string[]>} */
+    const shownTabs = {};
+    if (!isYours)
+        for (const a of unpinned) {
+            const tabs = shownTabs[a.space] ?? [];
+            if (!tabs.includes(a.tab)) shownTabs[a.space] = [...tabs, a.tab];
+        }
+    return {
+        shownMine: isYours ? unpinned.map((a) => a.address) : [],
+        shownPins: drawn
+            .filter((a) => pins.includes(a.address))
+            .map((a) => a.address),
+        shownSpaces: isNarrow
+            ? []
+            : [...new Set(groups.flatMap((g) => (g.space ? [g.space] : [])))],
+        shownTabs,
+    };
+}
+
+/**
+ * how many places a dragged item's kind has among the drawn rows
+ * @param {Dragged} item @param {ReturnType<typeof shownOf>} shown
+ */
+export function placesOf(item, shown) {
+    switch (item.kind) {
+        case 'pin':
+            return shown.shownPins.length;
+        case 'mine':
+            return shown.shownMine.length;
+        case 'tab':
+            return (shown.shownTabs[item.space] ?? []).length;
+        case 'space':
+            return shown.shownSpaces.length;
         default: {
             /** @type {never} */
             const unhandled = item;
