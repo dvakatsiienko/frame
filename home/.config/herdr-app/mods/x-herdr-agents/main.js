@@ -481,13 +481,15 @@ export default class Agents extends View {
     // compact: a ! for blocked where a header already says "Needs you". `a.status` is a shown status
     // (shownStatus: unread / done are ours).
     status(t, a, compact = false) {
+        // working: a calm breathing dot, no spin (FRM-618, his o1)
         if (a.status === 'working')
-            return svg('mods/workspace-chrome/spinner.svg')
-                .size(12)
-                .mx(1)
+            return div()
+                .size(7)
+                .mx(3.5)
                 .flex_none()
-                .text_color(t.working)
-                .spin(900);
+                .rounded_full()
+                .bg(t.muted)
+                .loop('opacity', { from: 0.3, period: 2000, to: 1 });
         if (a.status === 'blocked' && compact)
             return div()
                 .size(14)
