@@ -12,3 +12,7 @@ export function transcriptPath(session, home) {
     if (!cwd || !sessionId) return null;
     return `${home}/.claude/projects/${cwd.replace(/[^A-Za-z0-9]/g, '-')}/${sessionId}.jsonl`;
 }
+
+/** the thread's session, which names its state and join files @param {string} file its transcript */
+export const sidOf = (file) =>
+    file.slice(file.lastIndexOf('/') + 1, -'.jsonl'.length);

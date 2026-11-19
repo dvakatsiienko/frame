@@ -21,7 +21,6 @@ import {
     closeOverlay,
     exec,
     focused,
-    hc,
     home,
     layout,
     props,
@@ -31,10 +30,9 @@ import {
     shared,
     theme,
     watchFolder,
-    writeTextFile,
 } from 'herdr';
 
-import { fileName, isImagePath, pickFiles, withPaths } from './attach.js';
+import { fileName, isImagePath, pickFiles } from './attach.js';
 import { createAttachments } from './attachments.js';
 import { STATE_DIR } from './band.js';
 import { createBand } from './band-view.js';
@@ -56,28 +54,19 @@ import { replyFold } from './fold.js';
 import { placeOf } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
-import {
-    HOLD_DELAY_MS,
-    HOLD_PUSH_MS,
-    JOINED_SHOWN_MS,
-    JOINS_DIR,
-    JOIN_TAKE_MS,
-    enterHoldStep,
-    holdSend,
-} from './joins.js';
+import { enterHoldStep } from './joins.js';
 import { createKeyPress } from './keypress.js';
 import { LOOK_KEY, lookOf } from './look.js';
-import { createMagic, retextWait } from './magic.js';
 import { copyText, createMessageMenu, menuPlace } from './menu.js';
 import { createPages } from './pages.js';
 import { createPickers } from './pickers.js';
 import { createPictureViewer } from './picture-viewer.js';
 import { createPlace } from './place.js';
-import { sendArgs } from './queued.js';
 import { createQuills } from './quill.js';
 import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
-import { addressIn, sendBlocked, submitted } from './send.js';
+import { addressIn, submitted } from './send.js';
+import { createSendPath } from './send-path.js';
 import { SENT_DIR, createSentPictures } from './sent-pictures.js';
 import { readSettings, settingsDir } from './settings-io.js';
 import { createSettingsWindow } from './settings-window.js';
@@ -92,7 +81,7 @@ import {
 import { asksActedOn, isShownIn, pidFor, shownThread } from './shown.js';
 import { loadableSkills } from './skills.js';
 import { createSlashMenu, listedSkills, menuNames } from './slash.js';
-import { transcriptPath } from './thread.js';
+import { sidOf, transcriptPath } from './thread.js';
 import { tint } from './tint.js';
 import {
     createToolFolds,
@@ -221,49 +210,6 @@ const SKILL_FS = {
     list: (dir) => readdir(dir).catch(() => []),
     read: (path) => readTextFile(path).catch(() => null),
 };
-const NOT_IN_HERDR = 'This thread does not run in herdr: nothing was sent';
-
-/** the join file's doors in herdr: a mkdir lock dir, its age from macOS stat, a write over the text it read */
-/** @type {import('./joins.js').JoinIo} */
-const joinIo = {
-    lock: async (path) =>
-        (await exec('mkdir', [path]).catch(() => null))?.code === 0,
-    lockAge: async (path) => {
-        const out = await exec('stat', ['-f', '%m', path]).catch(() => null);
-        const at = Number(out?.stdout.trim());
-        return out?.code === 0 && at ? Date.now() - at * 1000 : null;
-    },
-    now: () => Date.now(),
-    read: (path) => readTextFile(path),
-    sleep: async (ms) => {
-        await exec('sleep', [String(ms / 1000)]);
-    },
-    unlock: async (path) => {
-        await exec('rmdir', [path]);
-    },
-    write: (path, body, expected) => writeTextFile(path, body, expected),
-};
-
-const newId = () =>
-    'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) =>
-        (c === 'x'
-            ? Math.floor(Math.random() * 16)
-            : Math.floor(Math.random() * 4) + 8
-        ).toString(16),
-    );
-
-/** the thread's session, which names its state and join files @param {string} file its transcript */
-const sidOf = (file) => file.slice(file.lastIndexOf('/') + 1, -'.jsonl'.length);
-
-/** herdr's window answers only inside a call it made; a timer tick may get a throw, read as «still active» */
-function isWindowActive() {
-    try {
-        return window.is_window_active() !== false;
-    } catch {
-        return true;
-    }
-}
-
 /** @param {unknown} error */
 const readError = (error) =>
     `This thread's transcript could not be read: ${error instanceof Error ? error.message : String(error)}`;
@@ -379,25 +325,19 @@ export default class Chat extends View {
     address = null;
     /** what the quill says about his last send: why it did not go, or why it went as a push @type {string | null} */
     note = null;
-    /** the marks of the magic send: words waiting in the quill to join a turn */
-    magic = createMagic({
-        dir: `${home()}/${JOINS_DIR}`,
-        io: joinIo,
-        newId,
+    /** the send path: the magic send's marks, the hold, a send that did not go coming back */
+    sendPath = createSendPath({
+        attachments: this.attachments,
+        pushed: (text, at) => this.model.pushed(text, at),
+        quillBox: () => this.box,
         quills: this.quills,
+        say: (note, cx) => this.say(note, cx),
+        shownAddress: () => this.address,
+        shownFile: () => this.file,
+        typingInto,
     });
-    /** what the shown thread's state lists of its joins; null: joins are off for it @type {import('./magic.js').Joins | null} */
-    joins = null;
     /** the pending wait for a change in the threads' state folder @type {import('herdr').FolderWatch | null} */
     stateWatch = null;
-    /** a press on send under way @type {import('./joins.js').Hold | null} */
-    hold = null;
-    holdFill = 0;
-    /** @type {{ cancel: () => void } | null} */
-    holdTask = null;
-    /** how long a hold takes to push: his two settings rows */
-    timing = { delay: HOLD_DELAY_MS, push: HOLD_PUSH_MS };
-    lastKeyAt = 0;
     /** the quill's text, and its text one change earlier: Enter types its line break before it submits */
     typedNow = '';
     /** Enter in the quill, one press at a time: a held key's repeats act once */
@@ -512,7 +452,7 @@ export default class Chat extends View {
                 this.typedNow = now;
             }
             this.quills.apply(this.file, { text: now, type: 'typed' });
-            this.typedUnderMark(box, cx);
+            this.sendPath.typedUnderMark(box, cx);
             this.slashMenu.typed(this.typedBefore ?? '', now);
             cx.notify();
         });
@@ -521,7 +461,9 @@ export default class Chat extends View {
                 box.value(),
                 [this.typedNow, this.typedBefore],
                 event,
-                Boolean(this.file && this.waitingPaths(this.file).length),
+                Boolean(
+                    this.file && this.sendPath.waitingPaths(this.file).length,
+                ),
             );
             if (text === null) return;
             // Enter's line break leaves, his caret stays; the words stay until they are sent or a turn takes them
@@ -529,8 +471,8 @@ export default class Chat extends View {
             box.set_selected_range({ end: caret, start: caret });
             // ⌘Enter reaches here, Enter is the quill's own action (QUILL_ENTER); a held key's repeats act once
             if (this.quillKeys.pressed() === 'repeat') return;
-            if (act === 'push') this.push(box, cx);
-            else if (act === 'click') this.click(box, cx);
+            if (act === 'push') this.sendPath.push(box, cx);
+            else if (act === 'click') this.sendPath.click(box, cx);
         });
         // a paste with no text: the clipboard's image saved as a png, or files copied in Finder by their paths (FRM-613)
         box.on('paste_other', (_event, cx) => this.pasteFiles(cx));
@@ -542,8 +484,8 @@ export default class Chat extends View {
         });
         box.on('blur', (_event, cx) => {
             this.quillKeys.blurred();
-            const event = enterHoldStep(this.hold, 'blur');
-            if (event) this.holdStep(box, event, cx);
+            const event = enterHoldStep(this.sendPath.hold(), 'blur');
+            if (event) this.sendPath.holdStep(box, event, cx);
         });
         this.box = box;
         this.pickers.start(cx);
@@ -937,14 +879,17 @@ export default class Chat extends View {
                         // the disc and pushes; its repeats keep the one hold going
                         .on_action(QUILL_ENTER, (_event, cx) => {
                             if (this.quillKeys.pressed() === 'act')
-                                this.press(box, cx, 'enter');
+                                this.sendPath.press(box, cx, 'enter');
                         })
                         // the box never tells Enter's key-down (FRM-628 round 2 trace): its key-up ends a press
                         .on_key_up((e, cx) => {
                             if (e.key !== 'enter') return;
                             this.quillKeys.released();
-                            const event = enterHoldStep(this.hold, 'keyUp');
-                            if (event) this.holdStep(box, event, cx);
+                            const event = enterHoldStep(
+                                this.sendPath.hold(),
+                                'keyUp',
+                            );
+                            if (event) this.sendPath.holdStep(box, event, cx);
                         })
                         .on_modifiers_changed((e) => {
                             if (!e.modifiers.platform)
@@ -1006,7 +951,7 @@ export default class Chat extends View {
             if (read && 'paths' in read) return this.addFiles(read.paths, cx);
             if (read) {
                 this.attachments.paste(file, read.rel);
-                this.filesUnderMark(file, cx);
+                this.sendPath.filesUnderMark(file, cx);
             }
             this.note = read ? null : NO_IMAGE;
             // only the newest note's timer clears it
@@ -1026,7 +971,7 @@ export default class Chat extends View {
         if (!file || !paths.length || file !== this.file) return;
         cx.spawn(async (cx) => {
             const adding = this.attachments.add(file, paths);
-            this.filesUnderMark(file, cx);
+            this.sendPath.filesUnderMark(file, cx);
             cx.notify();
             await adding;
             cx.notify();
@@ -1085,7 +1030,7 @@ export default class Chat extends View {
                     cx.stop_propagation();
                     if (file) {
                         this.attachments.remove(file, path);
-                        this.filesUnderMark(file, cx);
+                        this.sendPath.filesUnderMark(file, cx);
                     }
                     cx.notify();
                 })
@@ -1150,7 +1095,7 @@ export default class Chat extends View {
      * @param {Theme} t
      */
     sendButton(box, t) {
-        const mark = this.magic.markOf(this.file);
+        const mark = this.sendPath.magic.markOf(this.file);
         const icon = !mark
             ? ICONS.sendRest
             : mark.state === 'joined'
@@ -1176,21 +1121,21 @@ export default class Chat extends View {
                     ? 'Take it back (Enter), hold to send now'
                     : 'Join the turn (Enter), hold to send now (⌘Enter)',
             )
-            .on_mouse_down('left', (_event, cx) => this.press(box, cx))
+            .on_mouse_down('left', (_event, cx) => this.sendPath.press(box, cx))
             .on_mouse_up('left', (_event, cx) =>
-                this.holdStep(box, 'release', cx),
+                this.sendPath.holdStep(box, 'release', cx),
             )
             .on_hover((isOver, cx) => {
-                if (!isOver) this.holdStep(box, 'cancel', cx);
+                if (!isOver) this.sendPath.holdStep(box, 'cancel', cx);
             })
-            .when(this.holdFill > 0, (el) =>
+            .when(this.sendPath.holdFill() > 0, (el) =>
                 // a disc grows from the centre while the hold runs
                 el.child(
                     div()
                         .absolute()
-                        .left((SEND_SIZE / 2) * (1 - this.holdFill))
-                        .top((SEND_SIZE / 2) * (1 - this.holdFill))
-                        .size(SEND_SIZE * this.holdFill)
+                        .left((SEND_SIZE / 2) * (1 - this.sendPath.holdFill()))
+                        .top((SEND_SIZE / 2) * (1 - this.sendPath.holdFill()))
+                        .size(SEND_SIZE * this.sendPath.holdFill())
                         .rounded(SEND_SIZE / 2)
                         .bg(t.accent),
                 ),
@@ -1871,14 +1816,14 @@ export default class Chat extends View {
         // the viewer and find belong to the thread they opened on
         this.pictures.close();
         this.findBar.reset();
-        this.joins = null;
+        this.sendPath.takeJoins(null);
         // no button shows or presses a thread no longer on screen; the fleet's facts stay
         this.band.clear();
         this.pickers.clear();
         this.stateWatch?.cancel();
         this.stateWatch = null;
         this.stateTurn += 1;
-        this.cancelHold();
+        this.sendPath.cancelHold();
         this.showDraft();
         this.error = null;
         this.isRead = false;
@@ -1984,16 +1929,16 @@ export default class Chat extends View {
             .filter((r) => added.has(r.id) && r.kind === 'mine' && !r.isWaiting)
             .map((r) => ({ at: r.at, text: r.text }));
         if (arrived.length && this.file)
-            this.showSettled(this.magic.arrived(this.file, arrived), cx);
+            this.sendPath.showSettled(
+                this.sendPath.magic.arrived(this.file, arrived),
+                cx,
+            );
         if (changed.length || removed || isRestart || hadError) cx.notify();
     }
 
     /** his settings rows as the chat uses them @param {Record<string, unknown>} values */
     applySettings(values) {
-        this.timing = {
-            delay: Number(values['chatter.send.holdDelay']),
-            push: Number(values['chatter.send.holdPush']),
-        };
+        this.sendPath.applySettings(values);
         this.isCleanShot = values['chatter.pictures.cleanshot'] === true;
         this.band.applySettings(values);
         this.isShowMore = values['chatter.showMore'] === true;
@@ -2022,7 +1967,7 @@ export default class Chat extends View {
                 readJson(`${dir}/fleet.json`),
             ]);
             if (this.stateTurn !== turn) return;
-            this.joins = state?.joins ?? null;
+            this.sendPath.takeJoins(state?.joins ?? null);
             const band = {
                 fleet,
                 thread: state
@@ -2035,137 +1980,9 @@ export default class Chat extends View {
                 cx.spawn((cx) => this.band.readAutoWind(cx));
                 cx.notify();
             }
-            this.settle(cx);
+            this.sendPath.settle(cx);
             await watch;
         }
-    }
-
-    /** the mark of the shown thread against its state: taken by a turn, or by none in a minute @param {Context} cx */
-    settle(cx) {
-        const { file } = this;
-        if (!file) return;
-        this.showSettled(this.magic.settle(file, this.joins), cx);
-    }
-
-    /**
-     * a settled mark on screen: the quill already keeps only what he typed after the taken words; the taken mark
-     * shows for a moment
-     * @param {import('./magic.js').Settled | null} settled
-     * @param {Context} cx
-     */
-    showSettled(settled, cx) {
-        const { file } = this;
-        if (!settled || !file) return;
-        this.note = settled.note;
-        // the files its row carried went with the words
-        for (const path of settled.files ?? [])
-            this.attachments.remove(file, path);
-        // the taken mark shows for a moment, then the button rests
-        if (!settled.note)
-            cx.timer.after(JOINED_SHOWN_MS, (later) => {
-                this.magic.forget(file, settled.id);
-                later.notify();
-            });
-        cx.notify();
-    }
-
-    /**
-     * a click on send, or Enter: the quill's words are marked to join the thread's turn, or the mark is taken off; a
-     * thread that takes no joins, or a slash command, gets them as a plain send
-     * @param {import('gpui-base').TextareaState} box
-     * @param {Context} cx
-     */
-    click(box, cx) {
-        const { file } = this;
-        const text = box.value().trim();
-        if (!file) return;
-        const files = this.waitingPaths(file);
-        if (!text && !files.length) return;
-        if (!this.address) return this.say(NOT_IN_HERDR, cx);
-        const answer = this.magic.click(
-            file,
-            sidOf(file),
-            text,
-            this.joins,
-            files,
-        );
-        cx.notify();
-        cx.spawn(async (cx) => {
-            const { act, note } = await answer;
-            if (this.file !== file) return;
-            if (act === 'push') return this.send(text, note, cx);
-            // a mark no turn takes in a minute comes off by itself
-            if (act === 'marked')
-                cx.timer.after(JOIN_TAKE_MS + 500, (later) =>
-                    this.settle(later),
-                );
-            this.say(note, cx);
-        });
-    }
-
-    /**
-     * a hold on send, or cmd+Enter: the quill's words go now and a turn starts; words marked to join leave the join
-     * file first, so they never go twice
-     * @param {import('gpui-base').TextareaState} box
-     * @param {Context} cx
-     * @param {string | null} [note] why it went as a push
-     */
-    push(box, cx, note = null) {
-        const { file } = this;
-        const text = box.value().trim();
-        if (!file || (!text && !this.attachments.of(file).length)) return;
-        if (!this.address) return this.say(NOT_IN_HERDR, cx);
-        cx.spawn(async (cx) => {
-            // checked right before the mark comes off, so a refused push keeps his words marked
-            const blocked =
-                this.address && sendBlocked(this.address, typingInto);
-            if (blocked) return this.say(blocked, cx);
-            const why = await this.magic.release(file, this.joins);
-            if (this.file !== file) return;
-            if (why) return this.say(why, cx);
-            // the words go as the quill holds them once the row is out: an edit he made meanwhile is what he sends,
-            // and the quill empties, never keeping words that already went
-            this.send(box.value().trim() || text, note, cx);
-        });
-    }
-
-    /**
-     * the words leave the quill for the thread shown, as its Claude's next prompt, or wait in its queue while it
-     * works. a message that did not go comes back to the quill
-     * @param {string} text
-     * @param {string | null} note why it went this way
-     * @param {Context} cx
-     */
-    send(text, note, cx) {
-        const { address, file } = this;
-        if (!address) return;
-        const blocked = sendBlocked(address, typingInto);
-        if (blocked) return this.say(blocked, cx);
-        // what he typed while a mark was taken back stays: only the words sent leave
-        this.quills.apply(file, { said: text, type: 'sent' });
-        // the files waiting go after the words, each path on its line as a terminal drop types it (FRM-613)
-        const files = file ? this.attachments.take(file) : [];
-        const message = withPaths(text, files);
-        // Claude Code queues a slash command with no text: the model takes its words from here to draw it waiting
-        if (message.startsWith('/')) this.model.pushed(message, Date.now());
-        this.say(note, cx);
-        cx.spawn(async (cx) => {
-            const sent = await hc(sendArgs(address, message)).catch(
-                (/** @type {unknown} */ error) => ({
-                    code: 1,
-                    stderr: String(error),
-                }),
-            );
-            if (sent.code === 0) return;
-            // his words come back before what he typed since, and his files with them, never lost, on screen or not
-            this.quills.apply(file, { said: text, type: 'returned' });
-            if (file && files.length) this.attachments.add(file, files);
-            if (this.file !== file) return;
-            this.say(
-                `Not sent: ${sent.stderr.trim() || 'herdr refused it'}`,
-                cx,
-            );
-        });
     }
 
     /** @param {string | null} note @param {Context} cx */
@@ -2325,7 +2142,7 @@ export default class Chat extends View {
         // the quill writes the box, then the caret goes past the name; words under a 🍕 mark ride its row too
         this.quills.apply(this.file, { text: filled.text, type: 'typed' });
         this.box.set_selected_range({ end: filled.caret, start: filled.caret });
-        this.typedUnderMark(this.box, cx);
+        this.sendPath.typedUnderMark(this.box, cx);
         this.box.focus();
         cx.notify();
     }
@@ -2367,118 +2184,6 @@ export default class Chat extends View {
                         ),
                 ),
             );
-    }
-
-    /** @param {string} file @returns {string[]} */
-    waitingPaths(file) {
-        return this.attachments.of(file).map((w) => w.path);
-    }
-
-    /**
-     * a file came or went under a mark: its join row carries the files waiting now, or the mark comes off when nothing
-     * is left to send
-     * @param {string} file @param {Context} cx
-     */
-    filesUnderMark(file, cx) {
-        const mark = this.magic.markOf(file);
-        if (mark?.state !== 'pending') return;
-        cx.spawn(async (cx) => {
-            const isChanged = await this.magic.typed(
-                file,
-                this.box?.value().trim() ?? mark.said,
-                this.joins,
-                this.waitingPaths(file),
-            );
-            if (isChanged) cx.notify();
-        });
-    }
-
-    /**
-     * he typed under a mark: once his keys rest, the join row carries the quill's words; an emptied quill unmarks
-     * @param {import('gpui-base').TextareaState} box
-     * @param {Context} cx
-     */
-    typedUnderMark(box, cx) {
-        const { file } = this;
-        if (this.magic.markOf(file)?.state !== 'pending' || !file) return;
-        const at = Date.now();
-        this.lastKeyAt = at;
-        const text = box.value().trim();
-        if (!retextWait(text)) {
-            // the mark drops before the take-back's write, so 🍕 goes in this draw
-            cx.spawn(async (cx) => {
-                const isChanged = await this.magic.typed(
-                    file,
-                    '',
-                    this.joins,
-                    this.waitingPaths(file),
-                );
-                if (isChanged) cx.notify();
-            });
-            cx.notify();
-            return;
-        }
-        cx.timer.after(retextWait(text), (later) => {
-            if (this.lastKeyAt !== at || this.file !== file) return;
-            later.spawn(async (cx) => {
-                const isChanged = await this.magic.typed(
-                    file,
-                    box.value().trim(),
-                    this.joins,
-                    this.waitingPaths(file),
-                );
-                if (isChanged) cx.notify();
-            });
-        });
-    }
-
-    /**
-     * a press on send starts the hold: a release before its delay is a click, a hold to its end pushes
-     * @param {import('gpui-base').TextareaState} box
-     * @param {Context} cx
-     * @param {import('./joins.js').Hold['by']} [by]
-     */
-    press(box, cx, by = 'pointer') {
-        // an empty quill has nothing to send: no hold, no disc
-        if (
-            !this.file ||
-            (!box.value().trim() && !this.waitingPaths(this.file).length)
-        )
-            return;
-        this.cancelHold();
-        this.hold = holdSend(null, 'press', Date.now(), this.timing, by).hold;
-        this.holdTask = cx.timer.every(33, (later) =>
-            this.holdStep(box, 'tick', later),
-        );
-    }
-
-    /**
-     * @param {import('gpui-base').TextareaState} box
-     * @param {'tick' | 'release' | 'cancel'} event
-     * @param {Context} cx
-     */
-    holdStep(box, event, cx) {
-        if (!this.hold) return;
-        // a window that lost focus cuts the hold, as a pointer that left the button does
-        const step = holdSend(
-            this.hold,
-            event === 'tick' && !isWindowActive() ? 'cancel' : event,
-            Date.now(),
-            this.timing,
-        );
-        this.hold = step.hold;
-        this.holdFill = step.hold ? step.fill : 0;
-        if (!step.hold) this.cancelHold();
-        if (step.act === 'push') this.push(box, cx);
-        else if (step.act === 'join') this.click(box, cx);
-        cx.notify();
-    }
-
-    cancelHold() {
-        this.holdTask?.cancel();
-        this.holdTask = null;
-        this.hold = null;
-        this.holdFill = 0;
     }
 
     /** the quill holds the shown thread's draft, the caret after it; no thread, an empty quill */
