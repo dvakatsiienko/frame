@@ -328,7 +328,7 @@ export function noticeOf(
 export const ticketOf = (name: string) =>
     name.match(/\b(?:FRM|BYT)-\d+\b/)?.[0];
 
-const ROUND_LEAD = String.raw`(?:(?:\[\w+\]|[A-Z]{2,5}-\d+:?|#\d+|slice\s+\d+|coder:|sixth sense,|final(?:\s+[—–-])?)\s+)*`;
+const ROUND_LEAD = String.raw`(?:(?:\[\w+\]|[A-Z]{2,5}-\d+:?|#\d+|slice\s+\d+[a-z]?|coder:|sixth sense,|final(?:\s+[—–-])?)\s+)*`;
 const ROUND_HEAD = new RegExp(
     String.raw`^${ROUND_LEAD}round\s+(\d+)\b[^\n]*?(?:\bon\s+\**([0-9a-f]{7,40})|\b((?=[0-9a-f]*\d)[0-9a-f]{7,40}))\b`,
 );
@@ -373,11 +373,12 @@ export const severeOf = (message: string) => {
 export const ROUND_CAP = 3;
 // the count only signals and refuses nothing (FRM-504:W49: a block stops everyone); past the cap the coordinator decides,
 // `untold` the reason her line did not go
-// a round whose line named no «P0/P1: n» is unknown, never called one with a P0 or P1 (FRM-656)
-export function roundLine(count: number, isUnknown = false, untold?: string) {
+// `unknown`: the chunk's rounds whose line named no «P0/P1: n», never called ones with a P0 or P1 (FRM-656)
+export function roundLine(count: number, unknown = 0, untold?: string) {
     if (count < ROUND_CAP) return undefined;
-    const head = isUnknown
-        ? `round ${count} in this chunk not known clean, this one unknown (no «P0/P1: n» in its line)`
+    const known = count - unknown;
+    const head = unknown
+        ? `round ${count} in this chunk not known clean (${known ? `${known} with a P0 or P1, ` : ''}${unknown} unknown: no «P0/P1: n» in the line)`
         : `round ${count} with a P0 or P1 in this chunk`;
     if (count === ROUND_CAP)
         return `${head}: a next one is past the cap of ${ROUND_CAP}`;
@@ -392,9 +393,9 @@ export const capLine = (
     lane: string,
     count: number,
     from: string,
-    isUnknown = false,
+    unknown = 0,
 ) =>
-    `[escalate] round ${count} of ${lane}, past the cap of ${ROUND_CAP}, from ${from}${isUnknown ? ' (this round unknown: its line named no «P0/P1: n», ask for the count)' : ''}: ask dima «go on, or stop the lane»`;
+    `[escalate] round ${count} of ${lane}, past the cap of ${ROUND_CAP}, from ${from}${unknown ? ` (${unknown} unknown: their lines named no «P0/P1: n», ask for the count)` : ''}: ask dima «go on, or stop the lane»`;
 
 // the quiet ledger's count of one member's sends to clio: `sh -c LEDGER_SENDS <home> <session id> <address regex>`
 // prints the timestamp of each SendMessage call whose `to` names her; a call its result answered `success:false`

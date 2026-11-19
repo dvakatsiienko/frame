@@ -3636,16 +3636,19 @@ function roundWorld(
     });
     return { ...w, files: all, setPlan, told };
 }
-// the shelf file's rounds, each without its time
+// the shelf file's rounds as written, each with its unknown count; `roundsIn` without its time or that count, which the
+// unknown tests read from `roundsRaw`
+const roundsRaw = (files: Record<string, string>) =>
+    (
+        JSON.parse(files[ROUNDS_FILE] ?? '{}') as {
+            rounds?: Record<string, { at?: number; unknown?: number }>;
+        }
+    ).rounds ?? {};
 const roundsIn = (files: Record<string, string>) =>
     Object.fromEntries(
-        Object.entries(
-            (
-                JSON.parse(files[ROUNDS_FILE] ?? '{}') as {
-                    rounds?: Record<string, { at?: number }>;
-                }
-            ).rounds ?? {},
-        ).map(([k, { at: _at, ...v }]) => [k, v]),
+        Object.entries(roundsRaw(files)).map(
+            ([k, { at: _at, unknown: _unknown, ...v }]) => [k, v],
+        ),
     );
 const kept = (w: { files: Record<string, string> }, lane = LANE) =>
     roundsIn(w.files)[lane];
@@ -3963,44 +3966,13 @@ test("18 Nov's herdr round lines count per chunk: no round 6, only slice 5's unk
             'mods-lane-5 | FRM-648 slice 12b': 4,
         },
         [
-            'round 4 in this chunk not known clean, this one unknown (no «P0/P1: n» in its line), past the cap of 3: the coordinator has the count and says go on or stop; nothing is refused, keep working',
-            'round 3 in this chunk not known clean, this one unknown (no «P0/P1: n» in its line): a next one is past the cap of 3',
+            'round 4 in this chunk not known clean (3 with a P0 or P1, 1 unknown: no «P0/P1: n» in the line), past the cap of 3: the coordinator has the count and says go on or stop; nothing is refused, keep working',
+            'round 3 in this chunk not known clean (2 with a P0 or P1, 1 unknown: no «P0/P1: n» in the line): a next one is past the cap of 3',
         ],
         [
-            `[escalate] round 4 of mods-lane-5 | FRM-638 slice 5, past the cap of 3, from ${ROUND_CODIE} (this round unknown: its line named no «P0/P1: n», ask for the count): ask dima «go on, or stop the lane»`,
+            `[escalate] round 4 of mods-lane-5 | FRM-638 slice 5, past the cap of 3, from ${ROUND_CODIE} (1 unknown: their lines named no «P0/P1: n», ask for the count): ask dima «go on, or stop the lane»`,
         ],
     ]);
-});
-
-// the leftover «herdr-lane-2 | FRM-648» at 8 stops counting: the next chunk's round 1 opens the key fresh
-test('a round 1 on a key a count was left on stores count 1', async ($, on) => {
-    const w = roundWorld(on, {
-        files: {
-            [ROUNDS_FILE]: JSON.stringify({
-                rounds: {
-                    [LANE]: {
-                        clean: 2,
-                        count: 8,
-                        shas: [
-                            '721588be',
-                            '1dc7e6cb',
-                            '35a13429',
-                            'adb1fbef',
-                            'b89b8bea',
-                        ],
-                    },
-                },
-                v: 1,
-            }),
-        },
-    });
-    await start($);
-    const r = await send($, ROUND_SENSE, 'round 1 on c0ffee12 · P0/P1: 0');
-    expect([
-        (kept(w) as { count: number }).count,
-        roundLines(r),
-        w.told,
-    ]).toEqual([1, [], []]);
 });
 
 test('a round file that does not parse moves aside and the count starts over', async ($, on) => {
@@ -4113,23 +4085,25 @@ test('four rounds each with a P1, the last one naming none, escalate at the four
     ]).toEqual([
         [0, 0, 1, 1, 0],
         [
-            `[escalate] round 4 of mods-lane-5 | FRM-9 slice 5, past the cap of 3, from ${ROUND_CODIE} (this round unknown: its line named no «P0/P1: n», ask for the count): ask dima «go on, or stop the lane»`,
+            `[escalate] round 4 of mods-lane-5 | FRM-9 slice 5, past the cap of 3, from ${ROUND_CODIE} (1 unknown: their lines named no «P0/P1: n», ask for the count): ask dima «go on, or stop the lane»`,
         ],
     ]);
 });
 
 // FRM-656 exit 3: a round naming no «P0/P1: n» counts, and the sender hears it called unknown
 test('a round line naming no P0/P1 reaches the cap called unknown, never one with a P0 or P1', async ($, on) => {
-    roundWorld(on);
+    const w = roundWorld(on);
     await start($);
-    await sendRounds($, 2);
+    await send($, ROUND_SENSE, 'round 1 on abcdef7');
+    await send($, ROUND_SENSE, 'round 2 on abcdef8');
     const line = roundLines(
         await send($, ROUND_SENSE, 'round 3 on abcdef9'),
     ).join('');
     expect([
-        line.includes('unknown'),
+        line.includes('3 unknown'),
         line.includes('with a P0 or P1'),
-    ]).toEqual([true, false]);
+        roundsRaw(w.files)[LANE]?.unknown,
+    ]).toEqual([true, false, 3]);
 });
 
 // FRM-570 exit 15: the count reads x's record, so a rename keeps it and a name alone starts none

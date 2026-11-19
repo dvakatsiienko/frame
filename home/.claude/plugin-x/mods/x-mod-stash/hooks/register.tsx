@@ -110,7 +110,7 @@ import {
     quietPush,
     quietTag,
 } from './quiet.ts';
-import { roundKeyOf, roundTaken, roundsOf } from './rounds.ts';
+import { roundKeyOf, roundOpen, roundTaken, roundsOf } from './rounds.ts';
 import { cleanTree, drawn } from './tree.ts';
 import {
     WIND_ROWS,
@@ -2491,20 +2491,19 @@ async function laneRoundLine(
                 2,
             )}\n`,
         );
-        return { lane, open: after.count - (after.clean ?? 0) };
+        return { lane, ...roundOpen(after) };
     }).catch((err: unknown) => errorText(err));
     if (typeof taken === 'string')
         return `round ${round.n} on ${round.sha} not counted (${taken}): resend the same line to count it`;
     // a resend changes nothing and says nothing: its first send's line stands
     // a clean round moves no cap: only the rounds with a P0 or P1 count toward it (crew-dna § the loop)
     if (!taken || severe === 0) return undefined;
-    const { lane, open } = taken;
-    const isUnknown = severe === undefined;
-    if (open <= ROUND_CAP) return roundLine(open, isUnknown);
+    const { lane, open, unknown } = taken;
+    if (open <= ROUND_CAP) return roundLine(open, unknown);
     return roundLine(
         open,
-        isUnknown,
-        await capTold($, self.sessionId, lane, open, isUnknown),
+        unknown,
+        await capTold($, self.sessionId, lane, open, unknown),
     );
 }
 
@@ -2515,7 +2514,7 @@ async function capTold(
     sid: string,
     lane: string,
     count: number,
-    isUnknown: boolean,
+    unknown: number,
 ) {
     const threads = (await threadRecords($)).filter(
         (t) => t.pid !== undefined && t.sessionId !== sid,
@@ -2542,7 +2541,7 @@ async function capTold(
     if (!lead?.sessionId) return 'no live coordinator';
     const sent = await $.session
         .send({
-            text: capLine(lane, count, name ?? sid, isUnknown),
+            text: capLine(lane, count, name ?? sid, unknown),
             to: { sessionId: lead.sessionId },
         })
         .catch((err) => ({

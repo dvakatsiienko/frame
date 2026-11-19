@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing';
 
-import { capLine, roundChunkOf, roundLine } from '../hooks/parse.ts';
+import { capLine, roundChunkOf, roundLine, roundOf } from '../hooks/parse.ts';
 import { roundKeyOf, roundTaken } from '../hooks/rounds.ts';
 
 // 18 Nov's herdr lane: a lettered slice is a chunk of its own (FRM-656)
@@ -25,6 +25,15 @@ for (const [line, chunk] of [
 ] as const)
     test(`«${line}» keys ${chunk.ticket ?? 'the record'} slice ${chunk.slice ?? 'none'}`, () => {
         expect(roundChunkOf(line)).toEqual(chunk);
+    });
+
+// sixth sense round 1 on cf12f156: a lettered slice leading the line read no round at all
+for (const line of [
+    'FRM-638 slice 6b round 2 on 1dc7e6cb · P0/P1: 1',
+    'slice 12c final on adb1fbef',
+])
+    test(`a lettered slice leading «${line}» still reads its round`, () => {
+        expect(roundOf(line)?.sha).toBe(line.match(/[0-9a-f]{8}/)?.[0]);
     });
 
 test('two lettered slices of one ticket key apart', () => {
@@ -64,6 +73,22 @@ test('a round 1 on a new sha opens its key fresh, the old shas kept for a resend
     ]);
 });
 
+// clio's rule on sixth sense round 1: a «round 1» opens a key fresh only past the cap, so a codie that numbers every
+// round 1 still reaches it
+test('a round 1 on a key with rounds under the cap counts on', () => {
+    expect(
+        roundTaken({ count: 2, shas: ['a1', 'b2'] }, { n: 1, sha: 'c3' }, 1, 5)
+            ?.count,
+    ).toBe(3);
+});
+
+test('a codie sending «round 1» each round climbs past the cap', () => {
+    let kept = { count: 0, shas: [] as string[] };
+    for (const sha of ['a1', 'b2', 'c3', 'd4'])
+        kept = roundTaken(kept, { n: 1, sha }, 1, 5) ?? kept;
+    expect(roundLine(kept.count)).toContain('past the cap of 3:');
+});
+
 test('a bare final after rounds never opens its key fresh', () => {
     expect(
         roundTaken(
@@ -83,26 +108,28 @@ test('a later round still never reads back as less than the count kept', () => {
 });
 
 // FRM-656: a line with no «P0/P1: n» counts toward the cap, named unknown
-test('a round whose line names no P0/P1 counts toward the cap, never as clean', () => {
+test('a round whose line names no P0/P1 counts toward the cap as unknown', () => {
     const kept = { clean: 1, count: 1, shas: ['a1'] };
     expect([
         roundTaken(kept, { n: 2, sha: 'b2' }, undefined, 5),
         roundTaken(kept, { n: 2, sha: 'b2' }, 0, 5),
     ]).toEqual([
-        { at: 5, clean: 1, count: 2, shas: ['a1', 'b2'] },
+        { at: 5, clean: 1, count: 2, shas: ['a1', 'b2'], unknown: 1 },
         { at: 5, clean: 2, count: 2, shas: ['a1', 'b2'] },
     ]);
 });
 
-test("the sender's line at the cap names an unknown round unknown", () => {
-    expect([roundLine(3, true), roundLine(4, true)]).toEqual([
-        'round 3 in this chunk not known clean, this one unknown (no «P0/P1: n» in its line): a next one is past the cap of 3',
-        'round 4 in this chunk not known clean, this one unknown (no «P0/P1: n» in its line), past the cap of 3: the coordinator has the count and says go on or stop; nothing is refused, keep working',
+// sixth sense round 1 on cf12f156: two unknown rounds then one with «P0/P1: 2» read «3 with a P0 or P1»
+test("the sender's line at the cap counts the chunk's unknown rounds apart", () => {
+    expect([roundLine(3, 2), roundLine(4, 4), roundLine(3)]).toEqual([
+        'round 3 in this chunk not known clean (1 with a P0 or P1, 2 unknown: no «P0/P1: n» in the line): a next one is past the cap of 3',
+        'round 4 in this chunk not known clean (4 unknown: no «P0/P1: n» in the line), past the cap of 3: the coordinator has the count and says go on or stop; nothing is refused, keep working',
+        'round 3 with a P0 or P1 in this chunk: a next one is past the cap of 3',
     ]);
 });
 
-test("the coordinator's cap line names an unknown round", () => {
-    expect(capLine('mods-lane-8 | FRM-656', 4, '⚡ 🔧 mods', true)).toBe(
-        '[escalate] round 4 of mods-lane-8 | FRM-656, past the cap of 3, from ⚡ 🔧 mods (this round unknown: its line named no «P0/P1: n», ask for the count): ask dima «go on, or stop the lane»',
+test("the coordinator's cap line counts the unknown rounds", () => {
+    expect(capLine('mods-lane-8 | FRM-656', 4, '⚡ 🔧 mods', 2)).toBe(
+        '[escalate] round 4 of mods-lane-8 | FRM-656, past the cap of 3, from ⚡ 🔧 mods (2 unknown: their lines named no «P0/P1: n», ask for the count): ask dima «go on, or stop the lane»',
     );
 });

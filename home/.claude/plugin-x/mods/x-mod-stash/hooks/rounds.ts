@@ -1,13 +1,16 @@
 // the round count's pure half (FRM-504, FRM-656): which key a round lands on and what that key holds after it; the
 // shelf file's read, lock and write stay with the caller. no `$`
 
-// clean: the rounds whose line named «P0/P1: 0», written only once one did; count − clean is what the cap reads, a
-// round whose line named none among it
+import { ROUND_CAP } from './parse.ts';
+
+// clean: the rounds whose line named «P0/P1: 0», unknown: those that named no «P0/P1: n», each written only once one
+// did; count − clean is what the cap reads, the unknown ones among it
 export type LaneRounds = {
     at?: number;
     clean?: number;
     count: number;
     shas: string[];
+    unknown?: number;
 };
 
 // an array is the first build's shape; anything else unreadable counts from 0
@@ -24,6 +27,9 @@ export function roundsOf(kept: unknown): LaneRounds {
             : {}),
         count: typeof v?.count === 'number' ? v.count : 0,
         shas: Array.isArray(v?.shas) ? v.shas : [],
+        ...(typeof v?.unknown === 'number' && v.unknown > 0
+            ? { unknown: v.unknown }
+            : {}),
     };
 }
 
@@ -61,17 +67,28 @@ export function roundTaken(
         )
     )
         return undefined;
-    // a «round 1» opens a new chunk on its key, so a count left from before starts over (the herdr lane's 8 of 18 Nov);
-    // a bare «final on <sha>» reads as 1 yet may follow rounds, so it never resets (wisphunter on 25430ab6); past it a
-    // lane may open past round 1, and a number sent is never read back as less
+    // a «round 1» opens a key fresh only past the cap, a count left from before (the herdr lane's 8 of 18 Nov): under
+    // it a codie numbering every round 1 counts on, so it still reaches the cap (clio's rule, sixth sense round 1 on
+    // cf12f156); a bare «final on <sha>» reads as 1 yet may follow rounds, so it never resets (wisphunter on 25430ab6);
+    // a lane may open past round 1, and a number sent is never read back as less
     const was: Omit<LaneRounds, 'shas'> =
-        round.n === 1 && !round.isFinal ? { count: 0 } : kept;
+        round.n === 1 && !round.isFinal && kept.count > ROUND_CAP
+            ? { count: 0 }
+            : kept;
     const count = Math.max(round.n, was.count + 1);
     const clean = (was.clean ?? 0) + (severe === 0 ? 1 : 0);
+    const unknown = (was.unknown ?? 0) + (severe === undefined ? 1 : 0);
     return {
         at,
         ...(clean ? { clean } : {}),
         count,
         shas: [...kept.shas, round.sha],
+        ...(unknown ? { unknown } : {}),
     };
 }
+
+// the rounds the cap reads, and the unknown ones among them
+export const roundOpen = (r: LaneRounds) => ({
+    open: r.count - (r.clean ?? 0),
+    unknown: r.unknown ?? 0,
+});
