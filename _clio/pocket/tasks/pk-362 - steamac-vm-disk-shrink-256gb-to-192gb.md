@@ -1,10 +1,10 @@
 ---
 id: PK-362
 title: 'steamac vm disk: shrink 256gb to 192gb'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-18T13:40:00Z'
+updated_date: '2026-11-19T14:14:00Z'
 labels:
   - s
 dependencies: []
@@ -66,4 +66,7 @@ moved from FRM-506 at its close (14:55): FRM-506:W1462 (dima, the vm's performan
 11:18 kept: 2026-11-18 — his vet, «i tell when»
 
 kept: 2026-11-18 — dima's o4 steer: «park in a pocket for now»
+
+ticket: FRM-665
+16:14 close: snoozed on dima's 16:08 word («snoozes i resume myself when we have time»); W1–W8 and FRM-506:W1462 moved to FRM-665 as W1–W9, label snoozed
 <!-- SECTION:NOTES:END -->
