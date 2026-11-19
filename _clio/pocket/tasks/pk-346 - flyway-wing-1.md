@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-18T20:41:00Z'
+updated_date: '2026-11-19T11:52:00Z'
 labels:
   - s
   - clio-wing-1
@@ -707,4 +707,6 @@ done 2026-11-18 21:17: f29 💤 FRM-650 measuring, one solution: the shape-idea 
 done 2026-11-18 22:41: f36 ⏳ FRM-555 follow-up with the mods codie: its profile of a quiet row, then the fix with measured gains to main — waits for: FRM-555 (FRM-555 In Progress)
 
 22:41: f36 is reworded, not done: fixes 1–2 dropped on wing 1's verdict, the harness half went upstream (#106740), only fix 3's measure is open
+
+13:52 from dima's 18 Nov 22:19 (prompts 2026-11-18 line 823, helga's 19 Nov verify): I resume speak v2 with the wing. I started today and I'm not glad with the results, because we only managed to solve evergreen and prepare my lookout spot where I apply to jobs. I planned more for the wing today: to refresh the speak recipe with wing 1, to refresh Fable 5.2 to fleet knowledge, and to refresh the designer. I didn't make it in time, so it is postponed for tomorrow.
 <!-- SECTION:NOTES:END -->
