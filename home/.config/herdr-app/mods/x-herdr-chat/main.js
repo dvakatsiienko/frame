@@ -73,7 +73,7 @@ import {
     turnClock,
     withPress,
 } from './band.js';
-import { screenTail } from './blocked.js';
+import { createBlockedPanel } from './blocked-panel.js';
 import { splitBlocks } from './blocks.js';
 import { CHAT_SHOWN, settingsOverlay } from './chat-asks.js';
 import { messageDetails } from './details.js';
@@ -93,7 +93,8 @@ import {
     unlinkFiles,
     withFileRows,
 } from './files.js';
-import { FIND_SETTLE_MS, createFind, findCount, findSpans } from './find.js';
+import { findSpans } from './find.js';
+import { createFindBar } from './find-bar.js';
 import { replyFold } from './fold.js';
 import { placeOf } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
@@ -146,6 +147,7 @@ import { asksActedOn, isShownIn, pidFor, shownThread } from './shown.js';
 import { loadableSkills } from './skills.js';
 import { createSlashMenu, listedSkills, menuNames } from './slash.js';
 import { transcriptPath } from './thread.js';
+import { tint } from './tint.js';
 import {
     createToolFolds,
     isCallRow,
@@ -155,12 +157,11 @@ import {
 import { typedMarkdown } from './typed.js';
 import { openViewer, viewerAfter, viewerCount, viewerLevel } from './viewer.js';
 
-/** @typedef {import('gpui-kit').Color} Color */
-/** @typedef {import('gpui-kit').Context} Context */
+/** @typedef {import('./chat-types.js').Color} Color */
+/** @typedef {import('./chat-types.js').Context} Context */
 /** @typedef {import('./chat-asks.js').ChatShown} ChatShown */
 /** @typedef {import('./row-model.js').Row} Row */
-// the theme colours this file reads, each present in every herdr theme
-/** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'dim' | 'foreground' | 'hover' | 'muted' | 'popover' | 'raised' | 'selected' | 'solid' | 'solid_foreground' | 'working', Color>} Theme */
+/** @typedef {import('./chat-types.js').Theme} Theme */
 
 // the readable column of a narrow look (the old chat's), and the share of the column a bubble may take
 const NARROW = 820;
@@ -264,30 +265,6 @@ const ASK_READ_MS = 1000;
 const SETTINGS_RETRY_MS = 10 * 1000;
 // about how wide a character of a reply is, in px: the fold counts a bubble's lines from its width
 const CHAR_PX = 7.5;
-/**
- * a button of the question card and the blocked panel; `strong` is the one that answers
- * @param {any} t @param {string} id @param {string} label @param {((e: any, cx: any) => void) | null} onClick @param {boolean} [strong]
- */
-function askButton(t, id, label, onClick, strong) {
-    return div()
-        .id(id)
-        .px(10)
-        .py(4)
-        .rounded(6)
-        .text_size(12)
-        .cursor_pointer()
-        .bg(strong ? t.solid : t.raised)
-        .text_color(strong ? t.solid_foreground : t.foreground)
-        .hover((s) =>
-            strong
-                ? s.bg(t.accent).text_color(t.accent_foreground)
-                : s.bg(t.hover),
-        )
-        .when(Boolean(onClick), (el) =>
-            el.on_click((e, cx) => onClick?.(e, cx)),
-        )
-        .child(label);
-}
 const COPIED_NOTE = 'Message copied';
 const COPIED_NOTE_MS = 1500;
 // each save waits for the one before it, so an older store never lands last
@@ -368,9 +345,6 @@ function isWindowActive() {
         return true;
     }
 }
-
-/** a theme colour made see-through @param {Color} color @param {string} alpha two hex digits @returns {Color} */
-const tint = (color, alpha) => `#${color.slice(1, 7)}${alpha}`;
 
 /** @param {unknown} error */
 const readError = (error) =>
@@ -639,17 +613,22 @@ export default class Chat extends View {
     pickKeys = null;
     /** the picture viewer over the chat, null when closed @type {import('./viewer.js').ViewerState | null} */
     viewer = null;
-    /** find in the chat (slice 6) */
-    find = createFind();
-    /** @type {import('gpui-base').InputState | null} */
-    findBox = null;
-    findTyped = 0;
+    /** find in the chat (slice 6): the bar and the search the rows mark */
+    findBar = createFindBar({
+        focusQuill: () => this.box?.focus(),
+        isAllLoaded: () => this.pages?.isStart() ?? false,
+        rows: () => this.shownRows,
+        show: (id) => this.at.restore(id, 0),
+    });
     /** the / menu over the quill (slice 6) */
     slashMenu = createSlashMenu();
     /** the right-click menu on a message (slice 7) */
     messageMenu = createMessageMenu();
-    /** a blocked thread's ask as its screen shows it (a permission), read while it waits @type {string | null} */
-    blockedScreen = null;
+    /** a blocked thread's ask with the keys that answer it, over the quill */
+    blocked = createBlockedPanel({
+        address: () => this.address,
+        isBlocked: () => this.statusNow() === 'blocked',
+    });
     /** his «Show more» switch: a long reply of an earlier turn shows its first lines (FRM-607) */
     isShowMore = true;
     /** the long replies he opened with Show more, by row id @type {Set<string>} */
@@ -784,7 +763,7 @@ export default class Chat extends View {
             },
         ]);
         // find: ⌘F opens its bar; in the bar Enter or ↓ steps older, ⇧Enter or ↑ newer, Esc closes
-        this.findBox = this.newFindBox();
+        this.findBar.reset();
         cx.bind_keys([
             {
                 action: 'x_herdr_chat_find_newer',
@@ -839,7 +818,7 @@ export default class Chat extends View {
         cx.timer.every(SHOWN_LOOK_MS, (later) =>
             this.showThread(this.shownAddress, later),
         );
-        cx.timer.every(ASK_READ_MS, (later) => this.readAsk(later));
+        cx.timer.every(ASK_READ_MS, (later) => this.blocked.read(later));
         this.ageBand(cx);
         cx.timer.every(BAND_AGE_MS, (later) => this.ageBand(later));
         cx.spawn(async (cx) => {
@@ -875,7 +854,7 @@ export default class Chat extends View {
         const named = isShown
             ? {
                   address,
-                  isFindOpen: this.find.state.isOpen,
+                  isFindOpen: this.findBar.find.state.isOpen,
                   pid: this.pid ?? null,
               }
             : { address: null, isFindOpen: false, pid: null };
@@ -911,14 +890,14 @@ export default class Chat extends View {
         this.escapeAsk = acts.lastEscape;
         this.wasShown = isShown;
         // Esc pressed anywhere in the window closes the viewer, or find when no viewer shows (dima, 18:18)
-        if (acts.isEscape && (this.viewer || this.find.state.isOpen))
+        if (acts.isEscape && (this.viewer || this.findBar.find.state.isOpen))
             _cx.timer.after(0, (later) =>
                 this.viewer
                     ? this.viewerStep('close', later)
-                    : this.closeFind(later),
+                    : this.findBar.close(later),
             );
         if (acts.isFind && !this.viewer)
-            _cx.timer.after(0, (later) => this.openFind(later));
+            _cx.timer.after(0, (later) => this.findBar.open(later));
         if (acts.isFocus && !this.viewer)
             _cx.timer.after(50, () => {
                 if (!this.isPickOpen) this.box?.focus();
@@ -963,9 +942,9 @@ export default class Chat extends View {
             .size_full()
             .min_h(0)
             .key_context('XChat')
-            .on_action('x_herdr_chat_find', (_e, cx) => this.openFind(cx))
+            .on_action('x_herdr_chat_find', (_e, cx) => this.findBar.open(cx))
             .on_action('x_herdr_chat_find_close', (_e, cx) =>
-                this.closeFind(cx),
+                this.findBar.close(cx),
             )
             // ⌘ held at a click on a picture opens it in his desktop app, not the viewer
             .on_modifiers_changed((e) => {
@@ -1052,13 +1031,15 @@ export default class Chat extends View {
             root
                 .relative()
                 .when(this.statusNow() === 'blocked', (el) =>
-                    el.child(this.blockedPanel(t)),
+                    el.child(this.blocked.view(t)),
                 )
                 .child(this.band(drawn.band, t))
                 .child(this.quill(this.box, t))
                 .child(this.bar(drawn.bar, drawn.band.buttons, t))
                 // find floats over the list, so opening it moves no message (dima, 18:39)
-                .when(this.find.state.isOpen, (el) => el.child(this.findBar(t)))
+                .when(this.findBar.find.state.isOpen, (el) =>
+                    el.child(this.findBar.view(t)),
+                )
                 .when(Boolean(this.viewer), (el) =>
                     el.child(this.viewerView(t)),
                 )
@@ -2892,119 +2873,6 @@ export default class Chat extends View {
             );
     }
 
-    /** a blocked thread's ask, read off its screen each second while it waits @param {Context} cx */
-    readAsk(cx) {
-        const { address } = this;
-        if (!address || this.statusNow() !== 'blocked') {
-            if (this.blockedScreen !== null) {
-                this.blockedScreen = null;
-                cx.notify();
-            }
-            return;
-        }
-        cx.spawn(async (cx) => {
-            const read = await hc(['read', address]).catch(() => null);
-            if (this.address !== address || !read || read.code !== 0) return;
-            const screen = screenTail(read.stdout);
-            if (screen === this.blockedScreen) return;
-            this.blockedScreen = screen;
-            cx.notify();
-        });
-    }
-
-    /** the Terminal view on this thread: the stack shows its other child, the thread's pane takes the keyboard @param {string} address */
-    toTerminal(address) {
-        const { stack, other } = props() ?? {};
-        if (stack && other)
-            runCommand('layout.select', { child: other, stack });
-        if (address) runCommand('pane.focus', { terminal: address });
-    }
-
-    /** Claude asking (a permission): its screen with the keys that answer it @param {Theme} t */
-    blockedPanel(t) {
-        const address = this.address ?? '';
-        /** @param {string[]} keys */
-        const keys =
-            (...keys) =>
-            (/** @type {any} */ _e, /** @type {Context} */ cx) => {
-                cx.spawn(async (cx) => {
-                    await hc(['keys', address, ...keys]);
-                    this.blockedScreen = null;
-                    this.readAsk(cx);
-                });
-            };
-        return v_flex()
-            .id('chat-blocked')
-            .mx(32)
-            .mb(8)
-            .gap(8)
-            .p(10)
-            .rounded(8)
-            .bg(t.raised)
-            .border_1()
-            .border_color(t.blocked)
-            .child(
-                h_flex()
-                    .gap(8)
-                    .items_center()
-                    .child(div().size(8).rounded(4).bg(t.blocked))
-                    .child(
-                        div()
-                            .font_semibold()
-                            .text_color(t.foreground)
-                            .child('Claude is asking'),
-                    ),
-            )
-            .when(Boolean(this.blockedScreen), (el) =>
-                el.child(
-                    div()
-                        .id('chat-blocked-screen')
-                        .max_h(260)
-                        .overflow_y_scroll()
-                        .p(8)
-                        .rounded(6)
-                        .bg(t.background)
-                        .text_size(11)
-                        .font_family(
-                            String(settings().font_family ?? 'JetBrains Mono'),
-                        )
-                        .text_color(t.foreground)
-                        .child(
-                            TextView.markdown(
-                                'chat-blocked-text',
-                                `\`\`\`\n${this.blockedScreen ?? ''}\n\`\`\``,
-                            ).selectable(true),
-                        ),
-                ),
-            )
-            .child(
-                h_flex()
-                    .gap(6)
-                    .flex_wrap()
-                    .children(
-                        ['1', '2', '3', '4'].map((k) =>
-                            askButton(
-                                t,
-                                `chat-key-${k}`,
-                                k,
-                                keys(k),
-                                k === '1',
-                            ),
-                        ),
-                    )
-                    .child(
-                        askButton(t, 'chat-key-enter', 'Enter', keys('enter')),
-                    )
-                    .child(askButton(t, 'chat-key-esc', 'Esc', keys('esc')))
-                    .child(div().flex_1())
-                    .child(
-                        askButton(t, 'chat-to-terminal', 'Open terminal', () =>
-                            this.toTerminal(address),
-                        ),
-                    ),
-            );
-    }
-
     /** a line under the quill that leaves on its own @param {string} note @param {Context} cx */
     flashNote(note, cx) {
         this.note = note;
@@ -3086,11 +2954,11 @@ export default class Chat extends View {
                 .text_xs()
                 .text_color(t.muted)
                 .child('Start of thread');
-        const { hits, isOpen } = this.find.state;
+        const { hits, isOpen } = this.findBar.find.state;
         const base = row.id.replace(/#.*$/, '');
         const hit = !isOpen
             ? null
-            : this.find.current() === row.id
+            : this.findBar.find.current() === row.id
               ? 'current'
               : hits.some((h) => h.id === row.id || h.id === base)
                 ? 'match'
@@ -3400,7 +3268,7 @@ export default class Chat extends View {
         this.watch = null;
         this.model.clear();
         // nothing of the old thread's ask or menu may act on the new one
-        this.blockedScreen = null;
+        this.blocked.clear();
         this.messageMenu.close();
         this.openReplies.clear();
         this.heights.clear();
@@ -3417,9 +3285,7 @@ export default class Chat extends View {
         this.note = null;
         // the viewer and find belong to the thread they opened on
         this.viewer = null;
-        this.find.close();
-        this.findTyped += 1;
-        this.findBox = this.newFindBox();
+        this.findBar.reset();
         this.viewerAsk += 1;
         this.joins = null;
         // no button shows or presses a thread no longer on screen; the fleet's facts stay
@@ -3775,155 +3641,6 @@ export default class Chat extends View {
         return files.length ? { at: 0, files } : null;
     }
 
-    /** the find bar's box, empty: each close leaves a new one, so a reopened bar starts blank (dima, 18:11) */
-    newFindBox() {
-        const box = InputState.new({ placeholder: 'Find in this chat' });
-        box.on('change', (_event, cx) => {
-            const at = ++this.findTyped;
-            cx.timer.after(FIND_SETTLE_MS, (later) => {
-                if (this.findTyped !== at) return;
-                this.find.search(this.shownRows, box.value());
-                this.showHit(this.find.current(), later);
-            });
-        });
-        box.on('submit', (event, cx) =>
-            this.showHit(this.find.step(event.shift ? 'newer' : 'older'), cx),
-        );
-        return box;
-    }
-
-    /** ⌘F: the bar opens with the keyboard in it @param {Context} cx */
-    openFind(cx) {
-        this.find.open();
-        cx.timer.after(16, () => this.findBox?.focus());
-        cx.notify();
-    }
-
-    /** @param {Context} cx */
-    closeFind(cx) {
-        if (!this.find.state.isOpen) return cx.propagate();
-        this.find.close();
-        this.findTyped += 1;
-        this.findBox = this.newFindBox();
-        this.box?.focus();
-        cx.notify();
-    }
-
-    /** a hit's row scrolls in at the view's top @param {string | null} id @param {Context} cx */
-    showHit(id, cx) {
-        if (id) this.at.restore(id, 0);
-        cx.notify();
-    }
-
-    /** the find bar over the chat: his query, «n / N», the steps and ✕ @param {Theme} t */
-    findBar(t) {
-        const count = findCount(this.find.state);
-        /** @param {string} id @param {string} glyph @param {string} hint @param {(cx: Context) => void} act */
-        const button = (id, glyph, hint, act) =>
-            div()
-                .id(id)
-                .h(28)
-                .min_w(28)
-                .px(8)
-                .flex()
-                .items_center()
-                .justify_center()
-                .rounded_full()
-                .cursor_pointer()
-                .hover((style) => style.bg(t.border))
-                .tooltip(hint)
-                .on_click((_e, cx) => act(cx))
-                .child(glyph);
-        // the count and the steps sit beside his query on one pill, as the picture viewer's tools do (dima, 18:12)
-        // the tools sit on a pill of their own inside the bar, apart from his query (dima, 18:46)
-        const steps = h_flex()
-            .flex_none()
-            .px(4)
-            .py(2)
-            .gap(2)
-            .items_center()
-            .rounded_full()
-            .bg(t.background)
-            .border(1)
-            .border_color(t.border)
-            .when(Boolean(count), (el) =>
-                el.child(
-                    div()
-                        .id('find-count')
-                        .px(6)
-                        .text_size(12)
-                        .text_color(t.muted)
-                        .when(!this.pages?.isStart(), (el) =>
-                            el.tooltip(
-                                'Counts the history loaded so far: scroll up for older',
-                            ),
-                        )
-                        .child(count),
-                ),
-            )
-            .child(
-                button('chat-find-newer', '↑', 'Newer match (↑ ⇧Enter)', (cx) =>
-                    this.showHit(this.find.step('newer'), cx),
-                ),
-            )
-            .child(
-                button('chat-find-older', '↓', 'Older match (↓ Enter)', (cx) =>
-                    this.showHit(this.find.step('older'), cx),
-                ),
-            )
-            .child(div().w(1).h(16).mx(6).bg(t.border))
-            .child(
-                button('chat-find-close', '✕', 'Close (Esc)', (cx) =>
-                    this.closeFind(cx),
-                ),
-            );
-        return (
-            h_flex()
-                .id('chat-find')
-                .key_context('ChatFind')
-                // a press anywhere else closes it (dima, 21:04)
-                .on_mouse_down_out((_e, cx) => this.closeFind(cx))
-                .on_action('x_herdr_chat_find_close', (_e, cx) =>
-                    this.closeFind(cx),
-                )
-                .on_action('x_herdr_chat_find_newer', (_e, cx) =>
-                    this.showHit(this.find.step('newer'), cx),
-                )
-                .on_action('x_herdr_chat_find_older', (_e, cx) =>
-                    this.showHit(this.find.step('older'), cx),
-                )
-                .absolute()
-                .top(10)
-                .right(20)
-                .w(460)
-                .pl(14)
-                .pr(8)
-                .py(4)
-                .gap(6)
-                .items_center()
-                .rounded_full()
-                // lifted off the chat: the popover surface, an accent edge and a shadow (dima, 18:46: «blended with the chat»)
-                .bg(t.popover)
-                .border(1)
-                .border_color(tint(t.accent, '66'))
-                .shadow_lg()
-                // a press on the bar stays on it: the list under it never takes the click
-                .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
-                .child(
-                    div()
-                        .flex_1()
-                        .child(
-                            Input.new(
-                                /** @type {import('gpui-base').InputState} */ (
-                                    this.findBox
-                                ),
-                            ),
-                        ),
-                )
-                .child(steps)
-        );
-    }
-
     /** the thread's skill listing, wherever its line is read: the tail or an earlier page @param {string[]} lines */
     learnSkills(lines) {
         for (const line of lines)
@@ -3943,8 +3660,9 @@ export default class Chat extends View {
      * @param {Row} row
      */
     lookOf(row) {
-        const { isOpen, q } = this.find.state;
-        if (isOpen && this.find.current() === row.id) return `find:${q}`;
+        const { isOpen, q } = this.findBar.find.state;
+        if (isOpen && this.findBar.find.current() === row.id)
+            return `find:${q}`;
         return this.foldOf(row) ? 'fold' : undefined;
     }
 
@@ -3955,8 +3673,8 @@ export default class Chat extends View {
      */
     foldOf(row) {
         if (row.kind !== 'reply' || this.openReplies.has(row.id)) return null;
-        const { isOpen } = this.find.state;
-        if (isOpen && this.find.state.hits.some((h) => h.id === row.id))
+        const { isOpen } = this.findBar.find.state;
+        if (isOpen && this.findBar.find.state.hits.some((h) => h.id === row.id))
             return null;
         const width =
             Math.min(this.width || NARROW, this.column()) * BUBBLE_SHARE;
@@ -3991,8 +3709,8 @@ export default class Chat extends View {
             (isShown && !this.heights.has({ ...row, look }))
         )
             return null;
-        const { q } = this.find.state;
-        const current = this.find.currentHit();
+        const { q } = this.findBar.find.state;
+        const current = this.findBar.find.currentHit();
         return v_flex().children(
             findSpans(row.text, q).map((line) =>
                 h_flex()
@@ -4306,8 +4024,8 @@ export default class Chat extends View {
             if (place && joined && joined.id !== place.id && height)
                 this.at.restore(joined.id, 0, height - place.offset);
             else if (place) this.at.restore(place.id, place.offset);
-            if (this.find.state.isOpen)
-                this.find.recount(
+            if (this.findBar.find.state.isOpen)
+                this.findBar.find.recount(
                     shownOf(this.model.rows, this.look),
                     first && first.id !== firstId
                         ? { from: firstId, to: first.id }
