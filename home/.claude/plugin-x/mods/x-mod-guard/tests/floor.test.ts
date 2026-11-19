@@ -63,7 +63,7 @@ const FAMILIES = [
         'x lane rebase-main',
         'origin codie/x',
     ],
-    ['git branch -D', 'git branch -D old', 'ask clio', 'old'],
+    ['git branch -D', 'git branch -D old', 'x lane landed', 'old'],
     [
         'git worktree remove',
         'git worktree remove .claude/worktrees/w1',

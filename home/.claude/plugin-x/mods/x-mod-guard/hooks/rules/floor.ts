@@ -228,7 +228,11 @@ export function floor(c: Command): Refusal | undefined {
             (hasFlag(subArgs, ['--delete'], 'd') &&
                 hasFlag(subArgs, ['--force'], 'f')))
     )
-        return rewrite(subOps, 'git branch -D');
+        return rewrite(
+            subOps,
+            'git branch -D',
+            'x lane landed <ticket> --apply — it deletes a lane branch whose commits main or its merged pr carries, with its clean tree (x lane decamp --list-stale names them); any other branch, ask clio',
+        );
     if (sub === 'filter-repo' || sub === 'filter-branch')
         return rewrite([sub], `git ${sub}`);
     if (sub === 'gc' && hasFlag(subArgs, ['--prune=now']))

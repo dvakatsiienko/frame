@@ -136,35 +136,12 @@ func onMain(main, sha string) bool {
 // branch's origin tip (its local one with no origin), then the same rule and lease as lane landed. a branch decamp kept
 // while landed ran on its tree is the case this closes (FRM-553)
 func mergedLaneBranchNote(main, branch string) string {
-	tip, err := remoteBranch(main, branch)
-	if err != nil {
-		return branch + " stays: origin did not read"
-	}
+	tip, why := mergedPrTip(asDima, main, branch)
 	if tip == "" {
-		if local, _ := gitIn(main, "rev-parse", "--verify", "-q", "refs/heads/"+branch); local.ok {
-			tip = local.out
-		}
+		return branch + " stays: " + why
 	}
-	slug := originSlugIn(main)
-	var prs []struct {
-		MergedAt *string `json:"merged_at"`
-		Head     struct {
-			Ref string `json:"ref"`
-		} `json:"head"`
-	}
-	if tip == "" || slug == "" {
-		return branch + " stays: no tip or no github origin to find its pr"
-	}
-	if _, err := ghFetch(asDima, githubBase()+"/repos/"+slug+"/commits/"+tip+"/pulls", &prs); err != nil {
-		return branch + " stays: its prs did not read"
-	}
-	for _, pr := range prs {
-		if pr.MergedAt != nil && pr.Head.Ref == branch {
-			// github names the prs holding the tip, so the merged one carries it: the tip is the head the rule reads
-			return laneBranchNote(asDima, main, slug, branch, tip)
-		}
-	}
-	return branch + " stays: no merged pr carries " + short(tip)
+	// the merged pr carries the tip, so the tip is the head the rule reads
+	return laneBranchNote(asDima, main, originSlugIn(main), branch, tip)
 }
 
 type staleBranch struct {
@@ -183,7 +160,7 @@ func listStale(r *Run) (any, error) {
 	branches := []staleBranch{}
 	if err := r.Step("read", "the lane branches against origin/main", func() (string, error) {
 		_, _ = gitIn(main, "fetch", "-q", "origin", "main")
-		refs, err := mustGitIn(main, "for-each-ref", "for-each-ref", "--format=%(refname:short) %(committerdate:unix)", "refs/heads/worktree-*", "refs/heads/codie/")
+		refs, err := mustGitIn(main, "for-each-ref", append([]string{"for-each-ref", "--format=%(refname:short) %(committerdate:unix)"}, laneBranchRefs...)...)
 		if err != nil {
 			return "", err
 		}
@@ -193,7 +170,12 @@ func listStale(r *Run) (any, error) {
 				continue
 			}
 			seconds, _ := strconv.ParseInt(at, 10, 64)
-			branches = append(branches, staleBranch{name, onMain(main, name), fmt.Sprintf("%dd", (clock().Unix()-seconds)/86400)})
+			merged := mainCarries(main)(name)
+			if !merged {
+				tip, _ := mergedPrTip(asDima, main, name)
+				merged = tip != ""
+			}
+			branches = append(branches, staleBranch{name, merged, fmt.Sprintf("%dd", (clock().Unix()-seconds)/86400)})
 		}
 		return plural(len(branches), "branch"), nil
 	}); err != nil {

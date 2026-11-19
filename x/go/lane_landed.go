@@ -48,7 +48,7 @@ type landedPlan struct {
 	openClosing string
 	// the merged pr's branch, when one stands; --apply takes it
 	mergedRef, mergedHead, ghRepo string
-	// the merged worktree- branches no tree holds, each with the tips its delete leases on
+	// the merged lane-family branches, each with the tips its delete leases on (none: read again after its tree goes)
 	worktreeDrops []worktreeDrop
 }
 
@@ -230,7 +230,7 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		trees.ok, trees.detail = false, strings.Join(notes, "; ")
 	}
 	lines = append(lines, trees)
-	lines = append(lines, worktreeBranchesLine(main, id, plan))
+	lines = append(lines, mergedBranchesLine(main, id, headRef, plan))
 
 	plan.mergedRef = ""
 	if mergedHead != "" && isLaneBranch(headRef) && branchStands(main, headRef) {
@@ -758,36 +758,6 @@ func unmergedChunks(repo, spec, id string) []string {
 // the root rule: no change in git status, no file in .scratch/, every commit on an origin ref or in the merged pr.
 // a lane tree is a codie/<ticket>-* branch or the pr's head ref; a detached one is sixth sense's verify tree,
 // named verify-pr-<n> (frame), verify-<ticket> (any other repo) or sitting at the pr's head
-
-// the merged worktree- branches no tree holds go on --apply, by decamp's main-holds rule and lease; one main lacks stays,
-// named, never holding the landing: it is any session's, never this lane's (FRM-553)
-func worktreeBranchesLine(main, id string, plan *landedPlan) landedLine {
-	line := landedLine{name: "worktree branches", ok: true, detail: "no merged worktree- branch"}
-	plan.worktreeDrops = nil
-	listed, err := mustGitIn(main, "for-each-ref", "for-each-ref", "--format=%(refname:short)", "refs/heads/worktree-*")
-	if err != nil {
-		line.detail = "the branches did not read: " + err.Error()
-		return line
-	}
-	var going, staying []string
-	for ref := range strings.FieldsSeq(listed) {
-		why, tips := branchStay(main, ref, "main does not hold", func(sha string) bool { return onMain(main, sha) })
-		if why != "" {
-			staying = append(staying, ref+" stays: "+why)
-			continue
-		}
-		plan.worktreeDrops = append(plan.worktreeDrops, worktreeDrop{ref, tips})
-		going = append(going, ref)
-	}
-	switch {
-	case len(going) > 0:
-		line.ok, line.fix = false, "x lane landed "+id+" --apply"
-		line.detail = strings.Join(append([]string{strings.Join(going, ", ") + " merged, taken on --apply"}, staying...), "; ")
-	case len(staying) > 0:
-		line.detail = strings.Join(staying, "; ")
-	}
-	return line
-}
 
 func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 	mergedHead := refs.mergedHead
@@ -1351,7 +1321,7 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 	var takenBranches []string
 	for _, drop := range plan.worktreeDrops {
 		_ = r.Step("branch", drop.ref, func() (string, error) {
-			note := branchDrop(plan.main, drop.ref, drop.tips)
+			note := dropMergedBranch(plan.main, drop)
 			takenBranches = append(takenBranches, note)
 			return note, nil
 		})
@@ -1362,7 +1332,7 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 	}
 	after := again.(landedPlan)
 	for _, note := range takenBranches {
-		after.Lines = append(after.Lines, landedLine{name: "branch", ok: !strings.HasPrefix(note, "⚠"), detail: note, fix: "git branch --list worktree-*"}.String())
+		after.Lines = append(after.Lines, landedLine{name: "branch", ok: !strings.HasPrefix(note, "⚠"), detail: note, fix: "x lane decamp --list-stale"}.String())
 	}
 	// a branch that stays is the re-read's own red line; a gone one leaves no trace there, so it is named here
 	if dropped != "" {
