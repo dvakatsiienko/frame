@@ -24,17 +24,38 @@ export function shownThread(agents, focus, shown) {
 }
 
 /**
- * the session pid of the Claude in a terminal: the process whose environment names it (`ps eww -o pid=,command=`
- * over the session pids), never a process with no session file
+ * the session pid of the Claude in a terminal: the process whose environment names it (`ps eww -o
+ * pid=,etime=,command=` over the session pids), never a process with no session file. a Claude its hooks start (crow's
+ * `claude -p`) inherits the terminal id and writes a session file too, so the one up longest is the terminal's own
  * @param {string} address @param {string} ps @param {number[]} sessions
  * @returns {number | null}
  */
 export function pidFor(address, ps, sessions) {
+    let found = null;
+    let longest = -1;
     for (const line of ps.split('\n')) {
-        const pid = Number(/^\s*(\d+)\s/.exec(line)?.[1]);
-        if (sessions.includes(pid) && addressIn(line) === address) return pid;
+        const [, pid, etime] = /^\s*(\d+)\s+(\S+)\s/.exec(line) ?? [];
+        const up = secondsUp(etime ?? '');
+        if (
+            sessions.includes(Number(pid)) &&
+            addressIn(line) === address &&
+            up > longest
+        ) {
+            found = Number(pid);
+            longest = up;
+        }
     }
-    return null;
+    return found;
+}
+
+/** ps's `etime`, `[[dd-]hh:]mm:ss`, in seconds @param {string} etime */
+function secondsUp(etime) {
+    const [days, clock] = etime.includes('-') ? etime.split('-') : ['0', etime];
+    const [s = 0, m = 0, h = 0] = (clock ?? '')
+        .split(':')
+        .reverse()
+        .map(Number);
+    return ((Number(days) * 24 + h) * 60 + m) * 60 + s;
 }
 
 /**

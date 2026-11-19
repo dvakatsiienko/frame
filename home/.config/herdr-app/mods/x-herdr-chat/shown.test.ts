@@ -69,13 +69,31 @@ describe('the thread the chat shows: the focused tab’s Claude', () => {
 
 describe('a terminal’s Claude, by the terminal id in its environment', () => {
     const ps = [
-        '  412 /bin/zsh HC_TERMINAL_ID=t1 TERM=xterm',
-        ' 9001 claude --model opus HC_TERMINAL_ID=t2 HOME=/Users/x',
-        ' 9002 claude HC_TERMINAL_ID=t3',
+        '  412    01:02:03 /bin/zsh HC_TERMINAL_ID=t1 TERM=xterm',
+        ' 9001       20:01 claude --model opus HC_TERMINAL_ID=t2 HOME=/Users/x',
+        ' 9002 1-00:00:10 claude HC_TERMINAL_ID=t3',
     ].join('\n');
 
     test('the session pid whose process carries the terminal id', () => {
         expect(pidFor('t2', ps, [9001, 9002])).toBe(9001);
+    });
+
+    // clio's hook runs crow's plan critique as a `claude -p` that inherits her terminal id and writes its own session
+    // file; ps lists it first (19 Nov 13:40, his shot: crow's prompt drawn as his message in clio's chat)
+    test('a Claude started later under the same terminal never takes it over', () => {
+        const both = [
+            ' 2210       00:04 claude -p --model opus HC_TERMINAL_ID=t93',
+            '83284       23:13 claude -n clio HC_TERMINAL_ID=t93',
+        ].join('\n');
+        expect(pidFor('t93', both, [2210, 83284])).toBe(83284);
+    });
+
+    test('a thread up for days outranks one up for hours', () => {
+        const both = [
+            ' 2210    23:59:59 claude HC_TERMINAL_ID=t5',
+            ' 7000  2-00:00:01 claude HC_TERMINAL_ID=t5',
+        ].join('\n');
+        expect(pidFor('t5', both, [2210, 7000])).toBe(7000);
     });
 
     test('a process with no session file is never the thread', () => {

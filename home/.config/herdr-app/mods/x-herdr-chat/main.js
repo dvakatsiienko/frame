@@ -3370,7 +3370,7 @@ export default class Chat extends View {
                     const ps = await exec('ps', [
                         'eww',
                         '-o',
-                        'pid=,command=',
+                        'pid=,etime=,command=',
                         '-p',
                         sessions.join(','),
                     ]);
