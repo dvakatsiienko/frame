@@ -95,10 +95,6 @@ const caps = {
         cap: 1_707,
         why: 'merge-auto: the gates and the merge',
     },
-    'x/go/merge_auto_test.go': {
-        cap: 1_309,
-        why: 'merge-auto, one file of cases',
-    },
     'x/go/stacks_test.go': {
         cap: 1_363,
         why: 'the stacked-pr add-on, one file of cases',
