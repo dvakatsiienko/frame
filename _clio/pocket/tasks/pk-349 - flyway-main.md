@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T12:51:00Z'
+updated_date: '2026-11-19T12:58:00Z'
 labels:
   - s
   - clio-main
@@ -1150,4 +1150,6 @@ PK-349:W1214 (2026-11-19 14:12, dima): print waiting jev lines: what's there? �
 PK-349:W1216 (2026-11-19 14:33, dima, herdr-typed): ts lsp - so both codies can use it? herdr too? tell both: standing rule for today: use typescript lsp and measure its effectiveness and usefulness. both codies must use typescript lsp during the day. their job - measure it so we know use it and wire it or drop it. you - measure on your side. #standing
 
 PK-349:W1217 (2026-11-19 14:52, dima, herdr-typed): since stray is opus now (don't change it), it can solve more complicated tasks then (fyi) — remember this during the day, and tell wing 1 when you summon it, so it also remembers it for the whole day. #standing
+
+PK-349:W1218 (2026-11-19 14:41, dima, herdr-typed): add a habit, so any wishes like this, like not doable because herdr can't do them — you auto fold there, without me asking. ← (landed: craft-pm, 4a7f3a42)
 <!-- SECTION:NOTES:END -->
