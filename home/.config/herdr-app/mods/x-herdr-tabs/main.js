@@ -328,11 +328,18 @@ export default class Tabs extends View {
                     )
                     .when(st === 'working', (el) =>
                         el.child(
-                            svg('mods/workspace-chrome/spinner.svg')
-                                .size(12)
+                            // a calm breathing dot, as the agents list draws it (FRM-618)
+                            div()
+                                .size(7)
+                                .mx(2.5)
                                 .flex_none()
-                                .text_color(t.working)
-                                .spin(900),
+                                .rounded_full()
+                                .bg(t.muted)
+                                .loop('opacity', {
+                                    from: 0.3,
+                                    period: 2000,
+                                    to: 1,
+                                }),
                         ),
                     )
                     // Blocked and unread: a dot; finished and read: a gray tick.

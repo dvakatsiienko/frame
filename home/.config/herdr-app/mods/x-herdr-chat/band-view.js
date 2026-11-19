@@ -424,11 +424,17 @@ export function createBand({ shownAddress, pid, turnStart, column }) {
                         .text_color(t.muted)
                         .child(
                             mark === 'spinner'
-                                ? svg('mods/workspace-chrome/spinner.svg')
-                                      .size(12)
+                                ? div()
+                                      .size(7)
+                                      .mx(1.5)
                                       .flex_none()
-                                      .text_color(t.working)
-                                      .spin(900)
+                                      .rounded_full()
+                                      .bg(t.muted)
+                                      .loop('opacity', {
+                                          from: 0.3,
+                                          period: 2000,
+                                          to: 1,
+                                      })
                                 : div()
                                       .size(10)
                                       .flex_none()

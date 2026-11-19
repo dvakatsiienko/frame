@@ -201,7 +201,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
 ## the band and the status bar
 
 - ✅ a thread's status sits in the quill's bottom bar (FRM-610)
-  - given a thread working, then between + and the band's buttons a spinner, what it does, its turn clock in whole minutes («<1 min», «4 min») and Stop
+  - given a thread working, then between + and the band's buttons a calm breathing dot (FRM-618, his o6 steer), what it does, its turn clock in whole minutes («<1 min», «4 min») and Stop
   - given a thread idle, then the bar reads «○ Idle» (shots 2026-11-18, the quill crops)
   - decision: whole minutes, never seconds: each redraw drops a text selection in progress
 - ⬜ the meters sit right above the quill (FRM-565)
