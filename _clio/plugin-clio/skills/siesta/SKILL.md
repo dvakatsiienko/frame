@@ -42,7 +42,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 3.5 **the helper count**: step 1's helper count section: `helper` and `helper-lite` spawns per live session; a member with real work and zero is nudged the same turn, and the count joins the card
 4. **check before acting** — wishkeeper owns the files, the tracker and whether a claim to dima holds at HEAD; crow owns intent, process and a claim with no receipt as it is made; every high finding from either, and any finding that would change a rule or a claim made to dima, is opened at its cited spot first; one not checked is printed as `unchecked`; a high's fix names its cause, «fixed» or «ticketed FRM-N», before its commit
 5. **the card**, one reply when wishkeeper is back, after `node ~/frame/_clio/script/siesta-gate.ts card '<high 1>' …` (one quoted arg each; a high settled later: `… high <n> fixed|parked <why>`):
-   - 🐬 **wishkeeper**: its top 5 and the count of the rest, or the skip's why; one `## rounds` row of `docs/test-drive/pre-merge-siesta.md` per run: tokens, findings by severity, highs real y/n, acted or dropped (`docs/research/wishkeeper-cadence.md` remeasures them)
+   - 🐬 **wishkeeper**: its top 5 and the count of the rest, or the skip's why; one `## rounds` row of `docs/test-drive/pre-merge-siesta.md` per run: tokens, findings by severity, highs real y/n, acted or dropped (`docs/research/wishkeeper-cadence.md` remeasures them); main commits her row the turn she writes it, a wing writes its row in its own tree (dima o10: an uncommitted row blocks a wing's land)
    - 🎀 **chores**: the lines of `… card-lines <transcript>`
    - 🍀 **freebie**: what step 2.2 got done; a duplication finding offers `/simplify` here
    - ➡️ **next**: your flyway's next line
