@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T18:14:00Z'
+updated_date: '2026-11-19T19:27:00Z'
 labels:
   - s
   - clio-main
@@ -16,14 +16,12 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look
-- [ ] #2 f46 TS LSP check each siesta until the halt: are both codies calling LSP, from their transcripts
-- [ ] #3 f49 TS LSP plan (W1224–W1228): retros in, weigh usefulness, then why underused and the fleet-wide wiring
-- [ ] #4 f55 pr-watch alarm for a conflicting pr (FRM-572, dima's o78 tick): watch-pr.sh wakes on mergeState DIRTY
-- [ ] #5 f57 stray glide card reborn after each end: its thread record restamps «at» on sync (mods wisp, after FRM-662)
-- [ ] #6 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #7 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #8 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #1 f55 pr-watch alarm for a conflicting pr (FRM-572, dima's o78 tick): watch-pr.sh wakes on mergeState DIRTY
+- [ ] #2 f57 stray glide card reborn after each end: its thread record restamps «at» on sync (mods wisp, after FRM-662)
+- [ ] #3 f58 mods lane tomorrow: watch it closely, unwind its bottleneck, FRM-662 off the giant file (FRM-662:W11)
+- [ ] #4 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #5 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #6 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1207,4 +1205,12 @@ done 2026-11-19 19:25: f56 stray glide card reborn after each end (l99–l102): 
 PK-349:W1239 (2026-11-19 20:13, dima): TS LSP and o2: let's have the retros' data after everyone stops, so we have the full picture, then decide.
 PK-349:W1240 (2026-11-19 20:13, dima): from what I saw, I lean towards deleting the TypeScript LSP. I don't want to keep a half-set-up tool in a patched mode only for narrow stuff like you propose: if the TypeScript LSP is useless, like everyone says, there's no need to have it. we have enough knobs everywhere.
 PK-349:W1241 (2026-11-19 20:13, dima): let's wait for the retro, then make the final decision. you can object if you still think the TypeScript LSP is worth keeping.
+
+done 2026-11-19 21:27: f46 TS LSP check each siesta until the halt: are both codies calling LSP, from their transcripts
+
+done 2026-11-19 21:27: f49 TS LSP plan (W1224–W1228): retros in, weigh usefulness, then why underused and the fleet-wide wiring
+
+done 2026-11-19 21:27: f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look (FRM-642 Todo)
+
+21:27 f46, f49 done: TS LSP dropped, 9e88d5ec (dima's o1); f39 done: the designer refresh ran in wing 1 today, speak v2 lives in wing 1's flyway f25 (dima 21:15: «tomorrow you only run lanes while i take wing 1»)
 <!-- SECTION:NOTES:END -->
