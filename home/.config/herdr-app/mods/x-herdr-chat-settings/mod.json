@@ -1,9 +1,5 @@
 {
-    "overlay": {
-        "height": 352,
-        "width": 360
-    },
+    "overlay": { "height": 352, "width": 360 },
     "place": "none",
-    "shared": ["tab-status.js"],
     "title": "Chat settings"
 }

@@ -14,7 +14,7 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 
 - pretty and sharp, never clunky: a shot of every visible change goes to him, its path in the reply
 - ux first: every state, input and edge he meets; hotkeys welcome
-- a feature that has a choice gets its settings row, the essential knobs only, never an overload; a preference never hides in code
+- a choice gets its settings row, the essential knobs only; a preference never hides in code. the chat's look popover (header gear) holds only how the chat reads; every other row goes to the band 🎛️'s settings window (`x-herdr-chat/settings-model.js`) (dima, 16:58)
 - slipstream first wherever he talks to a thread, with visible feedback that it worked
 - cheap to change stays cheap: one mod per block, placed by the layout json alone, plain JS, colours from `theme()`
 - a code file stays under `x:guide-code`'s cap (1,200 lines, `script/lib/code-size.test.ts` refuses past it); x-herdr-chat's `MODULES.md` shows a split

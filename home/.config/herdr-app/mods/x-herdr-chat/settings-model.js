@@ -258,6 +258,32 @@ export const pages = [
         title: 'claude Code mods',
     },
     {
+        about: 'the tabs along the top of herdr',
+        groups: [
+            {
+                heading: 'tabs',
+                rows: [
+                    {
+                        control: {
+                            kind: 'choice',
+                            options: [
+                                { label: 'visible', value: 'visible' },
+                                { label: 'hidden', value: 'hidden' },
+                            ],
+                        },
+                        default: 'visible',
+                        key: 'tabs.status',
+                        title: 'tab status',
+                        why: 'each tab’s program icon and its state dot; hidden leaves more room for the names',
+                    },
+                ],
+            },
+        ],
+        icon: '🗂️',
+        id: 'tabs',
+        title: 'tabs',
+    },
+    {
         about: 'every x-herdr key, written into herdr’s keys.json beside herdr’s own',
         groups: [],
         icon: '⌨️',

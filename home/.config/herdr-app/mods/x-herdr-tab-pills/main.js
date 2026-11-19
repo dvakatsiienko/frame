@@ -11,17 +11,19 @@ import {
     home,
     openOverlay,
     panes,
+    readTextFile,
     run,
     shared,
     spaces,
     theme,
+    watchFolder,
     window as win,
 } from 'herdr';
 
 import { createListDrag } from './drag-view.js';
 import { closeAsks, closeWords, leadPane, pillName, swallow } from './pills.js';
 import { tabDrops } from './tab-drops.js';
-import { TAB_STATUS_KEY, tabStatusOf } from './tab-status.js';
+import { SETTINGS_DIR, SETTINGS_FILE, tabStatusIn } from './tab-status.js';
 
 // the agents list reads each session name and publishes it here (address → name); one reader, one naming rule
 const NAMES_KEY = 'x-herdr-agents.names';
@@ -98,6 +100,22 @@ export default class TabPills extends View {
     init(_props, cx) {
         // a press lifts a pill, a drag reorders the tabs, a click selects (FRM-664)
         this.tabKeys = cx.focus_handle();
+        // his «tabs › tab status» from the settings window's file, read again on each change to it (FRM-664:W6)
+        /** @type {import('./tab-status.js').TabStatus} */
+        this.tabStatus = 'visible';
+        cx.spawn(async (cx) => {
+            for (;;) {
+                const text = await readTextFile(
+                    `${home()}/${SETTINGS_FILE}`,
+                ).catch(() => /** @type {string | null} */ (null));
+                const status = tabStatusIn(text);
+                if (status !== this.tabStatus) {
+                    this.tabStatus = status;
+                    cx.notify();
+                }
+                await watchFolder(`${home()}/${SETTINGS_DIR}`);
+            }
+        });
         this.drag = createListDrag({
             axis: 'x',
             focus: () => this.tabKeys,
@@ -147,8 +165,8 @@ export default class TabPills extends View {
     render() {
         // herdr's theme colours are hex strings; gpui-kit's style setters want its Color
         const t = /** @type {Theme} */ (theme());
-        // his «Tabs › Tab status» in the chat settings: hidden leaves more room for the names (FRM-664:W6)
-        const isStatusShown = tabStatusOf(shared(TAB_STATUS_KEY)) === 'visible';
+        // hidden leaves more room for the names
+        const isStatusShown = this.tabStatus === 'visible';
         const dragTheme = /** @type {import('./drag-view.js').DragTheme} */ (t);
         const space = spaces().find((p) => p.active);
         if (!space) return div();
