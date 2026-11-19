@@ -238,7 +238,11 @@ func laneSpecSection(repo, id string) (paths []string, section string) {
 			continue
 		}
 		rest := text[at[1]:]
-		if next := nextHeading.FindStringIndex(rest); next != nil {
+		next := nextHeading
+		if strings.HasPrefix(text[at[0]:], "# ") {
+			next = nextH1
+		}
+		if next := next.FindStringIndex(rest); next != nil {
 			rest = rest[:next[0]]
 		}
 		section = strings.Repeat("\n", strings.Count(text[:at[0]], "\n")) + text[at[0]:at[1]] + rest
@@ -246,10 +250,13 @@ func laneSpecSection(repo, id string) (paths []string, section string) {
 	return paths, section
 }
 
-// a spec heading of id, a joint one included: `## FRM-436 + FRM-424 — …` heads both tickets' section
+// a spec heading of id, an h1 or an h2, a joint one included: `## FRM-436 + FRM-424 — …` heads both tickets' section
 func specHead(id string) *regexp.Regexp {
-	return regexp.MustCompile(`(?m)^## (?:(?:FRM|BYT)-\d+ \+ )*` + regexp.QuoteMeta(id) + `\b.*$`)
+	return regexp.MustCompile(`(?m)^##? (?:(?:FRM|BYT|PK)-\d+ \+ )*` + regexp.QuoteMeta(id) + `\b.*$`)
 }
+
+// an h1 section runs to the next h1, so its own h2s (its exit lines) stay inside it; an h2 one to the next h2
+var nextH1 = regexp.MustCompile(`(?m)^# `)
 
 // xCommandFindings checks every `x …` command the exit lines name against the registry, statically:
 // nothing in the ticket runs. a span the ticket marks (new) is exempt, and so is a flag marked (new)

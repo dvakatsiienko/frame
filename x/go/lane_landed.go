@@ -174,7 +174,12 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 
 	spec := landedLine{name: "spec", fix: "x lane landed " + id + " --apply"}
 	// the main checkout's spec: a lane tree's own .scratch copy would archive inside a tree about to go
-	if paths, _ := laneSpecSection(frame, id); len(paths) > 0 {
+	// a lane in another repo keeps its spec in that repo's .scratch (bytes): read after frame's
+	paths, _ := laneSpecSection(frame, id)
+	if len(paths) == 0 && main != frame {
+		paths, _ = laneSpecSection(main, id)
+	}
+	if len(paths) > 0 {
 		dir := filepath.Dir(paths[0])
 		if waiting := unmergedChunks(main, paths[0], id); len(waiting) > 0 {
 			spec.detail = home(dir) + " waits on " + strings.Join(waiting, ", ") + ", no commit on " + home(main) + "'s origin/main: a spec moves when its every chunk merged"
@@ -183,7 +188,7 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 			plan.specDir, plan.archive = dir, filepath.Join(filepath.Dir(dir), archived, filepath.Base(dir))
 			spec.detail = home(dir) + " is not archived"
 		}
-	} else if found := archivedSpec(frame, id); found != "" {
+	} else if found := cmp.Or(archivedSpec(frame, id), archivedSpec(main, id)); found != "" {
 		spec.ok, spec.detail = true, home(filepath.Dir(found))
 	} else {
 		spec.detail, spec.fix = "no lane spec holds § "+id, "find the lane's .scratch/<feature>/spec.md"
@@ -739,7 +744,7 @@ func mainCheckout(dir string) string {
 	return dir
 }
 
-var chunkHeading = regexp.MustCompile(`(?m)^## ((?:FRM|BYT|PK)-\d+(?: \+ (?:FRM|BYT|PK)-\d+)*)\b`)
+var chunkHeading = regexp.MustCompile(`(?m)^##? ((?:FRM|BYT|PK)-\d+(?: \+ (?:FRM|BYT|PK)-\d+)*)\b`)
 
 // unmergedChunks names the spec's other chunks with no commit on origin/main; a squash merge carries the pr
 // body's «- ticket:» lines, so a chunk merged in the same pr reads merged, and a joint chunk merged by any of its ids
