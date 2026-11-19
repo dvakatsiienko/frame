@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T18:21:00Z'
+updated_date: '2026-11-19T18:58:00Z'
 labels:
   - s
   - clio-wing-1
@@ -93,4 +93,6 @@ PK-457:W53 (2026-11-19 20:07, dima): let's probe design-loupe's replacement tomo
 PK-457:W54 (2026-11-19 20:08, dima, o11 steer): xhigh, no. high is most likely my pick for fable 5.2 as designer. i'm still in doubt, fable 5.2 high or opus 5.5 high; i think fable.
 PK-457:W55 (2026-11-19 20:11, dima): inter is actually not a bad font, i think it's fine, but i'm also interested in other great fonts.
 the 19:08 fold, restored: his raw text read «after it ends ~5 nov i most likely move to 100$ plan»; the date was dropped in the fold. inference: he means ~5 Dec (the $200 plan started ~5 Nov, habit-ctx-load-balancing); ask him at his next prompt.
+
+20:58 o6: dima confirmed the plan move is ~5 Dec («yes, ~5 dec»); the effort-raise trial re-measures its rate then. o5: he kept the model-cards quote cut.
 <!-- SECTION:NOTES:END -->
