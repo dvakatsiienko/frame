@@ -23,7 +23,7 @@ import {
     rowWords,
     settingRows,
 } from './settings-model.js';
-import { keepPage, pageOnOpen } from './settings-page.js';
+import { forgetPage, keepPage, pageOnOpen } from './settings-page.js';
 import {
     noteHint,
     noteShown,
@@ -94,7 +94,10 @@ export function createSettingsWindow(at, cx) {
         }
     });
 
-    const close = () => closeOverlay(at.overlay);
+    const close = () => {
+        forgetPage(localStorage, at.overlay);
+        closeOverlay(at.overlay);
+    };
 
     /** @param {string} key @param {unknown} value @param {any} cx */
     function change(key, value, cx) {
