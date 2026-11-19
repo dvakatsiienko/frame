@@ -13,7 +13,7 @@ import {
     v_flex,
     v_virtual_list,
 } from 'gpui-base';
-import { View, div, image, svg } from 'gpui-kit';
+import { View, div, image } from 'gpui-kit';
 import {
     agents,
     appHome,
@@ -24,15 +24,11 @@ import {
     hc,
     home,
     layout,
-    notify,
-    openOverlay,
     props,
     readTextFile,
-    run as runCommand,
     setShared,
     settings,
     shared,
-    terminals,
     theme,
     watchFolder,
     writeTextFile,
@@ -40,33 +36,11 @@ import {
 
 import { fileName, isImagePath, pickFiles, withPaths } from './attach.js';
 import { createAttachments } from './attachments.js';
-import {
-    AUTO_WIND_DOOR,
-    DECK_BLOCK,
-    OVERRIDE_STORE,
-    PRESS_DIR,
-    PRESS_FILE,
-    STATE_DIR,
-    THREADS_KEY,
-    autoWind,
-    autoWindAfterRead,
-    autoWindFlipped,
-    bandButtons,
-    bandOf,
-    meterCells,
-    meterTip,
-    overrideOf,
-    pendingOf,
-    pressLine,
-    pressesWaiting,
-    stateLine,
-    stateParts,
-    turnClock,
-    withPress,
-} from './band.js';
+import { STATE_DIR } from './band.js';
+import { createBand } from './band-view.js';
 import { createBlockedPanel } from './blocked-panel.js';
 import { splitBlocks } from './blocks.js';
-import { CHAT_SHOWN, settingsOverlay } from './chat-asks.js';
+import { CHAT_SHOWN } from './chat-asks.js';
 import { messageDetails } from './details.js';
 import {
     fileAt,
@@ -186,32 +160,9 @@ const PLACE_SAVE_MS = 600;
 const SETTLE_MS = 120;
 // earlier pages read at most this many times while looking for the message he was reading
 const PLACE_PAGES = 8;
-// a meter's cells, as the old chat drew them
-const METER_CELLS = 48;
-const CHIP_SIZE = 26;
-// his quill's two cards sit one layer under it, a little narrower, flush against it (the old chat's PK-384 pick)
-const NEST_INSET = 14;
 // the terminals a pick is typing keys into, model, effort or permission: it outlives a thread switch, so a second pick
 // never types beside it
 const typingInto = new Set();
-
-/** @param {Theme} t @param {'top' | 'bottom'} side */
-const nestedCard = (t, side) => {
-    const card = v_flex()
-        .px(12)
-        .bg(t.raised)
-        .border_color(t.border)
-        .border_l(1)
-        .border_r(1);
-    return side === 'top'
-        ? card.pt(8).pb(8).rounded_t(12).border_t(1)
-        : card.pt(6).pb(6).rounded_b(12).border_b(1);
-};
-// a 🍃 pressed on the cc band reaches no file herdr watches: the shown thread's key is asked again this often, and a
-// read that failed this soon, never a minute of grey; a door that hangs (a lock, a prompt) ends at its timeout
-const AUTO_WIND_MS = 60 * 1000;
-const AUTO_WIND_RETRY_MS = 10 * 1000;
-const AUTO_WIND_DOOR_MS = 10 * 1000;
 // how often the shown thread's session is looked up again, as the old chat's tick did
 const SHOWN_LOOK_MS = 2000;
 // the operator override changes with no event herdr watches, and a deck that stopped publishing changes nothing: the
@@ -359,80 +310,6 @@ const doorTo = (file) => ({
     },
 });
 
-/**
- * one press appended to the band press file with herdr's compare-and-swap write: a file changed since the read is read
- * again, so no other press is lost
- * @param {import('./band.js').PressLine} line
- */
-async function appendPress(line) {
-    await run('mkdir', ['-p', `${home()}/${PRESS_DIR}`]);
-    const path = `${home()}/${PRESS_FILE}`;
-    for (let tries = 2; ; tries--) {
-        const text = await readTextFile(path).catch(() => null);
-        try {
-            return await writeTextFile(
-                path,
-                withPress(text, line, line.at),
-                text,
-            );
-        } catch (error) {
-            if (tries <= 1) throw error;
-        }
-    }
-}
-
-/** x-mod-stash's door for a session's 🍃, run in frame where `pnpm mods:set` lives @param {string[]} args */
-async function autoWindDoor(args) {
-    const out = await exec('pnpm', [...AUTO_WIND_DOOR, ...args], {
-        cwd: `${home()}/frame`,
-        timeout: AUTO_WIND_DOOR_MS,
-    });
-    if (out.code !== 0)
-        throw new Error(
-            out.stderr.trim() || out.stdout.trim() || 'mods:set failed',
-        );
-    return out.stdout;
-}
-
-/** whether his layout shows the deck's block; a layout without it reads as shown, so 🚦 offers a hide */
-function isDeckShown() {
-    /** @param {any} node @returns {any} */
-    const find = (node) => {
-        if (node?.id === DECK_BLOCK) return node;
-        for (const child of node?.children ?? []) {
-            const found = find(child);
-            if (found) return found;
-        }
-        return null;
-    };
-    return !find(layout())?.hidden;
-}
-
-/**
- * a meter as a row of matte cells in a recessed rail, the lit ones in one colour (the old chat's, PK-384)
- * @param {Theme} t @param {number | null} pct @param {Color} fill
- */
-const meterBar = (t, pct, fill) => {
-    const lit = meterCells(pct, METER_CELLS);
-    return h_flex()
-        .h(9)
-        .p(2)
-        .gap(2)
-        .rounded(4)
-        .bg(t.background)
-        .border(1)
-        .border_color(t.border)
-        .children(
-            Array.from({ length: METER_CELLS }, (_, i) =>
-                div()
-                    .flex_1()
-                    .h_full()
-                    .rounded(1)
-                    .bg(i < lit ? fill : t.border),
-            ),
-        );
-};
-
 export default class Chat extends View {
     scroll = VirtualListScrollHandle.new();
     model = createRowModel();
@@ -520,8 +397,6 @@ export default class Chat extends View {
     holdTask = null;
     /** how long a hold takes to push: his two settings rows */
     timing = { delay: HOLD_DELAY_MS, push: HOLD_PUSH_MS };
-    /** how full a meter gets before it warns: his two settings rows, their defaults until read */
-    meterWarn = { ctx: 60, week: 80 };
     lastKeyAt = 0;
     /** the quill's text, and its text one change earlier: Enter types its line break before it submits */
     typedNow = '';
@@ -530,28 +405,13 @@ export default class Chat extends View {
     typedBefore = '';
     /** one more at each thread opened: a state watch of an earlier opening ends */
     stateTurn = 0;
-    /** the shown thread's band facts, as the stash wrote them @type {(import('./band.js').ThreadState & { sid: string }) | null} */
-    bandThread = null;
-    /** the fleet's afk and waker, as the stash wrote them @type {import('./band.js').FleetState | null} */
-    fleet = null;
-    /** the band press file, which the deck's presses reach too @type {string | null} */
-    pressText = null;
-    /** this band's own presses, until the state reads them @type {import('./band.js').Pending} */
-    pressed = {};
-    /** @type {import('./band.js').Override} */
-    override = { isOn: false };
-    /** the band as last drawn: a tick that finds it changed draws again */
-    bandKey = '';
-    isPressWatched = false;
-    /** Stop was pressed and the turn still works: a background task Esc cannot stop */
-    isStuck = false;
-    /** each thread's 🍃 as the stash's door last read it, by session @type {Map<string, import('./band.js').AutoWind>} */
-    autoWinds = new Map();
-    /** one flip and one read in flight per thread: a click during a read still flips */
-    autoWindFlipping = new Set();
-    autoWindReading = new Set();
-    /** auto second wind on for the fleet: his settings row; off, 🍃 leaves the band */
-    hasAutoWind = true;
+    /** the band over the quill and the bar under it */
+    band = createBand({
+        column: () => this.column(),
+        pid: () => this.pid,
+        shownAddress: () => this.address,
+        turnStart: () => this.model.turnAt(),
+    });
     /** Claude's settings.json: the model and effort a session starts on @type {import('./picker.js').ClaudeSettings} */
     claudeSettings = null;
     /** a picture's open button starts CleanShot's annotate, else Preview (`chatter.pictures.cleanshot`) */
@@ -784,8 +644,8 @@ export default class Chat extends View {
             this.showThread(this.shownAddress, later),
         );
         cx.timer.every(ASK_READ_MS, (later) => this.blocked.read(later));
-        this.ageBand(cx);
-        cx.timer.every(BAND_AGE_MS, (later) => this.ageBand(later));
+        this.ageFacts(cx);
+        cx.timer.every(BAND_AGE_MS, (later) => this.ageFacts(later));
         cx.spawn(async (cx) => {
             for (;;) {
                 const woken = new Promise((resolve) => {
@@ -995,17 +855,16 @@ export default class Chat extends View {
             );
         const confirm = this.pickers.confirmView(t);
         if (confirm) root.child(confirm);
-        const drawn = this.drawnNow(Date.now());
-        this.bandKey = JSON.stringify(drawn);
+        const drawn = this.band.drawn(Date.now());
         return (
             root
                 .relative()
                 .when(this.statusNow() === 'blocked', (el) =>
                     el.child(this.blocked.view(t)),
                 )
-                .child(this.band(drawn.band, t))
+                .child(this.band.view(drawn.band, t))
                 .child(this.quill(this.box, t))
-                .child(this.bar(drawn.bar, drawn.band.buttons, t))
+                .child(this.band.bar(drawn.bar, drawn.band.buttons, t))
                 // find floats over the list, so opening it moves no message (dima, 18:39)
                 .when(this.findBar.find.state.isOpen, (el) =>
                     el.child(this.findBar.view(t)),
@@ -1016,109 +875,14 @@ export default class Chat extends View {
         );
     }
 
-    /** the band and the bottom bar as they draw now @param {number} now */
-    drawnNow(now) {
-        const band = this.bandNow(now);
-        return { band, bar: this.barNow(now, band.meters.wait) };
-    }
-
     /**
-     * the bottom bar as it draws now: a spinner or an idle ring, what the turn does, its clock, and Stop
-     * @param {number} now
-     * @param {string | null} wait what the idle thread waits on, as the deck read it
-     */
-    barNow(now, wait) {
-        const status =
-            agents().find((agent) => agent.address === this.address)?.status ??
-            'idle';
-        const isWorking = status === 'working';
-        const turnAt = this.model.turnAt();
-        const parts = stateParts({
-            hasTurnAt: turnAt !== null,
-            isStuck: this.isStuck,
-            status,
-        });
-        const report = isWorking
-            ? terminals().find((terminal) => terminal.address === this.address)
-                  ?.report
-            : null;
-        return {
-            clock:
-                parts.hasClock && turnAt !== null
-                    ? turnClock(now - turnAt)
-                    : null,
-            hasStop: parts.hasStop && this.address !== null,
-            isWorking,
-            line: stateLine({
-                isBlocked: status === 'blocked',
-                isStuck: isWorking && this.isStuck,
-                isWorking,
-                msg: typeof report === 'object' ? report?.msg : null,
-                wait,
-            }),
-            mark: parts.mark,
-        };
-    }
-
-    /**
-     * the band as it draws now: its buttons, the thread's meters, and whether the deck still reads the thread
-     * @param {number} now
-     */
-    bandNow(now) {
-        const state = {
-            fleet: this.fleet,
-            isDeckShown: isDeckShown(),
-            override: this.override,
-            thread: this.bandThread,
-        };
-        const pending = pressesWaiting(
-            this.pressed,
-            pendingOf(this.pressText, this.bandThread?.sid, now),
-            bandButtons(state),
-            now,
-        );
-        return {
-            buttons: bandButtons({
-                ...state,
-                autoWind:
-                    this.autoWinds.get(this.bandThread?.sid ?? '')?.on ?? null,
-                hasAutoWind: this.hasAutoWind,
-                pending,
-            }),
-            meters: bandOf(shared(THREADS_KEY), this.pid, now),
-        };
-    }
-
-    /**
-     * the facts that age with no event: the override's store is read again, and the band draws again once a stale
-     * deck, a press past its wait or the override changed what it shows
+     * the facts that age with no event, every BAND_AGE_MS: the band's, and Claude's own settings, the model and effort
+     * a session starts on, which a pick in flight may be waiting to see
      * @param {Context} cx
      */
-    ageBand(cx) {
-        this.watchPresses(cx);
-        // 🍃 asks a program, so it runs beside the file reads and never holds them
-        cx.spawn((cx) => this.readAutoWind(cx));
-        this.pressed = pressesWaiting(
-            this.pressed,
-            {},
-            bandButtons({
-                fleet: this.fleet,
-                isDeckShown: true,
-                override: this.override,
-                thread: this.bandThread,
-            }),
-            Date.now(),
-        );
+    ageFacts(cx) {
+        this.band.age(cx);
         cx.spawn(async (cx) => {
-            const text = await readTextFile(
-                `${home()}/${OVERRIDE_STORE}`,
-            ).catch(() => null);
-            let store = null;
-            try {
-                store = JSON.parse(text ?? 'null');
-            } catch {}
-            this.override = overrideOf(store, Date.now());
-            // Claude's own settings: the model and effort a session starts on
             const claude = await readTextFile(
                 `${home()}/.claude/settings.json`,
             ).catch(() => null);
@@ -1130,364 +894,13 @@ export default class Chat extends View {
                     JSON.stringify(this.claudeSettings);
                 this.claudeSettings = next;
             } catch {}
-            isChanged = this.pickers.settle() || isChanged;
-            if (
-                isChanged ||
-                JSON.stringify(this.drawnNow(Date.now())) !== this.bandKey
-            )
-                cx.notify();
+            if (this.pickers.settle() || isChanged) cx.notify();
         });
-    }
-
-    /** the shown thread's 🍃 as the door reads it: asked on a new thread, then every AUTO_WIND_MS @param {Context} cx */
-    async readAutoWind(cx) {
-        const sid = this.bandThread?.sid;
-        if (!sid || !this.hasAutoWind || this.autoWindReading.has(sid)) return;
-        const last = this.autoWinds.get(sid);
-        const wait = last?.on === null ? AUTO_WIND_RETRY_MS : AUTO_WIND_MS;
-        if (last && Date.now() - last.at < wait) return;
-        this.autoWindReading.add(sid);
-        const flips = last?.flips ?? 0;
-        try {
-            /** @type {boolean | null} */
-            let on = null;
-            try {
-                on = await autoWind(autoWindDoor, sid);
-            } catch (error) {
-                console.log(
-                    `second wind auto: the door did not answer: ${error}`,
-                );
-            }
-            this.autoWinds = autoWindAfterRead(
-                this.autoWinds,
-                sid,
-                on,
-                flips,
-                Date.now(),
-            );
-            cx.notify();
-        } finally {
-            this.autoWindReading.delete(sid);
-        }
-    }
-
-    /** 🍃 flips through the stash's door, and shows what the door then reads, never the click's own guess @param {import('./band.js').BandButton} btn @param {Context} cx */
-    flipAutoWind(btn, cx) {
-        const sid = this.bandThread?.sid;
-        if (!sid || this.autoWindFlipping.has(sid)) return;
-        this.autoWindFlipping.add(sid);
-        cx.spawn(async (cx) => {
-            try {
-                const on = await autoWind(autoWindDoor, sid, !btn.isOn);
-                this.autoWinds = autoWindFlipped(
-                    this.autoWinds,
-                    sid,
-                    on,
-                    Date.now(),
-                );
-            } catch (error) {
-                notify({
-                    body: String(error),
-                    level: 'error',
-                    title: 'second wind auto: the flip was not written',
-                });
-            } finally {
-                this.autoWindFlipping.delete(sid);
-            }
-            cx.notify();
-        });
-    }
-
-    /** a press on the deck or another band shows here at once; a folder not made yet is watched from the next tick @param {Context} cx */
-    watchPresses(cx) {
-        if (this.isPressWatched) return;
-        this.isPressWatched = true;
-        cx.spawn(async (cx) => {
-            try {
-                for (;;) {
-                    const watch = watchFolder(`${home()}/${PRESS_DIR}`);
-                    this.pressText = await readTextFile(
-                        `${home()}/${PRESS_FILE}`,
-                    ).catch(() => null);
-                    cx.notify();
-                    await watch;
-                }
-            } catch {
-                this.isPressWatched = false;
-            }
-        });
-    }
-
-    /**
-     * the card over the quill: the context and week meters, their numbers beside them
-     * @param {ReturnType<Chat['bandNow']>} now
-     * @param {Theme} t
-     */
-    band({ meters }, t) {
-        /** @param {string} name @param {number | null} pct @param {number} warnAt */
-        const meter = (name, pct, warnAt) =>
-            h_flex()
-                .id(`chat-meter-${name}`)
-                .gap(8)
-                .items_center()
-                .tooltip(
-                    meters.isStale
-                        ? 'The deck has not read this thread for over 2 minutes'
-                        : meterTip(name, pct),
-                )
-                .child(
-                    div()
-                        .w(20)
-                        .flex_none()
-                        .text_size(12)
-                        .text_color(t.dim)
-                        .child(name === 'ctx' ? '🧠' : '🫙'),
-                )
-                .child(
-                    div()
-                        .flex_1()
-                        .child(
-                            meterBar(
-                                t,
-                                pct,
-                                meters.isStale
-                                    ? t.dim
-                                    : pct != null && pct >= warnAt
-                                      ? t.blocked
-                                      : t.accent,
-                            ),
-                        ),
-                )
-                .child(
-                    div()
-                        .w(36)
-                        .flex_none()
-                        .flex()
-                        .justify_end()
-                        .text_size(12)
-                        .text_color(t.dim)
-                        .child(pct == null ? '—' : `${Math.round(pct)}%`),
-                );
-        return this.nestedRow(
-            'chat-band-row',
-            nestedCard(t, 'top')
-                .gap(3)
-                // ctx above week (dima: «move ctx meter over the week»)
-                .child(meter('ctx', meters.context, this.meterWarn.ctx))
-                .child(meter('week', meters.week, this.meterWarn.week)),
-        );
-    }
-
-    /**
-     * a card nested under the quill, in the list's column, as wide as the quill less its inset
-     * @param {string} id @param {ReturnType<typeof v_flex>} card
-     */
-    nestedRow(id, card) {
-        return h_flex()
-            .id(id)
-            .w_full()
-            .flex_none()
-            .justify_center()
-            .px(18)
-            .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
-            .child(
-                v_flex()
-                    .w_full()
-                    .max_w(this.column())
-                    .px(NEST_INSET)
-                    .child(card),
-            );
-    }
-
-    /**
-     * one chip: plain off, the accent's edge and tint on, 🔓 on loud red; a button whose press herdr cannot prove is
-     * greyed, and a live one is a click, never a key (a keyed command is any shell's)
-     * @param {import('./band.js').BandButton} btn
-     * @param {Theme} t
-     */
-    bandChip(btn, t) {
-        const isOverride = btn.key === 'override';
-        const edge = btn.isOn ? (isOverride ? t.blocked : t.accent) : t.border;
-        return div()
-            .id(`chat-band-${btn.key}`)
-            .size(CHIP_SIZE)
-            .flex_none()
-            .flex()
-            .items_center()
-            .justify_center()
-            .rounded(6)
-            .border(1)
-            .border_color(edge)
-            .bg(btn.isOn ? (isOverride ? t.blocked : t.selected) : t.background)
-            .text_size(13)
-            .tooltip(btn.tip)
-            .when(!btn.isLive, (el) => el.opacity(0.4).cursor_not_allowed())
-            .when(btn.isLive, (el) =>
-                el
-                    .cursor_pointer()
-                    .hover((style) =>
-                        style.border_color(btn.isOn ? edge : t.muted),
-                    )
-                    .on_click((_event, cx) => this.pressBand(btn, cx)),
-            )
-            .child(btn.emoji);
     }
 
     /** the shown thread's status, as herdr reads it */
     statusNow() {
         return agents().find((agent) => agent.address === this.address)?.status;
-    }
-
-    /**
-     * the card under the quill: the thread's state, its turn clock and Stop, which stays pressable while the line
-     * truncates in a narrow window, then the band's buttons on the right
-     * @param {ReturnType<Chat['barNow']>} now
-     * @param {ReturnType<Chat['bandNow']>['buttons']} buttons
-     * @param {Theme} t
-     */
-    bar({ clock, hasStop, isWorking, line, mark }, buttons, t) {
-        return this.nestedRow(
-            'chat-bar-row',
-            nestedCard(t, 'bottom')
-                .flex_row()
-                .px(8)
-                .gap(6)
-                .items_center()
-                .child(
-                    h_flex()
-                        .flex_1()
-                        .min_w(0)
-                        .h(26)
-                        .gap(8)
-                        .items_center()
-                        .text_size(12)
-                        .text_color(t.muted)
-                        .child(
-                            mark === 'spinner'
-                                ? svg('mods/workspace-chrome/spinner.svg')
-                                      .size(12)
-                                      .flex_none()
-                                      .text_color(t.working)
-                                      .spin(900)
-                                : div()
-                                      .size(10)
-                                      .flex_none()
-                                      .rounded_full()
-                                      .border(1)
-                                      .border_color(t.dim),
-                        )
-                        .child(
-                            div()
-                                .id('chat-bar-line')
-                                .flex_1()
-                                .min_w(0)
-                                .truncate()
-                                .text_color(isWorking ? t.foreground : t.muted)
-                                .tooltip(line)
-                                .child(line),
-                        )
-                        .when(clock !== null, (el) =>
-                            el.child(
-                                div()
-                                    .flex_none()
-                                    .text_color(t.dim)
-                                    .child(clock ?? ''),
-                            ),
-                        )
-                        .when(hasStop, (el) =>
-                            el.child(
-                                div()
-                                    .id('chat-stop')
-                                    .flex_none()
-                                    .px(10)
-                                    .py(3)
-                                    .rounded(6)
-                                    .bg(t.raised)
-                                    .text_color(t.foreground)
-                                    .cursor_pointer()
-                                    .hover((style) => style.bg(t.border))
-                                    .tooltip("Stop Claude's turn")
-                                    .child('Stop')
-                                    .on_click((_event, cx) => this.stop(cx)),
-                            ),
-                        ),
-                )
-                .child(
-                    h_flex()
-                        .flex_none()
-                        .gap(4)
-                        .children(buttons.map((btn) => this.bandChip(btn, t))),
-                ),
-        ).pb(10);
-    }
-
-    /**
-     * Stop presses Esc in the thread, never `hc interrupt`: that presses Ctrl+C, and a second one quits Claude. a turn
-     * still working 3 s later runs a background task Esc cannot stop, and the bar says so for a while
-     * @param {Context} cx
-     */
-    stop(cx) {
-        const address = this.address;
-        if (!address) return;
-        cx.spawn(async () => {
-            await hc(['keys', address, 'esc']);
-        });
-        cx.timer.after(3000, (later) => {
-            const isStill =
-                agents().find((agent) => agent.address === address)?.status ===
-                'working';
-            if (!isStill || this.address !== address) return;
-            this.isStuck = true;
-            later.notify();
-            later.timer.after(8000, (after) => {
-                this.isStuck = false;
-                after.notify();
-            });
-        });
-    }
-
-    /**
-     * 🚦 and 🎛️ act at once; wind, hot, waker, AFK and 🔓 write a press the stash answers, the state it asks for
-     * shown until then
-     * @param {import('./band.js').BandButton} btn
-     * @param {Context} cx
-     */
-    pressBand(btn, cx) {
-        if (btn.key === 'board') {
-            runCommand('layout.toggle', { id: DECK_BLOCK });
-            cx.notify();
-            return;
-        }
-        if (btn.key === 'settings') {
-            openOverlay(settingsOverlay('chatter'));
-            return;
-        }
-        if (btn.key === 'auto') {
-            this.flipAutoWind(btn, cx);
-            return;
-        }
-        const key = /** @type {import('./band.js').PressKey} */ (btn.key);
-        if (!['wind', 'hot', 'waker', 'afk', 'override'].includes(key)) return;
-        const sid = this.bandThread?.sid ?? null;
-        if ((key === 'wind' || key === 'hot') && !sid) return;
-        const at = Date.now();
-        const on = !btn.isOn;
-        this.pressed = { ...this.pressed, [key]: { at, on } };
-        cx.notify();
-        cx.spawn(async (cx) => {
-            try {
-                await appendPress(pressLine(key, on, sid, at));
-            } catch (error) {
-                const { [key]: _dropped, ...rest } = this.pressed;
-                this.pressed = rest;
-                notify({
-                    body: String(error),
-                    level: 'error',
-                    title: `${btn.word}: the press was not written`,
-                });
-            }
-            cx.notify();
-        });
     }
 
     /**
@@ -2460,9 +1873,7 @@ export default class Chat extends View {
         this.findBar.reset();
         this.joins = null;
         // no button shows or presses a thread no longer on screen; the fleet's facts stay
-        this.bandThread = null;
-        this.pressed = {};
-        this.isStuck = false;
+        this.band.clear();
         this.pickers.clear();
         this.stateWatch?.cancel();
         this.stateWatch = null;
@@ -2584,11 +1995,7 @@ export default class Chat extends View {
             push: Number(values['chatter.send.holdPush']),
         };
         this.isCleanShot = values['chatter.pictures.cleanshot'] === true;
-        this.meterWarn = {
-            ctx: Number(values['chatter.meter.ctx.warn']),
-            week: Number(values['chatter.meter.week.warn']),
-        };
-        this.hasAutoWind = values['stash.second-wind-auto'] === true;
+        this.band.applySettings(values);
         this.isShowMore = values['chatter.showMore'] === true;
     }
 
@@ -2623,14 +2030,9 @@ export default class Chat extends View {
                     : null,
             };
             // every thread's state shares the folder: only a change of this band's facts draws again
-            if (
-                JSON.stringify(band) !==
-                JSON.stringify({ fleet: this.fleet, thread: this.bandThread })
-            ) {
-                this.fleet = fleet;
-                this.bandThread = band.thread;
+            if (this.band.takeState(band)) {
                 // a thread newly shown asks its 🍃 now, not at the next tick
-                cx.spawn((cx) => this.readAutoWind(cx));
+                cx.spawn((cx) => this.band.readAutoWind(cx));
                 cx.notify();
             }
             this.settle(cx);
