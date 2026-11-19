@@ -27,7 +27,6 @@ import {
     liveArm,
     modeList,
     oneCrow,
-    packWake,
     readState,
     sendLine,
     spawnHarvest,
@@ -37,6 +36,7 @@ import {
     wakeSuffixOf,
     writeWakeState,
 } from './lib.ts';
+import { packWake } from './packet.ts';
 import { readLines, transcriptDelta } from './transcript.ts';
 
 const usage = `crow:wake --transcript <jsonl> [--mode ${modeList.join('|')}] [--precompact]

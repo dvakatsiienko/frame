@@ -6,7 +6,6 @@ import { setTimeout as sleep } from 'node:timers/promises';
 
 import {
     type ClioThread,
-    type Decision,
     type LiveSession,
     MAIN_THREAD,
     NOTES_PATH,
@@ -14,22 +13,25 @@ import {
     STATE_DIR,
     type Wake,
     clioThreadOf,
-    consoleOf,
-    decisionOf,
     findSessions,
-    packWake,
-    prViewArgs,
-    proposalOf,
     readState,
     sendLine,
     spawnHarvest,
-    turnStartOf,
-    verifiedHead,
     wakeIdOf,
     wakeLine,
     wakeSuffixOf,
     writeWakeState,
 } from './lib.ts';
+import {
+    type Decision,
+    consoleOf,
+    decisionOf,
+    packWake,
+    prViewArgs,
+    proposalOf,
+    turnStartOf,
+    verifiedHead,
+} from './packet.ts';
 import { readLines, transcriptDelta } from './transcript.ts';
 
 // a PreToolUse exit 2 or timeout blocks the merge, so every failure prints context and exits 0
