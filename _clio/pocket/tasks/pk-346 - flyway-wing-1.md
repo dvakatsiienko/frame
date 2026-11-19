@@ -24,7 +24,7 @@ ordinal: 1001
 - [ ] #6 f19 wishkeeper-cache: one big measure over the trial's whole 5 min week, then the 1 h arm
 - [ ] #7 f25 speak v2 with dima: bytes move → mess hunt (FRM-629:W26–W27) → wisps → design; FRM-497 rides it
 - [ ] #8 f27 refreshes on his word: refresh-readaloud → refresh fable 5.2 → refresh designer, then speak v2 (his plan)
-- [ ] #9 f38 fable 5.2 research with dima: refresh-crew-coordinator for fable 5.2, then the model cards (was a ⏰, his 14:12 «later by me and wing 1»)
+- [ ] #9 f38 fable 5.2 research with dima: refresh-crew-coordinator, then the model cards
 - [ ] #10 f37 ⏳ FRM-555 fix 3 (live idle cpu): the mods codie's measure, then chunk or drop — waits for: FRM-555
 - [ ] #11 f28 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-20
 - [ ] #12 f30 📅 strays lane verdict (FRM-586): model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-20
