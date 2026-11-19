@@ -14,6 +14,7 @@ the build knowledge for speak: the practices, the bar, the architecture calls an
 - latency
 - following along
 - running it
+- ideas to borrow
 - shipping and earning
 
 ## the bar
@@ -90,6 +91,20 @@ the build knowledge for speak: the practices, the bar, the architecture calls an
 - a launchd daemon plus a warm local server holds for one user (our latency above)
 - in-process CoreML kokoro is the next step: no python server, no warm-up (FluidAudio, above)
 - a released app registers its agent through `SMAppService.agent(plistName:)` (macOS 13+), never a hand-installed plist ([apple](https://developer.apple.com/documentation/servicemanagement/smappservice))
+
+## ideas to borrow
+
+from the exa lane (`recipes/refresh-speak/last/exa.md`, 2026-11-19; patterns, not measured here):
+- latency targets: hot local first audio under 150 ms, cold local under 1 s
+- a sentence-chunk cache keyed by normalized text, voice, model revision and rate: a re-read plays at once; sensitive text never cached without a setting
+- every read carries a rising request token, so late audio and late word timings from a stopped read are dropped
+- the kokoro server activates on demand and shuts down when idle, never an immortal process holding a port; replaceable by an in-process engine later
+- one engine contract for every engine: `synthesize(chunk, voice, locale, options) → audio + marks + usage`
+- normalizer rules dima can edit; a code block announced or summarized, never brace by brace; urls and paths in a compact or verbatim mode
+- long-form extras: «read from here», «repeat sentence», media keys, a position kept per document, resume after restart
+- per-chunk records (engine, model, voice, characters, latency, failure) with no screen text in them
+- pronunciation dictionaries: ElevenLabs takes them, macOS 27 Read & Speak has «Pronunciations» ([apple](https://support.apple.com/guide/mac-help/spch638/27/mac/27))
+- macOS's «speak item under pointer» and Speechify's ⌥X screenshot read, two grabs speak lacks
 
 ## shipping and earning
 

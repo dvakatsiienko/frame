@@ -4,7 +4,7 @@ the brief of the `researcher` cards (Opus 5.5) that read the delta (`clio:evergr
 
 ## 1. gather — the delta comes from what moved
 
-the read runs after the upgrades, never before (the merge round, `brew upgrade`, `pnpm update -g --latest`, `uv tool upgrade --all`, the go modules): the delta file (`script/evergreen-delta.ts`) is every package that moved since the last evergreen, `<name> <from> -> <to>`, built from the merged prs, `git diff <last-evergreen>.. -- '**/package.json' go.mod`, the brew upgrade log, the pnpm -g and uv output and the apps reader. a missed run widens the range, never the lane list. the commands below find what still waits, for the merge round:
+the read runs after the upgrades, never before (the merge round, `brew upgrade`, `pnpm update -g --latest`, `uv tool upgrade` (all but mlx-audio), the go modules): the delta file (`script/evergreen-delta.ts`) is every package that moved since the last evergreen, `<name> <from> -> <to>`, built from the merged prs, `git diff <last-evergreen>.. -- '**/package.json' go.mod`, the brew upgrade log, the pnpm -g and uv output and the apps reader. a missed run widens the range, never the lane list. the commands below find what still waits, for the merge round:
 
 ```
 gh pr list -R dvakatsiienko/<repo> --search 'author:app/x-renovate' --json number,title,headRefName,createdAt,statusCheckRollup,body

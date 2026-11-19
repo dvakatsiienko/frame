@@ -20,10 +20,10 @@ so · **[community]** a practitioner pattern · **[measured]** we ran it · **[?
 
 ## opus-5.5 — `claude-opus-5-5` · the default
 
-- **price**: $4 in / $20 out, cache reads $0.20 (0.05×), writes $5 (5m) / $8 (1h); fast mode $8/$40, out of preview since 2026-10-15. 1M / 128K. **[vendor]**
+- **price**: $4 in / $20 out, cache reads $0.20, writes $5 (5m) / $8 (1h); fast $8/$40. 1M / 128K. **[vendor]**
 - **effort**: `medium` default (API and Claude Code) and our baseline; `high` for bug fixes in existing code and edge cases; `xhigh` for the hardest coding, where it matches fable high for 62 % of the cost **[bench]**; never `low` for code (TB4.0 31.3 vs 52.5 at medium) **[bench]**.
 - **pick for**: every codie, sixth sense, research synthesis, long-context single runs, security review (fable's safeguards block it).
-- **never**: an unchecked inference stated as fact — it drops its own doubts **[vendor]**; a frontend with no design direction falls back on stock styles **[vendor]**.
+- **never**: an unchecked inference stated as fact **[vendor]**; a frontend with no design direction (stock styles) **[vendor]**.
 - **numbers**: CursorBench 4.1 medium 50.0 % · high 54.5 % · max 58.1 % **[bench]**; AA v5.0.1 medium 48.2 · high 51.8 · xhigh 57.4, 105 tok/s **[bench]**; ProgramBench 91.2 vs fable 5.2 85.6 **[vendor]**.
 
 ## fable-5.2 — `claude-fable-5-2` · the escalation
@@ -34,13 +34,13 @@ so · **[community]** a practitioner pattern · **[measured]** we ran it · **[?
 - **effort**: `medium` is the cc default and our baseline (`high` on the API); `high` for long unattended runs, hard coding and deliverables; `xhigh` only after a measured gain; never `max` — below xhigh on FrontierCode at 3.2× the cost, below high on ARC-AGI-3 **[vendor]**. at medium on agentic work, add the vendor's «finish the whole task» line **[vendor]**. design «not lower than medium, maybe high» **[dima]**.
 - **pick for**: what Dima reads where flavour matters, verdict-shaped deliverables, design spreads, long autonomous builds, the orchestrator over a crew. «opus picks pragmatically, fable = flavour» **[dima]**. never spawned without his word.
 - **never**: security work (safeguards block it); context-filling runs (out of context on 68 % of ProgramBench); a switch to opus mid-thread, which drops its thinking; hard style caps, read literally **[vendor]**.
-- **numbers**: AA medium 56.4 for $3.80 a task in 6.5 min, against opus medium 48.2 for $2.45 in 7.0 min — faster, 32 % cheaper a task than 5.1 **[bench]**; CursorBench 4.1 fable high 56.5 % for $10.51 vs opus xhigh 56.7 % for $6.54 **[bench]**; SWE-bench Pro 93.0 vs opus 89.9 **[vendor]**. ours, 16–18 Nov: a codie lane cost about the same on fable as on opus at 5.1 prices (2 sessions each), ~20 % less at 5.2's, thin **[measured]**.
+- **numbers**: AA medium 56.4 for $3.80 a task in 6.5 min, against opus medium 48.2 for $2.45 in 7.0 min — faster, 32 % cheaper a task than 5.1 **[bench]**; CursorBench 4.1 fable high 56.5 % for $10.51 vs opus xhigh 56.7 % for $6.54 **[bench]**; SWE-bench Pro 93.0 vs opus 89.9 **[vendor]**. a design spread $13.44 at medium vs opus $4.35, Dima judged fable's better (`docs/test-drive/design-run.md`) **[measured]**. ours, 16–18 Nov: a codie lane cost about the same on fable as on opus at 5.1 prices (2 sessions each), ~20 % less at 5.2's, thin **[measured]**.
 
 ## sonnet-5.5 — `claude-sonnet-5-5` · the mid tier
 
 - **price**: $2 / $10, cache reads $0.10 (0.05×), writes $2.50 (5m) / $4 (1h). 1M / 128K. **[vendor]**
 - **effort**: `medium` in Claude Code, `high` on the API; in our crew set `high` or `xhigh` explicitly — at medium it loses to haiku xhigh for more money **[bench]**; never `low` for code (skips verification) **[vendor]**. a subagent on another model runs at that model's default unless its card sets `effort` (cc 2.1.317) **[vendor]**.
-- **pick for**: `helper` and `scout` at high, retrieval lanes under an opus lead (135 tok/s).
+- **pick for**: `helper` and `scout` at high, retrieval under an opus lead.
 - **never**: left at the cc default for real work; the main codie or the sole sixth sense; design.
 - **numbers**: CursorBench 4.1 medium 34.3 % for $0.63 vs haiku xhigh 45.2 % for $0.56 **[bench]**; high 43.8 % ≈ opus low 42.7 % at the same ~$1.4 **[bench]**; AA v5.0.1 high 41.5 for $1.64 vs opus medium 48.2 for $2.45 **[bench]**.
 

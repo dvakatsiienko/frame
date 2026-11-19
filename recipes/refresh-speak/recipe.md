@@ -78,7 +78,7 @@ dima's, 2026-09-29:
 7. long-form controls — skip, rewind, speed, resume, a position kept across reads
 8. tech text — ids, versions, units, code: engines that read them natively, normalizer libraries, a small llm rewrite pass
 9. latency — streaming sentence by sentence, first-audio numbers, warm-connection tricks
-10. following along — the spoken word highlighted, word timings from engines or forced alignment, where each breaks
+10. following along — how read-aloud tools highlight the spoken word, inside other apps (accessibility text ranges, overlays) and in their own ui; word timings from engines or forced alignment; where each breaks (electron, web, pdf) (dima, 2026-09-30: «I often follow a text that is read aloud while reading it myself in parallel»)
 11. shipping and earning — how such apps ship and earn: native swift, tauri, electron, remote hosts, donations (feeds [FRM-668](https://linear.app/x-com/issue/FRM-668))
 
 ### analysis
@@ -90,7 +90,7 @@ dima's, 2026-09-29:
 ## artifacts
 
 - `speak/docs/readaloud-playbook.md` — the build knowledge; clever-merged, every line holding a source
-- `speak/PRODUCT.md` — the engines, models and free tiers; a fact the run proved stale is replaced
+- `speak/PRODUCT.md` — the engines, models and free tiers; impeccable's file, so a fact the run proved stale is listed in the print and fixed through impeccable in the next speak lane, never by hand
 - `schedule/jobs/x-speak/` — the daemon, `config.json` and the golden normalizer cases; changed only by a codie on dima's pick
 - `speak/` — the voice admin app; its voice lists follow a model change
 
