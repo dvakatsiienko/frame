@@ -53,4 +53,4 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 - a `hc run --no-parent` thread has no tab until `skills/herdr/scripts/thread-tab.ts` gives it one
 - vim normal mode has no screen marker: empty Claude's prompt via `clearKeys` (chatter `queued.js`)
 - a helper green in vitest can lack a herdr global (`TextEncoder`); `check` renders one frame: shoot a view that ran it
-- a `keys.json` save seems to drop mods' `cx.bind_keys` until each reloads (seen twice, not proven): re-land them
+- `keys.json` changes only through the door, `home/.claude/plugin-x/skills/herdr/scripts/keys-change.ts`: a plain save drops every mod's `cx.bind_keys`

@@ -62,12 +62,14 @@ hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<re
 printf '\e]7501;id=%s:state=%s:msg=%s\e\\' build working "$(printf %s 'building' | base64)"
 ```
 
-**map his window** — `uv run -q --with pillow python -I scripts/window-map.py <out.png>`: shoots the window as it is, boxes solved from the layout it shows (`scripts/window-map.json` names the parts), a hidden tray or panel listed, never drawn; open nothing for it
+**map his window** — `uv run -q --with pillow python -I scripts/window-map.py <out.png>`: shoots it, boxes from its layout (`window-map.json`), a hidden panel listed, never drawn
+
+**change a key** — only `node scripts/keys-change.ts set|remove <global|terminal> <key> [command]`: a bare `keys.json` save kills x-herdr mods' keys
 
 ## traps
 
 - 📌 a bare `overlay.close`, `tab.close` or `pane.close` kills dima's focused thread; a probe closes itself, `closeOverlay(props().overlay)`; a second `mod.open` of a dialog opens a copy
-- a layout switch is safe since the 11-10 fix and stays dima's hand (`herdr/PRODUCT.md`)
+- a layout switch stays dima's hand (`herdr/PRODUCT.md`)
 - 📌 `hc send` always presses Enter; `hc keys` is the only prefill, with the limits above
 - 📌 `hc send --force` types into a blocked program and may answer its permission dialog: never into a thread waiting on dima
 - `hc get` changes nothing and shows no screen; the screen is `hc read`
