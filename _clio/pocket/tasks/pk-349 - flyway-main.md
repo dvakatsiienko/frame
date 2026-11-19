@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-18T21:34:00Z'
+updated_date: '2026-11-19T11:53:00Z'
 labels:
   - s
   - clio-main
@@ -1128,4 +1128,8 @@ PK-349:W1203 (2026-11-18 22:33, dima): FRM-590: I think it is nice to help. Evol
 22:45 correction: PK-349:W1201 is clio's 22:21 reply text, quoted back by dima to answer it, not his words; his own line is W1202 (wishkeeper 22:45)
 
 done 2026-11-18 22:53: f44 when dima is back: show where his not-possible herdr wishes live; he wants one colocated home — not now
+
+PK-349:W1204 (2026-11-19 13:33, dima): mods and herdr lanes up.
+PK-349:W1205 (2026-11-19 13:33, dima): wing 1 later when i say.
+PK-349:W1206 (2026-11-19 13:33, dima): you today - all tails should be solved and new ones not created - solve in place.
 <!-- SECTION:NOTES:END -->
