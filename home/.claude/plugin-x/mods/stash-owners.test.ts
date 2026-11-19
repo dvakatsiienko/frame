@@ -8,9 +8,9 @@ const HOOKS = join(import.meta.dirname, 'x-mod-stash/hooks');
 const OWNERS = {
     'ask-counter': 'register.tsx',
     'cc-usage-window.json': 'usage.ts',
-    'fleet.json': 'register.tsx',
+    'fleet.json': 'session-record.ts',
     'herdr-joins': 'joins.ts',
-    'herdr-state': 'register.tsx',
+    'herdr-state': 'session-record.ts',
     'lane-rounds.json': 'register.tsx',
     'lanes.json': 'register.tsx',
     'operator-override.json': 'override.ts',
