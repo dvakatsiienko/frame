@@ -16,12 +16,7 @@ const sizeLineWindow = 10;
 const root = path.resolve(import.meta.dirname, '../..');
 
 // not ours to cut: types the engines write, vendored code, generated files, public bundles
-const skipped = [
-    /\.d\.ts$/,
-    /^home\/\.claude\/plugin-x\/lsp\/typescript-native\//,
-    /^logos\/data\.gen\.ts$/,
-    /(^|\/)public\//,
-];
+const skipped = [/\.d\.ts$/, /^logos\/data\.gen\.ts$/, /(^|\/)public\//];
 
 // today's giants, each capped at its size on 2026-11-19: a cap goes down by hand as the file shrinks;
 // a raise names dima's word and its date in the why

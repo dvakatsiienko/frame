@@ -21,7 +21,7 @@ what the 2026-10-19 scout shaping learned, kept for every card and every `refres
 
 - the cheapest tier that finds as much, proven by a race on real tasks at a frozen commit — no paper or vendor note settles Haiku vs Sonnet for a given card
 - effort `low` for mechanical cards; a hard review or an exact count moves it per call
-- tools: only what the job needs; a read-only card keeps Bash to named read commands, LSP when symbols matter
+- tools: only what the job needs; a read-only card keeps Bash to named read commands
 - `omitClaudeMd: true` unless the job needs fleet memory: ~12k floor instead of ~80–117k
 
 ## measure what a card saves before building reach

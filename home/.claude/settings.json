@@ -237,7 +237,6 @@
     "refreshInterval": 60
   },
   "enabledPlugins": {
-    "typescript-lsp@claude-plugins-official": false,
     "x@x": true,
     "impeccable@impeccable": true,
     "typesafe@typesafe-ai": true,

@@ -5,7 +5,7 @@ description: >-
 model: opus
 effort: medium
 omitClaudeMd: true
-tools: Read, Bash, LSP, Skill
+tools: Read, Bash, Skill
 skills:
   - x:guide-code
 ---

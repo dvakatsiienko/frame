@@ -4,7 +4,7 @@
 
 - **`--effort` is honoured** on `claude --bg` — pass it every time, it is a flag, never inherited.
   a `Workflow` `agent()` call honours its per-call `effort` too (2.1.258).
-- ❗ **a plugin bump does not reach a running desktop-born session** — `/reload-plugins` + `/reload-skills` in a Code-tab codie left it on x 0.11.167 with 0 LSP servers while the cache held 0.11.175 (2026-09-30, the speak codie). a skill or LSP change is tested in a FRESH session; the probe is the session reporting its loaded version, never «i reloaded».
+- ❗ **a plugin bump does not reach a running desktop-born session** — `/reload-plugins` + `/reload-skills` in a Code-tab codie left it on x 0.11.167 while the cache held 0.11.175 (2026-09-30, the speak codie). a skill change is tested in a FRESH session; the probe is the session reporting its loaded version, never «i reloaded».
 - ✅ **a user-only skill runs when the summon prompt starts with it** — `claude --bg '/run-skill-generator <app> …'` generated 9 run skills with no hands (2026-09-27, cc 2.1.283). the same door as `/x:crew-codie`: a skill a model cannot load is typed by the summon instead.
 - ❌ **a prompt runs ONE slash command: everything after it is that command's args, by design** — a `claude -p --model haiku` probe with two matt skills on two lines: line 1 expanded, line 2 became line 1's argument (cc 2.1.289, 2026-10-07; crow read the mechanic right, a typed prompt does the same). re-probed on 2.1.292: two skills stacked on ONE line deliver only the first body too, though the skills docs say up to six stack at the start. mid-message, a `/name` is only a hint the model may act on. a second user-only skill is read from its `SKILL.md` (`sys-skills`).
 - ✅ **`claude --bg '<prompt>'` RUNS the prompt** (re-verified 2.1.258; it came up idle on 2.1.239).
@@ -29,6 +29,8 @@
 ## lifetime and stopping
 
 A member whose chunk is done **parks**: alive, idle, context kept; `claude stop` or `archive_session` only on dima's word (`rules/fleet-vibe.md`), or at his `clio:halt`, whose stop list stands; a stop gets a one-line confirm unless his message names the member (a stopped member loses its context for good). A new chunk in another area still goes to the parked member, second-winded first when its context is past ~20–25 % ([models.md](models.md) § summon or reuse). **Always stop probes.**
+
+- **a park with nothing queued gets a «next?» ask on dima's orbit the same turn**, the peeked next chunk its pick (`clio:lowtide-peek-chunk`): a member he has to ask about is idle time already spent (dima, 2026-11-19, o2: four «is X done?» polls that day)
 
 - **a lane whose last member stopped has its 🛼 glide ended at the next siesta or the halt** (`clio:siesta` 2.5, `clio:halt` phase 1.8); a parked lane gets a new card when it resumes
 - 🚨 **stop with `claude stop <jobId>`, never `kill <pid>`** — four rc sessions killed by pid came
