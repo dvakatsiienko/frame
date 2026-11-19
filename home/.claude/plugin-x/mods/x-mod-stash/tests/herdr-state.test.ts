@@ -595,14 +595,16 @@ test('exit 1 twins: a broken line, a row with no id and an id written twice each
     ]);
 });
 
-test('a slash row is never joined: it waits for herdr to push it', async ($, on) => {
+test('a slash row joins the turn like words: herdr pushes none (o3)', async ($, on) => {
     const s = await session($, on);
     s.files.set(JOINS, row('j1', '/compact'));
     await say($);
     await endTurn($);
     expect([said(s), s.read(A)?.joins]).toEqual([
-        [],
-        { joined: [], push: ['j1'], taken: [], waiting: [] },
+        [
+            '💨 dima wrote this in herdr while you worked; it joins this turn as his own words:\n«/compact»',
+        ],
+        { joined: ['j1'], push: [], taken: [], waiting: [] },
     ]);
 });
 

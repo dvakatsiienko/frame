@@ -62,7 +62,6 @@ import {
     isFresh,
     isGuardGated,
     isPressOn,
-    isPushOnly,
     joinRows,
     joinRowsText,
     joinText,
@@ -4313,7 +4312,7 @@ async function takeJoins($: EngineInterface) {
     if (!sid || !home || !(await partsShown($))('stash.joins')) return [];
     const { done, rows, taken } = await joinsOf($, home, sid);
     const fresh = rows.filter(
-        (r) => !isPushOnly(r) && !done.includes(r.id) && !taken.includes(r.id),
+        (r) => !done.includes(r.id) && !taken.includes(r.id),
     );
     if (!fresh.length) return [];
     await $.store.set(JOIN_TAKEN + sid, [...taken, ...fresh.map((r) => r.id)]);
@@ -4437,19 +4436,15 @@ async function writeState($: EngineInterface) {
         assumed: o.assumed ?? [],
         ctx: typeof ctx === 'number' ? ctx : null,
         hot: hotOf(await get(HOT + sid)) ?? null,
-        // a row reads joined only once the turn that took it completed; a slash row waits for herdr's push; switched
-        // off, none: herdr pushes instead
+        // a row reads joined only once the turn that took it completed, a slash row too (dima's o3); switched off, none:
+        // herdr pushes instead; `push` stays empty while herdr still reads it
         joins: !joins
             ? null
             : {
                   joined: joins.rows
                       .filter((r) => joins.done.includes(r.id))
                       .map((r) => r.id),
-                  push: joins.rows
-                      .filter(
-                          (r) => isPushOnly(r) && !joins.done.includes(r.id),
-                      )
-                      .map((r) => r.id),
+                  push: [],
                   // handed into a running turn, not joined yet: herdr empties its quill on these (FRM-564)
                   taken: joins.rows
                       .filter(
@@ -4459,9 +4454,7 @@ async function writeState($: EngineInterface) {
                       )
                       .map((r) => r.id),
                   waiting: joins.rows
-                      .filter(
-                          (r) => !isPushOnly(r) && !joins.done.includes(r.id),
-                      )
+                      .filter((r) => !joins.done.includes(r.id))
                       .map((r) => r.id),
               },
         label: identity.label,

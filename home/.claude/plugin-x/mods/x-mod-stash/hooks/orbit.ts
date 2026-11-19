@@ -148,9 +148,6 @@ export function joinRows(text: string) {
     return rows;
 }
 
-// a slash command only pushes (spec FRM-584, clio's call 6): its row is never joined, herdr pushes it
-export const isPushOnly = (r: JoinRow) => r.text.trimStart().startsWith('/');
-
 export const joinRowsText = (rows: JoinRow[]) =>
     `💨 dima wrote ${rows.length === 1 ? 'this' : `these ${rows.length}, in order,`} in herdr while you worked; it joins this turn as his own words:\n${rows.map((r) => `«${r.text}»`).join('\n')}`;
 
