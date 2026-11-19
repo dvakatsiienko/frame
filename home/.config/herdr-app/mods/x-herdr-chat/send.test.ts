@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { addressIn, sendBlocked, submitted } from './send.js';
+import { addressIn, sendBlocked, sentNote, submitted } from './send.js';
 
 describe('the thread a message goes to is the one its Claude runs in', () => {
     test('the address is read from the process line herdr started it with', () => {
@@ -105,5 +105,20 @@ describe('a send waits while a pick types into the same thread (FRM-628)', () =>
 
     test('a pick typing into another thread holds nothing here', () => {
         expect(sendBlocked('t1', new Set(['t2']))).toBeNull();
+    });
+});
+
+describe('a / command sent while the thread works says it waits (dima, 18 Nov 23:31)', () => {
+    test('while the thread works, the note under the quill says the command runs after this turn', () => {
+        expect(sentNote('/clio:halt wire+', null, true)).toBe(
+            'a / command runs after this turn',
+        );
+    });
+
+    test('an idle thread runs it now, and plain words keep their own note', () => {
+        expect([
+            sentNote('/clio:halt', null, false),
+            sentNote('ship it', 'pushed: no turn to join', true),
+        ]).toEqual([null, 'pushed: no turn to join']);
     });
 });
