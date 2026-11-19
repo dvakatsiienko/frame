@@ -25,6 +25,7 @@ the lanes, one line each; a quiet lane prints nothing:
 - **pnpm -g** — every global's notes over the range, read like renovate's
 - **go** — direct modules behind, notes read
 - **uv** — each tool's notes read
+- **kokoro**, printed every run (dima, 2026-11-19: «my main door to read-aloud»): `mlx-audio`'s move in the uv snapshot, with its notes; the cached model rev (`~/.cache/huggingface/hub/models--mlx-community--Kokoro-82M-bf16/refs/main`) against the hub api's `sha`; unmoved: «kokoro unchanged»
 - **toolchain** (dima, 2026-10-28) — node's notes read every run, upgraded only on his word when they bring something; pnpm always upgraded (brew owns it); after either, `pnpm -C ~/frame toolchain:sync` repins both repos
 - `pnpm update -g --latest` needs `~/Library/pnpm/bin` on PATH in an agent shell, or it refuses (`ERR_PNPM_GLOBAL_BIN_DIR_NOT_IN_PATH`)
 
