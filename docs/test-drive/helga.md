@@ -457,6 +457,15 @@ retro (14:43 on):
 - 2026-11-16 · pocket-write · 1 · 0 · PK-349 +7, PK-437 +13, PK-438 +4 appended; PK-436 archived, its 2 lines moved to PK-349 W1011-W1012; raw drops PK-437 x8, PK-438 x1; prompt-groom --day green 14:14
 - 2026-11-18 · prompt-groom · 1 · 0 · PK-349:W1163..W1181, 19 lines, every sentence mapped, groomed to ~/.local/state/clio/grooms/2026-11-18-1108.groomed.md
 - 2026-11-18 · inbox-prep · 1 · 0 · 26/26 content lines, check-inbox-prep exit 0, 7 items, 7 asks, written to _hq/inbox-helga.md
+- 2026-11-19 · prompt-groom · yes · 0 · 2026-11-19 13:33 boot prompt, 3 W-lines PK-349:W1204-W1206, sentence map in groomed file, exit 0
+- 2026-11-19 · prompt-groom · yes · 0 · 2026-11-19 14:12 prompt, 8 W-lines: FRM-662:W3-W4, FRM-661:W2, PK-349:W1207-W1214, top-tabs line skipped (PK-455:W1), exit 0
+- 2026-11-19 · groom · first pass · 0 · groomed 1421 and o7 raws, lines sent to clio
+- 2026-11-19 · groom · first pass · 0 · groomed 15:29 raw into PK-349 W1221-W1230
+- 2026-11-19 · groom · first pass · 0 · groomed 17:46 raw into PK-349 W1231-W1234
+- 2026-11-19 · groom · first pass · 0 · groomed 18:05 raw into PK-349 W1235-W1238
+- 2026-11-19 · groom · first pass · 0 · groomed 17:40 raw into FRM-670 W9-W10
+- 2026-11-19 · groom · first pass · 0 · groomed 18:19 raw into FRM-618 W20-W25
+- 2026-11-19 · groom · first pass · 0 · groomed 18:35 o2, o3, and 18:35 raw into FRM-618 W26-W45
 
 ## rounds
 
