@@ -170,7 +170,7 @@ export const basename = (p: string) => p.split('/').filter(Boolean).pop() ?? p;
 export const isFlag = (w: string) => w.startsWith('-') && w !== '-';
 // dima's o101: every refusal his tick can open says so
 export const TICK_DOOR =
-    'his tick on an orbit ask quoting this whole command in one backtick span runs it once (your coordinator brings the ask to him)';
+    'his tick on an orbit ask whose pick quotes this whole command in one backtick span, any length, runs it once (your coordinator brings the ask to him)';
 // `-rf` holds f; a long flag is matched whole
 export function hasFlag(args: Word[], long: string[], short = '') {
     return args.some(

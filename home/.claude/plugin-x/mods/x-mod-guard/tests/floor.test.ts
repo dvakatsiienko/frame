@@ -100,7 +100,7 @@ for (const [family, command, door] of FAMILIES)
         const said = (await bash($, command)).deny ?? '';
         expect(
             said.includes(
-                'his tick on an orbit ask quoting this whole command',
+                'his tick on an orbit ask whose pick quotes this whole command',
             ),
         ).toBe(door !== 'trash');
     });

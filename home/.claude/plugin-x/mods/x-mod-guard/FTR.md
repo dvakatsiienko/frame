@@ -20,7 +20,7 @@
   - and wherever it sits: the one walker, `rules/command.ts`, reads it behind a wrapper (`sudo`, `env`, `timeout`, `xargs`, `pnpm exec`, `x as <member> --`, …), inside a shell keyword, a group, a function, a `$( … )`, a `sh -c` script, a heredoc or string fed to a shell, an `eval`, a git alias, a `find -exec`, its name held in a literal variable or split by quotes; every case is a row in `tests/escapes.ts`
   - when x-mod-guard reads it
   - then that one command is refused, the reason opening with «nothing in this command ran», then the door: `trash`, `claude stop <id>`, `git stash push -u -- <your paths>`, a run without the flag, `x lane rebase-main` for a force-push, «ask clio» where no safe door exists
-  - and every refusal but plain rm names his tick on an orbit ask quoting the whole command as the way through
+  - and every refusal but plain rm names his tick on an orbit ask whose pick quotes the whole command as the way through
   - then every other command runs: a sign, a body write, a merge-auto `--dima-ok`, a write to a shelf or store file, a plain push, an overwrite, a lint shape — no rule reads them any more
   - decision: the guard was never his ask and locked the fleet out; it keeps only the destructive floor, every other refusal deleted with its tests (dima's o34, 2026-11-12: «floor, and keep other functionality like slipstreamed messages»)
   - decision: a refusal stops one command, never the session (dima, FRM-321)
@@ -115,13 +115,14 @@
   - 📌 the «names git» refusals the 10-08 retros counted come from cc's own worktree isolation («a worktree-isolated session's git operations must target its own worktree»), which no mod reaches (FRM-356)
   - proof: tests/words.test.ts::a command that only names git runs: …
 - ✅ dima's tick on an orbit ask opens one floor command once (FRM-427)
-  - given dima ticked an ask that quotes the whole floor command in one backtick span, spacing aside, on the seat board or on x-herdr-deck (a press counts only while this seat's orbit holds that ask with his accepted mark), within 2 h
+  - given dima ticked an ask whose pick, or text, quotes the whole floor command in one backtick span, spacing aside, any length, on the seat board or on x-herdr-deck (a press counts only while this seat's orbit holds that ask with his accepted mark, and with the pick the press carries), within 2 h
+  - and the tick covers the pick as it stood at his press: a `follow` that swaps it later moves nothing onto the new command; a press row with no pick, an older deck's, opens what the text quotes (FRM-661: a text caps at 90 chars, so a 130-char cleanup could never be ticked)
   - then the command runs, the escape kept with the ask's id; a second run is refused, a tick quoting another command opens nothing, and plain rm never opens
   - and a run that fails hands the tick back for the retry
   - and his tick on one command of a longer line passes that one when the rest of the line meets no floor rule (`hc kill t9 2>&1 | tail -1`, `hc ls && hc kill t9`); a pipe it feeds runs with `set -o pipefail` first, so a failed run reads as failed (FRM-574 decided 2 and 7)
   - makes: the spent ticks in x-mod-guard's `$.state`, `<ask id>@<tick time>:<what it authorized>`
   - decision: no typed word, no `# dima-ok` marker, no bare yes: his tick is the one door, and a sign or a merge needs none (FRM-581: FRM-580 and FRM-566 took two ticks or a raw api call for one sign)
-  - proof: tests/ticks.test.ts, tests/herdr-close.test.ts::a tick quoting the command passes it inside a longer line: …; a ticked command that fails keeps the tick for the retry
+  - proof: tests/ticks.test.ts, tests/pick.test.ts, tests/herdr-close.test.ts::a tick quoting the command passes it inside a longer line: …; a ticked command that fails keeps the tick for the retry
 - ✅ a herdr close names a target that ends no live seat
   - given a thread's herdr close — `herdr-app do` `pane.close`, `tab.close`, `space.close`, `terminal.kill`, `overlay.close`, `app.quit` or `window.close`, or `hc kill`, `hc rm`, `hc server stop|restart` — that names no target, a target behind a variable, or one whose terminals herdr cannot name or include a live seat (a `seat=` label, or a claude agent this seat did not start), then it is refused (rule `herdr-close`, dima's o53); the window, the app and the server end every seat, so those always ask
   - then a named overlay herdr lists open, a plain shell, a claude terminal this seat started, a finished terminal and a mod-only tab this seat's own `tab.new` made run

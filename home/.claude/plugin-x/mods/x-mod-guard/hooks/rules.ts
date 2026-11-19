@@ -344,11 +344,12 @@ export function message(r: Refusal) {
         : `${said}. only on dima's word: ${TICK_DOOR}`;
 }
 // his presses in a ticks file as ticks: the newest press per ask decides, a ↩️ replay after a 🛎 taking it back; a press
-// carries the ask text he pressed on, so a tick covers what that text quotes and nothing else
+// carries the ask text and pick he pressed on, so a tick covers what those quote and nothing else: the pick carries a
+// command of any length, the text caps at 90 chars (FRM-661); a row with no pick is an older deck's
 export function pressTicks(text: string) {
     const newest = new Map<
         string,
-        { at: number; text?: string; verdict: string }
+        { at: number; pick?: string; text?: string; verdict: string }
     >();
     for (const line of text.split('\n')) {
         let press: unknown;
@@ -361,6 +362,7 @@ export function pressTicks(text: string) {
         const {
             at,
             id,
+            pick,
             text: asked,
             verdict,
         } = press as Record<string, unknown>;
@@ -371,6 +373,7 @@ export function pressTicks(text: string) {
         if ((newest.get(id)?.at ?? -1) > at) continue;
         newest.set(id, {
             at,
+            ...(typeof pick === 'string' ? { pick } : {}),
             text: typeof asked === 'string' ? asked : undefined,
             verdict,
         });
@@ -381,9 +384,10 @@ export function pressTicks(text: string) {
                   {
                       at: p.at,
                       id: `herdr:${id}`,
-                      targets: [...p.text.matchAll(/`([^`]+)`/g)].map(
-                          (m) => m[1] as string,
-                      ),
+                      ...(p.pick !== undefined ? { pick: p.pick } : {}),
+                      targets: [
+                          ...`${p.text} ${p.pick ?? ''}`.matchAll(/`([^`]+)`/g),
+                      ].map((m) => m[1] as string),
                       text: p.text,
                   },
               ]

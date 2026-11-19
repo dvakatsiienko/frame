@@ -1541,6 +1541,24 @@ test("a 🛎️ press writes the tick record: the ask's id, text, quoted targets
     ]);
 });
 
+// FRM-661: the text names the target in plain words, the pick quotes the command whole, any length
+test("a 🛎️ press records the command the ask's pick quotes, 130 characters long", async ($, on) => {
+    world(on);
+    const writes = tickLog(on);
+    await start($);
+    const ui = await board($);
+    const cleanup =
+        'git -C ~/frame worktree remove --force .claude/worktrees/x-herdr-deck-rename && git -C ~/frame branch -D codie/x-herdr-deck-rename';
+    await add($, [
+        '⚠️ x-herdr-deck-rename cleanup: remove its worktree and its branch',
+        `run \`${cleanup}\``,
+    ]);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    expect(
+        (writes.at(-1) as { targets: string[] }[]).map((t) => t.targets),
+    ).toEqual([[cleanup]]);
+});
+
 test('a press that lands on an ask his prompt already locked keeps the tick record (S1)', async ($, on) => {
     world(on);
     const writes = tickLog(on);
@@ -2189,6 +2207,19 @@ test("orbit's description fits the 4096 chars cc shows the model, every op named
         true,
         ['add', 'resolve', 'follow', 'assume', 'plan', 'glide'],
     ]);
+});
+
+// FRM-661 exit 4: a command of any length rides the pick, so no ask sends him to type it
+test("orbit's guard line puts the command in the pick and never asks for his typed word", async ($, on) => {
+    world(on);
+    await start($);
+    const guard = registered.described
+        .split('\n')
+        .find((l) => l.startsWith('guard:'));
+    expect([
+        guard?.includes('the pick quotes it whole in one backtick span'),
+        /too long|typed word/.test(registered.described),
+    ]).toEqual([true, false]);
 });
 
 /* brief 8 item 1: an ask carries one link dima opens in a click */

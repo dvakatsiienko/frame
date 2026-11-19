@@ -61,6 +61,10 @@ beat grep or lost to it.
 - 2026-11-12 · dima's steer, the third extension, to 11-19: «push the reminder +7 days, still no time to revisit this ts-lsp» (o41)
 - 2026-11-19 · FRM-656 mods codie, the move of the round count out of `register.tsx` · not used for the move itself: 3 functions with one caller each, `grep -n` named every site; a miss of the brief's trial, said so
 - 2026-11-19 · FRM-656 mods codie · `findReferences` on `roundTaken` (`rounds.ts`): 10 sites in 3 files, `rg -n roundTaken` the same 10 · tie; the first call at the line above the name answered «no references», so the position must sit on the name · useful: n (grep was as fast) · the touch printed false TS5097 and «cannot find module» errors on scratch copies, the same noise as 11-12
+- 2026-11-19 · FRM-659 herdr codie, the probe on a herdr mod's `.js` · `findReferences` on x-herdr-chat `main.js`'s `file`, `pid`, `reader` fields → 15, 10, 9 sites through the mod's jsconfig.json; `grep 'this\.file\b'` the same 14 plus the declaration · tie on hits, LSP gave exact columns and no `this.files` risk; context saved: none on a one-file symbol · useful: y, it answers on JSDoc-typed JS
+- 2026-11-19 · FRM-659 herdr codie · `goToDefinition` on `savePress` in x-herdr-deck `main.js` → `orbit.js:340` in 1 call, where `grep 'function savePress'` found nothing (it is a `const` arrow) · LSP won · useful: y
+- 2026-11-19 · FRM-659 herdr codie, the dead-code proof · `findReferences` on `contrast.js` and `lists.js` exports → only their own file; `grep -rn` also found each one's `.test.ts` importer, which the LSP misses because the mod's jsconfig includes only `*.js` · LSP's «0 callers» is right for the shipped code, wrong as a delete proof; grep stays the check beside it · useful: half
+- 2026-11-19 · FRM-656 mods sixth sense · findReferences on roundLine and capLine (parse.ts), a new positional param before untold → 7 and 5 sites, every register.tsx caller in the new order; 1 call each · LSP won on a positional-param question · useful: y
 
 ## the reminder, moved here (2026-10-11, o139)
 

@@ -162,7 +162,7 @@ export function rawMergeRefused(
 
 // the brake is dima's: only his tick on an ask quoting the whole release, never the override, lets a seat take it off
 export const RELEASE_BRAKE: Refusal = {
-    door: "dima's look, then his tick on an orbit ask quoting this whole command",
+    door: "dima's look, then his tick on an orbit ask whose pick quotes this whole command",
     rule: 'raw-merge',
     targets: ['merge-brake'],
     why: 'the brake stops every merge until dima takes it off',

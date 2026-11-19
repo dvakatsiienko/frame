@@ -494,11 +494,14 @@ async function herdrTicks($: EngineInterface): Promise<Tick[]> {
     const { value: orbit } = await $.state
         .get(STASH_ORBIT)
         .catch(() => ({ value: undefined }));
+    // a press carrying a pick holds only while the ask still has it: a follow that swaps the pick after his press
+    // never moves his tick to the new command (FRM-661)
     const pressed = pressTicks(text).flatMap((t) => {
         const a = orbit?.asks.find(
             (a) =>
                 `herdr:${a.id}` === t.id &&
                 a.text === t.text &&
+                (t.pick === undefined || a.pick === t.pick) &&
                 a.mark === 'accepted',
         );
         if (!a) return [];
@@ -519,6 +522,7 @@ async function herdrTicks($: EngineInterface): Promise<Tick[]> {
                   JSON.stringify({
                       at: a.markedAt,
                       id: a.id,
+                      pick: a.pick,
                       text: a.text,
                       verdict: 'tick',
                   }),

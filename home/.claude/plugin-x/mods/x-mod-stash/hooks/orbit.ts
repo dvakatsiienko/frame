@@ -48,15 +48,18 @@ export const isAllAsksMarkable = (a: OrbitAsk) =>
     !a.isResolved &&
     !/⚠️|^\s*(?:merge|land)\b/iu.test(a.text);
 
-// the record x-mod-guard reads as dima's word, one per ask his press marks
+// the record x-mod-guard reads as dima's word, one per ask his press marks: what its text and its pick quote, as they
+// stand at the press; the pick carries a command of any length (FRM-661)
 export const allAsksTicks = (
-    asks: Pick<OrbitAsk, 'id' | 'text'>[],
+    asks: Pick<OrbitAsk, 'id' | 'pick' | 'text'>[],
     at: number,
 ): StashTick[] =>
-    asks.map(({ id, text }) => ({
+    asks.map(({ id, pick, text }) => ({
         at,
         id,
-        targets: [...text.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string),
+        targets: [...`${text} ${pick}`.matchAll(/`([^`]+)`/g)].map(
+            (m) => m[1] as string,
+        ),
         text,
     }));
 

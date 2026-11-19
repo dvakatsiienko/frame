@@ -25,6 +25,8 @@ declare module 'claude-code' {
                 asks: {
                     id: string;
                     text: string;
+                    // the command a tick runs, any length (FRM-661)
+                    pick?: string;
                     mark?: string;
                     // a mark read off his x-herdr-deck press, and when it was made
                     isHerdrMark?: boolean;
