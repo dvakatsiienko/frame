@@ -15,8 +15,9 @@ const OWNERS = {
     'lanes.json': 'register.tsx',
     'operator-override.json': 'override.ts',
     'relay.json': 'register.tsx',
-    'second-wind.json': 'wind-store.ts',
-} as const;
+    // syncWindStore writes it from register.tsx until the wind move hands that write to wind-store.ts
+    'second-wind.json': ['register.tsx', 'wind-store.ts'],
+} as const satisfies Record<string, string | readonly string[]>;
 // a module that only quotes the path in a text the model or dima reads, never touching the file
 const QUOTED: Record<string, readonly string[]> = {
     'herdr-joins': ['quiet.ts'],
@@ -40,9 +41,19 @@ const files = hooksFiles(HOOKS).map((path) => ({
     name: relative(HOOKS, path),
 }));
 
+// a const whose text holds the path names it too, in every file that uses the const: `${home}/.claude/shelf/${FILE}`
 function namers(token: string) {
+    const consts = files.flatMap((f) =>
+        [...f.code.matchAll(/\bconst (\w+) = ['`]([^'`]*)['`]/g)].flatMap(
+            ([, name, value]) => (value?.includes(token) && name ? [name] : []),
+        ),
+    );
     return files
-        .filter((f) => f.code.includes(token))
+        .filter(
+            (f) =>
+                f.code.includes(token) ||
+                consts.some((c) => new RegExp(`\\b${c}\\b`).test(f.code)),
+        )
         .map((f) => f.name)
         .filter((name) => !QUOTED[token]?.includes(name));
 }
@@ -56,6 +67,6 @@ describe('x-mod-stash: one module names each shelf file it writes', () => {
 
     for (const [token, owner] of Object.entries(OWNERS))
         it(`${token}: only ${owner} names it`, () => {
-            expect(namers(token)).toEqual([owner]);
+            expect(namers(token)).toEqual([owner].flat());
         });
 });
