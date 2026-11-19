@@ -6,7 +6,7 @@ the brief says `mode: stray`: you are the parked chore codie any clio feeds (FRM
 
 - a batch of 2–4 chores that share an area or files, sized to one session: chores, mechanical work, edits that would flood clio's context, bug and small fixes
 - never a feature: name it in your ping and stop; it belongs to a lane with a sixth sense
-- the model: Sonnet 5.5; a batch in the shared core (`x/go`, the shim, the guard) runs on Opus 5.5
+- the model: Sonnet 5.5 `--effort high`; Opus 5.5 only on dima's word for the day (o22, 11-19)
 
 ## how a batch runs
 
