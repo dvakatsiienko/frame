@@ -9,7 +9,7 @@ const OWNERS = {
     'ask-counter': 'register.tsx',
     'cc-usage-window.json': 'usage.ts',
     'fleet.json': 'register.tsx',
-    'herdr-joins': 'register.tsx',
+    'herdr-joins': 'joins.ts',
     'herdr-state': 'register.tsx',
     'lane-rounds.json': 'register.tsx',
     'lanes.json': 'register.tsx',
