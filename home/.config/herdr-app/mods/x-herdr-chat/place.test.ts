@@ -47,7 +47,7 @@ function createSim(heights: number[], startH = 600, zoom = 1) {
         return { end: Math.max(end, start), start };
     };
 
-    /** one render and its frame, as main.js `list()` runs them; a lift asks for the next frame at once */
+    /** one render and its frame, as message-list.js `view()` runs them; a lift asks for the next frame at once */
     function frame() {
         const plan = place.plan(rows, sizes, viewH);
         itemSizes = [...plan.itemSizes];
@@ -106,7 +106,7 @@ function createSim(heights: number[], startH = 600, zoom = 1) {
             clamp();
             frame();
         },
-        /** an older page lands above: the list keeps its px, his place read first and held, as main.js does */
+        /** an older page lands above: the list keeps its px, his place read first and held, as main.js `loadEarlier` does */
         prepend(...more: number[]) {
             place.read(rows, sizes);
             const held = place.place;
@@ -140,7 +140,7 @@ function createSim(heights: number[], startH = 600, zoom = 1) {
             viewH = height;
             frame();
         },
-        /** a new width: every height is guessed again and his place is held, as main.js does */
+        /** a new width: every height is guessed again and his place is held, as message-list.js does */
         resize() {
             place.read(rows, sizes);
             place.hold();

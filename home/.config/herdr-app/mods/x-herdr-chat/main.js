@@ -4,12 +4,7 @@
 // follow.js, place.js, quill.js, send.js, magic.js.
 
 import { mkdir, readdir, writeFile } from 'fs/promises';
-import {
-    VirtualListScrollHandle,
-    h_flex,
-    v_flex,
-    v_virtual_list,
-} from 'gpui-base';
+import { h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
 import {
     agents,
@@ -33,18 +28,16 @@ import { STATE_DIR } from './band.js';
 import { createBand } from './band-view.js';
 import { createBlockedPanel } from './blocked-panel.js';
 import { CHAT_SHOWN } from './chat-asks.js';
-import { openArgs, replyIdOf } from './files.js';
+import { replyIdOf } from './files.js';
 import { createFindBar } from './find-bar.js';
 import { placeOf } from './follow.js';
-import { createHeights, guessHeight } from './heights.js';
-import { ICONS } from './icons.js';
+import { createHeights } from './heights.js';
 import { LOOK_KEY, lookOf } from './look.js';
-import { copyText, createMessageMenu, menuPlace } from './menu.js';
+import { createMessageList, placeKey } from './message-list.js';
 import { createMessageRows } from './message-row.js';
 import { createPages } from './pages.js';
 import { createPickers } from './pickers.js';
 import { createPictureViewer } from './picture-viewer.js';
-import { createPlace } from './place.js';
 import { createQuill } from './quill-view.js';
 import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
@@ -64,8 +57,6 @@ import { sidOf, transcriptPath } from './thread.js';
 /** @typedef {import('./row-model.js').Row} Row */
 /** @typedef {import('./chat-types.js').Theme} Theme */
 
-// the readable column of a narrow look (the old chat's)
-const NARROW = 820;
 /** @type {Row} over a thread read back to its first line: no older page is left to ask for */
 const START_ROW = {
     at: null,
@@ -83,14 +74,7 @@ const START_ROW = {
 };
 // the ui font, as the old chat drew it
 const SANS = '.AppleSystemUIFont';
-// [TRACE-place] how long after an open the list's asks are traced
-const TRACE_MS = 8000;
 
-// his reading place is saved this long after his last scroll step
-const PLACE_SAVE_MS = 600;
-// how long after a held place was last asked for the list stays unseen: its landing takes two frames, and a
-// reload asks again as each real height arrives
-const SETTLE_MS = 120;
 // earlier pages read at most this many times while looking for the message he was reading
 const PLACE_PAGES = 8;
 // the terminals a pick is typing keys into, model, effort or permission: it outlives a thread switch, so a second pick
@@ -101,13 +85,10 @@ const SHOWN_LOOK_MS = 2000;
 // the operator override changes with no event herdr watches, and a deck that stopped publishing changes nothing: the
 // band's facts that age are read again this often
 const BAND_AGE_MS = 5000;
-// the right-click menu's size, one row; its note under the quill once a message is copied
-const MENU_SIZE = { h: 34, w: 200 };
 // a blocked thread's screen is read this often while it asks, so the question card follows its cursor
 const ASK_READ_MS = 1000;
 // the settings folder is looked for again this often while it does not exist
 const SETTINGS_RETRY_MS = 10 * 1000;
-const COPIED_NOTE = 'Message copied';
 const COPIED_NOTE_MS = 1500;
 /** @type {import('./sent-pictures.js').SentIo} */
 const SENT_IO = {
@@ -178,7 +159,6 @@ const doorTo = (file) => ({
 });
 
 export default class Chat extends View {
-    scroll = VirtualListScrollHandle.new();
     model = createRowModel();
     heights = createHeights();
     /** @type {ReturnType<typeof createReader> | null} */
@@ -205,34 +185,17 @@ export default class Chat extends View {
     file = null;
     /** the pid the open thread was opened for; undefined before the first @type {number | null | undefined} */
     opened = undefined;
-    /** his reading place: following the newest, or the first message on screen and the px of it above the view */
-    at = createPlace();
-    width = 0;
-    viewH = 0;
-    /** bumped when the width or the look changes: rich text laid out for the old one is never reused */
-    widthGen = 0;
     /** his chat look (look.js), read each render */
     look = lookOf(null);
-    /** the look's parts that move rows, as last drawn: a change holds his place */
-    lookKey = '';
-    /** the rows the list draws: the model's, less tool calls he hides @type {readonly Row[]} */
-    shownRows = [];
-    /** [TRACE-place] the list's asks are traced until then, after an open */
-    traceUntil = 0;
-    /** until then the list is not shown: a held place is still landing as real heights arrive */
-    settleUntil = 0;
     /** the pending wait for a change in the transcript's folder @type {import('herdr').FolderWatch | null} */
     watch = null;
-    /** @type {number[]} */
-    sizes = [];
-    lastWheelAt = 0;
     /** @type {string | null} */
     error = null;
     /** the open thread's transcript has been read once */
     isRead = false;
     /** the quill, its drafts, the files waiting over it and its / menu */
     quill = createQuill({
-        column: () => this.column(),
+        column: () => this.list.column(),
         flash: (note, ms, cx) => this.flashNote(note, cx, ms),
         pickersView: (t) => this.pickers.view(t),
         say: (note, cx) => this.say(note, cx),
@@ -262,7 +225,7 @@ export default class Chat extends View {
     stateTurn = 0;
     /** the band over the quill and the bar under it */
     band = createBand({
-        column: () => this.column(),
+        column: () => this.list.column(),
         pid: () => this.pid,
         shownAddress: () => this.address,
         turnStart: () => this.model.turnAt(),
@@ -278,7 +241,7 @@ export default class Chat extends View {
     /** the model, effort and permission pickers under the quill */
     pickers = createPickers({
         claudeSettings: () => this.claudeSettings,
-        column: () => this.column(),
+        column: () => this.list.column(),
         hasRows: () => this.model.rows.length > 0,
         quillBox: () => this.quill.box(),
         shownAddress: () => this.address,
@@ -291,21 +254,16 @@ export default class Chat extends View {
         focusQuill: () => this.quill.focus(),
         isCleanShot: () => this.isCleanShot,
         isCmdHeld: () => this.isCmdHeld,
-        room: () => ({
-            height: this.viewH || 600,
-            width: this.width || NARROW,
-        }),
+        room: () => this.list.size(),
         say: (note, cx) => this.say(note, cx),
     });
     /** find in the chat (slice 6): the bar and the search the rows mark */
     findBar = createFindBar({
         focusQuill: () => this.quill.focus(),
         isAllLoaded: () => this.pages?.isStart() ?? false,
-        rows: () => this.shownRows,
-        show: (id) => this.at.restore(id, 0),
+        rows: () => this.list.shown(),
+        show: (id) => this.list.restore(id, 0),
     });
-    /** the right-click menu on a message (slice 7) */
-    messageMenu = createMessageMenu();
     /** a blocked thread's ask with the keys that answer it, over the quill */
     blocked = createBlockedPanel({
         address: () => this.address,
@@ -315,13 +273,23 @@ export default class Chat extends View {
     isShowMore = true;
     /** each row as drawn, and the rows the list shows of the model's */
     rows = createMessageRows({
-        column: () => this.column(),
+        column: () => this.list.column(),
         find: () => this.findBar.find,
         heights: this.heights,
         isShowMore: () => this.isShowMore,
         look: () => this.look,
-        room: () => Math.min(this.width || NARROW, this.column()),
+        room: () => this.list.room(),
         sent: this.sent,
+    });
+    /** the list on screen and his reading place in it */
+    list = createMessageList({
+        file: () => this.file,
+        flash: (note, cx) => this.flashNote(note, cx),
+        heights: this.heights,
+        loadEarlier: (cx) => this.loadEarlier(cx),
+        pictures: this.pictures,
+        reader: () => this.reader,
+        rows: this.rows,
     });
 
     /** wakes the loop that opens the thread shown: a draw starts no work itself */
@@ -543,32 +511,13 @@ export default class Chat extends View {
                     this.pickers.readPermission(later);
             });
         const look = lookOf(shared(LOOK_KEY));
-        const lookKey = [
-            look.size,
-            look.font,
-            look.width,
-            look.space,
-            look.tools,
-        ].join('|');
         const shown = this.rows.shown(this.model.rows, look);
         const rows =
             this.isRead && shown.length && this.pages?.isStart()
                 ? [START_ROW, ...shown]
                 : shown;
-        if (this.lookKey && lookKey !== this.lookKey) {
-            // every row takes a new height at once: his place is held as a share of its message while they land
-            this.widthGen += 1;
-            this.trace(
-                `look ${this.lookKey} → ${lookKey} place=${JSON.stringify(this.at.place)} held=${this.at.isHeld} rows ${this.shownRows.length} → ${rows.length}`,
-            );
-            this.traceUntil = Date.now() + TRACE_MS;
-            if (this.at.restyle(this.shownRows, this.sizes, rows))
-                this.settleUntil = Date.now() + SETTLE_MS;
-            this.heights.clear();
-        }
+        this.list.take(rows, look);
         this.look = look;
-        this.lookKey = lookKey;
-        this.shownRows = rows;
         const root = v_flex()
             .size_full()
             .min_h(0)
@@ -625,7 +574,7 @@ export default class Chat extends View {
                         .bg(t.raised)
                         .child(this.error),
                 );
-            root.child(this.list(rows, t, _cx));
+            root.child(this.list.view(rows, t, _cx));
         } else
             root.child(
                 div()
@@ -715,239 +664,6 @@ export default class Chat extends View {
             : 'Reading the thread…';
     }
 
-    /**
-     * @param {readonly Row[]} rows
-     * @param {Theme} t
-     * @param {Context} cx
-     */
-    list(rows, t, cx) {
-        const zoom = Number(settings().zoom) || 1;
-        this.rows.markTurn(rows);
-        const booked = this.rows.booked(rows);
-        const sizes = this.heights.sizes(booked, (row) =>
-            guessHeight(row, Math.min(this.width || NARROW, this.column())),
-        );
-        this.sizes = sizes;
-        const pre = `w${this.widthGen}-`;
-        const plan = this.at.plan(rows, sizes, this.viewH);
-        if (plan.ask && Date.now() < this.traceUntil)
-            this.trace(
-                `plan ask=${plan.ask} seekAt=${plan.seekAt} follow=${this.at.follow} held=${this.at.isHeld}`,
-            );
-        const { cutAt, cutOffset, itemSizes, rowAt } = plan;
-        // his place, or the newest: asked of the list before the frame that draws these rows
-        if (plan.ask === 'lift') {
-            // the list lands an item's top on the view's top only from below it: to the end first, then the place
-            this.scroll.scroll_to_bottom();
-            cx.timer.after(0, (later) => later.notify());
-        } else if (plan.ask === 'seek')
-            this.scroll.scroll_to_item(plan.seekAt, 'top');
-        else if (plan.ask === 'end') this.scroll.scroll_to_bottom();
-        // a held place lands unseen: the frames it takes would show him other rows first
-        const settleFor = this.at.isHeld ? this.settleUntil - Date.now() : 0;
-        const isSettling = settleFor > 0;
-        if (isSettling)
-            cx.timer.after(settleFor + 1, (later) => later.notify());
-        const list = v_virtual_list(
-            'chat-rows',
-            itemSizes.length,
-            itemSizes,
-            (i) => {
-                const id = rows[rowAt(i)]?.id ?? `end-${i}`;
-                if (i === cutAt) return `${id}#above`;
-                return i === cutAt + 1 && cutAt >= 0 ? `${id}#below` : id;
-            },
-            (drawn) => {
-                // no redraw is asked for in here, herdr refuses one: a ↓ that should leave does so at the next draw
-                this.at.drawn(drawn, plan, Date.now());
-                const items = [];
-                for (let i = drawn.start; i < drawn.end; i++) {
-                    const row = rows[rowAt(i)];
-                    const box = div()
-                        .relative()
-                        .w_full()
-                        .h(itemSizes[i] ?? 1);
-                    // an end mark (follow.js END_MARKS): the list pairs each element with its item, so none is skipped
-                    if (!row) {
-                        items.push(box);
-                        continue;
-                    }
-                    if (i === cutAt)
-                        items.push(
-                            box
-                                .overflow_hidden()
-                                .child(this.rows.row(row, t, `${pre}a-`)),
-                        );
-                    else if (cutAt >= 0 && i === cutAt + 1)
-                        items.push(
-                            box.overflow_hidden().child(
-                                div()
-                                    .absolute()
-                                    .top(-cutOffset)
-                                    .left(0)
-                                    .w_full()
-                                    .child(this.rows.row(row, t, `${pre}b-`)),
-                            ),
-                        );
-                    else items.push(box.child(this.rows.row(row, t, pre)));
-                }
-                return items;
-            },
-        )
-            .track_scroll(this.scroll)
-            // a right-click names the row first; the list's own handler below then opens the menu where it was
-            .on_item_secondary_click((key, event) => {
-                const id = key.replace(/#(?:above|below)$/, '');
-                this.messageMenu.hit(
-                    event.position,
-                    copyText(rows.find((r) => r.id === id)),
-                );
-            })
-            // a file row opens its file in its app, a png in Preview (FRM-587)
-            .on_item_click((key, cx) => {
-                const press = this.rows.press(rows, key);
-                if (press?.kind === 'redraw') cx.notify();
-                else if (press?.kind === 'pictures')
-                    this.pictures.show(press.files, press.at, cx);
-                else if (press?.kind === 'file')
-                    exec('open', openArgs(press.path)).catch(() => {});
-            })
-            .size_full();
-        return div()
-            .id('chat-list')
-            .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
-            .on_mouse_down('right', (event, cx) => {
-                const local = event.local_position ?? { x: 0, y: 0 };
-                this.messageMenu.open(event.position, {
-                    x: local.x / zoom,
-                    y: local.y / zoom,
-                });
-                cx.notify();
-            })
-            .relative()
-            .flex_1()
-            .min_h(0)
-            .overflow_hidden()
-            .opacity(isSettling ? 0 : 1)
-            .on_size_change((size, cx) => {
-                const width = size.width / zoom;
-                const height = size.height / zoom;
-                if (Math.abs(width - this.width) > 1) {
-                    this.width = width;
-                    this.widthGen += 1;
-                    this.readPlace();
-                    this.heights.clear();
-                    // every height is guessed again: his place is brought back as the real ones arrive
-                    this.holdPlace();
-                }
-                this.viewH = height;
-                cx.notify();
-            })
-            .on_scroll_wheel((event, cx) => {
-                if (this.messageMenu.state) {
-                    this.messageMenu.close();
-                    cx.notify();
-                }
-                const step = this.at.wheel(
-                    (event.delta?.y ?? 0) / zoom,
-                    this.shownRows,
-                    this.sizes,
-                    this.viewH,
-                    Date.now(),
-                );
-                if (step.isIgnored) return;
-                this.savePlaceSoon(cx);
-                // within a screen of the first row: the next older page, one at a time
-                if (!this.at.follow && this.at.top < this.viewH)
-                    this.loadEarlier(cx);
-                if (step.hadCut || step.isFollowChanged) cx.notify();
-            })
-            .child(list)
-            .child(this.measurer(booked, t, `m${this.widthGen}-`))
-            .when(Boolean(this.messageMenu.state), (el) =>
-                el.child(this.messageMenuView(t)),
-            )
-            .when(!this.at.follow, (el) =>
-                el.child(
-                    div()
-                        .id('chat-newest')
-                        .absolute()
-                        .bottom(12)
-                        .right(16)
-                        .px(9)
-                        .py(3)
-                        .rounded(10)
-                        .bg(t.raised)
-                        .text_color(t.muted)
-                        .tooltip('Go to the newest')
-                        .child(ICONS.newest)
-                        .on_click((_event, cx) => {
-                            this.at.newest();
-                            if (this.file)
-                                localStorage.removeItem(
-                                    this.placeKey(this.file),
-                                );
-                            cx.notify();
-                        }),
-                ),
-            );
-    }
-
-    /** the right-click menu: «Copy message», dim when the press was on no message @param {Theme} t */
-    messageMenuView(t) {
-        const menu = this.messageMenu.state;
-        const text = menu?.text ?? null;
-        const place = menuPlace(
-            { x: menu?.x ?? 0, y: menu?.y ?? 0 },
-            { h: this.viewH, w: this.width || NARROW },
-            MENU_SIZE,
-        );
-        /** @param {Context} cx */
-        const close = (cx) => {
-            this.messageMenu.close();
-            cx.notify();
-        };
-        /** @param {string} id @param {string} label @param {(cx: Context) => void} act */
-        const item = (id, label, act) =>
-            h_flex()
-                .id(`chat-message-menu-${id}`)
-                .h(26)
-                .px(8)
-                .items_center()
-                .rounded(5)
-                .text_size(13)
-                .text_color(text ? t.foreground : t.dim)
-                .when(Boolean(text), (el) =>
-                    el
-                        .cursor_pointer()
-                        .hover((s) => s.bg(t.hover))
-                        .on_click((_event, cx) => {
-                            close(cx);
-                            act(cx);
-                        }),
-                )
-                .child(label);
-        return v_flex()
-            .id('chat-message-menu')
-            .absolute()
-            .left(place.x)
-            .top(place.y)
-            .w(MENU_SIZE.w)
-            .p(4)
-            .rounded(8)
-            .bg(t.popover)
-            .border_1()
-            .border_color(t.border)
-            .shadow_md()
-            .on_mouse_down_out((_event, cx) => close(cx))
-            .child(
-                item('copy', 'Copy message', (cx) => {
-                    cx.write_to_clipboard(text ?? '');
-                    this.flashNote(COPIED_NOTE, cx);
-                }),
-            );
-    }
-
     /** a line under the quill that leaves on its own @param {string} note @param {Context} cx @param {number} [ms] */
     flashNote(note, cx, ms = COPIED_NOTE_MS) {
         this.note = note;
@@ -958,59 +674,6 @@ export default class Chat extends View {
             cx.notify();
         });
         cx.notify();
-    }
-
-    /**
-     * rows drawn out of sight at the list's width, so each one's real height reaches the height book
-     * @param {readonly (Row & { look?: string })[]} rows
-     * @param {Theme} t
-     * @param {string} pre
-     */
-    measurer(rows, t, pre) {
-        return div()
-            .absolute()
-            .top(0)
-            .left(0)
-            .w(this.width || NARROW)
-            .h(0)
-            .overflow_hidden()
-            .opacity(0)
-            .child(
-                v_flex()
-                    .w_full()
-                    .children(
-                        this.heights.toMeasure(rows, this.at.range).map((row) =>
-                            div()
-                                .id(
-                                    `${pre}${row.id}@${row.version}${row.look ?? ''}`,
-                                )
-                                .flex_none()
-                                .w_full()
-                                .on_size_change((size, cx) => {
-                                    const zoom = Number(settings().zoom) || 1;
-                                    this.readPlace();
-                                    if (
-                                        !this.heights.record(
-                                            row,
-                                            size.height / zoom,
-                                        )
-                                    )
-                                        return;
-                                    if (
-                                        this.at.measured(
-                                            rows,
-                                            rows.indexOf(row),
-                                            Date.now(),
-                                        )
-                                    )
-                                        this.settleUntil =
-                                            Date.now() + SETTLE_MS;
-                                    cx.notify();
-                                })
-                                .child(this.rows.row(row, t, pre, false)),
-                        ),
-                    ),
-            );
     }
 
     /**
@@ -1058,7 +721,6 @@ export default class Chat extends View {
         this.model.clear();
         // nothing of the old thread's ask or menu may act on the new one
         this.blocked.clear();
-        this.messageMenu.close();
         this.rows.clearThread();
         this.heights.clear();
         this.quill.clearThread();
@@ -1082,7 +744,7 @@ export default class Chat extends View {
         this.quill.showDraft();
         this.error = null;
         this.isRead = false;
-        this.at.reset();
+        this.list.reset();
         cx.notify();
         if (pid === null) return;
         try {
@@ -1170,7 +832,7 @@ export default class Chat extends View {
             this.heights.clear();
             this.rows.clearFiles();
             // nothing of the old rows may steer the new ones: a held place, a landing under way, the rows drawn
-            this.at.reset();
+            this.list.reset();
         }
         const hadError = this.error !== null;
         this.error = null;
@@ -1257,11 +919,6 @@ export default class Chat extends View {
         });
     }
 
-    /** @param {string} file */
-    placeKey(file) {
-        return `place:${file}`;
-    }
-
     /**
      * after a reload of the mod: the message he was reading comes back to the top, read in from above if it must be
      * @param {ReturnType<typeof createReader>} reader
@@ -1269,12 +926,11 @@ export default class Chat extends View {
      */
     async restorePlace(reader, cx) {
         const place = placeOf(
-            this.file && localStorage.getItem(this.placeKey(this.file)),
+            this.file && localStorage.getItem(placeKey(this.file)),
         );
-        this.trace(
+        this.list.traceOpen(
             `open ${this.file?.slice(-12)} saved=${JSON.stringify(place)} rows=${this.model.rows.length}`,
         );
-        this.traceUntil = Date.now() + TRACE_MS;
         // a place on the start row would read every page back to it: the thread opens at its newest instead
         if (!place || place.id === START_ROW.id) return;
         // a place on a file row is found through its reply, the row the transcript holds
@@ -1296,7 +952,7 @@ export default class Chat extends View {
         // the saved line may sit inside a folded row: the place is that row
         const at = this.model.indexOf(lineId);
         const row = this.model.rows[at];
-        this.trace(
+        this.list.trace(
             `restore at=${at} kind=${row?.kind} tools=${this.look.tools}`,
         );
         if (!row) return;
@@ -1304,21 +960,19 @@ export default class Chat extends View {
         const shown = this.rows.shown(this.model.rows, this.look);
         const fileRow = shown.find((r) => r.id === place.id && r !== row);
         if (fileRow) {
-            this.at.restore(fileRow.id, place.offset);
-            this.settleUntil = Date.now() + SETTLE_MS;
+            this.list.land(fileRow.id, place.offset);
             cx.notify();
             return;
         }
         const next = shown.includes(row)
             ? row
             : this.model.rows.slice(at + 1).find((r) => shown.includes(r));
-        this.trace(`restore next=${next?.id.slice(0, 8)}`);
+        this.list.trace(`restore next=${next?.id.slice(0, 8)}`);
         if (!next) return;
-        this.at.restore(
+        this.list.land(
             next.id,
             next === row && lineId === place.id ? place.offset : 0,
         );
-        this.settleUntil = Date.now() + SETTLE_MS;
         cx.notify();
     }
 
@@ -1334,10 +988,7 @@ export default class Chat extends View {
         cx.spawn(async (cx) => {
             const lines = await read.catch(() => null);
             if (this.pages !== pages || !lines?.length) return;
-            this.readPlace();
-            const place = this.at.place;
-            const height =
-                this.sizes[this.shownRows.findIndex((r) => r.id === place?.id)];
+            const { height, place } = this.list.placeNow();
             const firstId = this.model.rows[0]?.id ?? '';
             this.model.addEarlier(lines);
             // the page's last reply may join the first row: it keeps its lines and takes the page's id
@@ -1349,8 +1000,8 @@ export default class Chat extends View {
                 ? this.model.rows[this.model.indexOf(place.id)]
                 : undefined;
             if (place && joined && joined.id !== place.id && height)
-                this.at.restore(joined.id, 0, height - place.offset);
-            else if (place) this.at.restore(place.id, place.offset);
+                this.list.restore(joined.id, 0, height - place.offset);
+            else if (place) this.list.restore(place.id, place.offset);
             if (this.findBar.find.state.isOpen)
                 this.findBar.find.recount(
                     this.rows.shown(this.model.rows, this.look),
@@ -1360,71 +1011,5 @@ export default class Chat extends View {
                 );
             cx.notify();
         });
-    }
-
-    /** his place, read from the rows the list drew last; never inside the list's row callback (see place.js) */
-    readPlace() {
-        this.at.read(this.shownRows, this.sizes);
-    }
-
-    /** [TRACE-place] one line to the lane's trace file, until the 23:44 «opened at the newest» is caught @param {string} line */
-    trace(line) {
-        const at = new Date().toTimeString().slice(0, 8);
-        exec('/bin/sh', [
-            '-c',
-            'printf "%s\\n" "$1" >> "$2"',
-            'sh',
-            `${at} ${line}`,
-            `${home()}/.local/state/x/lanes/herdr-lane-2/place-trace.log`,
-        ]).catch(() => {});
-    }
-
-    /** the widest a row or the quill draws: a readable column when narrow, the list's own width when full */
-    column() {
-        return this.look.width === 'narrow'
-            ? NARROW
-            : Math.max(this.width, NARROW);
-    }
-
-    /** his place is asked of the list again, to the pixel: after a new width; unseen while it lands */
-    holdPlace() {
-        if (this.at.hold()) this.settleUntil = Date.now() + SETTLE_MS;
-    }
-
-    /**
-     * his place is the first message on screen once his scroll has rested; following the newest keeps none
-     * @param {Context} cx
-     */
-    savePlaceSoon(cx) {
-        const at = Date.now();
-        const { file, reader } = this;
-        this.lastWheelAt = at;
-        let seen = '';
-        /** @param {Context} later */
-        const save = (later) => {
-            // only his last step counts, and only for the thread it was made in
-            // nor for an earlier opening of the same thread: its place may not be restored yet
-            if (this.lastWheelAt !== at || !file || this.file !== file) return;
-            if (this.reader !== reader) return;
-            this.readPlace();
-            // a glide moves the list on with no wheel step: the place is saved once two reads in a row agree
-            const { place } = this.at;
-            const now = `${place?.id}@${Math.round(this.at.top)}`;
-            if (now !== seen) {
-                seen = now;
-                later.timer.after(PLACE_SAVE_MS, save);
-                return;
-            }
-            if (place)
-                localStorage.setItem(
-                    this.placeKey(file),
-                    JSON.stringify(place),
-                );
-            else {
-                this.trace('save: following, the saved place is dropped');
-                localStorage.removeItem(this.placeKey(file));
-            }
-        };
-        cx.timer.after(PLACE_SAVE_MS, save);
     }
 }
