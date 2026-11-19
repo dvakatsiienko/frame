@@ -175,5 +175,44 @@ export function createFindBar({ rows, show, isAllLoaded, focusQuill }) {
         );
     }
 
-    return { close, find, open, reset, view };
+    /** find: ⌘F opens its bar; in the bar Enter or ↓ steps older, ⇧Enter or ↑ newer, Esc closes @param {Context} cx */
+    function start(cx) {
+        reset();
+        cx.bind_keys([
+            {
+                action: 'x_herdr_chat_find_newer',
+                context: 'ChatFind > Input',
+                keystroke: 'up',
+            },
+            {
+                action: 'x_herdr_chat_find_older',
+                context: 'ChatFind > Input',
+                keystroke: 'down',
+            },
+            // the bar's Esc from wherever the keyboard sits in the chat; a box deeper down keeps its own Esc
+            {
+                action: 'x_herdr_chat_find_close',
+                context: 'XChat',
+                keystroke: 'escape',
+            },
+            {
+                action: 'x_herdr_chat_find',
+                context: 'XChat',
+                keystroke: 'cmd-f',
+            },
+            {
+                action: 'x_herdr_chat_find_close',
+                context: 'ChatFind',
+                keystroke: 'escape',
+            },
+            // the find box's own Esc comes first unless ours sits on the box itself
+            {
+                action: 'x_herdr_chat_find_close',
+                context: 'ChatFind > Input',
+                keystroke: 'escape',
+            },
+        ]);
+    }
+
+    return { close, find, open, reset, start, view };
 }

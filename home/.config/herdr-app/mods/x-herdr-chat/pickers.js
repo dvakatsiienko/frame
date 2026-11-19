@@ -651,6 +651,19 @@ export function createPickers({
         /** @param {Context} cx */
         start(cx) {
             pickKeys = cx.focus_handle();
+            // ← → slide the effort thumb, Enter applies, Esc closes: the open picker holds the keyboard
+            cx.bind_keys(
+                [
+                    ['left', 'x_herdr_chat_effort_left'],
+                    ['right', 'x_herdr_chat_effort_right'],
+                    ['enter', 'x_herdr_chat_effort_apply'],
+                    ['escape', 'x_herdr_chat_effort_close'],
+                ].map(([keystroke, action]) => ({
+                    action: String(action),
+                    context: 'ChatPick',
+                    keystroke: String(keystroke),
+                })),
+            );
         },
         /**
          * the thread's new lines: the model and effort it ran at; the label flashes the moment a reply first ran at

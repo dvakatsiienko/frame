@@ -287,6 +287,23 @@ export function createPictureViewer({
         /** @param {Context} cx */
         start(cx) {
             keys = cx.focus_handle();
+            // the open viewer holds the keyboard: ← → move, + − 0 zoom, ⌘C copies, Esc closes
+            cx.bind_keys(
+                [
+                    ['left', 'previous'],
+                    ['right', 'next'],
+                    ['=', 'zoom in'],
+                    ['+', 'zoom in'],
+                    ['-', 'zoom out'],
+                    ['0', 'fit'],
+                    ['cmd-c', 'copy'],
+                    ['escape', 'close'],
+                ].map(([keystroke, step]) => ({
+                    action: `x_herdr_chat_viewer_${String(step).replace(' ', '_')}`,
+                    context: 'ChatViewer',
+                    keystroke: String(keystroke),
+                })),
+            );
         },
         step,
         view,

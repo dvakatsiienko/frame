@@ -146,6 +146,20 @@ export function createQuill({
                 keystroke: 'enter',
             },
         ]);
+        // the / menu's keys, only while it shows (its wrapper carries `ChatSlash` then)
+        cx.bind_keys(
+            [
+                ['down', 'x_herdr_chat_slash_down'],
+                ['up', 'x_herdr_chat_slash_up'],
+                ['tab', 'x_herdr_chat_slash_fill'],
+                ['enter', 'x_herdr_chat_slash_fill'],
+                ['escape', 'x_herdr_chat_slash_close'],
+            ].map(([keystroke, action]) => ({
+                action: String(action),
+                context: 'ChatSlash > Input',
+                keystroke: String(keystroke),
+            })),
+        );
     }
 
     /**
