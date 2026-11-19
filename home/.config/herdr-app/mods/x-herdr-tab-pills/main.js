@@ -21,6 +21,7 @@ import {
 import { createListDrag } from './drag-view.js';
 import { closeAsks, closeWords, leadPane, pillName, swallow } from './pills.js';
 import { tabDrops } from './tab-drops.js';
+import { TAB_STATUS_KEY, tabStatusOf } from './tab-status.js';
 
 // the agents list reads each session name and publishes it here (address → name); one reader, one naming rule
 const NAMES_KEY = 'x-herdr-agents.names';
@@ -146,6 +147,8 @@ export default class TabPills extends View {
     render() {
         // herdr's theme colours are hex strings; gpui-kit's style setters want its Color
         const t = /** @type {Theme} */ (theme());
+        // his «Tabs › Tab status» in the chat settings: hidden leaves more room for the names (FRM-664:W6)
+        const isStatusShown = tabStatusOf(shared(TAB_STATUS_KEY)) === 'visible';
         const dragTheme = /** @type {import('./drag-view.js').DragTheme} */ (t);
         const space = spaces().find((p) => p.active);
         if (!space) return div();
@@ -200,7 +203,9 @@ export default class TabPills extends View {
                                 .gap(9)
                                 .items_center()
                                 .text_size(13)
-                                .child(tile(t, p))
+                                .when(isStatusShown, (el) =>
+                                    el.child(tile(t, p)),
+                                )
                                 .child(words()),
                         places: space.tabs.length,
                         targetFor: () => i,
@@ -241,7 +246,7 @@ export default class TabPills extends View {
                         width: 200,
                     }),
                 )
-                .child(tile(t, p))
+                .when(isStatusShown, (el) => el.child(tile(t, p)))
                 .child(words())
                 .child(
                     div()

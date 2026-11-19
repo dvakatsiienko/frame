@@ -16,6 +16,7 @@ import {
 import { createForeground } from './foreground.js';
 import { LOOK_KEY, SIZE_MAX, SIZE_MIN, lookOf, withChange } from './look.js';
 import { ROWS } from './rows.js';
+import { TAB_STATUS_KEY, tabStatusOf } from './tab-status.js';
 
 /** @typedef {import('gpui-kit').Color} Color */
 /** @typedef {import('gpui-kit').Element} Element */
@@ -113,6 +114,72 @@ export default class ChatSettings extends View {
                         )
                         .child(this.control(row, look, t)),
                 ),
+            )
+            .child(this.tabs(t));
+    }
+
+    /** the top tabs' section: their status tile shown or hidden (FRM-664:W6) @param {Theme} t */
+    tabs(t) {
+        const status = tabStatusOf(shared(TAB_STATUS_KEY));
+        /** @type {[import('./tab-status.js').TabStatus, string][]} */
+        const choices = [
+            ['visible', 'Visible'],
+            ['hidden', 'Hidden'],
+        ];
+        return v_flex()
+            .child(
+                div()
+                    .px(8)
+                    .pt(8)
+                    .pb(4)
+                    .text_size(11)
+                    .text_color(t.dim)
+                    .child('Tabs'),
+            )
+            .child(
+                h_flex()
+                    .h(34)
+                    .px(8)
+                    .gap(8)
+                    .items_center()
+                    .child(
+                        div()
+                            .flex_1()
+                            .text_color(t.foreground)
+                            .child('Tab status'),
+                    )
+                    .child(
+                        this.pills(
+                            t,
+                            choices.map(([choice, label]) =>
+                                div()
+                                    .id(`tabs-status-${choice}`)
+                                    .px(8)
+                                    .h(22)
+                                    .flex()
+                                    .items_center()
+                                    .rounded(5)
+                                    .text_size(12)
+                                    .cursor_pointer()
+                                    .when(status === choice, (el) =>
+                                        el
+                                            .bg(t.selected)
+                                            .text_color(t.foreground),
+                                    )
+                                    .when(status !== choice, (el) =>
+                                        el
+                                            .text_color(t.dim)
+                                            .hover((style) =>
+                                                style.text_color(t.foreground),
+                                            ),
+                                    )
+                                    .on_click(() =>
+                                        setShared(TAB_STATUS_KEY, choice),
+                                    )
+                                    .child(label),
+                            ),
+                        ),
+                    ),
             );
     }
 
