@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T16:07:00Z'
+updated_date: '2026-11-19T16:12:00Z'
 labels:
   - s
   - clio-wing-1
@@ -57,4 +57,9 @@ PK-457:W28 (2026-11-19 18:06, dima): we should know where and when fable 5.2 is 
 PK-457:W29 (2026-11-19 18:06, dima): all the same steps; the recipe should already include what to look at and where to fold. fable 5.1 retires with this.
 PK-457:W30 (2026-11-19 18:06, dima): the data should be precise: the price, where and how it is best to summon fable 5.2, the best baseline effort setting, and when low or high matters.
 PK-457:W31 (2026-11-19 18:06, dima): from what i saw, anything higher than high is wasted inference; the research may tell otherwise, so you tell me. ❓
+
+PK-457:W32 (2026-11-19 18:12, dima): full crew research is redundant, but refresh the knowledge about every model we use: opus, sonnet and haiku. we use every one of them, so fresh knowledge about each is good to have.
+PK-457:W33 (2026-11-19 18:12, dima): after we have the numbers, compare them to how our system uses each model today, operation by operation, and tell me whether we use each model for the right tasks, and at the right effort.
+PK-457:W34 (2026-11-19 18:12, dima): if i had more usage to use fable 5.2 more proactively, i would use it in layers. the first layer: fable 5.2 on medium for clio and all wings; all codies and verifiers would still run on opus.
+PK-457:W35 (2026-11-19 18:12, dima): i would leave crow on opus, to have an alternative model's opinion while clio runs on fable. optionally i'd consider the verifiers on fable too, for an alternative opinion. just thoughts, no actions here: i am telling what i like.
 <!-- SECTION:NOTES:END -->
