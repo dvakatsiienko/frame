@@ -170,7 +170,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
 - ⬜ a slash command he sends is his message (FRM-638 slice 6)
   - given he sends «/name args» from the quill
   - then it shows as his bubble, as he typed it, waiting while the thread works and in history once it ran; no «Sent:» note (dima, 18:00, 18:01)
-  - and sent while the thread works, its row reads «sent HH:MM · runs after this turn» and the quill's note «a / command runs after this turn»: a / command never joins a running turn, so words he sends after it slipstream first (his 18 Nov 23:31 shot, FRM-659)
+  - and sent while the thread works, its row reads «sent HH:MM» like any message, with no note under the quill (dima, 19 Nov 17:28: «can you remove this?»)
 - ⬜ inline code in the quill turns into a chip
   - given dima types «use `ls` here»
   - then `ls` draws as one monospace chip the caret skips and one delete removes, and the sent message reads «use `ls` here»

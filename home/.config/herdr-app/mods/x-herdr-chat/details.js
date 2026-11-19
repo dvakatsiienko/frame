@@ -2,7 +2,6 @@
 // model owns (`Delivery`); a reply prints its time alone
 
 import { clockOf } from './relay.js';
-import { SLASH_WAITS } from './send.js';
 
 const MONTHS = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
 
@@ -17,19 +16,14 @@ const whenOf = (at, now) => {
 };
 
 /**
- * @param {{ at: string | null, delivery: import('./row-model.js').Delivery | null, text?: string }} row
+ * @param {{ at: string | null, delivery: import('./row-model.js').Delivery | null }} row
  * @param {number} now
- * @returns {string | null} «read 15:04», «sent 15:10», a reply's «15:04»; null with no stamp. a / command Claude Code
- *   still holds adds that it runs after this turn: it never joins one
+ * @returns {string | null} «read 15:04», «sent 15:10», a reply's «15:04»; null with no stamp
  */
-export function messageDetails({ at, delivery, text }, now) {
+export function messageDetails({ at, delivery }, now) {
     if (delivery) {
         const when = whenOf(delivery.at, now);
-        const isSlashHeld = delivery.state === 'sent' && text?.startsWith('/');
-        return (
-            when &&
-            `${delivery.state} ${when}${isSlashHeld ? ` · ${SLASH_WAITS}` : ''}`
-        );
+        return when && `${delivery.state} ${when}`;
     }
     return at ? whenOf(at, now) : null;
 }

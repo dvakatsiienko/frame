@@ -27,8 +27,8 @@ describe('a row prints one state and its own time (FRM-594)', () => {
         );
     });
 
-    // dima's 18 Nov 23:31 shot: «/clio:halt wire+» sat under a message sent after it
-    test('a / command still held says it runs after this turn; read, it says only that', () => {
+    // dima, 19 Nov 17:28: «can you remove this?»
+    test('a / command prints its state and time like any message', () => {
         const slash = (state: 'sent' | 'read') => ({
             ...mine(state, '2026-11-13T13:10:00Z'),
             text: '/clio:halt wire+',
@@ -36,7 +36,7 @@ describe('a row prints one state and its own time (FRM-594)', () => {
         expect([
             messageDetails(slash('sent'), now),
             messageDetails(slash('read'), now),
-        ]).toEqual(['sent 15:10 · runs after this turn', 'read 15:10']);
+        ]).toEqual(['sent 15:10', 'read 15:10']);
     });
 
     test('a time from an earlier day carries its date', () => {

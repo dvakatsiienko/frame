@@ -66,21 +66,3 @@ export const sendBlocked = (address, typingInto) =>
     typingInto.has(address)
         ? 'A switch is typing into this thread: send again in a moment'
         : null;
-
-// a slash command never joins a running turn: Claude Code queues it until the turn ends
-export const SLASH_WAITS = 'runs after this turn';
-
-/**
- * the note under the quill once a message went: a / command sent while the thread is in a turn (working, or blocked on
- * an ask) says it waits; an idle thread runs it now; plain words keep the note their send gave
- * @param {string} message @param {string | null} note @param {boolean} isInTurn
- * @returns {string | null}
- */
-export const sentNote = (message, note, isInTurn) =>
-    message.startsWith('/') && isInTurn ? `a / command ${SLASH_WAITS}` : note;
-
-/**
- * whether a thread is in a turn by herdr's status: working, or blocked on an ask mid-turn; a / command waits for its end
- * @param {string | null | undefined} status
- */
-export const inTurn = (status) => status === 'working' || status === 'blocked';
