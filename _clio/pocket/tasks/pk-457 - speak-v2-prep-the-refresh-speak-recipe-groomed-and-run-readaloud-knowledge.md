@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T17:13:00Z'
+updated_date: '2026-11-19T17:34:00Z'
 labels:
   - s
   - clio-wing-1
@@ -73,4 +73,9 @@ PK-457:W41 (2026-11-19 19:01, dima): i still have two fable resets; for those re
 PK-457:W42 (2026-11-19 19:08, dima): set proper habits so you prefer sonnet 5.5 on high for the stray lane, because today main clio summoned the stray with opus 5.5 medium.
 PK-457:W43 (2026-11-19 19:08, dima): the effort changes feel right; they could be made better, but they will use more of my inference. i want the numbers that confirm it is worth it: a precise measurement of how expensive it was for me and how much better everything was solved, ideally as weekly usage %. my plan is $200 now; after it ends i will most likely move to $100.
 PK-457:W44 (2026-11-19 19:13, dima): let's measure for 7 days: a first round as a checkpoint where we see the numbers, then another 7 days, another read, then the verdict.
+
+19:34 designer refresh, his 19:33 drop, folded:
+PK-457:W45 (2026-11-19 19:33, dima): the designer refresh: the refresh-crew-designer recipe was made long ago, before we stabilized our recipe spec, and as far as i remember it ran only once. let's do it now; the designer is probably simpler, i don't have many new wishes about it.
+PK-457:W46 (2026-11-19 19:33, dima): i just want to know how fable 5.2 is better at designing than fable 5.1 was, which effort is best for fable 5.2 as a designer, and how much better or worse fable 5.2 and opus 5.5 now are as designers.
+PK-457:W47 (2026-11-19 19:33, dima): plus everything else the designer recipe describes. the recipe is old too, made before the recipe spec existed, so let's reshape it and groom it via /clio:shape-recipe.
 <!-- SECTION:NOTES:END -->
