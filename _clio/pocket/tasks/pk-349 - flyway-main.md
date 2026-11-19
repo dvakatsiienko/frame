@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T12:00:00Z'
+updated_date: '2026-11-19T12:26:00Z'
 labels:
   - s
   - clio-main
@@ -1133,4 +1133,6 @@ PK-349:W1205 (2026-11-19 13:33, dima): wing 1 later when i say.
 PK-349:W1206 (2026-11-19 13:33, dima): you today - all tails should be solved and new ones not created - solve in place.
 
 done 2026-11-19 14:00: f45 keep/verify-pr-153: 7 vm-go-test fixes never landed; a stray chore rebases, tests, lands them (his o3, 23:35)
+
+PK-349:W1215 (2026-11-19 14:21, dima): numbers are good, drop reminder.
 <!-- SECTION:NOTES:END -->
