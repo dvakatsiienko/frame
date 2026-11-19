@@ -316,7 +316,7 @@ const SCENARIOS: Record<string, Scenario> = {
         },
         fire: async ($, w) => {
             const r = await $.tool.call({
-                message: 'round 1 on ccccccc',
+                message: 'round 3 on ccccccc',
                 to: '⚡ 🔎 sixth sense: x',
                 tool: 'SendMessage',
             } as never);

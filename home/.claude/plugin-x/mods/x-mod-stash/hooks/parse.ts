@@ -351,14 +351,15 @@ export function roundOf(message: string) {
 // the chunk a round's first line names, «round 3 on <sha> (FRM-638 slice 5, …)»: the cap is per chunk, and x's record can
 // trail a lane's chunks (herdr lane 2's slices 4 and 5 counted as one under FRM-625). a ticket counts paired with its
 // slice or in the lead, never one the line only mentions («fixes the FRM-617 regression»); a part it leaves out falls to
-// the record, a lone slice to the lane's key of that slice
+// the record, a lone slice to the lane's key of that slice. a lettered slice («6b») is a chunk of its own: 18 Nov's
+// «slice 6b» and «slice 12c» missed the digits-only pattern and ran on under the record's ticket to a false «round 6»
 export function roundChunkOf(message: string) {
     const line = message.trimStart().split('\n', 1)[0] ?? '';
-    const paired = line.match(/\b((?:FRM|BYT)-\d+)\s+slice\s+0*(\d+)\b/i);
-    if (paired) return { slice: paired[2], ticket: paired[1] };
+    const paired = line.match(/\b((?:FRM|BYT)-\d+)\s+slice\s+0*(\d+[a-z]?)\b/i);
+    if (paired) return { slice: paired[2]?.toLowerCase(), ticket: paired[1] };
     const lead = line.match(LEAD_HEAD)?.[0] ?? '';
     return {
-        slice: line.match(/\bslice\s+0*(\d+)\b/i)?.[1],
+        slice: line.match(/\bslice\s+0*(\d+[a-z]?)\b/i)?.[1]?.toLowerCase(),
         ticket: ticketOf(lead),
     };
 }

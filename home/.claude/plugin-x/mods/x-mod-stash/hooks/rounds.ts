@@ -60,9 +60,11 @@ export function roundTaken(
         )
     )
         return undefined;
-    // a lane may open past round 1, and a number sent is never read back as less; a round never seen reads as severe
-    const count = Math.max(round.n, kept.count + 1);
-    const clean = (kept.clean ?? 0) + (isClean ? 1 : 0);
+    // a round 1 opens a new chunk on its key, so a count left from before starts over (the herdr lane's 8 of 18 Nov);
+    // past it a lane may open past round 1, and a number sent is never read back as less
+    const was: Omit<LaneRounds, 'shas'> = round.n === 1 ? { count: 0 } : kept;
+    const count = Math.max(round.n, was.count + 1);
+    const clean = (was.clean ?? 0) + (isClean ? 1 : 0);
     return {
         at,
         ...(clean ? { clean } : {}),

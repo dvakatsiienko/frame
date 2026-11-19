@@ -3758,7 +3758,7 @@ test('no round is written to the private store', async ($, on) => {
 const sendRounds = async ($: Engine, n: number) => {
     const out = [];
     for (let i = 0; i < n; i++)
-        out.push(await send($, ROUND_SENSE, `round 1 on abcdef${i}`));
+        out.push(await send($, ROUND_SENSE, `round ${i + 1} on abcdef${i}`));
     return out;
 };
 
@@ -3900,6 +3900,26 @@ test('a lone slice joins the key a fuller line gave it, and a ticket the line on
             shas: ['a1a1a1a', 'b2b2b2b'],
         },
     });
+});
+
+// FRM-656 exit 2: 18 Nov's herdr lane read «round 6» over three chunks each clean at round 1
+test('three chunks each clean at round 1 keep three keys at count 1 and tell no one', async ($, on) => {
+    const w = roundWorld(on, { record: { ticket: 'FRM-648' } });
+    await start($);
+    const r = [];
+    for (const line of [
+        'round 1 on 1dc7e6cb (FRM-638 slice 6b) · P0/P1: 0',
+        'round 1 on adb1fbef (FRM-638 slice 12c) · P0/P1: 0',
+        'round 1 on b89b8bea',
+    ])
+        r.push(await send($, ROUND_SENSE, line));
+    expect([
+        Object.values(roundsIn(w.files)).map(
+            (k) => (k as { count: number }).count,
+        ),
+        r.flatMap(roundLines).filter((l) => l.includes('cap')),
+        w.told,
+    ]).toEqual([[1, 1, 1], [], []]);
 });
 
 test('a round file that does not parse moves aside and the count starts over', async ($, on) => {
@@ -4086,7 +4106,7 @@ for (const [shape, old] of [
         const w = roundWorld(on);
         w.store.set(LANE_KEY, old);
         await start($);
-        await send($, ROUND_SENSE, 'round 1 on ccccccc');
+        await send($, ROUND_SENSE, 'round 3 on ccccccc');
         expect([kept(w), w.store.get(LANE_KEY)]).toEqual([
             { count: 3, shas: ['aaaaaaa', 'bbbbbbb', 'ccccccc'] },
             old,
@@ -4331,7 +4351,7 @@ test('the past-the-cap line still fires across a compact and a reload, read from
         trigger: 'auto',
     } as never);
     w.store.clear();
-    const r = await send($, ROUND_SENSE, 'round 1 on ddddddd');
+    const r = await send($, ROUND_SENSE, 'round 4 on ddddddd');
     expect([roundLines(r).join(''), w.told.length]).toEqual([
         expect.stringContaining('the coordinator has the count'),
         1,
