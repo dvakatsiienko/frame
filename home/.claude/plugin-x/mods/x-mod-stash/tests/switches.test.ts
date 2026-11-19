@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-import { PARTS } from '../hooks/register.tsx';
+import { PARTS } from '../hooks/settings-store.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 // a 🎛️ switch is the whole feature (mods/AGENTS.md § the rules): every registered part either runs its scenario here —

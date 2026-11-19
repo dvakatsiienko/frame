@@ -45,7 +45,7 @@ test('a switch writes into a store with no shown yet', () => {
 
 test('the switch list reads the keys of the real parts list', () => {
     const source = readFileSync(
-        new URL('./x-mod-stash/hooks/register.tsx', import.meta.url),
+        new URL('./x-mod-stash/hooks/settings-store.ts', import.meta.url),
         'utf8',
     );
     expect(partKeysOf(source)).toContain('stash.pace-watch');

@@ -265,7 +265,10 @@ function main([key, value, id]: string[]) {
     if (key === 'part') {
         const parts = partKeysOf(
             readFileSync(
-                new URL('./x-mod-stash/hooks/register.tsx', import.meta.url),
+                new URL(
+                    './x-mod-stash/hooks/settings-store.ts',
+                    import.meta.url,
+                ),
                 'utf8',
             ),
         );
