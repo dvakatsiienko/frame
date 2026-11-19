@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 const HOOKS = join(import.meta.dirname, 'x-mod-stash/hooks');
 const OWNERS = {
     'ask-counter': 'register.tsx',
-    'cc-usage-window.json': 'register.tsx',
+    'cc-usage-window.json': 'usage.ts',
     'fleet.json': 'register.tsx',
     'herdr-joins': 'register.tsx',
     'herdr-state': 'register.tsx',

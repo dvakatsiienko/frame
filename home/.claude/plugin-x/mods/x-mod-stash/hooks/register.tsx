@@ -15,7 +15,6 @@ import type {
     StashEntry,
     StashField,
     StashLane,
-    StashMeter,
     StashOrbit,
     StashPlan,
     StashQuiet,
@@ -47,7 +46,6 @@ import {
     markOf,
     meterSvg,
     statusOf,
-    thresholdOf,
 } from './look.ts';
 import {
     ASSUMED_MAX,
@@ -220,6 +218,16 @@ import {
     turn,
 } from './turn.ts';
 import {
+    CONTEXT,
+    drawFill,
+    drawFillAfterCompact,
+    freshMeter,
+    measureUsage,
+    meterNow,
+    paceMeterOf,
+    setCompactAt,
+} from './usage.ts';
+import {
     STALE_MS,
     bare,
     errorText,
@@ -311,7 +319,6 @@ const OLD_BOARD = 'fleet-board';
 // four homes, 16:20); a tab row inside a pane was proven too, kept as an idea in api-map.md
 const SETTINGS_PANE = 'stash-settings';
 const REPLY = 'reply:';
-const CONTEXT = 'context:';
 // the model and effort of a session's main loop, as its last model request named them
 const MODEL = 'model:';
 // dima at the prompt, typing into a background job, on his phone or the web
@@ -336,8 +343,6 @@ const PING =
 // the waker: one global switch, off by default; when on, a session stopped on the 5h cap gets one resume at the reset
 const WAKER_KEY = 'waker';
 const CAP = { key: 'cap', plugin: 'x-mod-stash' } as const;
-// the band's meters, written on every session.measure
-const METER = { key: 'meter', plugin: 'x-mod-stash' } as const;
 // the 5h cap ends the turn as an API error with this text; the weekly cap and spent credits read otherwise
 // (8 rows in the transcripts, 2026-10-08)
 const CAPPED = /hit your session limit/i;
@@ -4886,30 +4891,6 @@ async function windReady(
 // and a breakdown read inside this hook, still count the messages from before it (probed on 2.1.322, FRM-505)
 const COMPACT_SETTLE_MS = 1000;
 
-// the fill the band and every board draw, undefined drawing none
-async function drawFill($: EngineInterface, fill: number | undefined) {
-    const sid = await currentId($);
-    if (sid)
-        await (fill === undefined
-            ? $.store.delete(CONTEXT + sid)
-            : $.store.set(CONTEXT + sid, fill));
-    const was = (await $.state.get(METER)).value;
-    if (was) await $.state.set(METER, { ...was, context: fill });
-}
-
-// estimated locally from what the window holds now, no request
-async function drawFillAfterCompact($: EngineInterface) {
-    const usage = await $.session
-        .usage({ breakdown: 'summary' })
-        .catch(() => undefined);
-    const tokens = usage?.context.breakdown?.totalTokens;
-    const window = usage?.context.window;
-    await drawFill(
-        $,
-        tokens && window ? Math.round((tokens / window) * 100) : undefined,
-    );
-}
-
 async function windOnCompact($: EngineInterface) {
     const sid = await currentId($);
     const was = sid ? await windOf($, sid) : undefined;
@@ -5541,41 +5522,6 @@ let isPaceSending = false;
 type PaceKept = { resetsAt: number; rung: PaceRung };
 let paceUnsaved: { stored: PaceKept | undefined } | undefined;
 
-// the usage file every session shares, undefined until a turn wrote one
-async function usageFile($: EngineInterface) {
-    const raw = await $.fs
-        .read(`${await $.env.get('HOME')}/.claude/shelf/cc-usage-window.json`)
-        .catch(() => undefined);
-    return raw
-        ? (JSON.parse(raw) as {
-              rate_limits?: {
-                  five_hour?: {
-                      used_percentage?: unknown;
-                      resets_at?: unknown;
-                  } | null;
-              };
-              written_at?: unknown;
-          })
-        : undefined;
-}
-
-async function paceMeterOf($: EngineInterface) {
-    const file = await usageFile($);
-    const five = file?.rate_limits?.five_hour;
-    if (
-        typeof five?.used_percentage !== 'number' ||
-        typeof five.resets_at !== 'number' ||
-        typeof file?.written_at !== 'number'
-    )
-        return undefined;
-    return {
-        now: await $.clock.now(),
-        resetsAt: five.resets_at * 1000,
-        used: five.used_percentage,
-        writtenAt: file.written_at * 1000,
-    };
-}
-
 async function paceNumbers($: EngineInterface) {
     const out = {} as PaceNumbers;
     for (const k of PACE_KEYS) out[k] = await readNumber($, k);
@@ -5813,161 +5759,8 @@ async function seatDefaults($: EngineInterface) {
     }
 }
 
-// the rate-limit mirror every fleet reader takes (clio's boot, the designer), in sline's old shape: seconds, and
-// `null` for a window the response did not report; this mod is its one writer
-async function saveUsage(
-    $: EngineInterface,
-    limits: { kind: string; percentUsed: number; resetsAt?: string }[],
-) {
-    const window = (kind: string) => {
-        const w = limits.find((l) => l.kind === kind);
-        return w
-            ? {
-                  resets_at: w.resetsAt
-                      ? Math.round(Date.parse(w.resetsAt) / 1000)
-                      : null,
-                  used_percentage: w.percentUsed,
-              }
-            : null;
-    };
-    await $.fs.write(
-        `${await $.env.get('HOME')}/.claude/shelf/cc-usage-window.json`,
-        JSON.stringify({
-            rate_limits: {
-                five_hour: window('five_hour'),
-                seven_day: window('seven_day'),
-            },
-            written_at: Math.round((await $.clock.now()) / 1000),
-        }),
-    );
-}
-
-// an idle band stays live: every session shares one 5h window, so the usage file any busy session writes carries its
-// latest reading, and the minute moves the time left; written only when one of the two changed
-async function freshMeter($: EngineInterface) {
-    const was = (await $.state.get(METER)).value ?? {};
-    const window = (await usageFile($))?.rate_limits?.five_hour;
-    const fiveHour =
-        typeof window?.used_percentage === 'number'
-            ? {
-                  resetsAt:
-                      typeof window.resets_at === 'number'
-                          ? window.resets_at * 1000
-                          : undefined,
-                  used: window.used_percentage,
-              }
-            : was.fiveHour;
-    const next = {
-        ...was,
-        fiveHour,
-        minute: Math.floor((await $.clock.now()) / 60_000),
-    };
-    if (JSON.stringify(next) !== JSON.stringify(was))
-        await $.state.set(METER, next);
-}
-
-// the engine's own compaction point as a % of the window, whatever set it: the project's override, or cc's default
-async function compactAtOf($: EngineInterface, window: number) {
-    // the override as cc resolves it for this session: the settings merged for its project (clio's 70 sits in
-    // ~/frame/_clio/.claude/settings.json), then the process env; the engine's breakdown reports its default either way
-    const merged = await $.settings.read().catch(() => undefined);
-    const set =
-        (typeof merged?.env === 'object' && merged.env
-            ? (merged.env as Record<string, unknown>)
-                  .CLAUDE_AUTOCOMPACT_PCT_OVERRIDE
-            : undefined) ??
-        (await $.env.get('CLAUDE_AUTOCOMPACT_PCT_OVERRIDE'));
-    const override = Number(set);
-    if (set !== undefined && Number.isInteger(override) && override > 0)
-        return override;
-    const usage = await $.session
-        .usage({ breakdown: 'summary' })
-        .catch(() => undefined);
-    const tokens = usage?.context.breakdown?.autoCompactThreshold;
-    return tokens && window ? Math.round((tokens / window) * 100) : undefined;
-}
-
-// a typed compaction point: a whole 10–99 goes into the launch dir's .claude settings `env`, keeping every
-// other key; anything else, or a file that is not json, leaves the file alone and says why in one line
-// typing saves each valid value as it lands; a half-typed one («8» on the way to «85») is skipped quietly, and only
-// Enter names a refusal (dima, 23:31)
-async function setCompactAt(
-    $: EngineInterface,
-    text: string,
-    isTyping = false,
-) {
-    const was = (await $.state.get(METER)).value ?? {};
-    const keep = async (note?: string) =>
-        $.state
-            .set(METER, { ...((await $.state.get(METER)).value ?? {}), note })
-            .catch(() => undefined);
-    const typed = thresholdOf(text);
-    if ('refusal' in typed) {
-        // a refused text takes back the saves typing made on the way to it: «10» on the way to «100»
-        const t = text.trim();
-        while (
-            compactTrail.length > 1 &&
-            t.startsWith(String(compactTrail.at(-1)))
-        )
-            compactTrail.pop();
-        const back = compactTrail.at(-1);
-        if (back !== undefined && back !== was.compactAt)
-            await setCompactAt($, String(back), true);
-        if (isTyping) return;
-        compactTrail = [];
-        return keep(typed.refusal);
-    }
-    if (!compactTrail.length && was.compactAt !== undefined)
-        compactTrail.push(was.compactAt);
-    compactTrail = isTyping ? [...compactTrail, typed.value] : [];
-    // the launch dir cc keeps in the registry is the project its settings resolve from; session.start's cwd can be a
-    // later one (clio's read ~/frame while it launched in ~/frame/_clio, 2026-10-09)
-    const launchPid = (await procNow($))?.pid;
-    const launched = launchPid
-        ? await $.fs
-              .read(
-                  `${await $.env.get('HOME')}/.claude/sessions/${launchPid}.json`,
-              )
-              .then((raw) => {
-                  const { cwd } = JSON.parse(raw) as { cwd?: unknown };
-                  return typeof cwd === 'string' && cwd ? cwd : undefined;
-              })
-              .catch(() => undefined)
-        : undefined;
-    const dir = launched ?? identity.projectDir;
-    if (!dir) return keep('no project dir for this session');
-    // a repo top's own settings.local.json outranks every subdir's, its shared settings.json does not (probed
-    // 2026-10-10): the top writes the shared file, so a subdir session (clio in ~/frame/_clio) keeps its own value
-    const root = (await $.session.repo().catch(() => undefined))?.root;
-    const path = `${dir}/.claude/${dir === root ? 'settings.json' : 'settings.local.json'}`;
-    let settings: Record<string, unknown> = {};
-    if (await $.fs.exists(path)) {
-        try {
-            const parsed: unknown = JSON.parse(await $.fs.read(path));
-            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
-                return keep(`${path} is not a json object, left as it is`);
-            settings = parsed as Record<string, unknown>;
-        } catch {
-            return keep(`${path} is not json, left as it is`);
-        }
-    }
-    const env =
-        settings.env && typeof settings.env === 'object'
-            ? (settings.env as Record<string, unknown>)
-            : {};
-    await $.fs.write(
-        path,
-        `${JSON.stringify({ ...settings, env: { ...env, CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: String(typed.value) } }, null, 2)}\n`,
-    );
-    await $.state
-        .set(METER, { ...was, compactAt: typed.value, note: undefined })
-        .catch(() => undefined);
-}
-
 let published = '';
 let boardPublished = '';
-// the compaction field's typing run: the value before it, then each value typing saved; Enter ends the run
-let compactTrail: number[] = [];
 // writes the view to $.state when it changed; every site that reads it while drawing redraws
 async function publish($: EngineInterface) {
     const isBoardOpen = await isOpen($);
@@ -7284,30 +7077,7 @@ export const register: Register = (on) => {
                 await armWake($);
             }
         }
-        const sid = await currentId($);
-        if (sid && e.context.percent !== undefined)
-            await $.store
-                .set(CONTEXT + sid, e.context.percent)
-                .catch(() => undefined);
-        if (e.changed.includes('rateLimits') && e.rateLimits.length)
-            await saveUsage($, e.rateLimits).catch((err) =>
-                $.ui.log(
-                    `x-mod-stash: usage file not written: ${errorText(err)}`,
-                ),
-            );
-        const was = (await $.state.get(METER)).value;
-        const meter: StashMeter = {
-            compactAt: e.changed.includes('context')
-                ? ((await compactAtOf($, e.context.window)) ?? was?.compactAt)
-                : was?.compactAt,
-            context: e.context.percent,
-            fiveHour: w ? { resetsAt, used: w.percentUsed } : was?.fiveHour,
-            minute: was?.minute,
-            note: was?.note,
-        };
-        // a write redraws the band, so only a reading that moved is written
-        if (JSON.stringify(meter) !== JSON.stringify(was))
-            await $.state.set(METER, meter).catch(() => undefined);
+        await measureUsage($, e);
         return next(e);
     });
 
@@ -7523,7 +7293,7 @@ export const register: Register = (on) => {
                     await (async () => {
                         const ui = $.ui.resolve(e);
                         const { Box, Text, Button } = ui;
-                        const meter = (await $.state.get(METER)).value;
+                        const meter = await meterNow($);
                         // mobile draws no Input
                         const Input = 'Input' in ui ? ui.Input : undefined;
                         // the knobs: a switch saves on its press, a number on each keystroke that makes a valid value
@@ -9034,8 +8804,7 @@ export const register: Register = (on) => {
                     // the band's ctx ramp needs this session's compaction point, which the rows share; unknown, it falls back to 80, the
                     // old red line, so a full session never reads calm
                     const compactAt =
-                        (await $.state.get(METER)).value?.compactAt ??
-                        CTX_FALLBACK_AT;
+                        (await meterNow($))?.compactAt ?? CTX_FALLBACK_AT;
                     const PillSvg =
                         e.surface === 'desktop' && 'Svg' in ui
                             ? ui.Svg
@@ -9873,7 +9642,7 @@ export const register: Register = (on) => {
                     });
 
                     // the meters: two short bars in the row, each ending in its %; the readings sit beside them
-                    const meter = (await $.state.get(METER)).value;
+                    const meter = await meterNow($);
                     const now = await $.clock.now();
                     const Svg =
                         e.surface === 'desktop'
