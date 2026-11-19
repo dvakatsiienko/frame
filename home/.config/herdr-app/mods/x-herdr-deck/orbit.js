@@ -4,7 +4,21 @@
 
 /** @typedef {{ id: string | null, text: string, pick: string | null, link: string | null, mark: string | null, isGated: boolean, isLocked: boolean }} Ask */
 /** @typedef {ReturnType<typeof import('./press.js').pressState>} PressState */
-/** @typedef {{ id: string, verdict: 'tick' | 'replay' | 'untick', steer?: string, text?: string, at: number }} Press */
+/** @typedef {{ id: string, verdict: 'tick' | 'replay' | 'untick', steer?: string, text?: string, pick?: string, at: number }} Press */
+
+/**
+ * one press line for an ask: its text, and its pick when it has one, so the stash acts on the pick he ticked (FRM-661)
+ * @param {Ask & { id: string }} ask @param {Press['verdict']} verdict @param {number} at @param {string} [steer]
+ * @returns {Press}
+ */
+export const pressOf = (ask, verdict, at, steer) => ({
+    at,
+    id: ask.id,
+    text: ask.text,
+    verdict,
+    ...(ask.pick ? { pick: ask.pick } : {}),
+    ...(steer ? { steer } : {}),
+});
 
 /**
  * the open asks in a session's state file (`~/.claude/shelf/herdr-state/<sid>.json`, which x-mod-stash writes); an
@@ -371,15 +385,13 @@ export async function tickAll(io, dir, rows, sid, stateOf, steerOf, at) {
     if (!row || takes.length === 0) return [];
     await rewrite(io, `${dir}/${sid}.jsonl`, (text) =>
         takes.reduce((was, a) => {
-            const steer = steerOf(/** @type {string} */ (a.id))?.trim();
-            /** @type {Press} */
-            const press = {
+            const id = /** @type {string} */ (a.id);
+            const press = pressOf(
+                { ...a, id },
+                'tick',
                 at,
-                id: /** @type {string} */ (a.id),
-                text: a.text,
-                verdict: 'tick',
-                ...(steer ? { steer } : {}),
-            };
+                steerOf(id)?.trim(),
+            );
             return withPress(was, press, row.taken);
         }, text ?? ''),
     );

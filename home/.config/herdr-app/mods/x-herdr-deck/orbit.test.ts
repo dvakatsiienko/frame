@@ -634,11 +634,21 @@ describe("«tick all» ticks one thread's open asks (FRM-589)", () => {
             ['o1', 'o2', 'o3'].map((id, i) => ({
                 at: 7 + i,
                 id,
+                pick: 'yes',
                 text: `ask ${id}`,
                 verdict: 'tick',
             })),
         );
         expect(files['t/B.jsonl']).toBe('b\n');
+    });
+
+    test('an ask with no pick writes its text alone (FRM-661)', async () => {
+        const files: Record<string, string | null> = {};
+        const rows = [
+            { asks: [{ ...open('o1'), pick: null }], sid: 'A', taken: 0 },
+        ];
+        await tickAll(shelf(files), 't', rows, 'A', allOpen, none, 1);
+        expect(lines(files['t/A.jsonl'])[0]).not.toHaveProperty('pick');
     });
 
     test('a gated ask stays open: only the two others are ticked', async () => {

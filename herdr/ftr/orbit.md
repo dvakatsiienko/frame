@@ -16,7 +16,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then the deck reads «🪐 **o36**: <text>», under a head «🪐 orbit: N asks» (dima, 2026-11-16 18:26: «quiter»), each asker's name bold at the name size (shot 1929)
   - and the asker's suggestion sits under the ask in its own words, with no «pick:» before it (dima, 2026-11-16 20:17: «remove the pick: part everywhere. just print what you suggest: yes: …»)
 - ⬜ a plain ask ticks from the deck
-  - makes: one press line in `~/.claude/shelf/orbit-ticks/<session id>.jsonl`
+  - makes: one press line in `~/.claude/shelf/orbit-ticks/<session id>.jsonl`, carrying the ask's text and, when it has one, its pick (FRM-661)
   - given a thread has an open ask
   - when dima clicks 🛎️ tick
   - then the thread's next turn reads it as ticked from herdr, and the ask leaves the deck

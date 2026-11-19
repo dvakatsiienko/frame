@@ -40,6 +40,7 @@ import {
     nextThreads,
     phasesOf,
     pressLabel,
+    pressOf,
     psStartArgs,
     runningThreads,
     savePress,
@@ -709,13 +710,7 @@ export default class Deck extends View {
                 savePress(
                     { read: readTextFile, write: writeTextFile },
                     `${TICKS}/${s.sid}.jsonl`,
-                    {
-                        at,
-                        id,
-                        text: ask.text,
-                        verdict,
-                        ...(steer ? { steer } : {}),
-                    },
+                    pressOf({ ...ask, id }, verdict, at, steer),
                     s.taken,
                 ),
             );
@@ -842,7 +837,7 @@ export default class Deck extends View {
                     : savePress(
                           io,
                           path,
-                          { at, id, text: ask.text, verdict: 'untick' },
+                          pressOf({ ...ask, id }, 'untick', at),
                           s.taken,
                       ),
             );
