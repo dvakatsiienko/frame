@@ -53,11 +53,15 @@ export function wishLines(item: string, homes: string[] = []) {
 
 // a wish joining an old block that restarts at W1 hides its lines behind the first of each number
 export function repeatedIds(item: string, homes: string[] = []) {
-    const ids = [
-        ...item.matchAll(/^\s*[-*]?\s*(?:((?:PK|FRM|BYT)-\d+):)?(W\d+)\b/gm),
+    // a twin under the same stamp is one prompt recorded twice (a typo'd copy kept by append-only notes), not two wishes
+    const entries = [
+        ...item.matchAll(
+            /^\s*[-*]?\s*(?:((?:PK|FRM|BYT)-\d+):)?(W\d+)\b(?:\s*(\([^)]*\)))?/gm,
+        ),
     ]
         .filter((m) => !isForeign(m[1], homes))
-        .map((m) => m[2]);
+        .map((m) => `${m[2]} ${m[3] ?? `#${m.index}`}`);
+    const ids = [...new Set(entries)].map((entry) => entry.split(' ')[0]);
     return [...new Set(ids.filter((id, i) => ids.indexOf(id) !== i))];
 }
 

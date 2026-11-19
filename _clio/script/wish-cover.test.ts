@@ -85,6 +85,13 @@ describe('repeatedIds', () => {
     test('a block numbered once passes', () => {
         expect(repeatedIds(item)).toEqual([]);
     });
+
+    test('one prompt recorded twice under its own stamp is one wish', () => {
+        const stamp = 'PK-3:W1 (2026-11-07 16:14, dima)';
+        expect(repeatedIds(`${stamp}: their ask\n${stamp}: thier ask`)).toEqual(
+            [],
+        );
+    });
 });
 
 describe('wish-cover', () => {
