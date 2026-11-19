@@ -201,8 +201,19 @@ export function fileAt(rows, key) {
 const RUNS =
     /(?:\.(?:app|command|terminal|tool|workflow|pkg|mpkg|scpt|sh)|\/[^/.]+)$/i;
 
-/** the `open` arguments for a file row's click: a file that would run is revealed in Finder @param {string} path */
-export const openArgs = (path) => (RUNS.test(path) ? ['-R', path] : [path]);
+const AUDIO = /\.(?:mp3|m4a|aac|wav|aiff?|flac|ogg|opus)$/i;
+
+/**
+ * the `open` arguments for a file row's click: a file that would run is revealed in Finder, audio opens in the app
+ * his settings name (`chatter.audio.app`; null: the system's choice)
+ * @param {string} path @param {string | null} [audioApp]
+ */
+export const openArgs = (path, audioApp = null) =>
+    RUNS.test(path)
+        ? ['-R', path]
+        : audioApp && AUDIO.test(path)
+          ? ['-a', audioApp, path]
+          : [path];
 
 /** the row a saved reading place names: a file row's or a tool call's place is found through its own row @param {string} id */
 export const replyIdOf = (id) => id.replace(/#(?:file|call)-\d+$/, '');

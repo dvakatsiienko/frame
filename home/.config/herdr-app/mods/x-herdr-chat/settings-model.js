@@ -34,7 +34,7 @@ export const pages = [
                 ],
             },
             {
-                heading: 'pictures',
+                heading: 'opening files',
                 rows: [
                     {
                         // a boolean in the file, as the old chat reads it: true is CleanShot
@@ -49,6 +49,24 @@ export const pages = [
                         key: 'chatter.pictures.cleanshot',
                         title: 'open pictures in',
                         why: 'the app a picture’s open button starts: CleanShot X’s annotate, or Preview',
+                    },
+                    {
+                        control: {
+                            kind: 'choice',
+                            options: [
+                                { label: 'iina', value: 'IINA' },
+                                {
+                                    label: 'quicktime',
+                                    value: 'QuickTime Player',
+                                },
+                                { label: 'vlc', value: 'VLC' },
+                                { label: 'macos default', value: '' },
+                            ],
+                        },
+                        default: 'IINA',
+                        key: 'chatter.audio.app',
+                        title: 'open audio in',
+                        why: 'the app an mp3, m4a or wav in the chat opens in; macos default is Music',
                     },
                 ],
             },

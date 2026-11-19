@@ -123,6 +123,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
 - ⬜ a reply's files open in one click from rows under it (FRM-587)
   - given a reply names a file by a bare path, a `~` path, a quoted or backslash-escaped path, a `file://` link or a markdown link to one
   - then each file gets one row under the reply, «🖼️ <name>» for a picture and «📂 <name>» for any other file, its whole path on hover, and a click opens it in its app (a png in Preview, a folder in Finder)
+  - 🧭 and a click on an audio file (mp3, m4a, wav, flac, …) opens it in the app «open audio in» names in x-herdr-settings › general: IINA by default, QuickTime, VLC or the macOS default (dima, 19 Nov 17:53: «they open in apple music»)
   - and a path inside a fenced block gets no row, a sentence's period or comma is not part of the path, and the same file twice is one row
   - and a reply's pictures draw together as squares under it, the way his own do, and a click opens them in the viewer (FRM-638 slice 5, dima 16:59)
   - decision: each file is its own row in the list, opened through the list's item click: a handler inside a row blanked the whole list; a link click inside the text waits on [herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894)

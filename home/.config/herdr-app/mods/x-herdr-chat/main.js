@@ -137,6 +137,8 @@ export default class Chat extends View {
     claudeSettings = null;
     /** a picture's open button starts CleanShot's annotate, else Preview (`chatter.pictures.cleanshot`) */
     isCleanShot = true;
+    /** the app a file row's audio opens in (`chatter.audio.app`); null: the system's choice @type {string | null} */
+    audioApp = 'IINA';
     /** x-herdr-settings, when this copy draws it @type {{ render: () => any } | null} */
     settingsWindow = null;
     isCmdHeld = false;
@@ -186,6 +188,7 @@ export default class Chat extends View {
     });
     /** the list on screen and his reading place in it */
     list = createMessageList({
+        audioApp: () => this.audioApp,
         file: () => this.feed.file(),
         flash: (note, cx) => this.flashNote(note, cx),
         heights: this.heights,
@@ -522,6 +525,8 @@ export default class Chat extends View {
     applySettings(values) {
         this.sendPath.applySettings(values);
         this.isCleanShot = values['chatter.pictures.cleanshot'] === true;
+        const audio = values['chatter.audio.app'];
+        this.audioApp = typeof audio === 'string' && audio ? audio : null;
         this.band.applySettings(values);
         this.isShowMore = values['chatter.showMore'] === true;
     }

@@ -210,6 +210,16 @@ describe('a file that would run is shown in Finder, never opened (wisphunter 14:
         expect(openArgs('/tmp/a.png')).toEqual(['/tmp/a.png']);
         expect(openArgs('/tmp/notes.md')).toEqual(['/tmp/notes.md']);
     });
+
+    // dima, 19 Nov 17:53: «they open in apple music»
+    test.each(['/tmp/A.mp3', '/tmp/b.M4A', '/tmp/c.wav', '/tmp/d.flac'])(
+        '%s opens in the audio app his settings name',
+        (path) => expect(openArgs(path, 'IINA')).toEqual(['-a', 'IINA', path]),
+    );
+
+    test('audio with no app named opens in the system’s choice', () => {
+        expect(openArgs('/tmp/A.mp3', null)).toEqual(['/tmp/A.mp3']);
+    });
 });
 
 describe('a reading place saved on a file row is found by its reply (wisphunter 14:30)', () => {

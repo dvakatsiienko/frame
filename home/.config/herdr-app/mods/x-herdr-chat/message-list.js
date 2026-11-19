@@ -35,6 +35,7 @@ export const placeKey = (file) => `place:${file}`;
 
 /**
  * @typedef {object} MessageListDeps
+ * @property {() => string | null} audioApp the app his settings open audio in, null: the system's choice
  * @property {() => string | null} file the shown thread's transcript
  * @property {(note: string, cx: Context) => void} flash a note under the quill that leaves on its own
  * @property {ReturnType<typeof import('./heights.js').createHeights>} heights
@@ -160,7 +161,9 @@ export function createMessageList(deps) {
                 else if (press?.kind === 'pictures')
                     deps.pictures.show(press.files, press.at, cx);
                 else if (press?.kind === 'file')
-                    exec('open', openArgs(press.path)).catch(() => {});
+                    exec('open', openArgs(press.path, deps.audioApp())).catch(
+                        () => {},
+                    );
             })
             .size_full();
         return div()
