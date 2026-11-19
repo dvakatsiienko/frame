@@ -6,8 +6,6 @@
 import { mkdir, readdir, writeFile } from 'fs/promises';
 import {
     TextView,
-    Textarea,
-    TextareaState,
     VirtualListScrollHandle,
     h_flex,
     v_flex,
@@ -32,8 +30,7 @@ import {
     watchFolder,
 } from 'herdr';
 
-import { fileName, isImagePath, pickFiles } from './attach.js';
-import { createAttachments } from './attachments.js';
+import { fileName } from './attach.js';
 import { STATE_DIR } from './band.js';
 import { createBand } from './band-view.js';
 import { createBlockedPanel } from './blocked-panel.js';
@@ -54,33 +51,23 @@ import { replyFold } from './fold.js';
 import { placeOf } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
-import { enterHoldStep } from './joins.js';
-import { createKeyPress } from './keypress.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { copyText, createMessageMenu, menuPlace } from './menu.js';
 import { createPages } from './pages.js';
 import { createPickers } from './pickers.js';
 import { createPictureViewer } from './picture-viewer.js';
 import { createPlace } from './place.js';
-import { createQuills } from './quill.js';
+import { createQuill } from './quill-view.js';
 import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
-import { addressIn, submitted } from './send.js';
+import { addressIn } from './send.js';
 import { createSendPath } from './send-path.js';
 import { SENT_DIR, createSentPictures } from './sent-pictures.js';
 import { readSettings, settingsDir } from './settings-io.js';
 import { createSettingsWindow } from './settings-window.js';
-import {
-    deletePreviewCopies,
-    loadShots,
-    readClipboard,
-    saveFileShot,
-    saveShots,
-    saveSquareThumb,
-} from './shots.js';
+import { saveSquareThumb } from './shots.js';
 import { asksActedOn, isShownIn, pidFor, shownThread } from './shown.js';
 import { loadableSkills } from './skills.js';
-import { createSlashMenu, listedSkills, menuNames } from './slash.js';
 import { sidOf, transcriptPath } from './thread.js';
 import { tint } from './tint.js';
 import {
@@ -157,13 +144,8 @@ const SHOWN_LOOK_MS = 2000;
 // the operator override changes with no event herdr watches, and a deck that stopped publishing changes nothing: the
 // band's facts that age are read again this often
 const BAND_AGE_MS = 5000;
-const SEND_SIZE = 28;
-// a picture waiting over the quill, and how long a paste's «nothing there» note stays
-const THUMB_SIZE = 56;
 // a picture his message sent or a reply names, a square under the words
 const SENT_THUMB = 96;
-const PASTE_NOTE_MS = 6000;
-const NO_IMAGE = 'No image on the clipboard';
 // the right-click menu's size, one row; its note under the quill once a message is copied
 const MENU_SIZE = { h: 34, w: 200 };
 // a blocked thread's screen is read this often while it asks, so the question card follows its cursor
@@ -174,19 +156,6 @@ const SETTINGS_RETRY_MS = 10 * 1000;
 const CHAR_PX = 7.5;
 const COPIED_NOTE = 'Message copied';
 const COPIED_NOTE_MS = 1500;
-// each save waits for the one before it, so an older store never lands last
-let shotsSaved = Promise.resolve();
-/** @type {import('./attachments.js').AttachmentsIo} */
-const ATTACH_IO = {
-    deleteCopies: (rels) => {
-        deletePreviewCopies(rels).catch(() => {});
-    },
-    makePreview: saveFileShot,
-    now: Date.now,
-    save: (store) => {
-        shotsSaved = shotsSaved.then(() => saveShots(store)).catch(() => {});
-    },
-};
 /** @type {import('./sent-pictures.js').SentIo} */
 const SENT_IO = {
     get home() {
@@ -204,7 +173,6 @@ const SENT_IO = {
         }
     },
 };
-const QUILL_ENTER = 'x_herdr_chat_quill_enter';
 /** @type {import('./skills.js').SkillFs} */
 const SKILL_FS = {
     list: (dir) => readdir(dir).catch(() => []),
@@ -309,17 +277,16 @@ export default class Chat extends View {
     error = null;
     /** the open thread's transcript has been read once */
     isRead = false;
-    /** the quill: herdr draws its text itself, so a key typed in it draws nothing of ours @type {import('gpui-base').TextareaState | null} */
-    box = null;
-    /** every thread's quill and its mark, the one owner of what the box shows */
-    quills = createQuills(localStorage, (text) => {
-        // a write of ours (a send, a taken mark, a fill) is an edit the / menu reads too: a sent «/co» closes it
-        this.slashMenu?.typed(this.typedNow ?? '', text);
-        this.typedNow = text;
-        this.typedBefore = text;
+    /** the quill, its drafts, the files waiting over it and its / menu */
+    quill = createQuill({
+        column: () => this.column(),
+        flash: (note, ms, cx) => this.flashNote(note, cx, ms),
+        pickersView: (t) => this.pickers.view(t),
+        say: (note, cx) => this.say(note, cx),
+        sendPath: () => this.sendPath,
+        showPictures: (files, at, cx) => this.pictures.show(files, at, cx),
+        shownFile: () => this.file,
     });
-    /** the files waiting over each thread's quill, by its transcript file; what waited comes back once the store is read */
-    attachments = createAttachments(appHome(), ATTACH_IO, {});
     sent = createSentPictures(SENT_IO);
     /** where a message to the shown thread goes: its herdr address @type {string | null} */
     address = null;
@@ -327,10 +294,10 @@ export default class Chat extends View {
     note = null;
     /** the send path: the magic send's marks, the hold, a send that did not go coming back */
     sendPath = createSendPath({
-        attachments: this.attachments,
+        attachments: this.quill.attachments,
         pushed: (text, at) => this.model.pushed(text, at),
-        quillBox: () => this.box,
-        quills: this.quills,
+        quillBox: () => this.quill.box(),
+        quills: this.quill.quills,
         say: (note, cx) => this.say(note, cx),
         shownAddress: () => this.address,
         shownFile: () => this.file,
@@ -338,11 +305,6 @@ export default class Chat extends View {
     });
     /** the pending wait for a change in the threads' state folder @type {import('herdr').FolderWatch | null} */
     stateWatch = null;
-    /** the quill's text, and its text one change earlier: Enter types its line break before it submits */
-    typedNow = '';
-    /** Enter in the quill, one press at a time: a held key's repeats act once */
-    quillKeys = createKeyPress();
-    typedBefore = '';
     /** one more at each thread opened: a state watch of an earlier opening ends */
     stateTurn = 0;
     /** the band over the quill and the bar under it */
@@ -365,7 +327,7 @@ export default class Chat extends View {
         claudeSettings: () => this.claudeSettings,
         column: () => this.column(),
         hasRows: () => this.model.rows.length > 0,
-        quillBox: () => this.box,
+        quillBox: () => this.quill.box(),
         shownAddress: () => this.address,
         status: () => this.statusNow(),
         typingInto,
@@ -373,7 +335,7 @@ export default class Chat extends View {
     /** the picture viewer over the chat (W33/W35) */
     pictures = createPictureViewer({
         file: () => this.file,
-        focusQuill: () => this.box?.focus(),
+        focusQuill: () => this.quill.focus(),
         isCleanShot: () => this.isCleanShot,
         isCmdHeld: () => this.isCmdHeld,
         room: () => ({
@@ -384,13 +346,11 @@ export default class Chat extends View {
     });
     /** find in the chat (slice 6): the bar and the search the rows mark */
     findBar = createFindBar({
-        focusQuill: () => this.box?.focus(),
+        focusQuill: () => this.quill.focus(),
         isAllLoaded: () => this.pages?.isStart() ?? false,
         rows: () => this.shownRows,
         show: (id) => this.at.restore(id, 0),
     });
-    /** the / menu over the quill (slice 6) */
-    slashMenu = createSlashMenu();
     /** the right-click menu on a message (slice 7) */
     messageMenu = createMessageMenu();
     /** a blocked thread's ask with the keys that answer it, over the quill */
@@ -404,10 +364,6 @@ export default class Chat extends View {
     openReplies = new Set();
     /** the rows of the turn he reads now, which never fold @type {Set<string>} */
     currentTurn = new Set();
-    /** the thread's skills, from its transcript's listing @type {Map<string, string>} */
-    skills = new Map();
-    /** the skills of the plugins its folder enables @type {Map<string, string>} */
-    pluginSkills = new Map();
 
     /** wakes the loop that opens the thread shown: a draw starts no work itself */
     wake = () => {};
@@ -442,52 +398,7 @@ export default class Chat extends View {
                 );
             }
         });
-        const box = TextareaState.new({});
-        box.set_auto_grow(1, 8);
-        box.on('change', (_event, cx) => {
-            const now = box.value();
-            // a change told twice is one change
-            if (now !== this.typedNow) {
-                this.typedBefore = this.typedNow;
-                this.typedNow = now;
-            }
-            this.quills.apply(this.file, { text: now, type: 'typed' });
-            this.sendPath.typedUnderMark(box, cx);
-            this.slashMenu.typed(this.typedBefore ?? '', now);
-            cx.notify();
-        });
-        box.on('submit', (event, cx) => {
-            const { act, caret, text } = submitted(
-                box.value(),
-                [this.typedNow, this.typedBefore],
-                event,
-                Boolean(
-                    this.file && this.sendPath.waitingPaths(this.file).length,
-                ),
-            );
-            if (text === null) return;
-            // Enter's line break leaves, his caret stays; the words stay until they are sent or a turn takes them
-            this.quills.apply(this.file, { text, type: 'typed' });
-            box.set_selected_range({ end: caret, start: caret });
-            // ⌘Enter reaches here, Enter is the quill's own action (QUILL_ENTER); a held key's repeats act once
-            if (this.quillKeys.pressed() === 'repeat') return;
-            if (act === 'push') this.sendPath.push(box, cx);
-            else if (act === 'click') this.sendPath.click(box, cx);
-        });
-        // a paste with no text: the clipboard's image saved as a png, or files copied in Finder by their paths (FRM-613)
-        box.on('paste_other', (_event, cx) => this.pasteFiles(cx));
-        // one owner from the start: what loads joins what he added meanwhile
-        cx.spawn(async (cx) => {
-            const made = this.attachments.restore(await loadShots());
-            cx.notify();
-            if (await made) cx.notify();
-        });
-        box.on('blur', (_event, cx) => {
-            this.quillKeys.blurred();
-            const event = enterHoldStep(this.sendPath.hold(), 'blur');
-            if (event) this.sendPath.holdStep(box, event, cx);
-        });
-        this.box = box;
+        this.quill.start(cx);
         this.pickers.start(cx);
         this.pictures.start(cx);
         // the open viewer holds the keyboard: ← → move, + − 0 zoom, ⌘C copies, Esc closes
@@ -520,15 +431,6 @@ export default class Chat extends View {
                 keystroke: String(keystroke),
             })),
         );
-        // Enter in the quill is ours before the text box's own (context `Input`): no line break typed, so no scroll to
-        // the caret (dima, 13:14). a binding herdr never reaches leaves Enter to the box's submit, as before
-        cx.bind_keys([
-            {
-                action: QUILL_ENTER,
-                context: 'XChatQuill > Input',
-                keystroke: 'enter',
-            },
-        ]);
         // find: ⌘F opens its bar; in the bar Enter or ↓ steps older, ⇧Enter or ↑ newer, Esc closes
         this.findBar.reset();
         cx.bind_keys([
@@ -670,7 +572,7 @@ export default class Chat extends View {
             _cx.timer.after(0, (later) => this.findBar.open(later));
         if (acts.isFocus && !this.pictures.isOpen())
             _cx.timer.after(50, () => {
-                if (!this.pickers.isOpen()) this.box?.focus();
+                if (!this.pickers.isOpen()) this.quill.focus();
             });
         // the open viewer holds the keyboard: a click on the list or a later focus of the quill never keeps it
         this.pictures.keepKeys(_cx);
@@ -775,7 +677,7 @@ export default class Chat extends View {
                     .text_color(t.muted)
                     .child(this.error ?? this.emptyLine()),
             );
-        if (!this.file || !this.box) return root;
+        if (!this.file || !this.quill.box()) return root;
         if (this.note)
             root.child(
                 div()
@@ -805,7 +707,7 @@ export default class Chat extends View {
                     el.child(this.blocked.view(t)),
                 )
                 .child(this.band.view(drawn.band, t))
-                .child(this.quill(this.box, t))
+                .child(this.quill.view(t) ?? div())
                 .child(this.band.bar(drawn.bar, drawn.band.buttons, t))
                 // find floats over the list, so opening it moves no message (dima, 18:39)
                 .when(this.findBar.find.state.isOpen, (el) =>
@@ -843,304 +745,6 @@ export default class Chat extends View {
     /** the shown thread's status, as herdr reads it */
     statusNow() {
         return agents().find((agent) => agent.address === this.address)?.status;
-    }
-
-    /**
-     * his text box, in the list's column
-     * @param {import('gpui-base').TextareaState} box
-     * @param {Theme} t
-     */
-    quill(box, t) {
-        return (
-            h_flex()
-                .id('chat-quill-row')
-                .w_full()
-                .flex_none()
-                .justify_center()
-                .px(18)
-                // opened as a window, a press herdr is not told to keep drags it: only the head row moves it
-                .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
-                .child(
-                    div()
-                        .w_full()
-                        .max_w(this.column())
-                        .relative()
-                        .px(14)
-                        .pt(12)
-                        // the send button sits in the card's bottom right corner, the text keeps clear of it
-                        .pb(SEND_SIZE + 12)
-                        .rounded(12)
-                        .bg(t.background)
-                        .border(1)
-                        .border_color(t.border)
-                        .key_context('XChatQuill')
-                        .on_drop((e, cx) => this.addFiles(e?.paths ?? [], cx))
-                        // Enter runs the send button's hold (FRM-628 W12): a tap joins on its release, a hold fills
-                        // the disc and pushes; its repeats keep the one hold going
-                        .on_action(QUILL_ENTER, (_event, cx) => {
-                            if (this.quillKeys.pressed() === 'act')
-                                this.sendPath.press(box, cx, 'enter');
-                        })
-                        // the box never tells Enter's key-down (FRM-628 round 2 trace): its key-up ends a press
-                        .on_key_up((e, cx) => {
-                            if (e.key !== 'enter') return;
-                            this.quillKeys.released();
-                            const event = enterHoldStep(
-                                this.sendPath.hold(),
-                                'keyUp',
-                            );
-                            if (event) this.sendPath.holdStep(box, event, cx);
-                        })
-                        .on_modifiers_changed((e) => {
-                            if (!e.modifiers.platform)
-                                this.quillKeys.modifiersReleased();
-                        })
-                        .child(this.slashList(t))
-                        .child(this.attachmentsRow(t))
-                        // while the / menu shows, its keys come before the box's own
-                        .child(
-                            div()
-                                .w_full()
-                                .when(this.slashShown().list.length > 0, (el) =>
-                                    el.key_context('ChatSlash'),
-                                )
-                                .on_action(
-                                    'x_herdr_chat_slash_down',
-                                    (_e, cx) => this.slashKey('down', cx),
-                                )
-                                .on_action('x_herdr_chat_slash_up', (_e, cx) =>
-                                    this.slashKey('up', cx),
-                                )
-                                .on_action(
-                                    'x_herdr_chat_slash_fill',
-                                    (_e, cx) => this.slashKey('fill', cx),
-                                )
-                                .on_action(
-                                    'x_herdr_chat_slash_close',
-                                    (_e, cx) => this.slashKey('close', cx),
-                                )
-                                .child(Textarea.new(box)),
-                        )
-                        .child(
-                            div()
-                                .absolute()
-                                .left(8)
-                                .bottom(10)
-                                .child(this.attachButton(t)),
-                        )
-                        .child(
-                            // the picker sits left of send, as shepherdr's does
-                            div()
-                                .absolute()
-                                .right(8 + SEND_SIZE + 6)
-                                .bottom(10)
-                                .child(this.pickers.view(t)),
-                        )
-                        .child(this.sendButton(box, t)),
-                )
-        );
-    }
-
-    /** @param {Context} cx */
-    pasteFiles(cx) {
-        const file = this.file;
-        if (!file) return;
-        cx.spawn(async (cx) => {
-            const read = await readClipboard();
-            if (this.file !== file) return;
-            if (read && 'paths' in read) return this.addFiles(read.paths, cx);
-            if (read) {
-                this.attachments.paste(file, read.rel);
-                this.sendPath.filesUnderMark(file, cx);
-            }
-            this.note = read ? null : NO_IMAGE;
-            // only the newest note's timer clears it
-            const shown = ++this.noteSerial;
-            if (!read)
-                cx.timer.after(PASTE_NOTE_MS, (cx) => {
-                    if (this.note === NO_IMAGE && this.noteSerial === shown)
-                        this.note = null;
-                    cx.notify();
-                });
-            cx.notify();
-        });
-    }
-
-    /** dropped or picked files join the thread's attachments; a picture's preview draws once it is made @param {string[]} paths @param {Context} cx */
-    addFiles(paths, cx, file = this.file) {
-        if (!file || !paths.length || file !== this.file) return;
-        cx.spawn(async (cx) => {
-            const adding = this.attachments.add(file, paths);
-            this.sendPath.filesUnderMark(file, cx);
-            cx.notify();
-            await adding;
-            cx.notify();
-        });
-    }
-
-    /** + in the quill's bottom left: the mac's own picker, several files at once @param {Theme} t */
-    attachButton(t) {
-        return div()
-            .id('chat-attach')
-            .size(24)
-            .flex()
-            .items_center()
-            .justify_center()
-            .rounded_full()
-            .text_size(16)
-            .text_color(t.muted)
-            .cursor_pointer()
-            .hover((s) => s.bg(t.raised).text_color(t.foreground))
-            .tooltip('Attach files')
-            .on_click((_e, cx) => {
-                const file = this.file;
-                cx.spawn(async (cx) =>
-                    this.addFiles(await pickFiles(), cx, file),
-                );
-            })
-            .child('+');
-    }
-
-    /**
-     * what waits over the quill: a 56 px preview per picture, a «📎 name» chip per other file, each with its ×
-     * (FRM-609: no caption, no Remove, each × takes its own)
-     * @param {Theme} t
-     */
-    attachmentsRow(t) {
-        const waiting = this.file ? this.attachments.of(this.file) : [];
-        const file = this.file;
-        /** @param {string} id @param {string} path */
-        const remove = (id, path) =>
-            div()
-                .id(id)
-                .absolute()
-                .top(3)
-                .right(3)
-                .size(18)
-                .flex()
-                .items_center()
-                .justify_center()
-                .rounded_full()
-                .bg(t.background)
-                .text_size(11)
-                .text_color(t.foreground)
-                .cursor_pointer()
-                .tooltip('Remove')
-                .on_click((_e, cx) => {
-                    cx.stop_propagation();
-                    if (file) {
-                        this.attachments.remove(file, path);
-                        this.sendPath.filesUnderMark(file, cx);
-                    }
-                    cx.notify();
-                })
-                .child('×');
-        return h_flex()
-            .gap(8)
-            .flex_wrap()
-            .items_center()
-            .when(waiting.length > 0, (el) => el.pb(8))
-            .children(
-                waiting.map(({ path, preview }, i) =>
-                    isImagePath(path)
-                        ? div()
-                              .id(`chat-thumb-${i}`)
-                              .size(THUMB_SIZE)
-                              .flex_none()
-                              .relative()
-                              .rounded(8)
-                              .overflow_hidden()
-                              .bg(t.raised)
-                              .border(1)
-                              .border_color(t.border)
-                              .cursor_pointer()
-                              .tooltip('Open')
-                              .on_click((_e, cx) => {
-                                  const pictures = waiting
-                                      .map((w) => w.path)
-                                      .filter(isImagePath);
-                                  this.pictures.show(
-                                      pictures,
-                                      pictures.indexOf(path),
-                                      cx,
-                                  );
-                              })
-                              .when(Boolean(preview), (el) =>
-                                  el.child(image(preview ?? '').size_full()),
-                              )
-                              .child(remove(`chat-thumb-x-${i}`, path))
-                        : h_flex()
-                              .id(`chat-file-${i}`)
-                              .relative()
-                              .gap(6)
-                              .items_center()
-                              .pl(8)
-                              .pr(26)
-                              .py(4)
-                              .rounded(8)
-                              .border(1)
-                              .border_color(t.border)
-                              .text_size(12)
-                              .text_color(t.muted)
-                              .tooltip(path)
-                              .child(`📎 ${fileName(path)}`)
-                              .child(remove(`chat-file-x-${i}`, path)),
-                ),
-            );
-    }
-
-    /**
-     * a click marks the quill's words to join the thread's turn, a hold sends them now
-     * @param {import('gpui-base').TextareaState} box
-     * @param {Theme} t
-     */
-    sendButton(box, t) {
-        const mark = this.sendPath.magic.markOf(this.file);
-        const icon = !mark
-            ? ICONS.sendRest
-            : mark.state === 'joined'
-              ? ICONS.sendTaken
-              : ICONS.sendReady;
-        return div()
-            .id('chat-send')
-            .absolute()
-            .right(8)
-            .bottom(8)
-            .size(SEND_SIZE)
-            .rounded(SEND_SIZE / 2)
-            .flex()
-            .items_center()
-            .justify_center()
-            .overflow_hidden()
-            .bg(t.raised)
-            .text_size(13)
-            .cursor_pointer()
-            .hover((style) => style.bg(t.border))
-            .tooltip(
-                mark?.state === 'pending'
-                    ? 'Take it back (Enter), hold to send now'
-                    : 'Join the turn (Enter), hold to send now (⌘Enter)',
-            )
-            .on_mouse_down('left', (_event, cx) => this.sendPath.press(box, cx))
-            .on_mouse_up('left', (_event, cx) =>
-                this.sendPath.holdStep(box, 'release', cx),
-            )
-            .on_hover((isOver, cx) => {
-                if (!isOver) this.sendPath.holdStep(box, 'cancel', cx);
-            })
-            .when(this.sendPath.holdFill() > 0, (el) =>
-                // a disc grows from the centre while the hold runs
-                el.child(
-                    div()
-                        .absolute()
-                        .left((SEND_SIZE / 2) * (1 - this.sendPath.holdFill()))
-                        .top((SEND_SIZE / 2) * (1 - this.sendPath.holdFill()))
-                        .size(SEND_SIZE * this.sendPath.holdFill())
-                        .rounded(SEND_SIZE / 2)
-                        .bg(t.accent),
-                ),
-            )
-            .child(div().relative().child(icon));
     }
 
     /** what the view says while it has no row to draw */
@@ -1403,11 +1007,11 @@ export default class Chat extends View {
             );
     }
 
-    /** a line under the quill that leaves on its own @param {string} note @param {Context} cx */
-    flashNote(note, cx) {
+    /** a line under the quill that leaves on its own @param {string} note @param {Context} cx @param {number} [ms] */
+    flashNote(note, cx, ms = COPIED_NOTE_MS) {
         this.note = note;
         const shown = ++this.noteSerial;
-        cx.timer.after(COPIED_NOTE_MS, (cx) => {
+        cx.timer.after(ms, (cx) => {
             if (this.note === note && this.noteSerial === shown)
                 this.note = null;
             cx.notify();
@@ -1804,9 +1408,7 @@ export default class Chat extends View {
         this.heights.clear();
         fileRows.clear();
         toolFolds.clear();
-        this.slashMenu.clear();
-        this.skills = new Map();
-        this.pluginSkills = new Map();
+        this.quill.clearThread();
         this.reader = null;
         this.pages?.close();
         this.pages = null;
@@ -1824,7 +1426,7 @@ export default class Chat extends View {
         this.stateWatch = null;
         this.stateTurn += 1;
         this.sendPath.cancelHold();
-        this.showDraft();
+        this.quill.showDraft();
         this.error = null;
         this.isRead = false;
         this.at.reset();
@@ -1842,14 +1444,14 @@ export default class Chat extends View {
                 return;
             }
             this.file = file;
-            this.showDraft();
+            this.quill.showDraft();
             cx.notify();
             const cwd = session && JSON.parse(session)?.cwd;
             if (typeof cwd === 'string')
                 loadableSkills(SKILL_FS, { cwd, home: home() })
                     .then((found) => {
                         if (this.file !== file) return;
-                        this.pluginSkills = found;
+                        this.quill.setPluginSkills(found);
                     })
                     .catch(() => {});
             // only a send needs the address: a ps that fails leaves the thread readable
@@ -1921,7 +1523,7 @@ export default class Chat extends View {
         this.error = null;
         this.pickers.takeLines(lines, cx);
         const { changed, removed } = this.model.add(lines);
-        this.learnSkills(lines);
+        this.quill.learnSkills(lines);
         this.makePictures(cx);
         // his marked words showing as his message settle the mark in this same draw: they leave the quill as they land
         const added = new Set(changed);
@@ -2016,19 +1618,6 @@ export default class Chat extends View {
         return files.length ? { at: 0, files } : null;
     }
 
-    /** the thread's skill listing, wherever its line is read: the tail or an earlier page @param {string[]} lines */
-    learnSkills(lines) {
-        for (const line of lines)
-            if (line.includes('"skill_listing"'))
-                try {
-                    const content = JSON.parse(line)?.attachment?.content;
-                    for (const [name, about] of listedSkills(content))
-                        this.skills.set(name, about);
-                } catch {
-                    // half a line never reaches here: the reader hands over whole lines
-                }
-    }
-
     /**
      * how a row draws when not plain: find's word marks over the stepped row only, keyed by the query; every other
      * match keeps its markdown under a tint, since a marked row loses its bold and reflows (dima's o2, 18:46)
@@ -2120,79 +1709,6 @@ export default class Chat extends View {
         );
     }
 
-    /** what the / menu shows now: the caret is read off the box, so a caret moved off the word closes it */
-    slashShown() {
-        if (this.box)
-            this.slashMenu.at(this.box.value(), this.box.selected_range().end);
-        return this.slashMenu.shown(menuNames(this.skills, this.pluginSkills));
-    }
-
-    /** a / menu key: ↑ ↓ move, Tab or Enter fills the pick, Esc closes @param {'up' | 'down' | 'fill' | 'close'} key @param {Context} cx */
-    slashKey(key, cx) {
-        const { at, list } = this.slashShown();
-        if (key !== 'fill') this.slashMenu.step(key, list.length);
-        else this.slashFill(list[at]?.[0], cx);
-        cx.notify();
-    }
-
-    /** @param {string | undefined} name @param {Context} cx */
-    slashFill(name, cx) {
-        const filled = name ? this.slashMenu.fill(name) : null;
-        if (!filled || !this.box) return;
-        // the quill writes the box, then the caret goes past the name; words under a 🍕 mark ride its row too
-        this.quills.apply(this.file, { text: filled.text, type: 'typed' });
-        this.box.set_selected_range({ end: filled.caret, start: filled.caret });
-        this.sendPath.typedUnderMark(this.box, cx);
-        this.box.focus();
-        cx.notify();
-    }
-
-    /** the / menu over the quill: a name and what it does per match, the pick marked (slice 6) @param {Theme} t */
-    slashList(t) {
-        const { at, list } = this.slashShown();
-        return v_flex()
-            .when(list.length > 0, (el) => el.pb(8))
-            .children(
-                list.map(([name, about], i) =>
-                    h_flex()
-                        .id(`chat-slash-${name}`)
-                        .gap(10)
-                        .px(8)
-                        .py(4)
-                        .rounded(6)
-                        .items_center()
-                        .cursor_pointer()
-                        .when(i === at, (el) => el.bg(t.raised))
-                        .hover((style) => style.bg(t.border))
-                        .on_click((_e, cx) => this.slashFill(name, cx))
-                        .child(
-                            div()
-                                .w(180)
-                                .flex_none()
-                                .truncate()
-                                .text_color(t.foreground)
-                                .child(`/${name}`),
-                        )
-                        .child(
-                            div()
-                                .flex_1()
-                                .min_w(0)
-                                .truncate()
-                                .text_size(12)
-                                .text_color(t.dim)
-                                .child(about),
-                        ),
-                ),
-            );
-    }
-
-    /** the quill holds the shown thread's draft, the caret after it; no thread, an empty quill */
-    showDraft() {
-        if (!this.box) return;
-        const text = this.quills.show(this.file, this.box);
-        this.box.set_selected_range({ end: text.length, start: text.length });
-    }
-
     /** @param {string} file */
     placeKey(file) {
         return `place:${file}`;
@@ -2226,7 +1742,7 @@ export default class Chat extends View {
             const lines = await read;
             if (this.reader !== reader) return;
             this.model.addEarlier(lines);
-            this.learnSkills(lines);
+            this.quill.learnSkills(lines);
         }
         this.makePictures(cx);
         // the saved line may sit inside a folded row: the place is that row
@@ -2278,7 +1794,7 @@ export default class Chat extends View {
             this.model.addEarlier(lines);
             // the page's last reply may join the first row: it keeps its lines and takes the page's id
             const first = this.model.rows[this.model.indexOf(firstId)];
-            this.learnSkills(lines);
+            this.quill.learnSkills(lines);
             this.makePictures(cx);
             // the page's last reply joined the row he reads: that row took the page's id and grew above him
             const joined = place
