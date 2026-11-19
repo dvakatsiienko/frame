@@ -18,7 +18,7 @@ read this before a change: find the one module that owns the state you touch, an
 - `picture-viewer.js` — the full-window picture viewer
 - `find-bar.js` — the ⌘F bar
 - `blocked-panel.js` — a blocked thread's ask and the keys that answer it
-- `settings-window.js` — x-herdr-settings, which the band's 🎛️ and ⌘⇧, open; `settings-page.js` keeps its page through a reload
+- `settings-window.js` — x-herdr-settings, which the band's 🎛️ and ⌘⇧, open; `settings-page.js` keeps its page through the reload a Keys save starts
 
 ## rules — pure steps, each with its test, no herdr
 
