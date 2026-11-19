@@ -7,6 +7,7 @@ artifacts:
   - schedule/jobs/x-speak/
   - speak/
 script: none
+groomed: 2026-11-19 (dima)
 was: [refresh-read-aloud]
 ---
 
