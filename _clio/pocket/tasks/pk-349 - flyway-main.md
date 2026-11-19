@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T17:35:00Z'
+updated_date: '2026-11-19T18:14:00Z'
 labels:
   - s
   - clio-main
@@ -1203,4 +1203,8 @@ done 2026-11-19 19:25: f56 stray glide card reborn after each end (l99–l102): 
 19:25 stray card cause: ~/.claude/shelf/threads.json restamps the stray's «at» on every sync, so register.tsx ~3500's «a card ended after the dispatch closes the lane» never holds; cards l99–l102
 
 19:35 same mods wisp, second face (his 19:35 shot): the reborn stray card takes its title from the thread record's old lane title («FRM-572 cli wisps») over the lane plan's h1; edited by hand to l103 «stray — giant files split by concern»
+
+PK-349:W1239 (2026-11-19 20:13, dima): TS LSP and o2: let's have the retros' data after everyone stops, so we have the full picture, then decide.
+PK-349:W1240 (2026-11-19 20:13, dima): from what I saw, I lean towards deleting the TypeScript LSP. I don't want to keep a half-set-up tool in a patched mode only for narrow stuff like you propose: if the TypeScript LSP is useless, like everyone says, there's no need to have it. we have enough knobs everywhere.
+PK-349:W1241 (2026-11-19 20:13, dima): let's wait for the retro, then make the final decision. you can object if you still think the TypeScript LSP is worth keeping.
 <!-- SECTION:NOTES:END -->

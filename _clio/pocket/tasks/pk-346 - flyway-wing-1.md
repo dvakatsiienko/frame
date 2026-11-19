@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-19T15:39:00Z'
+updated_date: '2026-11-19T18:08:00Z'
 labels:
   - s
   - clio-wing-1
@@ -18,18 +18,19 @@ ordinal: 1001
 <!-- AC:BEGIN -->
 - [ ] #1 f25 speak v2 with dima: bytes move → mess hunt (FRM-629:W26–W27) → wisps → design; FRM-497 rides it
 - [ ] #2 f42 wishkeeper 1 h arm: confirm runs read 1h, then the 10-run measure; revert if dearer (o1)
-- [ ] #3 f44 PK-457 refreshes with dima: fable 5.2 and the model cards, then the designer, then speak v2
-- [ ] #4 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
-- [ ] #5 f28 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-20
-- [ ] #6 f30 📅 strays lane verdict (FRM-586): model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-20
-- [ ] #7 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
-- [ ] #8 f43 📅 wishkeeper-cache verdict: the 1 h arm's 7 days read against the 5 min week — on: 2026-11-26
-- [ ] #9 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #10 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-07
-- [ ] #11 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #12 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #13 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #14 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #3 f45 speak prep tail: land dima's designer ticks (model, comms, design-loupe, the 14 Dec move)
+- [ ] #4 f46 design-loupe probe: a cheap summon tests artifact comments on dima's account, then keep or retire (o13)
+- [ ] #5 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
+- [ ] #6 f28 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-20
+- [ ] #7 f30 📅 strays lane verdict (FRM-586): model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-20
+- [ ] #8 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
+- [ ] #9 f43 📅 wishkeeper-cache verdict: the 1 h arm's 7 days read against the 5 min week — on: 2026-11-26
+- [ ] #10 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #11 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-07
+- [ ] #12 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #13 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #14 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #15 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -736,4 +737,6 @@ done 2026-11-19 17:39: f27 refreshes on his word: refresh-readaloud → refresh 
 done 2026-11-19 17:39: f38 fable 5.2 research with dima: refresh-crew-coordinator, then the model cards
 
 17:39 sync: f27's refresh-speak part done (run 1, 67ead9ef); f27 and f38 merged into one line for the two refreshes left (PK-457)
+
+done 2026-11-19 20:05: f44 PK-457 refreshes with dima: fable 5.2 and the model cards, then the designer, then speak v2 (PK-457 open)
 <!-- SECTION:NOTES:END -->
