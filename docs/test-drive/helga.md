@@ -466,6 +466,7 @@ retro (14:43 on):
 - 2026-11-19 · groom · first pass · 0 · groomed 17:40 raw into FRM-670 W9-W10
 - 2026-11-19 · groom · first pass · 0 · groomed 18:19 raw into FRM-618 W20-W25
 - 2026-11-19 · groom · first pass · 0 · groomed 18:35 o2, o3, and 18:35 raw into FRM-618 W26-W45
+- 2026-11-19 · groom · first pass · 0 · groomed 19:30 FRM-662 W5-W10
 
 ## rounds
 
