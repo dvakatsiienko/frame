@@ -58,7 +58,7 @@ dima, 2026-11-19 (PK-457:W46–W52):
 ### research
 
 1. model fit — fable 5.2 against fable 5.1 and opus 5.5 as a designer (benchmarks, design arenas, users' reports), and the effort that serves fable 5.2 best
-2. the operator's comms — how a non-designer operator briefs, steers and picks with the fewest switches and rounds; how a wish is translated into a designer brief; how the flow is delivered to him; is design-loupe still the right door: can an agent pin a thread on the canvas now, does any canvas ship agent-placed pins with a decision ui
+2. the operator's comms — how to search for references and how to query so a search finds the right thing (W49); how a non-designer operator briefs, steers and picks with the fewest switches and rounds; how a wish is translated into a designer brief; how the flow is delivered to him; is design-loupe still the right door: can an agent pin a thread on the canvas now, does any canvas ship agent-placed pins with a decision ui
 3. top AI design tools — Claude Design, paper.design, v0, Stitch, Figma Make, Subframe, Magic Patterns, Lovable: how each works now, which open parts (published skills, system prompts) to borrow
 4. prompting a design agent — the brief structure and the steers that measurably change output
 5. diversifying takes — how to make a spread truly different, and the right spread size
@@ -89,4 +89,4 @@ dima, 2026-11-19 (PK-457:W46–W52):
 ## findings
 
 - an overhaul proposal for dima: what changes in the brief, the designer, its model, the comms, the gallery and the scripts; noop is a valid outcome
-- checklist: each W46 question answered with sources · the comms count printed · design-loupe's verdict · every artifact touched or named «unchanged»
+- checklist: each W46 question answered with sources · each W49 part answered, how to search and how to query among them · the comms count printed · design-loupe's verdict · every artifact touched or named «unchanged»

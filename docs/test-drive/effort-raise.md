@@ -17,6 +17,8 @@ wish: PK-457:W43, PK-457:W44 (dima's o24)
 
 **test card:** we believe the raised efforts solve chores better for a small rise in usage · we test it by the fleet's real work over two 7-day rounds, no staged runs · we measure weekly usage % (`~/.claude/shelf/cc-usage-window.json` `seven_day.used_percentage`, read at each Monday 06:00 reset), tokens per spawn of each raised card from the transcripts against the 7 days before 2026-11-19, and quality: helga receipt misses (`docs/test-drive/helga.md` receipt log), rework rounds (a 🩹 fix on a card's or the stray's output), and `#dima-caught` lines in `x fleet flow --days 7` · we're right if the weekly usage rises ≤5 points per week while rework or dima-caught falls, or holds with dima's own read «better»
 
+**the cost in his %:** each raised card's tokens per spawn, before and after, priced at the model card's rates, then turned into weekly % by one dollars-to-% rate read off a week's usage against its api-equivalent spend; the rate is re-measured when he moves to the $100 plan (likely ~5 Dec, inside round 2).
+
 **kill rule:** a week on pace to pass 90 % of the weekly window before its reset, with the raised cards' tokens the cause → the raised cards drop back a step that day, dima told in one line.
 
 **rounds:** round 1 read on 2026-11-26 (checkpoint, numbers to dima), round 2 read and the verdict ask on 2026-12-03.
