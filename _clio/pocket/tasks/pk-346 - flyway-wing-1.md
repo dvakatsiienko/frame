@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-19T18:21:00Z'
+updated_date: '2026-11-19T18:58:00Z'
 labels:
   - s
   - clio-wing-1
@@ -741,4 +741,6 @@ done 2026-11-19 17:39: f38 fable 5.2 research with dima: refresh-crew-coordinato
 done 2026-11-19 20:05: f44 PK-457 refreshes with dima: fable 5.2 and the model cards, then the designer, then speak v2 (PK-457 open)
 
 done 2026-11-19 20:21: f45 speak prep tail: land dima's designer ticks (model, comms, design-loupe, the 14 Dec move)
+
+20:58 f25 speak v2's design step: the designer summon runs Opus 5.5 high (his ticked o17 fallback) until the fable week reopens Mon 23 Nov or his reset word; Fable 5.2 high after (crow's 20:58 note).
 <!-- SECTION:NOTES:END -->
