@@ -36,7 +36,7 @@ var roles = func() []role {
 }()
 
 // every scope a lane member's thread names, by its word: an emoji that replaces its role's mark, and a unit that replaces
-// its ticket; a new scope is one line here. stray draws «⚡ 🐕 stray | chores»
+// its ticket, and a mode no dispatch moves; a new scope is one line here. stray draws «⚡ 🐕 stray | chores»
 //
 //go:embed scopes.json
 var scopesJSON []byte
@@ -45,6 +45,7 @@ type scope struct {
 	Word  string `json:"word"`
 	Emoji string `json:"emoji,omitempty"`
 	Unit  string `json:"unit,omitempty"`
+	Mode  string `json:"mode,omitempty"`
 }
 
 var scopes = func() []scope {

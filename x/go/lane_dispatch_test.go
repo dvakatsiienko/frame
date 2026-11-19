@@ -735,8 +735,8 @@ func TestDispatchRefusesAThreadWithNoScopeFromTheTable(t *testing.T) {
 	}
 }
 
-// dispatchOntoRecord dispatches FRM-1 to s1 (dry run, then applied) over a stored thread record, with a fake hc
-func dispatchOntoRecord(t *testing.T, body, record string) (plan, applied asRun, envelope map[string]any, written threadStore, sent []byte) {
+// dispatchOntoRecord dispatches FRM-1 to s1 in a scope (dry run, then applied) over a stored thread record, with a fake hc
+func dispatchOntoRecord(t *testing.T, body, record, area string) (plan, applied asRun, envelope map[string]any, written threadStore, sent []byte) {
 	t.Helper()
 	const rule = "────────────────────────────────────────"
 	server := dispatchServer(t, dispatchState{body: body, state: "Todo", labels: []string{"agent", "signed"}})
@@ -758,8 +758,8 @@ esac
 	}
 	env := asCaller(t, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions, "X_HC=" + filepath.Join(bin, "hc")}, "coordinator")
 
-	envelope, plan = runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--lane", "chores", "--area", "stray")
-	_, applied = runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--lane", "chores", "--area", "stray", "--apply")
+	envelope, plan = runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--lane", "chores", "--area", area)
+	_, applied = runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--lane", "chores", "--area", area, "--apply")
 
 	written, _ = readThreadStore(store)
 	sent, _ = os.ReadFile(log)
@@ -771,12 +771,12 @@ func TestDispatchDrawsTheModeOfTheTicketsLaneLine(t *testing.T) {
 	t.Parallel()
 	above := strings.Replace(dispatchAbove, "lane: side", "lane: quick", 1)
 
-	plan, got, envelope, written, sent := dispatchOntoRecord(t, signedBody(above, "", above)+"\n⸻ 🪪 stamp — please keep 🙏", `{"v":1,"threads":[{"sessionId":"s1","role":"codie","laneKind":"side","area":"stray"}]}`)
+	plan, got, envelope, written, sent := dispatchOntoRecord(t, signedBody(above, "", above)+"\n⸻ 🪪 stamp — please keep 🙏", `{"v":1,"threads":[{"sessionId":"s1","role":"codie","laneKind":"side","area":"cli"}]}`, "cli")
 
-	if plan.code != 4 || !strings.Contains(jsonOf(envelope["plan"]), "s1 → ⚡ 🐕 stray | chores") {
-		t.Errorf("a dry run: exit %d, want the plan to say «s1 → ⚡ 🐕 stray | chores»:\n%s", plan.code, plan.stdout)
+	if plan.code != 4 || !strings.Contains(jsonOf(envelope["plan"]), "s1 → ⚡ 🔧 cli | FRM-1") {
+		t.Errorf("a dry run: exit %d, want the plan to say «s1 → ⚡ 🔧 cli | FRM-1»:\n%s", plan.code, plan.stdout)
 	}
-	if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Display != "⚡ 🐕 stray | chores" || written.Threads[0].LaneKind != "quick" || string(sent) != "send t9 /rename ⚡ 🐕 stray | chores\n" {
+	if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Display != "⚡ 🔧 cli | FRM-1" || written.Threads[0].LaneKind != "quick" || string(sent) != "send t9 /rename ⚡ 🔧 cli | FRM-1\n" {
 		t.Errorf("exit %d, records %+v, hc was told %q, want ⚡ in the record and the rename:\n%s", got.code, written.Threads, sent, got.stdout)
 	}
 }
@@ -787,19 +787,39 @@ func TestDispatchOfATicketWithNoLaneLineKeepsTheRecordsMode(t *testing.T) {
 	noLine := strings.Replace(dispatchAbove, "lane: side\n\n", "", 1)
 	body := signedBody(noLine, "", noLine) + "\n⸻ 🪪 stamp — please keep 🙏"
 	for _, c := range []struct{ name, record, kind, display string }{
-		{"a quick record stays quick", `{"v":1,"threads":[{"sessionId":"s1","role":"codie","laneKind":"quick","area":"stray"}]}`, "quick", "⚡ 🐕 stray | chores"},
-		{"a record with no mode starts side", `{"v":1,"threads":[{"sessionId":"s1","role":"codie","area":"stray"}]}`, "side", "🌗 🐕 stray | chores"},
+		{"a quick record stays quick", `{"v":1,"threads":[{"sessionId":"s1","role":"codie","laneKind":"quick","area":"cli"}]}`, "quick", "⚡ 🔧 cli | FRM-1"},
+		{"a record with no mode starts side", `{"v":1,"threads":[{"sessionId":"s1","role":"codie","area":"cli"}]}`, "side", "🌗 🔧 cli | FRM-1"},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 
-			plan, got, envelope, written, _ := dispatchOntoRecord(t, body, c.record)
+			plan, got, envelope, written, _ := dispatchOntoRecord(t, body, c.record, "cli")
 
 			if plan.code != 4 || !strings.Contains(jsonOf(envelope["plan"]), "s1 → "+c.display) {
 				t.Errorf("a dry run: exit %d, want the plan to say «s1 → %s»:\n%s", plan.code, c.display, plan.stdout)
 			}
 			if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].LaneKind != c.kind || written.Threads[0].Display != c.display {
 				t.Errorf("exit %d, records %+v, want kind %q shown as %q:\n%s", got.code, written.Threads, c.kind, c.display, got.stdout)
+			}
+		})
+	}
+}
+
+// FRM-572: the stray works quick on main, so a ticket's lane: side line never renames it 🌗, its record's mode or none
+func TestDispatchOntoTheStrayKeepsItsOwnMode(t *testing.T) {
+	t.Parallel()
+	body := signedBody(dispatchAbove, "", dispatchAbove) + "\n⸻ 🪪 stamp — please keep 🙏"
+	for _, record := range []string{
+		`{"v":1,"threads":[{"sessionId":"s1","role":"codie","laneKind":"quick","area":"stray"}]}`,
+		`{"v":1,"threads":[{"sessionId":"s1","role":"codie","area":"stray"}]}`,
+	} {
+		t.Run(record, func(t *testing.T) {
+			t.Parallel()
+
+			_, got, _, written, sent := dispatchOntoRecord(t, body, record, "stray")
+
+			if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].LaneKind != "quick" || strings.Contains(string(sent), "🌗") {
+				t.Errorf("exit %d, records %+v, hc was told %q: want the stray quick\n%s", got.code, written.Threads, sent, got.stdout)
 			}
 		})
 	}

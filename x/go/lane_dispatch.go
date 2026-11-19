@@ -140,7 +140,7 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	area, _ := areaFlag(flags)
 	for _, named := range dispatchNamed(flags, plan.Tickets) {
 		if named[1] != "" {
-			record := thread{Role: named[0], LaneKind: recordLaneKind(dispatchLaneKind(flags, plan.Tickets), named[1]), Area: area, Ticket: plan.Tickets[0].ID}
+			record := thread{Role: named[0], LaneKind: recordLaneKind(dispatchLaneKind(flags, plan.Tickets), named[1], area), Area: area, Ticket: plan.Tickets[0].ID}
 			plan.Threads = append(plan.Threads, named[1]+" → "+threadDisplay(record))
 		}
 	}
@@ -381,7 +381,7 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 		if sid == "" {
 			continue
 		}
-		record := thread{SessionID: sid, Role: role, Lane: plan.Tickets[0].lane, LaneKind: recordLaneKind(kind, sid), Ticket: plan.Tickets[0].ID, Area: area, What: plan.Tickets[0].what}
+		record := thread{SessionID: sid, Role: role, Lane: plan.Tickets[0].lane, LaneKind: recordLaneKind(kind, sid, area), Ticket: plan.Tickets[0].ID, Area: area, What: plan.Tickets[0].what}
 		if record.Lane != "" {
 			record.Coordinator = dispatcher
 		}
@@ -436,19 +436,21 @@ func dispatchNamed(flags Flags, tickets []dispatchTicket) [][2]string {
 	return named
 }
 
-// a dispatch that names no mode keeps the one its record holds; side only when the record has none either
-func recordLaneKind(kind, sid string) string {
-	if kind != "" {
-		return kind
-	}
+// a scope with its own mode keeps it whatever the tickets say (the stray works quick on main); else a dispatch that names
+// no mode keeps the one its record holds; side only when the record has none either
+func recordLaneKind(kind, sid, area string) string {
+	var held thread
 	if store, err := readThreadStore(threadStorePath()); err == nil {
 		for _, t := range store.Threads {
-			if t.SessionID == sid && t.LaneKind != "" {
-				return t.LaneKind
+			if t.SessionID == sid {
+				held = t
 			}
 		}
 	}
-	return "side"
+	if mode := scopeOf(cmp.Or(area, held.Area)).Mode; mode != "" {
+		return mode
+	}
+	return cmp.Or(kind, held.LaneKind, "side")
 }
 
 // a ticket title's scope prefix, `x-mod-stash: ` or `x + x-mod-stash: `: names joined by « + », then a colon
