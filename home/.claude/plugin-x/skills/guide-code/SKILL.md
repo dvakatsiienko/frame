@@ -36,6 +36,15 @@ Calls this decides:
 attention to save your keystrokes — that's more, not less. Minimise what a reader holds in
 their head.
 
+## File size
+
+- **Do not grow a source file past 1,200 lines** (about one Read): the new concern gets its own module.
+- **1,200–2,000 only with a `size:` line** in the first 10 lines saying why; no file starts past 2,000.
+- **An exception shares state too tightly to cut**: a split needs a god object or a hot-path call.
+  TypeScript's `checker.ts` is the model:
+  `// size: one closure over the checker's shared state, kept whole for speed`
+- `script/lib/code-size.test.ts` holds it; a giant's capped row rises only on dima's word.
+
 ## Complete means whole
 
 - **Reverse states.** A way in ships with the way out and the way to see it — snooze needs
