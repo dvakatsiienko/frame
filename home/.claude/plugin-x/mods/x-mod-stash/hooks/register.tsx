@@ -18,7 +18,6 @@ import type {
     StashOrbit,
     StashPlan,
     StashQuiet,
-    StashTick,
     StashView,
     StashWind,
 } from '../types/stash.d.ts';
@@ -54,30 +53,40 @@ import {
     ORBIT_TOOL,
     PLAN_MAX,
     PRESS_DIR,
-    allAsksTicks,
     bandPressLines,
     hasPlanMark,
     herdrTicks,
     isAllAsksMarkable,
     isFresh,
-    isGuardGated,
     isPressOn,
     joinRows,
     joinRowsText,
     joinText,
     linkLabel,
     lockJoined,
-    mounted,
     moved,
     oneLine,
     orbitOp,
     planTaken,
     planText,
     steered,
-    steeredOrbit,
     turnEnded,
     wrongText,
 } from './orbit.ts';
+import {
+    EMPTY_ORBIT,
+    KEPT,
+    PREFIX,
+    currentOrbit,
+    dropTicks,
+    inMarking,
+    keepState,
+    orbitNow,
+    putOrbit,
+    recordTicks,
+    saveOrbit,
+    startOrbit,
+} from './orbit-store.ts';
 import {
     isOverrideOn,
     readOverrideOn,
@@ -278,11 +287,6 @@ type Reply = {
     ended?: number;
 };
 
-const PREFIX = 'asks:';
-// what the board draws from this session's $.state, kept per conversation in the store, so a session resumed in a new
-// process — a mac reboot relaunches every one — draws it again: $.state starts empty there (dima's ✨ wisps, 10-13 16:26
-// orbit and the sessions rows, 16:44 phases); kept past an exit, dropped after a week unused
-const KEPT = 'kept:';
 const KEPT_MS = 7 * 24 * 60 * 60 * 1000;
 // `succ:<old id>` → the id a /clear continued under, so a lane linked by a session id follows it (todo 21: a clear left
 // the l14 card on the codie's old id, its asks gone from the card); dropped a week after it was written
@@ -758,13 +762,12 @@ async function settleHeld($: EngineInterface, key: string) {
     if (held === undefined || !own) return;
     await inMarking(async () => {
         const o = await currentOrbit($);
-        orbit = {
+        await putOrbit($, {
             ...o,
             asks: o.asks.map((a) =>
                 a.id === own[1] ? { ...a, shown: held } : a,
             ),
-        };
-        await keepOrbit($);
+        });
     });
 }
 // a dropped view's boxes mount again with the stored steer, or a text the store refused; a fold, a closed board and a
@@ -873,7 +876,9 @@ async function saveTyped(
             const o = await currentOrbit($);
             if (!o.plan) return false;
             if (!isBase(o.plan.steer)) return yielded();
-            await saveOrbit($, { ...o, plan: { ...o.plan, steer } });
+            await saveOrbit($, { ...o, plan: { ...o.plan, steer } }, () =>
+                keepShelf($),
+            );
             return true;
         });
     }
@@ -1051,13 +1056,6 @@ let hot: { since: number } | undefined;
 let modelSeen: string | undefined;
 // a turn start or a flip bumps it, so a ping armed before either never fires
 let hotGen = 0;
-
-const EMPTY_ORBIT: StashOrbit = { asks: [], next: 1, turns: 0 };
-// mirrors `$.state`'s orbit, which survives a reload: a get inside one dispatch reads the moment it began
-let orbit: StashOrbit = EMPTY_ORBIT;
-// false until this process read its orbit back, from $.state or the kept store; until then nothing is kept, so an
-// empty module copy never writes over the kept one
-let isOrbitLoaded = false;
 
 // quiet comms (PK-93, FRM-501): in clio's thread a message is held, no turn, unless it pushes (hooks/quiet.ts) or is a
 // member's first answer to her; held ones ride her next prompt as one hidden block, or an idle append after the wait.
@@ -2522,93 +2520,6 @@ async function quietIdle($: EngineInterface) {
     await quietLocked(() => quietFlushed($, due));
 }
 
-// kept in $.state for this session, and its open asks mirrored into the store, where the board's `🪐 n` counts every
-// session's
-async function saveOrbit(
-    $: EngineInterface,
-    next: StashOrbit,
-    // the one ask a steer box saved: only its steer is typing; every other ask is a read the save carried along
-    typedId?: string,
-) {
-    // as currentOrbit: a read from before this process's last write never wins, or a steer typed since reads as cleared
-    const read = await $.state.get(ORBIT).catch(() => undefined);
-    const was =
-        (!orbitWrites && (read?.version ?? 0) >= orbitVersion
-            ? read?.value?.asks
-            : undefined) ?? orbit.asks;
-    orbit = {
-        ...next,
-        asks: next.asks.map((a) =>
-            mounted(
-                was.find((w) => w.id === a.id),
-                a,
-                a.id === typedId,
-            ),
-        ),
-    };
-    const isKept = await keepOrbit($);
-    if (isKept) await keepState($, { orbit }).catch(() => undefined);
-    const sid = await currentId($);
-    if (!sid) return isKept;
-    const open = orbit.asks.filter((a) => !a.isResolved);
-    const asks = open.map((a) => a.text);
-    if (asks.length)
-        await $.store
-            .set(PREFIX + sid, {
-                asks,
-                at: await $.clock.now(),
-                items: open.map((a) => ({
-                    id: a.id,
-                    pick: a.pick,
-                    text: a.text,
-                    ...(a.link ? { link: a.link } : {}),
-                    ...(a.mark ? { mark: a.mark } : {}),
-                    ...(a.steer ? { steer: a.steer } : {}),
-                    ...(a.isLocked ? { isLocked: true } : {}),
-                    ...(isGuardGated(a.text) ? { isGated: true } : {}),
-                })),
-                label: identity.label,
-                name: await sessionName($),
-            } satisfies Entry)
-            .catch(() => undefined);
-    else await $.store.delete(PREFIX + sid).catch(() => undefined);
-    await keepShelf($);
-    return isKept;
-}
-
-// every get of one dispatch reads one moment (engine.md), so a hook running while he presses reads from before the
-// press and would put that copy back: a read older than this process's last write, or racing one, never wins
-let orbitVersion = 0;
-let orbitWrites = 0;
-async function keepOrbit($: EngineInterface) {
-    orbitWrites++;
-    try {
-        orbitVersion = (await $.state.set(ORBIT, orbit)).version;
-        return true;
-    } catch (err) {
-        await $.ui.log(`x-mod-stash: orbit was not kept: ${errorText(err)}`);
-        return false;
-    } finally {
-        orbitWrites--;
-    }
-}
-
-// the orbit as $.state holds it now: a reload can run a hook before session.start reads it back, and a module copy
-// that never loaded would write an empty orbit over the kept one (FRM-381: «coder wiped the orbit»)
-async function currentOrbit($: EngineInterface) {
-    const read = await $.state.get(ORBIT).catch(() => undefined);
-    const kept = read?.value;
-    if (kept && !orbitWrites && (read?.version ?? 0) >= orbitVersion) {
-        orbit = steeredOrbit(kept);
-        orbitVersion = read?.version ?? 0;
-    }
-    // a new process whose first hook is a turn's end, before its start (an app restart mid-turn): the kept copy first
-    else if (!kept && !isOrbitLoaded)
-        orbit = await resumeState($).catch(() => EMPTY_ORBIT);
-    isOrbitLoaded = true;
-    return orbit;
-}
-
 // herdr's presses for this session past what it read last; the file is herdr's board's alone, so this side only reads
 // and keeps its own watermark. x-mod-guard reads the same file as his tick, its ticks-write rule keeping seats out (FRM-544)
 async function herdrMarksOf($: EngineInterface, sid: string) {
@@ -2645,40 +2556,44 @@ async function absorbMarks($: EngineInterface) {
     const accepted: OrbitAsk[] = [];
     await inMarking(async () => {
         const o = await currentOrbit($);
-        isSaved = await saveOrbit($, {
-            ...o,
-            asks: o.asks.map((a) => {
-                // a new herdr press replaces the ask's mark, the newest press winning as at x-mod-guard: his ↩️ then 🛎
-                // is a tick (it once kept the first, which locked him out, sixth sense round 1 on FRM-544); it marks only
-                // the question he read, never the round a follow put under the same id
-                const h = herdr.marks[a.id];
-                const m = isPressOn(h, a) ? h : undefined;
-                if (!m || a.isLocked || a.isResolved) return a;
-                // a herdr ↩️ takes back a tick a turn already took, whose mark the turn end cleared: the deck's tick is a
-                // toggle, and the record would still stand for its 2 h
-                if (m.mark !== 'accepted') retracted.push(a);
-                // his 🛎 from herdr gets the tick record a seat-board 🛎 gets: x-herdr-deck prunes the press once read
-                // and the turn that takes the ask clears its mark, so the record is what x-mod-guard honours for 2 h
-                // (clio's o49 at 19:30, wing 1's o13 at 19:08)
-                if (m.mark === 'accepted' && a.mark !== 'accepted')
-                    accepted.push(a);
-                return {
-                    ...a,
-                    isChanged: false,
-                    isHerdrMark: true,
-                    mark: m.mark,
-                    markedAt: m.mark ? m.at : undefined,
-                    steer: isTypedHere(a.id)
-                        ? a.steer
-                        : m.isSteerEdit
-                          ? m.steer
-                          : // his untick from herdr takes back the steer his tick brought
-                            !m.mark
-                            ? undefined
-                            : (a.steer ?? m.steer),
-                };
-            }),
-        });
+        isSaved = await saveOrbit(
+            $,
+            {
+                ...o,
+                asks: o.asks.map((a) => {
+                    // a new herdr press replaces the ask's mark, the newest press winning as at x-mod-guard: his ↩️ then 🛎
+                    // is a tick (it once kept the first, which locked him out, sixth sense round 1 on FRM-544); it marks only
+                    // the question he read, never the round a follow put under the same id
+                    const h = herdr.marks[a.id];
+                    const m = isPressOn(h, a) ? h : undefined;
+                    if (!m || a.isLocked || a.isResolved) return a;
+                    // a herdr ↩️ takes back a tick a turn already took, whose mark the turn end cleared: the deck's tick is a
+                    // toggle, and the record would still stand for its 2 h
+                    if (m.mark !== 'accepted') retracted.push(a);
+                    // his 🛎 from herdr gets the tick record a seat-board 🛎 gets: x-herdr-deck prunes the press once read
+                    // and the turn that takes the ask clears its mark, so the record is what x-mod-guard honours for 2 h
+                    // (clio's o49 at 19:30, wing 1's o13 at 19:08)
+                    if (m.mark === 'accepted' && a.mark !== 'accepted')
+                        accepted.push(a);
+                    return {
+                        ...a,
+                        isChanged: false,
+                        isHerdrMark: true,
+                        mark: m.mark,
+                        markedAt: m.mark ? m.at : undefined,
+                        steer: isTypedHere(a.id)
+                            ? a.steer
+                            : m.isSteerEdit
+                              ? m.steer
+                              : // his untick from herdr takes back the steer his tick brought
+                                !m.mark
+                                ? undefined
+                                : (a.steer ?? m.steer),
+                    };
+                }),
+            },
+            () => keepShelf($),
+        );
     });
     if (isSaved && retracted.length) await recordTicks($, retracted, false);
     if (isSaved && accepted.length) await recordTicks($, accepted, true);
@@ -2874,25 +2789,20 @@ async function changeAssumed(
     if (isMark) await $.state.set(MOBILE, false).catch(() => undefined);
     await inMarking(async () => {
         const o = await currentOrbit($);
-        await saveOrbit($, {
-            ...o,
-            assumed: (o.assumed ?? []).flatMap((x) => {
-                const changed = change(x);
-                return changed ? [changed] : [];
-            }),
-        });
+        await saveOrbit(
+            $,
+            {
+                ...o,
+                assumed: (o.assumed ?? []).flatMap((x) => {
+                    const changed = change(x);
+                    return changed ? [changed] : [];
+                }),
+            },
+            () => keepShelf($),
+        );
     });
 }
 
-// one mark or steer write at a time: two boxes saved together each read the orbit before the other wrote it, and the
-// later save put the earlier one's steer back to none while its box still showed it (FRM-492)
-let marking: Promise<unknown> = Promise.resolve();
-// a read-change-write of the orbit or the ticks, each whole; a step never queues another, which would wait on itself
-function inMarking<T>(step: () => Promise<T>) {
-    const run = marking.then(step);
-    marking = run.catch(() => undefined);
-    return run;
-}
 async function markAsks(
     $: EngineInterface,
     change: (a: OrbitAsk) => OrbitAsk,
@@ -2913,7 +2823,7 @@ async function markAsksNow(
     const asks = o.asks.map((a) =>
         a.isLocked || a.isResolved ? a : change(a),
     );
-    return saveOrbit($, { ...o, asks }, typedId);
+    return saveOrbit($, { ...o, asks }, () => keepShelf($), typedId);
 }
 
 // a turn takes his marks in the marking queue: a press lands wholly before or after the lock, never inside it
@@ -2921,7 +2831,8 @@ function takeMarks($: EngineInterface, pick: (o: StashOrbit) => OrbitAsk[]) {
     return inMarking(async () => {
         const o = await currentOrbit($);
         const asks = pick(o);
-        if (asks.length) await saveOrbit($, lockJoined(o, asks));
+        if (asks.length)
+            await saveOrbit($, lockJoined(o, asks), () => keepShelf($));
         carried(
             $,
             asks.map((a) => `orbit:steer:${a.id}`),
@@ -2935,7 +2846,9 @@ function takePlanMark($: EngineInterface) {
     return inMarking(async () => {
         const o = await currentOrbit($);
         if (!hasPlanMark(o.plan)) return undefined;
-        await saveOrbit($, { ...o, plan: planTaken(o.plan) });
+        await saveOrbit($, { ...o, plan: planTaken(o.plan) }, () =>
+            keepShelf($),
+        );
         carried($, ['plan:steer']);
         return o.plan;
     });
@@ -2948,62 +2861,13 @@ async function unmountSteers($: EngineInterface) {
     await inMarking(async () => {
         const o = await currentOrbit($);
         if (!o.asks.some((a) => a.shown !== undefined)) return;
-        orbit = {
+        await putOrbit($, {
             ...o,
             asks: o.asks.map(({ shown: _, ...a }) => a),
-        };
-        await keepOrbit($);
+        });
     });
 }
 
-// dima's tick as x-mod-guard reads it: written here, from his own press alone, so no tool call can forge one (FRM-427);
-// one press is one marking step, deciding from one read: a tick's record lands before its mark, so a tool call that
-// takes the mark finds it; an untick clears the mark first, so no tick is ever marked without its record
-const TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
-// every live tick counts at the guard (FRM-510), so a record leaves only past the guard's own 2 h, never by a count
-const TICK_LIVE_MS = 2 * 60 * 60 * 1000;
-// as the orbit's read: a read from before this process's last write never wins
-let ticksKept: { sid?: string; value: StashTick[]; version: number } = {
-    value: [],
-    version: 0,
-};
-async function readTicks($: EngineInterface) {
-    const read = await $.state.get(TICKS);
-    // a new session id: its state was reset under this process, so the kept ticks are another conversation's
-    const sid = await currentId($);
-    if (sid !== ticksKept.sid || read.version >= ticksKept.version)
-        ticksKept = { sid, value: read.value ?? [], version: read.version };
-    return ticksKept.value;
-}
-async function writeTicks($: EngineInterface, value: StashTick[]) {
-    const { version } = await $.state.set(TICKS, value);
-    ticksKept = { sid: ticksKept.sid, value, version };
-}
-async function recordTicks(
-    $: EngineInterface,
-    asks: OrbitAsk[],
-    isTicked: boolean,
-) {
-    // the press still marks: a tick with no record fails closed at the guard; a drop that fails leaves his taken-back
-    // tick honoured for its 2 h, so that one tells him
-    try {
-        const now = await $.clock.now();
-        const rest = (await readTicks($)).filter(
-            (t) =>
-                now - t.at <= TICK_LIVE_MS && !asks.some((a) => a.id === t.id),
-        );
-        await writeTicks(
-            $,
-            isTicked ? [...rest, ...allAsksTicks(asks, now)] : rest,
-        );
-    } catch (err) {
-        $.ui.log(`x-mod-stash: tick record not written: ${errorText(err)}`);
-        if (!isTicked)
-            $.ui.toast(
-                '🛎️ untick not recorded: the guard may still honour this tick for 2 h',
-            );
-    }
-}
 async function pressMarkNow(
     $: EngineInterface,
     id: string,
@@ -3079,15 +2943,6 @@ async function pressMark(
     mark: 'accepted' | 'rejected',
 ) {
     await inMarking(() => pressMarkNow($, id, mark));
-}
-
-async function dropTicks($: EngineInterface, id: string) {
-    const kept = await readTicks($);
-    if (kept.some((t) => t.id === id))
-        await writeTicks(
-            $,
-            kept.filter((t) => t.id !== id),
-        );
 }
 
 // the lane ops on the fleet's lanes: validate, then keep each pointer honest — every step before it done, never on a done one
@@ -4114,49 +3969,6 @@ async function retire($: EngineInterface, sid: string) {
             ...reply,
             ended: await $.clock.now(),
         } satisfies Reply);
-}
-
-type Kept = {
-    folds?: Record<string, boolean>;
-    mobile?: boolean;
-    orbit?: StashOrbit;
-};
-// a part at its empty value keeps nothing, so a /clear leaves no copy of the conversation it left
-const isKeptBlank = (k: Kept) =>
-    !(k.orbit?.asks.length || k.orbit?.assumed?.length || k.orbit?.plan) &&
-    !Object.keys(k.folds ?? {}).length &&
-    !k.mobile;
-let keptJson = '';
-// every $.state part the board draws, written when one changed; a save passes its new value, since a read in the
-// same dispatch still sees the old one
-async function keepState($: EngineInterface, fresh: Kept = {}) {
-    if (!isOrbitLoaded) return;
-    const sid = await currentId($);
-    if (!sid) return;
-    const k: Kept = {
-        folds: fresh.folds ?? (await $.state.get(FOLDS)).value,
-        mobile: fresh.mobile ?? (await $.state.get(MOBILE)).value === true,
-        orbit: fresh.orbit ?? (await $.state.get(ORBIT)).value,
-    };
-    const json = JSON.stringify([sid, k]);
-    if (json === keptJson) return;
-    keptJson = json;
-    if (isKeptBlank(k)) await $.store.delete(KEPT + sid);
-    else await $.store.set(KEPT + sid, { ...k, at: await $.clock.now() });
-}
-
-// a new process with an empty $.state takes back what its conversation kept: folds, mobile mode and held pings into
-// $.state now, the orbit returned for the start to load; a lock the old process held clears at the next turn end
-async function resumeState($: EngineInterface): Promise<StashOrbit> {
-    const sid = await $.session.id();
-    const kept = (await $.store.get(KEPT + sid)) as Kept | undefined;
-    if (!kept) return EMPTY_ORBIT;
-    if (kept.folds) await $.state.set(FOLDS, kept.folds);
-    if (kept.mobile) await $.state.set(MOBILE, true);
-    if (!kept.orbit) return EMPTY_ORBIT;
-    // a new process draws a fresh pane: no box holds what the old one mounted with (FRM-492)
-    const o = steeredOrbit(kept.orbit);
-    return { ...o, asks: o.asks.map(({ shown: _, ...a }) => a) };
 }
 
 // an ended session's reply is dropped a day after it ended, a kept state a week after its last save
@@ -6467,7 +6279,7 @@ async function orbitCall(
             );
             if ('deny' in made) return made;
             if (asked) made.orbit = { ...made.orbit, next: current.next };
-            await saveOrbit($, made.orbit);
+            await saveOrbit($, made.orbit, () => keepShelf($));
             // a follow asks a new question: his tick on the old one is no longer his word on it (S3); one step with the
             // save, so a press lands wholly before both or after both
             if (input.op === 'follow') await dropTicks($, oneLine(input.id));
@@ -6527,17 +6339,17 @@ export const register: Register = (on) => {
             turn: (await $.state.get(TURN)).value,
             view: (await $.state.get(VIEW)).value,
         };
-        orbit = kept.orbit
-            ? steeredOrbit(kept.orbit)
-            : await resumeState($).catch(() => EMPTY_ORBIT);
-        isOrbitLoaded = true;
+        await startOrbit($, kept.orbit);
         // a start is where a reload lands: it always takes the kept boxes back
         fieldsTaken = takeFields($);
         await fieldsTaken;
         // a reload after the steer rename or the catch removal keeps a held text: the migrated orbit is written back once
         // through saveOrbit, so a resumed orbit's open asks reach the store every board counts from
-        if (JSON.stringify(orbit) !== JSON.stringify(kept.orbit ?? EMPTY_ORBIT))
-            await saveOrbit($, orbit);
+        if (
+            JSON.stringify(orbitNow()) !==
+            JSON.stringify(kept.orbit ?? EMPTY_ORBIT)
+        )
+            await saveOrbit($, orbitNow(), () => keepShelf($));
         // every board reads the fleet's lanes from the shelf file: at a start, a reload, and on each poll
         lanesShown = '';
         await showLanes($, await readLanes($));
@@ -6728,17 +6540,21 @@ export const register: Register = (on) => {
         // an assumption dima sent back joins his prompt once and leaves orbit
         const wrong =
             turn.isUserTurn && isOn('stash.assumed')
-                ? (orbit.assumed ?? []).filter((x) => x.isWrong)
+                ? (orbitNow().assumed ?? []).filter((x) => x.isWrong)
                 : [];
         if (wrong.length)
             await inMarking(async () => {
                 const o = await currentOrbit($);
-                await saveOrbit($, {
-                    ...o,
-                    assumed: (o.assumed ?? []).filter(
-                        (x) => !wrong.some((w) => w.id === x.id),
-                    ),
-                });
+                await saveOrbit(
+                    $,
+                    {
+                        ...o,
+                        assumed: (o.assumed ?? []).filter(
+                            (x) => !wrong.some((w) => w.id === x.id),
+                        ),
+                    },
+                    () => keepShelf($),
+                );
             });
         const tickets = turn.isUserTurn
             ? await ticketNote($, e.text)
@@ -6749,9 +6565,12 @@ export const register: Register = (on) => {
             (await $.state.get(MOBILE)).value || !isOn('stash.orbit');
         const told = isNoBoard
             ? undefined
-            : orbitReminder(orbit, isOn, toldOrbit, texts.plan);
-        const reminder = isNoBoard ? noBoardReminder(orbit, isOn) : told?.line;
-        const isFirst = orbit.turns === 0 && !orbit.plan && !turn.isPrimed;
+            : orbitReminder(orbitNow(), isOn, toldOrbit, texts.plan);
+        const reminder = isNoBoard
+            ? noBoardReminder(orbitNow(), isOn)
+            : told?.line;
+        const isFirst =
+            orbitNow().turns === 0 && !orbitNow().plan && !turn.isPrimed;
         patchTurn({ isPrimed: true });
         // the lanes speak only in clio's thread: a lane stale after LANE_STALE of her turns, and dima's steer on a current step
         // riding her next prompt once, from any board
@@ -6761,7 +6580,7 @@ export const register: Register = (on) => {
         const lanes = isOwner && isOn('stash.glide') ? await readLanes($) : [];
         const live = lanes.filter((l) => !l.endedAt);
         const staleNow = live.filter(
-            (l) => !l.runner && orbit.turns - l.movedAt >= LANE_STALE,
+            (l) => !l.runner && orbitNow().turns - l.movedAt >= LANE_STALE,
         );
         // a lane is told stale once, and again only after it moved and went stale anew: the move is in the key, since a
         // turn the mod started itself grows the count with no prompt to clear an id
@@ -6772,7 +6591,7 @@ export const register: Register = (on) => {
             .map((l) =>
                 filled(texts.lane ?? LANE_STALE_TEXT, {
                     id: l.id,
-                    n: orbit.turns - l.movedAt,
+                    n: orbitNow().turns - l.movedAt,
                     title: l.title,
                 }),
             );
@@ -6972,7 +6791,7 @@ export const register: Register = (on) => {
         ).catch(() => undefined);
         await refreshThreads($);
         await inMarking(async () =>
-            saveOrbit($, turnEnded(await currentOrbit($))),
+            saveOrbit($, turnEnded(await currentOrbit($)), () => keepShelf($)),
         );
         await windAfterTurn($).catch(() => undefined);
         armRelease($, WIND_DELAY_MS);
@@ -7774,7 +7593,7 @@ export const register: Register = (on) => {
                     const now = board?.at ?? 0;
                     const me = (await $.state.get(VIEW)).value?.selfId;
                     // the board's lower half: this session's orbit and its plan, read here so a mark or a tool call redraws it
-                    const o = (await $.state.get(ORBIT)).value ?? orbit;
+                    const o = (await $.state.get(ORBIT)).value ?? orbitNow();
                     // mobile draws no Input: its steers wait for another surface
                     const Input = 'Input' in ui ? ui.Input : undefined;
                     const open = o.asks.filter((a) => !a.isResolved);
@@ -8334,10 +8153,14 @@ export const register: Register = (on) => {
                         await inMarking(async () => {
                             const was = await currentOrbit($);
                             if (!was.plan) return;
-                            await saveOrbit($, {
-                                ...was,
-                                plan: change(was.plan),
-                            });
+                            await saveOrbit(
+                                $,
+                                {
+                                    ...was,
+                                    plan: change(was.plan),
+                                },
+                                () => keepShelf($),
+                            );
                         });
                     };
                     const handlePlanMove = (i: number, by: -1 | 1) =>
@@ -9307,7 +9130,7 @@ export const register: Register = (on) => {
         const left = await currentId($);
         const r = await next(e);
         if (left) await forget($, left).catch(() => undefined);
-        await saveOrbit($, EMPTY_ORBIT);
+        await saveOrbit($, EMPTY_ORBIT, () => keepShelf($));
         await load($);
         await seatDefaults($).catch(() => undefined);
         return r;
