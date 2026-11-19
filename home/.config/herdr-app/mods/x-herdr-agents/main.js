@@ -312,6 +312,12 @@ export default class Agents extends View {
         return this.changed[a.address]?.at ?? 0;
     }
 
+    /** a real drag is under way or settling: its release is no click */
+    isDragging() {
+        const name = this.drag.state().name;
+        return name === 'dragging' || name === 'settling';
+    }
+
     setOrder(order) {
         this.order = order;
         localStorage.setItem('order', JSON.stringify(order));
@@ -762,11 +768,19 @@ export default class Agents extends View {
             return this.drag
                 .item(
                     h_flex(),
-                    a.address,
-                    item,
-                    from,
-                    (held) => targetOf(held, spot),
-                    name,
+                    {
+                        from,
+                        item,
+                        key: a.address,
+                        label: name,
+                        places:
+                            item?.kind === 'pin'
+                                ? shownPins.length
+                                : item?.kind === 'mine'
+                                  ? shownMine.length
+                                  : (shownTabs[a.space] ?? []).length,
+                        targetFor: (held) => targetOf(held, spot),
+                    },
                     t,
                 )
                 .id(`ag-${a.address}`)
@@ -785,9 +799,8 @@ export default class Agents extends View {
                     cx.notify();
                 })
                 .on_click(() => {
-                    // a drag dropped back on its own row is no click
-                    if (this.drag.state().name === 'idle')
-                        run('pane.focus', { pane: a.pane });
+                    // a drag dropped back on its own row is no click; a plain click may come before the zone's release
+                    if (!this.isDragging()) run('pane.focus', { pane: a.pane });
                 })
                 .when(Boolean(pic), (el) =>
                     el.child(
@@ -907,22 +920,26 @@ export default class Agents extends View {
                     ? this.drag
                           .item(
                               h_flex(),
-                              g.id,
                               {
-                                  id: g.space,
-                                  kind: 'space',
-                                  machine: sp[at].machine ?? null,
-                              },
-                              this.shown.shownSpaces.indexOf(g.space),
-                              (held) =>
-                                  targetOf(held, {
-                                      kind: 'header',
+                                  from: this.shown.shownSpaces.indexOf(g.space),
+                                  item: {
+                                      id: g.space,
+                                      kind: 'space',
                                       machine: sp[at].machine ?? null,
-                                      spaceAt: this.shown.shownSpaces.indexOf(
-                                          g.space,
-                                      ),
-                                  }),
-                              g.label || g.space,
+                                  },
+                                  key: g.id,
+                                  label: g.label || g.space,
+                                  places: this.shown.shownSpaces.length,
+                                  targetFor: (held) =>
+                                      targetOf(held, {
+                                          kind: 'header',
+                                          machine: sp[at].machine ?? null,
+                                          spaceAt:
+                                              this.shown.shownSpaces.indexOf(
+                                                  g.space,
+                                              ),
+                                      }),
+                              },
                               t,
                           )
                           .on_mouse_down('right', () =>
@@ -942,7 +959,7 @@ export default class Agents extends View {
                 .cursor_pointer()
                 .hover((s) => s.text_color(t.foreground))
                 .on_click((_e, cx) => {
-                    if (this.drag.state().name !== 'idle') return;
+                    if (this.isDragging()) return;
                     open ? this.folded.add(g.id) : this.folded.delete(g.id);
                     cx.notify();
                 })

@@ -366,11 +366,14 @@ export default class Tabs extends View {
                                 .child(svg('mods/pane/close.svg').size(12)),
                         ),
                     ),
-                `tab-${c.id}`,
-                { id: c.id },
-                i,
-                () => i,
-                label,
+                {
+                    from: i,
+                    item: { id: c.id },
+                    key: `tab-${c.id}`,
+                    label,
+                    places: shown.length,
+                    targetFor: () => i,
+                },
                 t,
             );
         };

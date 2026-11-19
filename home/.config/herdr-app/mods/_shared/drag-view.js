@@ -5,7 +5,7 @@
 import { div } from 'gpui-kit';
 import { focused, run } from 'herdr';
 
-import { createDrag } from './drag.js';
+import { createDrag, placeAt } from './drag.js';
 
 const SETTLE_MS = 180;
 const SLIDE_MS = 120;
@@ -14,8 +14,9 @@ const FALLBACK_SIZE = 30;
 /**
  * the press, measured: its item, where its element starts in the window and its size along the axis
  * @template T
- * @typedef {{ item: T, start: number, size: number, label: string }} Held
+ * @typedef {{ item: T, start: number, size: number, label: string, places: number }} Held
  */
+
 /** @typedef {Record<'raised' | 'selected' | 'border' | 'foreground', import('gpui-kit').Color>} DragTheme */
 /** @typedef {import('gpui-kit').Context} Context */
 
@@ -98,13 +99,16 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
         },
 
         /**
-         * one draggable element: `from` is its place among its kind, `targetFor` where a held item lands over it
+         * one draggable element: `from` is its place among its kind's `places`, `targetFor` its place for a held item
+         * of another row (null: not of its kind, so it never slides)
          * @template {import('gpui-kit').Element} E
-         * @param {E} el @param {string} key @param {T | null} item null: it takes drops but lifts nothing
-         * @param {number} from @param {(held: T) => number | null} targetFor @param {string} label @param {DragTheme} t
+         * @param {E} el
+         * @param {{ key: string, item: T | null, from: number, places: number, targetFor: (held: T) => number | null,
+         *   label: string }} it `item` null: it lifts nothing
+         * @param {DragTheme} t
          * @returns {E}
          */
-        item(el, key, item, from, targetFor, label, t) {
+        item(el, { from, item, key, label, places, targetFor }, t) {
             const s = drag.state();
             const mine = s.name !== 'idle' && s.key === key;
             const at = s.name === 'idle' ? null : targetFor(s.item.item);
@@ -135,15 +139,7 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
                         .border_color(t.border)
                         .shadow_lg()
                         .cursor_grabbing(),
-                )
-                .on_mouse_move((_e, cx) => {
-                    const now = drag.state();
-                    if (
-                        now.name === 'dragging' &&
-                        drag.over(targetFor(now.item.item))
-                    )
-                        cx.notify();
-                });
+                );
             if (item === null) return placed;
             return placed.on_mouse_down('left', (e, cx) => {
                 const box = e.bounds;
@@ -152,6 +148,7 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
                     {
                         item,
                         label,
+                        places,
                         size: box
                             ? axis === 'y'
                                 ? box.height
@@ -183,10 +180,22 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
                     origin = along(e.position) - along(e.local_position);
                     const was = drag.state().name;
                     if (!drag.pointer(e.position)) return;
-                    if (was === 'pressed' && drag.state().name === 'dragging') {
+                    const now = drag.state();
+                    if (now.name !== 'dragging') return cx.notify();
+                    if (was === 'pressed') {
                         gaveFocus = focused()?.terminal ?? null;
                         focus().focus();
                     }
+                    drag.over(
+                        placeAt(
+                            {
+                                from: now.from,
+                                places: now.item.places,
+                                slot: now.item.size + gap,
+                            },
+                            along(now.pointer) - along(now.at),
+                        ),
+                    );
                     cx.notify();
                 })
                 .on_mouse_up('left', (_e, cx) => {
