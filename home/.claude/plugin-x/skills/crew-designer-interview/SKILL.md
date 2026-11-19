@@ -79,7 +79,7 @@ The questions, drop any the prep settled:
 7. references — up to 3 links with **what exactly to take** from each, yours or his; first, his
    taste or an experiment: a) the brief's References names `~/projects/studio/taste.md` b) it
    stays unread, so a new style can come (dima, 2026-11-12: a pointer, never loaded by default)
-8. do and don't lines — 5 candidates each (don'ts start from the AI look), ticked by default;
+8. do and don't lines — 5 candidates each (don'ts start from the AI look, Inter and Space Grotesk among them unless the brief names one: cc's design default since 2.1.321), ticked by default;
    the brief needs ≥3 of each, and he marks the **hard** ones
 9. states — the takes draw the ideal state + one more and the rest go on the pick, or all
    states now
@@ -125,6 +125,15 @@ map: jobs/<app>/map.md   ← blind only
 Then show dima the brief in five lines (view, the two axes, the hard lines) for a yes or one
 correction round, and hand it off: the designer session starts in `~/projects/studio` with
 `/x:crew-designer <app>`.
+
+## 7. while he reviews — clio's side
+
+- one design lane in review at a time: a second canvas waits until this pick lands
+- one open-asks list with its count, updated in place, never re-printed per lane
+- every pointer to a spot is a link that opens it (a loupe ask, an artifact comment), never a `⌘F` string
+- his thread gets the spread and the pick; the designer's comment rounds stay on the canvas
+
+<!-- the 2026-10-01 speak job: 78 inputs over 381 min, 44 canvas sends, 69 ⌘F strings, asks re-printed up to 7×; recipes/refresh-crew-designer, the 11-19 run. -->
 
 ## completion criterion
 
