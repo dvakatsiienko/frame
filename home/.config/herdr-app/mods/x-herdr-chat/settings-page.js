@@ -1,22 +1,30 @@
-// the settings window's page kept by its overlay: a Keys save reloads this chat, the mod that draws the window, and
-// the window comes back on the page he was on, never the one it was opened with
+// the settings window's page kept through a reload of this chat: a Keys save reloads x-herdr-chat, the mod that
+// draws the window, and the window comes back on the page he was on. overlay ids restart with herdr and herdr's own
+// Esc closes the window past any hook of ours, so a kept page lives only as long as a reload takes
 
 /** @typedef {{ getItem: (key: string) => string | null, setItem: (key: string, value: string) => void }} PageStore */
+
+export const KEPT_PAGE_MS = 10 * 1000;
 
 /** @param {string} overlay */
 const pageKey = (overlay) => `x-herdr-settings.page:${overlay}`;
 
-/** @param {PageStore} store @param {string} overlay @param {string} page */
-export function keepPage(store, overlay, page) {
-    store.setItem(pageKey(overlay), page);
+/** @param {PageStore} store @param {string} overlay @param {string} page @param {number} now */
+export function keepPage(store, overlay, page, now) {
+    store.setItem(pageKey(overlay), JSON.stringify({ at: now, page }));
 }
 
-/** overlay ids restart with herdr: a closed window's page must never open a later window that took its id @param {PageStore & { removeItem: (key: string) => void }} store @param {string} overlay */
-export function forgetPage(store, overlay) {
-    store.removeItem(pageKey(overlay));
-}
-
-/** @param {PageStore} store @param {string} overlay @param {string} asked the page the window was opened on */
-export function pageOnOpen(store, overlay, asked) {
-    return store.getItem(pageKey(overlay)) ?? asked;
+/**
+ * @param {PageStore} store @param {string} overlay @param {string} asked the page the window was opened on
+ * @param {number} now
+ */
+export function pageOnOpen(store, overlay, asked, now) {
+    try {
+        const kept = JSON.parse(store.getItem(pageKey(overlay)) ?? 'null');
+        return typeof kept?.page === 'string' && now - kept.at <= KEPT_PAGE_MS
+            ? kept.page
+            : asked;
+    } catch {
+        return asked;
+    }
 }
