@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T17:34:00Z'
+updated_date: '2026-11-19T17:42:00Z'
 labels:
   - s
   - clio-wing-1
@@ -78,4 +78,11 @@ PK-457:W44 (2026-11-19 19:13, dima): let's measure for 7 days: a first round as 
 PK-457:W45 (2026-11-19 19:33, dima): the designer refresh: the refresh-crew-designer recipe was made long ago, before we stabilized our recipe spec, and as far as i remember it ran only once. let's do it now; the designer is probably simpler, i don't have many new wishes about it.
 PK-457:W46 (2026-11-19 19:33, dima): i just want to know how fable 5.2 is better at designing than fable 5.1 was, which effort is best for fable 5.2 as a designer, and how much better or worse fable 5.2 and opus 5.5 now are as designers.
 PK-457:W47 (2026-11-19 19:33, dima): plus everything else the designer recipe describes. the recipe is old too, made before the recipe spec existed, so let's reshape it and groom it via /clio:shape-recipe.
+
+19:42 designer recipe round 1 answers, his 19:41 drop, folded (q3 skipped = accepted):
+PK-457:W48 (2026-11-19 19:41, dima): q1 yes, but i add another wish: better comms between me and the design phase. in the previous designer runs i had a lot of comms problems: a lot of context switching and back and forth, and we even built a design loop app to simplify my comms.
+PK-457:W49 (2026-11-19 19:41, dima): research: unfold how bad my comms were in the previous design run, and propose how to search; how to query in the right way so it searches for the right thing; how to simplify the comms between the design phase and me, the operator; how to deliver the design flow to me as a smooth experience; how to translate my wishes to the designer properly.
+PK-457:W50 (2026-11-19 19:41, dima): ❓ is design loop a correct solution for that or not?
+PK-457:W51 (2026-11-19 19:41, dima): q2: we did a similar design arena last time; it was interesting, but i had a lot of comms issues, it was very effort-demanding from my side, i got tired very fast, and it took a whole day. i don't have a whole day for another arena run.
+PK-457:W52 (2026-11-19 19:41, dima): to compare fable 5.2 and opus 5.5 for design, this time research only: search the internet for data on who designs better now, fable 5.2 or opus 5.5. keep the design arena idea for the future, not for this time.
 <!-- SECTION:NOTES:END -->
