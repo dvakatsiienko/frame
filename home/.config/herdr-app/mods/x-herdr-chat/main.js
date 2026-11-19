@@ -5,8 +5,6 @@
 
 import { mkdir, readdir, writeFile } from 'fs/promises';
 import {
-    Input,
-    InputState,
     Popover,
     TextView,
     Textarea,
@@ -41,13 +39,7 @@ import {
     writeTextFile,
 } from 'herdr';
 
-import {
-    fileName,
-    isImagePath,
-    pickFiles,
-    pictureOpenArgs,
-    withPaths,
-} from './attach.js';
+import { fileName, isImagePath, pickFiles, withPaths } from './attach.js';
 import { createAttachments } from './attachments.js';
 import {
     AUTO_WIND_DOOR,
@@ -124,6 +116,7 @@ import {
     pickIn,
     runsAtAfter,
 } from './picker.js';
+import { createPictureViewer } from './picture-viewer.js';
 import { createPlace } from './place.js';
 import { sendArgs } from './queued.js';
 import { createQuills } from './quill.js';
@@ -134,14 +127,12 @@ import { SENT_DIR, createSentPictures } from './sent-pictures.js';
 import { readSettings, settingsDir } from './settings-io.js';
 import { createSettingsWindow } from './settings-window.js';
 import {
-    copyPicture,
     deletePreviewCopies,
     loadShots,
     readClipboard,
     saveFileShot,
     saveShots,
     saveSquareThumb,
-    viewCopy,
 } from './shots.js';
 import { asksActedOn, isShownIn, pidFor, shownThread } from './shown.js';
 import { loadableSkills } from './skills.js';
@@ -155,7 +146,6 @@ import {
     withCallRows,
 } from './tool-folds.js';
 import { typedMarkdown } from './typed.js';
-import { openViewer, viewerAfter, viewerCount, viewerLevel } from './viewer.js';
 
 /** @typedef {import('./chat-types.js').Color} Color */
 /** @typedef {import('./chat-types.js').Context} Context */
@@ -611,8 +601,18 @@ export default class Chat extends View {
     isPermsOpen = false;
     /** the open picker holds the keyboard, so ← → reach the slider @type {import('gpui-kit').FocusHandle | null} */
     pickKeys = null;
-    /** the picture viewer over the chat, null when closed @type {import('./viewer.js').ViewerState | null} */
-    viewer = null;
+    /** the picture viewer over the chat (W33/W35) */
+    pictures = createPictureViewer({
+        file: () => this.file,
+        focusQuill: () => this.box?.focus(),
+        isCleanShot: () => this.isCleanShot,
+        isCmdHeld: () => this.isCmdHeld,
+        room: () => ({
+            height: this.viewH || 600,
+            width: this.width || NARROW,
+        }),
+        say: (note, cx) => this.say(note, cx),
+    });
     /** find in the chat (slice 6): the bar and the search the rows mark */
     findBar = createFindBar({
         focusQuill: () => this.box?.focus(),
@@ -639,10 +639,6 @@ export default class Chat extends View {
     skills = new Map();
     /** the skills of the plugins its folder enables @type {Map<string, string>} */
     pluginSkills = new Map();
-    /** the newest open asked: a slow one never reopens over a newer one or a close */
-    viewerAsk = 0;
-    /** @type {import('gpui-kit').FocusHandle | null} */
-    viewerKeys = null;
 
     /** wakes the loop that opens the thread shown: a draw starts no work itself */
     wake = () => {};
@@ -722,7 +718,7 @@ export default class Chat extends View {
         });
         this.box = box;
         this.pickKeys = cx.focus_handle();
-        this.viewerKeys = cx.focus_handle();
+        this.pictures.start(cx);
         // the open viewer holds the keyboard: ← → move, + − 0 zoom, ⌘C copies, Esc closes
         cx.bind_keys(
             [
@@ -890,21 +886,23 @@ export default class Chat extends View {
         this.escapeAsk = acts.lastEscape;
         this.wasShown = isShown;
         // Esc pressed anywhere in the window closes the viewer, or find when no viewer shows (dima, 18:18)
-        if (acts.isEscape && (this.viewer || this.findBar.find.state.isOpen))
+        if (
+            acts.isEscape &&
+            (this.pictures.isOpen() || this.findBar.find.state.isOpen)
+        )
             _cx.timer.after(0, (later) =>
-                this.viewer
-                    ? this.viewerStep('close', later)
+                this.pictures.isOpen()
+                    ? this.pictures.step('close', later)
                     : this.findBar.close(later),
             );
-        if (acts.isFind && !this.viewer)
+        if (acts.isFind && !this.pictures.isOpen())
             _cx.timer.after(0, (later) => this.findBar.open(later));
-        if (acts.isFocus && !this.viewer)
+        if (acts.isFocus && !this.pictures.isOpen())
             _cx.timer.after(50, () => {
                 if (!this.isPickOpen) this.box?.focus();
             });
         // the open viewer holds the keyboard: a click on the list or a later focus of the quill never keeps it
-        if (this.viewer && !this.viewerKeys?.is_focused())
-            _cx.timer.after(0, () => this.viewerKeys?.focus());
+        this.pictures.keepKeys(_cx);
         if (acts.isEffort)
             _cx.timer.after(0, (later) => {
                 const isOpening = !this.isPickOpen;
@@ -1040,246 +1038,10 @@ export default class Chat extends View {
                 .when(this.findBar.find.state.isOpen, (el) =>
                     el.child(this.findBar.view(t)),
                 )
-                .when(Boolean(this.viewer), (el) =>
-                    el.child(this.viewerView(t)),
+                .when(this.pictures.isOpen(), (el) =>
+                    el.child(this.pictures.view(t)),
                 )
         );
-    }
-
-    /**
-     * a click on a picture: the viewer over the chat, or with ⌘ held his desktop app (CleanShot annotate by default)
-     * @param {string[]} files @param {number} at @param {Context} cx
-     */
-    showPictures(files, at, cx) {
-        const file = files[at];
-        if (this.isCmdHeld && file)
-            exec('open', pictureOpenArgs(file, this.isCleanShot)).catch(
-                () => {},
-            );
-        else this.openPictures(files, at, cx);
-    }
-
-    /**
-     * the viewer opens on these pictures, at the one clicked; each is read whole first
-     * @param {string[]} files @param {number} at @param {Context} cx
-     */
-    openPictures(files, at, cx) {
-        const { file } = this;
-        const ask = ++this.viewerAsk;
-        cx.spawn(async (cx) => {
-            const made = await Promise.all(files.map((f) => viewCopy(f)));
-            /** @type {import('./viewer.js').Shown[]} */
-            const shown = [];
-            // a later click, a close or a thread switch outranks this one
-            if (this.file !== file || this.viewerAsk !== ask) return;
-            // the picture clicked opens, or nothing: never a sibling in its place
-            if (!made[at]) return this.say('That picture is gone', cx);
-            let from = 0;
-            made.forEach((copy, i) => {
-                if (!copy) return;
-                if (i === at) from = shown.length;
-                shown.push({ ...copy, file: files[i] ?? '' });
-            });
-            this.viewer = openViewer(shown, from);
-            if (this.viewer) cx.timer.after(16, () => this.viewerKeys?.focus());
-            cx.notify();
-        });
-    }
-
-    /** @param {import('./viewer.js').ViewerStep | 'copy' | 'open' | 'folder'} step @param {Context} cx */
-    viewerStep(step, cx) {
-        const shown = this.viewer?.pictures[this.viewer.at];
-        if (step === 'copy') {
-            if (shown) copyPicture(shown.file).catch(() => {});
-            return;
-        }
-        if (step === 'open' || step === 'folder') {
-            if (shown)
-                exec(
-                    'open',
-                    step === 'open'
-                        ? pictureOpenArgs(shown.file, this.isCleanShot)
-                        : ['-R', shown.file],
-                ).catch(() => {});
-            return;
-        }
-        this.viewer = viewerAfter(this.viewer, step);
-        if (!this.viewer) {
-            this.viewerAsk += 1;
-            this.box?.focus();
-        }
-        cx.notify();
-    }
-
-    /** the picture viewer over the whole chat (W33/W35) @param {Theme} t */
-    viewerView(t) {
-        const state = this.viewer;
-        const shown = state?.pictures[state.at];
-        if (!state || !shown) return div();
-        const roomW = Math.max(120, (this.width || NARROW) - 48);
-        const roomH = Math.max(120, (this.viewH || 600) - 24);
-        const fit = Math.min(1, roomW / shown.w, roomH / shown.h);
-        const scale = fit * state.zoom;
-        /** @param {string} id @param {string} glyph @param {string} hint @param {import('./viewer.js').ViewerStep | 'copy' | 'open' | 'folder'} step */
-        const button = (id, glyph, hint, step) =>
-            div()
-                .id(`chat-viewer-${id}`)
-                .h(28)
-                .min_w(28)
-                .px(8)
-                .flex()
-                .items_center()
-                .justify_center()
-                .rounded_full()
-                .cursor_pointer()
-                .hover((style) => style.bg(t.border))
-                .tooltip(hint)
-                .on_click((_e, cx) => {
-                    cx.stop_propagation();
-                    this.viewerStep(step, cx);
-                })
-                .child(glyph);
-        const actions = /** @type {const} */ ([
-            'previous',
-            'next',
-            'zoom in',
-            'zoom out',
-            'fit',
-            'copy',
-            'close',
-        ]);
-        const root = v_flex()
-            .id('chat-viewer')
-            .track_focus(
-                /** @type {import('gpui-kit').FocusHandle} */ (this.viewerKeys),
-            )
-            .key_context('ChatViewer')
-            .absolute()
-            .top(0)
-            .left(0)
-            .size_full()
-            .bg(tint(t.background, 'f2'))
-            .on_mouse_down('left', (_e, cx) => {
-                cx.stop_propagation();
-                this.viewerKeys?.focus();
-            })
-            // the tools sit centred on a pill of their own, so they read apart from the picture (dima, 17:40)
-            .child(
-                h_flex()
-                    .flex_none()
-                    .w_full()
-                    .py(10)
-                    .justify_center()
-                    .child(
-                        h_flex()
-                            .px(8)
-                            .py(4)
-                            .gap(2)
-                            .items_center()
-                            .rounded_full()
-                            .bg(t.raised)
-                            .border(1)
-                            .border_color(t.border)
-                            .text_color(t.foreground)
-                            .child(
-                                button('out', '−', 'Zoom out (−)', 'zoom out'),
-                            )
-                            .child(
-                                div()
-                                    .id('chat-viewer-level')
-                                    .min_w(48)
-                                    .flex()
-                                    .justify_center()
-                                    .text_size(12)
-                                    .text_color(t.muted)
-                                    .cursor_pointer()
-                                    .tooltip('Fit (0)')
-                                    .on_click((_e, cx) =>
-                                        this.viewerStep('fit', cx),
-                                    )
-                                    .child(viewerLevel(state)),
-                            )
-                            .child(button('in', '+', 'Zoom in (+)', 'zoom in'))
-                            .child(div().w(1).h(16).mx(6).bg(t.border))
-                            .child(
-                                button(
-                                    'copy',
-                                    '⧉',
-                                    'Copy picture (⌘C)',
-                                    'copy',
-                                ),
-                            )
-                            .child(
-                                button(
-                                    'open',
-                                    '↗',
-                                    this.isCleanShot
-                                        ? 'Open in CleanShot (⌘-click a square)'
-                                        : 'Open in Preview (⌘-click a square)',
-                                    'open',
-                                ),
-                            )
-                            .child(
-                                button(
-                                    'folder',
-                                    '📁',
-                                    'Show in Finder',
-                                    'folder',
-                                ),
-                            )
-                            .when(state.pictures.length > 1, (el) =>
-                                el
-                                    .child(div().w(1).h(16).mx(6).bg(t.border))
-                                    .child(
-                                        button(
-                                            'prev',
-                                            '←',
-                                            'Previous (←)',
-                                            'previous',
-                                        ),
-                                    )
-                                    .child(
-                                        div()
-                                            .min_w(40)
-                                            .flex()
-                                            .justify_center()
-                                            .text_size(12)
-                                            .text_color(t.muted)
-                                            .child(viewerCount(state)),
-                                    )
-                                    .child(
-                                        button('next', '→', 'Next (→)', 'next'),
-                                    ),
-                            )
-                            .child(div().w(1).h(16).mx(6).bg(t.border))
-                            .child(
-                                button('close', '✕', 'Close (Esc)', 'close'),
-                            ),
-                    ),
-            )
-            .child(
-                div()
-                    .id('chat-viewer-room')
-                    .flex_1()
-                    .min_h(0)
-                    .overflow_scroll()
-                    .flex()
-                    .items_center()
-                    .justify_center()
-                    .child(
-                        div()
-                            .flex_none()
-                            .w(Math.round(shown.w * scale))
-                            .h(Math.round(shown.h * scale))
-                            .child(image(shown.rel).size_full()),
-                    ),
-            );
-        for (const step of actions)
-            root.on_action(
-                `x_herdr_chat_viewer_${step.replace(' ', '_')}`,
-                (_e, cx) => this.viewerStep(step, cx),
-            );
-        return root;
     }
 
     /** the band and the bottom bar as they draw now @param {number} now */
@@ -2529,7 +2291,7 @@ export default class Chat extends View {
                                   const pictures = waiting
                                       .map((w) => w.path)
                                       .filter(isImagePath);
-                                  this.showPictures(
+                                  this.pictures.show(
                                       pictures,
                                       pictures.indexOf(path),
                                       cx,
@@ -2733,7 +2495,7 @@ export default class Chat extends View {
                 }
                 const opened = this.picturesAt(rows, key);
                 if (opened)
-                    return this.showPictures(opened.files, opened.at, cx);
+                    return this.pictures.show(opened.files, opened.at, cx);
                 const path = fileAt(rows, key);
                 if (path) exec('open', openArgs(path)).catch(() => {});
             })
@@ -3284,9 +3046,8 @@ export default class Chat extends View {
         this.address = null;
         this.note = null;
         // the viewer and find belong to the thread they opened on
-        this.viewer = null;
+        this.pictures.close();
         this.findBar.reset();
-        this.viewerAsk += 1;
         this.joins = null;
         // no button shows or presses a thread no longer on screen; the fleet's facts stay
         this.bandThread = null;
