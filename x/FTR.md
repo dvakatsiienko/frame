@@ -101,6 +101,10 @@
   - when `x lane commit --hold-unstaged <msg-file> -- <paths>` runs
   - then the hooks see only the index version of the tree, the commit lands, and every held file is back byte for byte — also when a hook refuses
   - decision: the files move into the git dir, never the shared stash stack another session could pop
+- ✅ `x lane commit --hold-unstaged` never takes or overwrites a peer's live work
+  - given a dirty path a live peer holds in x-mod-holds, then it stays in the tree, and the envelope names it in `leftForPeers`
+  - given a held path written while the hooks run, then the newer write stays, the held version waits in the held dir, and the run exits 1 naming the path
+  - proof: go/verbs_test.go::TestHoldUnstagedLeavesAPathALivePeerHolds, TestHoldUnstagedKeepsAWriteThatLandedDuringTheHold
 - ⬜ `x lane commit --bump <plugin>` lands a change and its plugin bump in one commit (FRM-436)
   - given a changed plugin, when `x lane commit --bump <plugin> <msg-file> -- <paths>` runs, then one commit holds the change and the patch step of its `plugin.json`, and `plugin.json` is clean after; the flag alone makes a bump-only commit
   - given a red gate, then `plugin.json` is byte for byte as before and unstaged, so a green re-run steps the version once

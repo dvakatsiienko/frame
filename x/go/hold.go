@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -20,6 +21,7 @@ import (
 type held struct {
 	dir   string
 	files []heldFile
+	peers []string // dirty paths a live peer holds in x-mod-holds, left in the tree
 }
 
 type heldFile struct {
@@ -27,6 +29,7 @@ type heldFile struct {
 	tracked bool   // the index version is checked out while it is held
 	deleted bool   // gone from the tree, in the index: held as an absence
 	sum     string
+	left    string // what the hold left in the tree, "" for nothing: anything else at restore is a newer write
 }
 
 func holdAside(tree string, named []string) (*held, error) {
@@ -66,6 +69,19 @@ func holdAside(tree string, named []string) (*held, error) {
 			pending = append(pending, heldFile{path: path, tracked: true})
 		}
 	}
+	// a live peer may write its held file while the hooks run, so that file stays where it is
+	paths := make([]string, len(pending))
+	for i, f := range pending {
+		paths[i] = f.path
+	}
+	peers := map[string]bool{}
+	for _, p := range heldByOthers(tree, paths) {
+		if !peers[p.named] {
+			peers[p.named] = true
+			h.peers = append(h.peers, p.named)
+		}
+	}
+	pending = slices.DeleteFunc(pending, func(f heldFile) bool { return peers[f.path] })
 	// a file joins the restore list the moment its tree state changed, never before: restore removes
 	// a tracked file's index copy, and an untaken one would lose the work still in it
 	for _, f := range pending {
@@ -103,18 +119,61 @@ func (h *held) take(tree string, f *heldFile) (bool, error) {
 		}
 	}
 	if f.tracked {
-		_, err := mustGitIn(tree, "checkout", "checkout", "--", f.path)
-		return true, err
+		if _, err := mustGitIn(tree, "checkout", "checkout", "--", f.path); err != nil {
+			return true, err
+		}
+		f.left = treeSum(filepath.Join(tree, f.path))
 	}
 	return true, nil
 }
 
+// a file comes back by a hard link, which refuses a path a peer wrote after the check; a link or a
+// dir cannot be linked portably, so it is renamed
+func putBack(from, to string) error {
+	if info, err := os.Lstat(from); err != nil || !info.Mode().IsRegular() {
+		return os.Rename(from, to)
+	}
+	if err := os.Link(from, to); err != nil {
+		return err
+	}
+	return os.Remove(from)
+}
+
+func treeSum(path string) string {
+	sum, _ := checksum(path)
+	return sum
+}
+
+func (h *held) summary() string {
+	said := plural(len(h.files), "file") + " held in " + home(h.dir)
+	if len(h.peers) > 0 {
+		said += "; left in place, a live peer holds them: " + strings.Join(h.peers, ", ")
+	}
+	return said
+}
+
+func (h *held) leftForPeers() ordered {
+	if h == nil || len(h.peers) == 0 {
+		return nil
+	}
+	return ordered{{"leftForPeers", h.peers}}
+}
+
 // restore puts every held file back and reads each one again; any difference is a failure that
-// names the held dir, which is kept until every file is back
-func (h *held) restore(tree string) error {
-	var lost []string
+// names the held dir, which is kept until every file is back. committed is the sha a landed commit
+// made, so an agent reading the failure never redoes or undoes it
+func (h *held) restore(tree, committed string) error {
+	var lost, kept, undeleted []string
 	for _, f := range h.files {
 		target := filepath.Join(tree, f.path)
+		if treeSum(target) != f.left {
+			if f.deleted {
+				undeleted = append(undeleted, f.path)
+			} else {
+				kept = append(kept, f.path)
+			}
+			continue
+		}
 		if f.tracked {
 			_ = os.Remove(target)
 		}
@@ -125,7 +184,10 @@ func (h *held) restore(tree string) error {
 			lost = append(lost, f.path)
 			continue
 		}
-		if err := os.Rename(filepath.Join(h.dir, f.path), target); err != nil {
+		if err := putBack(filepath.Join(h.dir, f.path), target); errors.Is(err, fs.ErrExist) {
+			kept = append(kept, f.path)
+			continue
+		} else if err != nil {
 			lost = append(lost, f.path)
 			continue
 		}
@@ -133,9 +195,21 @@ func (h *held) restore(tree string) error {
 			lost = append(lost, f.path)
 		}
 	}
+	var msg []string
+	if len(kept) > 0 {
+		msg = append(msg, strings.Join(kept, ", ")+" changed during the hold: the newer write stays, the held version waits in the held dir")
+	}
+	if len(undeleted) > 0 {
+		msg = append(msg, strings.Join(undeleted, ", ")+" was deleted before the hold and written during it: the newer write stays")
+	}
 	if len(lost) > 0 {
-		return &Fail{Msg: "held files did not come back byte for byte: " + strings.Join(lost, ", "),
-			Next: "copy them back from " + h.dir}
+		msg = append(msg, "held files did not come back byte for byte: "+strings.Join(lost, ", "))
+	}
+	if len(msg) > 0 && committed != "" {
+		msg = append([]string{"committed " + short(committed)}, msg...)
+	}
+	if len(msg) > 0 {
+		return &Fail{Msg: strings.Join(msg, "; "), Next: "merge or copy them back from " + h.dir}
 	}
 	_ = os.RemoveAll(h.dir)
 	_ = os.Remove(filepath.Dir(h.dir))

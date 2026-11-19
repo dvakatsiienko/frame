@@ -334,12 +334,12 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 			taken, err := holdAside(tree, paths)
 			if err != nil {
 				if taken != nil {
-					err = errors.Join(err, taken.restore(tree))
+					err = errors.Join(err, taken.restore(tree, ""))
 				}
 				return "", err
 			}
 			aside = taken
-			return plural(len(aside.files), "file") + " held in " + home(aside.dir), nil
+			return aside.summary(), nil
 		}); err != nil {
 			return nil, err
 		}
@@ -400,7 +400,7 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	// the held files come back whether the hooks passed or refused
 	if aside != nil {
 		if err := r.Step("restore", "putting the held files back", func() (string, error) {
-			return plural(len(aside.files), "file") + " back, byte for byte", aside.restore(tree)
+			return plural(len(aside.files), "file") + " back, byte for byte", aside.restore(tree, sha)
 		}); err != nil {
 			// both failed: the hook's words and the held dir are each the caller's next move
 			if refused, ok := errors.AsType[*Fail](stopped); ok {
@@ -418,7 +418,7 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	}
 	branch, _ := git("symbolic-ref", "--quiet", "--short", "HEAD")
 	r.Done(fmt.Sprintf("%s on %s, %s", short(sha), branch.out, plural(len(present), "path")), "x lane push --apply")
-	data := ordered{{"branch", branch.out}, {"sha", sha}, {"tree", tree}}
+	data := append(ordered{{"branch", branch.out}, {"sha", sha}, {"tree", tree}}, aside.leftForPeers()...)
 	if said := withWait(waited, ""); said != "" {
 		data = append(data, kv{"waited", said})
 	}
