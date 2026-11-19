@@ -31,6 +31,10 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a turn took dima's 🛎️ or 🔁 press
   - then both buttons stay, still and faded, the taken one reading 😋, and the steer box stays with his words, no longer editable, until the ask leaves the deck
   - decision: dima, 21:03
+- 🧭 an ask its thread updates under the same id shows 🆕 and starts clean (FRM-620 slice 1)
+  - given an ask on the deck, with or without his steer typed or his tick on it
+  - when its thread follows it up: a new text or pick under the same id
+  - then 🆕 leads its label, its steer box is empty, and it reads open, his old tick gone; 🆕 stays until he presses it or the ask leaves (W1, W2, W13)
 - ✅ ask text keeps a literal `<word>`
   - given an ask, a pick or a waiting-on line holds `<target>` outside a code span
   - then the deck draws it as written, never dropped as html

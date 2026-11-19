@@ -513,6 +513,27 @@ export function askLabel(thread, id) {
 }
 
 /**
+ * the asks updated under their id since the last read (FRM-620 W1, W2, W13): a new text or pick on an id seen before.
+ * herdr's state file carries no «changed» flag, so the deck tells by what it saw; an ask that left is forgotten
+ * @param {Record<string, string>} seen `sid:id` → the text and pick it last had
+ * @param {{ sid: string, asks: { id: string | null, text: string, pick?: string | null }[] }[]} rows
+ * @returns {{ seen: Record<string, string>, updated: string[] }}
+ */
+export function askRounds(seen, rows) {
+    /** @type {Record<string, string>} */
+    const next = {};
+    const updated = [];
+    for (const s of rows)
+        for (const ask of s.asks) {
+            if (!ask.id) continue;
+            const key = `${s.sid}:${ask.id}`;
+            next[key] = `${ask.text}\n${ask.pick ?? ''}`;
+            if (key in seen && seen[key] !== next[key]) updated.push(key);
+        }
+    return { seen: next, updated };
+}
+
+/**
  * a key in an ask's steer box: Enter is 🛎️, cmd-enter 🔁, each pressed a second time taking its press back (dima,
  * 20:34); a guarded ask's tick stays his click, as no key reaches an unlocking press
  * @param {PressState} state @param {boolean} isCmd @param {boolean} isGated
@@ -721,4 +742,39 @@ export function tickAllThread(sids, { hovered, picked, shown }) {
         [hovered, picked, shown].find((sid) => sid && sids.includes(sid)) ??
         null
     );
+}
+
+/** a value kept in this copy's localStorage, which outlives a reload; null when missing or refused @param {string} key */
+export function kept(key) {
+    try {
+        return localStorage.getItem(key);
+    } catch {
+        return null;
+    }
+}
+/** @param {string} key @param {string} value an empty value removes it */
+export function keep(key, value) {
+    try {
+        if (value) localStorage.setItem(key, value);
+        else localStorage.removeItem(key);
+    } catch {}
+}
+
+/**
+ * askRounds against what this copy kept: the updated set carried and stored, the keys whose steer clears now (their
+ * kept steer cleared here). null: the copy just started, so the stored set comes back
+ * @param {Set<string> | null} updated
+ * @param {Parameters<typeof askRounds>[1]} rows
+ */
+export function roundsKept(updated, rows) {
+    const was = updated ?? new Set(JSON.parse(kept('updated') ?? '[]'));
+    const { seen, updated: cleared } = askRounds(
+        JSON.parse(kept('seen') ?? '{}'),
+        rows,
+    );
+    for (const key of cleared) keep(`steer:${key}`, '');
+    const now = new Set([...was, ...cleared].filter((key) => key in seen));
+    keep('seen', JSON.stringify(seen));
+    keep('updated', JSON.stringify([...now]));
+    return { cleared, updated: now };
 }

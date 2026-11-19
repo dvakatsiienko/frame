@@ -7,6 +7,7 @@ import {
     READ_STALL_MS,
     THREADS_BEAT_MS,
     askLabel,
+    askRounds,
     asksOf,
     byName,
     canTakeBack,
@@ -706,6 +707,35 @@ describe("«tick all» ticks one thread's open asks (FRM-589)", () => {
             await tickAll(shelf(files), 't', rows, 'Z', allOpen, none, 1),
         ).toEqual([]);
         expect(files).toEqual({});
+    });
+});
+
+// FRM-620 W1, W2, W13: an ask clio updates under the same id clears his old steer and shows «updated»
+describe('an ask updated under its id', () => {
+    const row = (text: string, pick = 'yes') => [
+        { asks: [{ id: 'o1', pick, text }], sid: 's' },
+    ];
+
+    test('an ask seen the first time is not an update', () => {
+        expect(askRounds({}, row('ship it?')).updated).toEqual([]);
+    });
+
+    test('a new text under the same id is an update', () => {
+        const { seen } = askRounds({}, row('ship it?'));
+        expect(askRounds(seen, row('ship it now?')).updated).toEqual(['s:o1']);
+    });
+
+    test('a new pick under the same id is an update too', () => {
+        const { seen } = askRounds({}, row('ship it?'));
+        expect(askRounds(seen, row('ship it?', 'no')).updated).toEqual([
+            's:o1',
+        ]);
+    });
+
+    test('an unchanged ask is no update, and an ask that left is forgotten', () => {
+        const { seen } = askRounds({}, row('ship it?'));
+        expect(askRounds(seen, row('ship it?')).updated).toEqual([]);
+        expect(askRounds(seen, []).seen).toEqual({});
     });
 });
 

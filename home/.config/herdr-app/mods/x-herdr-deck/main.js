@@ -36,6 +36,8 @@ import {
     hotPressLine,
     hotPresses,
     inListOrder,
+    keep,
+    kept,
     linkOf,
     literalAngles,
     nextThreads,
@@ -43,6 +45,7 @@ import {
     pressLabel,
     pressOf,
     psStartArgs,
+    roundsKept,
     runningThreads,
     savePress,
     stateOfPid,
@@ -158,22 +161,9 @@ const STEER_CMD_ENTER = 'x_herdr_deck_steer_cmd_enter';
 // how long a press given up by time says so: long enough to be seen when he looks back at the board
 const GIVEN_UP_NOTE_MS = 30 * 1000;
 
-// a steer he is typing outlives a reload of this mod: localStorage is kept across a copy's restart
-/** @param {string} key */
-function keptSteer(key) {
-    try {
-        return localStorage.getItem(`steer:${key}`) ?? '';
-    } catch {
-        return '';
-    }
-}
-/** @param {string} key @param {string} text */
-function keepSteer(key, text) {
-    try {
-        if (text) localStorage.setItem(`steer:${key}`, text);
-        else localStorage.removeItem(`steer:${key}`);
-    } catch {}
-}
+const keptSteer = (/** @type {string} */ key) => kept(`steer:${key}`) ?? '';
+const keepSteer = (/** @type {string} */ key, /** @type {string} */ text) =>
+    keep(`steer:${key}`, text);
 
 /** @type {Record<string, string>} */
 const STATE = {
@@ -294,6 +284,8 @@ export default class Deck extends View {
         // a steer box per open ask, made when a read finds the ask: an InputState is never made while drawing
         /** @type {Map<string, import('gpui-base').InputState>} */
         this.steers = new Map();
+        /** the asks clio updated since he last pressed them (FRM-620): their steer cleared, 🆕 on them */
+        this.updated = /** @type {Set<string> | null} */ (null);
         // the gated asks a «tick all» passed over, `sid:id`: each says it still needs his own press
         /** @type {Set<string>} */
         this.passedOver = new Set();
@@ -431,6 +423,9 @@ export default class Deck extends View {
                 keepSteer(key, '');
             }
         }
+        const rounds = roundsKept(this.updated ?? null, this.rows);
+        this.updated = rounds.updated;
+        for (const key of rounds.cleared) this.steers.get(key)?.set_value('');
         for (const s of this.rows)
             for (const ask of s.asks) {
                 const key = `${s.sid}:${ask.id}`;
@@ -699,6 +694,7 @@ export default class Deck extends View {
         const key = `${s.sid}:${id}`;
         const steer = this.steers.get(key)?.value().trim();
         const at = Date.now();
+        this.updated?.delete(key);
         this.pressMade(cx, key, verdict, at);
         cx.notify();
         try {
@@ -1155,7 +1151,8 @@ export default class Deck extends View {
     /** @param {Theme} t @param {Row} s @param {Ask} ask @param {string} id */
     askLine(t, s, ask, id) {
         if (!ask.id) return prose(id, ask.text, t.foreground, SIZE.main);
-        const label = askLabel(s.name, ask.id);
+        const isUpdated = this.updated?.has(`${s.sid}:${ask.id}`);
+        const label = `${isUpdated ? '🆕 ' : ''}${askLabel(s.name, ask.id)}`;
         const width =
             (this.labelW.get(label) ?? label.length * 0.62 * SIZE.main) + 6;
         return div()
