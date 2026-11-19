@@ -123,7 +123,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
 - ⬜ a reply's files open in one click from rows under it (FRM-587)
   - given a reply names a file by a bare path, a `~` path, a quoted or backslash-escaped path, a `file://` link or a markdown link to one
   - then each file gets one row under the reply, «🖼️ <name>» for a picture and «📂 <name>» for any other file, its whole path on hover, and a click opens it in its app (a png in Preview, a folder in Finder)
-  - 🧭 and a click on an audio file (mp3, m4a, wav, flac, …) opens it in the app «open audio in» names in x-herdr-settings › general: IINA by default, QuickTime, VLC or the macOS default (dima, 19 Nov 17:53: «they open in apple music»)
+  - ✅ and a click on an audio file (mp3, m4a, wav, flac, …) opens it in the app «open audio in» names in x-herdr-settings › general: IINA by default, QuickTime, VLC or the macOS default (dima, 19 Nov 17:53: «they open in apple music»)
   - and a path inside a fenced block gets no row, a sentence's period or comma is not part of the path, and the same file twice is one row
   - and a reply's pictures draw together as squares under it, the way his own do, and a click opens them in the viewer (FRM-638 slice 5, dima 16:59)
   - decision: each file is its own row in the list, opened through the list's item click: a handler inside a row blanked the whole list; a link click inside the text waits on [herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894)
@@ -281,6 +281,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - given herdr focused, when he presses ⌘E, then the deck shows or hides
   - given a key of ours that herdr already binds, then the keys page marks ours refused and herdr's key keeps working
   - and x-herdr-settings' keys page lists ours, then herdr's own, each rebindable: a click on a key's cap takes the next chord, Esc gives up; cmd-enter is listed, never written into his keys.json
+  - and a rebind reloads every x-herdr mod through `keys-change.ts reload`, so no mod's keys go dead, and the window stays on the keys page (FRM-569; dima, 19 Nov 18:53: «after rebind tab switches to dock tab»)
   - decision: our keys go to x-herdr-status, always placed: herdr calls a command of a mod it does not draw «unknown»
 
 ## the deck's steers (x-herdr-deck)

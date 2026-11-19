@@ -23,6 +23,7 @@ import {
     rowWords,
     settingRows,
 } from './settings-model.js';
+import { keepPage, pageOnOpen } from './settings-page.js';
 import {
     noteHint,
     noteShown,
@@ -54,7 +55,7 @@ export function createSettingsWindow(at, cx) {
         noteBoxes: /** @type {Map<string, any>} */ (new Map()),
         noteDefaults: /** @type {Record<string, string>} */ ({}),
         notes: /** @type {Record<string, string>} */ ({}),
-        page: at.page,
+        page: pageOnOpen(localStorage, at.overlay, at.page),
         pending: /** @type {Record<string, unknown>} */ ({}),
         recording: /** @type {string | null} */ (null),
         values: /** @type {Record<string, unknown>} */ ({}),
@@ -192,6 +193,7 @@ export function createSettingsWindow(at, cx) {
         /** @param {string} id @param {any} cx */
         pickPage(id, cx) {
             s.page = id;
+            keepPage(localStorage, at.overlay, id);
             s.recording = null;
             cx.notify();
         },
