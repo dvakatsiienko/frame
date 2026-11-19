@@ -4,10 +4,9 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T18:58:00Z'
+updated_date: '2026-11-19T19:27:00Z'
 labels:
   - s
-  - clio-wing-1
 dependencies: []
 priority: next
 type: task
@@ -95,4 +94,6 @@ PK-457:W55 (2026-11-19 20:11, dima): inter is actually not a bad font, i think i
 the 19:08 fold, restored: his raw text read «after it ends ~5 nov i most likely move to 100$ plan»; the date was dropped in the fold. inference: he means ~5 Dec (the $200 plan started ~5 Nov, habit-ctx-load-balancing); ask him at his next prompt.
 
 20:58 o6: dima confirmed the plan move is ~5 Dec («yes, ~5 dec»); the effort-raise trial re-measures its rate then. o5: he kept the model-cards quote cut.
+
+21:27 handed back at wing 1's halt: the three refreshes done (read-aloud, fable 5.2 and model cards, designer); left: the W-lines fold into FRM-288's re-sign at speak v2's shape-idea, the design-loupe probe and the W49 search/query tail (wing 1 flyway f46, f47).
 <!-- SECTION:NOTES:END -->
