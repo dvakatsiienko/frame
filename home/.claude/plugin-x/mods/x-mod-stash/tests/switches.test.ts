@@ -214,15 +214,17 @@ const SCENARIOS: Record<string, Scenario> = {
         trace: /lane l1/,
     },
     'stash.hot': {
-        arm: async ($) => {
+        // the ping is armed at the turn's end and held until an advance crosses it; a hold past 10 s of real time is let
+        // go (the mock clock's hook budget), so at its 50 min default the ~750 polls on the way spent the budget at load ≥ 18
+        // (6 of 12 reds on 19 Nov). the knob's 1 min floor times the hot path alone, and a slowed path still reds
+        arm: async ($, w) => {
+            w.store.set('hot-minutes', 1);
             await endTurn($);
         },
-        // the ping lands 50 min after the turn's end: settle on its line a minute at a time, each its own call, so no one
-        // advance runs past the 10 s hook budget at load (FRM-649: 5 min steps still did at load 25)
         fire: async (_$, w) => {
             for (
                 let i = 0;
-                i < 60 && !w.lines.some((l) => /^turn: .*keep-hot/.test(l));
+                i < 2 && !w.lines.some((l) => /^turn: .*keep-hot/.test(l));
                 i++
             )
                 await w.clock.advance(MIN);

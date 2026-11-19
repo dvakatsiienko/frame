@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T18:04:00Z'
+updated_date: '2026-11-19T18:21:00Z'
 labels:
   - s
   - clio-wing-1
@@ -87,4 +87,10 @@ PK-457:W51 (2026-11-19 19:41, dima): q2: we did a similar design arena last time
 PK-457:W52 (2026-11-19 19:41, dima): to compare fable 5.2 and opus 5.5 for design, this time research only: search the internet for data on who designs better now, fable 5.2 or opus 5.5. keep the design arena idea for the future, not for this time.
 
 20:04 kept: a0437f6 reshaped the designer recipe, one step of three; the item stays for its fable 5.2 and model-cards refresh and speak v2 (wing 1 f44)
+
+20:21 wishkeeper siesta fold — his 20:07–20:11 herdr words and a W43 restore:
+PK-457:W53 (2026-11-19 20:07, dima): let's probe design-loupe's replacement tomorrow, once you get summoned, via some cheap probe; not today, i'm tired.
+PK-457:W54 (2026-11-19 20:08, dima, o11 steer): xhigh, no. high is most likely my pick for fable 5.2 as designer. i'm still in doubt, fable 5.2 high or opus 5.5 high; i think fable.
+PK-457:W55 (2026-11-19 20:11, dima): inter is actually not a bad font, i think it's fine, but i'm also interested in other great fonts.
+the 19:08 fold, restored: his raw text read «after it ends ~5 nov i most likely move to 100$ plan»; the date was dropped in the fold. inference: he means ~5 Dec (the $200 plan started ~5 Nov, habit-ctx-load-balancing); ask him at his next prompt.
 <!-- SECTION:NOTES:END -->

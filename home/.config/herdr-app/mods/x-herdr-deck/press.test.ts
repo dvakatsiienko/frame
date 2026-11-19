@@ -28,6 +28,13 @@ const run = (
 
 const shown = (record: PressRecord | null) => pressState(record);
 
+// FRM-620 W13: a follow-up drops the ask's mark in the store, so his old tick must not stay drawn
+test('a ticked ask its thread updates reads open again once the store drops the mark', () => {
+    expect(
+        shown(run(null, read({ mark: 'accepted' }), read({ mark: null }))),
+    ).toBe('open');
+});
+
 describe('a read of the shelf makes and moves the record', () => {
     test('an ask first read is drawn as the shelf has it', () => {
         expect(shown(run(null, read()))).toBe('open');
