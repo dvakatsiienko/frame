@@ -3,7 +3,7 @@ kind: refresh
 owner: coordinator
 artifacts: [home/.claude/plugin-x/skills/crew-lead/, _clio/memory/craft-fleet-flow.md, _clio/memory/craft-pm.md, _clio/memory/habit-cto.md, home/.claude/plugin-x/skills/crew-lead/references/spawn-mechanics.md, home/.claude/plugin-x/skills/crew-lead/references/model-cards.md, home/.claude/plugin-x/skills/crew-lead/references/card-craft.md, home/.claude/rules/fleet-flow.md, home/.claude/rules/fleet-identity.md, home/.claude/agents/, _clio/.claude/agents/, x:crew-sixth-sense]
 script: none
-groomed: 2026-11-04 (dima)
+groomed: 2026-11-19 (dima)
 was: [refresh-spawn-mechanics, refresh-spawn-models, refresh-craft-spawning, refresh-coordinator]
 ---
 
@@ -68,6 +68,16 @@ the pure lane coordinator (dima's, 2026-11-04, folded):
 > «this recipe was sharpened against clio as a coordinator, but with tilde we support both until we measure whether tilde works at all. i want this run's research pointed at the tilde model, not the shared clio-as-coordinator one: how do we properly make a pure coordinator work, since tilde is a pure coordinator and is not meant to do anything else?»
 >
 > «how a pure lane coordinator works, one that plans nothing and builds nothing: what it does, what it refuses, how it filters what reaches clio, and what makes it fail.»
+
+fable 5.2 and every model we run (dima's, 2026-11-19, PK-457:W27–W35):
+
+> «we should know where and when fable 5.2 is good. it's 20 % cheaper than fable 5.1 medium, still expensive … fable 5.1 retires with this.»
+>
+> «the data should be precise: the price, where and how it is best to summon fable 5.2, the best baseline effort setting, and when low or high matters. from what i saw, anything higher than high is wasted inference; the research may tell otherwise, so you tell me.»
+>
+> «refresh the knowledge about every model we use: opus, sonnet and haiku … after we have the numbers, compare them to how our system uses each model today, operation by operation, and tell me whether we use each model for the right tasks, and at the right effort.»
+>
+> «if i had more usage … fable 5.2 on medium for clio and all wings; all codies and verifiers would still run on opus. i would leave crow on opus, to have an alternative model's opinion … just thoughts, no actions here.»
 
 the tracker and the CTO hat (dima's, standing):
 > «optimize the fleet flow.»

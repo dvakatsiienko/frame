@@ -76,6 +76,7 @@ the build knowledge for speak: the practices, the bar, the architecture calls an
 
 - measure press to the first playable sound, never server time (parallel lane)
 - ours: kokoro median 268 ms, p90 417 ms; elevenlabs 236 ms; fish 682 ms; system 360 ms; kokoro's p90 rose from 367 ms in October to 515 ms in November, cause unchecked (`daemon.err.log`, 2026-11-19)
+- Speechify's stream from this mac, harper_32 on simba-3.5: first byte 300–650 ms over 5 runs, median 315 ms, against the docs' 64 ms from US East (probed 2026-11-19; first byte, not first playable sound)
 - speak already prefetches the next chunk and cuts a long first sentence at a comma (`main.swift`)
 
 ## following along
