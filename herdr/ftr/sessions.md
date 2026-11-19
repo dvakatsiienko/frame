@@ -36,3 +36,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given x-mod-stash writes each thread's `~/.claude/shelf/herdr-state/<sid>.json`
   - then every thread's asks, phases, waiting-on line, context and model draw from it, a thread after `/clear` included, and `rg x-mod-stash_inline` over x-herdr-deck prints nothing
   - decision: a thread's file is found by its pid, the newest `at` winning, since the registry keeps the old id after a `/clear` (FRM-568)
+- ⬜ a glide card shows each lane's steps as the stash ticked them
+  - given a lane in `~/.claude/shelf/lanes.json` that has not ended
+  - when dima opens its card
+  - then a step ticked done reads ✓, the step the lane is on reads ▸, the rest ·, and the ✓ count matches the card's done count (FRM-656: card l96 drew 49 ✓ under 115/116)
+  - and an ended lane leaves the deck at the next read
+  - decision: the deck and x-mod-stash test one fixture of the file (`x-mod-stash/tests/lanes-shelf.ts`), the writer that every field it writes is there, the deck that every field it reads is (FRM-659)

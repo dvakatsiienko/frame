@@ -18,6 +18,7 @@ import {
 
 import { rejoin } from './joined.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
+import { lanesShown, stepMark } from './lanes.js';
 import {
     ORDER_KEY,
     PENDING_MS,
@@ -64,7 +65,7 @@ import { SENT_MS, next, pressState, untickDoor } from './press.js';
 /** @typedef {import('./orbit.js').Ask} Ask */
 /** @typedef {{ asks: Ask[], context: number | null, hot: { since: number } | null, model: string | null, name: string, pending: Map<string, import('./orbit.js').Press['verdict']>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
 
-/** @typedef {{ id?: string, title: string, ticket?: string, items?: { text: string }[], current?: number, done?: number, endedAt?: number }} Lane */
+/** @typedef {import("./lanes.js").Lane} Lane */
 
 const CLAUDE = `${home()}/.claude`;
 const STATES = `${CLAUDE}/shelf/herdr-state`;
@@ -357,7 +358,7 @@ export default class Deck extends View {
      */
     async read(isCurrent) {
         const shelf = await states();
-        const lanes = (await json(LANES))?.lanes ?? [];
+        const lanes = lanesShown(await json(LANES));
         const filePresses = hotPresses(
             await readTextFile(`${home()}/${PRESS_FILE}`).catch(
                 () => /** @type {string | null} */ (null),
@@ -390,7 +391,7 @@ export default class Deck extends View {
             Date.now(),
         );
         if (next) setShared(THREADS_KEY, next);
-        this.lanes = lanes.filter((/** @type {Lane} */ l) => !l.endedAt);
+        this.lanes = lanes;
         /** @param {string} key */
         const askOf = (key) => {
             const [sid, id] = key.split(':');
@@ -1266,8 +1267,8 @@ export default class Deck extends View {
         const open = this.open.has(key);
         const now = items[current];
         const ticket = ticketUrl(l.ticket);
-        /** @param {string} text @param {number} i */
-        const step = (text, i) =>
+        /** @param {import('./lanes.js').LaneItem} item @param {number} i */
+        const step = (item, i) =>
             h_flex()
                 .gap(6)
                 .child(
@@ -1275,13 +1276,13 @@ export default class Deck extends View {
                         .w(12)
                         .flex_none()
                         .text_size(SIZE.secondary)
-                        .text_color(i < current ? t.working : t.muted)
-                        .child(i < current ? '✓' : i === current ? '▸' : '·'),
+                        .text_color(item.isDone ? t.working : t.muted)
+                        .child(stepMark(item, i, current)),
                 )
                 .child(
                     line(i === current ? t.foreground : t.muted, SIZE.secondary)
                         .when(i === current, (el) => el.font_semibold())
-                        .child(text),
+                        .child(item.text),
                 );
         return v_flex()
             .id(`lane-${key}`)
@@ -1358,11 +1359,9 @@ export default class Deck extends View {
                         ),
                     ),
             )
-            .when(open, (el) =>
-                el.children(items.map((it, i) => step(it.text, i))),
-            )
+            .when(open, (el) => el.children(items.map((it, i) => step(it, i))))
             .when(!open && Boolean(now), (el) =>
-                now ? el.child(step(now.text, current)) : el,
+                now ? el.child(step(now, current)) : el,
             );
     }
 
