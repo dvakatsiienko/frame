@@ -26,9 +26,11 @@ import {
     window,
 } from 'herdr';
 
+import { createListDrag } from './drag-view.js';
+import { drop, publishOrder, targetOf } from './drops.js';
 import { SOUNDS_ON, isSoundOn, startJobs } from './jobs.js';
 import { threadName } from './name.js';
-import { heirs, inOrder, moved, nextOrder } from './order.js';
+import { heirs, inOrder, nextOrder } from './order.js';
 
 function find(node, id) {
     if (node?.id === id) return node;
@@ -234,17 +236,6 @@ function publishNames() {
         setShared(NAMES_KEY, next);
 }
 
-// the pids in the order the list shows them: the deck orders its sessions and orbit by it (dima, 20:20: «The order in
-// the agents list is the true source for the order in Orbit for threads»); written only on a change
-const ORDER_KEY = 'x-herdr-agents.order';
-function publishOrder(addresses) {
-    const pids = addresses
-        .map((a) => NAMES.get(a)?.pid)
-        .filter((pid) => typeof pid === 'number');
-    if (JSON.stringify(shared(ORDER_KEY) ?? []) !== JSON.stringify(pids))
-        setShared(ORDER_KEY, pids);
-}
-
 export default class Agents extends View {
     init(_props, cx) {
         if (props()?.sortMenu) return;
@@ -259,6 +250,22 @@ export default class Agents extends View {
             localStorage.getItem('orderNames') ?? '{}',
         );
         cx.timer.every(30000, (cx) => cx.notify());
+        // one drag for all four kinds; it lives on the view, so a status redraw mid-drag keeps it (FRM-664)
+        this.listKeys = cx.focus_handle();
+        this.shownPins = [];
+        this.drag = createListDrag({
+            axis: 'y',
+            focus: () => this.listKeys,
+            onClick: () => {},
+            onMove: (item, from, to) =>
+                drop(item, from, to, {
+                    order: this.order,
+                    pinned: this.shownPins,
+                    pins: this.pins,
+                    setOrder: (order) => this.setOrder(order),
+                    setPins: (pins) => this.setPins(pins),
+                }),
+        });
         // the ♪ sounds when an agent needs him or finishes (jobs.js)
         startJobs(cx);
         const names = (cx) =>
@@ -392,78 +399,6 @@ export default class Agents extends View {
 
     peek(addr) {
         run('terminal.peek', { terminal: addr });
-    }
-
-    // Drag to reorder, as Herdr's spaces list does it (press, move, release; no drag API).
-    // `key` names this element; `me` is what pressing it drags ({kind, pos, ...}) or null;
-    // `aim(drag)` is where that drag lands with the pointer here ({key, pos, drop}) or null.
-    // The accent line is drawn on the landing element, under it when moving down.
-    dnd(el, t, key, me, aim) {
-        const d = this.drag;
-        const o = this.over;
-        return el
-            .relative()
-            .when(Boolean(d && d.key === key && o && o.key !== key), (el) =>
-                el.opacity(0.5),
-            )
-            .when(Boolean(d && o && o.key === key && d.key !== key), (el) =>
-                el.child(
-                    div()
-                        .absolute()
-                        .left(0)
-                        .right(0)
-                        .h(2)
-                        .rounded(1)
-                        .bg(t.accent)
-                        .when(d.pos < o.pos, (line) => line.bottom(0))
-                        .when(d.pos > o.pos, (line) => line.top(0)),
-                ),
-            )
-            .when(Boolean(me), (el) =>
-                el.on_mouse_down('left', () => {
-                    this.drag = { key, ...me };
-                    this.over = null;
-                }),
-            )
-            .on_mouse_move((_e, cx) => {
-                if (!this.drag) return;
-                const over = aim(this.drag);
-                if ((over?.key ?? null) !== (this.over?.key ?? null)) {
-                    this.over = over;
-                    cx.notify();
-                }
-            })
-            .on_mouse_up('left', (_e, cx) => {
-                const from = this.drag;
-                const over = from && aim(from);
-                this.drag = null;
-                this.over = null;
-                if (over && over.key !== from.key) over.drop(from);
-                cx.notify();
-            });
-    }
-
-    endDrag(cx) {
-        if (!this.drag && !this.over) return;
-        this.drag = null;
-        this.over = null;
-        cx.notify();
-    }
-
-    // Where a dragged space header lands with the pointer on space `id`'s header or rows:
-    // spaces move only within their machine (space.move).
-    spaceAim(id) {
-        return (d) => {
-            if (d.kind !== 'space') return null;
-            const sp = spaces();
-            const i = sp.findIndex((s) => s.id === id);
-            if (i < 0 || (sp[i].machine ?? null) !== d.machine) return null;
-            return {
-                drop: (d) => run('space.move', { id: d.id, index: i + 1 }),
-                key: `sp-${id}`,
-                pos: i,
-            };
-        };
     }
 
     // Live sub-agents of `addr`, depth first, each with the tree lines in front of it.
@@ -621,18 +556,13 @@ export default class Agents extends View {
         const rest = list.filter((a) => !this.pins.includes(a.address));
         list = [...pinned, ...rest];
         setAgentOrder(list.map((a) => a.address));
-        publishOrder(list.map((a) => a.address));
+        publishOrder(
+            list.map((a) => a.address),
+            (a) => NAMES.get(a)?.pid,
+        );
 
-        // Puts pin `from` where `to` is (after it when moving down); pins not shown keep their place at the end.
-        const movePin = (from, to) => {
-            const shown = pinned.map((a) => a.address);
-            const order = shown.filter((p) => p !== from);
-            order.splice(shown.indexOf(to), 0, from);
-            this.setPins([
-                ...order,
-                ...this.pins.filter((p) => !shown.includes(p)),
-            ]);
-        };
+        // a pin drag moves among the shown pins; the hidden ones keep their place at the end (drops.js)
+        this.shownPins = pinned.map((a) => a.address);
 
         const withKids = (a, i) => {
             const subs = collapsed ? [] : this.tree(all, a.address);
@@ -798,46 +728,37 @@ export default class Agents extends View {
                 spaces().find((s) => s.id === a.space)?.tabs ?? [];
             const tabAt = spaceTabs.findIndex((x) => x.id === a.tab);
             const mineAt = this.order.indexOf(a.address);
-            const me = isPinned
-                ? { kind: 'pin', pos: pinAt }
+            const allSpaces = spaces();
+            const spaceAt = allSpaces.findIndex((s) => s.id === a.space);
+            const [item, from] = isPinned
+                ? [{ kind: 'pin' }, pinAt]
                 : isYours
-                  ? { kind: 'mine', pos: mineAt }
+                  ? [{ kind: 'mine' }, mineAt]
                   : tabAt >= 0
-                    ? { kind: 'tab', pos: tabAt, space: a.space, tab: a.tab }
-                    : null;
-            const onSpace = this.spaceAim(a.space);
-            const aim = (d) => {
-                if (d.kind === 'pin' && isPinned)
-                    return {
-                        drop: (d) => movePin(d.key, a.address),
-                        key: a.address,
-                        pos: pinAt,
-                    };
-                if (d.kind === 'mine' && isYours && !isPinned)
-                    return {
-                        drop: (d) =>
-                            this.setOrder(moved(this.order, d.key, a.address)),
-                        key: a.address,
-                        pos: mineAt,
-                    };
-                if (
-                    d.kind === 'tab' &&
-                    !isPinned &&
-                    !isYours &&
-                    d.space === a.space &&
-                    d.tab !== a.tab &&
-                    tabAt >= 0
-                ) {
-                    return {
-                        drop: (d) =>
-                            run('tab.move', { id: d.tab, index: tabAt + 1 }),
-                        key: a.address,
-                        pos: tabAt,
-                    };
-                }
-                return !isPinned && !isYours ? onSpace(d) : null;
+                    ? [{ kind: 'tab', space: a.space, tab: a.tab }, tabAt]
+                    : [null, -1];
+            const spot = {
+                isPinned,
+                isYours,
+                kind: 'agent',
+                machine: allSpaces[spaceAt]?.machine ?? null,
+                mineAt,
+                pinAt,
+                space: a.space,
+                spaceAt,
+                tab: a.tab,
+                tabAt,
             };
-            return this.dnd(h_flex(), t, a.address, me, aim)
+            return this.drag
+                .item(
+                    h_flex(),
+                    a.address,
+                    item,
+                    from,
+                    (held) => targetOf(held, spot),
+                    name,
+                    t,
+                )
                 .id(`ag-${a.address}`)
                 .px(8)
                 .h(30)
@@ -853,7 +774,11 @@ export default class Agents extends View {
                     else if (this.hovered === a.address) this.hovered = null;
                     cx.notify();
                 })
-                .on_click(() => run('pane.focus', { pane: a.pane }))
+                .on_click(() => {
+                    // a drag dropped back on its own row is no click
+                    if (this.drag.state().name === 'idle')
+                        run('pane.focus', { pane: a.pane });
+                })
                 .when(Boolean(pic), (el) =>
                     el.child(
                         div()
@@ -944,20 +869,28 @@ export default class Agents extends View {
             const at = sp.findIndex((s) => s.id === g.space);
             const el =
                 g.space && at >= 0
-                    ? this.dnd(
-                          h_flex(),
-                          t,
-                          g.id,
-                          {
-                              id: g.space,
-                              kind: 'space',
-                              machine: sp[at].machine ?? null,
-                              pos: at,
-                          },
-                          this.spaceAim(g.space),
-                      ).on_mouse_down('right', () =>
-                          run('space.rename', { id: g.space }),
-                      )
+                    ? this.drag
+                          .item(
+                              h_flex(),
+                              g.id,
+                              {
+                                  id: g.space,
+                                  kind: 'space',
+                                  machine: sp[at].machine ?? null,
+                              },
+                              at,
+                              (held) =>
+                                  targetOf(held, {
+                                      kind: 'header',
+                                      machine: sp[at].machine ?? null,
+                                      spaceAt: at,
+                                  }),
+                              g.label || g.space,
+                              t,
+                          )
+                          .on_mouse_down('right', () =>
+                              run('space.rename', { id: g.space }),
+                          )
                     : h_flex();
             return el
                 .id(g.id)
@@ -972,6 +905,7 @@ export default class Agents extends View {
                 .cursor_pointer()
                 .hover((s) => s.text_color(t.foreground))
                 .on_click((_e, cx) => {
+                    if (this.drag.state().name !== 'idle') return;
                     open ? this.folded.add(g.id) : this.folded.delete(g.id);
                     cx.notify();
                 })
@@ -1111,19 +1045,21 @@ export default class Agents extends View {
                 ),
             )
             .child(
-                v_flex()
-                    .id('ag-list')
-                    .flex_1()
-                    .min_h(0)
-                    .px(collapsed ? 0 : 8)
-                    .overflow_y_scrollbar()
-                    .mode('always')
-                    // A drag ends on any release, and when the pointer leaves the list (a release out there never arrives).
-                    .on_mouse_up('left', (_e, cx) => this.endDrag(cx))
-                    .on_hover((on, cx) => {
-                        if (!on) this.endDrag(cx);
-                    })
-                    .children(rows),
+                // the drag's zone: a release ends it, leaving it springs the drag home (a release out there never
+                // arrives); it holds the ghost outside the scrolled rows
+                this.drag
+                    .zone(v_flex().id('ag-zone').relative().flex_1().min_h(0))
+                    .child(
+                        v_flex()
+                            .id('ag-list')
+                            .flex_1()
+                            .min_h(0)
+                            .px(collapsed ? 0 : 8)
+                            .overflow_y_scrollbar()
+                            .mode('always')
+                            .children(rows),
+                    )
+                    .children([this.drag.ghost(t)].filter(Boolean)),
             )
             .child(
                 h_flex()

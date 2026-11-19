@@ -4,5 +4,6 @@
         "version": "0.1.9"
     },
     "place": "none",
+    "shared": ["drag.js", "drag-view.js"],
     "title": "x-herdr agents"
 }

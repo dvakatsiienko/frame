@@ -4,47 +4,54 @@
 
 /** @typedef {{ x: number, y: number }} Point */
 /**
+ * `item` is what the list pressed (its kind, its ids); `to` is null while the pointer is over no row that takes it
+ * @template T
  * @typedef {{ name: 'idle' }
- *   | { name: 'pressed', key: string, from: number, at: Point }
- *   | { name: 'dragging', key: string, from: number, to: number, at: Point, pointer: Point }
- *   | { name: 'settling', key: string, from: number, to: number, token: number }} DragState
+ *   | { name: 'pressed', key: string, item: T, from: number, at: Point }
+ *   | { name: 'dragging', key: string, item: T, from: number, to: number | null, at: Point, pointer: Point }
+ *   | { name: 'settling', key: string, item: T, from: number, to: number, token: number }} DragState
  */
 /**
- * @typedef {{ type: 'pressed', key: string, from: number, at: Point }
+ * @template T
+ * @typedef {{ type: 'pressed', key: string, item: T, from: number, at: Point }
  *   | { type: 'pointerMoved', at: Point }
- *   | { type: 'rowEntered', index: number }
+ *   | { type: 'rowEntered', index: number | null }
  *   | { type: 'released' }
  *   | { type: 'cancelled' }
  *   | { type: 'settled', token: number }} DragEvent
  */
-/** @typedef {{ type: 'click', key: string } | { type: 'move', key: string, from: number, to: number } | null} DragEffect */
+/**
+ * @template T
+ * @typedef {{ type: 'click', key: string, item: T }
+ *   | { type: 'move', key: string, item: T, from: number, to: number }
+ *   | null} DragEffect
+ */
 
 const THRESHOLD = 4;
 
-/** @type {DragState} */
+/** @type {{ name: 'idle' }} */
 const IDLE = { name: 'idle' };
 
 /**
  * the drag's next state and what it asks done; pure, so a test drives every edge with no timer
- * @param {DragState} state @param {DragEvent} event @param {number} token the settle a release or cancel starts
- * @returns {{ state: DragState, effect: DragEffect }}
+ * @template T
+ * @param {DragState<T>} state @param {DragEvent<T>} event @param {number} token the settle a release or cancel starts
+ * @returns {{ state: DragState<T>, effect: DragEffect<T> }}
  */
 export function next(state, event, token) {
+    /** @type {{ state: DragState<T>, effect: DragEffect<T> }} */
     const stay = { effect: null, state };
     switch (event.type) {
-        case 'pressed':
+        case 'pressed': {
             // a press while the last drop settles only ends the settle: the move already ran
+            const { at, from, item, key } = event;
             return state.name === 'idle'
                 ? {
                       effect: null,
-                      state: {
-                          at: event.at,
-                          from: event.from,
-                          key: event.key,
-                          name: 'pressed',
-                      },
+                      state: { at, from, item, key, name: 'pressed' },
                   }
                 : { effect: null, state: IDLE };
+        }
         case 'pointerMoved':
             if (state.name === 'pressed')
                 return Math.hypot(
@@ -68,44 +75,35 @@ export function next(state, event, token) {
             return state.name === 'dragging' && state.to !== event.index
                 ? { effect: null, state: { ...state, to: event.index } }
                 : stay;
-        case 'released':
+        case 'released': {
             if (state.name === 'pressed')
                 return {
-                    effect: { key: state.key, type: 'click' },
+                    effect: { item: state.item, key: state.key, type: 'click' },
                     state: IDLE,
                 };
             if (state.name !== 'dragging') return stay;
+            const { from, item, key, to } = state;
+            const isMove = to !== null && to !== from;
             return {
-                effect:
-                    state.to === state.from
-                        ? null
-                        : {
-                              from: state.from,
-                              key: state.key,
-                              to: state.to,
-                              type: 'move',
-                          },
+                effect: isMove ? { from, item, key, to, type: 'move' } : null,
                 state: {
-                    from: state.from,
-                    key: state.key,
+                    from,
+                    item,
+                    key,
                     name: 'settling',
-                    to: state.to,
+                    to: isMove ? to : from,
                     token,
                 },
             };
-        case 'cancelled':
-            return state.name === 'dragging'
-                ? {
-                      effect: null,
-                      state: {
-                          from: state.from,
-                          key: state.key,
-                          name: 'settling',
-                          to: state.from,
-                          token,
-                      },
-                  }
-                : { effect: null, state: IDLE };
+        }
+        case 'cancelled': {
+            if (state.name !== 'dragging') return { effect: null, state: IDLE };
+            const { from, item, key } = state;
+            return {
+                effect: null,
+                state: { from, item, key, name: 'settling', to: from, token },
+            };
+        }
         case 'settled':
             return state.name === 'settling' && state.token === event.token
                 ? { effect: null, state: IDLE }
@@ -120,34 +118,36 @@ export function next(state, event, token) {
 
 /**
  * a list's drag: it owns the state, the list feeds it the pointer and draws from `state()`
- * @param {{ onMove: (key: string, from: number, to: number) => void, onClick: (key: string) => void }} handlers
+ * @template T
+ * @param {{ onMove: (item: T, from: number, to: number) => void, onClick: (item: T) => void }} handlers
  */
 export function createDrag({ onClick, onMove }) {
-    /** @type {DragState} */
+    /** @type {DragState<T>} */
     let state = IDLE;
     let tokens = 0;
-    /** @param {DragEvent} event @returns {boolean} whether the state changed, so the list redraws */
+    /** @param {DragEvent<T>} event @returns {boolean} whether the state changed, so the list redraws */
     const send = (event) => {
         const was = state;
         const step = next(state, event, tokens + 1);
         state = step.state;
         if (state.name === 'settling' && was.name !== 'settling') tokens++;
         if (step.effect?.type === 'move')
-            onMove(step.effect.key, step.effect.from, step.effect.to);
-        if (step.effect?.type === 'click') onClick(step.effect.key);
+            onMove(step.effect.item, step.effect.from, step.effect.to);
+        if (step.effect?.type === 'click') onClick(step.effect.item);
         return state !== was;
     };
     return {
         /** Escape, or the pointer left the list */
         cancel: () => send({ type: 'cancelled' }),
-        /** the row at `index` is under the pointer */
-        over: (/** @type {number} */ index) =>
+        /** the row at `index` is under the pointer; null: a row that does not take this item */
+        over: (/** @type {number | null} */ index) =>
             send({ index, type: 'rowEntered' }),
         /** the pointer moved inside the list */
         pointer: (/** @type {Point} */ at) =>
             send({ at, type: 'pointerMoved' }),
-        /** @param {string} key @param {number} from @param {Point} at */
-        press: (key, from, at) => send({ at, from, key, type: 'pressed' }),
+        /** @param {string} key the pressed row's own name @param {T} item @param {number} from @param {Point} at */
+        press: (key, item, from, at) =>
+            send({ at, from, item, key, type: 'pressed' }),
         release: () => send({ type: 'released' }),
         /** the settle's spring ended; a stale timer's token does nothing */
         settled: (/** @type {number} */ token) =>

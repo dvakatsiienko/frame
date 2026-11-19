@@ -7,8 +7,9 @@ function drag() {
     const moves: [string, number, number][] = [];
     const clicks: string[] = [];
     const d = createDrag({
-        onClick: (key) => clicks.push(key),
-        onMove: (key, from, to) => moves.push([key, from, to]),
+        onClick: (item: string) => clicks.push(item),
+        onMove: (item: string, from: number, to: number) =>
+            moves.push([item, from, to]),
     });
     return { clicks, d, moves };
 }
@@ -19,13 +20,13 @@ describe('a press lifts, a short move stays a click', () => {
     test('a press moves idle → pressed', () => {
         const { d } = drag();
         expect(d.state().name).toBe('idle');
-        d.press('a', 0, at(10));
+        d.press('a', 'a', 0, at(10));
         expect(d.state()).toMatchObject({ from: 0, key: 'a', name: 'pressed' });
     });
 
     test('a move under 4 px stays pressed, and its release is a click', () => {
         const { clicks, d, moves } = drag();
-        d.press('a', 0, at(10));
+        d.press('a', 'a', 0, at(10));
         d.pointer(at(13, 2));
         expect(d.state().name).toBe('pressed');
         d.release();
@@ -36,14 +37,14 @@ describe('a press lifts, a short move stays a click', () => {
 
     test('a move past 4 px enters dragging, with its own index as the target', () => {
         const { d } = drag();
-        d.press('a', 1, at(10));
+        d.press('a', 'a', 1, at(10));
         d.pointer(at(15));
         expect(d.state()).toMatchObject({ from: 1, name: 'dragging', to: 1 });
     });
 
     test('a row under the pointer while dragging is the target', () => {
         const { d } = drag();
-        d.press('a', 0, at(0));
+        d.press('a', 'a', 0, at(0));
         d.pointer(at(0, 20));
         expect(d.over(3)).toBe(true);
         expect(d.state()).toMatchObject({ name: 'dragging', to: 3 });
@@ -52,7 +53,7 @@ describe('a press lifts, a short move stays a click', () => {
 
     test('the ghost follows the pointer while dragging', () => {
         const { d } = drag();
-        d.press('a', 0, at(0));
+        d.press('a', 'a', 0, at(0));
         d.pointer(at(0, 20));
         d.pointer(at(3, 50));
         expect(d.state()).toMatchObject({ pointer: at(3, 50) });
@@ -60,7 +61,7 @@ describe('a press lifts, a short move stays a click', () => {
 
     test('a row hovered before the drag starts is no target', () => {
         const { d } = drag();
-        d.press('a', 0, at(0));
+        d.press('a', 'a', 0, at(0));
         expect(d.over(2)).toBe(false);
         expect(d.state().name).toBe('pressed');
     });
@@ -69,7 +70,7 @@ describe('a press lifts, a short move stays a click', () => {
 describe('a drop runs the move once', () => {
     test('a release in dragging runs the move once, then settles', () => {
         const { clicks, d, moves } = drag();
-        d.press('a', 0, at(0));
+        d.press('a', 'a', 0, at(0));
         d.pointer(at(0, 40));
         d.over(2);
         d.release();
@@ -80,9 +81,20 @@ describe('a drop runs the move once', () => {
         expect(moves).toHaveLength(1);
     });
 
+    test('a drop over a row that does not take the item runs no move and springs home', () => {
+        const { d, moves } = drag();
+        d.press('a', 'a', 0, at(0));
+        d.pointer(at(0, 40));
+        d.over(2);
+        d.over(null);
+        d.release();
+        expect(moves).toEqual([]);
+        expect(d.state()).toMatchObject({ name: 'settling', to: 0 });
+    });
+
     test('a drop back on its own index runs no move', () => {
         const { clicks, d, moves } = drag();
-        d.press('a', 2, at(0));
+        d.press('a', 'a', 2, at(0));
         d.pointer(at(0, 40));
         d.over(0);
         d.over(2);
@@ -93,7 +105,7 @@ describe('a drop runs the move once', () => {
 
     test('the settle ends in idle on its own token, a stale one does nothing', () => {
         const { d } = drag();
-        d.press('a', 0, at(0));
+        d.press('a', 'a', 0, at(0));
         d.pointer(at(0, 40));
         d.over(1);
         d.release();
@@ -108,7 +120,7 @@ describe('a drop runs the move once', () => {
     test('the last drop’s settle timer never ends the next drop’s settle', () => {
         const { d } = drag();
         const drop = () => {
-            d.press('a', 0, at(0));
+            d.press('a', 'a', 0, at(0));
             d.pointer(at(0, 40));
             d.over(1);
             d.release();
@@ -125,7 +137,7 @@ describe('a drop runs the move once', () => {
 
     test('Escape during settling ends in idle, the move run once', () => {
         const { d, moves } = drag();
-        d.press('a', 0, at(0));
+        d.press('a', 'a', 0, at(0));
         d.pointer(at(0, 40));
         d.over(1);
         d.release();
@@ -136,11 +148,11 @@ describe('a drop runs the move once', () => {
 
     test('a new press during settling ends in idle, the move run once', () => {
         const { clicks, d, moves } = drag();
-        d.press('a', 0, at(0));
+        d.press('a', 'a', 0, at(0));
         d.pointer(at(0, 40));
         d.over(1);
         d.release();
-        d.press('b', 1, at(0));
+        d.press('b', 'b', 1, at(0));
         expect(d.state().name).toBe('idle');
         d.release();
         expect(moves).toHaveLength(1);
@@ -151,7 +163,7 @@ describe('a drop runs the move once', () => {
 describe('Escape or leaving the list cancels with no move', () => {
     test('from pressed: idle, no move, no click', () => {
         const { clicks, d, moves } = drag();
-        d.press('a', 0, at(0));
+        d.press('a', 'a', 0, at(0));
         d.cancel();
         expect(d.state().name).toBe('idle');
         d.release();
@@ -161,7 +173,7 @@ describe('Escape or leaving the list cancels with no move', () => {
 
     test('from dragging: the ghost springs home, then idle, no move', () => {
         const { d, moves } = drag();
-        d.press('a', 0, at(0));
+        d.press('a', 'a', 0, at(0));
         d.pointer(at(0, 40));
         d.over(2);
         d.cancel();
@@ -176,7 +188,7 @@ describe('Escape or leaving the list cancels with no move', () => {
 
     test('a pointer moving inside the list never cancels', () => {
         const { d } = drag();
-        d.press('a', 0, at(0));
+        d.press('a', 'a', 0, at(0));
         for (const y of [10, -30, 200, 3, 90]) d.pointer(at(7, y));
         expect(d.state().name).toBe('dragging');
     });
