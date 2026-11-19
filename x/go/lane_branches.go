@@ -104,23 +104,29 @@ func mergedPrTip(as, main, ref string) (string, string) {
 	return "", "no merged pr carries " + short(tip)
 }
 
-// why a lane-family branch stays, "" when it may go: main carries every commit, or its merged pr does and no open pr
-// is based on it; a tree freed names does not hold it
+// why a lane-family branch stays, "" when it may go: main carries every commit, or its merged pr does, and no open
+// pr is based on it either way; a tree freed names does not hold it
 func mergedBranchStay(as, main, ref string, freed func(tree string) bool) (string, branchTips) {
 	why, tips := branchStayUnless(main, ref, "main lacks", mainCarries(main), freed)
-	if !strings.HasSuffix(why, "a commit main lacks") {
+	if strings.HasSuffix(why, "a commit main lacks") {
+		tip, prWhy := mergedPrTip(as, main, ref)
+		if tip == "" {
+			return why + ", and " + prWhy, tips
+		}
+		why, tips = branchStayUnless(main, ref, "its merged pr lacks", func(sha string) bool {
+			return sha == tip || ok(gitIn(main, "merge-base", "--is-ancestor", sha, tip))
+		}, freed)
+	}
+	if why != "" {
 		return why, tips
 	}
-	tip, prWhy := mergedPrTip(as, main, ref)
-	if tip == "" {
-		return why + ", and " + prWhy, tips
+	// a repo with no github origin has no pr to close
+	if slug := originSlugIn(main); slug != "" {
+		if open := openPrOnBase(as, slug, ref); open != "" {
+			return open, branchTips{}
+		}
 	}
-	if open := openPrOnBase(as, originSlugIn(main), ref); open != "" {
-		return open, tips
-	}
-	return branchStayUnless(main, ref, "its merged pr lacks", func(sha string) bool {
-		return sha == tip || ok(gitIn(main, "merge-base", "--is-ancestor", sha, tip))
-	}, freed)
+	return "", tips
 }
 
 func laneFamilyBranches(main string) ([]string, error) {

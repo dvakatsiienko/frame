@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -98,18 +99,27 @@ func TestDecampListStaleReadsASquashAsMerged(t *testing.T) {
 	}
 }
 
-// a merged layer an open pr still sits on stays: deleting a base closes the pr above it
+// a merged layer an open pr still sits on stays, whether its merged pr or main itself carries it: deleting a base
+// closes the pr above it
 func TestLandedApplyKeepsAMergedBranchAnOpenPrIsBasedOn(t *testing.T) {
 	t.Parallel()
-	w := newMergeWorld(t, "script/foo.ts")
-	tip := w.sideBranch(t, "codie/FRM-2-low", "a lower layer")
-	w.hub.pages[repoPath+"/commits/"+tip+"/pulls"] = `[{"number":6,"merged_at":"2026-11-19T12:00:00Z","head":{"ref":"codie/FRM-2-low"}}]`
-	w.hub.pages[repoPath+"/pulls"] = `[{"number":9}]`
+	for _, onMain := range []bool{false, true} {
+		t.Run(fmt.Sprintf("squashed onto main %v", onMain), func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			tip := w.sideBranch(t, "codie/FRM-2-low", "a lower layer")
+			if onMain {
+				w.squashOntoMain(t, "codie/FRM-2-low")
+			}
+			w.hub.pages[repoPath+"/commits/"+tip+"/pulls"] = `[{"number":6,"merged_at":"2026-11-19T12:00:00Z","head":{"ref":"codie/FRM-2-low"}}]`
+			w.hub.pages[repoPath+"/pulls"] = `[{"number":9}]`
 
-	got := w.landedAfterMerge(t, "--apply")
+			got := w.landedAfterMerge(t, "--apply")
 
-	if !w.onClone(t, "codie/FRM-2-low") || !w.onOrigin(t, "codie/FRM-2-low") || !strings.Contains(got.stdout, "codie/FRM-2-low stays: #9 is based on it") {
-		t.Fatalf("exit %d: want codie/FRM-2-low kept, named with #9\n%s", got.code, got.stdout)
+			if !w.onClone(t, "codie/FRM-2-low") || !w.onOrigin(t, "codie/FRM-2-low") || !strings.Contains(got.stdout, "codie/FRM-2-low stays: #9 is based on it") {
+				t.Fatalf("exit %d: want codie/FRM-2-low kept, named with #9\n%s", got.code, got.stdout)
+			}
+		})
 	}
 }
 
