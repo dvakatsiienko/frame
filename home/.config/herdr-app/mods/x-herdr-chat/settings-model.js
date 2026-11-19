@@ -13,6 +13,63 @@ const WIND_WORDS = ['second-wind', 'handoff'];
 /** @type {Page[]} */
 export const pages = [
     {
+        about: 'herdr as a whole, outside any one chat',
+        groups: [
+            {
+                heading: 'tabs',
+                rows: [
+                    {
+                        control: {
+                            kind: 'choice',
+                            options: [
+                                { label: 'visible', value: 'visible' },
+                                { label: 'hidden', value: 'hidden' },
+                            ],
+                        },
+                        default: 'visible',
+                        key: 'tabs.status',
+                        title: 'tab status',
+                        why: 'each tab’s program icon and its state dot; hidden leaves more room for the names',
+                    },
+                ],
+            },
+            {
+                heading: 'pictures',
+                rows: [
+                    {
+                        // a boolean in the file, as the old chat reads it: true is CleanShot
+                        control: {
+                            kind: 'choice',
+                            options: [
+                                { label: 'cleanshot', value: true },
+                                { label: 'macos preview', value: false },
+                            ],
+                        },
+                        default: true,
+                        key: 'chatter.pictures.cleanshot',
+                        title: 'open pictures in',
+                        why: 'the app a picture’s open button starts: CleanShot X’s annotate, or Preview',
+                    },
+                ],
+            },
+            {
+                heading: 'measure',
+                rows: [
+                    {
+                        control: { kind: 'toggle' },
+                        default: false,
+                        key: 'chatter.metalHud',
+                        title: 'metal hud',
+                        why: 'apple’s frame-rate meter over herdr, for measuring a scroll or a redraw',
+                    },
+                ],
+            },
+        ],
+        icon: '⚙️',
+        id: 'general',
+        title: 'general',
+    },
+    {
         about: 'the bar under the chat: its meters and how send works',
         groups: [
             {
@@ -83,7 +140,7 @@ export const pages = [
         title: 'dock',
     },
     {
-        about: 'the chat view: its replies and pictures',
+        about: 'the chat view: how its replies read',
         groups: [
             {
                 heading: 'replies',
@@ -94,37 +151,6 @@ export const pages = [
                         key: 'chatter.showMore',
                         title: 'show more',
                         why: 'a long reply of an earlier turn shows its first lines and a Show more; off, every reply reads whole',
-                    },
-                ],
-            },
-            {
-                heading: 'pictures',
-                rows: [
-                    {
-                        // a boolean in the file, as the old chat reads it: true is CleanShot
-                        control: {
-                            kind: 'choice',
-                            options: [
-                                { label: 'cleanshot', value: true },
-                                { label: 'macos preview', value: false },
-                            ],
-                        },
-                        default: true,
-                        key: 'chatter.pictures.cleanshot',
-                        title: 'open pictures in',
-                        why: 'the app a picture’s open button starts: CleanShot X’s annotate, or Preview',
-                    },
-                ],
-            },
-            {
-                heading: 'measure',
-                rows: [
-                    {
-                        control: { kind: 'toggle' },
-                        default: false,
-                        key: 'chatter.metalHud',
-                        title: 'metal hud',
-                        why: 'apple’s frame-rate meter over herdr, for measuring a scroll or a redraw',
                     },
                 ],
             },
@@ -264,32 +290,6 @@ export const pages = [
         icon: '🧩',
         id: 'cc',
         title: 'claude code mods',
-    },
-    {
-        about: 'herdr as a whole, outside any one chat',
-        groups: [
-            {
-                heading: 'tabs',
-                rows: [
-                    {
-                        control: {
-                            kind: 'choice',
-                            options: [
-                                { label: 'visible', value: 'visible' },
-                                { label: 'hidden', value: 'hidden' },
-                            ],
-                        },
-                        default: 'visible',
-                        key: 'tabs.status',
-                        title: 'tab status',
-                        why: 'each tab’s program icon and its state dot; hidden leaves more room for the names',
-                    },
-                ],
-            },
-        ],
-        icon: '⚙️',
-        id: 'general',
-        title: 'general',
     },
     {
         about: 'every x-herdr key, written into herdr’s keys.json beside herdr’s own',
