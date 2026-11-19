@@ -38,6 +38,7 @@ import {
     isAllAsksMarkable,
     isFresh,
     isGuardGated,
+    isPressOn,
     isPushOnly,
     joinRows,
     joinRowsText,
@@ -2856,8 +2857,7 @@ async function absorbMarks($: EngineInterface) {
                 // is a tick (it once kept the first, which locked him out, sixth sense round 1 on FRM-544); it marks only
                 // the question he read, never the round a follow put under the same id
                 const h = herdr.marks[a.id];
-                const m =
-                    h?.text !== undefined && h.text !== a.text ? undefined : h;
+                const m = isPressOn(h, a) ? h : undefined;
                 if (!m || a.isLocked || a.isResolved) return a;
                 // a herdr ↩️ takes back a tick a turn already took, whose mark the turn end cleared: the deck's tick is a
                 // toggle, and the record would still stand for its 2 h

@@ -385,9 +385,11 @@ export function pressTicks(text: string) {
                       at: p.at,
                       id: `herdr:${id}`,
                       ...(p.pick !== undefined ? { pick: p.pick } : {}),
-                      targets: [
-                          ...`${p.text} ${p.pick ?? ''}`.matchAll(/`([^`]+)`/g),
-                      ].map((m) => m[1] as string),
+                      targets: [p.text, p.pick ?? ''].flatMap((s) =>
+                          [...s.matchAll(/`([^`]+)`/g)].map(
+                              (m) => m[1] as string,
+                          ),
+                      ),
                       text: p.text,
                   },
               ]

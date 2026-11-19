@@ -11,7 +11,14 @@ const CLEANUP =
     'git -C ~/frame worktree remove --force .claude/worktrees/x-herdr-deck-rename && git -C ~/frame branch -D codie/x-herdr-deck-rename';
 const SID = 't1t1t1t1-0000';
 const PRESSES = `/home/.claude/shelf/orbit-ticks/${SID}.jsonl`;
-type Ask = { id: string; mark?: string; pick: string; text: string };
+type Ask = {
+    id: string;
+    isHerdrMark?: boolean;
+    mark?: string;
+    markedAt?: number;
+    pick: string;
+    text: string;
+};
 const ask = (over: Partial<Ask> = {}): Ask => ({
     id: 'o2',
     mark: 'accepted',
@@ -111,6 +118,24 @@ for (const [name, run] of [
 
 test('a pick a follow swapped after his press opens neither command', async ($, on) => {
     const swapped = ask({ pick: 'run `git -C ~/frame branch -D main`' });
+    const { ran } = world(on, { asks: [swapped], presses: [press(ask())] });
+    const r = [
+        await bash($, CLEANUP),
+        await bash($, 'git -C ~/frame branch -D main'),
+    ];
+    expect([r.map((x) => x.deny !== undefined), ran]).toEqual([
+        [true, true],
+        [],
+    ]);
+});
+
+// wisphunter on 6e0349e9: the mark x-mod-stash kept never rebuilds a tick from a pick swapped while his press still sits
+test('a herdr mark on a pick swapped since his press opens neither command', async ($, on) => {
+    const swapped = ask({
+        isHerdrMark: true,
+        markedAt: NOW,
+        pick: 'run `git -C ~/frame branch -D main`',
+    });
     const { ran } = world(on, { asks: [swapped], presses: [press(ask())] });
     const r = [
         await bash($, CLEANUP),

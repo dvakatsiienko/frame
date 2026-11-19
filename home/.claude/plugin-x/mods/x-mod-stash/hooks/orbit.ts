@@ -57,8 +57,8 @@ export const allAsksTicks = (
     asks.map(({ id, pick, text }) => ({
         at,
         id,
-        targets: [...`${text} ${pick}`.matchAll(/`([^`]+)`/g)].map(
-            (m) => m[1] as string,
+        targets: [text, pick].flatMap((s) =>
+            [...s.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string),
         ),
         text,
     }));
@@ -74,10 +74,11 @@ const HERDR_MARK = {
     untick: undefined,
 } as const;
 export function herdrTicks(text: string, after: number) {
-    const marks: Record<string, RemoteMark & { text?: string }> = {};
+    const marks: Record<string, RemoteMark & { pick?: string; text?: string }> =
+        {};
     let last = after;
     for (const { row: press } of jsonRows(text)) {
-        const { at, id, steer, text: asked, verdict } = press;
+        const { at, id, pick, steer, text: asked, verdict } = press;
         if (
             typeof id !== 'string' ||
             typeof at !== 'number' ||
@@ -96,10 +97,20 @@ export function herdrTicks(text: string, after: number) {
                 ? { isSteerEdit: true, steer }
                 : {}),
             ...(typeof asked === 'string' ? { text: asked } : {}),
+            ...(typeof pick === 'string' ? { pick } : {}),
         };
     }
     return { last, marks };
 }
+// a press marks only the question he read: its text, and its pick when the deck wrote one, as the ask has them now; a
+// follow that swaps either puts a new round under the same id (FRM-661, wisphunter on 6e0349e9)
+export const isPressOn = (
+    h: { pick?: string; text?: string } | undefined,
+    a: Pick<OrbitAsk, 'pick' | 'text'>,
+) =>
+    h !== undefined &&
+    (h.text === undefined || h.text === a.text) &&
+    (h.pick === undefined || h.pick === a.pick);
 
 // the one reader of herdr's shelf files: each line an object, a broken or half-written line skipped
 function jsonRows(text: string) {

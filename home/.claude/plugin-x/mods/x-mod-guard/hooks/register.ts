@@ -516,7 +516,7 @@ async function herdrTicks($: EngineInterface): Promise<Tick[]> {
         a.isHerdrMark &&
         typeof a.markedAt === 'number' &&
         !pressed.some((t) => t.id === `herdr:${a.id}`) &&
-        // a ↩️ there newer than the mark takes it back before x-mod-stash reads it
+        // a press there at or past the mark is read above, or a ↩️ that takes it back (FRM-661: a swapped pick)
         !pressedSince(text, a.id, a.markedAt)
             ? pressTicks(
                   JSON.stringify({
@@ -535,7 +535,7 @@ const pressedSince = (text: string, id: string, at: number) =>
     text.split('\n').some((line) => {
         try {
             const p = JSON.parse(line) as { at?: unknown; id?: unknown };
-            return p.id === id && typeof p.at === 'number' && p.at > at;
+            return p.id === id && typeof p.at === 'number' && p.at >= at;
         } catch {
             return false;
         }
