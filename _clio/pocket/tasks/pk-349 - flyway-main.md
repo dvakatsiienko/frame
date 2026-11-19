@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T13:10:00Z'
+updated_date: '2026-11-19T13:49:00Z'
 labels:
   - s
   - clio-main
@@ -19,7 +19,7 @@ ordinal: 1000
 - [ ] #1 f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look
 - [ ] #2 f46 TS LSP check each siesta until the halt: are both codies calling LSP, from their transcripts
 - [ ] #3 f47 wing 1 summon: tell it the stray runs Opus 5.5 today and takes harder chores (his 14:5x)
-- [ ] #4 f48 TS LSP re-vendor lands → report what is new to dima, tell both lanes (his 15:09)
+- [ ] #4 f49 TS LSP plan (W1224–W1228): retros in, weigh usefulness, then why underused and the fleet-wide wiring
 - [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
 - [ ] #6 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
 - [ ] #7 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
@@ -1157,4 +1157,17 @@ PK-349:W1218 (2026-11-19 14:41, dima, herdr-typed): add a habit, so any wishes l
 PK-349:W1219 (2026-11-19 15:09, dima, herdr-typed): wow, update it! as next stray's chore. after ts lsp is refreshed - report what's interesting we have after the update, and tell the lanes that we updated and what's new there, so they use the new version.
 
 PK-349:W1220 (2026-11-19 14:59, dima, herdr-typed): once it's done with FRM-663, make sure it searches for it too (refresh if we can move to the marketplace lsp version already).
+
+done 2026-11-19 15:19: f48 TS LSP re-vendor lands → report what is new to dima, tell both lanes (his 15:09)
+
+PK-349:W1221 (2026-11-19 15:29, dima): i'm here after the shower.
+PK-349:W1222 (2026-11-19 15:29, dima): TS LSP idle shutdown: what's better, keep it off or on? ❓ → answered 15:32, keep on; his o2 tick
+PK-349:W1223 (2026-11-19 15:29, dima): frame also runs TS 7.
+PK-349:W1224 (2026-11-19 15:29, dima): clarification about my TS LSP measure ask for the whole day: why i ask? because it is parked as dead weight and not being used, so the goal is:
+PK-349:W1225 (2026-11-19 15:29, dima): 1. first, use it actively for a day
+PK-349:W1226 (2026-11-19 15:29, dima): 2. important: collect retros about it, along with an overall retro per lane — let's have retros today for the mods and herdr lanes; the TS LSP retro vector is one of the primary ones → his o3 tick; asked of all four members 15:33
+PK-349:W1227 (2026-11-19 15:29, dima): 3. then weigh its usefulness
+PK-349:W1228 (2026-11-19 15:29, dima): 4. if it is useful, learn why it is being underused, and think how to properly wire it into the fleet, so everyone uses it, even you.
+PK-349:W1229 (2026-11-19 15:29, dima): /clio:lowtide-peek-lanes cli. → answered 15:32
+PK-349:W1230 (2026-11-19 15:29, dima): we solved it almost fully, but i saw a few chunks there. i want to weigh them for a worth-it check, sign all unsigned and order them into an efficient solving queue. → answered 15:32, all four already signed; order his o1 tick
 <!-- SECTION:NOTES:END -->
