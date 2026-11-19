@@ -13,7 +13,7 @@ const WIND_WORDS = ['second-wind', 'handoff'];
 /** @type {Page[]} */
 export const pages = [
     {
-        about: 'the chat view: its band and its meters',
+        about: 'the bar under the chat: its meters and how send works',
         groups: [
             {
                 heading: 'meters',
@@ -47,7 +47,7 @@ export const pages = [
                 ],
             },
             {
-                heading: 'send',
+                heading: 'magic send',
                 rows: [
                     {
                         control: {
@@ -77,6 +77,14 @@ export const pages = [
                     },
                 ],
             },
+        ],
+        icon: '⚓',
+        id: 'dock',
+        title: 'dock',
+    },
+    {
+        about: 'the chat view: its replies and pictures',
+        groups: [
             {
                 heading: 'replies',
                 rows: [
@@ -255,7 +263,7 @@ export const pages = [
         ],
         icon: '🧩',
         id: 'cc',
-        title: 'claude Code mods',
+        title: 'claude code mods',
     },
     {
         about: 'the tabs along the top of herdr',

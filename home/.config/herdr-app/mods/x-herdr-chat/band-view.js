@@ -519,7 +519,7 @@ export function createBand({ shownAddress, pid, turnStart, column }) {
             return;
         }
         if (btn.key === 'settings') {
-            openOverlay(settingsOverlay('chatter'));
+            openOverlay(settingsOverlay('dock'));
             return;
         }
         if (btn.key === 'auto') {

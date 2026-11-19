@@ -113,7 +113,13 @@ export default class TabPills extends View {
                     this.tabStatus = status;
                     cx.notify();
                 }
-                await watchFolder(`${home()}/${SETTINGS_DIR}`);
+                // a folder not made yet is asked again later, so its first write is still read
+                await watchFolder(`${home()}/${SETTINGS_DIR}`).catch(
+                    () =>
+                        new Promise((done) =>
+                            cx.timer.after(5000, () => done(null)),
+                        ),
+                );
             }
         });
         this.drag = createListDrag({
