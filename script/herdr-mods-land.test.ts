@@ -82,6 +82,18 @@ describe('a land copies a mod into herdr', () => {
     });
 });
 
+// FRM-659: a mod folder holding herdr's type files kept drifted copies beside the code; the check reads herdr's own
+describe('a mod folder keeping its own herdr type file is refused', () => {
+    test.each(['gpui-kit.d.ts', 'herdr.d.ts'])('%s', (name) => {
+        const { env, landed, source } = fixture();
+        writeFileSync(join(source, 'probe', name), 'declare const x: 1;\n');
+        const out = run(env, 'probe');
+        expect(out.status).toBe(1);
+        expect(out.stderr).toContain(`probe/${name}`);
+        expect(existsSync(join(landed, 'main.js'))).toBe(false);
+    });
+});
+
 describe('the watcher lands a save only when herdr-app check passes', () => {
     let child: ChildProcess | undefined;
     afterEach(() => child?.kill());

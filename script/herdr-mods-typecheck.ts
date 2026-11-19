@@ -67,8 +67,13 @@ export function needingHerdr(
     return [...skipped].sort();
 }
 
-// herdr writes these two into a mod's folder; the gate passes herdr's own copies once, beside the files
+// herdr's own type files: a mod folder in frame never keeps a copy (herdr wrote drifted ones there on old starts); the
+// gate passes herdr's own once, beside the files
 const HERDR_TYPE_FILES = new Set(['gpui-kit.d.ts', 'herdr.d.ts']);
+
+/** the herdr type files a mod folder keeps, which the land and this gate refuse @param names the folder's entries */
+export const ownHerdrTypes = (names: string[]) =>
+    names.filter((name) => HERDR_TYPE_FILES.has(name));
 
 /** the files of a mod the gate checks: its js, and its own declarations of a runtime global ES2022 leaves out */
 export function checkedNames(names: string[]) {
@@ -79,7 +84,12 @@ export function checkedNames(names: string[]) {
     );
 }
 
-export function verdict({ checked, mods, red, skipped }: Tally) {
+export function verdict({ checked, mods, ownTypes, red, skipped }: Tally) {
+    if (ownTypes.length)
+        return {
+            isRed: true,
+            line: `herdr-mods:typecheck: red, a mod keeps its own copy of herdr's types: ${ownTypes.join(', ')} — trash it, the check reads herdr's own`,
+        };
     if (red.length)
         return {
             isRed: true,
@@ -111,7 +121,19 @@ if (import.meta.main) {
         join(herdrHome, 'herdr.d.ts'),
     ];
     const hasHerdrTypes = herdrTypes.every((path) => existsSync(path));
-    const tally: Tally = { checked: 0, mods: 0, red: [], skipped: [] };
+    const tally: Tally = {
+        checked: 0,
+        mods: 0,
+        ownTypes: readdirSync(root, { withFileTypes: true })
+            .filter((entry) => entry.isDirectory())
+            .flatMap((entry) =>
+                ownHerdrTypes(readdirSync(join(root, entry.name))).map(
+                    (name) => `${entry.name}/${name}`,
+                ),
+            ),
+        red: [],
+        skipped: [],
+    };
     const scratch = mkdtempSync(join(tmpdir(), 'herdr-mods-typecheck-'));
     try {
         for (const mod of strictMods(root)) {
@@ -206,6 +228,7 @@ function strictMods(root: string) {
 type Tally = {
     checked: number;
     mods: number;
+    ownTypes: string[];
     red: string[];
     skipped: string[];
 };

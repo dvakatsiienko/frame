@@ -18,6 +18,8 @@ import {
 import { homedir, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
+import { ownHerdrTypes } from './herdr-mods-typecheck.ts';
+
 // both roots move for a test's fixture home; herdr itself reads HERDR_APP_HOME the same way
 const sourceRoot =
     process.env.HERDR_MODS_SOURCE ??
@@ -120,6 +122,9 @@ function newest(mod: string) {
  */
 function filesOf(mod: string): Map<string, string> | string {
     const source = join(sourceRoot, mod);
+    const ownTypes = ownHerdrTypes(readdirSync(source));
+    if (ownTypes.length)
+        return `${ownTypes.map((name) => `${mod}/${name}`).join(', ')}: a mod keeps no copy of herdr's types, trash it`;
     const files = new Map(
         readdirSync(source, { withFileTypes: true })
             .filter((e) => e.isFile() && isLanded(e.name))

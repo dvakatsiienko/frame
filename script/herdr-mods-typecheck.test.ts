@@ -4,6 +4,7 @@ import {
     checkedNames,
     needingHerdr,
     needsHerdrTypes,
+    ownHerdrTypes,
     verdict,
 } from './herdr-mods-typecheck.ts';
 
@@ -84,9 +85,50 @@ describe('needingHerdr', () => {
     });
 });
 
+// FRM-659: herdr wrote its type files into our mod folders on starts long gone; nine drifted copies sat beside the code
+describe('ownHerdrTypes', () => {
+    it('names a herdr type file a mod folder keeps', () => {
+        expect(
+            ownHerdrTypes([
+                'main.js',
+                'gpui-kit.d.ts',
+                'globals.d.ts',
+                'herdr.d.ts',
+            ]),
+        ).toEqual(['gpui-kit.d.ts', 'herdr.d.ts']);
+    });
+
+    it('names nothing in a folder of our own files', () => {
+        expect(ownHerdrTypes(['main.js', 'globals.d.ts'])).toEqual([]);
+    });
+});
+
 describe('verdict', () => {
+    it('is red and names a mod folder keeping its own herdr type file', () => {
+        expect(
+            verdict({
+                checked: 9,
+                mods: 1,
+                ownTypes: ['x-herdr-deck/gpui-kit.d.ts'],
+                red: [],
+                skipped: [],
+            }),
+        ).toEqual({
+            isRed: true,
+            line: "herdr-mods:typecheck: red, a mod keeps its own copy of herdr's types: x-herdr-deck/gpui-kit.d.ts — trash it, the check reads herdr's own",
+        });
+    });
+
     it('is clean when every mod passed with herdr types', () => {
-        expect(verdict({ checked: 9, mods: 1, red: [], skipped: [] })).toEqual({
+        expect(
+            verdict({
+                checked: 9,
+                mods: 1,
+                ownTypes: [],
+                red: [],
+                skipped: [],
+            }),
+        ).toEqual({
             isRed: false,
             line: 'herdr-mods:typecheck: 1 mod clean, 9 files',
         });
@@ -97,6 +139,7 @@ describe('verdict', () => {
             verdict({
                 checked: 9,
                 mods: 2,
+                ownTypes: [],
                 red: ['x-herdr-chat'],
                 skipped: [],
             }),
@@ -111,6 +154,7 @@ describe('verdict', () => {
             verdict({
                 checked: 7,
                 mods: 1,
+                ownTypes: [],
                 red: [],
                 skipped: ['x-herdr-chat/attach.js', 'x-herdr-chat/main.js'],
             }).line,
@@ -120,7 +164,15 @@ describe('verdict', () => {
     });
 
     it('is red when nothing was checked: a green that ran nothing proves nothing', () => {
-        expect(verdict({ checked: 0, mods: 0, red: [], skipped: [] })).toEqual({
+        expect(
+            verdict({
+                checked: 0,
+                mods: 0,
+                ownTypes: [],
+                red: [],
+                skipped: [],
+            }),
+        ).toEqual({
             isRed: true,
             line: 'herdr-mods:typecheck: red, 0 files checked',
         });
