@@ -637,7 +637,7 @@ async function startHelga() {
         '--model',
         'haiku',
         '--effort',
-        'medium',
+        'xhigh',
         '--settings',
         settings,
     ];

@@ -4,7 +4,7 @@
 
 ## who
 
-- a herdr pane session (the fallback: `--bg --remote-control`) named «🎀 helga», Haiku 5.5 at medium effort, no fleet memory (`CLAUDE_CODE_DISABLE_CLAUDE_MDS`): the skill's floor section stands in for it
+- a herdr pane session (the fallback: `--bg --remote-control`) named «🎀 helga», Haiku 5.5 at xhigh effort (dima's o21, 2026-11-19), no fleet memory (`CLAUDE_CODE_DISABLE_CLAUDE_MDS`): the skill's floor section stands in for it
 - takes chores from `🦉 clio` and any wing `🦉🪽 clio: wing N`, by message; any other sender gets «not clio»
 - dima may open her session and steer her; she tells clio what he said in one `[ask]`
 - adopted 2026-10-22 (dima's o33); the trial's numbers and receipt log stay in `docs/test-drive/helga.md`
