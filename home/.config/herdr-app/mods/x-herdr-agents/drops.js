@@ -54,9 +54,9 @@ export function targetOf(item, spot) {
 
 /**
  * the one write a drop makes: `from` takes `to`'s place, landing after it when it moved down; herdr's moves are 1-based
- * @param {Dragged} item @param {number} from @param {number} to @param {DropContext} cx
+ * @param {Dragged} item @param {number} _from @param {number} to @param {DropContext} cx
  */
-export function drop(item, from, to, cx) {
+export function drop(item, _from, to, cx) {
     switch (item.kind) {
         case 'pin': {
             // by its address: a row that went mid-drag shifts the places, never what moves
