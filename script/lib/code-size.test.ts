@@ -87,7 +87,7 @@ const caps = {
         why: 'the deck mod: orbit and phases in one view',
     },
     'home/.config/herdr-app/mods/x-herdr-status/main.js': {
-        cap: 1_521,
+        cap: 1_463,
         why: 'the status mod, one view',
     },
     'x/go/brief_summon_test.go': {

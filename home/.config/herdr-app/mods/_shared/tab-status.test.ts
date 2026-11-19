@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import { nextChange, tabStatusIn } from './tab-status.js';
 
-// FRM-664:W6: the top tabs' status tile shows unless he hid it in the settings window
+// FRM-664:W6: the top tabs' status tile shows unless he hid it in x-herdr-settings
 const file = (rows: Record<string, unknown>) => JSON.stringify({ rows, v: 1 });
 
 describe('tab status from the settings file', () => {

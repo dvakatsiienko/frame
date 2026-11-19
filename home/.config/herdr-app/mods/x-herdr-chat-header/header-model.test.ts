@@ -276,7 +276,7 @@ describe('what a press does', () => {
         ]);
     });
 
-    test('settings opens the chat look popover', () => {
+    test('settings opens the chat settings', () => {
         expect(pressOf('settings', at)).toEqual([
             {
                 overlay: expect.objectContaining({

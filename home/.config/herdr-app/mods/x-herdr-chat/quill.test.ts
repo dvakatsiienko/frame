@@ -289,7 +289,7 @@ describe('the quills of every thread, kept and shown by one owner', () => {
         expect(quills.get('a.jsonl').text).toBe('text');
     });
 
-    // the settings window's note boxes are its own text boxes, never a quill
+    // x-herdr-settings' note boxes are its own text boxes, never a quill
     test('the quill is written in one place: no file of the chat but quill.js sets a box’s text', () => {
         const dir = new URL('.', import.meta.url).pathname;
         const writers = readdirSync(dir)
