@@ -29,7 +29,21 @@ import {
     takeJoinLock,
     takeJoins,
 } from './joins.ts';
-import { HOT, hotOf } from './keep-warm.ts';
+import {
+    HOT,
+    bumpHotGen,
+    holdAfk,
+    holdHot,
+    holdWaker,
+    hotOf,
+    isAfkWarm,
+    isWindowSpent,
+    setAfk,
+    setHot,
+    setWaker,
+    warm,
+    writeWaker,
+} from './keep-warm.ts';
 import {
     BAR_HEIGHT,
     BREATH_MS,
@@ -522,8 +536,6 @@ let isAutoWindOn = true;
 // what this session's last reply waits on, its 🔭 line
 let wait: string | undefined;
 let isPolling = false;
-let afk = false;
-let isWaker = false;
 let isPaced = false;
 // the window this process already sent its last ping in: a refused one never retries every poll
 let lateWindow: number | undefined;
@@ -1056,12 +1068,8 @@ let fiveHourPercent: number | undefined;
 const CAP_FULL_PERCENT = 95;
 let cap: StashCap | undefined;
 let capGen = 0;
-// since: the turn end the next ping counts from; only dima's click turns it off, a 5h reset never does
-let hot: { since: number } | undefined;
 // the model label last written for this session, so a step writes the store only when it changes
 let modelSeen: string | undefined;
-// a turn start or a flip bumps it, so a ping armed before either never fires
-let hotGen = 0;
 
 // quiet comms (PK-93, FRM-501): in clio's thread a message is held, no turn, unless it pushes (hooks/quiet.ts) or is a
 // member's first answer to her; held ones ride her next prompt as one hidden block, or an idle append after the wait.
@@ -4016,14 +4024,14 @@ async function load($: EngineInterface) {
     if (bandPresses) return;
     await readOverrideOn($).catch(() => undefined);
     const flag = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
-    const wasAfk = afk;
-    afk = flag?.on === true;
+    const wasAfk = warm.afk;
+    holdAfk(flag?.on === true);
     // afk flipped from any board re-arms keep-hot here, since afk warms a remote-controlled session
-    if (afk !== wasAfk) await armHot($);
+    if (warm.afk !== wasAfk) await armHot($);
     const waker = (await $.store.get(WAKER_KEY)) as
         | { on?: boolean }
         | undefined;
-    isWaker = waker?.on === true;
+    holdWaker(waker?.on === true);
     await refreshShown($);
     // after a /clear the process goes on under a new id, and no session.start fires
     await refreshSelfId($);
@@ -4055,14 +4063,14 @@ async function load($: EngineInterface) {
 // the band's view the module's values make
 function viewOf(isBoardOpen: boolean): StashView {
     return {
-        afk,
+        afk: warm.afk,
         isAutoWind: isAutoWindOn,
         isBoardOpen,
-        isHot: Boolean(hot),
+        isHot: Boolean(warm.hot),
         isOverrideOn: isOverrideOn(),
         isPaced,
         isSettingsOpen: settings.isSettingsOpen,
-        isWaker,
+        isWaker: warm.isWaker,
         selfId: identity.selfId,
         shown: settings.shown,
         wait,
@@ -4134,8 +4142,9 @@ async function takeBandPresses($: EngineInterface) {
         const key = p.button === 'waker' ? WAKER_KEY : AFK_KEY;
         const stored = (await $.store.get(key)) as { at?: number } | undefined;
         if (typeof stored?.at === 'number' && stored.at >= p.at) continue;
-        if (p.button === 'waker') await setWaker($, p.on, p.at);
-        else await setAfk($, p.on, p.at);
+        if (p.button === 'waker')
+            await setWaker($, p.on, () => writeFleet($), p.at);
+        else await setAfk($, p.on, () => writeFleet($), p.at);
     }
     const override = presses.findLast((p) => p.button === 'override');
     if (override) await takeOverridePress($, home, override);
@@ -5174,13 +5183,14 @@ async function paceWaker($: EngineInterface) {
                 wasOn,
                 ...(until ? { until } : {}),
             });
-            if (!wasOn) await writeWaker($, true);
+            if (!wasOn) await writeWaker($, true, () => writeFleet($));
             return;
         }
         // a second start means ⏰ on, he may have forgotten it (W1958); the end still restores what the first one found
         if (key?.since !== note.since) {
             await $.store.set(PACE_WAKER + sid, { ...note, since: key?.since });
-            if (waker?.on !== true) await writeWaker($, true);
+            if (waker?.on !== true)
+                await writeWaker($, true, () => writeFleet($));
             // a held afk puts its copy back at its end
             const away = (await $.store.get(AFK_KEY)) as
                 | { on?: boolean }
@@ -5206,7 +5216,7 @@ async function paceWaker($: EngineInterface) {
             | undefined;
         if (away?.on)
             await $.store.set(AFK_KEY, { ...away, wakerBefore: false });
-        else await writeWaker($, false);
+        else await writeWaker($, false, () => writeFleet($));
     }
     await $.store.delete(PACE_WAKER + sid);
 }
@@ -5382,92 +5392,25 @@ async function pressSwitch(
 // the wiring's share of every turn start: a ping armed before it never fires, the poll's state is read fresh, and the
 // turn keeps whether dima is afk
 async function prepareTurn($: EngineInterface) {
-    hotGen++;
+    bumpHotGen();
     await load($);
-    return afk;
-}
-
-async function saveHot($: EngineInterface) {
-    const sid = await currentId($);
-    if (!sid) return;
-    await $.store.set(HOT + sid, hot ?? { off: true });
-}
-
-// 🔥 set, never flipped: on keeps a running hot's start, else counts from now mid-turn or from the last turn's end
-async function setHot($: EngineInterface, on: boolean) {
-    const now = await $.clock.now();
-    hot = on
-        ? (hot ?? { since: turn.isBusy ? now : (turn.endedAt ?? now) })
-        : undefined;
-    await saveHot($);
-}
-
-// ⏰'s one writer: every write stamps its time, so the latest press wins whichever band it came from (FRM-568)
-// `at`: the press's own time, so a later press read in the same poll still outranks it; a cc press stamps now
-async function writeWaker($: EngineInterface, on: boolean, at?: number) {
-    await $.store.set(WAKER_KEY, { at: at ?? (await $.clock.now()), on });
-    await writeFleet($).catch(() => undefined);
-}
-
-// ⏰ set, never flipped; a set during afk is what afk off puts back
-async function setWaker($: EngineInterface, on: boolean, at?: number) {
-    isWaker = on;
-    await writeWaker($, on, at);
-    const away = (await $.store.get(AFK_KEY)) as
-        | { at?: number; on?: boolean; wakerBefore?: boolean }
-        | undefined;
-    if (away?.on) await $.store.set(AFK_KEY, { ...away, wakerBefore: on });
-}
-
-// 💨 set, never flipped: afk on turns ⏰ on, afk off puts back what ⏰ was before it; a press on ⏰ meanwhile still counts
-async function setAfk($: EngineInterface, on: boolean, at?: number) {
-    const was = (await $.store.get(AFK_KEY)) as
-        | { at?: number; on?: boolean; wakerBefore?: boolean }
-        | undefined;
-    const wakerWas = (await $.store.get(WAKER_KEY)) as
-        | { on?: boolean }
-        | undefined;
-    afk = on;
-    const stamp = at ?? (await $.clock.now());
-    await $.store.set(AFK_KEY, {
-        at: stamp,
-        on,
-        ...(on
-            ? { wakerBefore: was?.on ? was.wakerBefore : wakerWas?.on === true }
-            : {}),
-    });
-    if (on || was?.wakerBefore !== undefined) {
-        isWaker = on || was?.wakerBefore === true;
-        await writeWaker($, isWaker, stamp);
-    }
-    await writeFleet($).catch(() => undefined);
-    return was;
-}
-
-// 💨 afk on keeps every remote-controlled session warm too, as if its 🔥 were on (o161): each session's own stash
-// pings itself, counted from its last turn end
-async function isAfkWarm($: EngineInterface) {
-    if (!afk || !(await partsShown($))('stash.afk')) return false;
-    const sid = await currentId($);
-    return (await registry($).catch(() => [])).some(
-        (r) => r.base.sid === sid && r.isBridged,
-    );
+    return warm.afk;
 }
 
 async function armHot($: EngineInterface) {
-    const mine = ++hotGen;
+    const mine = bumpHotGen();
     if (turn.isBusy) return;
     const now = await $.clock.now();
     const since =
-        hot?.since ??
+        warm.hot?.since ??
         ((await isAfkWarm($)) ? (turn.endedAt ?? now) : undefined);
     if (since === undefined) return;
     const everyMs = (await readNumber($, 'hot-minutes')) * MINUTE_MS;
     $.clock.after(Math.max(0, since + everyMs - now), async () => {
         // a chip may have deleted the key since the last poll: a change re-arms, so this timer goes stale
         await followHot($).catch(() => undefined);
-        if (turn.isBusy || mine !== hotGen) return;
-        if (!hot && !(await isAfkWarm($))) return;
+        if (turn.isBusy || mine !== warm.hotGen) return;
+        if (!warm.hot && !(await isAfkWarm($))) return;
         if (!(await partsShown($))('stash.hot')) return;
         if (await isWindowSpent($)) return;
         $.ui.log('x-mod-stash keep-hot: pinged the idle session');
@@ -5475,15 +5418,9 @@ async function armHot($: EngineInterface) {
     });
 }
 
-// a ping at 100 % only comes back as the cap's error
-async function isWindowSpent($: EngineInterface) {
-    const m = await paceMeterOf($).catch(() => undefined);
-    return Boolean(m && m.resetsAt > m.now && m.used >= 100);
-}
-
 // a cache that would die before the reset gets one last ping; that ping's own turn puts it past the reset, so it fires once
 async function hotLate($: EngineInterface) {
-    if (!hot || turn.isBusy || turn.endedAt === undefined) return;
+    if (!warm.hot || turn.isBusy || turn.endedAt === undefined) return;
     if (!(await partsShown($))('stash.hot')) return;
     const m = await paceMeterOf($);
     if (!m || m.resetsAt <= m.now || m.used >= 100) return;
@@ -5509,9 +5446,9 @@ async function followHot($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
     const stored = hotOf(await $.store.get(HOT + sid));
-    if (Boolean(stored) === Boolean(hot)) return;
+    if (Boolean(stored) === Boolean(warm.hot)) return;
     const now = await $.clock.now();
-    hot = stored && { since: turn.isBusy ? now : (turn.endedAt ?? now) };
+    holdHot(stored && { since: turn.isBusy ? now : (turn.endedAt ?? now) });
     await armHot($);
     await publish($);
 }
@@ -6071,7 +6008,7 @@ export const register: Register = (on) => {
         restoreTurn(kept.ended ?? undefined, kept.turn ?? undefined);
         await pruneEnded($).catch(() => undefined);
         const stored = hotOf(await $.store.get(HOT + identity.selfId));
-        hot = stored && { since: turn.endedAt ?? stored.since };
+        holdHot(stored && { since: turn.endedAt ?? stored.since });
         // a reload drops the release timer: a compact-held list waiting for it goes in once the session is idle; armed after
         // a mid-turn reload's busy flag is back, so it never submits into a running turn
         armRelease($, COMPACT_SETTLE_MS);
@@ -6321,7 +6258,7 @@ export const register: Register = (on) => {
             context: [
                 ...(e.context ?? []),
                 clock,
-                ...(afk && isOn('stash.afk') ? [AWAY_NOTE] : []),
+                ...(warm.afk && isOn('stash.afk') ? [AWAY_NOTE] : []),
                 ...(marked.length
                     ? [joinText(marked, tickSentence(texts, marked.length))]
                     : []),
@@ -6508,10 +6445,15 @@ export const register: Register = (on) => {
         await armWake($);
         // the store is 🔥's truth: crow writes its key after session.start, and a written off turns it off
         const sid = await currentId($);
-        if (sid) hot = hotOf(await $.store.get(HOT + sid).catch(() => hot));
+        if (sid)
+            holdHot(hotOf(await $.store.get(HOT + sid).catch(() => warm.hot)));
         // it counts from this turn's end, kept in $.state; it never writes the key back, which once undid a 🌌 sessions
         // chip's delete landing between this read and the write (FRM-499)
-        if (hot) hot = { ...hot, since: turn.endedAt ?? (await $.clock.now()) };
+        if (warm.hot)
+            holdHot({
+                ...warm.hot,
+                since: turn.endedAt ?? (await $.clock.now()),
+            });
         await armHot($);
         await load($);
         return r;
@@ -8901,9 +8843,9 @@ export const register: Register = (on) => {
             ).catch(() => undefined);
             if (round) notes.push(round);
         }
-        if (turn.turnAfk !== undefined && turn.turnAfk !== afk) {
-            setTurnAfk(afk);
-            if (isOn('stash.afk')) notes.push(afk ? AWAY_NOTE : BACK_NOTE);
+        if (turn.turnAfk !== undefined && turn.turnAfk !== warm.afk) {
+            setTurnAfk(warm.afk);
+            if (isOn('stash.afk')) notes.push(warm.afk ? AWAY_NOTE : BACK_NOTE);
         }
         if (
             (e.tool as string) === START_SESSION_TOOL &&
@@ -9008,7 +8950,7 @@ export const register: Register = (on) => {
                             },
                         );
                     const handleAfkFlip = () => {
-                        afk = !view.afk;
+                        holdAfk(!view.afk);
                         let isRead = false;
                         let was:
                             | {
@@ -9020,18 +8962,20 @@ export const register: Register = (on) => {
                         return pressSwitch(
                             $,
                             '💨',
-                            { afk },
+                            { afk: warm.afk },
                             async () => {
                                 // the store's value, never the module copy: another session may have flipped it since the last poll
                                 const read = (await $.store.get(AFK_KEY)) as
                                     | typeof was
                                     | undefined;
                                 isRead = true;
-                                was = await setAfk($, !read?.on);
+                                was = await setAfk($, !read?.on, () =>
+                                    writeFleet($),
+                                );
                             },
                             async () => {
-                                afk = view.afk === true;
-                                isWaker = view.isWaker === true;
+                                holdAfk(view.afk === true);
+                                holdWaker(view.isWaker === true);
                                 // a read that failed wrote nothing, so nothing goes back
                                 if (isRead)
                                     await $.store
@@ -9043,18 +8987,18 @@ export const register: Register = (on) => {
                     // one switch for every session, kept in the store so a restart keeps it
                     const handleWakerFlip = () => {
                         const wanted = !view.isWaker;
-                        isWaker = wanted;
+                        holdWaker(wanted);
                         return pressSwitch(
                             $,
                             '⏰',
-                            { isWaker },
+                            { isWaker: warm.isWaker },
                             // a poll already past load's guard may have read the old value
-                            () => setWaker($, wanted),
+                            () => setWaker($, wanted, () => writeFleet($)),
                             async () => {
-                                isWaker = view.isWaker === true;
-                                await writeWaker($, isWaker).catch(
-                                    () => undefined,
-                                );
+                                holdWaker(view.isWaker === true);
+                                await writeWaker($, warm.isWaker, () =>
+                                    writeFleet($),
+                                ).catch(() => undefined);
                             },
                         );
                     };
@@ -9088,8 +9032,8 @@ export const register: Register = (on) => {
                         );
                     };
                     const handleHotFlip = async () => {
-                        const hotWas = hot;
-                        const isWanted = !hot;
+                        const hotWas = warm.hot;
+                        const isWanted = !warm.hot;
                         await pressSwitch(
                             $,
                             '🔥',
@@ -9097,7 +9041,7 @@ export const register: Register = (on) => {
                             // a poll already past followHot's guard may have read the old value
                             () => setHot($, isWanted),
                             async () => {
-                                hot = hotWas;
+                                holdHot(hotWas);
                             },
                         );
                         await armHot($);
