@@ -50,6 +50,7 @@ comparison brief).
   `to-spec` with an open `?` is the failure.
 - **⚖️ worth it reads every wish too** (root invariant 3, W1247): at the fold, a doubtful wish gets one `🧐 doubt: <why, what he'd lose>` line in that reply, then his call
 - **a grill runs through shape-idea**: the rule and every grill habit live in `habit-dima-comms` § grill
+- **a wish herdr can't do yet folds into FRM-655 unasked** (dima, 2026-11-19: «you auto fold there, without me asking»): its W-line under the upstream issue's section, the issue watched; a doable half gets its own ticket
 
 ## milestones first — initiatives → 🎑 milestones → our flow
 
