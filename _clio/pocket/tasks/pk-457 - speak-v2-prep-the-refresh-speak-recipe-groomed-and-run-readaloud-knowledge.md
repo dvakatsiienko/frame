@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T15:10:00Z'
+updated_date: '2026-11-19T15:37:00Z'
 labels:
   - s
   - clio-wing-1
@@ -49,4 +49,6 @@ PK-457:W25 (2026-11-19 17:02, dima): how, then, do we keep it properly updated i
 PK-457:W26 (2026-11-19 17:02, dima): ok, let's keep refresh-speak for brevity. i actually like «refresh-readaloud»: it is a more precise and more versatile name. for now keep refresh-speak; change to readaloud if we grow this area into something bigger, later.
 
 moved: W20 → FRM-669:W1, W18 → FRM-669:W2 (dima o10, 17:09)
+
+17:37 refresh-speak run 1 done: playbook filled (67ead9ef), W5–W10, W12–W17, W19 met by the run and its 16:42 answers; W11 → FRM-668, W18/W20 → FRM-669; next: fable 5.2 (W1), then the designer refresh
 <!-- SECTION:NOTES:END -->
