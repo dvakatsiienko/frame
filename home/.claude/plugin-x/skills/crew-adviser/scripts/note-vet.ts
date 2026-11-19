@@ -1,13 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
 
-import {
-    NOTES_PATH,
-    VERDICTS_PATH,
-    appendJsonl,
-    changedList,
-    fail,
-} from './lib.ts';
+import { NOTES_PATH, VERDICTS_PATH, changedList, fail } from './lib.ts';
+import { appendJsonl } from './notes.ts';
 
 const usage = `crow:note-vet <ok|miss> <note-id> <why…> [--changed ${changedList.join('|')}] [--ref <path|id>] — log a verdict on one note to ${VERDICTS_PATH}`;
 // a vet can land before harvest.ts logs the note it answers, so the line gets this long to appear

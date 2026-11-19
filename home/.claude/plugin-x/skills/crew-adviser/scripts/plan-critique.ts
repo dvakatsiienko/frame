@@ -4,24 +4,26 @@ import { basename, resolve } from 'node:path';
 import {
     NOTES_PATH,
     type OneShotResult,
-    type PlanReview,
     STATE_DIR,
-    appendJsonl,
     armModels,
-    blindPrompt,
-    blindSections,
     claudeArgs,
     clioThreadOf,
     fail,
     liveArm,
     oneShotModel,
-    planNotes,
-    planPrompt,
-    planSchema,
     runOneShot,
     tokensIn,
     wakeIdOf,
 } from './lib.ts';
+import {
+    type PlanReview,
+    appendJsonl,
+    blindPrompt,
+    blindSections,
+    planNotes,
+    planPrompt,
+    planSchema,
+} from './notes.ts';
 
 const usage = `crow:plan-critique <plan file>
 

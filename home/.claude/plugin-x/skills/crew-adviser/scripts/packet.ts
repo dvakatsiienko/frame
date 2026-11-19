@@ -10,21 +10,18 @@ import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 import {
-    HELD_HEAD,
     MAIN_THREAD,
     NOTES_PATH,
     STATE_DIR,
     type State,
     VERDICTS_PATH,
     charterHash,
-    heldUnsent,
-    isHeldDue,
-    ledgerLine,
     localDay,
     meterLine,
     readCharter,
     threadLabel,
 } from './lib.ts';
+import { HELD_HEAD, heldUnsent, isHeldDue, ledgerLine } from './notes.ts';
 import {
     RECEIPT_MAX_CHARS,
     newestTranscript,

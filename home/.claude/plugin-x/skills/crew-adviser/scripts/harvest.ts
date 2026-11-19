@@ -6,18 +6,13 @@ import {
     type Arm,
     HARVEST_DEADLINE_MS,
     NOTES_PATH,
-    type Note,
     STATE_DIR,
     type Wake,
-    appendNoteOnce,
     armList,
     claudeArgs,
-    heldForAfterTurn,
-    heldMapOf,
     isMode,
     noneReceipt,
     oneShotModel,
-    packetCarriedHeld,
     readCharter,
     readState,
     runOneShot,
@@ -27,6 +22,13 @@ import {
     wakeMarker,
     writeState,
 } from './lib.ts';
+import {
+    type Note,
+    appendNoteOnce,
+    heldForAfterTurn,
+    heldMapOf,
+    packetCarriedHeld,
+} from './notes.ts';
 import { type Run, newestTranscript, readTurn } from './transcript.ts';
 
 // spawned detached by wake.ts, stdio ignored: every outcome goes to harvest.log
