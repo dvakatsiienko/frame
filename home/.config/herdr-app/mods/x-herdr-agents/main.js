@@ -707,6 +707,8 @@ export default class Agents extends View {
                 .when(this.drag.isIdle(), (el) =>
                     el.tooltip(isPinned ? 'Unpin' : 'Pin to the top'),
                 )
+                // the pin owns its press: the row under it never lifts, so no drag stays armed after the click
+                .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
                 .on_click((_e, cx) => {
                     cx.stop_propagation();
                     this.setPins(
@@ -804,13 +806,17 @@ export default class Agents extends View {
                         div()
                             .id(`agent-fold-${a.address}`)
                             .when(subs.length > 0, (el) =>
-                                el.on_click((_e, cx) => {
-                                    cx.stop_propagation();
-                                    this.folded.has(a.address)
-                                        ? this.folded.delete(a.address)
-                                        : this.folded.add(a.address);
-                                    cx.notify();
-                                }),
+                                el
+                                    .on_mouse_down('left', (_e, cx) =>
+                                        cx.stop_propagation(),
+                                    )
+                                    .on_click((_e, cx) => {
+                                        cx.stop_propagation();
+                                        this.folded.has(a.address)
+                                            ? this.folded.delete(a.address)
+                                            : this.folded.add(a.address);
+                                        cx.notify();
+                                    }),
                             )
                             .child(pic),
                     ),

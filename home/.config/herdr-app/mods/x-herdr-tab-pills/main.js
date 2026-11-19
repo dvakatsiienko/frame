@@ -235,8 +235,6 @@ export default class TabPills extends View {
                 .child(
                     div()
                         .id(`pill-close-${c.id}`)
-                        // its press is its own: it never lifts the pill
-                        .on_mouse_down('left', swallow)
                         .size(20)
                         .flex()
                         .flex_none()
@@ -251,11 +249,19 @@ export default class TabPills extends View {
                             el.tooltip('Close tab'),
                         )
                         // a hidden × takes no click: a press there selects the pill
+                        // a shown × owns its press, so it never lifts the pill and leaves no drag armed
                         .when(isCloseShown, (el) =>
-                            el.on_click((_e, cx) => {
-                                cx.stop_propagation();
-                                this.closeTab(c, name.label, space.name, cx);
-                            }),
+                            el
+                                .on_mouse_down('left', swallow)
+                                .on_click((_e, cx) => {
+                                    cx.stop_propagation();
+                                    this.closeTab(
+                                        c,
+                                        name.label,
+                                        space.name,
+                                        cx,
+                                    );
+                                }),
                         )
                         .child(
                             svg('mods/x-herdr-tab-pills/close.svg').size(12),
