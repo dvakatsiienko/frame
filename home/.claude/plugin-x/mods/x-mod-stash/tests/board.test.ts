@@ -1,7 +1,7 @@
 import type { FsEntry, On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-import { isSeated } from '../hooks/register.tsx';
+import { isSeated } from '../hooks/roster.ts';
 import {
     THREADS_FILE,
     type ThreadRow,

@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing';
 
 import { ticketOf } from '../hooks/parse.ts';
-import { pinOf } from '../hooks/register.tsx';
+import { pinOf } from '../hooks/roster.ts';
 
 // FRM-579: the pin reads a thread's role from its record, so a name, an old title or a joiner never moves it
 for (const [role, pin] of [

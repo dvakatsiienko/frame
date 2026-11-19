@@ -1,12 +1,8 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-import {
-    clioAddress,
-    laneMemberRow,
-    parkedWakeMs,
-    peerPing,
-} from '../hooks/register.tsx';
+import { clioAddress, parkedWakeMs, peerPing } from '../hooks/register.tsx';
+import { laneMemberRow } from '../hooks/roster.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 // quiet comms (PK-93): a member's [progress] ping is held in clio's thread, everything else passes
