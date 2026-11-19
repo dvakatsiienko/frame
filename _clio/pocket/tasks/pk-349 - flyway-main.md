@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T15:51:00Z'
+updated_date: '2026-11-19T16:07:00Z'
 labels:
   - s
   - clio-main
@@ -1183,4 +1183,10 @@ PK-349:W1231 (2026-11-19 17:46, dima): I didn't see the 7names by the way
 PK-349:W1232 (2026-11-19 17:46, dima): No, aside from you, the asks are also created by your wings and sometimes by Codie and by Verifier, from what I saw. Also I can start a plain CC without you and it can also use Orbit and should if you are not present.
 PK-349:W1233 (2026-11-19 17:46, dima): You're partially right too. You're the main coordinator so most of the asks come from you or from A Wing. I think 95% or even 98% of them. Maybe let's shape this idea right away because I think it would improve my comms very much but I'd be careful with this. I don't want to build anything redundant or any deadweight. Also I want a precise build.
 PK-349:W1234 (2026-11-19 17:46, dima): I assume, for it to work, some parts of CC mods will need to be implemented, right, and Herdr mods. Let's then design proper updates and Orbit extension functionality. What doors do you need to have it working very well? You need a tool to set an initiator for an ask? Where, then, to have a habit that describes how everything that I've asked for works inside the Orbit mod itself that tells you the system prompt of itself? Or global memory? I lean toward it's the Orbit mod itself. ❓
+
+18:07 wishes, 18:05 groom (ask origin, grill approved):
+PK-349:W1235 (2026-11-19 18:05, dima): grill approved, and i want pretty UI for it. and support for emojies so why tells:
+PK-349:W1236 (2026-11-19 18:05, dima): 🐦⬛ crow
+PK-349:W1237 (2026-11-19 18:05, dima): 🐬 wishkeeper
+PK-349:W1238 (2026-11-19 18:05, dima): etc. so i cleanly see who asked. if codie or verifier relays - i want know which one (lane and ticket, or current task/topic - what are is aked about)
 <!-- SECTION:NOTES:END -->
