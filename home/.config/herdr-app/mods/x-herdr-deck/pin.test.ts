@@ -29,6 +29,27 @@ describe('pinned asks draw first', () => {
         ).toEqual(['o2', 'o4', 'o1', 'o3']);
     });
 
+    test('a bare ⚠, a leading space and a capital Look pin too', () => {
+        expect(
+            ids([
+                { id: 'o1', text: 'push FRM-1' },
+                { id: 'o2', text: 'Look at the dock' },
+                { id: 'o3', text: '  ⚠ push main' },
+            ]),
+        ).toEqual(['o3', 'o2', 'o1']);
+    });
+
+    test('a ticked pinned ask keeps its place', () => {
+        expect(
+            asksOf({
+                asks: [
+                    { id: 'o1', text: 'push FRM-1' },
+                    { id: 'o2', mark: 'accepted', text: '⚠️ merge #9' },
+                ],
+            }).map((a) => a.id),
+        ).toEqual(['o2', 'o1']);
+    });
+
     test('a word that only starts like look pins nothing', () => {
         expect(
             ids([

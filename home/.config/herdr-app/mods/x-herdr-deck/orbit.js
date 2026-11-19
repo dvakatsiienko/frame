@@ -56,7 +56,8 @@ export function asksOf(state) {
  */
 const pinRank = (text) => {
     const head = text.trimStart();
-    if (head.startsWith('⚠️')) return 0;
+    // the bare ⚠ prefix matches ⚠️ too, the stash itself writes it bare
+    if (head.startsWith('⚠')) return 0;
     return /^look\b/i.test(head) ? 1 : 2;
 };
 
