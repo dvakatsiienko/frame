@@ -34,8 +34,8 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 - `pnpm herdr-mods:land <mod> --dry` (a staged check: a bare `herdr-app check` writes herdr's types in), `herdr-app status`, `herdr-app shot`, read it
 - edit in frame; `pnpm herdr-mods:land --watch` lands each save whose staged check passes, live; a link never does
 - a change he can see lands live under `--watch` while he watches (dima 2026-11-17: «the cost of doing the wrong thing is higher»); one that only fixes code lands once at its job's end; «landing now» in the ping
-- a landing restarts the mod and stalls his chats: land yourself, then one look ask once it's live: what he sees and where, with a shot; a land is never an ask (dima, 19 Nov 19:55)
-- a herdr restart is his hand alone: it can lose his typed prompt
+- a landing restarts the mod and stalls his chats: land yourself, then one look ask once it's live: what he sees and where, with a shot; a land is never an ask (dima, 19 Nov 19:55); a chat land waits for afk or an empty quill
+- a herdr restart is his hand alone: it can lose his prompt
 - commit through `x lane commit` in the background; a new mod's `landedByCopy` line (`script/lib/manifest.ts`) rides its first commit
 - a speed change (scrolling, a redraw) is measured on Apple's Metal HUD over herdr: `defaults write dev.herdr.app MetalForceHudEnabled -bool YES` shows it (`NO` hides it), proven 2026-11-12; herdr's own `show_fps_monitor()` is refused in his window
 
@@ -44,7 +44,7 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 - read a cc mod's private store: draw from its file in `~/.claude/shelf/`
 - key an unlocking button (sign, merge, delete): any shell reaches a key
 - restart or kill a live thread for a proof: a throwaway one, killed after
-- start a second Herdr window while dima works, even on a throwaway home: his window reloads and loses his typed draft (2026-11-11, 8 probe starts)
+- start a second Herdr window while dima works, even on a throwaway home: his window reloads and loses his typed draft
 - close with a bare close: it kills dima's focused thread
 - trim a cc mod's band, board or orbit for a herdr twin: they are his fallback
 
