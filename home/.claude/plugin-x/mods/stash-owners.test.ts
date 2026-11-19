@@ -13,7 +13,7 @@ const OWNERS = {
     'herdr-state': 'register.tsx',
     'lane-rounds.json': 'register.tsx',
     'lanes.json': 'register.tsx',
-    'operator-override.json': 'register.tsx',
+    'operator-override.json': 'override.ts',
     'relay.json': 'register.tsx',
     'second-wind.json': 'wind-store.ts',
 } as const;
