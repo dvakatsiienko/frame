@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T17:42:00Z'
+updated_date: '2026-11-19T18:04:00Z'
 labels:
   - s
   - clio-wing-1
@@ -85,4 +85,6 @@ PK-457:W49 (2026-11-19 19:41, dima): research: unfold how bad my comms were in t
 PK-457:W50 (2026-11-19 19:41, dima): ❓ is design loop a correct solution for that or not?
 PK-457:W51 (2026-11-19 19:41, dima): q2: we did a similar design arena last time; it was interesting, but i had a lot of comms issues, it was very effort-demanding from my side, i got tired very fast, and it took a whole day. i don't have a whole day for another arena run.
 PK-457:W52 (2026-11-19 19:41, dima): to compare fable 5.2 and opus 5.5 for design, this time research only: search the internet for data on who designs better now, fable 5.2 or opus 5.5. keep the design arena idea for the future, not for this time.
+
+20:04 kept: a0437f6 reshaped the designer recipe, one step of three; the item stays for its fable 5.2 and model-cards refresh and speak v2 (wing 1 f44)
 <!-- SECTION:NOTES:END -->
