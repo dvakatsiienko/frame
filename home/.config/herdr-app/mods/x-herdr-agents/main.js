@@ -252,18 +252,29 @@ export default class Agents extends View {
         cx.timer.every(30000, (cx) => cx.notify());
         // one drag for all four kinds; it lives on the view, so a status redraw mid-drag keeps it (FRM-664)
         this.listKeys = cx.focus_handle();
-        this.shownPins = [];
+        // the drawn rows of each kind, in order: a drag's places count them (drops.js)
+        this.shown = {
+            shownMine: [],
+            shownPins: [],
+            shownSpaces: [],
+            shownTabs: {},
+        };
         this.drag = createListDrag({
             axis: 'y',
             focus: () => this.listKeys,
             onClick: () => {},
             onMove: (item, from, to) =>
                 drop(item, from, to, {
+                    ...this.shown,
                     order: this.order,
-                    pinned: this.shownPins,
                     pins: this.pins,
                     setOrder: (order) => this.setOrder(order),
                     setPins: (pins) => this.setPins(pins),
+                    spaceIndex: (id) => spaces().findIndex((s) => s.id === id),
+                    tabIndex: (space, tab) =>
+                        (
+                            spaces().find((s) => s.id === space)?.tabs ?? []
+                        ).findIndex((x) => x.id === tab),
                 }),
         });
         // the ♪ sounds when an agent needs him or finishes (jobs.js)
@@ -561,9 +572,6 @@ export default class Agents extends View {
             (a) => NAMES.get(a)?.pid,
         );
 
-        // a pin drag moves among the shown pins; the hidden ones keep their place at the end (drops.js)
-        this.shownPins = pinned.map((a) => a.address);
-
         const withKids = (a, i) => {
             const subs = collapsed ? [] : this.tree(all, a.address);
             const r = row(a, i, subs);
@@ -723,13 +731,14 @@ export default class Agents extends View {
                             : label(a))));
             // Dragging: pinned rows reorder the pins; in his order a row takes the place it is dropped on;
             // under a space header a row moves its tab within the space (the tab bar follows).
-            const pinAt = pinned.indexOf(a);
-            const spaceTabs =
-                spaces().find((s) => s.id === a.space)?.tabs ?? [];
-            const tabAt = spaceTabs.findIndex((x) => x.id === a.tab);
-            const mineAt = this.order.indexOf(a.address);
-            const allSpaces = spaces();
-            const spaceAt = allSpaces.findIndex((s) => s.id === a.space);
+            const { shownMine, shownPins, shownSpaces, shownTabs } = this.shown;
+            const pinAt = shownPins.indexOf(a.address);
+            const tabAt =
+                isPinned || isYours
+                    ? -1
+                    : (shownTabs[a.space] ?? []).indexOf(a.tab);
+            const mineAt = shownMine.indexOf(a.address);
+            const spaceAt = shownSpaces.indexOf(a.space);
             const [item, from] = isPinned
                 ? [{ kind: 'pin' }, pinAt]
                 : isYours
@@ -741,7 +750,8 @@ export default class Agents extends View {
                 isPinned,
                 isYours,
                 kind: 'agent',
-                machine: allSpaces[spaceAt]?.machine ?? null,
+                machine:
+                    spaces().find((s) => s.id === a.space)?.machine ?? null,
                 mineAt,
                 pinAt,
                 space: a.space,
@@ -855,6 +865,31 @@ export default class Agents extends View {
                 });
         }
 
+        // what is drawn, kind by kind, in order: a folded group's rows are not
+        const drawn = groups
+            .filter((g) => !this.folded.has(g.id))
+            .flatMap((g) => g.members);
+        const shownTabs = {};
+        for (const a of drawn) {
+            if (this.pins.includes(a.address) || isYours) continue;
+            const tabs = shownTabs[a.space] ?? [];
+            if (!tabs.includes(a.tab)) shownTabs[a.space] = [...tabs, a.tab];
+        }
+        this.shown = {
+            shownMine: isYours
+                ? drawn
+                      .filter((a) => !this.pins.includes(a.address))
+                      .map((a) => a.address)
+                : [],
+            shownPins: this.folded.has('pinned')
+                ? []
+                : pinned.map((a) => a.address),
+            shownSpaces: [
+                ...new Set(groups.filter((g) => g.space).map((g) => g.space)),
+            ],
+            shownTabs,
+        };
+
         // A group's header; it folds the group. Folded, it says how many and the most urgent state.
         // A space's header drags to reorder the spaces; right-click renames the space.
         const header = (g) => {
@@ -878,12 +913,14 @@ export default class Agents extends View {
                                   kind: 'space',
                                   machine: sp[at].machine ?? null,
                               },
-                              at,
+                              this.shown.shownSpaces.indexOf(g.space),
                               (held) =>
                                   targetOf(held, {
                                       kind: 'header',
                                       machine: sp[at].machine ?? null,
-                                      spaceAt: at,
+                                      spaceAt: this.shown.shownSpaces.indexOf(
+                                          g.space,
+                                      ),
                                   }),
                               g.label || g.space,
                               t,

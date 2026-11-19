@@ -16,15 +16,15 @@ const FALLBACK_SIZE = 30;
  * @template T
  * @typedef {{ item: T, start: number, size: number, label: string }} Held
  */
-/** @typedef {Record<'raised' | 'border' | 'foreground', import('gpui-kit').Color>} DragTheme */
+/** @typedef {Record<'raised' | 'selected' | 'border' | 'foreground', import('gpui-kit').Color>} DragTheme */
 /** @typedef {import('gpui-kit').Context} Context */
 
 /**
  * @template T
- * @param {{ axis: 'x' | 'y', onMove: (item: T, from: number, to: number) => void, onClick: (item: T) => void,
+ * @param {{ axis: 'x' | 'y', gap?: number, onMove: (item: T, from: number, to: number) => void, onClick: (item: T) => void,
  *   focus: () => import('gpui-kit').FocusHandle }} options
  */
-export function createListDrag({ axis, focus, onClick, onMove }) {
+export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
     /** @type {ReturnType<typeof createDrag<Held<T>>>} */
     const drag = createDrag({
         onClick: (/** @type {Held<T>} */ held) => onClick(held.item),
@@ -73,7 +73,7 @@ export function createListDrag({ axis, focus, onClick, onMove }) {
             const offset =
                 s.name === 'dragging'
                     ? along(s.pointer) - along(s.at)
-                    : (s.to - s.from) * size;
+                    : (s.to - s.from) * (size + gap);
             const at = start - origin + offset;
             const ghost = div()
                 .id('drag-ghost')
@@ -82,7 +82,7 @@ export function createListDrag({ axis, focus, onClick, onMove }) {
                 .flex()
                 .items_center()
                 .px(8)
-                .rounded(8)
+                .rounded(axis === 'y' ? 8 : 13)
                 .border_1()
                 .border_color(t.border)
                 .bg(t.raised)
@@ -108,14 +108,19 @@ export function createListDrag({ axis, focus, onClick, onMove }) {
             const s = drag.state();
             const mine = s.name !== 'idle' && s.key === key;
             const at = s.name === 'idle' ? null : targetFor(s.item.item);
+            // the neighbours between the source and its target slide one slot toward the source; the dimmed source
+            // stands in the target's slot, so nothing overlaps
+            const slot = s.name === 'idle' ? 0 : s.item.size + gap;
             const slide =
-                s.name === 'dragging' && !mine && at !== null && s.to !== null
-                    ? s.from < s.to && at > s.from && at <= s.to
-                        ? -s.item.size
+                s.name !== 'dragging' || s.to === null || at === null
+                    ? 0
+                    : mine
+                      ? (s.to - s.from) * slot
+                      : s.from < s.to && at > s.from && at <= s.to
+                        ? -slot
                         : s.from > s.to && at >= s.to && at < s.from
-                          ? s.item.size
-                          : 0
-                    : 0;
+                          ? slot
+                          : 0;
             const placed = el
                 .relative()
                 .transition(axis === 'y' ? 'top' : 'left', SLIDE_MS)
@@ -124,7 +129,12 @@ export function createListDrag({ axis, focus, onClick, onMove }) {
                 .when(axis === 'x', (el) => el.left(slide))
                 .opacity(mine && s.name !== 'pressed' ? 0.3 : 1)
                 .when(mine && s.name === 'pressed', (el) =>
-                    el.bg(t.raised).shadow_md().cursor_grabbing(),
+                    el
+                        .bg(t.selected)
+                        .border_1()
+                        .border_color(t.border)
+                        .shadow_lg()
+                        .cursor_grabbing(),
                 )
                 .on_mouse_move((_e, cx) => {
                     const now = drag.state();

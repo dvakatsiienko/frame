@@ -100,6 +100,7 @@ export default class TabPills extends View {
         this.drag = createListDrag({
             axis: 'x',
             focus: () => this.tabKeys,
+            gap: 3,
             ...tabDrops,
         });
         /** @type {string | null} the pill under the pointer: its × shows */

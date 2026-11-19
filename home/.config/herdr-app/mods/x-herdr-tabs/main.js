@@ -112,6 +112,7 @@ export default class Tabs extends View {
         this.drag = createListDrag({
             axis: 'x',
             focus: () => this.tabKeys,
+            gap: 3,
             ...tabDrops,
         });
         // the first tab drawn, the bar's width, and the active tab seen last: one swipe moves `first` by one tab

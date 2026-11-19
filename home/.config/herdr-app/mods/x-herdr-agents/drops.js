@@ -13,15 +13,18 @@ import { moved } from './order.js';
  *   | { kind: 'space', id: string, machine: string | null }} Dragged
  */
 /**
- * what the pointer is over: an agent row, with its places in each order, or a space's header
+ * what the pointer is over: an agent row, with its place among the shown rows of each kind, or a space's header;
+ * a place counts only what is drawn, so the rows between a source and its target are the ones that slide
  * @typedef {{ kind: 'agent', isPinned: boolean, isYours: boolean, pinAt: number, mineAt: number, tabAt: number,
  *   space: string, tab: string, spaceAt: number, machine: string | null }
  *   | { kind: 'header', spaceAt: number, machine: string | null }} Spot
  */
 /**
- * what a drop reads at the moment it lands, never a render's copy
- * @typedef {{ order: string[], pinned: string[], pins: string[], setOrder: (order: string[]) => void,
- *   setPins: (pins: string[]) => void }} DropContext
+ * what a drop reads as it lands: the shown rows of each kind in their drawn order, and the stores they move in
+ * @typedef {{ order: string[], pins: string[], shownPins: string[], shownMine: string[],
+ *   shownTabs: Record<string, string[]>, shownSpaces: string[], tabIndex: (space: string, tab: string) => number,
+ *   spaceIndex: (space: string) => number, setOrder: (order: string[]) => void, setPins: (pins: string[]) => void
+ * }} DropContext
  */
 
 /**
@@ -56,7 +59,7 @@ export function targetOf(item, spot) {
 export function drop(item, from, to, cx) {
     switch (item.kind) {
         case 'pin': {
-            const shown = cx.pinned;
+            const shown = cx.shownPins;
             const from_ = shown[from];
             const to_ = shown[to];
             if (from_ === undefined || to_ === undefined) return;
@@ -67,18 +70,24 @@ export function drop(item, from, to, cx) {
             return;
         }
         case 'mine': {
-            const from_ = cx.order[from];
-            const to_ = cx.order[to];
+            const from_ = cx.shownMine[from];
+            const to_ = cx.shownMine[to];
             if (from_ === undefined || to_ === undefined) return;
             cx.setOrder(moved(cx.order, from_, to_));
             return;
         }
-        case 'tab':
-            run('tab.move', { id: item.tab, index: to + 1 });
+        case 'tab': {
+            const onto = cx.shownTabs[item.space]?.[to];
+            const at = onto === undefined ? -1 : cx.tabIndex(item.space, onto);
+            if (at >= 0) run('tab.move', { id: item.tab, index: at + 1 });
             return;
-        case 'space':
-            run('space.move', { id: item.id, index: to + 1 });
+        }
+        case 'space': {
+            const onto = cx.shownSpaces[to];
+            const at = onto === undefined ? -1 : cx.spaceIndex(onto);
+            if (at >= 0) run('space.move', { id: item.id, index: at + 1 });
             return;
+        }
         default: {
             /** @type {never} */
             const unhandled = item;
