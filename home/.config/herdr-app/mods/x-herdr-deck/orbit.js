@@ -43,8 +43,22 @@ export function asksOf(state) {
                     pick: a.pick ?? null,
                     text: a.text,
                 }),
+        )
+        .sort(
+            (/** @type {Ask} */ a, /** @type {Ask} */ b) =>
+                pinRank(a.text) - pinRank(b.text),
         );
 }
+
+/**
+ * hazards first, then look cards, then the rest; a stable sort keeps the store's order inside each group (FRM-620:W12)
+ * @param {string} text
+ */
+const pinRank = (text) => {
+    const head = text.trimStart();
+    if (head.startsWith('⚠️')) return 0;
+    return /^look\b/i.test(head) ? 1 : 2;
+};
 
 /**
  * an ask's link as the card draws it: a web page by its host, an app link by its app (its scheme), a file by its name;
