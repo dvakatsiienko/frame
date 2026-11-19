@@ -266,7 +266,7 @@ export const pages = [
         title: 'claude code mods',
     },
     {
-        about: 'the tabs along the top of herdr',
+        about: 'herdr as a whole, outside any one chat',
         groups: [
             {
                 heading: 'tabs',
@@ -287,9 +287,9 @@ export const pages = [
                 ],
             },
         ],
-        icon: '🗂️',
-        id: 'tabs',
-        title: 'tabs',
+        icon: '⚙️',
+        id: 'general',
+        title: 'general',
     },
     {
         about: 'every x-herdr key, written into herdr’s keys.json beside herdr’s own',

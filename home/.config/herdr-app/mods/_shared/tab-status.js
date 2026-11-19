@@ -1,4 +1,4 @@
-// the top tabs' status tile (the program's icon with its state dot): his «tabs › tab status» row in the settings
+// the top tabs' status tile (the program's icon with its state dot): his «general › tab status» row in the settings
 // window the band's 🎛️ opens (FRM-664:W6); the window writes the one settings file, the pills read it from here
 
 // the settings window's file (x-herdr-chat settings-store.js), under the home folder
