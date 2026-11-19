@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-19T11:52:00Z'
+updated_date: '2026-11-19T12:13:00Z'
 labels:
   - s
   - clio-wing-1
@@ -24,16 +24,17 @@ ordinal: 1001
 - [ ] #6 f19 wishkeeper-cache: one big measure over the trial's whole 5 min week, then the 1 h arm
 - [ ] #7 f25 speak v2 with dima: bytes move → mess hunt (FRM-629:W26–W27) → wisps → design; FRM-497 rides it
 - [ ] #8 f27 refreshes on his word: refresh-readaloud → refresh fable 5.2 → refresh designer, then speak v2 (his plan)
-- [ ] #9 f37 ⏳ FRM-555 fix 3 (live idle cpu): the mods codie's measure, then chunk or drop — waits for: FRM-555
-- [ ] #10 f28 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-20
-- [ ] #11 f30 📅 strays lane verdict (FRM-586): model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-20
-- [ ] #12 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
-- [ ] #13 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #14 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #15 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #16 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #17 f34 🦥 PK-362 steamac vm disk 256 → 192 gb — later: dima, his vet
-- [ ] #18 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #9 f38 fable 5.2 research with dima: refresh-crew-coordinator for fable 5.2, then the model cards (was a ⏰, his 14:12 «later by me and wing 1»)
+- [ ] #10 f37 ⏳ FRM-555 fix 3 (live idle cpu): the mods codie's measure, then chunk or drop — waits for: FRM-555
+- [ ] #11 f28 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-20
+- [ ] #12 f30 📅 strays lane verdict (FRM-586): model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-20
+- [ ] #13 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
+- [ ] #14 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #15 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #16 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #17 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #18 f34 🦥 PK-362 steamac vm disk 256 → 192 gb — later: dima, his vet
+- [ ] #19 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -709,4 +710,6 @@ done 2026-11-18 22:41: f36 ⏳ FRM-555 follow-up with the mods codie: its profil
 22:41: f36 is reworded, not done: fixes 1–2 dropped on wing 1's verdict, the harness half went upstream (#106740), only fix 3's measure is open
 
 13:52 from dima's 18 Nov 22:19 (prompts 2026-11-18 line 823, helga's 19 Nov verify): I resume speak v2 with the wing. I started today and I'm not glad with the results, because we only managed to solve evergreen and prepare my lookout spot where I apply to jobs. I planned more for the wing today: to refresh the speak recipe with wing 1, to refresh Fable 5.2 to fleet knowledge, and to refresh the designer. I didn't make it in time, so it is postponed for tomorrow.
+
+14:13 from _reminders.md, moved on dima's 14:12 word «fable 5.2 research is later by me and wing 1»: PK-363:W195 (dima 2026-11-10): «research about refreshing models in a week (set a reminder)»; W196: «slightly stronger than opus 5.5, but twice as expensive, and ~20% cheaper than fable 5.1. opus 5.5 medium is still the baseline, imo.» — run recipes/refresh-crew-coordinator/recipe.md for fable 5.2 once bench data is seeded, then the model cards
 <!-- SECTION:NOTES:END -->
