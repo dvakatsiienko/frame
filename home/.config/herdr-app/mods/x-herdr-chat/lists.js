@@ -2,7 +2,7 @@
 // each message's source, so a paste into its quill puts back the marker of every line that is a list item's text
 // (dima, 23:38, the probe's variant E)
 
-import { plainText, withPlainPaste } from './paste.js';
+import { insertOf, plainText, withPlainPaste } from './paste.js';
 
 const ITEM = /^(\s*)([-*+]|\d+[.)])\s+(.+)$/;
 const FENCE = /^\s*(```|~~~)/;
@@ -65,12 +65,14 @@ export function withMarkers(was, now, lines) {
 
 /**
  * the quill after a change, a paste in it made plain and its list lines given their markers back (his «i want only
- * lists rich format pasted»); only an insert of more than one character is a paste, so a typed key stays as typed
+ * lists rich format pasted»); a change is a paste only when what it put in is the clipboard's text, so a typed key, an
+ * undo or a dictated phrase stays as it came
  * @param {string} was the quill before the change
  * @param {string} now the quill after it
- * @param {string[]} markdowns the shown thread's messages, as written
+ * @param {string | undefined} clipboard
+ * @param {() => string[]} markdowns the shown thread's messages, as written, read only for a paste
  */
-export function pastedText(was, now, markdowns) {
-    if (now.length <= was.length + 1) return now;
-    return withMarkers(was, withPlainPaste(was, now), listLines(markdowns));
+export function pastedText(was, now, clipboard, markdowns) {
+    if (!clipboard || insertOf(was, now).text !== clipboard) return now;
+    return withMarkers(was, withPlainPaste(was, now), listLines(markdowns()));
 }

@@ -19,9 +19,14 @@ export function createToolFolds() {
         clear: () => open.clear(),
         /** @param {string} id a tool row's or a call row's */
         isOpen: (id) => open.has(id),
-        /** a click on a fold or a call: it opens, or closes, alone @param {string} id */
+        /**
+         * a click on a fold or a call: it opens, or closes, alone; a click in a card changes nothing (FRM-659:W4)
+         * @param {string} id @returns {boolean} whether a fold moved
+         */
         toggle(id) {
+            if (isCardRow(id)) return false;
             if (!open.delete(id)) open.add(id);
+            return true;
         },
     };
 }
@@ -46,7 +51,16 @@ export function withCallRows(rows, folds) {
                 version: isOpen ? 2 : 1,
             };
             return isOpen
-                ? [callRow, { ...callRow, id: `${id}${CARD}`, version: 1 }]
+                ? [
+                      callRow,
+                      // its text is the json it shows, so find counts and steps to what the card holds
+                      {
+                          ...callRow,
+                          id: `${id}${CARD}`,
+                          text: call.input ?? '',
+                          version: 1,
+                      },
+                  ]
                 : [callRow];
         });
         // an open fold draws ▾, so it is drawn again: a half step no closed version reaches

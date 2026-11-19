@@ -47,24 +47,28 @@ describe('a list pasted from the chat gets its markers back (dima, 23:38)', () =
 });
 
 describe('a paste into the quill reads plain with its lists kept (FRM-659 wisp: lost in the swap)', () => {
-    const messages = ['- **first** item\n- second item'];
+    const messages = () => ['- **first** item\n- second item'];
+    const pasted =
+        'see [the doc](https://x.y) and `code`\nfirst item\nsecond item';
 
     test('links read as labels, marks go, and list lines get their markers back', () => {
-        expect(
-            pastedText(
-                'note: ',
-                'note: see [the doc](https://x.y) and `code`\nfirst item\nsecond item',
-                messages,
-            ),
-        ).toBe('note: see the doc and code\n- first item\n- second item');
+        expect(pastedText('note: ', `note: ${pasted}`, pasted, messages)).toBe(
+            'note: see the doc and code\n- first item\n- second item',
+        );
     });
 
     test('a typed character is left as typed', () => {
-        expect(pastedText('a', 'a*', messages)).toBe('a*');
+        expect(pastedText('a', 'a*', '*', messages)).toBe('a*');
     });
 
-    test('a paste already fixed comes back unchanged, so setting it ends there', () => {
+    test('text that is not the clipboard (an undo, dictation) keeps its markdown', () => {
+        expect(
+            pastedText('run  now', 'run `foo` now', 'something else', messages),
+        ).toBe('run `foo` now');
+    });
+
+    test('a paste already fixed comes back unchanged', () => {
         const fixed = 'x\n- first item\n- second item';
-        expect(pastedText('', fixed, messages)).toBe(fixed);
+        expect(pastedText('', fixed, fixed, messages)).toBe(fixed);
     });
 });

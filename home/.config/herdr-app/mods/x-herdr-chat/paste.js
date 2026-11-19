@@ -23,21 +23,34 @@ export function plainPaste(text) {
 }
 
 /**
+ * where a change put its new text: the length of what it kept before it and after it
+ * @param {string} was the value before the change
+ * @param {string} now the value after it
+ */
+export function insertOf(was, now) {
+    let start = 0;
+    while (
+        start < was.length &&
+        start < now.length &&
+        was[start] === now[start]
+    )
+        start++;
+    let end = 0;
+    while (
+        end < was.length - start &&
+        end < now.length - start &&
+        was[was.length - 1 - end] === now[now.length - 1 - end]
+    )
+        end++;
+    return { end, start, text: now.slice(start, now.length - end) };
+}
+
+/**
  * the quill's value with only the pasted stretch made plain: what was typed before stays as it was
  * @param {string} was the value before the paste
  * @param {string} now the value after it
  */
 export function withPlainPaste(was, now) {
-    let start = 0;
-    while (start < was.length && was[start] === now[start]) start++;
-    let end = 0;
-    while (
-        end < was.length - start &&
-        was[was.length - 1 - end] === now[now.length - 1 - end]
-    )
-        end++;
-    const pasted = now.slice(start, now.length - end);
-    return (
-        now.slice(0, start) + plainPaste(pasted) + now.slice(now.length - end)
-    );
+    const { end, start, text } = insertOf(was, now);
+    return now.slice(0, start) + plainPaste(text) + now.slice(now.length - end);
 }

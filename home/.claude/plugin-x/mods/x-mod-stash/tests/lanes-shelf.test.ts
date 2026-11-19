@@ -4,8 +4,8 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 import { LANES_SHELF } from './lanes-shelf.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
-// the writer's half of the lanes.json contract (FRM-659): every field the stash writes is one the shared fixture holds,
-// so the deck's reader test runs against the shape this mod really writes
+// the writer's half of the lanes.json contract (FRM-659): the stash writes exactly the fields the shared fixture holds,
+// no more and no fewer, so the deck's reader test runs against the shape this mod really writes
 const SID = 's1s1s1s1-shelf';
 const PID = 4343;
 const FILE = '/home/.claude/shelf/lanes.json';
@@ -111,14 +111,14 @@ test('every field the stash writes to lanes.json is in the shared fixture', asyn
     const written = (JSON.parse(files[FILE] ?? '{}') as typeof LANES_SHELF)
         .lanes;
     const shelf = LANES_SHELF.lanes;
-    const missing = (have: Set<string>, wrote: Set<string>) =>
-        [...wrote].filter((k) => !have.has(k));
+    const sorted = (keys: Set<string>) => [...keys].sort();
     expect([
         written.length,
-        missing(keysOf(shelf), keysOf(written)),
-        missing(
-            keysOf(shelf.flatMap((l) => l.items)),
-            keysOf(written.flatMap((l) => l.items)),
-        ),
-    ]).toEqual([2, [], []]);
+        sorted(keysOf(written)),
+        sorted(keysOf(written.flatMap((l) => l.items))),
+    ]).toEqual([
+        2,
+        sorted(keysOf(shelf)),
+        sorted(keysOf(shelf.flatMap((l) => l.items))),
+    ]);
 });

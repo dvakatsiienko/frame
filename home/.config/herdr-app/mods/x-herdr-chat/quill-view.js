@@ -99,17 +99,21 @@ export function createQuill({
         const made = TextareaState.new({});
         made.set_auto_grow(1, 8);
         made.on('change', (_event, cx) => {
+            const was = typedNow;
             const typed = made.value();
-            // a paste reads plain, its list lines with their markers back, written through the quill's owner; the box's
-            // change for that write is ours and keeps it
-            const now = pastedText(typedNow, typed, messages());
-            if (now !== typed) {
+            // a paste reads plain, its list lines with their markers back, written through the quill's owner; that
+            // write tells no change, so this one goes on with the fixed text
+            const now = pastedText(
+                was,
+                typed,
+                cx.read_from_clipboard(),
+                messages,
+            );
+            if (now !== typed)
                 quills.apply(shownFile(), { text: now, type: 'typed' });
-                return cx.notify();
-            }
             // a change told twice is one change
-            if (now !== typedNow) {
-                typedBefore = typedNow;
+            if (now !== was) {
+                typedBefore = was;
                 typedNow = now;
             }
             quills.apply(shownFile(), { text: now, type: 'typed' });

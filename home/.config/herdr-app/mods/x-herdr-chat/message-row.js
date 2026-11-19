@@ -469,10 +469,9 @@ export function createMessageRows(deps) {
         press(rows, key) {
             const id = key.replace(/#(?:above|below)$/, '');
             const pressed = rows.find((r) => r.id === id);
-            if (pressed?.kind === 'tool') {
-                toolFolds.toggle(id);
-                return { kind: 'redraw' };
-            }
+            // a click in a tool call's card moves no fold and asks no redraw, so his selection there stays
+            if (pressed?.kind === 'tool')
+                return toolFolds.toggle(id) ? { kind: 'redraw' } : null;
             if (pressed && foldOf(pressed)) {
                 openReplies.add(id);
                 return { kind: 'redraw' };

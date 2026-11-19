@@ -231,6 +231,8 @@ export function createThreadFeed(deps) {
             let watch = watchFolder(dir);
             feed.watch = watch;
             await pull(reader, cx);
+            // a switch during the first read: the thread now shown is another opening's, never marked read from here
+            if (feed.reader !== reader) return;
             feed.isRead = true;
             cx.notify();
             await restorePlace(reader, cx);

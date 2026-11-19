@@ -131,10 +131,19 @@ describe('the tool-call fold opens to its calls, each call alone (PK-432:W2, FRM
             expect(isCardRow(rows[3]?.id ?? '')).toBe(true);
         });
 
-        test('a click in the card leaves the call open', () => {
+        test('a click in the card leaves the call open and opens nothing', () => {
             const { call, folds } = opened();
-            folds.toggle(`${call}#card`);
-            expect(folds.isOpen(call)).toBe(true);
+            expect(folds.toggle(`${call}#card`)).toBe(false);
+            expect([folds.isOpen(call), folds.isOpen(`${call}#card`)]).toEqual([
+                true,
+                false,
+            ]);
+        });
+
+        test('the card is found by the json it shows', () => {
+            const { folds, m } = opened();
+            const rows = withCallRows(m.rows, folds);
+            expect(rows[3]?.text).toBe(rows[2]?.calls?.[0]?.input);
         });
 
         test('a click on the call’s name closes it', () => {
