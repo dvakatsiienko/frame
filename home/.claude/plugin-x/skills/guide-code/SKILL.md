@@ -43,7 +43,7 @@ their head.
 - **An exception shares state too tightly to cut**: a split needs a god object or a hot-path call.
   TypeScript's `checker.ts` is the model:
   `// size: one closure over the checker's shared state, kept whole for speed`
-- `script/lib/code-size.test.ts` holds it; a giant's capped row rises only on dima's word.
+- `script/lib/code-size.test.ts` holds it over ts, tsx, js, go and sh, tests included; a giant's capped row rises only on dima's word.
 
 ## Complete means whole
 

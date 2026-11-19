@@ -18,9 +18,9 @@ born 2026-11-19 on dima's word (W40: «let's try the refuse and test drive it fo
 ## the setup
 
 - the rule: `x:guide-code` § file size, read by every coder
-- the check: `script/lib/code-size.test.ts`, run at commit by lefthook's `code-size` gate on any staged `ts`, `tsx`, `js`, `go` or `sh` file
+- the check: `script/lib/code-size.test.ts`, run at commit by lefthook's `code-size` gate whenever a `ts`, `tsx`, `js`, `go` or `sh` file is staged, a delete included
 - the giants: one row each in that test, capped at their size on 2026-11-19; a cap goes down by hand as a file shrinks, a raise is dima's word, dated in its row
-- the grade: `x:crew-sixth-sense` step 1, «no touched file past the limit»
+- the grade: `x:crew-sixth-sense` step 1, item 3 (the tests), «no touched file past the limit»
 
 ## the refusal log — one line per refusal, by the codie it stopped or by clio at land
 

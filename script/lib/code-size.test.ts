@@ -82,7 +82,7 @@ const caps = {
         why: "the adviser's wake, packet and note logic in one library",
     },
     'home/.config/herdr-app/mods/x-herdr-deck/main.js': {
-        cap: 1_474,
+        cap: 1_473,
         why: 'the deck mod: orbit and phases in one view',
     },
     'home/.config/herdr-app/mods/x-herdr-status/main.js': {
@@ -140,10 +140,25 @@ const readText = (file: string) => {
 
 const countLines = (text: string) => text.split('\n').length - 1;
 
+// a comment line opening with size: — `//`, a `#` that is not a private field or a shebang, `/*`, or a block's ` * `
+const sizeLinePattern = /^\s*(\/\/|#(?![\w!])|\/\*+|\*)\s*size:\s*\S/;
+
 const hasSizeLine = (text: string) =>
-    text
-        .split('\n', sizeLineWindow)
-        .some((line) => /^\s*(\/\/|#|\/?\*+)\s*size:\s*\S/.test(line));
+    text.split('\n', sizeLineWindow).some((line) => sizeLinePattern.test(line));
+
+test.each([
+    ['// size: one closure kept whole', true],
+    ['#!/usr/bin/env bash\n# size: one script of steps', true],
+    ['/* size: a generated table */', true],
+    ['/**\n * size: one parser, its states shared', true],
+    ['    #size: number;', false],
+    ["const label = 'size: big';", false],
+    ['// sizes: many', false],
+    ['// size:', false],
+    [`${'\n'.repeat(sizeLineWindow)}// size: past the window`, false],
+] as const)('size: line in %j reads %s', (text, isExplained) => {
+    expect(hasSizeLine(text)).toBe(isExplained);
+});
 
 const sizes = codeFiles.flatMap((file) => {
     const text = readText(file);
