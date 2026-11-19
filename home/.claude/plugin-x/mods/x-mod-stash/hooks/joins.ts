@@ -12,6 +12,8 @@ import { writeWhole } from './util.ts';
 // completed turn took, which herdr reads as `joined`, kept whole while the thread lives, since its rows stay in the file
 const JOIN_TAKEN = 'join-taken:';
 const JOIN_DONE = 'join-done:';
+// `join-owed:<sid>`: an ended thread whose hand-back a held lock refused, retried at the sweep
+export const JOIN_OWED = 'join-owed:';
 const JOINS_DIR = 'herdr-joins';
 const joinsFile = (home: string, sid: string) =>
     `${home}/.claude/shelf/${JOINS_DIR}/${sid}.jsonl`;

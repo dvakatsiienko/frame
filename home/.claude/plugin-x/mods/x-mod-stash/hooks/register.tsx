@@ -22,9 +22,9 @@ import type {
     StashWind,
 } from '../types/stash.d.ts';
 import {
+    JOIN_OWED,
     handBackJoins,
     joinsLocked,
-    joinsOf,
     settleJoins,
     takeJoinLock,
     takeJoins,
@@ -195,6 +195,12 @@ import {
     startIdentity,
     threadRecords,
 } from './session-identity.ts';
+import {
+    dropState,
+    keepShelf,
+    pollShelf,
+    writeFleet,
+} from './session-record.ts';
 import type { IsPartOn, NumberName, SwitchName } from './settings-store.ts';
 import {
     NUMBERS,
@@ -222,6 +228,14 @@ import {
     windEditsOf,
 } from './settings-store.ts';
 import { isSpeakingNow, playPress, refreshSpeaking, speak } from './speak.ts';
+import {
+    AFK_KEY,
+    HERDR_READ,
+    MODEL,
+    REPLY,
+    type Reply,
+    WAKER_KEY,
+} from './store-keys.ts';
 import { cleanTree, drawn } from './tree.ts';
 import {
     addGridQs,
@@ -282,35 +296,17 @@ type AskDoor = {
     // resolves once the steer is written: a flush before a prompt waits on it
     steer: (a: OrbitAsk, value: string) => unknown;
 };
-// a session's last reply: when it ended, its 🔭 wait; `ended` once the session itself exited
-// waits: every background task's own name when the reply set no 🔭, so the board can list them all
-type Reply = {
-    at: number;
-    // a keep-hot ping's reply end: it warms the cache without being a reply dima reads
-    pingedAt?: number;
-    name?: string;
-    wait?: string;
-    waits?: string[];
-    // the background tasks the wait came from, so an end notice can settle one
-    tasks?: BackgroundTask[];
-    ended?: number;
-};
 
 const KEPT_MS = 7 * 24 * 60 * 60 * 1000;
 // `succ:<old id>` → the id a /clear continued under, so a lane linked by a session id follows it (todo 21: a clear left
 // the l14 card on the codie's old id, its asks gone from the card); dropped a week after it was written
 const SUCC = 'succ:';
-// how far this session read herdr's ticks file for it: the `at` of the newest press taken, one key per session id
-const HERDR_READ = 'herdr-read:';
-// `join-owed:<sid>`: an ended thread whose hand-back a held lock refused, retried at the sweep (the join queue: joins.ts)
-const JOIN_OWED = 'join-owed:';
 // 🛼 a member's lane step from its plan op, one key per registry name, written only by that session (todo 6)
 const LANE_STEP = 'lane-step:';
 // the moves clio's stash made from codie's step, held for her next tool call or prompt
 const LANE_MOVES = 'lane-moves';
 // when dima last prompted anywhere: an idle session's herdr press waits for it before it wakes
 const DIMA_AT = 'dima-at';
-const AFK_KEY = 'afk';
 const AWAY_NOTE =
     'dima is afk: nothing waits on him. take reversible steps and log them, pick every pending ask and log its undo, raise one in orbit only when blocked, on his design call, or irreversible. send no ping.';
 const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';
@@ -326,9 +322,6 @@ const OLD_BOARD = 'fleet-board';
 // 🎛️ is a pane of its own, which the surface tabs beside 🚦: the band is capped by cc, the list outgrew it (dima's pick a of
 // four homes, 16:20); a tab row inside a pane was proven too, kept as an idea in api-map.md
 const SETTINGS_PANE = 'stash-settings';
-const REPLY = 'reply:';
-// the model and effort of a session's main loop, as its last model request named them
-const MODEL = 'model:';
 // dima at the prompt, typing into a background job, on his phone or the web
 const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
 const MINUTE_MS = 60_000;
@@ -347,8 +340,6 @@ const ENDED = { key: 'ended', plugin: 'x-mod-stash' } as const;
 const STAMP = /(📄[^\n]*?\b)(\d{1,2}:\d{2})\b/g;
 const PING =
     'x-mod-stash keep-hot ping: answer with one character, nothing else.';
-// the waker: one global switch, off by default; when on, a session stopped on the 5h cap gets one resume at the reset
-const WAKER_KEY = 'waker';
 const CAP = { key: 'cap', plugin: 'x-mod-stash' } as const;
 // the 5h cap ends the turn as an API error with this text; the weekly cap and spent credits read otherwise
 // (8 rows in the transcripts, 2026-10-08)
@@ -4079,142 +4070,6 @@ async function successorOf($: EngineInterface, sid: string) {
     return id;
 }
 
-// FRM-568: what herdr draws for each session lives on the shelf, one file per session, since herdr reads no private store
-// (frame AGENTS.md § the boundary); dima named the folder (21:36)
-const STATE_DIR = 'herdr-state';
-const FLEET_FILE = 'fleet.json';
-const stateDir = (home: string) => `${home}/.claude/shelf/${STATE_DIR}`;
-// what this process last wrote, without its time, so an unchanged state costs no write
-let stateWritten: string | undefined;
-let fleetWritten: string | undefined;
-async function writeState($: EngineInterface) {
-    const sid = await currentId($);
-    const home = await $.env.get('HOME').catch(() => undefined);
-    if (!sid || !home) return;
-    const get = (key: string) => $.store.get(key).catch(() => undefined);
-    const joins = (await partsShown($))('stash.joins')
-        ? await joinsOf($, home, sid)
-        : undefined;
-    const entry = (await get(PREFIX + sid)) as Entry | undefined;
-    const reply = (await get(REPLY + sid)) as Reply | undefined;
-    const taken = await get(HERDR_READ + sid);
-    const ctx = await get(CONTEXT + sid);
-    const model = await get(MODEL + sid);
-    const o = await currentOrbit($);
-    const state = {
-        asks: entry?.items ?? [],
-        assumed: o.assumed ?? [],
-        ctx: typeof ctx === 'number' ? ctx : null,
-        hot: hotOf(await get(HOT + sid)) ?? null,
-        // a row reads joined only once the turn that took it completed, a slash row too (dima's o3); switched off, none:
-        // herdr pushes instead; `push` stays empty while herdr still reads it
-        joins: !joins
-            ? null
-            : {
-                  joined: joins.rows
-                      .filter((r) => joins.done.includes(r.id))
-                      .map((r) => r.id),
-                  push: [],
-                  // handed into a running turn, not joined yet: herdr empties its quill on these (FRM-564)
-                  taken: joins.rows
-                      .filter(
-                          (r) =>
-                              joins.taken.includes(r.id) &&
-                              !joins.done.includes(r.id),
-                      )
-                      .map((r) => r.id),
-                  waiting: joins.rows
-                      .filter((r) => !joins.done.includes(r.id))
-                      .map((r) => r.id),
-              },
-        label: identity.label,
-        model: typeof model === 'string' ? model : null,
-        name: entry?.name ?? (await sessionName($)) ?? null,
-        pid: identity.proc?.pid ?? null,
-        plan: o.plan ? { lines: o.plan.lines } : null,
-        rounds: null,
-        sid,
-        // the id this session continued from at a /clear, the fallback when a reader cannot match the pid
-        succ: identity.clearedFrom ?? null,
-        taken: typeof taken === 'number' ? taken : 0,
-        v: 1,
-        wait: reply?.wait ?? null,
-        wind: (await windOf($, sid))?.state ?? null,
-    };
-    const text = JSON.stringify(state);
-    if (text === stateWritten) return;
-    await writeWhole(
-        $,
-        identity.proc?.pid ?? 0,
-        `${stateDir(home)}/${sid}.json`,
-        `${JSON.stringify({ ...state, at: await $.clock.now() })}\n`,
-    );
-    stateWritten = text;
-}
-async function dropState($: EngineInterface, sid: string) {
-    const home = await $.env.get('HOME').catch(() => undefined);
-    if (!home) return;
-    await $.process.run(['rm', '-f', `${stateDir(home)}/${sid}.json`]);
-    stateWritten = undefined;
-}
-// ⏰ and 💨, fleet-wide, beside the session files; each carries its `at`, so herdr draws «on since»
-async function writeFleet($: EngineInterface) {
-    const home = await $.env.get('HOME').catch(() => undefined);
-    if (!home) return;
-    const stamped = (v: unknown) => {
-        const { at, on } = (v ?? {}) as { at?: unknown; on?: unknown };
-        return { at: typeof at === 'number' ? at : null, on: on === true };
-    };
-    const fleet = {
-        afk: stamped(await $.store.get(AFK_KEY).catch(() => undefined)),
-        v: 1,
-        waker: stamped(await $.store.get(WAKER_KEY).catch(() => undefined)),
-    };
-    const text = JSON.stringify(fleet);
-    if (text === fleetWritten) return;
-    await writeWhole(
-        $,
-        identity.proc?.pid ?? 0,
-        `${stateDir(home)}/${FLEET_FILE}`,
-        `${text}\n`,
-    );
-    fleetWritten = text;
-}
-// a killed session fires no end: its file goes once its pid is gone, read every STATE_PRUNE_POLLS shelf passes
-const STATE_PRUNE_POLLS = 5;
-let statePolls = 0;
-async function pruneStates($: EngineInterface) {
-    if (statePolls++ % STATE_PRUNE_POLLS) return;
-    const home = await $.env.get('HOME').catch(() => undefined);
-    if (!home) return;
-    const dir = stateDir(home);
-    for (const f of await $.fs.list(dir).catch(() => [])) {
-        if (!f.name.endsWith('.json') || f.name === FLEET_FILE) continue;
-        const kept = await $.fs
-            .read(`${dir}/${f.name}`)
-            .then((t) => JSON.parse(t) as { pid?: unknown })
-            .catch(() => undefined);
-        if (typeof kept?.pid !== 'number') continue;
-        const ps = await $.process.run(['ps', '-p', String(kept.pid)]);
-        // a killed thread fires no end: its waiting joins go back first, and its file stays until they could
-        if (
-            ps.exitCode !== 0 &&
-            (await handBackJoins(
-                $,
-                home,
-                f.name.slice(0, -'.json'.length),
-            ).catch(() => false))
-        )
-            await $.process.run(['rm', '-f', `${dir}/${f.name}`]);
-    }
-    // an ended thread whose hand-back a held lock refused at its end
-    for (const key of await $.store.keys().catch(() => [] as string[])) {
-        if (!key.startsWith(JOIN_OWED)) continue;
-        const sid = key.slice(JOIN_OWED.length);
-        if (await handBackJoins($, home, sid).catch(() => false))
-            await $.store.delete(key).catch(() => undefined);
-    }
-}
 // how far this thread read the band presses: the `at` of the newest line taken, from the thread's start on
 const BAND_READ = 'band-read:';
 // `band-refused:<sid>`: the times of lines this thread saw dated ahead of now
@@ -4272,27 +4127,6 @@ async function takeBandPresses($: EngineInterface) {
     const last = Math.max(after, ...presses.map((p) => p.at));
     if (last !== read) await $.store.set(BAND_READ + sid, last);
     if (presses.length) await load($);
-}
-
-// told once per process: a shelf that cannot be written fails the same way every poll
-let isShelfTold = false;
-async function keepShelf($: EngineInterface) {
-    await writeState($).catch(async (err) => {
-        if (isShelfTold) return;
-        isShelfTold = true;
-        await $.ui.log(
-            `x-mod-stash: the herdr state file was not kept: ${errorText(err)}`,
-        );
-    });
-    await writeFleet($).catch(() => undefined);
-}
-// the poll's share: every SHELF_POLLS-th tick, since asks and afk write the shelf the moment they change
-const SHELF_POLLS = 3;
-let shelfPolls = 0;
-async function pollShelf($: EngineInterface) {
-    if (shelfPolls++ % SHELF_POLLS) return;
-    await keepShelf($);
-    await pruneStates($).catch(() => undefined);
 }
 
 // a board's press on a row: asks, or takes the ask back; a note already delivered is taken back at the next turn, a
