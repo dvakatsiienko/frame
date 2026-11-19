@@ -161,10 +161,6 @@ const STEER_CMD_ENTER = 'x_herdr_deck_steer_cmd_enter';
 // how long a press given up by time says so: long enough to be seen when he looks back at the board
 const GIVEN_UP_NOTE_MS = 30 * 1000;
 
-const keptSteer = (/** @type {string} */ key) => kept(`steer:${key}`) ?? '';
-const keepSteer = (/** @type {string} */ key, /** @type {string} */ text) =>
-    keep(`steer:${key}`, text);
-
 /** @type {Record<string, string>} */
 const STATE = {
     blocked: 'blocked',
@@ -420,10 +416,14 @@ export default class Deck extends View {
             // his steer stays, stored and shown, until the ask leaves (dima, 21:03)
             if (!s || !ask) {
                 this.steers.delete(key);
-                keepSteer(key, '');
+                keep(localStorage, `steer:${key}`, '');
             }
         }
-        const rounds = roundsKept(this.updated ?? null, this.rows);
+        const rounds = roundsKept(
+            localStorage,
+            this.updated ?? null,
+            this.rows,
+        );
         this.updated = rounds.updated;
         for (const key of rounds.cleared) this.steers.get(key)?.set_value('');
         for (const s of this.rows)
@@ -774,9 +774,10 @@ export default class Deck extends View {
         try {
             const box = InputState.new({
                 placeholder: 'steer…',
-                value: keptSteer(key),
+                value: kept(localStorage, `steer:${key}`) ?? '',
             });
-            box.on('change', () => keepSteer(key, box.value()));
+            const save = () => keep(localStorage, `steer:${key}`, box.value());
+            box.on('change', save);
             // Enter and ⌘Enter are the box's own actions (STEER_ENTER), never its submit; focus leaving ends a press
             box.on('blur', () => this.steerKeys.blurred());
             this.steers.set(key, box);

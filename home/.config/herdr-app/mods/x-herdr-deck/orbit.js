@@ -744,37 +744,40 @@ export function tickAllThread(sids, { hovered, picked, shown }) {
     );
 }
 
-/** a value kept in this copy's localStorage, which outlives a reload; null when missing or refused @param {string} key */
-export function kept(key) {
+/** @typedef {{ getItem: (key: string) => string | null, setItem: (key: string, value: string) => void, removeItem: (key: string) => void }} KeptStore */
+
+/** a value kept in the copy's store (herdr's localStorage, which outlives a reload); null when missing or refused @param {KeptStore} store @param {string} key */
+export function kept(store, key) {
     try {
-        return localStorage.getItem(key);
+        return store.getItem(key);
     } catch {
         return null;
     }
 }
-/** @param {string} key @param {string} value an empty value removes it */
-export function keep(key, value) {
+/** @param {KeptStore} store @param {string} key @param {string} value an empty value removes it */
+export function keep(store, key, value) {
     try {
-        if (value) localStorage.setItem(key, value);
-        else localStorage.removeItem(key);
+        if (value) store.setItem(key, value);
+        else store.removeItem(key);
     } catch {}
 }
 
 /**
- * askRounds against what this copy kept: the updated set carried and stored, the keys whose steer clears now (their
+ * askRounds against what the copy kept: the updated set carried and stored, the keys whose steer clears now (their
  * kept steer cleared here). null: the copy just started, so the stored set comes back
+ * @param {KeptStore} store
  * @param {Set<string> | null} updated
  * @param {Parameters<typeof askRounds>[1]} rows
  */
-export function roundsKept(updated, rows) {
-    const was = updated ?? new Set(JSON.parse(kept('updated') ?? '[]'));
+export function roundsKept(store, updated, rows) {
+    const was = updated ?? new Set(JSON.parse(kept(store, 'updated') ?? '[]'));
     const { seen, updated: cleared } = askRounds(
-        JSON.parse(kept('seen') ?? '{}'),
+        JSON.parse(kept(store, 'seen') ?? '{}'),
         rows,
     );
-    for (const key of cleared) keep(`steer:${key}`, '');
+    for (const key of cleared) keep(store, `steer:${key}`, '');
     const now = new Set([...was, ...cleared].filter((key) => key in seen));
-    keep('seen', JSON.stringify(seen));
-    keep('updated', JSON.stringify([...now]));
+    keep(store, 'seen', JSON.stringify(seen));
+    keep(store, 'updated', JSON.stringify([...now]));
     return { cleared, updated: now };
 }
