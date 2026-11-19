@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T17:25:00Z'
+updated_date: '2026-11-19T17:35:00Z'
 labels:
   - s
   - clio-main
@@ -1201,4 +1201,6 @@ done 2026-11-19 18:58: f54 pr-watch alarm for a conflicting pr: watch-pr.sh wake
 done 2026-11-19 19:25: f56 stray glide card reborn after each end (l99–l102): the stray's threads.json record restamps «at» on every sync, so the ended-after-dispatch check never holds (register.tsx ~3500); a mods wisp after FRM-662 (FRM-662 In Progress)
 
 19:25 stray card cause: ~/.claude/shelf/threads.json restamps the stray's «at» on every sync, so register.tsx ~3500's «a card ended after the dispatch closes the lane» never holds; cards l99–l102
+
+19:35 same mods wisp, second face (his 19:35 shot): the reborn stray card takes its title from the thread record's old lane title («FRM-572 cli wisps») over the lane plan's h1; edited by hand to l103 «stray — giant files split by concern»
 <!-- SECTION:NOTES:END -->
