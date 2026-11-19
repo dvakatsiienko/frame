@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T16:50:00Z'
+updated_date: '2026-11-19T17:13:00Z'
 labels:
   - s
   - clio-wing-1
@@ -67,4 +67,10 @@ PK-457:W36 (2026-11-19 18:49, dima): i believe that despite fable 5.2 being chea
 PK-457:W37 (2026-11-19 18:49, dima): fable 5.2 is a capable coder, at times even better than opus, and that data folds into the model knowledge; but the fleet rule is an override: we do not use fable 5.2 for coding, because of the taxonomy and my plans. it is too expensive; given my inference volume, i would rather be economic and use opus 5.5 for all the tasks, to ship more.
 PK-457:W38 (2026-11-19 18:49, dima): fable 5.2 for the designer still holds, although opus 5.5 draws very well too. it's a hard choice for me; let's go with fable 5.2.
 PK-457:W39 (2026-11-19 18:49, dima): i'm confused by o5 and o8: print a clear, easy-to-read list of everything you propose to change: who, how it was, and how it will be.
+
+PK-457:W40 (2026-11-19 19:01, dima): scout: no, medium is enough; it simply searches the filesystem, high is overkill. fresh-eyes: let's try high, we never tested medium vs high. the stray on sonnet high: okay, then the line between opus medium and sonnet high narrows; sonnet high can do more now.
+PK-457:W41 (2026-11-19 19:01, dima): i still have two fable resets; for those resets my override that forbids coding with fable is lifted, by my word. i will remind you to summon everyone on fable 5.2 on monday; the roles most likely stay as on the previous run.
+PK-457:W42 (2026-11-19 19:08, dima): set proper habits so you prefer sonnet 5.5 on high for the stray lane, because today main clio summoned the stray with opus 5.5 medium.
+PK-457:W43 (2026-11-19 19:08, dima): the effort changes feel right; they could be made better, but they will use more of my inference. i want the numbers that confirm it is worth it: a precise measurement of how expensive it was for me and how much better everything was solved, ideally as weekly usage %. my plan is $200 now; after it ends i will most likely move to $100.
+PK-457:W44 (2026-11-19 19:13, dima): let's measure for 7 days: a first round as a checkpoint where we see the numbers, then another 7 days, another read, then the verdict.
 <!-- SECTION:NOTES:END -->

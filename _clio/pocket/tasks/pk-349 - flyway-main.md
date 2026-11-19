@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T16:48:00Z'
+updated_date: '2026-11-19T16:58:00Z'
 labels:
   - s
   - clio-main
@@ -19,7 +19,7 @@ ordinal: 1000
 - [ ] #1 f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look
 - [ ] #2 f46 TS LSP check each siesta until the halt: are both codies calling LSP, from their transcripts
 - [ ] #3 f49 TS LSP plan (W1224–W1228): retros in, weigh usefulness, then why underused and the fleet-wide wiring
-- [ ] #4 f54 pr-watch alarm for a conflicting pr: watch-pr.sh wakes on mergeState DIRTY (left over from the stray cli batch)
+- [ ] #4 f55 pr-watch alarm for a conflicting pr (FRM-572, dima's o78 tick): watch-pr.sh wakes on mergeState DIRTY
 - [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
 - [ ] #6 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
 - [ ] #7 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
@@ -1194,4 +1194,6 @@ PK-349:W1238 (2026-11-19 18:05, dima): etc. so i cleanly see who asked. if codie
 18:26 moved: PK-349:W1231 → FRM-670:W1, PK-349:W1232 → FRM-670:W2, PK-349:W1233 → FRM-670:W3, PK-349:W1234 → FRM-670:W4, PK-349:W1235 → FRM-670:W5, PK-349:W1236 → FRM-670:W6, PK-349:W1237 → FRM-670:W7, PK-349:W1238 → FRM-670:W8
 
 done 2026-11-19 18:48: f53 pr-watch alarm for a conflicting pr (FRM-572 wisp half): watch-pr.sh wakes on mergeState DIRTY (FRM-572 Done)
+
+done 2026-11-19 18:58: f54 pr-watch alarm for a conflicting pr: watch-pr.sh wakes on mergeState DIRTY (left over from the stray cli batch)
 <!-- SECTION:NOTES:END -->
