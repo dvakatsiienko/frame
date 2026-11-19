@@ -139,7 +139,7 @@ export default class Chat extends View {
     claudeSettings = null;
     /** a picture's open button starts CleanShot's annotate, else Preview (`chatter.pictures.cleanshot`) */
     isCleanShot = true;
-    /** the settings window this copy draws, when the gear opened it @type {{ render: () => any } | null} */
+    /** x-herdr-settings, when this copy draws it @type {{ render: () => any } | null} */
     settingsWindow = null;
     isCmdHeld = false;
     noteSerial = 0;

@@ -7,19 +7,18 @@ import {
     closeOverlay,
     exec,
     focused,
-    layout,
-    nextCommand,
     notify,
     openOverlay,
     panes,
     props,
     run,
-    setShared,
     spaces,
     theme,
     watchFolder,
     window,
 } from 'herdr';
+
+import { takeCommands } from './commands.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('gpui-kit').AsyncContext} AsyncContext */
@@ -495,31 +494,6 @@ const resetText = (w) =>
           ? `Resets at ${clock(w.resets)}`
           : '';
 
-/** whether a settings window, dialog or popup sits over the layout: no mod api lists them, the window's status does */
-async function isOverlayOpen() {
-    const status = await exec('herdr-app', ['status']).catch(() => null);
-    try {
-        return JSON.parse(status?.stdout ?? '').overlays?.length > 0;
-    } catch {
-        return false;
-    }
-}
-
-/** the first block of the shown layout whose content passes `test` @param {(content: any) => unknown} test */
-function blockOf(test) {
-    /** @param {any} node @returns {any} */
-    const walk = (node) => {
-        if (!node || typeof node !== 'object') return null;
-        if (test(node.content)) return node;
-        for (const child of node.children ?? []) {
-            const found = walk(child);
-            if (found) return found;
-        }
-        return null;
-    };
-    return walk(/** @type {any} */ (layout())?.root ?? layout());
-}
-
 export default class WorkspaceStatus extends View {
     /** @param {unknown} _props @param {Context} cx */
     init(_props, cx) {
@@ -546,39 +520,7 @@ export default class WorkspaceStatus extends View {
         this.initUsage(cx, true);
         // x-herdr keys (FRM-577) land here: the status bar is always placed, while the chat sits behind the Terminal
         // view half the time, and herdr calls a command of a mod that is not drawn «unknown»
-        cx.spawn(async () => {
-            for (;;) {
-                const command = await nextCommand();
-                // ⌘F over an open settings window or dialog does nothing: find opens only on the chat in view (dima, 18:28)
-                if (command === 'find' && (await isOverlayOpen())) continue;
-                // ⌘F from any focus opens the chat's find; a terminal keeps its own ⌘F (keys.json's terminal section)
-                if (
-                    command === 'quill' ||
-                    command === 'effort' ||
-                    command === 'find'
-                ) {
-                    const chat = blockOf(
-                        (c) => c?.mod === 'x-herdr-chat' && c.props?.stack,
-                    );
-                    if (chat)
-                        run('layout.select', {
-                            child: chat.content.props.self,
-                            stack: chat.content.props.stack,
-                        });
-                    setShared(`chat.${command}`, Date.now());
-                } else if (command === 'escape') {
-                    // the chat on screen closes its viewer or find; no view is switched for it
-                    setShared('chat.escape', Date.now());
-                } else if (command === 'tickall') {
-                    setShared('deck.tickAll', Date.now());
-                } else if (command === 'deck') {
-                    const deck = blockOf(
-                        (c) => c?.mod === 'x-herdr-deck' && !c.props?.view,
-                    );
-                    if (deck) run('layout.toggle', { id: deck.id });
-                }
-            }
-        });
+        cx.spawn(takeCommands);
         /** @type {Record<string, GitInfo | null>} */
         this.git = {}; // folder -> { branch, upstream, ahead, behind, dirty } | null (not a repo)
         cx.timer.every(3000, (cx) => {

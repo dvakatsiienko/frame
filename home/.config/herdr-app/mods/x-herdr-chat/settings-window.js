@@ -1,4 +1,4 @@
-// the chat's own settings window (FRM-638 slice 7), shaped like shepherdr's: a card in the middle of herdr, a page
+// x-herdr-settings, «settings» (FRM-638 slice 7), drawn by this chat, shaped like shepherdr's: a card in the middle of herdr, a page
 // list on the left, each row a title, one dim line and its control on the right. rows come from settings-model.js,
 // values from the one settings file through settings-io.js; colours only from theme(), so it follows herdr's theme
 import { Textarea, TextareaState, h_flex, v_flex } from 'gpui-base';

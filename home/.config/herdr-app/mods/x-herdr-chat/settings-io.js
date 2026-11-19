@@ -1,4 +1,4 @@
-// the settings window's doors: the settings file, the second wind notes' defaults, Apple's Metal HUD and his
+// x-herdr-settings' doors: the settings file, the second wind notes' defaults, Apple's Metal HUD and his
 // keys.json. each read or write here is one place, so the window and the chat never reach a file another way
 import { appHome, exec, home, readTextFile, writeTextFile } from 'herdr';
 

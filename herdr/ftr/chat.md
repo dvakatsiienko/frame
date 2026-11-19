@@ -45,7 +45,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
 - ⬜ his messages sit in bubbles on the right, Claude's on the left (FRM-562)
   - then his words sit in an accent-tinted bubble on the right, Claude's in a quiet bubble on the left
   - decision: their bubbles, after shepherdr's chat (dima, 21:13)
-  - missing in the new chat: «Your messages» Box, Tint and Bar; the row left the look popover until the chat draws them (dima's o5, 2026-11-18)
+  - missing in the new chat: «Your messages» Box, Tint and Bar; the row left the chat settings until the chat draws them (dima's o5, 2026-11-18)
 - ⬜ **bold** and *italic* in replies draw bold and italic
   - given the chat's font is Sans
   - then a reply's markdown bold reads bold; seen only in the old chat (shot 1928), not yet in the new one
@@ -61,7 +61,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - when he clicks it, then one row a call follows, its name and what it did (a path, a command, a pattern)
   - and a click on one call opens it alone to its input, a second click closes it; every fold opens, whatever its count
 - ⬜ a long reply of an earlier turn folds behind «Show more» (FRM-638 slice 7, FRM-607)
-  - given «show more» on in the chat's settings window, then a reply past ~40 lines in an earlier turn shows its first ~24 and «▾ Show more · N more lines»; a click on it opens it whole where it is
+  - given «show more» on in x-herdr-settings, then a reply past ~40 lines in an earlier turn shows its first ~24 and «▾ Show more · N more lines»; a click on it opens it whole where it is
   - and the turn he reads now never folds, nor a search hit; off, every reply reads whole, and on again the same reply folds at once
   - and every reply of an earlier turn still shows; only the tools between them fold
   - decision: the fold waits for his next message, so a reply never collapses while he reads it (review, 00:54)
@@ -72,7 +72,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and a prompt a plugin sends in his place, or a command it runs for him, draws no bubble of his (dima, 18:28)
   - and a message he pasted reads as his own words, the wrapper Claude Code puts around a paste gone; a tag he typed, or one inside what he pasted, stays (FRM-628)
   - decision: told apart by the entry (its `origin.kind`, a `<synthetic>` model, a `compact_boundary` row), never by a tag found inside his text
-  - missing in the new chat: the dim fold and its «System lines» pick; the row left the look popover until the chat draws them (dima's o5, 2026-11-18)
+  - missing in the new chat: the dim fold and its «System lines» pick; the row left the chat settings until the chat draws them (dima's o5, 2026-11-18)
 - ⬜ a message between threads reads as who sent it (FRM-562)
   - given another thread sends this one a message
   - then it reads «↪ who: words», the sender's name whole (🐦‍⬛ crow, never «🐦 ⬛»)
@@ -109,7 +109,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and files copied in Finder paste as their paths, the way a drop does, never as the file's icon; a text paste stays text
   - and a picture waiting over the quill is still there after the chat reloads
   - and a click on a picture's square, over the quill, under his message or in a reply's file row, opens the viewer over the chat on the whole picture: zoom out, its level (a click fits), zoom in, copy, open, Show in Finder, ← → with «n / N» among its siblings, ✕; keys ← → + − 0 ⌘C Esc (FRM-638 slice 5, W33/W35)
-  - and the viewer's open, or a ⌘-click on any picture square, starts CleanShot X annotate on the file, or Preview, as «open pictures in» says in the chat's settings window (FRM-587 W1, dima 16:59)
+  - and the viewer's open, or a ⌘-click on any picture square, starts CleanShot X annotate on the file, or Preview, as «open pictures in» says in x-herdr-settings (FRM-587 W1, dima 16:59)
   - and every square is sharp and fills its frame: a 288 px cut of the picture's middle (dima 17:00, «too blurry»)
   - and a message he sent draws its pictures under his words as squares, and its other files as «📎 name» chips, never as their paths or «[Image #N]» tokens; a reload brings them back (FRM-638 slice 5, his 16:35 shot)
   - decision: an inline picture is written once as `~/.config/herdr-app/data/x-herdr-chat/sent/<row>-<n>.<ext>` from the transcript's bytes, a joined one by path gets a scaled copy; no «🖼 N images» caption, the squares say it
@@ -134,7 +134,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - when he types, then his draft is kept for that thread: it is back after a reload of the chat and after a switch to another thread and back, the caret at its end (his look, 22:42)
   - when he presses Enter or clicks the send button, then his words are marked to join the thread's turn and stay in the quill, the caret where it was, the button reading 🍕; a second press takes the mark off; once a turn took them they leave the quill and the button reads 😋 for a moment, then 🛎️ again
   - and each thread keeps its own mark, settled from its thread's state whether that thread is open or not
-  - when he holds the send button or Enter, then after a 100 ms pause a disc fills the button over 1 s and the words go now: a turn starts; a release after the disc shows sends nothing; the chat's settings window sets both timings
+  - when he holds the send button or Enter, then after a 100 ms pause a disc fills the button over 1 s and the words go now: a turn starts; a release after the disc shows sends nothing; x-herdr-settings sets both timings
   - when he presses cmd+Enter in the focused quill, then the words go now, no disc (dima, 20:41: «cmd+enter — sends immediately»)
   - and a slash command, or a thread that takes no joins, is sent that way on a plain press, and a line over the quill says why
   - when a send is refused, or the thread does not run in herdr, then his words are back in the quill and a line over it says so
@@ -205,7 +205,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - decision: whole minutes, never seconds: each redraw drops a text selection in progress
 - ⬜ the meters sit right above the quill (FRM-565)
   - then 🧠 context and 🫙 week bars sit over the quill, from the deck's shared `x-herdr-deck.threads`; facts older than 2 min 15 s draw dimmed
-  - and each bar turns amber at his level, set in the chat's settings window (60 % and 80 % by default)
+  - and each bar turns amber at his level, set in x-herdr-settings (60 % and 80 % by default)
 - ⬜ the band's buttons (FRM-565, FRM-568, FRM-625)
   - makes: one line `{at, button, on, sid?}` per press in `~/.claude/shelf/band-presses/band.jsonl`
   - then 🐦‍🔥 🍃 🔥 ⏰ 💨 🔓 🎛️ 🚦 sit on the lower card, emoji only, each word leading its tooltip; filled when on, 🔓 red when on
@@ -217,7 +217,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
 
 - ✅ the thread's top row (x-herdr-chat-header, FRM-638:W134–W137)
   - given the Chat view or a Terminal pane, then one row reads the thread's name and folder on the left, then + (new tab), Files, Changes, search, ⚙ and the Chat | Terminal switch (shot `~/.local/state/looks/FRM-638/2110-chat-header.png`)
-  - and the ⚙ opens the chat look popover; search opens find, and a press anywhere outside an open find closes it
+  - and the ⚙ opens the chat settings; search opens find, and a press anywhere outside an open find closes it
   - and on a Terminal pane, hover adds split right, split down, zoom and close for that pane (his o2 tick)
   - and a blocked thread shows «Needs you»; a working one shows no spinner (dima, 20:56: «i already have enough spinners»)
   - and a chat with no thread yet keeps + Files Changes and the way to Terminal
@@ -228,7 +228,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
 - 🔎 find in the chat (FRM-638 slice 6)
   - given the chat shows a thread
   - when he presses ⌘F anywhere in the window, or the header's search, then a find bar floats at the chat's top right with the keyboard in it, and no message moves (dima, 17:58, 18:39)
-  - and ⌘F over an open settings window, dialog or popup does nothing (dima, 18:28)
+  - and ⌘F over open x-herdr-settings, a dialog or a popup does nothing (dima, 18:28)
   - and his query settles 150 ms, then «n / N» counts each match, any case, and the newest hit's row scrolls to the view's top
   - and Enter or ↓ steps to the next older match, ⇧Enter or ↑ to the newer, wrapping
   - and Esc, ✕ or a press anywhere outside the bar closes it and gives the keyboard back to the quill; a thread switch closes it (dima, 18:11, 18:18, 21:04)
@@ -242,17 +242,17 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
 
 ## settings
 
-- ✅ the chat look popover (x-herdr-chat-settings, FRM-641)
+- ✅ the chat settings (x-herdr-chat-settings, FRM-641)
   - makes: the chat look in herdr's shared store, `chat.look`; «Text (all of herdr)» also writes `colors.foreground` in herdr's `settings.json`
   - given the header's ⚙ pressed, then a popover opens over the chat: a «Chat» heading with Reset, then text size, font, width, tool calls, «Text (all of herdr)» and spacing
   - when he changes a row, then the chat redraws in it at once: Narrow keeps rows and the quill in an 820 px column; tool calls hidden leave the list; the message he was reading stays on the same line
   - when he picks a colour for «Text (all of herdr)», then herdr's whole text takes it; Reset puts back the colour herdr had before his first pick
   - decision: only the rows the chat acts on show (dima's o5, 2026-11-18); accent, his messages, background, system lines and earlier replies come back with their slices
   - decision: the popover is its own mod, its rows as data (`rows.js`) and one typed reader of the store (`look.js`), copied into the chat and held equal by a test
-- ⬜ the chat's settings window (FRM-638 slice 7, W42, FRM-566)
+- ⬜ x-herdr-settings, «settings» (FRM-638 slice 7, W42, FRM-566)
   - makes: `~/.claude/shelf/herdr-settings/settings.json`, `{v, rows}`
-  - when he presses 🎛️ on the band
-  - then the settings window opens in herdr's middle, shaped like shepherdr's: a page list on the left (chat, claude Code mods, keys), each row a title, one dim line and its control
+  - when he presses 🎛️ on the band, or ⌘⇧, anywhere (⌘, stays herdr's own settings)
+  - then x-herdr-settings opens in herdr's middle, shaped like shepherdr's: a page list on the left (general, dock, chat, claude code mods, keys; the band opens dock, ⌘⇧, general), each row a title, one dim line and its control
   - and a change lands in the file at once and the chat applies it; a value off its row's range reads as the default; a key no row reads is kept through every write
   - and Esc, ✕ or a click beside the card closes it
   - decision: the window lives in the chat: a herdr mod cannot import a sibling mod's file (clio, 19:28)
@@ -268,7 +268,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - 📌 the built-in line is a copy kept in `settings-model.js`; an empty row always means the mod's text
 - ⬜ a «lane idle alarm after» row on the claude Code mods page (FRM-605 rider)
   - makes: `stash.park.after` in `settings.json`, minutes, 10 by default, 5 to 60
-- ⬜ Apple's Metal HUD from the settings window
+- ⬜ Apple's Metal HUD from x-herdr-settings' general page
   - when he turns «metal hud» on, then herdr's bundle default `MetalForceHudEnabled` turns on and macOS draws its frame-rate meter over herdr; off turns it off
   - decision: herdr's own gpui-fps meter is refused in his window, Apple's HUD is the meter (dima, o1)
 
@@ -279,7 +279,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - given herdr focused, when dima presses ⌘K, then the Chat view comes forward and the caret sits in the quill
   - given herdr focused, when he presses ⌘E, then the deck shows or hides
   - given a key of ours that herdr already binds, then the keys page marks ours refused and herdr's key keeps working
-  - and the settings window's keys page lists ours, then herdr's own, each rebindable: a click on a key's cap takes the next chord, Esc gives up; cmd-enter is listed, never written into his keys.json
+  - and x-herdr-settings' keys page lists ours, then herdr's own, each rebindable: a click on a key's cap takes the next chord, Esc gives up; cmd-enter is listed, never written into his keys.json
   - decision: our keys go to x-herdr-status, always placed: herdr calls a command of a mod it does not draw «unknown»
 
 ## the deck's steers (x-herdr-deck)

@@ -1,5 +1,9 @@
 {
-    "cloned_from": { "name": "workspace-status", "version": "0.1.10" },
+    "cloned_from": {
+        "name": "workspace-status",
+        "version": "0.1.10"
+    },
     "place": "none",
+    "shared": ["chat-asks.js"],
     "title": "x-herdr status"
 }

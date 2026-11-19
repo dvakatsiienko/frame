@@ -105,7 +105,7 @@ export default class TabPills extends View {
     init(_props, cx) {
         // a press lifts a pill, a drag reorders the tabs, a click selects (FRM-664)
         this.tabKeys = cx.focus_handle();
-        // his «general › tab status» from the settings window's file, read again on each change to it (FRM-664:W6)
+        // his «general › tab status» from x-herdr-settings' file, read again on each change to it (FRM-664:W6)
         /** @type {import('./tab-status.js').TabStatus} */
         this.tabStatus = 'visible';
         cx.spawn(async (cx) => {

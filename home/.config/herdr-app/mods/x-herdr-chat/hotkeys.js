@@ -26,6 +26,11 @@ export const OUR_KEYS = [
         title: 'Pick the effort',
     },
     {
+        action: 'x-herdr-status.settings',
+        key: 'cmd-shift-,',
+        title: 'Open the settings',
+    },
+    {
         action: 'x-herdr-status.tickall',
         key: 'cmd-shift-k',
         title: "Tick all of the shown thread's asks",

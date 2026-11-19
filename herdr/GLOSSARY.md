@@ -15,9 +15,10 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **band** — the dock's top card: the thread's meters (context, weekly use); not cc's own band, the row cc draws in the Terminal view
 - **quill** — the dock's text box, where dima writes to a thread
 - **ledge** — the dock's bottom card: the thread's status line with its clock and Stop, the buttons, the agent's progress
-- **x-herdr key** — a key of ours in herdr's `keys.json`, its action naming an x-herdr mod (`x-herdr-status.quill`); listed in `hotkeys.js`, shown on the settings window's Keys page
-- **settings window** — the one dialog for x-herdr's choices, a page per mod, drawn by x-herdr-chat from its rows; its values live in `~/.claude/shelf/herdr-settings/settings.json`
-- **settings row** — one choice in the settings window: a key, a title, a one-line why, one control (toggle, checks or stepper) and a default
+- **x-herdr key** — a key of ours in herdr's `keys.json`, its action naming an x-herdr mod (`x-herdr-status.quill`); listed in `hotkeys.js`, shown on x-herdr-settings' keys page
+- **x-herdr-settings** — «settings» in speech: the one dialog for x-herdr's choices (pages general, dock, chat, claude code mods, keys), opened by the band's 🎛️ or ⌘⇧,; drawn by x-herdr-chat today, not a mod of its own; its values live in `~/.claude/shelf/herdr-settings/settings.json`
+- **x-herdr-chat-settings** — «chat settings» in speech: the popover the chat header's gear opens, only how the chat reads (text size, font, width, spacing); his choices there are the **chat look**
+- **settings row** — one choice in x-herdr-settings: a key, a title, a one-line why, one control (toggle, checks or stepper) and a default
 - **x-herdr-chat** — our chat mod, the Chat view itself, built new in place of zoo's chat (FRM-638)
 - **iTrout** — dima's layout, `layouts/itrout.json` under the hood (FRM-633)
 - **chat look** — his choices for how the chat reads (text size, font, width, spacing, tool calls, his messages, colours, accent), kept in herdr's shared store under `chat.look`; the chat reads it

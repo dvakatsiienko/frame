@@ -180,7 +180,7 @@ export function pressOf(kind, at) {
         case 'search':
             return [{ ask: at.isFindOpen ? 'escape' : 'find' }];
         case 'settings':
-            // the chat's look (text size, font, tool calls, …), never the band's settings window
+            // the chat's look (text size, font, tool calls, …), never x-herdr-settings
             return [
                 {
                     overlay: {

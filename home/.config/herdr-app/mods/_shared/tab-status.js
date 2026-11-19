@@ -1,7 +1,7 @@
-// the top tabs' status tile (the program's icon with its state dot): his «general › tab status» row in the settings
-// window the band's 🎛️ opens (FRM-664:W6); the window writes the one settings file, the pills read it from here
+// the top tabs' status tile (the program's icon with its state dot): his «general › tab status» row in x-herdr-settings
+// (the band's 🎛️ or ⌘⇧,, FRM-664:W6); the window writes the one settings file, the pills read it from here
 
-// the settings window's file (x-herdr-chat settings-store.js), under the home folder
+// x-herdr-settings' file (x-herdr-chat settings-store.js), under the home folder
 export const SETTINGS_DIR = '.claude/shelf/herdr-settings';
 export const SETTINGS_FILE = `${SETTINGS_DIR}/settings.json`;
 export const TAB_STATUS_ROW = 'tabs.status';
