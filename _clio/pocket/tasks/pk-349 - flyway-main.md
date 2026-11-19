@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T12:26:00Z'
+updated_date: '2026-11-19T12:33:00Z'
 labels:
   - s
   - clio-main
@@ -1144,4 +1144,6 @@ PK-349:W1211 (2026-11-19 14:12, dima): i thought we already did this.
 PK-349:W1212 (2026-11-19 14:12, dima): if there are new interesting numbers, tell me.
 PK-349:W1213 (2026-11-19 14:12, dima): memory-by-surface - wtf is it? propose actions. ❓
 PK-349:W1214 (2026-11-19 14:12, dima): print waiting jev lines: what's there? ❓
+
+PK-349:W1216 (2026-11-19 14:33, dima, herdr-typed): ts lsp - so both codies can use it? herdr too? tell both: standing rule for today: use typescript lsp and measure its effectiveness and usefulness. both codies must use typescript lsp during the day. their job - measure it so we know use it and wire it or drop it. you - measure on your side. #standing
 <!-- SECTION:NOTES:END -->
