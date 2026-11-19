@@ -31,6 +31,7 @@ import { drop, placesOf, publishOrder, shownOf, targetOf } from './drops.js';
 import { SOUNDS_ON, isSoundOn, startJobs } from './jobs.js';
 import { threadName } from './name.js';
 import { heirs, inOrder, nextOrder } from './order.js';
+import { timeLabel } from './time-label.js';
 
 function find(node, id) {
     if (node?.id === id) return node;
@@ -149,14 +150,6 @@ const SORTS = [
 ];
 const sortOf = () =>
     SORTS.find((s) => s.id === shared('agents.sort')) ?? SORTS[0];
-
-function duration(ms) {
-    const m = Math.floor(ms / 60000);
-    if (m < 1) return '<1m';
-    if (m < 60) return `${m}m`;
-    const h = Math.floor(m / 60);
-    return h < 24 ? `${h}h` : `${Math.floor(h / 24)}d`;
-}
 
 // The agent's icon from the app's program table: a one-color glyph or a picture.
 function icon(p, size, color) {
@@ -699,7 +692,7 @@ export default class Agents extends View {
                             ),
                     );
             }
-            const when = this.since(a);
+            const idleFor = timeLabel(shownStatus(a), this.since(a), now);
             const idle = a.status === 'idle' && !a.focused;
             const isPinned = this.pins.includes(a.address);
             const pin = div()
@@ -853,13 +846,13 @@ export default class Agents extends View {
                 )
                 .when(subs.length > 0, (el) => el.child(fold(a, subs)))
                 .when(this.hovered === a.address, (el) => el.child(pin))
-                .when(this.hovered !== a.address && Boolean(when), (el) =>
+                .when(this.hovered !== a.address && Boolean(idleFor), (el) =>
                     el.child(
                         div()
                             .flex_none()
                             .text_size(11)
                             .text_color(t.dim)
-                            .child(duration(now - when)),
+                            .child(idleFor),
                     ),
                 )
                 .child(

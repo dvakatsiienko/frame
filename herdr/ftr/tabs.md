@@ -5,6 +5,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ the agents list is one flat list in dima's own order
   - given threads come, go and change state
   - then no Unread or Working section shows, a new thread joins at the end, and a row never moves when its state changes; the dots and the tick stay (shot 1932)
+  - 🧭 and the time beside a thread reads how long it has sat idle, «idle 54m», a finished turn counted as idle; a working or blocked thread shows none (FRM-618 W22)
   - ✅ and a working thread shows a calm breathing dot, muted, its opacity swinging over 2 s, never a spinning arc (FRM-618, his o1)
   - and dima drags a row to set its place, the order kept across restarts
   - and a press lifts the row, past 4 px a copy follows the pointer and the rows between slide one slot; a drop settles at once, leaving the list or Esc springs it home; pins, tab rows and space headers drag the same way (FRM-664)
