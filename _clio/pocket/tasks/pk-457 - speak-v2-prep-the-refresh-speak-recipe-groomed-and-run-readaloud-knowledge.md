@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T15:37:00Z'
+updated_date: '2026-11-19T16:07:00Z'
 labels:
   - s
   - clio-wing-1
@@ -51,4 +51,10 @@ PK-457:W26 (2026-11-19 17:02, dima): ok, let's keep refresh-speak for brevity. i
 moved: W20 → FRM-669:W1, W18 → FRM-669:W2 (dima o10, 17:09)
 
 17:37 refresh-speak run 1 done: playbook filled (67ead9ef), W5–W10, W12–W17, W19 met by the run and its 16:42 answers; W11 → FRM-668, W18/W20 → FRM-669; next: fable 5.2 (W1), then the designer refresh
+
+PK-457:W27 (2026-11-19 18:06, dima): fable 5.2 was released about 10 days ago, so we can now run the refresh recipe to learn its data.
+PK-457:W28 (2026-11-19 18:06, dima): we should know where and when fable 5.2 is good. it's 20 % cheaper than fable 5.1 medium, still expensive.
+PK-457:W29 (2026-11-19 18:06, dima): all the same steps; the recipe should already include what to look at and where to fold. fable 5.1 retires with this.
+PK-457:W30 (2026-11-19 18:06, dima): the data should be precise: the price, where and how it is best to summon fable 5.2, the best baseline effort setting, and when low or high matters.
+PK-457:W31 (2026-11-19 18:06, dima): from what i saw, anything higher than high is wasted inference; the research may tell otherwise, so you tell me. ❓
 <!-- SECTION:NOTES:END -->
