@@ -98,7 +98,7 @@ const caps = {
         cap: 1_534,
         why: 'the lane family: commit, push and the shared lane steps',
     },
-    'x/go/lane_landed.go': { cap: 1_458, why: 'lane landed and its decamp' },
+    'x/go/lane_landed.go': { cap: 1_398, why: 'lane landed and its decamp' },
     'x/go/merge_auto.go': {
         cap: 1_888,
         why: 'merge-auto: the brake, the gates and the merge',
