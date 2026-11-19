@@ -4,10 +4,11 @@
  */
 
 /* Core */
-import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'vitest';
+
+import { trackedFiles } from './git-fixture.ts';
 
 const limit = 1_200;
 const ceiling = 2_000;
@@ -116,18 +117,15 @@ const caps = {
     },
 } as const satisfies Record<string, { cap: number; why: string }>;
 
-const codeFiles = execFileSync(
-    'git',
-    ['ls-files', '-z', '--', '*.ts', '*.tsx', '*.js', '*.go', '*.sh'],
-    {
-        cwd: root,
-        encoding: 'utf8',
-    },
-)
-    .split('\0')
-    .filter(
-        (file) => file !== '' && !skipped.some((pattern) => pattern.test(file)),
-    );
+const codeFiles = trackedFiles(
+    root,
+    '--',
+    '*.ts',
+    '*.tsx',
+    '*.js',
+    '*.go',
+    '*.sh',
+).filter((file) => !skipped.some((pattern) => pattern.test(file)));
 
 const readText = (file: string) => {
     try {
