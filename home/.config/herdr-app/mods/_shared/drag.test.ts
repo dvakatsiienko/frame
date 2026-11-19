@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { createDrag } from './drag.js';
+import { createDrag, placeAt } from './drag.js';
 
 // FRM-664: one drag for the top tabs and the agents list, the research's recipe (docs/research/herdr-drag-and-drop.md)
 function drag() {
@@ -191,5 +191,32 @@ describe('Escape or leaving the list cancels with no move', () => {
         d.press('a', 'a', 0, at(0));
         for (const y of [10, -30, 200, 3, 90]) d.pointer(at(7, y));
         expect(d.state().name).toBe('dragging');
+    });
+});
+
+// dima's 16:28 video: a target read from the row under the pointer flickered, as the row slid away from under it
+describe('the target comes from the slots as they stood at the press', () => {
+    const press = { from: 1, places: 5, slot: 30 };
+
+    test('a move of half a slot or less keeps its own place', () => {
+        expect(placeAt(press, 14)).toBe(1);
+        expect(placeAt(press, -14)).toBe(1);
+    });
+
+    test('past half a slot it points at the next place, each way', () => {
+        expect(placeAt(press, 16)).toBe(2);
+        expect(placeAt(press, -16)).toBe(0);
+        expect(placeAt(press, 61)).toBe(3);
+    });
+
+    test('a move past either end stops at the first or last place', () => {
+        expect(placeAt(press, -300)).toBe(0);
+        expect(placeAt(press, 900)).toBe(4);
+    });
+
+    test('the same pointer always gives the same place, whatever the rows drew', () => {
+        const seen = [44, 46, 44, 46].map((moved) => placeAt(press, moved));
+        expect(seen).toEqual([2, 3, 2, 3]);
+        expect(placeAt(press, 44)).toBe(placeAt(press, 44));
     });
 });

@@ -29,6 +29,17 @@
 
 const THRESHOLD = 4;
 
+/**
+ * the place a drag points at: the press's own place moved by whole slots, within its kind's places. it reads the
+ * pointer against the slots as they stood at the press, never the rows' hover: a row that slides from under the
+ * pointer would retarget the drag each frame and the rows would flicker (dima's 16:28 video)
+ * @param {{ from: number, places: number, slot: number }} press @param {number} moved along the axis since the press
+ */
+export function placeAt({ from, places, slot }, moved) {
+    if (places <= 0 || slot <= 0) return from;
+    return Math.min(places - 1, Math.max(0, from + Math.round(moved / slot)));
+}
+
 /** @type {{ name: 'idle' }} */
 const IDLE = { name: 'idle' };
 

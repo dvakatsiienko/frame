@@ -167,11 +167,14 @@ export default class TabPills extends View {
             return this.drag
                 .item(
                     own(h_flex()),
-                    `pill-${c.id}`,
-                    { id: c.id },
-                    i,
-                    () => i,
-                    name.label,
+                    {
+                        from: i,
+                        item: { id: c.id },
+                        key: `pill-${c.id}`,
+                        label: name.label,
+                        places: space.tabs.length,
+                        targetFor: () => i,
+                    },
                     dragTheme,
                 )
                 .id(`pill-${c.id}`)
