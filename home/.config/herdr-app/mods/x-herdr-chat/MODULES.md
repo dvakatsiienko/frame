@@ -24,10 +24,6 @@ read this before a change: find the one module that owns the state you touch, an
 
 - reading: `reader.js` (new lines of a file), `pages.js` (older pages), `row-model.js` (lines in, rows out), `thread.js`, `shown.js`
 - the list: `place.js` (his reading place), `follow.js`, `heights.js`, `fold.js`, `tool-folds.js`, `files.js`, `details.js`, `blocks.js`, `relay.js`
-- the quill and sending: `quill.js`, `send.js`, `magic.js`, `joins.js`, `queued.js`, `attach.js`, `attachments.js`, `shots.js`, `sent-pictures.js`, `paste.js`, `typed.js`, `slash.js`, `commands.js`, `skills.js`
-- the rest: `band.js`, `blocked.js`, `picker.js`, `effort.js`, `find.js`, `menu.js`, `viewer.js`, `look.js`, `hotkeys.js`, `joined.js`, `settings-model.js`, `settings-store.js`, `settings-io.js`, `icons.js`, `tint.js`, `chat-types.js`
+- the quill and sending: `quill.js`, `send.js`, `magic.js`, `joins.js`, `queued.js`, `attach.js`, `attachments.js`, `shots.js`, `sent-pictures.js`, `paste.js`, `lists.js` (a paste reads plain, its lists keep their markers), `typed.js`, `slash.js`, `commands.js`, `skills.js`
+- the rest: `band.js`, `blocked.js`, `picker.js`, `effort.js`, `find.js`, `menu.js`, `viewer.js`, `look.js`, `hotkeys.js`, `joined.js`, `settings-model.js`, `settings-store.js`, `settings-io.js`, `icons.js`, `tint.js`, `contrast.js` (a background he can read on, whatever the theme), `chat-types.js`
 - shared with the other mods: `chat-asks.js` lives in `../_shared/` and lands beside the mod, listed in `mod.json`'s `shared`
-
-## not wired
-
-- `lists.js` (list markers put back on a paste into the quill, dima's variant E) and `contrast.js` (a readable background under a theme that paints its text colour) came from the old chat and nothing imports them yet

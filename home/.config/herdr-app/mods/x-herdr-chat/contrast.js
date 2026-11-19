@@ -30,3 +30,20 @@ export function readableBackground(bg, fg, fallbacks) {
         fallbacks.find((c) => (contrastRatio(c, fg) ?? 0) >= MIN_RATIO) ?? bg
     );
 }
+
+/**
+ * the theme as the chat draws it: a background his text cannot be read on gives way to the canvas, then the surface
+ * @template {Record<string, string | undefined>} T
+ * @param {T} t
+ * @returns {T}
+ */
+export function readableTheme(t) {
+    const { background, canvas, foreground, surface } = t;
+    if (!background || !foreground) return t;
+    const readable = readableBackground(
+        background,
+        foreground,
+        [canvas, surface].filter((c) => typeof c === 'string'),
+    );
+    return readable === background ? t : { ...t, background: readable };
+}

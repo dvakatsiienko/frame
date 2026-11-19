@@ -25,6 +25,7 @@ import {
 import { createBand } from './band-view.js';
 import { createBlockedPanel } from './blocked-panel.js';
 import { CHAT_SHOWN } from './chat-asks.js';
+import { readableTheme } from './contrast.js';
 import { createFindBar } from './find-bar.js';
 import { createHeights } from './heights.js';
 import { LOOK_KEY, lookOf } from './look.js';
@@ -274,7 +275,8 @@ export default class Chat extends View {
     /** @param {Context} _cx */
     render(_cx) {
         if (this.settingsWindow) return this.settingsWindow.render();
-        const t = /** @type {Theme} */ (theme());
+        // a theme that paints the terminal in its text colour (win98) gives the chat a background he can read on
+        const t = /** @type {Theme} */ (readableTheme(theme()));
         // the chat finds its own thread, as the old chat did; on screen it names it for the deck's ⌘⇧K, hidden it names none
         const { stack, self } = props() ?? {};
         const isShown = isShownIn(layout(), stack, self);
