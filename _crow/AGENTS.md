@@ -53,12 +53,12 @@
 - every packet opens with crow's ledger line: notes sent today, the last send's time, today's ok verdicts — `ledgerLine` in `lib.ts`
 - every packet whose delta lost older blocks or capped a tool output opens with one `cut:` line naming the
   transcript; crow reads its tail only then.
-- `pnpm crow:plan-critique <plan file>` — the blind plan review at `clio:shape-idea` step 4 (FRM-336): two fresh `claude -p` opus one-shots with `--tools ''`, never crow's own session; pass 1 sees only the want, constraints, not and done-test sections, pass 2 the whole plan plus pass 1; `notes.jsonl` gets `plan-<run>-0` for the run (the only row with the cost) and `plan-<run>-<n>` per finding with `located` (its quote is really in the plan); accepted is a `crow:note-vet` on that id, the review in `plans/<run>/review.json`
+- `pnpm crow:plan-critique <plan file>` — the blind plan review at `clio:shape-idea` step 4 (FRM-336): two fresh `claude -p` opus one-shots with `--tools ''`, never crow's own session; pass 1 sees only the want, constraints, not and done-test sections, pass 2 the whole plan plus pass 1; `notes.jsonl` gets `plan-<run>-0` for the run (the only row with the cost) and `plan-<run>-<n>` per finding with `located` (its quote is really in the plan) and `thread`, the clio thread that ran it; accepted is a `crow:note-vet` on that id, the review in `plans/<run>/review.json`
 <!-- --tools '': a one-shot that can read reaches clio's transcripts through the `~` extra dir and stops being blind -->
 
 - `pnpm crow:note-vet ok|miss <note-id> <why> --changed file|reply|ask|ticket|none --ref <path|id>` — appends the verdict to `verdicts.jsonl`, keyed by
   note id, waiting ≤60 s for a note harvest.ts has not logged yet; `pnpm crow:unvetted`, clio's Stop hook,
-  blocks her turn end once per «🔴 sent» note still without a verdict, naming the command; `notes.jsonl` is append-only, so a harvester writing mid-vet loses nothing.
+  blocks her turn end once per «🔴 sent» note, and per located plan finding stamped with her thread, still without a verdict, naming the command (an unstamped plan row blocks no thread); `notes.jsonl` is append-only, so a harvester writing mid-vet loses nothing.
 - `leaves.txt`: one glob per line, `{today}` → `YYYY-MM-DD`, a `latest ` prefix keeps the newest
   match only. clio owns it; the builder never reads under `_clio/`.
 

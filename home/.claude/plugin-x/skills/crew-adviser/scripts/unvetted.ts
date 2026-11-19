@@ -1,16 +1,11 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import {
-    NOTES_PATH,
-    STATE_DIR,
-    VERDICTS_PATH,
-    clioThreadOf,
-    threadOfNoteId,
-} from './lib.ts';
+import { NOTES_PATH, STATE_DIR, VERDICTS_PATH, clioThreadOf } from './lib.ts';
+import { unvettedIds } from './unvetted-ids.ts';
 
-// clio's Stop hook: a note crow sent with no verdict blocks the turn end once, naming the vet command;
-// green and held notes reach clio as nothing to answer, so only a 🔴 sent one needs a verdict
+// clio's Stop hook: a note crow sent, or a plan critique's located finding, with no verdict blocks the
+// turn end once, naming the vet command; green and held notes reach clio as nothing to answer
 const FLAGGED_PATH = join(STATE_DIR, 'unvetted-flagged.txt');
 // a note waits on the thread it was sent to, so no clio answers for another's
 const hook: { transcript_path?: string } = JSON.parse(
@@ -40,26 +35,18 @@ const flagged = new Set(
         ? readFileSync(FLAGGED_PATH, 'utf8').split('\n').filter(Boolean)
         : [],
 );
-const open = jsonl(NOTES_PATH)
-    .filter((n) =>
-        String(n.note ?? '')
-            .split('\n')[1]
-            ?.startsWith('🔴 sent'),
-    )
-    .map((n) => String(n.id))
-    .filter(
-        (id) =>
-            threadOfNoteId(id) === thread.id &&
-            !vetted.has(id) &&
-            !flagged.has(id),
-    );
+const open = unvettedIds(
+    jsonl(NOTES_PATH),
+    new Set([...vetted, ...flagged]),
+    thread.id,
+);
 
 if (open.length > 0) {
     writeFileSync(FLAGGED_PATH, `${[...flagged, ...open].join('\n')}\n`);
     console.log(
         JSON.stringify({
             decision: 'block',
-            reason: `crow sent ${open.length === 1 ? 'a note' : 'notes'} with no verdict: ${open.join(', ')}. vet each with \`pnpm -C ~/frame crow:note-vet ok|miss <id> <why> --changed file|reply|ask|ticket|none --ref <path|id>\` — every one is counted; dima already sees the reply above, so print nothing new unless the verdict changes it.`,
+            reason: `${open.length === 1 ? 'a crow note' : 'crow notes'} (a sent note or a plan finding) with no verdict: ${open.join(', ')}. vet each with \`pnpm -C ~/frame crow:note-vet ok|miss <id> <why> --changed file|reply|ask|ticket|none --ref <path|id>\` — every one is counted; dima already sees the reply above, so print nothing new unless the verdict changes it.`,
         }),
     );
 }

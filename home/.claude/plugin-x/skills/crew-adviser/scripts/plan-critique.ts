@@ -11,6 +11,7 @@ import {
     blindPrompt,
     blindSections,
     claudeArgs,
+    clioThreadOf,
     fail,
     liveArm,
     oneShotModel,
@@ -123,7 +124,12 @@ const notes = planNotes(
     },
     review,
 );
-for (const note of notes) appendJsonl(NOTES_PATH, note);
+// the clio thread that ran the critique owes its findings a verdict at its own Stop (unvetted.ts)
+const thread = clioThreadOf(
+    `${process.env.CLAUDE_CODE_SESSION_ID ?? ''}.jsonl`,
+)?.id;
+for (const note of notes)
+    appendJsonl(NOTES_PATH, Object.assign(note, { thread }));
 
 const head = notes[0];
 console.log(
