@@ -585,6 +585,10 @@ final class Speaker {
             Task { await warmKokoro() }
         }
         log("\(engine.rawValue) skipped: \(error)\(pause.map { ", off for \(Int($0)) s" } ?? "")")
+        // fish's free model ends on a date its blog names twice (11-30, 08-31): its refusal reads as the tier's end
+        if engine == .fish, case EngineError.status(let code) = error, [402, 429].contains(code) {
+            log("⚠️ FISH REFUSED \(settings(.fish).model ?? "s2.1-pro-free") (\(code)): the free tier may have ended; the chain falls through for an hour; check fish.audio")
+        }
     }
 
     private func speak(_ chunk: Chunk, with engine: Engine, deadline: Duration?, onAudio: @escaping () -> Void) async throws {
@@ -635,7 +639,8 @@ final class Speaker {
         case .fish:
             guard let key = keys[.fish] else { throw EngineError.noKey }
             guard let voice = settings(.fish).voice(for: chunk.lang) else { throw EngineError.noVoice }
-            // s2.1-pro-free: no character cap, free until 2026-11-30; after that its non-2xx drops the tier by itself
+            // s2.1-pro-free: no character cap, free until 2026-11-30 (fish's blog also names 08-31; a live call answered 200
+            // on 2026-11-19); after that its non-2xx drops the tier by itself, and a 402 or 429 logs the loud line in handle
             var request = URLRequest(url: URL(string: "https://api.fish.audio/v1/tts")!)
             request.httpMethod = "POST"
             request.setValue("Bearer \(key)", forHTTPHeaderField: "authorization")

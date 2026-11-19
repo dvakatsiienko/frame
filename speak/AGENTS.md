@@ -21,6 +21,7 @@ else, and the daemon re-reads the file on the next F4 after a save.
 - **the live daemon is dima's most-used tool** — a rebuild (`pnpm speak:build`) relaunches it and cuts any read in
   progress; announce the swap first and check the control socket's `status` is not speaking (live tests cut his
   reads twice on FRM-283)
+- **check due 2026-11-28: fish's free `s2.1-pro-free` ends 11-30** (its blog also says 08-31): one `POST api.fish.audio/v1/tts` with that `model` header and `FISH_API_KEY` via `script/op-run.sh` answers 200 while it lives; a 402/429 logs `⚠️ FISH REFUSED`. drop this line once read
 - **a normalizer rule starts from the real grab**, never a guessed input: the Claude app glues list items and drops
   line breaks, Slack's accessibility focus is the empty message box — one real F4 beat every guess (FRM-283, 10-01)
 
