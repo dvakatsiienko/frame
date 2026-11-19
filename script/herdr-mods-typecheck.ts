@@ -1,7 +1,7 @@
 // pnpm herdr-mods:typecheck — type-checks every herdr mod of ours whose jsconfig.json turns `strictNullChecks` on, then
 // prints one summary line; exit 1 when any is red or nothing was checked. herdr's own type files live only where herdr
-// is installed (~/.config/herdr-app), never in git: with them, every file of a mod is checked; without them (ci), only
-// the files that import nothing but their own siblings, and the line says how many were left out.
+// is installed (~/.config/herdr-app), never in git: with them, every file of a mod is checked; without them (ci), each
+// file that imports herdr, or imports such a file, is left out, and the line names each one.
 // Usage: pnpm herdr-mods:typecheck [mods root]
 import { spawnSync } from 'node:child_process';
 import {
@@ -13,7 +13,7 @@ import {
     writeFileSync,
 } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 
 const IMPORT_FROM = /(?:\bfrom\s*|\bimport\s*\(\s*)(['"])([^'"]+)\1/g;
 const LINE_COMMENT = /^\s*\/\/.*$/gm;
@@ -24,6 +24,47 @@ export function needsHerdrTypes(source: string) {
     return [...code.matchAll(IMPORT_FROM)].some(
         ([, , specifier]) => !specifier?.startsWith('.'),
     );
+}
+
+/**
+ * the files that need herdr's types: each that imports herdr, then each that imports one of those by a relative path,
+ * through any depth (tsc pulls an imported file back in whatever the files list says). `rootDirs` resolve a relative
+ * import the way the check's config does, `./keypress.js` from a mod into `_shared/`
+ */
+export function needingHerdr(
+    sources: Record<string, string>,
+    rootDirs: string[],
+) {
+    const skipped = new Set(
+        Object.keys(sources).filter((path) =>
+            needsHerdrTypes(sources[path] ?? ''),
+        ),
+    );
+    const importsOf = (path: string) =>
+        [
+            ...(sources[path] ?? '')
+                .replace(LINE_COMMENT, '')
+                .matchAll(IMPORT_FROM),
+        ]
+            .map(([, , specifier]) => specifier ?? '')
+            .filter((specifier) => specifier.startsWith('.'))
+            .flatMap((specifier) =>
+                [dirname(path), ...rootDirs].map((root) =>
+                    resolve(root, specifier),
+                ),
+            );
+    for (let grew = true; grew; ) {
+        grew = false;
+        for (const path of Object.keys(sources))
+            if (
+                !skipped.has(path) &&
+                importsOf(path).some((to) => skipped.has(to))
+            ) {
+                skipped.add(path);
+                grew = true;
+            }
+    }
+    return [...skipped].sort();
 }
 
 // herdr writes these two into a mod's folder; the gate passes herdr's own copies once, beside the files
@@ -38,7 +79,7 @@ export function checkedNames(names: string[]) {
     );
 }
 
-export function verdict({ checked, mods, red, skippedFiles }: Tally) {
+export function verdict({ checked, mods, red, skipped }: Tally) {
     if (red.length)
         return {
             isRed: true,
@@ -49,8 +90,8 @@ export function verdict({ checked, mods, red, skippedFiles }: Tally) {
             isRed: true,
             line: 'herdr-mods:typecheck: red, 0 files checked',
         };
-    const skip = skippedFiles
-        ? ` — ${skippedFiles} ${skippedFiles === 1 ? 'file that imports' : 'files that import'} herdr not checked: herdr's types are not on this machine`
+    const skip = skipped.length
+        ? ` — ${skipped.length} ${skipped.length === 1 ? 'file needs' : 'files need'} herdr's types, not on this machine: ${skipped.join(', ')}`
         : '';
     return {
         isRed: false,
@@ -70,7 +111,7 @@ if (import.meta.main) {
         join(herdrHome, 'herdr.d.ts'),
     ];
     const hasHerdrTypes = herdrTypes.every((path) => existsSync(path));
-    const tally: Tally = { checked: 0, mods: 0, red: [], skippedFiles: 0 };
+    const tally: Tally = { checked: 0, mods: 0, red: [], skipped: [] };
     const scratch = mkdtempSync(join(tmpdir(), 'herdr-mods-typecheck-'));
     try {
         for (const mod of strictMods(root)) {
@@ -84,12 +125,20 @@ if (import.meta.main) {
                 ),
                 ...shared,
             ];
-            const files = hasHerdrTypes
-                ? sources
-                : sources.filter(
-                      (path) => !needsHerdrTypes(readFileSync(path, 'utf8')),
+            const rootDirs = [dir, join(root, '_shared')];
+            const skipped = hasHerdrTypes
+                ? []
+                : needingHerdr(
+                      Object.fromEntries(
+                          sources.map((path) => [
+                              path,
+                              readFileSync(path, 'utf8'),
+                          ]),
+                      ),
+                      rootDirs,
                   );
-            tally.skippedFiles += sources.length - files.length;
+            const files = sources.filter((path) => !skipped.includes(path));
+            tally.skipped.push(...skipped.map((path) => relative(root, path)));
             if (!files.length) continue;
             const config = join(scratch, `${mod}.json`);
             writeFileSync(
@@ -104,7 +153,7 @@ if (import.meta.main) {
                         noEmit: true,
                         noUncheckedIndexedAccess: true,
                         paths: { herdr: [herdrTypes[1]] },
-                        rootDirs: [dir, join(root, '_shared')],
+                        rootDirs,
                         skipLibCheck: true,
                         strict: true,
                         target: 'ES2022',
@@ -158,5 +207,5 @@ type Tally = {
     checked: number;
     mods: number;
     red: string[];
-    skippedFiles: number;
+    skipped: string[];
 };
