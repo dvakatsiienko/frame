@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T16:07:00Z'
+updated_date: '2026-11-19T16:26:00Z'
 labels:
   - s
   - clio-main
@@ -1189,4 +1189,6 @@ PK-349:W1235 (2026-11-19 18:05, dima): grill approved, and i want pretty UI for 
 PK-349:W1236 (2026-11-19 18:05, dima): 🐦⬛ crow
 PK-349:W1237 (2026-11-19 18:05, dima): 🐬 wishkeeper
 PK-349:W1238 (2026-11-19 18:05, dima): etc. so i cleanly see who asked. if codie or verifier relays - i want know which one (lane and ticket, or current task/topic - what are is aked about)
+
+18:26 moved: PK-349:W1231 → FRM-670:W1, PK-349:W1232 → FRM-670:W2, PK-349:W1233 → FRM-670:W3, PK-349:W1234 → FRM-670:W4, PK-349:W1235 → FRM-670:W5, PK-349:W1236 → FRM-670:W6, PK-349:W1237 → FRM-670:W7, PK-349:W1238 → FRM-670:W8
 <!-- SECTION:NOTES:END -->
