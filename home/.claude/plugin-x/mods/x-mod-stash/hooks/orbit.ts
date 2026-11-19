@@ -545,3 +545,43 @@ export function bandPressLines(text: string, after: number, now: number) {
     }
     return out.sort((a, b) => a.at - b.at);
 }
+
+// what an ask's steer box mounts with after a write, always read off the stored ask: typing keeps what it showed; any
+// other change to the steer shows the new one, under a new key when the box already shows that text, since the surface
+// keeps typed text under an unchanged value; a write made from a read older than his last typed save keeps his steer
+export function mounted(
+    was: OrbitAsk | undefined,
+    a: OrbitAsk,
+    isTyped: boolean,
+): OrbitAsk {
+    if (!was) return a;
+    const { gen: _gen, rev: _rev, shown: _shown, steer, ...rest } = a;
+    const box = (
+        shown: string | undefined,
+        gen: number | undefined,
+        rev = was.rev,
+    ) => ({
+        ...(shown === undefined ? {} : { shown }),
+        ...(gen ? { gen } : {}),
+        ...(rev ? { rev } : {}),
+    });
+    const withSteer = (s: string | undefined) =>
+        s === undefined ? {} : { steer: s };
+    const drew = was.shown ?? was.steer ?? '';
+    if (isTyped)
+        return steer === was.steer
+            ? { ...rest, ...withSteer(steer), ...box(was.shown, was.gen) }
+            : {
+                  ...rest,
+                  ...withSteer(steer),
+                  ...box(drew, was.gen, (was.rev ?? 0) + 1),
+              };
+    if ((a.rev ?? 0) !== (was.rev ?? 0) || steer === was.steer)
+        return { ...rest, ...withSteer(was.steer), ...box(was.shown, was.gen) };
+    const shown = steer ?? '';
+    return {
+        ...rest,
+        ...withSteer(steer),
+        ...box(shown, shown === drew ? (was.gen ?? 0) + 1 : was.gen),
+    };
+}
