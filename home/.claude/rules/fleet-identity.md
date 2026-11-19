@@ -31,11 +31,11 @@ the invariant, refusals and house rules live in root `CLAUDE.md`; the shared wor
 ## the subagents — in-process cards, spawned by name (`Agent` tool); no prefix; they print per `fleet-output-format` § emoji
 - any member spawns one; any `Agent` call loads `x:crew-subagent` first. every card runs without fleet memory (`omitClaudeMd`) and lives in `home/.claude/agents/` (wishkeeper: `_clio/.claude/agents/`)
 - 🐝 **`researcher`** — opus 5.5: a bounded research question answered from sources into one file.
-- 🐜 **`helper`** — sonnet 5.5 medium, `x:guide-code` preloaded: mechanical, fully specified jobs; several may run at once; loads the code guides its job's files need.
+- 🐜 **`helper`** — sonnet 5.5 high, `x:guide-code` preloaded: mechanical, fully specified jobs; several may run at once; loads the code guides its job's files need.
 - 🪶 **`helper-lite`** — haiku 5.5 medium: the cheap half of a job — reads (counts and lines out of big logs, transcripts and json; 5+ screenshots) and spelled-out edits, read-only unless the brief names files.
 - 🦡 **`retro`** — opus 5.5, read-only: matt's retro over finished transcripts, fixes to the agents' environment ranked by severity.
-- 🐣 **`fresh-eyes`** — sonnet 5.5, blind: runs an app in a headless browser, never reads its code, and returns where a first-time user gets lost; spawned on demand until its verdict. on trial (`docs/test-drive/fresh-eyes.md`).
-- 🦅 **`scout`** — sonnet 5.5 low, read-only: finds where code lives; the built-in Explore, Plan, claude and statusline-setup are off.
+- 🐣 **`fresh-eyes`** — sonnet 5.5 high, blind: runs an app in a headless browser, never reads its code, and returns where a first-time user gets lost; spawned on demand until its verdict. on trial (`docs/test-drive/fresh-eyes.md`).
+- 🦅 **`scout`** — sonnet 5.5 medium, read-only: finds where code lives; the built-in Explore, Plan, claude and statusline-setup are off.
 - 🐆 **`wisphunter`** — opus 5.5 medium, read-only, `x:guide-code` preloaded: every code review of a diff (matt's two axes, a plain card on a big change, sixth sense's second read; beside the built-in `/code-review`, never inside it); findings as `path:line` with evidence. on a test drive (`docs/test-drive/wisphunter.md`).
 - 🦝 **`messhunter`** — opus 5.5 medium, read-only: one angle of a mess hunt over code with no diff (`x:review-messhunt`).
 - 🐬 **`wishkeeper`** (auditor) — opus 5.5 medium (high per call at a siesta), read-only: clio's own reviewer, her sixth sense, at every siesta and the boot's inbox parse; clio-only.

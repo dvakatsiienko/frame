@@ -40,7 +40,7 @@ so · **[community]** a practitioner pattern · **[measured]** we ran it · **[?
 
 - **price**: $2 / $10, cache reads $0.10 (0.05×), writes $2.50 (5m) / $4 (1h). 1M / 128K. **[vendor]**
 - **effort**: `medium` in Claude Code, `high` on the API; in our crew set `high` or `xhigh` explicitly — at medium it loses to haiku xhigh for more money **[bench]**; never `low` for code (skips verification) **[vendor]**. a subagent on another model runs at that model's default unless its card sets `effort` (cc 2.1.317) **[vendor]**.
-- **pick for**: `helper` and `scout` at high, retrieval under an opus lead.
+- **pick for**: `helper` and `fresh-eyes` at high, `scout` at medium **[dima]**, retrieval under an opus lead.
 - **never**: left at the cc default for real work; the main codie or the sole sixth sense; design.
 - **numbers**: CursorBench 4.1 medium 34.3 % for $0.63 vs haiku xhigh 45.2 % for $0.56 **[bench]**; high 43.8 % ≈ opus low 42.7 % at the same ~$1.4 **[bench]**. **[bench]**
 
@@ -48,14 +48,13 @@ so · **[community]** a practitioner pattern · **[measured]** we ran it · **[?
 
 - **price**: ≤100K prompts $0.10 / $0.50, cache reads $0.01, writes $0.125 (5m) / $0.20 (1h); over 100K **×5 on every line**, cache included, set per request. **[vendor]**
 - **the cliff**: a Haiku session compacts at ~967K, so a long run pays ×5 **[community]**; `helper-lite` sets `autoCompactWindow: 100000`.
-- **effort**: `medium` baseline; `xhigh` is the value pick for coding-shaped worker tasks (Cursor 45.2 % for $0.56) **[bench]**; `low` only for chat and short tool calls — on long prompts it skips searches and checks **[vendor]**.
+- **effort**: `medium` baseline; `xhigh` is the value pick for small coding-shaped worker edits (Cursor 45.2 % for $0.56) **[bench]**; `low` only for chat and short tool calls — on long prompts it skips searches and checks **[vendor]**.
 - **pick for**: `helper-lite` — extraction, transcripts, screenshot transcription, a crew of workers under an opus lead **[community]**; a classifier through the api with a strict schema **[vendor]**.
-- **never**: judgment or verifying (it took github's «clean» as «merge ready»), a wait or a loop against an outside api **[community]**; research synthesis (AA-Omniscience 40 % hallucination) **[bench]**.
+- **never**: judgment or verifying (it took github's «clean» as «merge ready»), a wait or a loop against an outside api **[community]**; research synthesis (AA-Omniscience 40 % hallucination) **[bench]**; a whole agentic coding job (Terminal-Bench 39.2 vs sonnet 70.6) **[vendor]**.
 - **numbers**: AA v5.0.1 low 18.6 · medium 24.6 · high 29.9 · xhigh 34.6 **[bench]**; images vs opus: **a single value 45–47 % vs 68–70 %** (Roboflow) **[bench]**; ours: 38 of 39 numbers read **[measured]**.
 
 ## across the line
 
-- **cache reads are where agents spend**: a 50-turn run re-reading 100k costs ~$1 on opus against $20 uncached **[vendor]**.
 - **effort mid-session keeps the cache** on all four models on a subscription or api key, never on bedrock, vertex, a gateway or HIPAA; `/model` re-reads the history uncached **[verified 2026-10-12]**.
 - **bounded vs unbounded**: more intelligence adds nothing to a bounded task, so a cheaper model fits **[vendor]**; haiku takes the legwork, the strong model writes **[community]**.
 ## Dima's live calls — task → model, his words kept (keep growing) [dima]

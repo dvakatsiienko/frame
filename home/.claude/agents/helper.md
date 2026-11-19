@@ -2,7 +2,7 @@
 name: helper
 description: Sonnet, the careful tier above `helper-lite` — mechanical, fully specified jobs that need some judgment — a report read off a script's output (evergreen apps, the stale research scan, a transcript audit, test-drive log lines), or a bulk edit whose every change the brief spells out (a date shift, a table of values, an edit that needs care; a plain rename or string swap goes to `helper-lite`). Not for design, debugging, judgment calls, code review (that is wisphunter), or anything the brief leaves open.
 model: sonnet
-effort: medium
+effort: high
 omitClaudeMd: true
 tools: Read, Edit, Write, Bash, Skill
 skills:

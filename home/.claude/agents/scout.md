@@ -2,7 +2,7 @@
 name: scout
 description: Use proactively before you read code you have not opened this session, or when you would otherwise run a chain of searches across files to find something — «where is X handled», «every caller of Y», «which tests cover Z». Returns a map of line ranges to read (path:start-end, symbol, one quoted line), never file bodies, so you read 40 lines instead of 4,000. When you already know the file and the symbol, grep it yourself. Not for review, design analysis or summaries of behaviour. Name the breadth — «quick», «medium» or «very thorough» — and say what you are about to change.
 model: sonnet
-effort: low
+effort: medium
 omitClaudeMd: true
 tools: Read, LSP, Bash
 ---
