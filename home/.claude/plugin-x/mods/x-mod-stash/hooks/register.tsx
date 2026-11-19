@@ -114,6 +114,15 @@ import {
 import { roundKeyOf, roundOpen, roundTaken, roundsOf } from './rounds.ts';
 import { cleanTree, drawn } from './tree.ts';
 import {
+    bare,
+    basename,
+    errorText,
+    memberKey,
+    short,
+    text,
+    writeWhole,
+} from './util.ts';
+import {
     WIND_ROWS,
     WIND_STORE_FILE,
     WIND_TEXT_CAP,
@@ -2485,6 +2494,7 @@ async function laneRoundLine(
         if (!after) return undefined;
         await writeWhole(
             $,
+            proc?.pid ?? 0,
             roundsPath(home),
             `${JSON.stringify(
                 { rounds: { ...rounds, [lane]: after }, v: 1 },
@@ -4249,17 +4259,9 @@ async function isBootOpen($: EngineInterface) {
     return typeof at === 'number' && (await $.clock.now()) - at < BOOT_MS;
 }
 
-// a member's name without its leading mode emoji: «⚡ 🔧 codie: mods lane 6 | FRM-1» and «🌗 🔧 codie: mods lane 6 | FRM-1» are one member
-const memberKey = (name: string) =>
-    bare(name).replace(/^(?:☕️?|🌗|⚡️?|🌘|🎯)/u, '');
-const bare = (name: string) => name.replaceAll(/[\s\u200d]/g, '');
-
 // a thread's asks show while it has any and they are under a day old
 const isLive = (v: Entry | undefined, now: number): v is Entry =>
     !!v && Array.isArray(v.asks) && v.asks.length > 0 && now - v.at < STALE_MS;
-
-const errorText = (err: unknown) =>
-    err instanceof Error ? err.message : String(err);
 
 // a file an ask links to opens in its app; `~/` is the home dir, the path an argv item, never a shell word
 async function openPath($: EngineInterface, path: string) {
@@ -4269,12 +4271,7 @@ async function openPath($: EngineInterface, path: string) {
         .catch(() => undefined);
 }
 
-const basename = (path: string) =>
-    path.split('/').filter(Boolean).pop() ?? path;
-
 type Proc = { pid: number; start: string };
-
-const short = (sid: string) => sid.slice(0, 8);
 
 // the name ListAgents shows lives in the session registry, keyed by the claude process id
 // this session's process, resolved at its first read: a hook can run before a reloaded module's session.start, where
@@ -4762,16 +4759,6 @@ const stateDir = (home: string) => `${home}/.claude/shelf/${STATE_DIR}`;
 // what this process last wrote, without its time, so an unchanged state costs no write
 let stateWritten: string | undefined;
 let fleetWritten: string | undefined;
-// whole or not at all: a reader never meets a half-written file
-async function writeWhole($: EngineInterface, path: string, text: string) {
-    const cut = path.lastIndexOf('/');
-    // the pid in the name: every session writes the second-wind store, and a shared temp would let one session's
-    // rename move another's half-written file into place
-    const temp = `${path.slice(0, cut)}/.${path.slice(cut + 1)}.${proc?.pid ?? 0}.tmp`;
-    await $.fs.write(temp, text);
-    const r = await $.process.run(['mv', '-f', temp, path]);
-    if (r.exitCode !== 0) throw new Error(r.stderr.trim() || 'mv failed');
-}
 const JOINS_DIR = 'herdr-joins';
 const joinsFile = (home: string, sid: string) =>
     `${home}/.claude/shelf/${JOINS_DIR}/${sid}.jsonl`;
@@ -4897,6 +4884,7 @@ async function handBackJoins($: EngineInterface, home: string, sid: string) {
             const kept = await $.fs.read(`${dir}/${sid}.jsonl`).catch(() => '');
             await writeWhole(
                 $,
+                proc?.pid ?? 0,
                 `${dir}/${sid}.jsonl`,
                 `${kept}${back.map((line) => `${line}\n`).join('')}`,
             );
@@ -4972,6 +4960,7 @@ async function writeState($: EngineInterface) {
     if (text === stateWritten) return;
     await writeWhole(
         $,
+        proc?.pid ?? 0,
         `${stateDir(home)}/${sid}.json`,
         `${JSON.stringify({ ...state, at: await $.clock.now() })}\n`,
     );
@@ -4998,7 +4987,12 @@ async function writeFleet($: EngineInterface) {
     };
     const text = JSON.stringify(fleet);
     if (text === fleetWritten) return;
-    await writeWhole($, `${stateDir(home)}/${FLEET_FILE}`, `${text}\n`);
+    await writeWhole(
+        $,
+        proc?.pid ?? 0,
+        `${stateDir(home)}/${FLEET_FILE}`,
+        `${text}\n`,
+    );
     fleetWritten = text;
 }
 // a killed session fires no end: its file goes once its pid is gone, read every STATE_PRUNE_POLLS shelf passes
@@ -7099,8 +7093,6 @@ export const markOf = (m: {
 }) =>
     m.isOffPattern ? '⚠' : m.isIdle && m.ms >= CACHE_TTL_MS ? '❄️' : undefined;
 
-const text = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
-
 type Registered = {
     pid: number;
     bg: boolean;
@@ -7503,7 +7495,7 @@ async function syncWindStore($: EngineInterface) {
         null,
         2,
     )}\n`;
-    if (text !== raw) await writeWhole($, path, text);
+    if (text !== raw) await writeWhole($, proc?.pid ?? 0, path, text);
     if (!Object.keys(edits).length) return;
     // an edit leaves the key only once a pass reads it back from the file: a session that wrote an older file over it
     // loses nothing, the next pass folds it again. one no row takes (an unknown row, a text over the cap) leaves at
