@@ -181,6 +181,7 @@ file he names.
 - give the context needed to choose fast, and no more.
 - **a choice prints as `a) … b) …`**, each option with its consequence in his words, ≤15 words; never
   an abstract axis («keep the linear scale or change the truth of the scale» cost an «eli5» turn).
+- **an orbit ask opens with the choice in his words**, the default option first; his «i don't understand your oN» came 4 times on 2026-11-19 (the day's retro, his o2 yes).
 
 ### 🔭 blocked on something external
 - **when**: only while a review bot, ci, a background job or another agent genuinely holds the

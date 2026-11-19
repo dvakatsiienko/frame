@@ -1,5 +1,5 @@
 ---
-dies-when: the 2026-11-18 remeasure lands its verdict (kept, partly reverted or reverted) in FRM-491 and the card's new rules are proven or rolled back
+dies-when: clio:siesta stops pointing here for its pre-merge-siesta remeasure, or that trial takes its verdict
 ---
 
 # wishkeeper cadence — the baseline, and the remeasure a week after the change
