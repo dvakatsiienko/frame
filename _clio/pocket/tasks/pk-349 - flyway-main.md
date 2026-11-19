@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T14:09:00Z'
+updated_date: '2026-11-19T14:23:00Z'
 labels:
   - s
   - clio-main
@@ -20,7 +20,7 @@ ordinal: 1000
 - [ ] #2 f46 TS LSP check each siesta until the halt: are both codies calling LSP, from their transcripts
 - [ ] #3 f47 wing 1 summon: tell it the stray runs Opus 5.5 today and takes harder chores (his 14:5x)
 - [ ] #4 f49 TS LSP plan (W1224–W1228): retros in, weigh usefulness, then why underused and the fleet-wide wiring
-- [ ] #5 f50 crow:unvetted counts unvetted plan-critique findings too, so the Stop hook catches a fold with no verdict (crow 16:04) → stray chore after the names fix
+- [ ] #5 f51 crow:unvetted counts unvetted plan-critique findings, so the Stop hook catches them (stray chore)
 - [ ] #6 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
 - [ ] #7 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
 - [ ] #8 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
@@ -1171,4 +1171,6 @@ PK-349:W1227 (2026-11-19 15:29, dima): 3. then weigh its usefulness
 PK-349:W1228 (2026-11-19 15:29, dima): 4. if it is useful, learn why it is being underused, and think how to properly wire it into the fleet, so everyone uses it, even you.
 PK-349:W1229 (2026-11-19 15:29, dima): /clio:lowtide-peek-lanes cli. → answered 15:32
 PK-349:W1230 (2026-11-19 15:29, dima): we solved it almost fully, but i saw a few chunks there. i want to weigh them for a worth-it check, sign all unsigned and order them into an efficient solving queue. → answered 15:32, all four already signed; order his o1 tick
+
+done 2026-11-19 16:23: f50 crow:unvetted counts unvetted plan-critique findings too, so the Stop hook catches a fold with no verdict (crow 16:04) → stray chore after the names fix
 <!-- SECTION:NOTES:END -->

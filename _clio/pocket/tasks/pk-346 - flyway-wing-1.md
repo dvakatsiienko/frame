@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-19T14:15:00Z'
+updated_date: '2026-11-19T14:17:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,17 +17,17 @@ ordinal: 1001
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 f4 agent-desktop test drive beside computer-use (o106), Accessibility by his hand
-- [ ] #2 f5 FRM-407 fresh-eyes: its trial round on speak v2's first screen pr, then the verdict
-- [ ] #3 f6 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed
-- [ ] #4 f8 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop
-- [ ] #5 f10 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks
-- [ ] #6 f25 speak v2 with dima: bytes move → mess hunt (FRM-629:W26–W27) → wisps → design; FRM-497 rides it
-- [ ] #7 f27 refreshes on his word: refresh-readaloud → refresh fable 5.2 → refresh designer, then speak v2 (his plan)
-- [ ] #8 f38 fable 5.2 research with dima: refresh-crew-coordinator, then the model cards
-- [ ] #9 f28 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-20
-- [ ] #10 f30 📅 strays lane verdict (FRM-586): model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-20
-- [ ] #11 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
-- [ ] #12 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #2 f6 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed
+- [ ] #3 f8 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop
+- [ ] #4 f25 speak v2 with dima: bytes move → mess hunt (FRM-629:W26–W27) → wisps → design; FRM-497 rides it
+- [ ] #5 f27 refreshes on his word: refresh-readaloud → refresh fable 5.2 → refresh designer, then speak v2 (his plan)
+- [ ] #6 f38 fable 5.2 research with dima: refresh-crew-coordinator, then the model cards
+- [ ] #7 f40 ⏳ FRM-407 fresh-eyes: its trial round on speak v2's first screen pr, then the verdict — waits for: speak v2's first screen pr
+- [ ] #8 f28 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-20
+- [ ] #9 f30 📅 strays lane verdict (FRM-586): model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-20
+- [ ] #10 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
+- [ ] #11 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #12 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-07
 - [ ] #13 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
 - [ ] #14 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
 - [ ] #15 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
@@ -715,4 +715,8 @@ done 2026-11-19 16:15: f34 🦥 PK-362 steamac vm disk 256 → 192 gb — later:
 done 2026-11-19 16:15: f37 ⏳ FRM-555 fix 3 (live idle cpu): the mods codie's measure, then chunk or drop — waits for: FRM-555 (FRM-555 Done)
 
 done 2026-11-19 16:15: f19 wishkeeper-cache: one big measure over the trial's whole 5 min week, then the 1 h arm
+
+done 2026-11-19 16:17: f10 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks
+
+done 2026-11-19 16:17: f5 FRM-407 fresh-eyes: its trial round on speak v2's first screen pr, then the verdict (FRM-407 Todo)
 <!-- SECTION:NOTES:END -->
