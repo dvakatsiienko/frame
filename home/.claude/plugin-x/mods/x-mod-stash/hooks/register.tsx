@@ -30,12 +30,28 @@ import {
     takeJoins,
 } from './joins.ts';
 import {
-    bumpHotGen,
+    MINUTE_MS,
+    PACE,
+    PING,
+    POLL_MS,
+    type ViewDoors,
+    WAKE_SLACK_MS,
+    armHot,
+    followHot,
     holdAfk,
     holdHot,
     holdWaker,
-    isAfkWarm,
+    hotLate,
+    isPaceOn,
+    isShiftOn,
     isWindowSpent,
+    pacePoll,
+    paceStep,
+    prepareTurn,
+    pressBegin,
+    pressEnd,
+    pressHot,
+    seatDefaults,
     setAfk,
     setHot,
     setWaker,
@@ -114,19 +130,7 @@ import {
     takeOverridePress,
     writeOverrideOff,
 } from './override.ts';
-import {
-    PACE_KEYS,
-    PACE_NEW_WINDOW,
-    PACE_SETTINGS,
-    type PaceNumbers,
-    type PaceRung,
-    isPaceHeld,
-    isPaceLineDue,
-    isSameWindow,
-    paceLine,
-    paceOf,
-    paceRung,
-} from './pace.ts';
+import { PACE_KEYS, PACE_SETTINGS, paceOf } from './pace.ts';
 import {
     type BackgroundTask,
     LEDGER_SENDS,
@@ -255,7 +259,6 @@ import {
     endStop,
     endUserTurn,
     idleTurn,
-    isTurnBusy,
     markActive,
     markNudged,
     markWork,
@@ -274,7 +277,6 @@ import {
     freshMeter,
     measureUsage,
     meterNow,
-    paceMeterOf,
     setCompactAt,
 } from './usage.ts';
 import {
@@ -330,7 +332,6 @@ const DIMA_AT = 'dima-at';
 const AWAY_NOTE =
     'dima is afk: nothing waits on him. take reversible steps and log them, pick every pending ask and log its undo, raise one in orbit only when blocked, on his design call, or irreversible. send no ping.';
 const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';
-const POLL_MS = 4000;
 // 5 min past its last event, a session's bookkeeping jobs tick every 30 s; what dima pressed, typed or ticked, and the
 // wakes, keep 4 s (FRM-555, dima o58, o59)
 const IDLE_AFTER_MS = 5 * 60_000;
@@ -344,9 +345,6 @@ const OLD_BOARD = 'fleet-board';
 const SETTINGS_PANE = 'stash-settings';
 // dima at the prompt, typing into a background job, on his phone or the web
 const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
-const MINUTE_MS = 60_000;
-// the prompt cache's own lifetime
-const CACHE_MS = 60 * MINUTE_MS;
 // a reload keeps `$.state` and resets the module: what must outlive a mod save lives there (FRM-320)
 // what the band and the board draw: renders read it, and a write redraws them, no invalidate
 const VIEW = { key: 'view', plugin: 'x-mod-stash' } as const;
@@ -358,16 +356,12 @@ const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
 const ENDED = { key: 'ended', plugin: 'x-mod-stash' } as const;
 // a 📄 line's HH:MM — the same shape reply-check.py reads
 const STAMP = /(📄[^\n]*?\b)(\d{1,2}:\d{2})\b/g;
-const PING =
-    'x-mod-stash keep-hot ping: answer with one character, nothing else.';
 const CAP = { key: 'cap', plugin: 'x-mod-stash' } as const;
 // the 5h cap ends the turn as an API error with this text; the weekly cap and spent credits read otherwise
 // (8 rows in the transcripts, 2026-10-08)
 const CAPPED = /hit your session limit/i;
 const RESUME =
     'x-mod-stash waker: the 5h window reset. pick up where you stopped.';
-// a few seconds past the reset, so the window has turned before the resume goes out
-const WAKE_SLACK_MS = 5000;
 // the last few error-ended turns as the hook saw them, so the cap's real text is measured, never inferred (riders 11-02)
 const CAP_SEEN = 'cap-seen';
 const CAP_SEEN_MAX = 5;
@@ -532,8 +526,6 @@ let isAutoWindOn = true;
 let wait: string | undefined;
 let isPolling = false;
 let isPaced = false;
-// the window this process already sent its last ping in: a refused one never retries every poll
-let lateWindow: number | undefined;
 // the main thread's tool calls this turn, and whether its one phases nudge went out
 // a field never redraws because of its own typing: the surface runs a keystroke ahead of this module, so any changed
 // `value` — the stored steer, or even the latest text this module heard — reset the field and threw the caret (dima,
@@ -1761,11 +1753,11 @@ async function quietSilentMembers($: EngineInterface, now: number) {
                 $,
                 `🚨 quiet comms: ${words}; check it, and break the hang if it is one.`,
                 false,
-                () => prepareTurn($),
+                () => prepareTurn(viewDoors($)),
             ).catch(() => undefined);
             if (!r || r.drop) {
                 await idleTurn($);
-                await armHot($);
+                await armHot($, viewDoors($));
                 continue;
             }
             await $.store.set(
@@ -1919,11 +1911,11 @@ async function wakeForParkedLanes($: EngineInterface) {
             $,
             `🅿️ parked lane: ${nudge}; its members sat idle ${minutes} min.`,
             false,
-            () => prepareTurn($),
+            () => prepareTurn(viewDoors($)),
         ).catch(() => undefined);
         if (!r || r.drop) {
             await idleTurn($);
-            await armHot($);
+            await armHot($, viewDoors($));
             continue;
         }
         await $.store.set(key, at);
@@ -2634,7 +2626,7 @@ async function wakeForMarks($: EngineInterface) {
             $,
             joinText(due, tickSentence(await orbitTexts($), due.length)),
             false,
-            () => prepareTurn($),
+            () => prepareTurn(viewDoors($)),
         ).catch(() => undefined);
 }
 
@@ -4016,13 +4008,13 @@ async function countWords($: EngineInterface, hits: Record<string, number>) {
 }
 
 async function load($: EngineInterface) {
-    if (bandPresses) return;
+    if (warm.pressing) return;
     await readOverrideOn($).catch(() => undefined);
     const flag = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
     const wasAfk = warm.afk;
     holdAfk(flag?.on === true);
     // afk flipped from any board re-arms keep-hot here, since afk warms a remote-controlled session
-    if (warm.afk !== wasAfk) await armHot($);
+    if (warm.afk !== wasAfk) await armHot($, viewDoors($));
     const waker = (await $.store.get(WAKER_KEY)) as
         | { on?: boolean }
         | undefined;
@@ -4131,7 +4123,7 @@ async function takeBandPresses($: EngineInterface) {
         if (p.button === 'wind' && p.sid === sid) await setWind($, sid, p.on);
         if (p.button === 'hot' && p.sid === sid) {
             await setHot($, p.on);
-            await armHot($);
+            await armHot($, viewDoors($));
         }
         if (p.button !== 'waker' && p.button !== 'afk') continue;
         const key = p.button === 'waker' ? WAKER_KEY : AFK_KEY;
@@ -4742,19 +4734,19 @@ async function releaseHeldSteers(
     const steers = await takeHeld($, keys, isDue);
     if (!steers.length) return;
     // through selfSubmit, so the released turn reads busy: a keep-hot ping or a wake never lands inside it
-    await selfSubmit($, heldText(steers), false, () => prepareTurn($)).catch(
-        async (err: unknown) => {
-            // a refused submit hands the list back ahead of what landed since, flagged, so the next release takes it
-            await quietLocked(async () => {
-                const now = await heldStore($, keys);
-                await saveHeld($, keys, {
-                    isCompacted: true,
-                    messages: [...steers, ...now.messages],
-                });
+    await selfSubmit($, heldText(steers), false, () =>
+        prepareTurn(viewDoors($)),
+    ).catch(async (err: unknown) => {
+        // a refused submit hands the list back ahead of what landed since, flagged, so the next release takes it
+        await quietLocked(async () => {
+            const now = await heldStore($, keys);
+            await saveHeld($, keys, {
+                isCompacted: true,
+                messages: [...steers, ...now.messages],
             });
-            throw err;
-        },
-    );
+        });
+        throw err;
+    });
     await tellDelivered($, steers);
     const quiet = steers.filter((m) => m.isQuiet).map(quietPingOf);
     if (quiet.length)
@@ -5014,226 +5006,15 @@ async function armWake($: EngineInterface) {
             | undefined;
         if (waker?.on !== true || !(await partsShown($))('stash.waker')) return;
         $.ui.log('x-mod-stash waker: resumed the session after the 5h reset');
-        await selfSubmit($, RESUME, false, () => prepareTurn($));
+        await selfSubmit($, RESUME, false, () => prepareTurn(viewDoors($)));
     });
 }
 
-// the pace watch (FRM-500): `pace:<id>` not holding `{ off: true }` switches it on for that session, its own stash reads the meter on the idle poll
-// and tells the session only when the 5h window changes its rung, no model between
-const PACE = 'pace:';
-const PACE_RUNG = 'pace-rung:';
-const PACE_CLAIM = 'pace-claim:';
-const PACE_WAKER = 'pace-waker:';
-const PACE_CLAIM_MS = 30_000;
 const WIND_STALE_MS = 30 * MINUTE_MS;
-const PACE_LATE_MS = 5 * 60 * MINUTE_MS;
-const PACE_ME = `${Math.random()}`;
-// off is a written value, so the coordinator's default arms only a key never written; `since` marks a shift's start, the one
-// that also moves ⏰
-const isPaceOn = (key: unknown) =>
-    Boolean(key) && (key as { off?: boolean }).off !== true;
-// past a reset the waker's own resume fires first, so a shift's expiry never turns ⏰ off under it
-const PACE_EXPIRY_MS = WAKE_SLACK_MS + POLL_MS;
-// a line on its way: a submit may resolve only at its turn's end, and its rung moves after that
-let isPaceSending = false;
-type PaceKept = { resetsAt: number; rung: PaceRung };
-let paceUnsaved: { stored: PaceKept | undefined } | undefined;
 
-async function paceNumbers($: EngineInterface) {
-    const out = {} as PaceNumbers;
-    for (const k of PACE_KEYS) out[k] = await readNumber($, k);
-    return out;
-}
-
-// the line went out: its rung stands, or the reset's line clears it
-async function paceSent(
-    $: EngineInterface,
-    sid: string,
-    stored: PaceKept | undefined,
-) {
-    try {
-        if (stored) await $.store.set(PACE_RUNG + sid, stored);
-        else await $.store.delete(PACE_RUNG + sid);
-        paceUnsaved = undefined;
-    } catch {
-        // the line went out: a store that refuses the rung must not buy a turn per poll
-        paceUnsaved = { stored };
-    }
-}
-
-// the line this poll owes, none when the rung stands; the stored rung of another window counts as none
-async function paceDue($: EngineInterface, sid: string) {
-    if (!isPaceOn(await $.store.get(PACE + sid))) return undefined;
-    if (!(await partsShown($))('stash.pace-watch')) return undefined;
-    let kept = paceUnsaved
-        ? paceUnsaved.stored
-        : ((await $.store.get(PACE_RUNG + sid)) as PaceKept | undefined);
-    // the clock says a window ended, never a meter write: a frozen file is what a stopped fleet leaves
-    const clockNow = await $.clock.now();
-    if (kept && clockNow >= kept.resetsAt) {
-        // a watch off for a whole window has no reset to tell of
-        if (isPaceHeld(kept.rung) && clockNow - kept.resetsAt < PACE_LATE_MS)
-            return { line: PACE_NEW_WINDOW, stored: undefined };
-        await $.store.delete(PACE_RUNG + sid);
-        kept = undefined;
-    }
-    const meter = await paceMeterOf($);
-    if (!meter) return undefined;
-    const isSame = kept && isSameWindow(kept.resetsAt, meter.resetsAt);
-    const numbers = await paceNumbers($);
-    const rung = paceRung(meter, isSame ? kept?.rung : undefined, numbers);
-    // a held rung waits for the clock's reset, whatever a meter a few seconds off says
-    const isPastReset = meter.resetsAt <= meter.now;
-    if (kept && (!isSame || (!rung && !(isPastReset && isPaceHeld(kept.rung)))))
-        await $.store.delete(PACE_RUNG + sid);
-    if (!rung || rung === 'between') return undefined;
-    if (!isPaceLineDue(rung, isSame ? kept?.rung : undefined)) return undefined;
-    return {
-        line: paceLine(rung, meter, numbers),
-        stored: { resetsAt: meter.resetsAt, rung: rung as PaceRung },
-    };
-}
-
-// one poller's line: a claim younger than PACE_CLAIM_MS is another process's, and a write it lost reads back as theirs
-async function paceClaim($: EngineInterface, sid: string) {
-    const now = await $.clock.now();
-    const was = (await $.store.get(PACE_CLAIM + sid)) as
-        | { at: number; by: string }
-        | undefined;
-    if (was && was.by !== PACE_ME && now - was.at < PACE_CLAIM_MS) return false;
-    await $.store.set(PACE_CLAIM + sid, { at: now, by: PACE_ME });
-    const held = (await $.store.get(PACE_CLAIM + sid)) as
-        | { by: string }
-        | undefined;
-    return held?.by === PACE_ME;
-}
-
-// idle: the line is the turn; the rung moves only once it entered, so a refused one is sent again by the next poll
-async function paceTick($: EngineInterface) {
-    const sid = await currentId($);
-    if (!sid || isPaceSending || (await isTurnBusy($))) return;
-    const due = await paceDue($, sid);
-    if (!due || !(await paceClaim($, sid))) return;
-    isPaceSending = true;
-    try {
-        const r = await selfSubmit($, due.line, false, () =>
-            prepareTurn($),
-        ).catch(() => undefined);
-        if (r && !r.drop) await paceSent($, sid, due.stored);
-        else {
-            await idleTurn($);
-            await armHot($);
-        }
-        await $.store.delete(PACE_CLAIM + sid);
-    } finally {
-        isPaceSending = false;
-    }
-}
-
-// busy: the line joins the running step
-async function paceStep($: EngineInterface) {
-    const sid = await currentId($);
-    const due = sid && !isPaceSending ? await paceDue($, sid) : undefined;
-    if (!sid || !due || !(await paceClaim($, sid))) return undefined;
-    await paceSent($, sid, due.stored);
-    await $.store.delete(PACE_CLAIM + sid);
-    return due.line;
-}
-
-// a hidden part is off whole, and its expiry runs only while shown, so a `since` it left behind means no shift
-async function isShiftOn(
-    $: EngineInterface,
-    key: { since?: number } | undefined,
-) {
-    return (
-        key?.since !== undefined && (await partsShown($))('stash.pace-watch')
-    );
-}
-
-// the ⏰ waker follows the key: on at the start with what it found kept, put back at the end or when the start's window
-// reset; a state dima changed since is his
-async function paceWaker($: EngineInterface) {
-    const sid = await currentId($);
-    if (!sid) return;
-    const key = (await $.store.get(PACE + sid)) as
-        | { off?: boolean; since?: number; was?: unknown }
-        | undefined;
-    const isWatched = await isShiftOn($, key);
-    const note = (await $.store.get(PACE_WAKER + sid)) as
-        | { since?: number; until?: number; wasOn: boolean }
-        | undefined;
-    const waker = (await $.store.get(WAKER_KEY)) as
-        | { on?: boolean }
-        | undefined;
-    const now = await $.clock.now();
-    if (isWatched) {
-        // the window a start expires with: only one still ahead, so an old file never ends a shift it just began
-        const ahead = (await paceMeterOf($).catch(() => undefined))?.resetsAt;
-        const until = note?.until ?? (ahead && ahead > now ? ahead : undefined);
-        if (!note) {
-            const wasOn = waker?.on === true;
-            await $.store.set(PACE_WAKER + sid, {
-                since: key?.since,
-                wasOn,
-                ...(until ? { until } : {}),
-            });
-            if (!wasOn) await writeWaker($, true);
-            return;
-        }
-        // a second start means ⏰ on, he may have forgotten it (W1958); the end still restores what the first one found
-        if (key?.since !== note.since) {
-            await $.store.set(PACE_WAKER + sid, { ...note, since: key?.since });
-            if (waker?.on !== true) await writeWaker($, true);
-            // a held afk puts its copy back at its end
-            const away = (await $.store.get(AFK_KEY)) as
-                | { on?: boolean }
-                | undefined;
-            if (away?.on)
-                await $.store.set(AFK_KEY, { ...away, wakerBefore: true });
-            return;
-        }
-        if (until === undefined) return;
-        if (note.until === undefined)
-            await $.store.set(PACE_WAKER + sid, { ...note, until });
-        if (now <= until + PACE_EXPIRY_MS) return;
-        // a shift ends where it found the key; a seat's default fills a key it found empty
-        if (key?.was) await $.store.set(PACE + sid, key.was);
-        else await $.store.delete(PACE + sid);
-        await seatDefaults($).catch(() => undefined);
-    }
-    if (!note) return;
-    if (!note.wasOn) {
-        // a held afk puts this back at its end, so its copy is the one to change
-        const away = (await $.store.get(AFK_KEY)) as
-            | { on?: boolean }
-            | undefined;
-        if (away?.on)
-            await $.store.set(AFK_KEY, { ...away, wakerBefore: false });
-        else await writeWaker($, false);
-    }
-    await $.store.delete(PACE_WAKER + sid);
-}
-
-// a coordinator seat that wrote no pace key while the all-sessions part was off: the poll arms it once the part is back
-let isPaceSeatHeld = false;
-// every 4 s in every session, so one with no watch stops at two reads
-async function pacePoll($: EngineInterface) {
-    const sid = await currentId($);
-    if (sid && isPaceSeatHeld && (await partsShown($))('stash.pace-watch')) {
-        isPaceSeatHeld = false;
-        if ((await $.store.get(PACE + sid)) === undefined)
-            await $.store.set(PACE + sid, { on: true });
-    }
-    if (
-        !sid ||
-        !(
-            (await $.store.get(PACE + sid)) ||
-            (await $.store.get(PACE_WAKER + sid))
-        )
-    )
-        return;
-    await paceWaker($);
-    await paceTick($);
+// the view's two doors, built per call for a module that must reach up: the one upward door (clio, 19:27)
+function viewDoors($: EngineInterface): ViewDoors {
+    return { load: () => load($), publish: () => publish($) };
 }
 
 async function pressPace($: EngineInterface) {
@@ -5258,23 +5039,6 @@ async function pressPace($: EngineInterface) {
     await load($);
     await publish($);
     $.ui.invalidate('ui.render');
-}
-
-// a seat starts on: 🔋 the coordinator's, 🔥 every seated member's; a written key, off included, stands
-async function seatDefaults($: EngineInterface) {
-    const sid = await currentId($);
-    if (!sid) return;
-    const now = await $.clock.now();
-    const role = (await selfLive($))?.role;
-    if (role === MAIN_ROLE && (await $.store.get(PACE + sid)) === undefined) {
-        if ((await partsShown($))('stash.pace-watch'))
-            await $.store.set(PACE + sid, { on: true });
-        else isPaceSeatHeld = true;
-    }
-    if (isSeated(role) && (await $.store.get(HOT + sid)) === undefined) {
-        await $.store.set(HOT + sid, { since: now });
-        await followHot($);
-    }
 }
 
 let published = '';
@@ -5360,8 +5124,6 @@ async function drawBand($: EngineInterface, patch: Partial<StashView>) {
         );
 }
 
-// a poll during a press would read the store before its write lands and undo it, so load and followHot sit it out
-let bandPresses = 0;
 async function pressSwitch(
     $: EngineInterface,
     name: string,
@@ -5369,7 +5131,7 @@ async function pressSwitch(
     write: () => Promise<unknown>,
     undo: () => Promise<unknown>,
 ) {
-    bandPresses++;
+    pressBegin();
     try {
         await drawBand($, patch);
         await write();
@@ -5377,85 +5139,9 @@ async function pressSwitch(
         await undo();
         await $.ui.log(`x-mod-stash: ${name} was not kept: ${errorText(err)}`);
     } finally {
-        bandPresses--;
+        pressEnd();
     }
     await publish($);
-}
-
-// the wiring's share of every turn start: a ping armed before it never fires, the poll's state is read fresh, and the
-// turn keeps whether dima is afk
-async function prepareTurn($: EngineInterface) {
-    bumpHotGen();
-    await load($);
-    return warm.afk;
-}
-
-async function armHot($: EngineInterface) {
-    const mine = bumpHotGen();
-    if (turn.isBusy) return;
-    const now = await $.clock.now();
-    const since =
-        warm.hot?.since ??
-        ((await isAfkWarm($)) ? (turn.endedAt ?? now) : undefined);
-    if (since === undefined) return;
-    const everyMs = (await readNumber($, 'hot-minutes')) * MINUTE_MS;
-    $.clock.after(Math.max(0, since + everyMs - now), async () => {
-        // a chip may have deleted the key since the last poll: a change re-arms, so this timer goes stale
-        await followHot($).catch(() => undefined);
-        if (turn.isBusy || mine !== warm.hotGen) return;
-        if (!warm.hot && !(await isAfkWarm($))) return;
-        if (!(await partsShown($))('stash.hot')) return;
-        if (await isWindowSpent($)) return;
-        $.ui.log('x-mod-stash keep-hot: pinged the idle session');
-        await selfSubmit($, PING, true, () => prepareTurn($));
-    });
-}
-
-// a cache that would die before the reset gets one last ping; that ping's own turn puts it past the reset, so it fires once
-async function hotLate($: EngineInterface) {
-    if (!warm.hot || turn.isBusy || turn.endedAt === undefined) return;
-    if (!(await partsShown($))('stash.hot')) return;
-    const m = await paceMeterOf($);
-    if (!m || m.resetsAt <= m.now || m.used >= 100) return;
-    const lateMs = (await readNumber($, 'hot-late')) * MINUTE_MS;
-    if (m.resetsAt - m.now > lateMs) return;
-    if (turn.endedAt + CACHE_MS >= m.resetsAt) return;
-    if (lateWindow === m.resetsAt) return;
-    lateWindow = m.resetsAt;
-    $.ui.log('x-mod-stash keep-hot: the last ping before the reset');
-    const r = await selfSubmit($, PING, true, () => prepareTurn($)).catch(
-        () => undefined,
-    );
-    if (r && !r.drop) return;
-    await idleTurn($);
-    await armHot($);
-}
-
-// 🔥 follows its store key idle or not: a 🌌 sessions row's chip writes it from another session, so the poll takes the
-// change and arms or cancels the ping with no turn (FRM-499); it only reads, since a write back could undo a press
-// made between its read and its write
-async function followHot($: EngineInterface) {
-    if (bandPresses) return;
-    const sid = await currentId($);
-    if (!sid) return;
-    const stored = hotOf(await $.store.get(HOT + sid));
-    if (Boolean(stored) === Boolean(warm.hot)) return;
-    const now = await $.clock.now();
-    holdHot(stored && { since: turn.isBusy ? now : (turn.endedAt ?? now) });
-    await armHot($);
-    await publish($);
-}
-
-// a row's 🔥 chip: writes or deletes that session's key; its own stash arms the ping at its next poll
-async function pressHot($: EngineInterface, sid: string) {
-    await $.store.set(
-        HOT + sid,
-        hotOf(await $.store.get(HOT + sid))
-            ? { off: true }
-            : { since: await $.clock.now() },
-    );
-    if (sid === (await currentId($))) await followHot($);
-    await load($);
 }
 
 // live sessions from the registry, each with what its own stash wrote
@@ -5946,7 +5632,7 @@ export const register: Register = (on) => {
         await startIdentity($, e.cwd);
         await seedTurnNo($, identity.selfId).catch(() => undefined);
         await refreshThreads($);
-        await seatDefaults($).catch(() => undefined);
+        await seatDefaults($, viewDoors($)).catch(() => undefined);
         await syncWindStore($).catch(() => undefined);
         await armHeldTells($).catch(() => undefined);
         const panes = await $.ui.panes().catch(() => undefined);
@@ -6006,7 +5692,7 @@ export const register: Register = (on) => {
         // a mid-turn reload's busy flag is back, so it never submits into a running turn
         armRelease($, COMPACT_SETTLE_MS);
         await load($);
-        await armHot($);
+        await armHot($, viewDoors($));
         await armWake($);
         await $.command
             .register({
@@ -6057,7 +5743,7 @@ export const register: Register = (on) => {
                     await syncWindStore($).catch(() => undefined);
                     // an open board's view carries the tick's clock, so its «ago» times move on their own
                     await load($);
-                    await followHot($).catch(() => undefined);
+                    await followHot($, viewDoors($)).catch(() => undefined);
                     if (isBookkept) await freshMeter($).catch(() => undefined);
                     await absorbMarks($).catch(() => undefined);
                     await wakeForMarks($).catch(() => undefined);
@@ -6067,8 +5753,8 @@ export const register: Register = (on) => {
                     await quietIdle($).catch(() => undefined);
                     if (isBookkept) await quietBooks($).catch(() => undefined);
                     await wakeForParkedLanes($).catch(() => undefined);
-                    await pacePoll($).catch(() => undefined);
-                    await hotLate($).catch(() => undefined);
+                    await pacePoll($, viewDoors($)).catch(() => undefined);
+                    await hotLate($, viewDoors($)).catch(() => undefined);
                     await relayCrowWake($).catch(() => undefined);
                     if (isBookkept) {
                         await followCodies($).catch(() => undefined);
@@ -6135,7 +5821,9 @@ export const register: Register = (on) => {
             await $.state.set(MOBILE, false).catch(() => undefined);
         // prompt.submit fires when a prompt is queued (engine.md): one queued behind a running turn is no turn of its own yet
         const isQueued = turn.isBusy;
-        await startTurn($, isUser, e.text === PING, () => prepareTurn($));
+        await startTurn($, isUser, e.text === PING, () =>
+            prepareTurn(viewDoors($)),
+        );
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
         const at = new Date(await $.clock.now());
         const offset = -at.getTimezoneOffset() / 60;
@@ -6410,7 +6098,7 @@ export const register: Register = (on) => {
         armRelease($, WIND_DELAY_MS);
         const endedAt = await $.clock.now();
         await endStop($, endedAt);
-        await seatDefaults($).catch(() => undefined);
+        await seatDefaults($, viewDoors($)).catch(() => undefined);
         // a stop on the 5h cap waits for the reset; any other end clears it. the cap ends the turn with an empty answer,
         // so an error end reads the transcript's last entry for the cap text and the reset it names (FRM-488)
         const read =
@@ -6447,7 +6135,7 @@ export const register: Register = (on) => {
                 ...warm.hot,
                 since: turn.endedAt ?? (await $.clock.now()),
             });
-        await armHot($);
+        await armHot($, viewDoors($));
         await load($);
         return r;
     });
@@ -8444,7 +8132,11 @@ export const register: Register = (on) => {
                                                 <Button
                                                     key={`hot:${m.sid}`}
                                                     onPress={() =>
-                                                        pressHot($, m.sid)
+                                                        pressHot(
+                                                            $,
+                                                            m.sid,
+                                                            viewDoors($),
+                                                        )
                                                     }
                                                     {...(m.isHot
                                                         ? {
@@ -8748,7 +8440,7 @@ export const register: Register = (on) => {
         if (left) await forget($, left).catch(() => undefined);
         await saveOrbit($, EMPTY_ORBIT, () => keepShelf($));
         await load($);
-        await seatDefaults($).catch(() => undefined);
+        await seatDefaults($, viewDoors($)).catch(() => undefined);
         return r;
     });
 
@@ -9035,7 +8727,7 @@ export const register: Register = (on) => {
                                 holdHot(hotWas);
                             },
                         );
-                        await armHot($);
+                        await armHot($, viewDoors($));
                     };
                     const tip = (
                         key: string,
