@@ -23,7 +23,12 @@ import {
 import { createListDrag } from './drag-view.js';
 import { closeAsks, closeWords, leadPane, pillName, swallow } from './pills.js';
 import { tabDrops } from './tab-drops.js';
-import { SETTINGS_DIR, SETTINGS_FILE, tabStatusIn } from './tab-status.js';
+import {
+    SETTINGS_DIR,
+    SETTINGS_FILE,
+    nextChange,
+    tabStatusIn,
+} from './tab-status.js';
 
 // the agents list reads each session name and publishes it here (address → name); one reader, one naming rule
 const NAMES_KEY = 'x-herdr-agents.names';
@@ -114,7 +119,8 @@ export default class TabPills extends View {
                     cx.notify();
                 }
                 // a folder not made yet is asked again later, so its first write is still read
-                await watchFolder(`${home()}/${SETTINGS_DIR}`).catch(
+                await nextChange(
+                    () => watchFolder(`${home()}/${SETTINGS_DIR}`),
                     () =>
                         new Promise((done) =>
                             cx.timer.after(5000, () => done(null)),
