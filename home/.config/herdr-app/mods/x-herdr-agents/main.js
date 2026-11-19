@@ -704,7 +704,9 @@ export default class Agents extends View {
                 .text_color(t.dim)
                 .cursor_pointer()
                 .hover((s) => s.bg(t.hover).text_color(t.foreground))
-                .tooltip(isPinned ? 'Unpin' : 'Pin to the top')
+                .when(this.drag.isIdle(), (el) =>
+                    el.tooltip(isPinned ? 'Unpin' : 'Pin to the top'),
+                )
                 .on_click((_e, cx) => {
                     cx.stop_propagation();
                     this.setPins(
@@ -825,7 +827,9 @@ export default class Agents extends View {
                                 .when(both, (el) => el.min_w(0))
                                 .when(!both, (el) => el.min_w(0).max_w(200))
                                 .truncate()
-                                .tooltip(String(name))
+                                .when(this.drag.isIdle(), (el) =>
+                                    el.tooltip(String(name)),
+                                )
                                 .text_color(idle ? t.muted : t.foreground)
                                 .child(name),
                         ),

@@ -285,7 +285,7 @@ export default class Tabs extends View {
                     .flex_shrink(c.active ? 0 : 1)
                     .min_w(c.active ? 0 : 110)
                     .text_size(12.8)
-                    .tooltip(name)
+                    .when(this.drag.isIdle(), (el) => el.tooltip(name))
                     .border(1)
                     .border_color(c.active ? t.border : t.chrome)
                     .bg(c.active ? t.raised : t.chrome)

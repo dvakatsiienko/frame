@@ -190,7 +190,7 @@ export default class TabPills extends View {
                 .border_1()
                 .cursor_pointer()
                 .text_size(13)
-                .tooltip(name.full)
+                .when(this.drag.isIdle(), (el) => el.tooltip(name.full))
                 .when(c.active, (el) => el.bg(t.selected).border_color(t.input))
                 .when(!c.active, (el) =>
                     el.border_color(t.chrome).hover((s) => s.bg(t.hover)),
@@ -247,7 +247,9 @@ export default class TabPills extends View {
                         .cursor_pointer()
                         .opacity(isCloseShown ? 1 : 0)
                         .hover((s) => s.bg(t.hover).text_color(t.foreground))
-                        .tooltip('Close tab')
+                        .when(this.drag.isIdle(), (el) =>
+                            el.tooltip('Close tab'),
+                        )
                         // a hidden × takes no click: a press there selects the pill
                         .when(isCloseShown, (el) =>
                             el.on_click((_e, cx) => {

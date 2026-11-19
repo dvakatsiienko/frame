@@ -96,6 +96,8 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
                 ? ghost.left(0).right(0).h(size).top(at)
                 : ghost.top(0).bottom(0).w(size).left(at);
         },
+        /** no drag under way: a list shows its tooltips only then, so none pops up over a dragged row (dima, 16:39) */
+        isIdle: () => drag.state().name === 'idle',
 
         /**
          * one draggable element: `from` is its place among its kind's `places`, `targetFor` its place for a held item
