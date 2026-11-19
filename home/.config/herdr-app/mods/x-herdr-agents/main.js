@@ -593,33 +593,37 @@ export default class Agents extends View {
                 null,
             );
             const open = !this.folded.has(a.address);
-            return div()
-                .id(`fold-${a.address}`)
-                .h(18)
-                .px(3)
-                .gap(3)
-                .flex()
-                .items_center()
-                .rounded(4)
-                .text_size(11)
-                .text_color(open ? t.dim : (t[top] ?? t.dim))
-                .cursor_pointer()
-                .hover((s) => s.bg(t.hover).text_color(t.foreground))
-                .on_click((_e, cx) => {
-                    cx.stop_propagation();
-                    open
-                        ? this.folded.add(a.address)
-                        : this.folded.delete(a.address);
-                    cx.notify();
-                })
-                .child(
-                    svg(
-                        `mods/workspace-chrome/chevron-${open ? 'down' : 'right'}.svg`,
+            return (
+                div()
+                    .id(`fold-${a.address}`)
+                    .h(18)
+                    .px(3)
+                    .gap(3)
+                    .flex()
+                    .items_center()
+                    .rounded(4)
+                    .text_size(11)
+                    .text_color(open ? t.dim : (t[top] ?? t.dim))
+                    .cursor_pointer()
+                    .hover((s) => s.bg(t.hover).text_color(t.foreground))
+                    // the chip owns its press: the row under it never lifts
+                    .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
+                    .on_click((_e, cx) => {
+                        cx.stop_propagation();
+                        open
+                            ? this.folded.add(a.address)
+                            : this.folded.delete(a.address);
+                        cx.notify();
+                    })
+                    .child(
+                        svg(
+                            `mods/workspace-chrome/chevron-${open ? 'down' : 'right'}.svg`,
+                        )
+                            .size(11)
+                            .flex_none(),
                     )
-                        .size(11)
-                        .flex_none(),
-                )
-                .when(!open, (el) => el.child(String(subs.length)));
+                    .when(!open, (el) => el.child(String(subs.length)))
+            );
         };
 
         // A row reads "space \u00b7 detail": the detail is a tab someone named or the
