@@ -21,3 +21,10 @@ export function tabStatusIn(text) {
         return 'visible';
     }
 }
+
+/**
+ * the next change to the settings folder: a folder not made yet, or a watch herdr refuses, waits instead, so the read
+ * loop asks again later and never stops for the mod's life
+ * @param {() => Promise<unknown>} watch @param {() => Promise<unknown>} wait
+ */
+export const nextChange = (watch, wait) => watch().catch(() => wait());
