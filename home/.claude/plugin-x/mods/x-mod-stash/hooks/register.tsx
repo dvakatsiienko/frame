@@ -139,16 +139,30 @@ import {
     quietTag,
 } from './quiet.ts';
 import { roundKeyOf, roundOpen, roundTaken, roundsOf } from './rounds.ts';
-import { cleanTree, drawn } from './tree.ts';
 import {
-    bare,
-    basename,
-    errorText,
-    memberKey,
-    short,
-    text,
-    writeWhole,
-} from './util.ts';
+    ADVISER_ROLE,
+    MAIN_ROLE,
+    type ThreadRecord,
+    WING_ROLE,
+    clearedNow,
+    continueFromCleared,
+    currentId,
+    endIdentity,
+    identity,
+    isBgSelf,
+    isLaneOwner,
+    procNow,
+    refreshSelfId,
+    refreshThreads,
+    runnerOf,
+    selfLive,
+    selfRecord,
+    sessionName,
+    startIdentity,
+    threadRecords,
+} from './session-identity.ts';
+import { cleanTree, drawn } from './tree.ts';
+import { bare, errorText, memberKey, short, text, writeWhole } from './util.ts';
 import {
     WIND_ROWS,
     WIND_STORE_FILE,
@@ -599,15 +613,9 @@ const ORBIT_PROPS = {
     },
 } as const;
 
-let selfId: string | undefined;
-// the id a /clear left, until the next load reads the new one and writes the successor
-let clearedFrom: string | undefined;
-// the id the last /clear left, kept past the succ write: a message held under it is still this thread's
-let continuedFrom: string | undefined;
 // this session's own second wind as the store holds it, read at each load for the band's button
 let selfWind: StashWind['state'] | undefined;
 let isAutoWindOn = true;
-let label = 'session';
 let isUserTurn = false;
 // what this session's last reply waits on, its 🔭 line
 let wait: string | undefined;
@@ -1157,12 +1165,9 @@ let fiveHourResetsAt: number | undefined;
 // the 5h window's fill at the last measure: an error end this full is read as the cap when no entry names it (FRM-488)
 let fiveHourPercent: number | undefined;
 const CAP_FULL_PERCENT = 95;
-// the dir the session started in: its project, whose .claude settings the threshold input writes
-let projectDir: string | undefined;
 let cap: StashCap | undefined;
 let capGen = 0;
 let turnAfk: boolean | undefined;
-let proc: Proc | undefined;
 // since: the turn end the next ping counts from; only dima's click turns it off, a 5h reset never does
 let hot: { since: number } | undefined;
 let endedAt: number | undefined;
@@ -1346,7 +1351,7 @@ async function heldKeys($: EngineInterface): Promise<HeldKeys | undefined> {
     const sid = await currentId($);
     const own = sid ?? (name ? bare(name) : undefined);
     if (!own) return undefined;
-    const prior = clearedFrom ?? continuedFrom;
+    const prior = identity.clearedFrom ?? identity.continuedFrom;
     return {
         key: HELD + own,
         steers: STEER_HELD + (name ? bare(name) : own),
@@ -2468,7 +2473,7 @@ async function laneRoundLine(
         if (!after) return undefined;
         await writeWhole(
             $,
-            proc?.pid ?? 0,
+            identity.proc?.pid ?? 0,
             roundsPath(home),
             `${JSON.stringify(
                 { rounds: { ...rounds, [lane]: after }, v: 1 },
@@ -2756,7 +2761,7 @@ async function saveOrbit(
                     ...(a.isLocked ? { isLocked: true } : {}),
                     ...(isGuardGated(a.text) ? { isGated: true } : {}),
                 })),
-                label,
+                label: identity.label,
                 name: await sessionName($),
             } satisfies Entry)
             .catch(() => undefined);
@@ -4221,11 +4226,6 @@ async function takeLaneSteers($: EngineInterface, lanes: StashLane[]) {
     });
 }
 
-// main clio by her record, so a handoff's new clio keeps the lanes once summon records her, and no name grants them
-async function isLaneOwner($: EngineInterface) {
-    return (await selfLive($))?.role === MAIN_ROLE;
-}
-
 // a clio boot whose board has not printed: the skill loaded in the last hours, no board-length reply since
 async function isBootOpen($: EngineInterface) {
     if (!(await isLaneOwner($))) return false;
@@ -4243,16 +4243,6 @@ async function openPath($: EngineInterface, path: string) {
     await $.process
         .run(['open', path.replace(/^~(?=\/)/, home)])
         .catch(() => undefined);
-}
-
-type Proc = { pid: number; start: string };
-
-// the name ListAgents shows lives in the session registry, keyed by the claude process id
-// this session's process, resolved at its first read: a hook can run before a reloaded module's session.start, where
-// a module variable is still unset (clio's glide was refused after a /reload-plugins, 2026-10-12 20:05)
-async function procNow($: EngineInterface) {
-    proc ??= await procOf($).catch(() => undefined);
-    return proc;
 }
 
 // the Stop's two reds, once a turn (FRM-427): a wrap_up ask while an orbit ask is open (PK-227, one home for the next
@@ -4277,118 +4267,6 @@ async function stopRed($: EngineInterface, reply: string) {
     ].filter(Boolean);
     return reds.length ? reds.join('\n') : undefined;
 }
-
-// this session's own registry entry, `~/.claude/sessions/<pid>.json`
-async function selfEntry(
-    $: EngineInterface,
-): Promise<{ kind?: unknown; name?: unknown } | undefined> {
-    const pid = (await procNow($))?.pid;
-    if (!pid) return undefined;
-    const home = await $.env.get('HOME');
-    const raw = await $.fs
-        .read(`${home}/.claude/sessions/${pid}.json`)
-        .catch(() => undefined);
-    if (!raw) return undefined;
-    try {
-        return JSON.parse(raw);
-    } catch {
-        return undefined;
-    }
-}
-
-async function isBgSelf($: EngineInterface) {
-    return (await selfEntry($))?.kind === 'bg';
-}
-
-async function sessionName($: EngineInterface) {
-    const name = (await selfEntry($))?.name;
-    return typeof name === 'string' && name ? name : undefined;
-}
-
-// one rule, one reader (FRM-570 rules 8 and 9): x's thread records, `~/.claude/shelf/threads.json`, carry each thread's
-// role, lane and ticket by session id, so no reader here parses a name; no file or no record reads as unknown, and a file
-// that does not parse (a torn or hand-broken write) reads as the last list that did, so no role drops for one bad read
-type ThreadRecord = {
-    sessionId: string;
-    display?: string;
-    roleName?: string;
-    name?: string;
-    pid?: number;
-    role?: string;
-    lane?: string;
-    // the clio that dispatched a lane member, by x's owner label: clio-main or clio-wing-<n>
-    coordinator?: string;
-    wing?: number;
-    at?: number;
-    ticket?: string;
-};
-// the standing role ids x's roles.json names (FRM-579): one place here, so a rename of the fleet's roles is a table edit
-const MAIN_ROLE = 'coordinator';
-// a wing owns its lanes by its role's display, which a rename (a title) leaves alone
-const runnerOf = (t: ThreadRecord) => t.roleName ?? t.display ?? '';
-const WING_ROLE = 'wing';
-const ADVISER_ROLE = 'adviser';
-
-// a power read (a lane's owner, the glide door, a coordinator's message) reads the record x wrote, never a name; x alone
-// writes the store and x-mod-guard refuses every session's write to it
-async function selfLive($: EngineInterface) {
-    const sid = await currentId($);
-    return sid
-        ? (await threadRecords($)).find((t) => t.sessionId === sid)
-        : undefined;
-}
-const THREADS_KEPT = 'threads-kept';
-async function threadRecords($: EngineInterface): Promise<ThreadRecord[]> {
-    const raw = await $.fs
-        .read(`${await $.env.get('HOME')}/.claude/shelf/threads.json`)
-        .catch(() => undefined);
-    if (raw === undefined) return [];
-    try {
-        const { threads } = JSON.parse(raw) as { threads?: unknown };
-        if (!Array.isArray(threads)) throw new Error('no threads list');
-        // a board render reads this often: the store is written only when the list moved
-        if (
-            JSON.stringify(await $.store.get(THREADS_KEPT)) !==
-            JSON.stringify(threads)
-        )
-            await $.store.set(THREADS_KEPT, threads);
-        return threads as ThreadRecord[];
-    } catch {
-        const kept = await $.store.get(THREADS_KEPT);
-        return Array.isArray(kept) ? (kept as ThreadRecord[]) : [];
-    }
-}
-
-async function selfRecord($: EngineInterface) {
-    const sid = await currentId($);
-    return sid
-        ? (await threadRecords($)).find((t) => t.sessionId === sid)
-        : undefined;
-}
-
-// x rewrites the store from cc's registry; run from home so the shim runs main's x; a failed run keeps the last file
-async function refreshThreads($: EngineInterface) {
-    await $.process
-        .run(['x', 'thread', 'list', '--json'], {
-            cwd: await $.env.get('HOME'),
-            timeoutMs: 4000,
-        })
-        .catch(() => undefined);
-}
-
-// twin proc-of — a copy lives in x-mod-holds; the twins lint keeps them equal
-async function procOf($: EngineInterface): Promise<Proc | undefined> {
-    const r = await $.process.run([
-        'sh',
-        '-c',
-        'echo $PPID; ps -o lstart= -p $PPID',
-    ]);
-    const [pid, start] = r.stdout.split('\n').map((s) => s.trim());
-    return r.exitCode === 0 && pid && start
-        ? { pid: Number(pid), start }
-        : undefined;
-}
-// twin end
 
 // everything this mod keeps for one conversation: one store key per prefix, the session id after it, plus its pending
 // lane marks; a new per-session key joins this list, or a /clear leaves it behind for good (marks did, FRM-400)
@@ -4627,22 +4505,27 @@ async function load($: EngineInterface) {
     isWaker = waker?.on === true;
     shown = shownOf(await $.store.get(SHOWN).catch(() => undefined));
     // after a /clear the process goes on under a new id, and no session.start fires
-    selfId = await $.session.id().catch(() => selfId);
-    isPaced = isPaceOn(await $.store.get(PACE + (selfId ?? '')));
-    selfWind = selfId ? (await windOf($, selfId))?.state : undefined;
+    await refreshSelfId($);
+    isPaced = isPaceOn(await $.store.get(PACE + (identity.selfId ?? '')));
+    selfWind = identity.selfId
+        ? (await windOf($, identity.selfId))?.state
+        : undefined;
     isAutoWindOn = await isAutoWind($).catch(() => isAutoWindOn);
-    if (clearedFrom && selfId && selfId !== clearedFrom) {
+    const cleared = clearedNow();
+    if (cleared) {
         await $.store
-            .set(SUCC + clearedFrom, { at: await $.clock.now(), sid: selfId })
+            .set(SUCC + cleared, {
+                at: await $.clock.now(),
+                sid: identity.selfId,
+            })
             .catch(() => undefined);
-        continuedFrom = clearedFrom;
-        clearedFrom = undefined;
+        continueFromCleared();
     }
     // the band's 🔭 line: what this session's last reply said it waits on
-    const reply = selfId
-        ? ((await $.store.get(REPLY + selfId).catch(() => undefined)) as
-              | Partial<Reply>
-              | undefined)
+    const reply = identity.selfId
+        ? ((await $.store
+              .get(REPLY + identity.selfId)
+              .catch(() => undefined)) as Partial<Reply> | undefined)
         : undefined;
     wait = reply?.wait;
     await publish($);
@@ -4659,7 +4542,7 @@ function viewOf(isBoardOpen: boolean): StashView {
         isPaced,
         isSettingsOpen,
         isWaker,
-        selfId,
+        selfId: identity.selfId,
         shown,
         wait,
         wind: selfWind,
@@ -4806,7 +4689,7 @@ async function takeJoinLock($: EngineInterface, lock: string) {
     if ((await $.process.run(['mkdir', breaker])).exitCode !== 0) {
         if (!(await isJoinLockStale($, breaker))) return false;
         // moved aside under a name of its own: a second waiter's move then fails, never removing a fresh breaker
-        const aside = `${breaker}.${proc?.pid ?? 0}.${await $.clock.now()}`;
+        const aside = `${breaker}.${identity.proc?.pid ?? 0}.${await $.clock.now()}`;
         if ((await $.process.run(['mv', breaker, aside])).exitCode === 0)
             await $.process.run(['rmdir', aside]);
         return false;
@@ -4858,7 +4741,7 @@ async function handBackJoins($: EngineInterface, home: string, sid: string) {
             const kept = await $.fs.read(`${dir}/${sid}.jsonl`).catch(() => '');
             await writeWhole(
                 $,
-                proc?.pid ?? 0,
+                identity.proc?.pid ?? 0,
                 `${dir}/${sid}.jsonl`,
                 `${kept}${back.map((line) => `${line}\n`).join('')}`,
             );
@@ -4916,15 +4799,15 @@ async function writeState($: EngineInterface) {
                       )
                       .map((r) => r.id),
               },
-        label,
+        label: identity.label,
         model: typeof model === 'string' ? model : null,
         name: entry?.name ?? (await sessionName($)) ?? null,
-        pid: proc?.pid ?? null,
+        pid: identity.proc?.pid ?? null,
         plan: o.plan ? { lines: o.plan.lines } : null,
         rounds: null,
         sid,
         // the id this session continued from at a /clear, the fallback when a reader cannot match the pid
-        succ: clearedFrom ?? null,
+        succ: identity.clearedFrom ?? null,
         taken: typeof taken === 'number' ? taken : 0,
         v: 1,
         wait: reply?.wait ?? null,
@@ -4934,7 +4817,7 @@ async function writeState($: EngineInterface) {
     if (text === stateWritten) return;
     await writeWhole(
         $,
-        proc?.pid ?? 0,
+        identity.proc?.pid ?? 0,
         `${stateDir(home)}/${sid}.json`,
         `${JSON.stringify({ ...state, at: await $.clock.now() })}\n`,
     );
@@ -4963,7 +4846,7 @@ async function writeFleet($: EngineInterface) {
     if (text === fleetWritten) return;
     await writeWhole(
         $,
-        proc?.pid ?? 0,
+        identity.proc?.pid ?? 0,
         `${stateDir(home)}/${FLEET_FILE}`,
         `${text}\n`,
     );
@@ -6395,7 +6278,7 @@ async function setCompactAt(
               })
               .catch(() => undefined)
         : undefined;
-    const dir = launched ?? projectDir;
+    const dir = launched ?? identity.projectDir;
     if (!dir) return keep('no project dir for this session');
     // a repo top's own settings.local.json outranks every subdir's, its shared settings.json does not (probed
     // 2026-10-10): the top writes the shared file, so a subdir session (clio in ~/frame/_clio) keeps its own value
@@ -6563,11 +6446,6 @@ async function selfSubmit($: EngineInterface, text: string) {
         await keepTurn($);
         throw err;
     });
-}
-
-// this session's id as session.start read it, else asked now; undefined when the engine cannot say
-async function currentId($: EngineInterface) {
-    return selfId ?? (await $.session.id().catch(() => undefined));
 }
 
 // off is a written value, so a seat's default arms only a key never written
@@ -7104,7 +6982,7 @@ async function syncWindStore($: EngineInterface) {
     );
     const isOn = await partsShown($);
     const sid = await currentId($);
-    const others = windPidsOf(file).filter((pid) => pid !== proc?.pid);
+    const others = windPidsOf(file).filter((pid) => pid !== identity.proc?.pid);
     const gone =
         others.length && !(windPolls++ % WIND_PRUNE_POLLS)
             ? await deadPids($, others).catch(() => undefined)
@@ -7121,14 +6999,14 @@ async function syncWindStore($: EngineInterface) {
             edits,
             gone,
             self:
-                sid && proc
-                    ? { auto: await isAutoWind($), pid: proc.pid, sid }
+                sid && identity.proc
+                    ? { auto: await isAutoWind($), pid: identity.proc.pid, sid }
                     : undefined,
         }),
         null,
         2,
     )}\n`;
-    if (text !== raw) await writeWhole($, proc?.pid ?? 0, path, text);
+    if (text !== raw) await writeWhole($, identity.proc?.pid ?? 0, path, text);
     if (!Object.keys(edits).length) return;
     // an edit leaves the key only once a pass reads it back from the file: a session that wrote an older file over it
     // loses nothing, the next pass folds it again. one no row takes (an unknown row, a text over the cap) leaves at
@@ -7548,20 +7426,9 @@ async function orbitCall(
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
     on('session.start', async ($, e, next) => {
-        // the repo root, not the cwd: a cd in the shell must not rename the thread
-        selfId = await $.session.id();
-        await seedTurnNo($, selfId).catch(() => undefined);
+        await startIdentity($, e.cwd);
+        await seedTurnNo($, identity.selfId).catch(() => undefined);
         await refreshThreads($);
-        // a hot reload's start carries the shell's cwd, which follows a `cd`: the root stays the project's
-        projectDir = await $.session.root().catch(() => e.cwd);
-        const top = (await $.session.repo())?.root ?? e.cwd;
-        label = basename(top);
-        proc = await procOf($).catch(() => {
-            $.ui.log(
-                'x-mod-stash: no pid for this session, so its row reads no registry name',
-            );
-            return undefined;
-        });
         await seatDefaults($).catch(() => undefined);
         await syncWindStore($).catch(() => undefined);
         await armHeldTells($).catch(() => undefined);
@@ -7615,7 +7482,7 @@ export const register: Register = (on) => {
         cap = kept.cap ?? undefined;
         endedAt = kept.ended ?? undefined;
         await pruneEnded($).catch(() => undefined);
-        const stored = hotOf(await $.store.get(HOT + selfId));
+        const stored = hotOf(await $.store.get(HOT + identity.selfId));
         hot = stored && { since: endedAt ?? stored.since };
         // a mid-turn reload: the turn goes on, busy, and the band keeps what only it held
         if (kept.turn) {
@@ -10349,8 +10216,7 @@ export const register: Register = (on) => {
             isPrimed = false;
             forgetTold();
             // the process goes on under a new id with no session.start: the next read takes it fresh
-            selfId = undefined;
-            clearedFrom = e.sessionId;
+            endIdentity(e.sessionId);
             await forget($, e.sessionId);
         } else {
             // a quit keeps what the board drew, so the resumed session draws it again
