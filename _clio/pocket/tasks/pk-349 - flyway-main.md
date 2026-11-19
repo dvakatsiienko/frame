@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T12:33:00Z'
+updated_date: '2026-11-19T12:41:00Z'
 labels:
   - s
   - clio-main
@@ -17,9 +17,10 @@ ordinal: 1000
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look
-- [ ] #2 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #3 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #4 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #2 f46 TS LSP check each siesta until the halt: are both codies calling LSP, from their transcripts
+- [ ] #3 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #4 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #5 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
