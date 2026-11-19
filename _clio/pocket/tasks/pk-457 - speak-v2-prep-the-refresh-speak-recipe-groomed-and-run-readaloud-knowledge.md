@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T16:12:00Z'
+updated_date: '2026-11-19T16:50:00Z'
 labels:
   - s
   - clio-wing-1
@@ -62,4 +62,9 @@ PK-457:W32 (2026-11-19 18:12, dima): full crew research is redundant, but refres
 PK-457:W33 (2026-11-19 18:12, dima): after we have the numbers, compare them to how our system uses each model today, operation by operation, and tell me whether we use each model for the right tasks, and at the right effort.
 PK-457:W34 (2026-11-19 18:12, dima): if i had more usage to use fable 5.2 more proactively, i would use it in layers. the first layer: fable 5.2 on medium for clio and all wings; all codies and verifiers would still run on opus.
 PK-457:W35 (2026-11-19 18:12, dima): i would leave crow on opus, to have an alternative model's opinion while clio runs on fable. optionally i'd consider the verifiers on fable too, for an alternative opinion. just thoughts, no actions here: i am telling what i like.
+
+PK-457:W36 (2026-11-19 18:49, dima): i believe that despite fable 5.2 being cheaper than 5.1, it still gets more than 2× opus; in reality it feels even more expensive, about 2.5× at least. on monday i ran everyone on fable all day (all clios, crow, all codies, the verifiers) and spent the full 100 % of the fable share in one day.
+PK-457:W37 (2026-11-19 18:49, dima): fable 5.2 is a capable coder, at times even better than opus, and that data folds into the model knowledge; but the fleet rule is an override: we do not use fable 5.2 for coding, because of the taxonomy and my plans. it is too expensive; given my inference volume, i would rather be economic and use opus 5.5 for all the tasks, to ship more.
+PK-457:W38 (2026-11-19 18:49, dima): fable 5.2 for the designer still holds, although opus 5.5 draws very well too. it's a hard choice for me; let's go with fable 5.2.
+PK-457:W39 (2026-11-19 18:49, dima): i'm confused by o5 and o8: print a clear, easy-to-read list of everything you propose to change: who, how it was, and how it will be.
 <!-- SECTION:NOTES:END -->
