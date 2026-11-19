@@ -1833,6 +1833,29 @@ test("a plan card whose running ticket is all done points at the plan's first op
     expect(kept(w)[0]?.current).toBe(1);
 });
 
+// FRM-656 exit 1: card l96 read 49/116, the pointer's index, on a plan with 115 of 116 steps ticked
+test('the card the deck draws carries its ticked steps, never the pointer', async ($, on) => {
+    const w = world(on);
+    await start($);
+    plant(
+        w,
+        Array.from(
+            { length: 116 },
+            (_, i): Step => [i === 49 ? ' ' : 'x', 'FRM-649', `step ${i + 1}`],
+        ),
+    );
+    await create($, {
+        items: undefined,
+        plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+        title: 'mods lane',
+    });
+    await poll(w);
+    const card = kept(w)[0] as KeptLane & { done?: number };
+    expect([card.done, card.items.length, card.current]).toEqual([
+        115, 116, 49,
+    ]);
+});
+
 test('a plan with a step line holding no ticket id is refused, naming that line', async ($, on) => {
     const w = world(on);
     await start($);

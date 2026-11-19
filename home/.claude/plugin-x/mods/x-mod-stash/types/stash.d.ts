@@ -271,6 +271,8 @@ export type StashLane = {
     isPlanStale?: boolean;
     // the step we are on; items.length once every step is done
     current: number;
+    // the ticked steps, derived at each write of the shelf file: the deck draws done of all
+    done?: number;
     // clio's orbit turn count when the pointer or a done flag last moved
     movedAt: number;
     // the linked members as the registry names them (an id the registry did not know stays as given); a re-link of a

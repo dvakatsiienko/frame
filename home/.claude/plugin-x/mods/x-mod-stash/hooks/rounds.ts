@@ -1,7 +1,8 @@
 // the round count's pure half (FRM-504, FRM-656): which key a round lands on and what that key holds after it; the
 // shelf file's read, lock and write stay with the caller. no `$`
 
-// clean: the rounds whose line named «P0/P1: 0», written only once one did; count − clean is what the cap reads
+// clean: the rounds whose line named «P0/P1: 0», written only once one did; count − clean is what the cap reads, a
+// round whose line named none among it
 export type LaneRounds = {
     at?: number;
     clean?: number;
@@ -47,11 +48,11 @@ export function roundKeyOf(
     );
 }
 
-// the key after one round; undefined for a resend, its sha long or short
+// the key after one round, `severe` the P0 and P1 count its line named; undefined for a resend, its sha long or short
 export function roundTaken(
     kept: LaneRounds,
     round: { n: number; sha: string },
-    isClean: boolean,
+    severe: number | undefined,
     at: number,
 ): LaneRounds | undefined {
     if (
@@ -64,7 +65,7 @@ export function roundTaken(
     // past it a lane may open past round 1, and a number sent is never read back as less
     const was: Omit<LaneRounds, 'shas'> = round.n === 1 ? { count: 0 } : kept;
     const count = Math.max(round.n, was.count + 1);
-    const clean = (was.clean ?? 0) + (isClean ? 1 : 0);
+    const clean = (was.clean ?? 0) + (severe === 0 ? 1 : 0);
     return {
         at,
         ...(clean ? { clean } : {}),

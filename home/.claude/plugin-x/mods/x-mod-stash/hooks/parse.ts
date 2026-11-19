@@ -373,19 +373,28 @@ export const severeOf = (message: string) => {
 export const ROUND_CAP = 3;
 // the count only signals and refuses nothing (FRM-504:W49: a block stops everyone); past the cap the coordinator decides,
 // `untold` the reason her line did not go
-export function roundLine(count: number, untold?: string) {
+// a round whose line named no «P0/P1: n» is unknown, never called one with a P0 or P1 (FRM-656)
+export function roundLine(count: number, isUnknown = false, untold?: string) {
     if (count < ROUND_CAP) return undefined;
+    const head = isUnknown
+        ? `round ${count} in this chunk not known clean, this one unknown (no «P0/P1: n» in its line)`
+        : `round ${count} with a P0 or P1 in this chunk`;
     if (count === ROUND_CAP)
-        return `round ${count} with a P0 or P1 in this chunk: a next one is past the cap of ${ROUND_CAP}`;
+        return `${head}: a next one is past the cap of ${ROUND_CAP}`;
     const heard =
         untold === undefined
             ? 'the coordinator has the count and says go on or stop'
             : `the line to the coordinator did not go (${untold}): send her this count yourself`;
-    return `round ${count} with a P0 or P1 in this chunk, past the cap of ${ROUND_CAP}: ${heard}; nothing is refused, keep working`;
+    return `${head}, past the cap of ${ROUND_CAP}: ${heard}; nothing is refused, keep working`;
 }
 // the coordinator's line past the cap: [escalate] passes quiet comms and starts her turn
-export const capLine = (lane: string, count: number, from: string) =>
-    `[escalate] round ${count} of ${lane}, past the cap of ${ROUND_CAP}, from ${from}: ask dima «go on, or stop the lane»`;
+export const capLine = (
+    lane: string,
+    count: number,
+    from: string,
+    isUnknown = false,
+) =>
+    `[escalate] round ${count} of ${lane}, past the cap of ${ROUND_CAP}, from ${from}${isUnknown ? ' (this round unknown: its line named no «P0/P1: n», ask for the count)' : ''}: ask dima «go on, or stop the lane»`;
 
 // the quiet ledger's count of one member's sends to clio: `sh -c LEDGER_SENDS <home> <session id> <address regex>`
 // prints the timestamp of each SendMessage call whose `to` names her; a call its result answered `success:false`

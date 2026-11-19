@@ -2469,7 +2469,7 @@ async function laneRoundLine(
     const ticket = chunk.ticket ?? self.ticket;
     if (!ticket)
         return `round ${round.n} on ${round.sha} not counted (x's record names no ticket): resend the same line once clio's dispatch writes one`;
-    const isClean = severeOf(text(e.message) ?? '') === 0;
+    const severe = severeOf(text(e.message) ?? '');
     const now = await $.clock.now();
     // a count that could not be taken says so: a silent miss is a cap nobody hears
     const taken = await roundsLocked($, home, async () => {
@@ -2480,7 +2480,7 @@ async function laneRoundLine(
             roundsOf(
                 await $.store.get(LANE_ROUNDS + lane).catch(() => undefined),
             );
-        const after = roundTaken(kept, round, isClean, now);
+        const after = roundTaken(kept, round, severe, now);
         if (!after) return undefined;
         await writeWhole(
             $,
@@ -2491,16 +2491,21 @@ async function laneRoundLine(
                 2,
             )}\n`,
         );
-        return { lane, severe: after.count - (after.clean ?? 0) };
+        return { lane, open: after.count - (after.clean ?? 0) };
     }).catch((err: unknown) => errorText(err));
     if (typeof taken === 'string')
         return `round ${round.n} on ${round.sha} not counted (${taken}): resend the same line to count it`;
     // a resend changes nothing and says nothing: its first send's line stands
     // a clean round moves no cap: only the rounds with a P0 or P1 count toward it (crew-dna § the loop)
-    if (!taken || isClean) return undefined;
-    const { lane, severe } = taken;
-    if (severe <= ROUND_CAP) return roundLine(severe);
-    return roundLine(severe, await capTold($, self.sessionId, lane, severe));
+    if (!taken || severe === 0) return undefined;
+    const { lane, open } = taken;
+    const isUnknown = severe === undefined;
+    if (open <= ROUND_CAP) return roundLine(open, isUnknown);
+    return roundLine(
+        open,
+        isUnknown,
+        await capTold($, self.sessionId, lane, open, isUnknown),
+    );
 }
 
 // past the cap, each new round: one line to the lane's coordinator, the live wing whose glide card links this codie,
@@ -2510,6 +2515,7 @@ async function capTold(
     sid: string,
     lane: string,
     count: number,
+    isUnknown: boolean,
 ) {
     const threads = (await threadRecords($)).filter(
         (t) => t.pid !== undefined && t.sessionId !== sid,
@@ -2536,7 +2542,7 @@ async function capTold(
     if (!lead?.sessionId) return 'no live coordinator';
     const sent = await $.session
         .send({
-            text: capLine(lane, count, name ?? sid),
+            text: capLine(lane, count, name ?? sid, isUnknown),
             to: { sessionId: lead.sessionId },
         })
         .catch((err) => ({
@@ -4104,10 +4110,18 @@ export function mergeLanes(
     ];
 }
 
+// each card carries its ticked steps: the deck's count is done of all, never the pointer (FRM-656: l96 read 49/116)
 async function writeLanes($: EngineInterface, lanes: StashLane[]) {
     const home = await $.env.get('HOME').catch(() => undefined);
+    const counted = lanes.map((l) => ({
+        ...l,
+        done: l.items.filter((x) => x.isDone).length,
+    }));
     await $.fs
-        .write(lanesFile(home), `${JSON.stringify({ lanes }, null, 2)}\n`)
+        .write(
+            lanesFile(home),
+            `${JSON.stringify({ lanes: counted }, null, 2)}\n`,
+        )
         .catch((err) =>
             $.ui.log(
                 `x-mod-stash: the lanes file was not kept: ${errorText(err)}`,

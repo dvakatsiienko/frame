@@ -63,7 +63,7 @@ import { SENT_MS, next, pressState, untickDoor } from './press.js';
 /** @typedef {import('./orbit.js').Ask} Ask */
 /** @typedef {{ asks: Ask[], context: number | null, hot: { since: number } | null, model: string | null, name: string, pending: Map<string, import('./orbit.js').Press['verdict']>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
 
-/** @typedef {{ id?: string, title: string, ticket?: string, items?: { text: string }[], current?: number, endedAt?: number }} Lane */
+/** @typedef {{ id?: string, title: string, ticket?: string, items?: { text: string }[], current?: number, done?: number, endedAt?: number }} Lane */
 
 const CLAUDE = `${home()}/.claude`;
 const STATES = `${CLAUDE}/shelf/herdr-state`;
@@ -1346,7 +1346,7 @@ export default class Deck extends View {
                             .flex_none()
                             .text_size(SIZE.small)
                             .text_color(t.muted)
-                            .child(`${current}/${items.length}`),
+                            .child(`${l.done ?? current}/${items.length}`),
                     ),
             )
             .child(
@@ -1355,7 +1355,9 @@ export default class Deck extends View {
                     .child(
                         bar(
                             t,
-                            items.length ? (100 * current) / items.length : 0,
+                            items.length
+                                ? (100 * (l.done ?? current)) / items.length
+                                : 0,
                             '100%',
                             t.working,
                         ),

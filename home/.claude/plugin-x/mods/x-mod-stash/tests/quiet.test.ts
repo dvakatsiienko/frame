@@ -3758,7 +3758,13 @@ test('no round is written to the private store', async ($, on) => {
 const sendRounds = async ($: Engine, n: number) => {
     const out = [];
     for (let i = 0; i < n; i++)
-        out.push(await send($, ROUND_SENSE, `round ${i + 1} on abcdef${i}`));
+        out.push(
+            await send(
+                $,
+                ROUND_SENSE,
+                `round ${i + 1} on abcdef${i} · P0/P1: 1`,
+            ),
+        );
     return out;
 };
 
@@ -3857,7 +3863,7 @@ test('two chunks a round line names count apart, the record trailing both, and t
             await send(
                 $,
                 ROUND_SENSE,
-                `round ${n} on ${sha} (FRM-638 slice 05, base main:1234567)`,
+                `round ${n} on ${sha} (FRM-638 slice 05, base main:1234567) · P0/P1: 1`,
             ),
         );
     expect([
@@ -3873,7 +3879,11 @@ test('two chunks a round line names count apart, the record trailing both, and t
         ],
         [],
     ]);
-    await send($, ROUND_SENSE, 'round 4 on f6f6f6f (FRM-638 slice 5)');
+    await send(
+        $,
+        ROUND_SENSE,
+        'round 4 on f6f6f6f (FRM-638 slice 5) · P0/P1: 1',
+    );
     expect(w.told.map((t) => t.text)).toEqual([
         `[escalate] round 4 of mods-lane-5 | FRM-638 slice 5, past the cap of 3, from ${ROUND_CODIE}: ask dima «go on, or stop the lane»`,
     ]);
@@ -3920,6 +3930,74 @@ test('three chunks each clean at round 1 keep three keys at count 1 and tell no 
         r.flatMap(roundLines).filter((l) => l.includes('cap')),
         w.told,
     ]).toEqual([[1, 1, 1], [], []]);
+});
+
+// FRM-656 exit 5: the five round lines the herdr codie sent its sixth sense on 18 Nov (transcript 52af0793), as sent
+const HERDR_18_NOV = [
+    'round 4 on 721588be (FRM-638 slice 5, scoped): the each-path-once row, attachments.test.ts',
+    'round 2 on 1dc7e6cb (FRM-638 slice 6b), main:9d387640 base, on origin/main.',
+    'round 3 on 35a13429 (FRM-638 end step, slices.md 12 + FRM-633), base d4ccf50d.',
+    "round 4 on adb1fbef (FRM-648) · P0/P1: 0 open — slice 12b, base 3f2f4bc5, dima's 21:42 tick + vote via clio.",
+    'round 2 on b89b8bea (FRM-638 slice 12c) · P0/P1: 0',
+];
+test("18 Nov's herdr round lines count per chunk: no round 6, only slice 5's unknown round 4 warns", async ($, on) => {
+    const w = roundWorld(on, { record: { ticket: 'FRM-648' } });
+    await start($);
+    const r = [];
+    for (const line of HERDR_18_NOV) r.push(await send($, ROUND_SENSE, line));
+    expect([
+        Object.fromEntries(
+            Object.entries(roundsIn(w.files)).map(([k, v]) => [
+                k,
+                (v as { count: number }).count,
+            ]),
+        ),
+        r.flatMap(roundLines).filter((l) => /\bround 6\b/.test(l)),
+        w.told.map((t) => t.text),
+    ]).toEqual([
+        {
+            'mods-lane-5 | FRM-638 slice 12c': 2,
+            'mods-lane-5 | FRM-638 slice 5': 4,
+            'mods-lane-5 | FRM-638 slice 6b': 2,
+            'mods-lane-5 | FRM-648': 3,
+            'mods-lane-5 | FRM-648 slice 12b': 4,
+        },
+        [],
+        [
+            `[escalate] round 4 of mods-lane-5 | FRM-638 slice 5, past the cap of 3, from ${ROUND_CODIE} (this round unknown: its line named no «P0/P1: n», ask for the count): ask dima «go on, or stop the lane»`,
+        ],
+    ]);
+});
+
+// the leftover «herdr-lane-2 | FRM-648» at 8 stops counting: the next chunk's round 1 opens the key fresh
+test('a round 1 on a key a count was left on stores count 1', async ($, on) => {
+    const w = roundWorld(on, {
+        files: {
+            [ROUNDS_FILE]: JSON.stringify({
+                rounds: {
+                    [LANE]: {
+                        clean: 2,
+                        count: 8,
+                        shas: [
+                            '721588be',
+                            '1dc7e6cb',
+                            '35a13429',
+                            'adb1fbef',
+                            'b89b8bea',
+                        ],
+                    },
+                },
+                v: 1,
+            }),
+        },
+    });
+    await start($);
+    const r = await send($, ROUND_SENSE, 'round 1 on c0ffee12 · P0/P1: 0');
+    expect([
+        (kept(w) as { count: number }).count,
+        roundLines(r),
+        w.told,
+    ]).toEqual([1, [], []]);
 });
 
 test('a round file that does not parse moves aside and the count starts over', async ($, on) => {
@@ -4032,9 +4110,23 @@ test('four rounds each with a P1, the last one naming none, escalate at the four
     ]).toEqual([
         [0, 0, 1, 1, 0],
         [
-            `[escalate] round 4 of mods-lane-5 | FRM-9 slice 5, past the cap of 3, from ${ROUND_CODIE}: ask dima «go on, or stop the lane»`,
+            `[escalate] round 4 of mods-lane-5 | FRM-9 slice 5, past the cap of 3, from ${ROUND_CODIE} (this round unknown: its line named no «P0/P1: n», ask for the count): ask dima «go on, or stop the lane»`,
         ],
     ]);
+});
+
+// FRM-656 exit 3: a round naming no «P0/P1: n» counts, and the sender hears it called unknown
+test('a round line naming no P0/P1 reaches the cap called unknown, never one with a P0 or P1', async ($, on) => {
+    roundWorld(on);
+    await start($);
+    await sendRounds($, 2);
+    const line = roundLines(
+        await send($, ROUND_SENSE, 'round 3 on abcdef9'),
+    ).join('');
+    expect([
+        line.includes('unknown'),
+        line.includes('with a P0 or P1'),
+    ]).toEqual([true, false]);
 });
 
 // FRM-570 exit 15: the count reads x's record, so a rename keeps it and a name alone starts none

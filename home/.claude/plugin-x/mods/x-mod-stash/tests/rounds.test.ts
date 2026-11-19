@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing';
 
-import { roundChunkOf } from '../hooks/parse.ts';
+import { capLine, roundChunkOf, roundLine } from '../hooks/parse.ts';
 import { roundKeyOf, roundTaken } from '../hooks/rounds.ts';
 
 // 18 Nov's herdr lane: a lettered slice is a chunk of its own (FRM-656)
@@ -51,8 +51,8 @@ test('a round 1 on a new sha opens its key fresh, the old shas kept for a resend
         shas: ['721588be', 'a', 'b', 'c', 'b89b8bea'],
     };
     expect([
-        roundTaken(left, { n: 1, sha: 'feedf00d' }, true, 5),
-        roundTaken(left, { n: 1, sha: 'b89b8bea' }, true, 5),
+        roundTaken(left, { n: 1, sha: 'feedf00d' }, 0, 5),
+        roundTaken(left, { n: 1, sha: 'b89b8bea' }, 0, 5),
     ]).toEqual([
         {
             at: 5,
@@ -66,7 +66,32 @@ test('a round 1 on a new sha opens its key fresh, the old shas kept for a resend
 
 test('a later round still never reads back as less than the count kept', () => {
     expect(
-        roundTaken({ count: 3, shas: ['a1'] }, { n: 2, sha: 'b2' }, false, 5)
+        roundTaken({ count: 3, shas: ['a1'] }, { n: 2, sha: 'b2' }, 1, 5)
             ?.count,
     ).toBe(4);
+});
+
+// FRM-656: a line with no «P0/P1: n» counts toward the cap, named unknown
+test('a round whose line names no P0/P1 counts toward the cap, never as clean', () => {
+    const kept = { clean: 1, count: 1, shas: ['a1'] };
+    expect([
+        roundTaken(kept, { n: 2, sha: 'b2' }, undefined, 5),
+        roundTaken(kept, { n: 2, sha: 'b2' }, 0, 5),
+    ]).toEqual([
+        { at: 5, clean: 1, count: 2, shas: ['a1', 'b2'] },
+        { at: 5, clean: 2, count: 2, shas: ['a1', 'b2'] },
+    ]);
+});
+
+test("the sender's line at the cap names an unknown round unknown", () => {
+    expect([roundLine(3, true), roundLine(4, true)]).toEqual([
+        'round 3 in this chunk not known clean, this one unknown (no «P0/P1: n» in its line): a next one is past the cap of 3',
+        'round 4 in this chunk not known clean, this one unknown (no «P0/P1: n» in its line), past the cap of 3: the coordinator has the count and says go on or stop; nothing is refused, keep working',
+    ]);
+});
+
+test("the coordinator's cap line names an unknown round", () => {
+    expect(capLine('mods-lane-8 | FRM-656', 4, '⚡ 🔧 mods', true)).toBe(
+        '[escalate] round 4 of mods-lane-8 | FRM-656, past the cap of 3, from ⚡ 🔧 mods (this round unknown: its line named no «P0/P1: n», ask for the count): ask dima «go on, or stop the lane»',
+    );
 });
