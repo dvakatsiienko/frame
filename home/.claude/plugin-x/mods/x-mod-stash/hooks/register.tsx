@@ -162,6 +162,16 @@ import {
     threadRecords,
 } from './session-identity.ts';
 import { cleanTree, drawn } from './tree.ts';
+import {
+    addGridQs,
+    beginTurn,
+    countTool,
+    isTurnBusy,
+    keepTurn,
+    markActive,
+    patchTurn,
+    turn,
+} from './turn.ts';
 import { bare, errorText, memberKey, short, text, writeWhole } from './util.ts';
 import {
     WIND_ROWS,
@@ -240,11 +250,6 @@ const POLL_MS = 4000;
 // wakes, keep 4 s (FRM-555, dima o58, o59)
 const IDLE_AFTER_MS = 5 * 60_000;
 const IDLE_POLL_MS = 30_000;
-let activeAt = 0;
-let bookkeptAt = 0;
-async function markActive($: EngineInterface) {
-    activeAt = await $.clock.now();
-}
 // the fleet board: cc's registry gives each session's state; each session's stash adds its 🔭 wait and context fill
 const BOARD = 'x-cc-deck';
 // read-both: the board's id before dima's x-cc-deck name (o25); a reload finds it open and swaps it
@@ -616,10 +621,8 @@ const ORBIT_PROPS = {
 // this session's own second wind as the store holds it, read at each load for the band's button
 let selfWind: StashWind['state'] | undefined;
 let isAutoWindOn = true;
-let isUserTurn = false;
 // what this session's last reply waits on, its 🔭 line
 let wait: string | undefined;
-let pinged = false;
 let isPolling = false;
 let afk = false;
 let overrideStore: string | undefined;
@@ -1140,14 +1143,6 @@ function askBox($: EngineInterface, a: OrbitAsk) {
         value: heldOver(key) ?? a.shown ?? a.steer ?? '',
     };
 }
-let turnTools = 0;
-let isNudged = false;
-// the phases nudge fires only on a turn that did real work: an edit, a spawn or a stop, a commit, a lane move — a q&a
-// turn keeps quiet and the 3-turn stale mark covers it (PK-70: 235 plan calls in a session, the nudge on every turn)
-let isWorkTurn = false;
-// this turn's wrap_up carried an ask, and the Q numbers its orbit adds opened with: the Stop checks read both (FRM-427)
-let isWrapAsked = false;
-let gridQs: string[] = [];
 const WORK_TOOLS = new Set([
     'Edit',
     'Write',
@@ -1159,7 +1154,6 @@ const WORK_BASH =
     /\b(claude\s+(--bg|-n\s+\S+.*--bg|stop|respawn)|git\s+commit|x\s+lane\s+(commit|push|pr-open|merge-main|seed)|x\s+mods\s+edit\s+push)\b/;
 export const isWork = (tool: string, command?: string) =>
     WORK_TOOLS.has(tool) || (tool === 'Bash' && WORK_BASH.test(command ?? ''));
-let isPrimed = false;
 // the 5h reset as the last session.measure reported it, and this session's cap state
 let fiveHourResetsAt: number | undefined;
 // the 5h window's fill at the last measure: an error end this full is read as the cap when no entry names it (FRM-488)
@@ -1167,11 +1161,8 @@ let fiveHourPercent: number | undefined;
 const CAP_FULL_PERCENT = 95;
 let cap: StashCap | undefined;
 let capGen = 0;
-let turnAfk: boolean | undefined;
 // since: the turn end the next ping counts from; only dima's click turns it off, a 5h reset never does
 let hot: { since: number } | undefined;
-let endedAt: number | undefined;
-let isBusy = false;
 // the model label last written for this session, so a step writes the store only when it changes
 let modelSeen: string | undefined;
 // a turn start or a flip bumps it, so a ping armed before either never fires
@@ -1556,7 +1547,8 @@ async function quietWhy($: EngineInterface, from: string, body: string) {
 }
 
 const quietIsBusy = async ($: EngineInterface) =>
-    (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ?? isBusy;
+    (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
+    turn.isBusy;
 
 // the held list is read, changed and written back across awaits: every change waits its turn, or a message landing
 // between the two is lost
@@ -1883,7 +1875,7 @@ async function quietSilentMembers($: EngineInterface, now: number) {
                 `🚨 quiet comms: ${words}; check it, and break the hang if it is one.`,
             ).catch(() => undefined);
             if (!r || r.drop) {
-                isBusy = false;
+                patchTurn({ isBusy: false });
                 await keepTurn($);
                 await armHot($);
                 continue;
@@ -2057,7 +2049,7 @@ async function wakeForParkedLanes($: EngineInterface) {
             `🅿️ parked lane: ${nudge}; its members sat idle ${minutes} min.`,
         ).catch(() => undefined);
         if (!r || r.drop) {
-            isBusy = false;
+            patchTurn({ isBusy: false });
             await keepTurn($);
             await armHot($);
             continue;
@@ -2886,7 +2878,7 @@ async function absorbMarks($: EngineInterface) {
 async function wakeForMarks($: EngineInterface) {
     if (
         (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
-        isBusy
+        turn.isBusy
     )
         return;
     if (!(await partsShown($))('stash.orbit')) return;
@@ -4254,11 +4246,11 @@ async function stopRed($: EngineInterface, reply: string) {
         return undefined;
     const open = (await currentOrbit($)).asks.filter((a) => !a.isResolved);
     // a title inside the bold still printed the round; a false red here makes the model print it twice (PK-351:W54)
-    const lost = gridQs.filter(
+    const lost = turn.gridQs.filter(
         (n) => !new RegExp(`❓ \\*\\*Q${n}\\b`).test(reply),
     );
     const reds = [
-        isWrapAsked && open.length
+        turn.isWrapAsked && open.length
             ? `your wrap_up asks dima a question while orbit holds ${open.map((a) => `${a.id} «${a.text}»`).join(', ')} open: one home for the next move — resolve or follow the orbit ask, or drop the wrap_up ask`
             : '',
         lost.length
@@ -5507,7 +5499,7 @@ async function tellWaiting($: EngineInterface) {
     const isWindOn = (await partsShown($))('stash.second-wind');
     // a turn still running is no missed turn either: the compact ran inside it, and its end hands the message over. the
     // module's flag, as releaseIfIdle reads it: a state read inside this timer sees its arming hook's moment, busy forever
-    if (isBusy || (await isCompactingNow($, sid, isWindOn)))
+    if (turn.isBusy || (await isCompactingNow($, sid, isWindOn)))
         return armHeldDeadline($, now + 60_000 - STEER_TELL_MS, now);
     const due = await quietLocked(async () => {
         const kept = await heldStore($, keys);
@@ -5608,9 +5600,12 @@ async function releaseHeldSteers(
 // end, or its next prompt takes it first
 async function releaseIfIdle($: EngineInterface) {
     // the module's flag, as the keep-hot timer reads it: a state read inside the timer may see its arming hook's moment
-    if (isBusy) return;
+    if (turn.isBusy) return;
     // read again under the lock: a prompt that started while this waited takes the list itself
-    await releaseHeldSteers($, (kept) => !isBusy && kept.isCompacted === true);
+    await releaseHeldSteers(
+        $,
+        (kept) => !turn.isBusy && kept.isCompacted === true,
+    );
 }
 
 // a refused release tries again a few times, so an idle session with no next prompt still reads it; past them its next
@@ -5844,7 +5839,7 @@ async function armWake($: EngineInterface) {
     if (at === undefined || cap?.sentFor === at) return;
     const wait = at + WAKE_SLACK_MS - (await $.clock.now());
     $.clock.after(Math.max(0, wait), async () => {
-        if (mine !== capGen || isBusy || !cap) return;
+        if (mine !== capGen || turn.isBusy || !cap) return;
         // the reset is spent at its fire, switch on or off: ⏰ flipped on later never wakes a reset already past (o102)
         cap = { ...cap, sentFor: at };
         await $.state.set(CAP, cap).catch(() => undefined);
@@ -5982,13 +5977,6 @@ async function paceClaim($: EngineInterface, sid: string) {
     return held?.by === PACE_ME;
 }
 
-async function isTurnBusy($: EngineInterface) {
-    return (
-        (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
-        isBusy
-    );
-}
-
 // idle: the line is the turn; the rung moves only once it entered, so a refused one is sent again by the next poll
 async function paceTick($: EngineInterface) {
     const sid = await currentId($);
@@ -6000,7 +5988,7 @@ async function paceTick($: EngineInterface) {
         const r = await selfSubmit($, due.line).catch(() => undefined);
         if (r && !r.drop) await paceSent($, sid, due.stored);
         else {
-            isBusy = false;
+            patchTurn({ isBusy: false });
             await keepTurn($);
             await armHot($);
         }
@@ -6415,25 +6403,12 @@ async function pressSwitch(
     await publish($);
 }
 
-async function keepTurn($: EngineInterface) {
-    await $.state
-        .set(TURN, { afk: turnAfk, isBusy, isPinged: pinged, isUserTurn })
-        .catch(() => undefined);
-}
-
 // every turn starts here: dima's and a peer's through prompt.submit, the mod's own through selfSubmit
 async function startTurn($: EngineInterface, text: string, isUser: boolean) {
-    isUserTurn = isUser;
-    pinged = text === PING;
-    isBusy = true;
-    turnTools = 0;
-    isNudged = false;
-    isWorkTurn = false;
-    isWrapAsked = false;
-    gridQs = [];
+    beginTurn(isUser, text === PING);
     hotGen++;
     await load($);
-    turnAfk = afk;
+    patchTurn({ turnAfk: afk });
     await keepTurn($);
 }
 
@@ -6442,7 +6417,7 @@ async function startTurn($: EngineInterface, text: string, isUser: boolean) {
 async function selfSubmit($: EngineInterface, text: string) {
     await startTurn($, text, false);
     return $.prompt.submit({ text }).catch(async (err: unknown) => {
-        isBusy = false;
+        patchTurn({ isBusy: false });
         await keepTurn($);
         throw err;
     });
@@ -6463,7 +6438,9 @@ async function saveHot($: EngineInterface) {
 // 🔥 set, never flipped: on keeps a running hot's start, else counts from now mid-turn or from the last turn's end
 async function setHot($: EngineInterface, on: boolean) {
     const now = await $.clock.now();
-    hot = on ? (hot ?? { since: isBusy ? now : (endedAt ?? now) }) : undefined;
+    hot = on
+        ? (hot ?? { since: turn.isBusy ? now : (turn.endedAt ?? now) })
+        : undefined;
     await saveHot($);
 }
 
@@ -6521,16 +6498,17 @@ async function isAfkWarm($: EngineInterface) {
 
 async function armHot($: EngineInterface) {
     const mine = ++hotGen;
-    if (isBusy) return;
+    if (turn.isBusy) return;
     const now = await $.clock.now();
     const since =
-        hot?.since ?? ((await isAfkWarm($)) ? (endedAt ?? now) : undefined);
+        hot?.since ??
+        ((await isAfkWarm($)) ? (turn.endedAt ?? now) : undefined);
     if (since === undefined) return;
     const everyMs = (await readNumber($, 'hot-minutes')) * MINUTE_MS;
     $.clock.after(Math.max(0, since + everyMs - now), async () => {
         // a chip may have deleted the key since the last poll: a change re-arms, so this timer goes stale
         await followHot($).catch(() => undefined);
-        if (isBusy || mine !== hotGen) return;
+        if (turn.isBusy || mine !== hotGen) return;
         if (!hot && !(await isAfkWarm($))) return;
         if (!(await partsShown($))('stash.hot')) return;
         if (await isWindowSpent($)) return;
@@ -6547,19 +6525,19 @@ async function isWindowSpent($: EngineInterface) {
 
 // a cache that would die before the reset gets one last ping; that ping's own turn puts it past the reset, so it fires once
 async function hotLate($: EngineInterface) {
-    if (!hot || isBusy || endedAt === undefined) return;
+    if (!hot || turn.isBusy || turn.endedAt === undefined) return;
     if (!(await partsShown($))('stash.hot')) return;
     const m = await paceMeterOf($);
     if (!m || m.resetsAt <= m.now || m.used >= 100) return;
     const lateMs = (await readNumber($, 'hot-late')) * MINUTE_MS;
     if (m.resetsAt - m.now > lateMs) return;
-    if (endedAt + CACHE_MS >= m.resetsAt) return;
+    if (turn.endedAt + CACHE_MS >= m.resetsAt) return;
     if (lateWindow === m.resetsAt) return;
     lateWindow = m.resetsAt;
     $.ui.log('x-mod-stash keep-hot: the last ping before the reset');
     const r = await selfSubmit($, PING).catch(() => undefined);
     if (r && !r.drop) return;
-    isBusy = false;
+    patchTurn({ isBusy: false });
     await keepTurn($);
     await armHot($);
 }
@@ -6574,7 +6552,7 @@ async function followHot($: EngineInterface) {
     const stored = hotOf(await $.store.get(HOT + sid));
     if (Boolean(stored) === Boolean(hot)) return;
     const now = await $.clock.now();
-    hot = stored && { since: isBusy ? now : (endedAt ?? now) };
+    hot = stored && { since: turn.isBusy ? now : (turn.endedAt ?? now) };
     await armHot($);
     await publish($);
 }
@@ -7355,11 +7333,11 @@ async function orbitCall(
                     .catch(() => undefined);
             }
         await writeLanes($, mergeLanes(before, lanes, await readLanes($)));
-        isWorkTurn = true;
+        patchTurn({ isWorkTurn: true });
         return { result: op.result };
     }
     // the turn as $.state holds it: a call that lands before a mid-turn reload's start reads a default isBusy
-    const isTurn = (await $.state.get(TURN)).value?.isBusy ?? isBusy;
+    const isTurn = (await $.state.get(TURN)).value?.isBusy ?? turn.isBusy;
     const step = input.step;
     const isPlan = input.op === 'plan';
     if (
@@ -7406,7 +7384,7 @@ async function orbitCall(
     });
     if ('deny' in op) return { deny: op.deny };
     if (input.op === 'add')
-        gridQs.push(
+        addGridQs(
             ...(Array.isArray(input.asks) ? input.asks : []).flatMap((x) => {
                 const n = oneLine((x as { text?: unknown })?.text).match(
                     /^Q(\d+)\b/,
@@ -7480,16 +7458,18 @@ export const register: Register = (on) => {
                 $.ui.log('x-mod-stash: the orbit tool was not registered'),
             );
         cap = kept.cap ?? undefined;
-        endedAt = kept.ended ?? undefined;
+        patchTurn({ endedAt: kept.ended ?? undefined });
         await pruneEnded($).catch(() => undefined);
         const stored = hotOf(await $.store.get(HOT + identity.selfId));
-        hot = stored && { since: endedAt ?? stored.since };
+        hot = stored && { since: turn.endedAt ?? stored.since };
         // a mid-turn reload: the turn goes on, busy, and the band keeps what only it held
         if (kept.turn) {
-            isBusy = kept.turn.isBusy;
-            isUserTurn = kept.turn.isUserTurn;
-            pinged = kept.turn.isPinged;
-            turnAfk = kept.turn.afk;
+            patchTurn({
+                isBusy: kept.turn.isBusy,
+                isUserTurn: kept.turn.isUserTurn,
+                pinged: kept.turn.isPinged,
+                turnAfk: kept.turn.afk,
+            });
         }
         // a reload drops the release timer: a compact-held list waiting for it goes in once the session is idle; armed after
         // a mid-turn reload's busy flag is back, so it never submits into a running turn
@@ -7538,10 +7518,10 @@ export const register: Register = (on) => {
                 $.clock.after(pollMs, async () => {
                     const now = await $.clock.now();
                     const isBookkept =
-                        isBusy ||
-                        now - activeAt < IDLE_AFTER_MS ||
-                        now - bookkeptAt >= IDLE_POLL_MS;
-                    if (isBookkept) bookkeptAt = now;
+                        turn.isBusy ||
+                        now - turn.activeAt < IDLE_AFTER_MS ||
+                        now - turn.bookkeptAt >= IDLE_POLL_MS;
+                    if (isBookkept) patchTurn({ bookkeptAt: now });
                     await takeHerdrRows($).catch(() => undefined);
                     await syncWindStore($).catch(() => undefined);
                     // an open board's view carries the tick's clock, so its «ago» times move on their own
@@ -7623,14 +7603,14 @@ export const register: Register = (on) => {
         if (isUser && BACK_AT_MAC.test(e.text))
             await $.state.set(MOBILE, false).catch(() => undefined);
         // prompt.submit fires when a prompt is queued (engine.md): one queued behind a running turn is no turn of its own yet
-        const isQueued = isBusy;
+        const isQueued = turn.isBusy;
         await startTurn($, e.text, isUser);
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
         const at = new Date(await $.clock.now());
         const offset = -at.getTimezoneOffset() / 60;
         const clock = `now ${at.toTimeString().slice(0, 5)} UTC${offset >= 0 ? '+' : ''}${offset}`;
         // only dima's own prompt carries his marks; each joins once and locks until the turn ends
-        if (isUserTurn)
+        if (turn.isUserTurn)
             await $.store
                 .set(DIMA_AT, await $.clock.now())
                 .catch(() => undefined);
@@ -7638,12 +7618,12 @@ export const register: Register = (on) => {
         await currentOrbit($);
         const isOn = await partsShown($);
         const marked =
-            isUserTurn && isOn('stash.orbit')
+            turn.isUserTurn && isOn('stash.orbit')
                 ? await takeMarks($, (o) => o.asks.filter(isFresh))
                 : [];
         // an assumption dima sent back joins his prompt once and leaves orbit
         const wrong =
-            isUserTurn && isOn('stash.assumed')
+            turn.isUserTurn && isOn('stash.assumed')
                 ? (orbit.assumed ?? []).filter((x) => x.isWrong)
                 : [];
         if (wrong.length)
@@ -7656,7 +7636,9 @@ export const register: Register = (on) => {
                     ),
                 });
             });
-        const tickets = isUserTurn ? await ticketNote($, e.text) : undefined;
+        const tickets = turn.isUserTurn
+            ? await ticketNote($, e.text)
+            : undefined;
         const texts = await orbitTexts($);
         // with no board the whole reply shape rides every prompt; the board's return then prints the state once
         const isNoBoard =
@@ -7665,8 +7647,8 @@ export const register: Register = (on) => {
             ? undefined
             : orbitReminder(orbit, isOn, toldOrbit, texts.plan);
         const reminder = isNoBoard ? noBoardReminder(orbit, isOn) : told?.line;
-        const isFirst = orbit.turns === 0 && !orbit.plan && !isPrimed;
-        isPrimed = true;
+        const isFirst = orbit.turns === 0 && !orbit.plan && !turn.isPrimed;
+        patchTurn({ isPrimed: true });
         // the lanes speak only in clio's thread: a lane stale after LANE_STALE of her turns, and dima's steer on a current step
         // riding her next prompt once, from any board
         const isOwner = await isLaneOwner($);
@@ -7690,11 +7672,13 @@ export const register: Register = (on) => {
                     title: l.title,
                 }),
             );
-        const laneSteers = isUserTurn ? await takeLaneSteers($, lanes) : [];
+        const laneSteers = turn.isUserTurn
+            ? await takeLaneSteers($, lanes)
+            : [];
         if (isOwner) await dropLaneOrders($);
         // dima's own prompt carries his phases mark
         const planMark =
-            isUserTurn && isOn('stash.phases')
+            turn.isUserTurn && isOn('stash.phases')
                 ? await takePlanMark($)
                 : undefined;
         // held member pings ride the next prompt of any origin, once (quiet comms)
@@ -7702,7 +7686,7 @@ export const register: Register = (on) => {
         // herdr's joins ride any turn but the keep-hot ping, in the order written (FRM-584); a prompt queued behind a
         // running turn takes none, since that turn's end would stamp them before the prompt runs: its tool steps take them
         const joins =
-            pinged || isQueued
+            turn.pinged || isQueued
                 ? []
                 : await joinsLocked(() => takeJoins($)).catch(() => []);
         const gapNotes = isOwner ? await takeGapNotes($).catch(() => []) : [];
@@ -7845,15 +7829,15 @@ export const register: Register = (on) => {
         const red = e.stop_hook_active
             ? undefined
             : await stopRed($, e.last_assistant_message ?? '');
-        isWrapAsked = false;
-        gridQs = [];
+        patchTurn({ isWrapAsked: false });
+        patchTurn({ gridQs: [] });
         // a keep-hot ping's one-character reply never clears what the session waits on; it only stamps the warm cache
-        const was = pinged
+        const was = turn.pinged
             ? ((await $.store
                   .get(REPLY + e.session_id)
                   .catch(() => undefined)) as Reply | undefined)
             : undefined;
-        const reply: Reply | undefined = pinged
+        const reply: Reply | undefined = turn.pinged
             ? was && { ...was, pingedAt: await $.clock.now() }
             : {
                   at: await $.clock.now(),
@@ -7867,7 +7851,7 @@ export const register: Register = (on) => {
             await $.store
                 .set(REPLY + e.session_id, reply)
                 .catch(() => undefined);
-        isUserTurn = false;
+        patchTurn({ isUserTurn: false });
         await keepTurn($);
         await load($);
         return red ? { ...r, block: red } : r;
@@ -7878,7 +7862,7 @@ export const register: Register = (on) => {
         const r = await next(e);
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
-        isBusy = false;
+        patchTurn({ isBusy: false });
         await joinsLocked(() =>
             settleJoins($, !e.isAborted && e.reason !== 'error'),
         ).catch(() => undefined);
@@ -7888,7 +7872,8 @@ export const register: Register = (on) => {
         );
         await windAfterTurn($).catch(() => undefined);
         armRelease($, WIND_DELAY_MS);
-        endedAt = await $.clock.now();
+        const endedAt = await $.clock.now();
+        patchTurn({ endedAt });
         await $.state.set(ENDED, endedAt).catch(() => undefined);
         await keepTurn($);
         await seatDefaults($).catch(() => undefined);
@@ -7922,7 +7907,7 @@ export const register: Register = (on) => {
         if (sid) hot = hotOf(await $.store.get(HOT + sid).catch(() => hot));
         // it counts from this turn's end, kept in $.state; it never writes the key back, which once undid a 🌌 sessions
         // chip's delete landing between this read and the write (FRM-499)
-        if (hot) hot = { ...hot, since: endedAt ?? (await $.clock.now()) };
+        if (hot) hot = { ...hot, since: turn.endedAt ?? (await $.clock.now()) };
         await armHot($);
         await load($);
         return r;
@@ -10213,7 +10198,7 @@ export const register: Register = (on) => {
         await refreshThreads($);
         if (e.reason === 'clear' || e.reason === 'resume') {
             // the process outlives a /clear, so the next conversation is primed again: no session.start fires for it
-            isPrimed = false;
+            patchTurn({ isPrimed: false });
             forgetTold();
             // the process goes on under a new id with no session.start: the next read takes it fresh
             endIdentity(e.sessionId);
@@ -10299,14 +10284,14 @@ export const register: Register = (on) => {
             (e.tool as string) === WRAP_UP_TOOL &&
             oneLine((e as Record<string, unknown>).ask)
         )
-            isWrapAsked = true;
+            patchTurn({ isWrapAsked: true });
         if (
             isWork(
                 e.tool as string,
                 (e as { command?: unknown }).command as string | undefined,
             )
         )
-            isWorkTurn = true;
+            patchTurn({ isWorkTurn: true });
         const notes: string[] = [];
         const sent = send
             ? await quietSendEnd($, send, r.result).catch(() => undefined)
@@ -10323,8 +10308,8 @@ export const register: Register = (on) => {
             ).catch(() => undefined);
             if (round) notes.push(round);
         }
-        if (turnAfk !== undefined && turnAfk !== afk) {
-            turnAfk = afk;
+        if (turn.turnAfk !== undefined && turn.turnAfk !== afk) {
+            patchTurn({ turnAfk: afk });
             if (isOn('stash.afk')) notes.push(afk ? AWAY_NOTE : BACK_NOTE);
         }
         if (
@@ -10337,7 +10322,7 @@ export const register: Register = (on) => {
         // turn too, only the keep-hot ping never takes one (dima's o10, 2026-10-11); the turn is read from $.state, which a
         // mid-turn reload keeps
         await absorbMarks($);
-        const isPing = (await $.state.get(TURN)).value?.isPinged ?? pinged;
+        const isPing = (await $.state.get(TURN)).value?.isPinged ?? turn.pinged;
         const fresh =
             isPing || !isOn('stash.orbit')
                 ? []
@@ -10375,13 +10360,13 @@ export const register: Register = (on) => {
         if (p) notes.push(planText(p));
         const o = await currentOrbit($);
         if (
-            !isNudged &&
+            !turn.isNudged &&
             isOn('stash.phases') &&
-            ++turnTools >= NUDGE_AT &&
-            isWorkTurn &&
+            countTool() >= NUDGE_AT &&
+            turn.isWorkTurn &&
             !(o.plan && o.plan.at >= o.turns + 1 - PLAN_QUIET_TURNS)
         ) {
-            isNudged = true;
+            patchTurn({ isNudged: true });
             notes.push(
                 o.plan
                     ? `phases not set for ${PLAN_QUIET_TURNS + 1} turns — update them with ${ORBIT_TOOL} plan`
