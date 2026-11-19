@@ -47,7 +47,7 @@ const caps = {
         why: 'the command rules the guard refuses or hints',
     },
     'home/.claude/plugin-x/mods/x-mod-stash/hooks/register.tsx': {
-        cap: 10_993,
+        cap: 10_079,
         why: 'the stash mod: orbit, phases, glide, wind and quiet in one register',
     },
     'home/.claude/plugin-x/mods/x-mod-stash/tests/board.test.ts': {
@@ -100,8 +100,8 @@ const caps = {
     },
     'x/go/lane_landed.go': { cap: 1_398, why: 'lane landed and its decamp' },
     'x/go/merge_auto.go': {
-        cap: 1_888,
-        why: 'merge-auto: the brake, the gates and the merge',
+        cap: 1_744,
+        why: 'merge-auto: the gates and the merge',
     },
     'x/go/merge_auto_test.go': {
         cap: 1_983,

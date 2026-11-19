@@ -250,7 +250,7 @@ func brakeCheckPlan(r *Run) (any, error) {
 		if err := os.Chdir(clone[1]); err != nil {
 			return nil, unread(fmt.Errorf("no clone of %s: %w", clone[0], err))
 		}
-		brake, _, err := brakeOn(clone[0], "main")
+		brake, _, err := brakeOn(clone[0], "main", "")
 		if err != nil {
 			return nil, unread(err)
 		}

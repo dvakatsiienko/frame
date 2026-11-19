@@ -212,7 +212,9 @@ func newMergeWorld(t *testing.T, paths ...string) *mergeWorld {
 		// mergeable leads, so a test that plants its own value after "number" wins: go's json keeps a key's last value
 		repoPath + "/pulls/7": `{"mergeable":true,"mergeable_state":"clean","number":7,"title":"a pr","state":"open","merged":false,"body":"the body",
 			"head":{"sha":"` + head + `","ref":"codie/x"},"base":{"ref":"main"}}`,
-		repoPath + "/pulls/7/files":                                   "[" + strings.Join(files, ",") + "]",
+		repoPath + "/pulls/7/files": "[" + strings.Join(files, ",") + "]",
+		// the pr's own labels, the brake's first read; #8 is a stack's upper layer
+		repoPath + "/issues/7/labels": `[]`, repoPath + "/issues/8/labels": `[]`,
 		repoPath + "/branches/main/protection/required_status_checks": `{"contexts":["test","build"]}`,
 		repoPath + "/commits/" + head + "/check-runs": `{"total_count":2,"check_runs":[
 			{"name":"test","status":"completed","conclusion":"success","html_url":"https://ci/1"},
@@ -1898,15 +1900,6 @@ func TestMergeAutoReleasesTheBrakeOnlyOnDimasWord(t *testing.T) {
 	if got.code != 2 || len(w.hub.sent("DELETE ")) != 0 || !strings.Contains(envelopeOf(got).Error, "only on dima's typed word") || got.next != "x lane merge-auto 8 --release-brake --dima-ok 8" {
 		t.Fatalf("exit %d, deletes %q, error %q, next %q: want the refusal naming dima's word and the exact release", got.code, w.hub.sent("DELETE "), envelopeOf(got).Error, got.next)
 	}
-}
-
-// brakeOnFor lands a merge-auto merge and its git revert inside brakeNow's 7 days, so the brake is on; it returns the revert
-func brakeOnFor(t *testing.T, w *mergeWorld) string {
-	t.Helper()
-	write(t, filepath.Join(w.seed, "merged.txt"), "an earlier pr\n")
-	gitT(t, w.seed, "add", "merged.txt")
-	merged := commitAt(t, w, "2026-10-17T12:00:00Z", "commit", "-q", "-m", "an earlier pr (#5)\n\nthe body\n\n"+mergeTrailer)
-	return gitRevert(t, w, merged, "2026-10-18T12:00:00Z")
 }
 
 // --dima-ok trusts what reached it: x-mod-guard refuses the flag unless dima's last prompt names the pr
