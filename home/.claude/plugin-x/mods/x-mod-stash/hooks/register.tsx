@@ -30,12 +30,10 @@ import {
     takeJoins,
 } from './joins.ts';
 import {
-    HOT,
     bumpHotGen,
     holdAfk,
     holdHot,
     holdWaker,
-    hotOf,
     isAfkWarm,
     isWindowSpent,
     setAfk,
@@ -209,12 +207,7 @@ import {
     startIdentity,
     threadRecords,
 } from './session-identity.ts';
-import {
-    dropState,
-    keepShelf,
-    pollShelf,
-    writeFleet,
-} from './session-record.ts';
+import { dropState, keepShelf, pollShelf } from './session-record.ts';
 import type { IsPartOn, NumberName, SwitchName } from './settings-store.ts';
 import {
     NUMBERS,
@@ -245,10 +238,12 @@ import { isSpeakingNow, playPress, refreshSpeaking, speak } from './speak.ts';
 import {
     AFK_KEY,
     HERDR_READ,
+    HOT,
     MODEL,
     REPLY,
     type Reply,
     WAKER_KEY,
+    hotOf,
 } from './store-keys.ts';
 import { cleanTree, drawn } from './tree.ts';
 import {
@@ -4142,9 +4137,8 @@ async function takeBandPresses($: EngineInterface) {
         const key = p.button === 'waker' ? WAKER_KEY : AFK_KEY;
         const stored = (await $.store.get(key)) as { at?: number } | undefined;
         if (typeof stored?.at === 'number' && stored.at >= p.at) continue;
-        if (p.button === 'waker')
-            await setWaker($, p.on, () => writeFleet($), p.at);
-        else await setAfk($, p.on, () => writeFleet($), p.at);
+        if (p.button === 'waker') await setWaker($, p.on, p.at);
+        else await setAfk($, p.on, p.at);
     }
     const override = presses.findLast((p) => p.button === 'override');
     if (override) await takeOverridePress($, home, override);
@@ -5183,14 +5177,13 @@ async function paceWaker($: EngineInterface) {
                 wasOn,
                 ...(until ? { until } : {}),
             });
-            if (!wasOn) await writeWaker($, true, () => writeFleet($));
+            if (!wasOn) await writeWaker($, true);
             return;
         }
         // a second start means ⏰ on, he may have forgotten it (W1958); the end still restores what the first one found
         if (key?.since !== note.since) {
             await $.store.set(PACE_WAKER + sid, { ...note, since: key?.since });
-            if (waker?.on !== true)
-                await writeWaker($, true, () => writeFleet($));
+            if (waker?.on !== true) await writeWaker($, true);
             // a held afk puts its copy back at its end
             const away = (await $.store.get(AFK_KEY)) as
                 | { on?: boolean }
@@ -5216,7 +5209,7 @@ async function paceWaker($: EngineInterface) {
             | undefined;
         if (away?.on)
             await $.store.set(AFK_KEY, { ...away, wakerBefore: false });
-        else await writeWaker($, false, () => writeFleet($));
+        else await writeWaker($, false);
     }
     await $.store.delete(PACE_WAKER + sid);
 }
@@ -8969,9 +8962,7 @@ export const register: Register = (on) => {
                                     | typeof was
                                     | undefined;
                                 isRead = true;
-                                was = await setAfk($, !read?.on, () =>
-                                    writeFleet($),
-                                );
+                                was = await setAfk($, !read?.on);
                             },
                             async () => {
                                 holdAfk(view.afk === true);
@@ -8993,12 +8984,12 @@ export const register: Register = (on) => {
                             '⏰',
                             { isWaker: warm.isWaker },
                             // a poll already past load's guard may have read the old value
-                            () => setWaker($, wanted, () => writeFleet($)),
+                            () => setWaker($, wanted),
                             async () => {
                                 holdWaker(view.isWaker === true);
-                                await writeWaker($, warm.isWaker, () =>
-                                    writeFleet($),
-                                ).catch(() => undefined);
+                                await writeWaker($, warm.isWaker).catch(
+                                    () => undefined,
+                                );
                             },
                         );
                     };

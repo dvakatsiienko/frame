@@ -2,17 +2,18 @@ import type { EngineInterface } from 'claude-code';
 
 import type { StashEntry } from '../types/stash.d.ts';
 import { JOIN_OWED, handBackJoins, joinsOf } from './joins.ts';
-import { HOT, hotOf } from './keep-warm.ts';
 import { PREFIX, currentOrbit } from './orbit-store.ts';
 import { currentId, identity, sessionName } from './session-identity.ts';
 import { partsShown } from './settings-store.ts';
 import {
     AFK_KEY,
     HERDR_READ,
+    HOT,
     MODEL,
     REPLY,
     type Reply,
     WAKER_KEY,
+    hotOf,
 } from './store-keys.ts';
 import { CONTEXT } from './usage.ts';
 import { errorText, writeWhole } from './util.ts';

@@ -2,19 +2,11 @@ import type { EngineInterface } from 'claude-code';
 
 import { registry } from './roster.ts';
 import { currentId } from './session-identity.ts';
+import { writeFleet } from './session-record.ts';
 import { partsShown } from './settings-store.ts';
-import { AFK_KEY, WAKER_KEY } from './store-keys.ts';
+import { AFK_KEY, HOT, WAKER_KEY } from './store-keys.ts';
 import { turn } from './turn.ts';
 import { paceMeterOf } from './usage.ts';
-
-// 🔥 keep warm: `hot:<sid>`, this session's ping clock, `{ since }` on, `{ off: true }` dima's off
-export const HOT = 'hot:';
-
-// off is a written value, so a seat's default arms only a key never written
-export const hotOf = (key: unknown) =>
-    key && (key as { off?: boolean }).off !== true
-        ? (key as { since: number })
-        : undefined;
 
 // the band's three switches as this process holds them: 💨 afk, ⏰ the waker, 🔥 keep-hot; read through `warm`
 const state = {
@@ -55,25 +47,15 @@ export async function setHot($: EngineInterface, on: boolean) {
 
 // ⏰'s one writer: every write stamps its time, so the latest press wins whichever band it came from (FRM-568)
 // `at`: the press's own time, so a later press read in the same poll still outranks it; a cc press stamps now
-export async function writeWaker(
-    $: EngineInterface,
-    on: boolean,
-    onSaved: () => Promise<void>,
-    at?: number,
-) {
+export async function writeWaker($: EngineInterface, on: boolean, at?: number) {
     await $.store.set(WAKER_KEY, { at: at ?? (await $.clock.now()), on });
-    await onSaved().catch(() => undefined);
+    await writeFleet($).catch(() => undefined);
 }
 
 // ⏰ set, never flipped; a set during afk is what afk off puts back
-export async function setWaker(
-    $: EngineInterface,
-    on: boolean,
-    onSaved: () => Promise<void>,
-    at?: number,
-) {
+export async function setWaker($: EngineInterface, on: boolean, at?: number) {
     state.isWaker = on;
-    await writeWaker($, on, onSaved, at);
+    await writeWaker($, on, at);
     const away = (await $.store.get(AFK_KEY)) as
         | { at?: number; on?: boolean; wakerBefore?: boolean }
         | undefined;
@@ -81,12 +63,7 @@ export async function setWaker(
 }
 
 // 💨 set, never flipped: afk on turns ⏰ on, afk off puts back what ⏰ was before it; a press on ⏰ meanwhile still counts
-export async function setAfk(
-    $: EngineInterface,
-    on: boolean,
-    onSaved: () => Promise<void>,
-    at?: number,
-) {
+export async function setAfk($: EngineInterface, on: boolean, at?: number) {
     const was = (await $.store.get(AFK_KEY)) as
         | { at?: number; on?: boolean; wakerBefore?: boolean }
         | undefined;
@@ -104,9 +81,9 @@ export async function setAfk(
     });
     if (on || was?.wakerBefore !== undefined) {
         state.isWaker = on || was?.wakerBefore === true;
-        await writeWaker($, state.isWaker, onSaved, stamp);
+        await writeWaker($, state.isWaker, stamp);
     }
-    await onSaved().catch(() => undefined);
+    await writeFleet($).catch(() => undefined);
     return was;
 }
 

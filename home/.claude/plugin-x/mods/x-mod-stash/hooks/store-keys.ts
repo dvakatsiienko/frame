@@ -23,3 +23,13 @@ export const REPLY = 'reply:';
 export const MODEL = 'model:';
 // the waker: one global switch, off by default; when on, a session stopped on the 5h cap gets one resume at the reset
 export const WAKER_KEY = 'waker';
+// stays here, never a leftover: session-record writes it into the fleet's shelf and keep-warm writes the shelf through
+// session-record, so keep-warm holding the key would close an import cycle
+// 🔥 keep warm: `hot:<sid>`, this session's ping clock, `{ since }` on, `{ off: true }` dima's off
+export const HOT = 'hot:';
+
+// off is a written value, so a seat's default arms only a key never written
+export const hotOf = (key: unknown) =>
+    key && (key as { off?: boolean }).off !== true
+        ? (key as { since: number })
+        : undefined;
