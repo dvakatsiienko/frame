@@ -5,7 +5,6 @@
 
 import { mkdir, readdir, writeFile } from 'fs/promises';
 import {
-    Popover,
     TextView,
     Textarea,
     TextareaState,
@@ -70,14 +69,6 @@ import { splitBlocks } from './blocks.js';
 import { CHAT_SHOWN, settingsOverlay } from './chat-asks.js';
 import { messageDetails } from './details.js';
 import {
-    EFFORTS,
-    effortKey,
-    effortWord,
-    isPickWaiting,
-    pickerLabel,
-    slideEffort,
-} from './effort.js';
-import {
     fileAt,
     isSentRow,
     openArgs,
@@ -105,17 +96,7 @@ import { LOOK_KEY, lookOf } from './look.js';
 import { createMagic, retextWait } from './magic.js';
 import { copyText, createMessageMenu, menuPlace } from './menu.js';
 import { createPages } from './pages.js';
-import {
-    MODELS,
-    NO_RUNS_AT,
-    PERMISSIONS,
-    effortNow,
-    modelNow,
-    permissionIn,
-    permissionOf,
-    pickIn,
-    runsAtAfter,
-} from './picker.js';
+import { createPickers } from './pickers.js';
 import { createPictureViewer } from './picture-viewer.js';
 import { createPlace } from './place.js';
 import { sendArgs } from './queued.js';
@@ -231,10 +212,6 @@ const nestedCard = (t, side) => {
 const AUTO_WIND_MS = 60 * 1000;
 const AUTO_WIND_RETRY_MS = 10 * 1000;
 const AUTO_WIND_DOOR_MS = 10 * 1000;
-// the picker's label flashes this long once a reply first ran at his pick
-const APPLIED_FLASH_MS = 2000;
-// a pick that shows no change by then says so
-const PICK_WAIT_MS = 12000;
 // how often the shown thread's session is looked up again, as the old chat's tick did
 const SHOWN_LOOK_MS = 2000;
 // the operator override changes with no event herdr watches, and a deck that stopped publishing changes nothing: the
@@ -575,32 +552,24 @@ export default class Chat extends View {
     autoWindReading = new Set();
     /** auto second wind on for the fleet: his settings row; off, 🍃 leaves the band */
     hasAutoWind = true;
-    /** the model and effort the shown thread runs at, as its transcript tells them */
-    runsAt = NO_RUNS_AT;
     /** Claude's settings.json: the model and effort a session starts on @type {import('./picker.js').ClaudeSettings} */
     claudeSettings = null;
-    /** a pick on its way to the shown thread @type {{ kind: 'model' | 'effort', value: string, until: number } | null} */
-    pending = null;
-    /** why a pick did not go, or did not land @type {string | null} */
-    pickNote = null;
-    isPickOpen = false;
     /** a picture's open button starts CleanShot's annotate, else Preview (`chatter.pictures.cleanshot`) */
     isCleanShot = true;
     /** the settings window this copy draws, when the gear opened it @type {{ render: () => any } | null} */
     settingsWindow = null;
     isCmdHeld = false;
     noteSerial = 0;
-    /** the effort slider while the picker is open @type {import('./effort.js').EffortPopover | null} */
-    effortPop = null;
-    /** a model switch waiting on his yes: it drops the thread's cache @type {string | null} */
-    askModel = null;
-    /** the thread's permission mode, read off its screen when the picker opens @type {string | null} */
-    permission = null;
-    /** a permission change on its way @type {string | null} */
-    permissionAsked = null;
-    isPermsOpen = false;
-    /** the open picker holds the keyboard, so ← → reach the slider @type {import('gpui-kit').FocusHandle | null} */
-    pickKeys = null;
+    /** the model, effort and permission pickers under the quill */
+    pickers = createPickers({
+        claudeSettings: () => this.claudeSettings,
+        column: () => this.column(),
+        hasRows: () => this.model.rows.length > 0,
+        quillBox: () => this.box,
+        shownAddress: () => this.address,
+        status: () => this.statusNow(),
+        typingInto,
+    });
     /** the picture viewer over the chat (W33/W35) */
     pictures = createPictureViewer({
         file: () => this.file,
@@ -717,7 +686,7 @@ export default class Chat extends View {
             if (event) this.holdStep(box, event, cx);
         });
         this.box = box;
-        this.pickKeys = cx.focus_handle();
+        this.pickers.start(cx);
         this.pictures.start(cx);
         // the open viewer holds the keyboard: ← → move, + − 0 zoom, ⌘C copies, Esc closes
         cx.bind_keys(
@@ -899,15 +868,16 @@ export default class Chat extends View {
             _cx.timer.after(0, (later) => this.findBar.open(later));
         if (acts.isFocus && !this.pictures.isOpen())
             _cx.timer.after(50, () => {
-                if (!this.isPickOpen) this.box?.focus();
+                if (!this.pickers.isOpen()) this.box?.focus();
             });
         // the open viewer holds the keyboard: a click on the list or a later focus of the quill never keeps it
         this.pictures.keepKeys(_cx);
         if (acts.isEffort)
             _cx.timer.after(0, (later) => {
-                const isOpening = !this.isPickOpen;
-                this.applyEffort(later);
-                if (isOpening && this.isPickOpen) this.readPermission(later);
+                const isOpening = !this.pickers.isOpen();
+                this.pickers.applyEffort(later);
+                if (isOpening && this.pickers.isOpen())
+                    this.pickers.readPermission(later);
             });
         const look = lookOf(shared(LOOK_KEY));
         const lookKey = [
@@ -1013,16 +983,18 @@ export default class Chat extends View {
                     .text_color(t.muted)
                     .child(this.note),
             );
-        if (this.pickNote)
+        const pickNote = this.pickers.note();
+        if (pickNote)
             root.child(
                 div()
                     .px(32)
                     .pb(6)
                     .text_size(12)
                     .text_color(t.accent)
-                    .child(this.pickNote),
+                    .child(pickNote),
             );
-        if (this.askModel) root.child(this.modelConfirm(this.askModel, t));
+        const confirm = this.pickers.confirmView(t);
+        if (confirm) root.child(confirm);
         const drawn = this.drawnNow(Date.now());
         this.bandKey = JSON.stringify(drawn);
         return (
@@ -1158,7 +1130,7 @@ export default class Chat extends View {
                     JSON.stringify(this.claudeSettings);
                 this.claudeSettings = next;
             } catch {}
-            isChanged = this.settlePick() || isChanged;
+            isChanged = this.pickers.settle() || isChanged;
             if (
                 isChanged ||
                 JSON.stringify(this.drawnNow(Date.now())) !== this.bandKey
@@ -1364,568 +1336,6 @@ export default class Chat extends View {
     /** the shown thread's status, as herdr reads it */
     statusNow() {
         return agents().find((agent) => agent.address === this.address)?.status;
-    }
-
-    /** the model and effort the shown thread runs at, a pick on its way shown in their place */
-    pickNow() {
-        const model = modelNow(this.runsAt, this.claudeSettings);
-        const effort = effortNow(this.runsAt, this.claudeSettings);
-        const { pending } = this;
-        return {
-            effort,
-            isApplied:
-                this.runsAt.appliedAt !== null &&
-                Date.now() - this.runsAt.appliedAt < APPLIED_FLASH_MS,
-            model,
-            pending,
-            shownEffort: pending?.kind === 'effort' ? pending.value : effort,
-            shownModel: pending?.kind === 'model' ? pending.value : model,
-        };
-    }
-
-    /**
-     * a pick made in Claude's own /model or /effort picker; the label says «…» until the transcript shows it, or says
-     * after 12 s that it did not. never while Claude asks him something: the keys would answer it
-     * @param {'model' | 'effort'} kind @param {string} value @param {Context} cx
-     */
-    pick(kind, value, cx) {
-        const { address } = this;
-        if (!address) return;
-        if (
-            this.statusNow() === 'blocked' ||
-            this.pending ||
-            typingInto.has(address)
-        ) {
-            this.pickNote =
-                this.pending || typingInto.has(address)
-                    ? 'One switch at a time: wait for this one to land'
-                    : 'Answer Claude first, then pick';
-            cx.notify();
-            return;
-        }
-        this.closePick();
-        this.pending = { kind, until: Date.now() + PICK_WAIT_MS, value };
-        this.pickNote = null;
-        typingInto.add(address);
-        cx.notify();
-        cx.spawn(async (cx) => {
-            try {
-                const isTaken = await pickIn(kind, value, {
-                    editorMode: this.claudeSettings?.editorMode,
-                    keys: async (keys) => {
-                        if (keys.length) await hc(['keys', address, ...keys]);
-                    },
-                    screen: async () =>
-                        (await hc(['read', address])).stdout.replace(/\r/g, ''),
-                    sleep: (ms) => cx.sleep(ms),
-                    status: () =>
-                        agents().find((agent) => agent.address === address)
-                            ?.status,
-                });
-                // mid-turn the pick writes nothing to the transcript: the label takes it once the picker closed
-                if (isTaken && this.address === address)
-                    this.runsAt =
-                        kind === 'model'
-                            ? { ...this.runsAt, model: value }
-                            : {
-                                  ...this.runsAt,
-                                  effort: {
-                                      isPicked: true,
-                                      level: value,
-                                      model: modelNow(
-                                          this.runsAt,
-                                          this.claudeSettings,
-                                      ),
-                                  },
-                              };
-            } catch (error) {
-                if (this.address === address) {
-                    this.pending = null;
-                    this.pickNote =
-                        error instanceof Error ? error.message : String(error);
-                }
-            } finally {
-                typingInto.delete(address);
-            }
-            cx.notify();
-        });
-    }
-
-    /**
-     * whether the pick in flight landed or timed out: a picked effort stays «…» until a reply runs at it, mid-turn
-     * too; a turn that ended first holds it for the next turn
-     * @returns {boolean} whether anything changed
-     */
-    settlePick() {
-        const p = this.pending;
-        if (!p) return false;
-        const { effort, model } = this.pickNow();
-        const now = p.kind === 'model' ? model : effort;
-        if (
-            p.kind === 'effort' &&
-            this.runsAt.effort?.isPicked &&
-            now === p.value
-        ) {
-            if (isPickWaiting(true, this.statusNow())) return false;
-            this.runsAt = {
-                ...this.runsAt,
-                effort: { ...this.runsAt.effort, isPicked: false },
-            };
-            this.pending = null;
-            return true;
-        }
-        if (now === p.value) {
-            this.pending = null;
-            return true;
-        }
-        if (Date.now() <= p.until) return false;
-        this.pending = null;
-        this.pickNote = 'No change seen: look at the Terminal';
-        return true;
-    }
-
-    closePick() {
-        this.isPickOpen = false;
-        this.effortPop = null;
-    }
-
-    /** the open slider holds the keyboard; closed, the caret goes back to the quill, a frame later @param {Context} cx */
-    focusPick(cx) {
-        if (!this.isPickOpen) {
-            this.box?.focus();
-            return;
-        }
-        cx.timer.after(16, () => this.pickKeys?.focus());
-    }
-
-    /** Enter in the open slider applies the stop picked and closes it @param {Context} cx */
-    applyEffort(cx) {
-        const isBlocked = this.statusNow() === 'blocked';
-        const r = effortKey(
-            this.isPickOpen ? this.effortPop : null,
-            this.pickNow().shownEffort,
-            isBlocked,
-        );
-        this.effortPop = r.popover;
-        this.isPickOpen = Boolean(r.popover);
-        this.pickNote = isBlocked ? 'Answer Claude first, then pick' : null;
-        if (r.apply) this.pick('effort', r.apply, cx);
-        this.focusPick(cx);
-        cx.notify();
-    }
-
-    /**
-     * the quill's one picker, shepherdr's shape (dima's o10 pick, 2026-11-13): «Opus 5.5 · Medium ⌄» left of send, its
-     * popover the model list over the effort slider. both switch mid-turn: the next reply uses the pick
-     * @param {Theme} t
-     */
-    picker(t) {
-        const ready = this.statusNow() !== 'blocked';
-        const { effort, isApplied, model, pending, shownEffort, shownModel } =
-            this.pickNow();
-        const trigger = h_flex()
-            .id('chat-pick-trigger')
-            .flex_none()
-            .gap(4)
-            .px(6)
-            .h(24)
-            .items_center()
-            .rounded(6)
-            .when(this.isPickOpen, (el) => el.bg(t.hover))
-            .cursor_pointer()
-            .text_size(12)
-            .text_color(pending ? t.accent : t.muted)
-            .when(isApplied, (el) =>
-                el.bg(t.solid).text_color(t.solid_foreground),
-            )
-            .hover((style) => style.bg(t.hover).text_color(t.foreground))
-            .child(pickerLabel(model, effort, pending))
-            .child(
-                svg('mods/workspace-chrome/chevron-down.svg')
-                    .size(12)
-                    .text_color(t.dim),
-            );
-        /** @param {string} value */
-        const row = (value) =>
-            h_flex()
-                .id(`chat-pick-model-${value}`)
-                .gap(10)
-                .px(9)
-                .h(31)
-                .items_center()
-                .rounded(7)
-                .text_size(13)
-                .text_color(value === shownModel ? t.foreground : t.muted)
-                .when(value !== shownModel && ready, (el) =>
-                    el
-                        .cursor_pointer()
-                        .hover((style) =>
-                            style.bg(t.hover).text_color(t.foreground),
-                        )
-                        .on_click((_event, cx) => {
-                            this.closePick();
-                            // a model switch mid-conversation drops the thread's cache: it asks first
-                            if (this.model.rows.length) this.askModel = value;
-                            else this.pick('model', value, cx);
-                            this.box?.focus();
-                            cx.notify();
-                        }),
-                )
-                .when(!ready, (el) => el.text_color(t.dim))
-                .when(value === shownModel && pending?.kind === 'model', (el) =>
-                    el.text_color(t.accent),
-                )
-                .child(div().flex_1().child(value))
-                .child(
-                    div()
-                        .w(14)
-                        .flex_none()
-                        .text_color(t.foreground)
-                        .child(value === shownModel ? '✓' : ''),
-                );
-        /** @param {string} text */
-        const head = (text) =>
-            div().px(9).pt(8).pb(4).text_size(11).text_color(t.dim).child(text);
-        const chosenEffort =
-            EFFORTS[this.effortPop?.at ?? -1] ?? shownEffort ?? null;
-        // each level as wide as its word, the room left shared out, the chosen one raised (shepherdr's segments)
-        const levels = h_flex()
-            .mx(4)
-            .my(3)
-            .h(28)
-            .gap(2)
-            .p(2)
-            .rounded(7)
-            .bg(t.selected)
-            .children(
-                EFFORTS.map((level) =>
-                    div()
-                        .id(`chat-pick-level-${level}`)
-                        .flex_auto()
-                        .h_full()
-                        .flex()
-                        .items_center()
-                        .justify_center()
-                        .rounded(5)
-                        .text_size(11.5)
-                        .when(level === chosenEffort, (el) =>
-                            el
-                                .bg(isApplied ? t.solid : t.popover)
-                                .text_color(
-                                    isApplied
-                                        ? t.solid_foreground
-                                        : pending?.kind === 'effort'
-                                          ? t.accent
-                                          : t.foreground,
-                                )
-                                .font_weight(500)
-                                .shadow_sm(),
-                        )
-                        .when(level !== chosenEffort, (el) =>
-                            el.text_color(t.muted),
-                        )
-                        .when(ready && level !== shownEffort, (el) =>
-                            el
-                                .cursor_pointer()
-                                .hover((style) =>
-                                    style.text_color(t.foreground),
-                                )
-                                .on_click((_event, cx) => {
-                                    this.closePick();
-                                    if (level !== shownEffort)
-                                        this.pick('effort', level, cx);
-                                    this.box?.focus();
-                                    cx.notify();
-                                }),
-                        )
-                        .child(effortWord(level)),
-                ),
-            );
-        return Popover.new('chat-pick')
-            .anchor('bottom_right')
-            .open(this.isPickOpen)
-            .on_open_change((isOpen, cx) => {
-                // a thread asking him something opens nothing: a pick would type into its question
-                this.isPickOpen = isOpen && ready;
-                this.effortPop = this.isPickOpen
-                    ? effortKey(null, shownEffort, false).popover
-                    : null;
-                this.pickNote =
-                    isOpen && !ready ? 'Answer Claude first, then pick' : null;
-                this.isPermsOpen = false;
-                if (this.isPickOpen) this.readPermission(cx);
-                this.focusPick(cx);
-                cx.notify();
-            })
-            .trigger(trigger)
-            .content(
-                v_flex()
-                    .id('chat-pick-pop')
-                    .track_focus(
-                        /** @type {import('gpui-kit').FocusHandle} */ (
-                            this.pickKeys
-                        ),
-                    )
-                    .key_context('ChatPick')
-                    .on_action('x_herdr_chat_effort_left', (_event, cx) =>
-                        this.slideEffort('left', cx),
-                    )
-                    .on_action('x_herdr_chat_effort_right', (_event, cx) =>
-                        this.slideEffort('right', cx),
-                    )
-                    .on_action('x_herdr_chat_effort_apply', (_event, cx) =>
-                        this.applyEffort(cx),
-                    )
-                    .on_action('x_herdr_chat_effort_close', (_event, cx) => {
-                        this.closePick();
-                        this.box?.focus();
-                        cx.notify();
-                    })
-                    .relative()
-                    .w(340)
-                    .p(5)
-                    .mb(6)
-                    .rounded(10)
-                    .bg(t.popover)
-                    .border(1)
-                    .border_color(t.border)
-                    .shadow_md()
-                    .child(head('Model'))
-                    .children(MODELS.map(([, label]) => row(label ?? '')))
-                    .child(div().mx(4).my(4).h(1).bg(t.border))
-                    .child(head('Reasoning'))
-                    .child(levels)
-                    .child(div().mx(4).my(4).h(1).bg(t.border))
-                    .child(this.permissionsRow(t, ready))
-                    .when(this.isPermsOpen, (el) =>
-                        el.child(this.permissionsMenu(t, ready)),
-                    ),
-            );
-    }
-
-    /** shepherdr's row: «Permissions · Bypass permissions ›», its five modes listed under it, named as Claude Code names them @param {Theme} t @param {boolean} ready */
-    permissionsRow(t, ready) {
-        const shown = this.permissionAsked ?? this.permission;
-        const label = PERMISSIONS.find((p) => p.id === shown)?.label ?? '…';
-        return h_flex()
-            .id('chat-permissions')
-            .gap(10)
-            .px(9)
-            .h(31)
-            .items_center()
-            .rounded(7)
-            .text_size(13)
-            .text_color(ready ? t.foreground : t.dim)
-            .when(this.isPermsOpen, (el) => el.bg(t.hover))
-            .when(ready, (el) =>
-                el
-                    .cursor_pointer()
-                    .hover((style) => style.bg(t.hover))
-                    .on_click((_event, cx) => {
-                        this.isPermsOpen = !this.isPermsOpen;
-                        cx.notify();
-                    }),
-            )
-            .child(div().flex_1().child('Permissions'))
-            .child(
-                div()
-                    .text_size(12)
-                    .text_color(this.permissionAsked ? t.accent : t.muted)
-                    .child(label),
-            )
-            .child(div().text_color(t.dim).child('›'));
-    }
-
-    /** the five modes, inline under the row: a menu floating over the picker's rows would let a click reach them too @param {Theme} t @param {boolean} ready */
-    permissionsMenu(t, ready) {
-        const shown = this.permissionAsked ?? this.permission;
-        return v_flex()
-            .id('chat-permissions-menu')
-            .mx(4)
-            .mb(2)
-            .p(3)
-            .rounded(8)
-            .bg(t.selected)
-            .children(
-                PERMISSIONS.map(({ id, label }) =>
-                    h_flex()
-                        .id(`chat-permission-${id}`)
-                        .gap(10)
-                        .px(9)
-                        .h(29)
-                        .items_center()
-                        .rounded(6)
-                        .text_size(13)
-                        .text_color(id === shown ? t.foreground : t.muted)
-                        .when(ready, (el) =>
-                            el
-                                .cursor_pointer()
-                                .hover((style) =>
-                                    style.bg(t.hover).text_color(t.foreground),
-                                )
-                                .on_click((_event, cx) => {
-                                    if (id !== shown)
-                                        this.pickPermission(id, label, cx);
-                                    else {
-                                        this.isPermsOpen = false;
-                                        cx.notify();
-                                    }
-                                }),
-                        )
-                        .child(div().flex_1().child(label))
-                        .child(
-                            div()
-                                .w(14)
-                                .flex_none()
-                                .text_color(t.foreground)
-                                .child(id === shown ? '✓' : ''),
-                        ),
-                ),
-            );
-    }
-
-    /** the mode line at the foot of the thread's screen, read when the picker opens @param {Context} cx */
-    readPermission(cx) {
-        const { address } = this;
-        if (!address) return;
-        cx.spawn(async (cx) => {
-            const out = await hc(['read', address]).catch(() => null);
-            if (this.address !== address || !out) return;
-            this.permission = permissionOf(out.stdout.replace(/\r/g, ''));
-            cx.notify();
-        });
-    }
-
-    /**
-     * Shift+Tab in the thread until its mode line reads the mode picked: it applies live, mid-turn too (probed
-     * 2026-11-17), so nothing restarts
-     * @param {string} mode @param {string} label @param {Context} cx
-     */
-    pickPermission(mode, label, cx) {
-        const { address } = this;
-        if (!address || typingInto.has(address)) return;
-        const isBlocked =
-            agents().find((a) => a.address === address)?.status === 'blocked';
-        // keys typed into a question would answer it, and keys mixed into a model or effort pick would land in its picker
-        if (isBlocked || this.pending) {
-            this.pickNote = isBlocked
-                ? 'Answer Claude first, then pick'
-                : 'One switch at a time: wait for this one to land';
-            this.isPermsOpen = false;
-            cx.notify();
-            return;
-        }
-        typingInto.add(address);
-        this.permissionAsked = mode;
-        this.isPermsOpen = false;
-        cx.notify();
-        cx.spawn(async (cx) => {
-            try {
-                const now = await permissionIn(mode, {
-                    isBlocked: () =>
-                        agents().find((a) => a.address === address)?.status ===
-                        'blocked',
-                    keys: async (keys) => {
-                        await hc(['keys', address, ...keys]);
-                    },
-                    screen: async () =>
-                        (await hc(['read', address])).stdout.replace(/\r/g, ''),
-                    sleep: (ms) => cx.sleep(ms),
-                });
-                if (this.address !== address) return;
-                this.permission = now;
-                if (now !== mode)
-                    this.pickNote = `${label} is not in this thread's Shift+Tab cycle`;
-            } catch (error) {
-                // keys may have gone before the failure: the mode shown is unknown until the picker reads it again
-                if (this.address === address) {
-                    this.permission = null;
-                    this.pickNote =
-                        error instanceof Error ? error.message : String(error);
-                }
-            } finally {
-                typingInto.delete(address);
-                if (this.address === address) this.permissionAsked = null;
-                cx.notify();
-            }
-        });
-    }
-
-    /** @param {'left' | 'right'} way @param {Context} cx */
-    slideEffort(way, cx) {
-        if (!this.isPickOpen || !this.effortPop) return;
-        this.effortPop = slideEffort(this.effortPop, way);
-        cx.notify();
-    }
-
-    /** a model switch mid-conversation, asked first: the next message re-reads the whole history uncached @param {string} value @param {Theme} t */
-    modelConfirm(value, t) {
-        /** @param {string} id @param {string} word @param {boolean} isMain @param {(cx: Context) => void} act */
-        const choice = (id, word, isMain, act) =>
-            div()
-                .id(id)
-                .px(10)
-                .py(3)
-                .rounded(6)
-                .bg(isMain ? t.solid : t.raised)
-                .text_color(isMain ? t.solid_foreground : t.foreground)
-                .cursor_pointer()
-                .child(word)
-                .on_click((_event, cx) => {
-                    this.askModel = null;
-                    act(cx);
-                    cx.notify();
-                });
-        return h_flex()
-            .w_full()
-            .flex_none()
-            .justify_center()
-            .px(18)
-            .pb(6)
-            .child(
-                v_flex()
-                    .w_full()
-                    .max_w(this.column())
-                    .gap(8)
-                    .p(10)
-                    .rounded(8)
-                    .border(1)
-                    .border_color(t.border)
-                    .bg(t.raised)
-                    .text_size(12)
-                    .child(
-                        div()
-                            .font_semibold()
-                            .child(`Switch this thread to ${value}?`),
-                    )
-                    .child(
-                        div()
-                            .text_color(t.muted)
-                            .child(
-                                'Its cache is lost: the next message re-reads the whole conversation, slower and pricier.',
-                            ),
-                    )
-                    .child(
-                        h_flex()
-                            .gap(6)
-                            .child(
-                                choice(
-                                    'chat-model-switch',
-                                    `Switch to ${value}`,
-                                    true,
-                                    (cx) => this.pick('model', value, cx),
-                                ),
-                            )
-                            .child(
-                                choice(
-                                    'chat-model-keep',
-                                    'Keep',
-                                    false,
-                                    () => {},
-                                ),
-                            ),
-                    ),
-            );
     }
 
     /**
@@ -2166,7 +1576,7 @@ export default class Chat extends View {
                                 .absolute()
                                 .right(8 + SEND_SIZE + 6)
                                 .bottom(10)
-                                .child(this.picker(t)),
+                                .child(this.pickers.view(t)),
                         )
                         .child(this.sendButton(box, t)),
                 )
@@ -3052,15 +2462,8 @@ export default class Chat extends View {
         // no button shows or presses a thread no longer on screen; the fleet's facts stay
         this.bandThread = null;
         this.pressed = {};
-        this.runsAt = NO_RUNS_AT;
         this.isStuck = false;
-        this.pending = null;
-        this.pickNote = null;
-        this.askModel = null;
-        this.permission = null;
-        this.permissionAsked = null;
-        this.isPermsOpen = false;
-        this.closePick();
+        this.pickers.clear();
         this.stateWatch?.cancel();
         this.stateWatch = null;
         this.stateTurn += 1;
@@ -3151,7 +2554,7 @@ export default class Chat extends View {
         if (this.reader !== reader) return;
         if (isRestart) {
             // a replaced transcript names its own model and effort, or none yet: never the removed one's
-            this.runsAt = NO_RUNS_AT;
+            this.pickers.restart();
             this.model.clear();
             this.heights.clear();
             fileRows.clear();
@@ -3160,15 +2563,7 @@ export default class Chat extends View {
         }
         const hadError = this.error !== null;
         this.error = null;
-        const ran = this.runsAt;
-        for (const line of lines)
-            this.runsAt = runsAtAfter(this.runsAt, line, Date.now());
-        if (this.runsAt.appliedAt !== ran.appliedAt) {
-            // the picker's label flashes the moment a reply first ran at his pick, and draws again when it ends
-            cx.notify();
-            cx.timer.after(APPLIED_FLASH_MS + 50, (later) => later.notify());
-        }
-        if (this.runsAt !== ran && this.settlePick()) cx.notify();
+        this.pickers.takeLines(lines, cx);
         const { changed, removed } = this.model.add(lines);
         this.learnSkills(lines);
         this.makePictures(cx);
