@@ -1272,6 +1272,22 @@
         {
             "args": [
                 {
+                    "description": "the session id of a thread with a record",
+                    "name": "id"
+                }
+            ],
+            "hidden": true,
+            "name": "thread sync",
+            "needsApply": false,
+            "purpose": "a thread's tab and cc name take its record's name once idle; landed and dispatch start it, so help hides it",
+            "touches": [
+                "herdr-app — the thread's tab, renamed",
+                "hc — the thread's herdr terminal, sent /rename when idle"
+            ]
+        },
+        {
+            "args": [
+                {
                     "description": "a session id or a pid",
                     "name": "id"
                 }

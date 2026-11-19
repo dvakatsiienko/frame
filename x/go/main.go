@@ -86,6 +86,7 @@ var impls = map[string]Impl{
 	"events day":                  {Run: eventsDayRun},
 	"thread list":                 {Run: threadList},
 	"thread rename":               {Run: threadRenameRun, Undone: "the record keeps its name"},
+	"thread sync":                 {Run: threadSyncRun},
 	"thread show":                 {Run: threadShow},
 	"gh pr-review-comments-list":  {Run: ghReviewCommentsList},
 	"gh pr-review-comments-reply": {Run: ghReviewCommentsReply, Undone: "nothing was posted"},

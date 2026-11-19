@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 	"unicode"
 )
@@ -108,7 +109,8 @@ func renameTab(terminal, name string) ordered {
 // that terminal sits idle, or handed back as the exact command when it is busy or out of reach. with a wait, a busy
 // terminal or a draft in its box is retried until the deadline, then reads pending; a thread still busy after nudgeAfter is
 // asked once to end its turn at its next step, and told to resume once renamed — never an Esc or a forced stop
-func renameThread(sid, display string, wait, nudgeAfter time.Duration) ordered {
+// display is read again before each try, so a later rename of the record wins over an earlier one still waiting
+func renameThread(sid string, display func() string, wait, nudgeAfter, poll time.Duration) ordered {
 	start := time.Now()
 	isNudged := false
 	// a thread that was asked to end its turn is told to resume however the rename ended: landed, failed or timed out
@@ -123,7 +125,7 @@ func renameThread(sid, display string, wait, nudgeAfter time.Duration) ordered {
 		return row
 	}
 	for {
-		row, blocked := renameOnce(sid, display)
+		row, blocked := renameOnce(sid, display())
 		if blocked == "" || wait <= 0 {
 			return finish(row)
 		}
@@ -133,7 +135,7 @@ func renameThread(sid, display string, wait, nudgeAfter time.Duration) ordered {
 		if blocked == "busy" && !isNudged && time.Since(start) >= nudgeAfter {
 			isNudged, _ = tellThread(sid, "end your turn at your next step")
 		}
-		time.Sleep(renamePoll())
+		time.Sleep(poll)
 	}
 }
 
@@ -179,7 +181,7 @@ func renameOnce(sid, display string) (ordered, string) {
 	row := ordered{{"session", sid}, {"display", display}}
 	terminal, idle := herdrTerminalOf(sessionPid(sid))
 	if terminal == "" {
-		return append(row, kv{"renamed", false}, kv{"command", "/rename " + display + " in the thread's own chat: no herdr terminal holds it"}), ""
+		return append(row, kv{"renamed", false}, kv{"command", "/rename " + display + " in the thread's own chat: no herdr terminal holds it"}, kv{"noTerminal", true}), ""
 	}
 	command := "env -u HC_TERMINAL_ID hc send " + terminal + " " + quote("/rename "+display)
 	if !idle {
@@ -200,7 +202,182 @@ func renameOnce(sid, display string) (ordered, string) {
 // every live place a thread's name sits in besides its record, after the record took it: the herdr tab and cc's name
 func renamePlaces(sid, name string, wait, nudgeAfter time.Duration) []ordered {
 	terminal, _ := herdrTerminalOf(sessionPid(sid))
-	return []ordered{{{"place", "record"}, {"renamed", true}}, renameTab(terminal, name), renameThread(sid, name, wait, nudgeAfter)}
+	return []ordered{{{"place", "record"}, {"renamed", true}}, renameTab(terminal, name), renameThread(sid, func() string { return name }, wait, nudgeAfter, renamePoll())}
+}
+
+// the display a session's record draws now, read fresh from the store; "" when it has no record
+func recordDisplay(sid string) string {
+	store, err := readThreadStore(threadStorePath())
+	if err != nil {
+		return ""
+	}
+	for _, t := range store.Threads {
+		if t.SessionID == sid && t.Role != "" && !t.Fallback {
+			return threadDisplay(t)
+		}
+	}
+	return ""
+}
+
+// a live place that did not take a record's new name follows it in the background, once the thread idles: `x thread sync`,
+// detached, so a landing or a dispatch never holds for a busy thread and no surface is left on the old name. under X_TEST
+// the call is logged to X_RENAME_FOLLOW instead, so no test starts a process that outlives it
+func followRename(sid string) {
+	if os.Getenv("X_TEST") != "" {
+		if log := os.Getenv("X_RENAME_FOLLOW"); log != "" {
+			if f, err := os.OpenFile(log, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644); err == nil {
+				_, _ = fmt.Fprintln(f, "thread sync "+sid)
+				_ = f.Close()
+			}
+		}
+		return
+	}
+	exe, err := os.Executable()
+	if err != nil {
+		return
+	}
+	follow := exec.Command(exe, "thread", "sync", sid)
+	follow.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	if follow.Start() == nil {
+		_ = follow.Process.Release()
+	}
+}
+
+// renames that did not take, followed in the background; the count of live places left behind. a cc name no herdr
+// terminal holds is out of every follow's reach, so it starts none
+func followUntaken(sid string, places []ordered) int {
+	behind := 0
+	for _, place := range places {
+		if !placeTook(place) && !slices.ContainsFunc(place, func(field kv) bool { return field.key == "noTerminal" }) {
+			behind++
+		}
+	}
+	if behind > 0 {
+		followRename(sid)
+	}
+	return behind
+}
+
+// whether a rename row took, or has nothing to take (a thread with no herdr tab)
+func placeTook(row ordered) bool {
+	for _, field := range row {
+		if (field.key == "renamed" || field.key == "isAbsent") && field.value == true {
+			return true
+		}
+	}
+	return false
+}
+
+// the live places of a recorded thread take the name its record draws now: the herdr tab, then cc's own name once the
+// thread idles, re-read before each try; what a landing or a dispatch leaves behind runs here, detached. it writes no
+// record and asks no thread to end its turn, so it needs no caller gate: a detached child outlives the coordinator that
+// started it, and its ancestry no longer reads as one. one sync a session at a time; a second leaves it to the first
+func threadSyncRun(r *Run, args []string, _ Flags) (any, error) {
+	sid := args[0]
+	display := recordDisplay(sid)
+	if display == "" {
+		return nil, &Fail{Refused: true, Msg: sid + " has no record to sync from", Next: "x thread list"}
+	}
+	if lock, err := os.OpenFile(threadStorePath()+"."+sid+".sync", os.O_CREATE|os.O_RDWR, 0o644); err == nil {
+		defer lock.Close()
+		if syscall.Flock(int(lock.Fd()), syscall.LOCK_EX|syscall.LOCK_NB) != nil {
+			return ordered{{"session", sid}, {"display", display}, {"following", "another sync holds it"}}, nil
+		}
+	}
+	terminal, _ := herdrTerminalOf(sessionPid(sid))
+	wait := syncWait()
+	// a record gone mid-wait keeps its last name: a rename to "" would draw nothing
+	current := func() string { return cmp.Or(recordDisplay(sid), display) }
+	places := []ordered{renameTab(terminal, display)}
+	if !sameName(sessionName(sid), display) {
+		// a slow poll: a half-hour wait on 1 s ticks would spawn hc thousands of times
+		places = append(places, renameThread(sid, current, wait, 2*wait, 5*renamePoll()))
+	}
+	r.Done(sid+" is "+current(), "")
+	for _, place := range places {
+		if !placeTook(place) {
+			return nil, &Fail{Msg: sid + " is " + current() + " in its record, not in every live place", Next: "x thread rename " + sid + " " + quote(current())}
+		}
+	}
+	return ordered{{"session", sid}, {"display", current()}, {"places", places}}, nil
+}
+
+// how long a background sync waits for its thread to idle: a working codie can hold a turn for half an hour;
+// X_SYNC_WAIT (seconds) shortens it under X_TEST only
+func syncWait() time.Duration {
+	if os.Getenv("X_TEST") != "" {
+		if seconds, err := strconv.ParseFloat(os.Getenv("X_SYNC_WAIT"), 64); err == nil {
+			return time.Duration(seconds * float64(time.Second))
+		}
+	}
+	return 30 * time.Minute
+}
+
+// cc's own name for a live session, from its registry file; "" when none reads
+func sessionName(sid string) string {
+	files, _ := filepath.Glob(filepath.Join(sessionsDir(), "*.json"))
+	for _, file := range files {
+		var entry struct {
+			SessionID string `json:"sessionId"`
+			Name      string `json:"name"`
+		}
+		if raw, err := os.ReadFile(file); err == nil && json.Unmarshal(raw, &entry) == nil && entry.SessionID == sid {
+			return entry.Name
+		}
+	}
+	return ""
+}
+
+// clearThreadTicket takes a landed ticket off each thread record that names it, so its display drops the unit; a title that
+// only spells the role name for a ticket goes with it, or the landed ticket would stay in the name. best effort, since a
+// merged lane stands whatever its store says
+func clearThreadTicket(id string) (string, error) {
+	path := threadStorePath()
+	if path == "" {
+		return "no thread store", nil
+	}
+	unlock, err := lockThreadStore(path)
+	if err != nil {
+		return "", err
+	}
+	store, err := readThreadStore(path)
+	if err != nil {
+		unlock()
+		return "", err
+	}
+	var renamed []thread
+	for i := range store.Threads {
+		if store.Threads[i].Ticket == id {
+			if _, unit, _ := strings.Cut(store.Threads[i].Title, " | "); unit == id && isRoleName(store.Threads[i], store.Threads[i].Title) {
+				store.Threads[i].Title = ""
+			}
+			store.Threads[i].Ticket = ""
+			drawNames(&store.Threads[i])
+			renamed = append(renamed, store.Threads[i])
+		}
+	}
+	if len(renamed) == 0 {
+		unlock()
+		return "no record names it", nil
+	}
+	err = writeThreadStore(path, time.Now(), store.Threads)
+	// the store is free before any slow call: every refresh and hook waits on this lock
+	unlock()
+	if err != nil {
+		return "", err
+	}
+	// a landing never holds for a busy thread: what does not take at once follows in the background
+	followed := []string{}
+	for _, t := range renamed {
+		if followUntaken(t.SessionID, renamePlaces(t.SessionID, t.Display, 0, 0)) > 0 {
+			followed = append(followed, t.SessionID)
+		}
+	}
+	detail := plural(len(renamed), "record") + " cleared"
+	if len(followed) > 0 {
+		detail += ", the live names following once idle: x thread sync " + strings.Join(followed, ", ")
+	}
+	return detail, nil
 }
 
 // the record a rename means: a session id, else the one thread drawing that display; a display two threads draw is refused
@@ -263,8 +440,16 @@ func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
 		return nil, err
 	}
 	sid := store.Threads[i].SessionID
+	// a rename to the name the record draws anyway pins nothing, so the next chunk's ticket and a landing still redraw it
+	untitled := store.Threads[i]
+	untitled.Title = ""
 	store.Threads[i].Title = title
+	if sameName(threadDisplay(untitled), title) {
+		store.Threads[i].Title = ""
+	}
 	drawNames(&store.Threads[i])
+	// every place takes the record's own string, so a name typed with a stray space still reads as one name everywhere
+	title = store.Threads[i].Display
 	err = writeThreadStore(path, time.Now(), store.Threads)
 	unlock()
 	if err != nil {
@@ -272,6 +457,7 @@ func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
 	}
 	wait, nudge := renameWait()
 	places := renamePlaces(sid, title, wait, nudge)
+	followUntaken(sid, places[1:])
 	taken, left, next := []string{}, []string{}, ""
 	for _, row := range places {
 		place, command, why, resumeCommand, isRenamed, isAbsent, isPending := "", "", "", "", false, false, false
