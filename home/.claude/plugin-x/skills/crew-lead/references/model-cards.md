@@ -33,7 +33,7 @@ so · **[community]** a practitioner pattern · **[measured]** we ran it · **[?
 - **price**: $8 / $40, cache reads $0.20 (0.025×), writes $10 (5m) / $16 (1h); fast mode $16/$80. 1M / 128K. 2× opus per token, 20 % under 5.1 on every line. **[vendor]**
 - **effort**: `medium` is the cc default and our baseline (`high` on the API); `high` for long unattended runs, hard coding and deliverables; `xhigh` only after a measured gain; never `max` — below xhigh on FrontierCode at 3.2× the cost, below high on ARC-AGI-3 **[vendor]**. at medium on agentic work, add the vendor's «finish the whole task» line **[vendor]**. design «not lower than medium, maybe high» **[dima]**.
 - **pick for**: what Dima reads where flavour matters, verdict-shaped deliverables, design spreads, long autonomous builds, the orchestrator over a crew. «opus picks pragmatically, fable = flavour» **[dima]**. never spawned without his word.
-- **never**: coding in the fleet — capable, but opus ships more per window **[dima]**; security work (safeguards block it); context-filling runs (out of context on 68 % of ProgramBench); a switch to opus mid-thread, which drops its thinking; hard style caps, read literally **[vendor]**.
+- **never**: coding in the fleet, bar a reset day — opus ships more per window **[dima]**; security work (safeguards block it); context-filling runs (out of context on 68 % of ProgramBench); a switch to opus mid-thread, which drops its thinking; hard style caps, read literally **[vendor]**.
 - **numbers**: AA medium 56.4 for $3.80 a task in 6.5 min vs opus 48.2, $2.45, 7.0 min; 32 % cheaper a task than 5.1 **[bench]**; CursorBench 4.1 fable high 56.5 % for $10.51 vs opus xhigh 56.7 % for $6.54 **[bench]**; SWE-bench Pro 93.0 vs opus 89.9 **[vendor]**. a design spread $13.44 at medium vs opus $4.35, Dima judged fable's better (`docs/test-drive/design-run.md`) **[measured]**. ours, 16–18 Nov: a codie lane cost about the same on fable as on opus at 5.1 prices (2 sessions each), ~20 % less at 5.2's, thin **[measured]**.
 
 ## sonnet-5.5 — `claude-sonnet-5-5` · the mid tier
@@ -42,7 +42,7 @@ so · **[community]** a practitioner pattern · **[measured]** we ran it · **[?
 - **effort**: `medium` in Claude Code, `high` on the API; in our crew set `high` or `xhigh` explicitly — at medium it loses to haiku xhigh for more money **[bench]**; never `low` for code (skips verification) **[vendor]**. a subagent on another model runs at that model's default unless its card sets `effort` (cc 2.1.317) **[vendor]**.
 - **pick for**: `helper` and `fresh-eyes` at high, `scout` at medium **[dima]**, retrieval under an opus lead.
 - **never**: left at the cc default for real work; the main codie or the sole sixth sense; design.
-- **numbers**: CursorBench 4.1 medium 34.3 % for $0.63 vs haiku xhigh 45.2 % for $0.56 **[bench]**; high 43.8 % ≈ opus low 42.7 % at the same ~$1.4 **[bench]**. **[bench]**
+- **numbers**: CursorBench 4.1 medium 34.3 % for $0.63 vs haiku xhigh 45.2 % for $0.56 **[bench]**; high 43.8 % ≈ opus low 42.7 % at the same ~$1.4 **[bench]**.
 
 ## haiku-5.5 — `claude-haiku-5-5` · the worker
 
@@ -51,7 +51,7 @@ so · **[community]** a practitioner pattern · **[measured]** we ran it · **[?
 - **effort**: `medium` baseline; `xhigh` is the value pick for small coding-shaped worker edits (Cursor 45.2 % for $0.56) **[bench]**; `low` only for chat and short tool calls — on long prompts it skips searches and checks **[vendor]**.
 - **pick for**: `helper-lite` — extraction, transcripts, screenshot transcription, a crew of workers under an opus lead **[community]**; a classifier through the api with a strict schema **[vendor]**.
 - **never**: judgment or verifying (it took github's «clean» as «merge ready»), a wait or a loop against an outside api **[community]**; research synthesis (AA-Omniscience 40 % hallucination) **[bench]**; a whole agentic coding job (Terminal-Bench 39.2 vs sonnet 70.6) **[vendor]**.
-- **numbers**: AA v5.0.1 low 18.6 · medium 24.6 · high 29.9 · xhigh 34.6 **[bench]**; images vs opus: **a single value 45–47 % vs 68–70 %** (Roboflow) **[bench]**; ours: 38 of 39 numbers read **[measured]**.
+- **numbers**: AA v5.0.1 low 18.6 · medium 24.6 · high 29.9 · xhigh 34.6 **[bench]**; images vs opus: transcription 93–95 % vs ~96 %, **a single value 45–47 % vs 68–70 %** (Roboflow) **[bench]**; ours: 38 of 39 numbers read **[measured]**.
 
 ## across the line
 
