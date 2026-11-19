@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from 'vitest';
 
 vi.mock('herdr', () => ({ exec: vi.fn() }));
 const { createRowModel, callOf } = await import('./row-model.js');
-const { createToolFolds, isCallRow, withCallRows } = await import(
+const { createToolFolds, isCallRow, isCardRow, withCallRows } = await import(
     './tool-folds.js'
 );
 
@@ -91,6 +91,7 @@ describe('the tool-call fold opens to its calls, each call alone (PK-432:W2, FRM
             false,
             true,
             false,
+            false,
         ]);
         expect(peeked[2]?.version).not.toBe(open[2]?.version);
         folds.toggle(call);
@@ -104,6 +105,43 @@ describe('the tool-call fold opens to its calls, each call alone (PK-432:W2, FRM
         expect(withCallRows(m.rows, folds)[0]?.version).not.toBe(
             m.rows[0]?.version,
         );
+    });
+
+    // FRM-659:W4: a selection drag's release inside the json card is a click on the list item; it closed the card
+    describe('an open call’s json card is its own row, so a click in it never closes the call', () => {
+        const opened = () => {
+            const m = model();
+            const folds = createToolFolds();
+            folds.toggle(m.rows[0]?.id ?? '');
+            const call = withCallRows(m.rows, folds)[2]?.id ?? '';
+            folds.toggle(call);
+            return { call, folds, m };
+        };
+
+        test('the card follows its call as a row of its own', () => {
+            const { call, folds, m } = opened();
+            const rows = withCallRows(m.rows, folds);
+            expect(rows.map((r) => r.id)).toEqual([
+                m.rows[0]?.id,
+                expect.stringContaining('#call-0'),
+                call,
+                `${call}#card`,
+                expect.stringContaining('#call-2'),
+            ]);
+            expect(isCardRow(rows[3]?.id ?? '')).toBe(true);
+        });
+
+        test('a click in the card leaves the call open', () => {
+            const { call, folds } = opened();
+            folds.toggle(`${call}#card`);
+            expect(folds.isOpen(call)).toBe(true);
+        });
+
+        test('a click on the call’s name closes it', () => {
+            const { call, folds } = opened();
+            folds.toggle(call);
+            expect(folds.isOpen(call)).toBe(false);
+        });
     });
 
     test('a call joining an open fold shows as a row at once', () => {

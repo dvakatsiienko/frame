@@ -146,7 +146,12 @@ import { asksActedOn, isShownIn, pidFor, shownThread } from './shown.js';
 import { loadableSkills } from './skills.js';
 import { createSlashMenu, listedSkills, menuNames } from './slash.js';
 import { transcriptPath } from './thread.js';
-import { createToolFolds, isCallRow, withCallRows } from './tool-folds.js';
+import {
+    createToolFolds,
+    isCallRow,
+    isCardRow,
+    withCallRows,
+} from './tool-folds.js';
 import { typedMarkdown } from './typed.js';
 import { openViewer, viewerAfter, viewerCount, viewerLevel } from './viewer.js';
 
@@ -3222,7 +3227,8 @@ export default class Chat extends View {
 
     /**
      * a run of tool calls, folded behind 🛠️; opened, each call is a row that opens alone to its input (PK-432,
-     * FRM-638:W23). no press handler in here: the list's item click toggles it (herdr-app#894)
+     * FRM-638:W23); an open call's json card is a row of its own, so a selection's release in it never closes the call
+     * (FRM-659:W4). no press handler in here: the list's item click opens and closes (herdr-app#894)
      * @param {Row} row @param {Theme} t @param {string} pre
      */
     toolRow(row, t, pre, isShown = true) {
@@ -3236,17 +3242,11 @@ export default class Chat extends View {
                 .cursor_pointer()
                 .child(div().flex_none().w(12).child(mark))
                 .child(div().truncate().child(text));
-        if (!isCallRow(row.id))
-            return line(isOpen ? '▾' : '▸', `${ICONS.tools} ${row.text}`);
-        const [call] = row.calls ?? [];
-        return v_flex()
-            .pl(18)
-            .gap(4)
-            .child(line(isOpen ? '▾' : '▸', row.text))
-            .when(isOpen && Boolean(call), (el) =>
-                el.child(
+        if (isCardRow(row.id))
+            return div()
+                .pl(36)
+                .child(
                     div()
-                        .ml(18)
                         .px(10)
                         .py(6)
                         .rounded(6)
@@ -3257,11 +3257,15 @@ export default class Chat extends View {
                         .child(
                             TextView.markdown(
                                 `${pre}${row.id}@${row.version}`,
-                                `\`\`\`json\n${call?.input ?? ''}\n\`\`\``,
+                                `\`\`\`json\n${row.calls?.[0]?.input ?? ''}\n\`\`\``,
                             ).selectable(isShown),
                         ),
-                ),
-            );
+                );
+        if (!isCallRow(row.id))
+            return line(isOpen ? '▾' : '▸', `${ICONS.tools} ${row.text}`);
+        return div()
+            .pl(18)
+            .child(line(isOpen ? '▾' : '▸', row.text));
     }
 
     /**

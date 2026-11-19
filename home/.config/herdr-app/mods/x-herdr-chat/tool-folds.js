@@ -4,9 +4,13 @@
 /** @typedef {import('./row-model.js').Row} Row */
 
 const CALL = '#call-';
+const CARD = '#card';
 
 /** a call's row: its tool row's id and its place @param {string} id */
 export const isCallRow = (id) => id.includes(CALL);
+
+/** an open call's json card, a row of its own after the call's (FRM-659:W4) @param {string} id */
+export const isCardRow = (id) => id.endsWith(CARD);
 
 export function createToolFolds() {
     /** @type {Set<string>} */
@@ -30,16 +34,20 @@ export function createToolFolds() {
 export function withCallRows(rows, folds) {
     return rows.flatMap((row) => {
         if (row.kind !== 'tool' || !folds.isOpen(row.id)) return [row];
-        const calls = (row.calls ?? []).map((call, i) => {
+        const calls = (row.calls ?? []).flatMap((call, i) => {
             const id = `${row.id}${CALL}${i}`;
-            return {
+            const isOpen = folds.isOpen(id);
+            const callRow = {
                 ...row,
                 calls: [call],
                 id,
                 text: call.arg ? `${call.name} ${call.arg}` : call.name,
                 tools: [call.name],
-                version: folds.isOpen(id) ? 2 : 1,
+                version: isOpen ? 2 : 1,
             };
+            return isOpen
+                ? [callRow, { ...callRow, id: `${id}${CARD}`, version: 1 }]
+                : [callRow];
         });
         // an open fold draws ▾, so it is drawn again: a half step no closed version reaches
         return [{ ...row, version: row.version + 0.5 }, ...calls];
