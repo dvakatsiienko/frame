@@ -16,7 +16,9 @@ import {
     ORDER_KEY,
     type Spot,
     drop,
+    placesOf,
     publishOrder,
+    shownOf,
     targetOf,
 } from './drops.js';
 import { inOrder } from './order.js';
@@ -90,9 +92,14 @@ describe('his own order: a drag of row 1 past row 3', () => {
         expect(kept.get(ORDER_KEY)).toEqual([11, 12, 13, 14]);
 
         const d = list(cx);
-        d.press('t1', { kind: 'mine' }, 0, at(0));
+        d.press('t1', { address: 't1', kind: 'mine' }, 0, at(0));
         d.pointer(at(70));
-        d.over(targetOf({ kind: 'mine' }, agent({ isYours: true, mineAt: 2 })));
+        d.over(
+            targetOf(
+                { address: 't1', kind: 'mine' },
+                agent({ isYours: true, mineAt: 2 }),
+            ),
+        );
         d.release();
 
         expect(writes).toEqual([['t2', 't3', 't1', 't4']]);
@@ -112,7 +119,7 @@ describe('his own order: a drag of row 1 past row 3', () => {
                 shownMine: ['t1', 't2', 't3'],
             }),
         );
-        d.press('t1', { kind: 'mine' }, 0, at(0));
+        d.press('t1', { address: 't1', kind: 'mine' }, 0, at(0));
         d.pointer(at(70));
         d.over(2);
         d.release();
@@ -129,7 +136,7 @@ describe('his own order: a drag of row 1 past row 3', () => {
                 shownMine,
             }),
         );
-        d.press('t1', { kind: 'mine' }, 0, at(0));
+        d.press('t1', { address: 't1', kind: 'mine' }, 0, at(0));
         d.pointer(at(70));
         d.over(2);
         // a redraw: the render builds new rows and a new context; the drag lives on the view, not in the render
@@ -150,9 +157,14 @@ describe('each kind drags to its own move', () => {
                 shownPins: ['p1', 'p2', 'p3'],
             }),
         );
-        d.press('p3', { kind: 'pin' }, 2, at(60));
+        d.press('p3', { address: 'p3', kind: 'pin' }, 2, at(60));
         d.pointer(at(0));
-        d.over(targetOf({ kind: 'pin' }, agent({ isPinned: true, pinAt: 0 })));
+        d.over(
+            targetOf(
+                { address: 'p3', kind: 'pin' },
+                agent({ isPinned: true, pinAt: 0 }),
+            ),
+        );
         d.release();
         expect(pinsWritten).toEqual([['p3', 'p1', 'p2', 'gone']]);
     });
@@ -195,14 +207,17 @@ describe('each kind drags to its own move', () => {
 describe('a spot takes only its own kind', () => {
     test('a pin never lands on an unpinned row', () => {
         expect(
-            targetOf({ kind: 'pin' }, agent({ isYours: true, mineAt: 1 })),
+            targetOf(
+                { address: 'p3', kind: 'pin' },
+                agent({ isYours: true, mineAt: 1 }),
+            ),
         ).toBeNull();
     });
 
     test('his order never lands on a pinned row', () => {
         expect(
             targetOf(
-                { kind: 'mine' },
+                { address: 't1', kind: 'mine' },
                 agent({ isPinned: true, isYours: true, mineAt: 0, pinAt: 0 }),
             ),
         ).toBeNull();
@@ -224,5 +239,111 @@ describe('a spot takes only its own kind', () => {
                 { kind: 'header', machine: null, spaceAt: 0 },
             ),
         ).toBeNull();
+    });
+});
+
+describe('a drop moves what was pressed, whatever changed since', () => {
+    test('a thread gone mid-drag shifts the places, never which row moves', () => {
+        let shownMine = ['t1', 't2', 't3', 't4'];
+        const writes: string[][] = [];
+        const d = list(() =>
+            context({
+                order: ['t1', 't2', 't3', 't4'],
+                setOrder: (next) => writes.push(next),
+                shownMine,
+            }),
+        );
+        d.press('t3', { address: 't3', kind: 'mine' }, 2, at(60));
+        d.pointer(at(0));
+        d.over(0);
+        shownMine = ['t1', 't3', 't4'];
+        d.release();
+        expect(writes).toEqual([['t3', 't1', 't2', 't4']]);
+    });
+});
+
+describe('a pin moves by what was pressed too', () => {
+    test('a pin unpinned mid-drag shifts the places, never which pin moves', () => {
+        let shownPins = ['p1', 'p2', 'p3'];
+        const written: string[][] = [];
+        const d = list(() =>
+            context({
+                pins: ['p1', 'p2', 'p3'],
+                setPins: (p) => written.push(p),
+                shownPins,
+            }),
+        );
+        d.press('p3', { address: 'p3', kind: 'pin' }, 2, at(60));
+        d.pointer(at(0));
+        d.over(0);
+        shownPins = ['p1', 'p3'];
+        d.release();
+        expect(written[0]?.[0]).toBe('p3');
+    });
+});
+
+describe('the places count only the rows drawn', () => {
+    const groups = [
+        {
+            id: 'pinned',
+            members: [{ address: 'p1', space: 's1', tab: 'tp' }],
+        },
+        {
+            id: 'sp-s1',
+            members: [
+                { address: 'a1', space: 's1', tab: 'ta' },
+                { address: 'a2', space: 's1', tab: 'ta' },
+                { address: 'a3', space: 's1', tab: 'tb' },
+            ],
+            space: 's1',
+        },
+        {
+            id: 'sp-s2',
+            members: [{ address: 'b1', space: 's2', tab: 'tc' }],
+            space: 's2',
+        },
+    ];
+    const view = {
+        folded: new Set<string>(),
+        isNarrow: false,
+        isYours: false,
+        pins: ['p1'],
+    };
+
+    test('a tab with two agent rows is one place, a pin is no tab place', () => {
+        const shown = shownOf(groups, view);
+        expect(shown.shownTabs).toEqual({ s1: ['ta', 'tb'], s2: ['tc'] });
+        expect(shown.shownPins).toEqual(['p1']);
+        expect(shown.shownSpaces).toEqual(['s1', 's2']);
+        expect(placesOf({ kind: 'tab', space: 's1', tab: 'ta' }, shown)).toBe(
+            2,
+        );
+    });
+
+    test('a folded group draws no rows, so its rows are no places', () => {
+        const shown = shownOf(groups, {
+            ...view,
+            folded: new Set(['sp-s1', 'pinned']),
+        });
+        expect(shown.shownTabs).toEqual({ s2: ['tc'] });
+        expect(shown.shownPins).toEqual([]);
+        expect(shown.shownSpaces).toEqual(['s1', 's2']);
+    });
+
+    test('the narrow rail draws every row and no header', () => {
+        const shown = shownOf(groups, {
+            ...view,
+            folded: new Set(['sp-s1']),
+            isNarrow: true,
+        });
+        expect(shown.shownTabs.s1).toEqual(['ta', 'tb']);
+        expect(shown.shownSpaces).toEqual([]);
+    });
+
+    test('in his order every unpinned row is a place, and no tab is', () => {
+        const shown = shownOf(groups, { ...view, isYours: true });
+        expect(shown.shownMine).toEqual(['a1', 'a2', 'a3', 'b1']);
+        expect(shown.shownTabs).toEqual({});
+        expect(placesOf({ address: 'a1', kind: 'mine' }, shown)).toBe(4);
     });
 });

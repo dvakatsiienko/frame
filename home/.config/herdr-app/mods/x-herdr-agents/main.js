@@ -27,7 +27,7 @@ import {
 } from 'herdr';
 
 import { createListDrag } from './drag-view.js';
-import { drop, publishOrder, targetOf } from './drops.js';
+import { drop, placesOf, publishOrder, shownOf, targetOf } from './drops.js';
 import { SOUNDS_ON, isSoundOn, startJobs } from './jobs.js';
 import { threadName } from './name.js';
 import { heirs, inOrder, nextOrder } from './order.js';
@@ -746,9 +746,9 @@ export default class Agents extends View {
             const mineAt = shownMine.indexOf(a.address);
             const spaceAt = shownSpaces.indexOf(a.space);
             const [item, from] = isPinned
-                ? [{ kind: 'pin' }, pinAt]
+                ? [{ address: a.address, kind: 'pin' }, pinAt]
                 : isYours
-                  ? [{ kind: 'mine' }, mineAt]
+                  ? [{ address: a.address, kind: 'mine' }, mineAt]
                   : tabAt >= 0
                     ? [{ kind: 'tab', space: a.space, tab: a.tab }, tabAt]
                     : [null, -1];
@@ -773,12 +773,7 @@ export default class Agents extends View {
                         item,
                         key: a.address,
                         label: name,
-                        places:
-                            item?.kind === 'pin'
-                                ? shownPins.length
-                                : item?.kind === 'mine'
-                                  ? shownMine.length
-                                  : (shownTabs[a.space] ?? []).length,
+                        places: item ? placesOf(item, this.shown) : 0,
                         targetFor: (held) => targetOf(held, spot),
                     },
                     t,
@@ -878,30 +873,12 @@ export default class Agents extends View {
                 });
         }
 
-        // what is drawn, kind by kind, in order: a folded group's rows are not
-        const drawn = groups
-            .filter((g) => !this.folded.has(g.id))
-            .flatMap((g) => g.members);
-        const shownTabs = {};
-        for (const a of drawn) {
-            if (this.pins.includes(a.address) || isYours) continue;
-            const tabs = shownTabs[a.space] ?? [];
-            if (!tabs.includes(a.tab)) shownTabs[a.space] = [...tabs, a.tab];
-        }
-        this.shown = {
-            shownMine: isYours
-                ? drawn
-                      .filter((a) => !this.pins.includes(a.address))
-                      .map((a) => a.address)
-                : [],
-            shownPins: this.folded.has('pinned')
-                ? []
-                : pinned.map((a) => a.address),
-            shownSpaces: [
-                ...new Set(groups.filter((g) => g.space).map((g) => g.space)),
-            ],
-            shownTabs,
-        };
+        this.shown = shownOf(groups, {
+            folded: this.folded,
+            isNarrow: collapsed,
+            isYours,
+            pins: this.pins,
+        });
 
         // A group's header; it folds the group. Folded, it says how many and the most urgent state.
         // A space's header drags to reorder the spaces; right-click renames the space.
