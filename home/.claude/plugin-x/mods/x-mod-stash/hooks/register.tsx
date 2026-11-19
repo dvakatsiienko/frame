@@ -110,6 +110,7 @@ import {
     quietPush,
     quietTag,
 } from './quiet.ts';
+import { roundKeyOf, roundTaken, roundsOf } from './rounds.ts';
 import { cleanTree, drawn } from './tree.ts';
 import {
     WIND_ROWS,
@@ -2406,13 +2407,6 @@ async function isToCoordinator($: EngineInterface, to: string) {
 // rounds; only this mod writes it, clio's compact-carry and the board read it, so a compact or a reload loses no count.
 // a resend adds nothing; the private `lane-rounds:` keys of the build before seed a key the file lacks (clio's call 9)
 const LANE_ROUNDS = 'lane-rounds:';
-// clean: the rounds whose line named «P0/P1: 0», written only once one did; count − clean is what the cap reads
-type LaneRounds = {
-    at?: number;
-    clean?: number;
-    count: number;
-    shas: string[];
-};
 const roundsPath = (home: string) => `${home}/.claude/shelf/lane-rounds.json`;
 // a file that does not parse moves aside to `lane-rounds.json.bad`, kept for a look, and the count starts over: one torn
 // write never stops every lane's count
@@ -2438,22 +2432,6 @@ async function readRounds($: EngineInterface, home: string) {
         `${roundsPath(home)}.bad`,
     ]);
     return {};
-}
-// an array is the first build's shape; anything else unreadable counts from 0
-function roundsOf(kept: unknown): LaneRounds {
-    if (Array.isArray(kept))
-        return {
-            count: kept.length,
-            shas: kept.filter((s) => typeof s === 'string'),
-        };
-    const v = kept as Partial<LaneRounds> | undefined;
-    return {
-        ...(typeof v?.clean === 'number' && v.clean > 0
-            ? { clean: v.clean }
-            : {}),
-        count: typeof v?.count === 'number' ? v.count : 0,
-        shas: Array.isArray(v?.shas) ? v.shas : [],
-    };
 }
 // several codies write the one file: the joins' lock dir rule, a live writer's waited out for 2 s, a crash's broken
 async function roundsLocked<T>(
@@ -2496,55 +2474,24 @@ async function laneRoundLine(
     // a count that could not be taken says so: a silent miss is a cap nobody hears
     const taken = await roundsLocked($, home, async () => {
         const rounds = await readRounds($, home);
-        const named = `${self.lane} | ${ticket}${chunk.slice ? ` slice ${chunk.slice}` : ''}`;
-        // a lone slice joins the lane's latest key of that slice, whichever ticket a fuller line gave it
-        const lane =
-            chunk.slice && !chunk.ticket
-                ? (Object.entries(rounds)
-                      .filter(
-                          ([k]) =>
-                              k.startsWith(`${self.lane} | `) &&
-                              k.endsWith(` slice ${chunk.slice}`),
-                      )
-                      .sort(
-                          ([, a], [, b]) => (b.at ?? 0) - (a.at ?? 0),
-                      )[0]?.[0] ?? named)
-                : named;
+        const lane = roundKeyOf(rounds, self.lane ?? '', ticket, chunk);
         const kept =
             rounds[lane] ??
             roundsOf(
                 await $.store.get(LANE_ROUNDS + lane).catch(() => undefined),
             );
-        if (
-            kept.shas.some(
-                (s) => s.startsWith(round.sha) || round.sha.startsWith(s),
-            )
-        )
-            return undefined;
-        // a lane may open past round 1, and a number sent is never read back as less; a round never seen reads as severe
-        const next = Math.max(round.n, kept.count + 1);
-        const clean = (kept.clean ?? 0) + (isClean ? 1 : 0);
+        const after = roundTaken(kept, round, isClean, now);
+        if (!after) return undefined;
         await writeWhole(
             $,
             roundsPath(home),
             `${JSON.stringify(
-                {
-                    rounds: {
-                        ...rounds,
-                        [lane]: {
-                            at: now,
-                            ...(clean ? { clean } : {}),
-                            count: next,
-                            shas: [...kept.shas, round.sha],
-                        },
-                    },
-                    v: 1,
-                },
+                { rounds: { ...rounds, [lane]: after }, v: 1 },
                 null,
                 2,
             )}\n`,
         );
-        return { lane, severe: next - clean };
+        return { lane, severe: after.count - (after.clean ?? 0) };
     }).catch((err: unknown) => errorText(err));
     if (typeof taken === 'string')
         return `round ${round.n} on ${round.sha} not counted (${taken}): resend the same line to count it`;
