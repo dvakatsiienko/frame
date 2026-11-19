@@ -9,6 +9,7 @@ not deployed anywhere: it edits this mac's config.json and talks to this mac's d
 📌 before changing what the app does, read your section of `FTR.md` + `GLOSSARY.md` and `PRODUCT.md` (impeccable `init`, the product record);
 `DESIGN.md` (impeccable `document`) is the look record — read it before changing how anything renders. both
 are impeccable's files: change them through it, never by hand.
+📌 before a design or build change, read `docs/readaloud-playbook.md`: the read-aloud practices, the bar and the voice safety rule.
 
 ## the daemon is not here
 
