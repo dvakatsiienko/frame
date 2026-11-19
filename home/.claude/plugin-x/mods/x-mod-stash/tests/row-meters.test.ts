@@ -1,12 +1,15 @@
 import { expect, test } from 'claude-code/testing';
 
 import {
+    PALETTE,
     ROW_STEPS,
     contrastOf,
+    ctxBar,
     ctxBarSvg,
     ctxRingSvg,
     effortSvg,
-} from '../hooks/register.tsx';
+    huesOf,
+} from '../hooks/look.ts';
 
 // a session row's two meters in one bright look, the context % merged into its meter as a ring (C) or with a thin bar
 // under it (B), switched in 🎛️ (dima, 10-13 16:50 «swamp … make prettier, brighter», «print a session context number
@@ -104,4 +107,41 @@ test('the effort meter lights each cell in its own step, the 5th red', () => {
     expect([0, 1, 2, 3, 4].map((i) => tints(svg, `e${i}`)[0])).toEqual([
         ...ROW_STEPS.light,
     ]);
+});
+
+test('two members whose names hash alike still get two hues', () => {
+    const hues = huesOf(['☕️ 🔧 twin', '☕️ 🔧 twin']);
+    expect(new Set(hues).size).toBe(2);
+});
+
+test('the terminal draws ctx as a fixed 10-wide bar', () => {
+    expect(['0', '43', '100'].map((p) => ctxBar(Number(p)))).toEqual([
+        '▯▯▯▯▯   0%',
+        '▮▮▯▯▯  43%',
+        '▮▮▮▮▮ 100%',
+    ]);
+});
+
+test('no member dot equals a state tint: ok, warn, hot, calm or accent', () => {
+    const tints: string[] = [
+        PALETTE.ok,
+        PALETTE.warn,
+        PALETTE.hot,
+        PALETTE.calm,
+        PALETTE.accent,
+    ];
+    expect(PALETTE.dots.filter((d) => tints.includes(d))).toEqual([]);
+});
+
+test('every dot comes from the palette, the same name keeping the same hue', () => {
+    const names = ['🦉 clio', '☕️ 🔧 codie', '🐦 ⬛ crow'];
+    const hues = huesOf(names);
+    expect([
+        hues.every(
+            (h) =>
+                h !== undefined &&
+                (PALETTE.dots as readonly string[]).includes(h),
+        ),
+        huesOf(names),
+    ]).toEqual([true, hues]);
 });

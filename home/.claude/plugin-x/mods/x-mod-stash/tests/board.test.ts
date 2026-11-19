@@ -1,7 +1,7 @@
 import type { FsEntry, On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-import { PALETTE, ctxBar, huesOf, isSeated } from '../hooks/register.tsx';
+import { isSeated } from '../hooks/register.tsx';
 import {
     THREADS_FILE,
     type ThreadRow,
@@ -1085,11 +1085,6 @@ test("with colour on, each member's dot wears its own hue", async ($, on) => {
     ]).toEqual([2, 2, true]);
 });
 
-test('two members whose names hash alike still get two hues', () => {
-    const hues = huesOf(['☕️ 🔧 twin', '☕️ 🔧 twin']);
-    expect(new Set(hues).size).toBe(2);
-});
-
 test("with colour on, an idle member's dot is dimmed and a busy one's is not", async ($, on) => {
     fleet(on, { 'board-colour': true });
     const dots = (await colourTexts($)).filter((t) => t.text === '●');
@@ -1469,38 +1464,6 @@ test("crow's lines count for her though the log keeps the registry's split «�
         },
     );
     expect(await gapRow($, clock, store)).toBeUndefined();
-});
-
-test('the terminal draws ctx as a fixed 10-wide bar', () => {
-    expect(['0', '43', '100'].map((p) => ctxBar(Number(p)))).toEqual([
-        '▯▯▯▯▯   0%',
-        '▮▮▯▯▯  43%',
-        '▮▮▮▮▮ 100%',
-    ]);
-});
-
-test('no member dot equals a state tint: ok, warn, hot, calm or accent', () => {
-    const tints: string[] = [
-        PALETTE.ok,
-        PALETTE.warn,
-        PALETTE.hot,
-        PALETTE.calm,
-        PALETTE.accent,
-    ];
-    expect(PALETTE.dots.filter((d) => tints.includes(d))).toEqual([]);
-});
-
-test('every dot comes from the palette, the same name keeping the same hue', () => {
-    const names = ['🦉 clio', '☕️ 🔧 codie', '🐦 ⬛ crow'];
-    const hues = huesOf(names);
-    expect([
-        hues.every(
-            (h) =>
-                h !== undefined &&
-                (PALETTE.dots as readonly string[]).includes(h),
-        ),
-        huesOf(names),
-    ]).toEqual([true, hues]);
 });
 
 test("a row's state emoji sits against its time, both packed left, so every row's emoji lines up (dima, 10-13 16:59)", async ($, on) => {
