@@ -5,6 +5,10 @@ import { describe, expect, it } from 'vitest';
 // x-mod-stash's hook entry as cc's own validator reads it: a split of register.tsx that drops one `on(...)` loses a
 // feature with no test of its own to notice, so the hooks list is pinned (FRM-662 exit 2); a new hook adds its row
 const MOD = join(import.meta.dirname, 'x-mod-stash');
+// cc's validator runs on this mac only: the ci runner has no claude, and every move lands through the local commit
+// gate, which runs this file; so the run reads its binary from a list, and ci skips it
+const VALIDATE = ['claude', 'plugin', 'validate'] as const;
+const isOnCi = process.env.CI === 'true';
 const HOOKS = [
     'session.start',
     'skill.prompt',
@@ -49,8 +53,9 @@ describe('x-mod-stash: the hook entry registers every hook', () => {
         ).toEqual(['a', 'ui.press', 'b{x=1, y=2}']);
     });
 
-    it('validates with the pinned hooks', () => {
-        const run = spawnSync('claude', ['plugin', 'validate', MOD], {
+    it.skipIf(isOnCi)('validates with the pinned hooks', () => {
+        const [bin, ...args] = VALIDATE;
+        const run = spawnSync(bin, [...args, MOD], {
             encoding: 'utf8',
             timeout: 60_000,
         });
