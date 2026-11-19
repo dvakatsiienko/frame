@@ -7,7 +7,7 @@ import {
     v_virtual_list,
 } from 'gpui-base';
 import { div } from 'gpui-kit';
-import { exec, home, settings } from 'herdr';
+import { exec, settings } from 'herdr';
 
 import { openArgs } from './files.js';
 import { guessHeight } from './heights.js';
@@ -21,8 +21,6 @@ import { createPlace } from './place.js';
 
 // the readable column of a narrow look (the old chat's)
 const NARROW = 820;
-// [TRACE-place] how long after an open the list's asks are traced
-const TRACE_MS = 8000;
 // his reading place is saved this long after his last scroll step
 const PLACE_SAVE_MS = 600;
 // how long after a held place was last asked for the list stays unseen: its landing takes two frames, and a
@@ -64,8 +62,6 @@ export function createMessageList(deps) {
     /** the look's width, and its parts that move rows as last drawn: a change holds his place */
     let lookWidth = 'full';
     let lookKey = '';
-    /** [TRACE-place] the list's asks are traced until then, after an open */
-    let traceUntil = 0;
     /** until then the list is not shown: a held place is still landing as real heights arrive */
     let settleUntil = 0;
     let lastWheelAt = 0;
@@ -88,10 +84,6 @@ export function createMessageList(deps) {
         sizes = deps.heights.sizes(booked, (row) => guessHeight(row, room()));
         const pre = `w${widthGen}-`;
         const plan = at.plan(rows, sizes, viewH);
-        if (plan.ask && Date.now() < traceUntil)
-            trace(
-                `plan ask=${plan.ask} seekAt=${plan.seekAt} follow=${at.follow} held=${at.isHeld}`,
-            );
         const { cutAt, cutOffset, itemSizes, rowAt } = plan;
         // his place, or the newest: asked of the list before the frame that draws these rows
         if (plan.ask === 'lift') {
@@ -360,18 +352,6 @@ export function createMessageList(deps) {
         at.read(shownRows, sizes);
     }
 
-    /** [TRACE-place] one line to the lane's trace file, until the 23:44 «opened at the newest» is caught @param {string} line */
-    function trace(line) {
-        const stamp = new Date().toTimeString().slice(0, 8);
-        exec('/bin/sh', [
-            '-c',
-            'printf "%s\\n" "$1" >> "$2"',
-            'sh',
-            `${stamp} ${line}`,
-            `${home()}/.local/state/x/lanes/herdr-lane-2/place-trace.log`,
-        ]).catch(() => {});
-    }
-
     /** his place is asked of the list again, to the pixel: after a new width; unseen while it lands */
     function holdPlace() {
         if (at.hold()) settleUntil = Date.now() + SETTLE_MS;
@@ -404,10 +384,7 @@ export function createMessageList(deps) {
             }
             if (place)
                 localStorage.setItem(placeKey(file), JSON.stringify(place));
-            else {
-                trace('save: following, the saved place is dropped');
-                localStorage.removeItem(placeKey(file));
-            }
+            else localStorage.removeItem(placeKey(file));
         };
         cx.timer.after(PLACE_SAVE_MS, save);
     }
@@ -460,10 +437,6 @@ export function createMessageList(deps) {
             ].join('|');
             if (lookKey && key !== lookKey) {
                 widthGen += 1;
-                trace(
-                    `look ${lookKey} → ${key} place=${JSON.stringify(at.place)} held=${at.isHeld} rows ${shownRows.length} → ${rows.length}`,
-                );
-                traceUntil = Date.now() + TRACE_MS;
                 if (at.restyle(shownRows, sizes, rows))
                     settleUntil = Date.now() + SETTLE_MS;
                 deps.heights.clear();
@@ -471,12 +444,6 @@ export function createMessageList(deps) {
             lookWidth = look.width;
             lookKey = key;
             shownRows = rows;
-        },
-        trace,
-        /** [TRACE-place] the list's asks are traced a while after an open @param {string} line */
-        traceOpen(line) {
-            trace(line);
-            traceUntil = Date.now() + TRACE_MS;
         },
         view,
     };
