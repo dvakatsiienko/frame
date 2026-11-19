@@ -20,11 +20,9 @@ import {
     packWake,
     prViewArgs,
     proposalOf,
-    readLines,
     readState,
     sendLine,
     spawnHarvest,
-    transcriptDelta,
     turnStartOf,
     verifiedHead,
     wakeIdOf,
@@ -32,6 +30,7 @@ import {
     wakeSuffixOf,
     writeWakeState,
 } from './lib.ts';
+import { readLines, transcriptDelta } from './transcript.ts';
 
 // a PreToolUse exit 2 or timeout blocks the merge, so every failure prints context and exits 0
 // clio's settings give the merge hook 120 s, so this wait stays under it

@@ -7,7 +7,6 @@ import {
     HARVEST_DEADLINE_MS,
     NOTES_PATH,
     type Note,
-    type Run,
     STATE_DIR,
     type Wake,
     appendNoteOnce,
@@ -16,13 +15,11 @@ import {
     heldForAfterTurn,
     heldMapOf,
     isMode,
-    newestTranscript,
     noneReceipt,
     oneShotModel,
     packetCarriedHeld,
     readCharter,
     readState,
-    readTurn,
     runOneShot,
     threadOfNoteId,
     tokensIn,
@@ -30,6 +27,7 @@ import {
     wakeMarker,
     writeState,
 } from './lib.ts';
+import { type Run, newestTranscript, readTurn } from './transcript.ts';
 
 // spawned detached by wake.ts, stdio ignored: every outcome goes to harvest.log
 const POLL_MS = 5_000;

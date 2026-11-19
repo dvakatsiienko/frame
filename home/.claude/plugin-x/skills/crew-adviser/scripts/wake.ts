@@ -28,17 +28,16 @@ import {
     modeList,
     oneCrow,
     packWake,
-    readLines,
     readState,
     sendLine,
     spawnHarvest,
     takesSocketLines,
-    transcriptDelta,
     wakeIdOf,
     wakeLine,
     wakeSuffixOf,
     writeWakeState,
 } from './lib.ts';
+import { readLines, transcriptDelta } from './transcript.ts';
 
 const usage = `crow:wake --transcript <jsonl> [--mode ${modeList.join('|')}] [--precompact]
 

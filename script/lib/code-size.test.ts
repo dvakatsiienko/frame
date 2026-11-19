@@ -74,12 +74,8 @@ const caps = {
         cap: 2_780,
         why: 'the second wind, one file of cases',
     },
-    'home/.claude/plugin-x/skills/crew-adviser/scripts/lib.test.ts': {
-        cap: 1_415,
-        why: 'the adviser library, one file of cases',
-    },
     'home/.claude/plugin-x/skills/crew-adviser/scripts/lib.ts': {
-        cap: 2_078,
+        cap: 1_691,
         why: "the adviser's wake, packet and note logic in one library",
     },
     'home/.config/herdr-app/mods/x-herdr-deck/main.js': {
