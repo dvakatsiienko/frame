@@ -1,12 +1,13 @@
 ---
 id: PK-425
 title: 'cv: web app, pdf, ATS readability (I3)'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-15T12:27:00Z'
-updated_date: '2026-11-18T09:18:00Z'
+updated_date: '2026-11-19T14:16:00Z'
 labels:
   - s
+  - clio-wing-1
 dependencies: []
 priority: next
 type: task
@@ -37,4 +38,10 @@ PK-425:W5 (2026-11-16 14:50, dima): yes, i mistaken. fix AST to ATS. (ATS = appl
 PK-425:W6 (2026-11-16 17:36, dima): the cv: plan right after speak app v2 is done.
 
 11:18 kept: 2026-11-18 — cv later, after speak v2 (dima-fleet-priority)
+
+ticket: BYT-36
+PK-425:W7 (2026-11-19 16:08, dima): with you, after speak v2.
+16:14 close: W1–W7 folded into BYT-36 as BYT-36:W1–W7, labelled clio-wing-1, after speak v2
+
+close: W1–W7 moved to BYT-36 as BYT-36:W1–W7
 <!-- SECTION:NOTES:END -->
