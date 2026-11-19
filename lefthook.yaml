@@ -67,6 +67,11 @@ pre-commit:
       # raises its row in recipes/nurture-memory/scripts/memory-budgets.tsv with a reason, in the same commit),
       # merged bullets, a new memory file with no row, a row whose file is gone. no glob: the memory set lives in the script
       run: node recipes/nurture-memory/scripts/memory-lint.ts {staged_files}
+    code-size:
+      # each code file's line cap (x:guide-code § file size): no import ties a file to its size test, so the related
+      # test run never picks it; on a month's test drive, docs/test-drive/size-cap.md
+      glob: "*.{ts,tsx,js,go,sh}"
+      run: script/index-run.sh pnpm exec vitest run script/lib/code-size.test.ts
     surface-mirror:
       # the herdr and desktop leaves keep one heading list in one order. no glob: lefthook's staged list drops a deleted
       # file, so the script reads the index itself and passes at once when neither leaf nor it is staged
