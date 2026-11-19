@@ -1,10 +1,10 @@
 ---
 id: PK-455
 title: 'herdr: the very top tabs draggable, so dima reorders them'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-19T12:13:00Z'
-updated_date: '2026-11-19T12:31:00Z'
+updated_date: '2026-11-19T12:40:00Z'
 labels:
   - s
 dependencies: []
@@ -30,4 +30,6 @@ PK-455:W4 (2026-11-19 14:21, dima): I vote for research now. You can ask Trey to
 14:19 herdr codie: possible, not upstream-blocked — tab.move {id?, index | by} exists (herdr.d.ts:59); no on_drag event, so a hand-rolled drag on mouse down/move/up in x-herdr-tabs, then tab.move by index. size: S with no drag ghost (~80 lines), M with a ghost and a drop marker
 
 14:31 stray research a2d0e354 (docs/research/herdr-drag-and-drop.md): the clunk is mostly ours (no lift on press, no ghost, no threshold); herdr's limit is narrow (no drag api for mods, mouse-move only over the element); a 9-step recipe fixes it today; upstream herdr-app#769 adds pointer capture; the top tabs (x-herdr-tab-pills) have no drag at all. FRM-618's «drag is whatever the native list brings» rests on a premise the doc mostly refutes: re-grill
+
+14:40 ticket: FRM-664 — close: folded into FRM-664 (W1–W3 moved, signed on his o4 tick)
 <!-- SECTION:NOTES:END -->
