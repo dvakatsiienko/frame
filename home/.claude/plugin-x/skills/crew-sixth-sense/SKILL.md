@@ -52,6 +52,7 @@ read prose and ran nothing.
    started once the verdict is sent.
 3. **the tests** — the project's own, for the touched packages (`turbo run test --filter=…` in bytes; `pnpm typecheck && pnpm test`,
    plus `pnpm x-go:test` in frame). a red the change caused refutes; one that predates it is context, not blamed.
+   every chunk grades «no touched file past the limit» off `script/lib/code-size.test.ts` in frame.
    then **test adequacy**: in frame `x lane verify-tree <head> --revert <base> <paths…> -- <command>`, elsewhere
    revert the source hunks; each new test must go red, one that stays green is a finding.
 4. **every exit line, the failing path too** — drive the given/when, observe the then; a state change runs end to end.

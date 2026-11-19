@@ -27,7 +27,8 @@ const crewCaps = {
     'crew-designer': 12_000,
     'crew-dna': 7_000,
     'crew-lead': 12_000,
-    'crew-sixth-sense': 12_000,
+    // +150: the size-cap grade line, FRM-629, dima o3
+    'crew-sixth-sense': 12_150,
 } as const satisfies Record<string, number>;
 
 const countChars = (file: string) =>
