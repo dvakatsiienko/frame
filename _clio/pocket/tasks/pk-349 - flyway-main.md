@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-19T16:58:00Z'
+updated_date: '2026-11-19T17:25:00Z'
 labels:
   - s
   - clio-main
@@ -20,9 +20,10 @@ ordinal: 1000
 - [ ] #2 f46 TS LSP check each siesta until the halt: are both codies calling LSP, from their transcripts
 - [ ] #3 f49 TS LSP plan (W1224–W1228): retros in, weigh usefulness, then why underused and the fleet-wide wiring
 - [ ] #4 f55 pr-watch alarm for a conflicting pr (FRM-572, dima's o78 tick): watch-pr.sh wakes on mergeState DIRTY
-- [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #6 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #7 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #5 f57 stray glide card reborn after each end: its thread record restamps «at» on sync (mods wisp, after FRM-662)
+- [ ] #6 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #7 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #8 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1196,4 +1197,8 @@ PK-349:W1238 (2026-11-19 18:05, dima): etc. so i cleanly see who asked. if codie
 done 2026-11-19 18:48: f53 pr-watch alarm for a conflicting pr (FRM-572 wisp half): watch-pr.sh wakes on mergeState DIRTY (FRM-572 Done)
 
 done 2026-11-19 18:58: f54 pr-watch alarm for a conflicting pr: watch-pr.sh wakes on mergeState DIRTY (left over from the stray cli batch)
+
+done 2026-11-19 19:25: f56 stray glide card reborn after each end (l99–l102): the stray's threads.json record restamps «at» on every sync, so the ended-after-dispatch check never holds (register.tsx ~3500); a mods wisp after FRM-662 (FRM-662 In Progress)
+
+19:25 stray card cause: ~/.claude/shelf/threads.json restamps the stray's «at» on every sync, so register.tsx ~3500's «a card ended after the dispatch closes the lane» never holds; cards l99–l102
 <!-- SECTION:NOTES:END -->
