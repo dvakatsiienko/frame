@@ -29,6 +29,7 @@ import {
     takeJoinLock,
     takeJoins,
 } from './joins.ts';
+import { HOT, hotOf } from './keep-warm.ts';
 import {
     BAR_HEIGHT,
     BREATH_MS,
@@ -250,6 +251,7 @@ import {
     text,
     writeWhole,
 } from './util.ts';
+import { WIND, windOf } from './wind.ts';
 import {
     WIND_STORE_FILE,
     WIND_TEXT_CAP,
@@ -332,7 +334,6 @@ const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
 const MINUTE_MS = 60_000;
 // the prompt cache's own lifetime
 const CACHE_MS = 60 * MINUTE_MS;
-const HOT = 'hot:';
 // a reload keeps `$.state` and resets the module: what must outlive a mod save lives there (FRM-320)
 // what the band and the board draw: renders read it, and a write redraws them, no invalidate
 const VIEW = { key: 'view', plugin: 'x-mod-stash' } as const;
@@ -1064,9 +1065,6 @@ let hotGen = 0;
 // member's first answer to her; held ones ride her next prompt as one hidden block, or an idle append after the wait.
 // they live in the one held store (`HELD`); this key is the old store, read at the land, never written
 const QUIET_HELD = 'quiet-held:';
-// 🐦‍🔥 second wind (todo 16): `wind:<sid>`, written by any board's press and read by that session's own stash at its next
-// turn, so the ask rides the turn and never starts one (dima's slipstream)
-const WIND = 'wind:';
 // dima asking clio about cost: her context points at the price facts once, so she never answers from recall (o171; 10-13
 // she quoted a cache read at 1/10 of input, the file says 1/20)
 export const COST_WORDS =
@@ -4081,12 +4079,6 @@ async function successorOf($: EngineInterface, sid: string) {
     return id;
 }
 
-async function windOf($: EngineInterface, sid: string) {
-    return (await $.store.get(WIND + sid).catch(() => undefined)) as
-        | StashWind
-        | undefined;
-}
-
 // FRM-568: what herdr draws for each session lives on the shelf, one file per session, since herdr reads no private store
 // (frame AGENTS.md § the boundary); dima named the folder (21:36)
 const STATE_DIR = 'herdr-state';
@@ -5554,12 +5546,6 @@ async function selfSubmit($: EngineInterface, text: string) {
         throw err;
     });
 }
-
-// off is a written value, so a seat's default arms only a key never written
-const hotOf = (key: unknown) =>
-    key && (key as { off?: boolean }).off !== true
-        ? (key as { since: number })
-        : undefined;
 
 async function saveHot($: EngineInterface) {
     const sid = await currentId($);
