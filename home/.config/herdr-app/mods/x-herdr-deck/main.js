@@ -2,7 +2,7 @@
 // orbit asks x-mod-stash keeps on disk, ticked here into each session's ticks file; a `view: 'glide'` copy draws each
 // lane's glide card under antenna (glide-view.js).
 
-import { Button, Input, InputState, h_flex, v_flex } from 'gpui-base';
+import { Button, InputState, h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
 import {
     agents,
@@ -27,7 +27,6 @@ import {
 } from './band-press.js';
 import { isDeckShown, takeCommands, tickAsker } from './deck-commands.js';
 import { deckParts, orbitHeader } from './deck-parts.js';
-import { focusBorder } from './focus-ring.js';
 import { createGlide } from './glide-view.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
 import { SANS, SIZE, clockOf, leadingRoom, line, prose } from './look.js';
@@ -78,6 +77,14 @@ import {
     sessions,
     states,
 } from './shelf.js';
+import {
+    STEER_BACK,
+    STEER_CMD_ENTER,
+    STEER_ENTER,
+    STEER_TAB,
+    pressButton,
+    steerBox,
+} from './steer-kit.js';
 import { createTabMember } from './tab-loop.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
@@ -89,12 +96,6 @@ import { createTabMember } from './tab-loop.js';
 
 // how long a key that did nothing says why under its steer box
 const KEY_NOTE_MS = 3000;
-// Enter and ⌘Enter in a steer box are the deck's own actions, ahead of the box's submit (FRM-648 step 111)
-const STEER_ENTER = 'x_herdr_deck_steer_enter';
-const STEER_CMD_ENTER = 'x_herdr_deck_steer_cmd_enter';
-// Tab and shift-Tab in a steer box loop the quill and orbit, never herdr's hidden stops (FRM-620 slice 5c)
-const STEER_TAB = 'x_herdr_deck_steer_tab';
-const STEER_BACK = 'x_herdr_deck_steer_back';
 // how long a press given up by time says so: long enough to be seen when he looks back at the board
 const GIVEN_UP_NOTE_MS = 30 * 1000;
 
@@ -482,7 +483,6 @@ export default class Deck extends View {
      * @param {Theme} t @param {any} head @param {string} key `<sid>:plan`
      */
     planHead(t, head, key) {
-        const box = /** @type {InputState} */ (this.steers.get(key));
         const sid = key.slice(0, -':plan'.length);
         const plan = this.rows.find((r) => r.sid === sid)?.phases.join('\n');
         const isTicked = this.planTicked.get(sid) === plan;
@@ -492,67 +492,45 @@ export default class Deck extends View {
             .gap(8)
             .child(div().flex_1())
             .child(
-                Button.new(`plan-tick-${sid}`)
-                    .tab_stop(false)
-                    .h(26)
-                    .px(10)
-                    .flex_none()
-                    .flex()
-                    .items_center()
-                    .rounded(6)
-                    .border_1()
-                    .border_color(isTicked ? t.border : t.solid)
-                    .bg(isTicked ? t.surface : t.solid)
-                    .text_size(SIZE.secondary)
-                    .text_color(isTicked ? t.foreground : t.solid_foreground)
-                    .cursor_pointer()
-                    .on_click((_e, cx) =>
-                        cx.spawn((cx) => this.pressPlan(cx, key)),
-                    )
-                    .child(isTicked ? '✓ ticked' : '🛎️ tick'),
+                pressButton(t, {
+                    id: `plan-tick-${sid}`,
+                    isPrimary: true,
+                    label: pressLabel(isTicked ? 'ticked' : 'open', null).tick,
+                    onClick: (cx) => cx.spawn((cx) => this.pressPlan(cx, key)),
+                    tip: isTicked
+                        ? 'queued for its next turn: click to take it back'
+                        : 'tick: agree with the plan',
+                }),
             )
             .child(
                 div()
-                    .id(`plan-steer-${sid}`)
-                    .w(180)
+                    .w(200)
                     .flex_none()
-                    .h(26)
-                    .px(8)
                     .flex()
-                    .items_center()
-                    .rounded(6)
-                    .border_1()
-                    .border_color(
-                        focusBorder(this.steerFocus === key, t, t.border),
-                    )
-                    .bg(t.surface)
-                    .font_weight(400)
-                    .cursor_text()
-                    .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
-                    .key_context('XDeckSteer')
-                    .on_action(STEER_ENTER, (_e, cx) =>
-                        this.steerKeyAct(cx, key, false),
-                    )
-                    .on_action(STEER_CMD_ENTER, (_e, cx) =>
-                        this.steerKeyAct(cx, key, true),
-                    )
-                    .on_action(STEER_TAB, () =>
-                        this.tab.ask(`steer-${key}`, false),
-                    )
-                    .on_action(STEER_BACK, () =>
-                        this.tab.ask(`steer-${key}`, true),
-                    )
-                    .on_key_up((e) => {
-                        if (e.key === 'enter') this.steerKeys.released();
-                    })
                     .child(
-                        Input.new(box)
-                            .tab_index(this.tabAt.get(`steer-${key}`) ?? 0)
-                            .w_full()
-                            .text_size(SIZE.secondary)
-                            .text_color(t.foreground),
+                        this.steerOf(
+                            t,
+                            key,
+                            this.tabAt.get(`steer-${key}`) ?? 0,
+                            false,
+                        ),
                     ),
             );
+    }
+
+    /** a card's steer box, its keys wired to this deck @param {Theme} t @param {string} key @param {number} tabIndex @param {boolean} isLocked */
+    steerOf(t, key, tabIndex, isLocked) {
+        return steerBox(t, {
+            box: /** @type {InputState} */ (this.steers.get(key)),
+            id: `steer-${key}`,
+            isFocused: this.steerFocus === key,
+            isLocked,
+            onCmdUp: () => this.steerKeys.modifiersReleased(),
+            onEnter: (cx, isCmd) => this.steerKeyAct(cx, key, isCmd),
+            onEnterUp: () => this.steerKeys.released(),
+            onTab: (isBack) => this.tab.ask(`steer-${key}`, isBack),
+            tabIndex,
+        });
     }
 
     // the phases' tick (rider 4d): a press naming the whole plan into the thread's ticks file; a second press unticks
@@ -779,38 +757,16 @@ export default class Deck extends View {
             record?.phase === 'failed' ? (record.reason ?? '') : null;
         const isLocked = state === 'locked';
         const labels = pressLabel(state, ask.mark);
-        // tick is the main act, so it is the one filled button
         /** @param {string} id @param {string} label @param {string} tip @param {(cx: Context) => void} onClick @param {boolean} [isPrimary] */
         const button = (id, label, tip, onClick, isPrimary = false) =>
-            Button.new(`${id}-${key}`)
-                // the steer box's Enter and ⌘Enter press these, so Tab skips them (his 14:12 steer)
-                .tab_stop(false)
-                .h(28)
-                .px(12)
-                .flex_none()
-                .flex()
-                .items_center()
-                .rounded(6)
-                .border_1()
-                .border_color(isPrimary ? t.solid : t.border)
-                .bg(isPrimary ? t.solid : t.surface)
-                .text_size(SIZE.secondary)
-                .text_color(isPrimary ? t.solid_foreground : t.foreground)
-                .when(isPrimary, (el) => el.font_semibold())
-                // delivered: both stay, still, the taken one reading 😋 (dima, 21:03)
-                .when(isLocked, (el) =>
-                    el.opacity(0.6).tooltip('joined: the session took it'),
-                )
-                .when(!isLocked, (el) =>
-                    el
-                        .cursor_pointer()
-                        .hover((st) =>
-                            isPrimary ? st.opacity(0.85) : st.bg(t.hover),
-                        )
-                        .tooltip(tip)
-                        .on_click((_e, cx) => onClick(cx)),
-                )
-                .child(label);
+            pressButton(t, {
+                id: `${id}-${key}`,
+                isLocked,
+                isPrimary,
+                label,
+                onClick,
+                tip,
+            });
         // an ask is a card: the section head carries the 🪐, the bold id leads
         return (
             v_flex()
@@ -894,77 +850,7 @@ export default class Deck extends View {
                             )
                             .when(Boolean(steer), (row) =>
                                 row.child(
-                                    div()
-                                        .id(`steer-${key}`)
-                                        .flex_1()
-                                        .min_w(0)
-                                        .h(28)
-                                        .px(8)
-                                        .flex()
-                                        .items_center()
-                                        .rounded(6)
-                                        .border_1()
-                                        .border_color(
-                                            focusBorder(
-                                                this.steerFocus === key,
-                                                t,
-                                                t.border,
-                                            ),
-                                        )
-                                        .bg(t.surface)
-                                        .when(isLocked, (el) => el.opacity(0.6))
-                                        .when(!isLocked, (el) =>
-                                            el.cursor_text(),
-                                        )
-                                        .on_mouse_down('left', (_e, cx) =>
-                                            cx.stop_propagation(),
-                                        )
-                                        .key_context('XDeckSteer')
-                                        .on_action(STEER_ENTER, (_e, cx) =>
-                                            this.steerKeyAct(cx, key, false),
-                                        )
-                                        .on_action(STEER_CMD_ENTER, (_e, cx) =>
-                                            this.steerKeyAct(cx, key, true),
-                                        )
-                                        .on_action(STEER_TAB, () =>
-                                            this.tab.ask(`steer-${key}`, false),
-                                        )
-                                        .on_action(STEER_BACK, () =>
-                                            this.tab.ask(`steer-${key}`, true),
-                                        )
-                                        // a let-go key ends a press, so the next Enter acts however soon; ⌘ let go
-                                        // ends a cmd-enter, whose Enter key-up macOS never sends
-                                        .on_key_up((e) => {
-                                            if (e.key === 'enter')
-                                                this.steerKeys.released();
-                                        })
-                                        .on_modifiers_changed((e) => {
-                                            if (!e.modifiers.platform)
-                                                this.steerKeys.modifiersReleased();
-                                        })
-                                        // delivered: the steer stays as words, no longer editable
-                                        .child(
-                                            isLocked
-                                                ? div()
-                                                      .w_full()
-                                                      .truncate()
-                                                      .text_size(SIZE.secondary)
-                                                      .text_color(t.muted)
-                                                      .child(
-                                                          /** @type {InputState} */ (
-                                                              steer
-                                                          ).value(),
-                                                      )
-                                                : Input.new(
-                                                      /** @type {InputState} */ (
-                                                          steer
-                                                      ),
-                                                  )
-                                                      .tab_index(steerTab)
-                                                      .w_full()
-                                                      .text_size(SIZE.secondary)
-                                                      .text_color(t.foreground),
-                                        ),
+                                    this.steerOf(t, key, steerTab, isLocked),
                                 ),
                             ),
                     ),
@@ -1125,8 +1011,8 @@ export default class Deck extends View {
     }
 
     // look and 🧪 cards from every thread lead (or close, by his setting), then each thread in the agents list's order
-    /** @param {Theme} t @param {Context} cx */
-    orbit(t, cx) {
+    /** @param {Theme} t */
+    orbit(t) {
         const sections = orbitSections(
             this.rows,
             /** @type {number[] | null} */ (shared(ORDER_KEY)),
@@ -1241,7 +1127,7 @@ export default class Deck extends View {
         // orbit draws its steer boxes as Tab stops and focuses the one the loop asks for; with no asks it draws none
         this.orbitStops = [];
         this.tabAt = new Map();
-        const orbitRows = asks > 0 ? this.orbit(t, cx) : [];
+        const orbitRows = asks > 0 ? this.orbit(t) : [];
         // one head for every section: a hairline above, its emoji, its name and its count in words
         /** @param {string} text */
         const header = (text) =>
