@@ -1,7 +1,7 @@
 // the siesta's «lane pace» section (FRM-672): per running lane since the last siesta, from its transcript and `git log` — commits,
 // lines per commit, the share of its time spent waiting (tests, tsc, commit and push, the commit queue), and a projected finish
 // against its ticket's size budget. a red never parks a lane: it names the likely fix, for clio to send as a steer.
-// the method is `docs/research/lane-pace.md` (the 20 Nov read), ported from its pace.py
+// the method is the 20 Nov pace read across lanes (FRM-672's refs), ported from its pace.py
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
