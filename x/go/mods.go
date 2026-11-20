@@ -524,6 +524,9 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 		if err := os.CopyFS(overlay, os.DirFS(filepath.Join(repo, modsDir, mod))); err != nil {
 			return nil, err
 		}
+		if err := dropUntracked(repo, overlay, mod, only); err != nil {
+			return nil, err
+		}
 		for _, path := range changed {
 			if m, _ := modOf(path); m == mod {
 				rel := strings.TrimPrefix(filepath.ToSlash(path), modsDir+mod+"/")
@@ -576,6 +579,24 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 		reports = append(reports, report)
 	}
 	return reports, nil
+}
+
+// a file git has never seen in the mod is a parallel member's half-done work, never this session's edit (those come in as scratch
+// copies, laid over after; a file --only names stays): left in, one stray test red every run until its owner committed it. an ignored file (the engine's types) stays
+func dropUntracked(repo, overlay, mod, keep string) error {
+	got, _ := run(repo, nil, "", "git", "ls-files", "--others", "--exclude-standard", "-z", "--", modsDir+mod)
+	if !got.ok {
+		return &Fail{Msg: "git ls-files failed: " + got.log, Next: "git status"}
+	}
+	for path := range strings.SplitSeq(got.out, "\x00") {
+		if path == "" || path == keep {
+			continue
+		}
+		if err := removeIfThere(filepath.Join(overlay, strings.TrimPrefix(path, modsDir+mod+"/"))); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // the overlay's tsc, with the flags `mods/typecheck.ts` passes: a dropped import is red here in seconds, before the suite spends minutes on it;

@@ -649,6 +649,29 @@ func TestModsEditTypeErrorStopsPushAndTestBeforeAnyTestRuns(t *testing.T) {
 	}
 }
 
+// a parallel member's untracked test file is not this session's edit, so it never enters the overlay: its red waits for its own commit
+func TestModsEditOverlayLeavesAPeersUntrackedTestFileOut(t *testing.T) {
+	t.Parallel()
+	for _, verb := range []string{"push", "test"} {
+		t.Run(verb, func(t *testing.T) {
+			t.Parallel()
+			dir, env := modsFixture(t)
+			peer := filepath.Join(dir, modsDir, "m", "tests", "peer.test.ts")
+			write(t, peer, "RED, a peer's half-done file\n")
+			write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
+
+			got := xIn(t, dir, env, "mods", "edit", verb)
+
+			if got.code != 0 || !strings.Contains(got.stdout, `"passed":2`) {
+				t.Errorf("exit %d, want the two tracked tests green and the peer's file unread\n%s", got.code, got.stdout)
+			}
+			if readFile(t, peer) != "RED, a peer's half-done file\n" {
+				t.Errorf("the peer's file was touched")
+			}
+		})
+	}
+}
+
 // tsc runs with the flags `mods/typecheck.ts` passes: the engine's tsconfig leaves out the `.ts` import paths every mod writes
 func TestModsEditTypecheckPassesTheModsTypecheckFlags(t *testing.T) {
 	t.Parallel()
