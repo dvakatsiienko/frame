@@ -153,6 +153,10 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-18 · FRM-622 · wisphunter, plain + security card (Opus 5.5) · 3; 3 real fixed by one rework (a `false &&` or `; echo` forge, a `--bg` past `--`, the stale name), the output read replaced by a `lead=` label · useful
 - 2026-11-18 · FRM-622 · macroscope, budget · 2; 1 real fixed (the same forge, high), 1 in the herdr lane's `x-herdr-chat/shots.js:64` · useful
 - 2026-11-18 · FRM-622 · sixth sense · clean at round 1 on 82a37fe2, 12 probes, 0 broke; its one find a doc gap (mods `AGENTS.md` § mods:live named no sandbox HOME), fixed as a rider
+- 2026-11-20 · FRM-662 · wisphunter, plain card (Opus 5.5), the batch seams of the view-door moves · 0; one note (module lets now reset with their child module on a reload), probed and logged in `engine.md` · useful as a proof, no fix
+- 2026-11-20 · FRM-662 · wisphunter, plain card (Opus 5.5), the round-1 fixes diff · its findings are not in this thread's record after two compactions · not graded
+- 2026-11-20 · FRM-662 · sixth sense · clean, verified at round 3 on 30f35a9c; round 2 refuted exit 4 (per-session keys dropped by hand, not by their owners), fixed in fce603a4; the wisp (new scope) refuted once on 2 untested guards (a mid-turn reload, a second timer), both rows added and red-proven · useful: only sixth sense found the untested guards
+- 2026-11-20 · FRM-662, mods-lane-8 quick lane on main, register.tsx 11,557 → 228 lines over 81 steps, plus the wisp: no coderabbit, no /security-review (no role or guard door touched) · local reviews 2
 
 ## verdict
 - 2026-11-12 · frame#172, FRM-572 chunk 2 (cli wisps): clean at 3 rounds · wishkeeper found 1 high (a UTC lock stamp read every live holder as gone), sixth sense round 2 found 1 P1 (a `ps` that did not run read as gone); both fixed, red-proven · ci reviewer: not named
