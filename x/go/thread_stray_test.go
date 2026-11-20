@@ -22,6 +22,7 @@ func TestThreadRecordKeepsAStrayOffAnotherLane(t *testing.T) {
 	}{
 		{"a mods dispatch's lane and ticket", "mods-lane-8", "FRM-662", "", ""},
 		{"its own batch", "stray-batch-9", "FRM-700", "stray-batch-9", "FRM-700"},
+		{"its standing lane", "strays-lane", "FRM-701", "strays-lane", "FRM-701"},
 		{"another lane again, after its batch", "mods-lane-8", "FRM-662", "", ""},
 	} {
 		if err := writeThreadRecord(thread{SessionID: "sid-stray", Role: "codie", Area: "stray", Lane: c.lane, Ticket: c.ticket}, now, true); err != nil {

@@ -306,6 +306,26 @@ func TestShimALateShellNeverRebuildsATreeAlreadyBuilt(t *testing.T) {
 	}
 }
 
+// the stamp is read again under the lock only as proof the binary exists: a stamp beside a missing x-pushed builds again
+func TestShimRebuildsAMissingPushedBinaryWhoseStampIsCurrent(t *testing.T) {
+	t.Parallel()
+	w := newPushedWorld(t)
+	w.goDev(t)
+	w.run(t, w.tree)
+	waitFor(t, w.stamp(), w.pushedTree(t))
+	if err := os.Remove(filepath.Join(w.tree, "x/go/bin/x-pushed")); err != nil {
+		t.Fatal(err)
+	}
+
+	w.run(t, w.base)
+	waitFor(t, w.stamp(), w.pushedTree(t))
+	after := w.run(t, w.base)
+
+	if after.out != "pushed-v1" || w.pushedBuilds(t) != 2 {
+		t.Errorf("%q after %d pushed builds, want the binary built again, two builds in all", after.out, w.pushedBuilds(t))
+	}
+}
+
 // FRM-624 exit 6: a failing pushed build leaves the last pushed binary running with one stderr line, never a second try for the
 // same tree; with none built, the working tree's build runs with one line naming it
 func TestShimFallsBackWhenThePushedBuildFails(t *testing.T) {

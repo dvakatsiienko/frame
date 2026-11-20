@@ -691,6 +691,17 @@ describe('currentTicketOf', () => {
         writeFileSync(path.join(dir, 'b.md'), '- [x] 01 · FRM-1 a\n');
         writeFileSync(path.join(dir, 'c.md'), '- [ ] 01 · no ticket here\n');
         expect(currentTicketOf(path.join(dir, 'a.md'))).toBe('FRM-618');
+        // herdr-lane-3 on 20 Nov: an old chunk's step 16 left open above the ticked FRM-618 steps, more open ones under «not greenlit»
+        writeFileSync(
+            path.join(dir, 'd.md'),
+            '## FRM-569\n\n- [x] 01 · FRM-569 a\n- [ ] 16 · FRM-569 riders\n\n## FRM-618\n\n- [x] 40 · FRM-618 b\n- [x] 41 · FRM-618 c\n- [ ] 42 · FRM-618 d\n\n## not greenlit\n\n- [ ] 99 · FRM-999 e\n',
+        );
+        expect(currentTicketOf(path.join(dir, 'd.md'))).toBe('FRM-618');
+        writeFileSync(
+            path.join(dir, 'e.md'),
+            '- [x] 01 · FRM-1 a\n\n## not greenlit\n\n- [ ] 02 · FRM-2 b\n',
+        );
+        expect(currentTicketOf(path.join(dir, 'e.md'))).toBeNull();
         expect(currentTicketOf(path.join(dir, 'b.md'))).toBeNull();
         expect(currentTicketOf(path.join(dir, 'c.md'))).toBeNull();
         expect(currentTicketOf(path.join(dir, 'gone.md'))).toBeNull();

@@ -720,7 +720,12 @@ describe('the cli on a moved wish, with an x that answers by ticket', () => {
 describe('the cli on a ticket whose wish block holds PK-prefixed lines', () => {
     const here = import.meta.dirname;
     const wish = (...lines: string[]) => `## wish\n\n${lines.join('\n')}\n`;
-    const run = (body: string, draft: string, flags: string[] = []) => {
+    const run = (
+        body: string,
+        draft: string,
+        flags: string[] = [],
+        pocket: Record<string, string> = {},
+    ) => {
         const root = mkdtempSync(join(tmpdir(), 'wish-pk-'));
         try {
             mkdirSync(join(root, 'script'));
@@ -737,6 +742,8 @@ describe('the cli on a ticket whose wish block holds PK-prefixed lines', () => {
             mkdirSync(join(root, 'pocket', 'archive', 'tasks'), {
                 recursive: true,
             });
+            for (const [name, text] of Object.entries(pocket))
+                writeFileSync(join(root, 'pocket', 'tasks', name), text);
             mkdirSync(join(root, 'bin'));
             writeFileSync(
                 join(root, 'ticket.json'),
@@ -824,6 +831,20 @@ describe('the cli on a ticket whose wish block holds PK-prefixed lines', () => {
         );
         expect(missed.status).toBe(1);
         expect(missed.stdout).toContain('FRM-567:W1 uncited');
+    });
+
+    test("a pocket item standing in for an empty block keeps another home's quoted line a quote", () => {
+        const done = run(
+            wish('no numbered lines here'),
+            'FRM-7:W1 its own words',
+            ['--all'],
+            {
+                'pk-9 - item.md':
+                    'ticket: FRM-7\n\n- W1 its own words\n- PK-55:W3 a quote of another item\n',
+            },
+        );
+        expect(done.stdout).not.toContain('PK-55');
+        expect(done.status).toBe(0);
     });
 
     test('a W number twice under one home is still numbered twice', () => {

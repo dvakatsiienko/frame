@@ -394,6 +394,7 @@ if (import.meta.main) {
     const items = pocketItems(path.resolve(import.meta.dirname, '..'));
     let item: string | undefined;
     const homes = [id];
+    let joined: string[] = [];
     const isTicket = /^(FRM|BYT)-\d+$/i.test(id);
     if (isTicket) {
         try {
@@ -414,12 +415,15 @@ if (import.meta.main) {
                 process.exit(0);
             }
             item = wishBlock(ticket.description ?? '');
+            // lines joined into the block keep their home's prefix and count as this ticket's, each by its whole id; a
+            // pocket item standing in for an empty block quotes other homes' lines, which stay quotes
+            joined = joinedPrefixes(item, homes);
         } catch (error) {
             console.error(`${id}: x linear read failed — ${error}`);
             process.exit(2);
         }
         // the ticket's block is the wish's home; one pocket item that carries it stands in only for a block with no W-lines
-        if (wishLines(item, homes, joinedPrefixes(item, homes)).size === 0) {
+        if (wishLines(item, homes, joined).size === 0) {
             const owners = itemsForTicket(items, id);
             const owned =
                 owners.length === 1 && owners[0]
@@ -427,6 +431,7 @@ if (import.meta.main) {
                     : undefined;
             item = owned ?? item;
             if (owned && owners[0]) homes.push(owners[0]);
+            if (owned) joined = [];
         }
     } else {
         item = readItem(items, id);
@@ -445,8 +450,6 @@ if (import.meta.main) {
         console.log(`${id}: moved, not re-checked: ${movedHome}`);
         process.exit(3);
     };
-    // lines joined into the block keep their home's prefix and count as this ticket's, each by its whole id
-    const joined = joinedPrefixes(item, homes);
     if (wishLines(item, homes, joined).size === 0) {
         console.error(
             isTicket

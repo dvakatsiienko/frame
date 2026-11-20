@@ -100,7 +100,7 @@ if ((dev_now)) && [[ -z ${X_DEV-} && ${dir} == "${main}" ]]; then
             if mkdir "${lock}" 2>/dev/null; then
                 # the stamp was read before the lock: a build that ended in between wrote its stamp (or its .failed marker)
                 # before it dropped the lock, so a read under the lock sees it and this tree is never built twice
-                if [[ $(cat "${pbin}.stamp" 2>/dev/null) == "${want}" ||
+                if [[ -x ${pbin} && $(cat "${pbin}.stamp" 2>/dev/null) == "${want}" ||
                     $(cat "${pbin}.failed" 2>/dev/null) == "${want}" && -z $(find "${pbin}.failed" -mmin +10 2>/dev/null) ]]; then
                     rmdir "${lock}"
                 else

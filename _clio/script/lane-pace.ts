@@ -462,10 +462,19 @@ export function planOf(file: string): Plan | null {
     return steps.length > 0 && done > 0 ? { done, total: steps.length } : null;
 }
 
-// the ticket of the plan's first open step: the chunk the lane builds now, while its record keeps the ticket it was dispatched with
+// the ticket of the plan's step being built: the first open step after the last ticked one, never one from `## not greenlit`
+// down, so an old chunk's step left open does not outrank the chunk in hand; none ticked reads the first open step
 export function currentTicketOf(file: string): string | null {
     if (!existsSync(file)) return null;
-    const open = readFileSync(file, 'utf8').match(/^- \[ \] .*$/m)?.[0];
+    const lines = readFileSync(file, 'utf8')
+        .split(/^## not greenlit\b/im)[0]
+        ?.split('\n')
+        .filter((line) => /^- \[[ xX]\] /.test(line));
+    const steps = lines ?? [];
+    const lastDone = steps.findLastIndex((line) => !line.startsWith('- [ ]'));
+    const open = steps
+        .slice(lastDone + 1)
+        .find((line) => line.startsWith('- [ ]'));
     return open?.match(/\b(?:FRM|BYT)-\d+\b/)?.[0] ?? null;
 }
 
