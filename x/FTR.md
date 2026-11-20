@@ -807,6 +807,8 @@
   - when `x fleet growth --json` runs
   - then the first run seeds the baseline from today's sizes and names nothing; later a part whose lines reach 2× its baseline is named with lines then → now and the trigger `size`; a part born after the seed is seeded at its own size
   - given 3 🐞 commits in 7 days touching one part's files, or 3 of his prompt blocks naming the part on one day of `~/.local/state/clio/prompts/`, both counted from the part's seed on, then it is named with the trigger `fixes` or `turns (rough)`; 2 of either, other commit subjects, three parts with one fix each, events before the seed or past the window name nothing
+  - given a crossing (a part plus a trigger kind) already named, when it runs again with no answer, then it names nothing new for that part; another kind on the same part is a new crossing
+  - given `x fleet growth --keep <part>`, then the part is re-seeded at today's size and stamped «kept at», its named kinds forgotten, and fixes and turns count only events after the stamp (the 3 fixes still inside 7 days predate it; 3 after it cross anew); an unknown part exits 2 with the command that works
   - decision: a reader, never a hook, and one metric for every part (his o103: bytes apps later)
 
 ## stats — telemetry

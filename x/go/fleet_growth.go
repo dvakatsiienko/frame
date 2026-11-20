@@ -43,20 +43,23 @@ type growthCrossing struct {
 type growthData struct {
 	Seeded    bool             `json:"seeded"`
 	Parts     int              `json:"parts"`
+	Kept      string           `json:"kept,omitempty"`
 	Crossings []growthCrossing `json:"crossings"`
 }
 
-// at is the instant the part was seeded: fixes and turns count only from it
+// at is the instant the part was seeded or last kept: fixes and turns count only from it; reported lists the trigger kinds already
+// named since then, so a crossing is raised once
 type growthEntry struct {
-	Lines int    `json:"lines"`
-	At    string `json:"at"`
+	Lines    int      `json:"lines"`
+	At       string   `json:"at"`
+	Reported []string `json:"reported,omitempty"`
 }
 
 type growthBaseline struct {
 	Parts map[string]growthEntry `json:"parts"`
 }
 
-func fleetGrowth(r *Run, _ []string, _ Flags) (any, error) {
+func fleetGrowth(r *Run, _ []string, flags Flags) (any, error) {
 	root := frameRoot()
 	sizes, err := growthSizes(root)
 	if err != nil {
@@ -73,14 +76,21 @@ func fleetGrowth(r *Run, _ []string, _ Flags) (any, error) {
 	if !hadBaseline {
 		baseline = growthBaseline{Parts: map[string]growthEntry{}}
 	}
-	born := false
+	changed := !hadBaseline
+	if keep, _ := flags["keep"].(string); keep != "" {
+		if _, ok := sizes[keep]; !ok {
+			return nil, usageFail("no part named "+keep+" to keep", "x fleet growth --json")
+		}
+		baseline.Parts[keep] = growthEntry{Lines: sizes[keep], At: stamp}
+		data.Kept, changed = keep, true
+	}
 	parts := slices.Sorted(maps.Keys(sizes))
 	for _, part := range parts {
 		entry, known := baseline.Parts[part]
 		switch {
 		case !known:
 			baseline.Parts[part] = growthEntry{Lines: sizes[part], At: stamp}
-			born = true
+			changed = true
 		case entry.Lines > 0 && sizes[part] >= growthSizeRatio*entry.Lines:
 			data.Crossings = append(data.Crossings, growthCrossing{Part: part, Trigger: "size", Then: entry.Lines, Now: sizes[part]})
 		}
@@ -103,8 +113,19 @@ func fleetGrowth(r *Run, _ []string, _ Flags) (any, error) {
 		slices.SortStableFunc(data.Crossings, func(a, b growthCrossing) int {
 			return strings.Compare(a.Part, b.Part)*3 + rank[a.Trigger] - rank[b.Trigger]
 		})
+		fresh := []growthCrossing{}
+		for _, c := range data.Crossings {
+			entry := baseline.Parts[c.Part]
+			if slices.Contains(entry.Reported, c.Trigger) {
+				continue
+			}
+			entry.Reported = append(entry.Reported, c.Trigger)
+			baseline.Parts[c.Part] = entry
+			fresh, changed = append(fresh, c), true
+		}
+		data.Crossings = fresh
 	}
-	if !hadBaseline || born {
+	if changed {
 		if err := writeGrowthBaseline(path, baseline); err != nil {
 			return nil, err
 		}
@@ -116,6 +137,9 @@ func fleetGrowth(r *Run, _ []string, _ Flags) (any, error) {
 }
 
 func growthLines(data growthData) []string {
+	if data.Kept != "" {
+		return append([]string{"kept " + data.Kept + " at today's size"}, growthLines(growthData{Crossings: data.Crossings, Parts: data.Parts})...)
+	}
 	if data.Seeded {
 		return []string{fmt.Sprintf("seeded the baseline from today's sizes: %d parts", data.Parts)}
 	}

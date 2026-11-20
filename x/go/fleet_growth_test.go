@@ -255,3 +255,81 @@ func TestFleetGrowthNamesAPartWithThreeOfHisTurnsInOneDay(t *testing.T) {
 		})
 	}
 }
+
+func keepAt(t *testing.T, root string, env []string, now string, part string) ran {
+	t.Helper()
+	return xIn(t, root, append(env, "X_NOW="+now), "fleet", "growth", "--keep", part, "--json")
+}
+
+// exit 3, the first half: a crossing is a part plus a trigger kind and is named once; another kind on the same part is a new crossing
+func TestFleetGrowthNamesACrossingOnce(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	growthAt(t, root, env, "2026-11-20T09:00:00Z")
+	write(t, filepath.Join(root, growthMod), strings.Repeat("x\n", 200))
+	gitT(t, root, "add", "-A")
+	if first := growth(t, root, env); len(first.Crossings) != 1 || first.Crossings[0].Trigger != "size" {
+		t.Fatalf("first run %+v, want the size crossing", first.Crossings)
+	}
+
+	if again := growth(t, root, env); len(again.Crossings) != 0 {
+		t.Errorf("second run %+v, want the reported size crossing quiet", again.Crossings)
+	}
+
+	for range 3 {
+		fixCommit(t, root, growthAlphaDir, growthFix, 1)
+	}
+	got := growth(t, root, env)
+	if len(got.Crossings) != 1 || got.Crossings[0].Trigger != "fixes" {
+		t.Errorf("after 3 fixes %+v, want only the new «fixes» crossing", got.Crossings)
+	}
+}
+
+// exit 3, the second half: --keep re-seeds the part at today's size and stamps «kept at»; the 3 fixes still inside 7 days predate it, so
+// nothing crosses, and 3 fixes after the keep make a new crossing
+func TestFleetGrowthKeepAnswersACrossing(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	growthAt(t, root, env, "2026-11-20T09:00:00Z")
+	write(t, filepath.Join(root, growthMod), strings.Repeat("x\n", 200))
+	gitT(t, root, "add", "-A")
+	for range 3 {
+		fixCommit(t, root, growthAlphaDir, growthFix, 1)
+	}
+	if first := growth(t, root, env); len(first.Crossings) != 2 {
+		t.Fatalf("first run %+v, want the size and the fixes crossings", first.Crossings)
+	}
+
+	if got := keepAt(t, root, env, growthNow, "x-mod-alpha"); got.code != 0 {
+		t.Fatalf("keep exit %d\n%s", got.code, got.stdout)
+	}
+	again := growthAt(t, root, env, "2026-11-20T12:30:00Z")
+	if len(again.Crossings) != 0 {
+		t.Errorf("after keep %+v, want nothing: the size is re-seeded and the fixes predate «kept at»", again.Crossings)
+	}
+	if lines := seededLines(t, env)["x-mod-alpha"]; lines != 203 {
+		t.Errorf("kept at %d lines, want today's 203", lines)
+	}
+
+	for range 3 {
+		fixCommit(t, root, growthAlphaDir, growthFix, -1)
+	}
+	got := growthAt(t, root, env, "2026-11-20T14:00:00Z")
+	want := growthCrossing{Part: "x-mod-alpha", Trigger: "fixes", Count: 3}
+	if len(got.Crossings) != 1 || got.Crossings[0] != want {
+		t.Errorf("3 fixes after the keep %+v, want only %+v", got.Crossings, want)
+	}
+}
+
+// a part that is not in the baseline is a usage error naming the way on
+func TestFleetGrowthKeepNamesNoUnknownPart(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	growth(t, root, env)
+
+	got := keepAt(t, root, env, growthNow, "x-mod-nope")
+
+	if got.code != 2 || !strings.Contains(got.next, "x fleet growth") {
+		t.Errorf("exit %d next %q, want 2 and the verb to run", got.code, got.next)
+	}
+}

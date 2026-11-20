@@ -1239,6 +1239,13 @@
             ]
         },
         {
+            "flags": {
+                "keep": {
+                    "description": "answer a crossing: keep this part, re-seeding its size to today and counting fixes and turns from now",
+                    "type": "string",
+                    "value": "part"
+                }
+            },
             "name": "fleet growth",
             "needsApply": false,
             "purpose": "the parts of the fleet (cc mods, herdr mods, verb families, skills) that outgrew the size they were seeded at",
