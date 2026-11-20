@@ -3,10 +3,10 @@ id: PK-461
 title: >-
   speak component lib: ui sdk vs shadcn, the frontend stack health check before
   speak v2
-status: open
+status: done
 assignee: []
 created_date: '2026-11-20T17:11:00Z'
-updated_date: '2026-11-20T17:54:00Z'
+updated_date: '2026-11-20T17:59:00Z'
 labels:
   - s
   - clio-wing-1
@@ -40,4 +40,6 @@ PK-461:W13 (2026-11-20 19:54, dima, o7): q1 ok: we stay on shadcn through the by
 PK-461:W14 (2026-11-20 19:54, dima): the rest about the ui kit: no probes for now, no time for experiments.
 PK-461:W15 (2026-11-20 19:54, dima): the grill itself narrows to this: we use shadcn and the bytes ui kit for now.
 19:54 settled: speak's base is shadcn through the bytes ui kit (W13); ui sdk: no probe, no test drive now (W14); research 2–3 ask open in orbit
+
+19:59 research 2–3 dropped on his o16 tick: research 1 found shadcn top-tier, his W15 narrowing settles speak's pick; closed, the pick lives in FRM-288 § decided
 <!-- SECTION:NOTES:END -->
