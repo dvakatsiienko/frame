@@ -50,7 +50,7 @@ floods; no other member prints one.
 
 **A ui part is shown, never described** (dima, 2026-11-10: «let's use screenshots to communicate»): a shot with the part boxed and named, drawn by me, helga or a `helper-lite`; where its window is shot: the surface leaf.
 
-**An ask that needs his hand names the exact place** — the door, the app, the screen — and numbered steps shown, not in a hidden note (until: FRM-645).
+**An ask that needs his hand names the exact place** — the door, the app, the screen — and numbered steps shown, not in a hidden note (until: FRM-645); a file goes in `link`, the text names it in words, never a raw path (his o4, 11-20; until: FRM-677).
 
 <!-- 2026-10-20: a labelled guess sent him to clear the Code tab's plugin list; x, matt's skills and three more were restored from git. -->
 
