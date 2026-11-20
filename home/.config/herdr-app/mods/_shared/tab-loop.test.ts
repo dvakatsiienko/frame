@@ -67,7 +67,7 @@ describe('the Tab loop', () => {
             setShared: (key: string, value: unknown) => store.set(key, value),
             shared: (key: string) => store.get(key),
         };
-        createTabMember('x-test-gear', herdr).publish(['gear'], (run) => run());
+        createTabMember('x-test-gear', herdr).draw(['gear'], (run) => run());
         expect(loopOf(herdr.shared, herdr.layout())).toEqual([
             'quill',
             'gear',

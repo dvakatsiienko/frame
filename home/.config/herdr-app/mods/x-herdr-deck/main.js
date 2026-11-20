@@ -1139,7 +1139,9 @@ export default class Deck extends View {
                 this.pressStateOf(s, ask.id) !== 'locked',
         );
         this.tabAt = new Map(stops.map((id, i) => [id, i + 1]));
-        this.tab.publish(stops, (run) => cx.timer.after(0, run));
+        const to = this.tab.draw(stops, (run) => cx.timer.after(0, run));
+        const box = to && this.steers.get(to.slice('steer-'.length));
+        if (box) cx.timer.after(0, () => box.focus());
         return sections.map((section) => {
             if (section.kind === 'pinned')
                 return v_flex()
@@ -1361,10 +1363,6 @@ export default class Deck extends View {
             if (asker && tickAsk && Date.now() - tickAsk < 2000)
                 cx.spawn((cx) => this.pressAll(cx, asker));
         }
-        // the Tab loop asks for one of the steer boxes; an ask made before this load never fires
-        const to = this.tab.take();
-        const box = to && this.steers.get(to.slice('steer-'.length));
-        if (box) cx.timer.after(0, () => box.focus());
         // his order from the agents list, read at every draw, so a drag there moves the deck at once; the read's own
         // order (blocked, working, then by name) stays for a thread the list does not show
         const rows = inListOrder(
@@ -1375,7 +1373,9 @@ export default class Deck extends View {
             (s) => STATE[s.status] === 'working',
         ).length;
         const asks = this.rows.reduce((n, s) => n + s.asks.length, 0);
-        if (asks === 0) this.tab.publish([], (run) => cx.timer.after(0, run));
+        // orbit draws its steer boxes as Tab stops and focuses the one the loop asks for; with no asks it draws none
+        const orbitRows = asks > 0 ? this.orbit(t, cx) : [];
+        if (asks === 0) this.tab.draw([], (run) => cx.timer.after(0, run));
         // one head for every section: a hairline above, its emoji, its name and its count in words
         /** @param {string} text */
         const header = (text) =>
@@ -1407,7 +1407,7 @@ export default class Deck extends View {
             .when(asks > 0, (el) =>
                 el
                     .child(header(`🪐 orbit: ${count(asks, 'ask', 'asks')}`))
-                    .children(this.orbit(t, cx))
+                    .children(orbitRows)
                     .when(Boolean(this.pressError), (el2) =>
                         el2.child(
                             div()

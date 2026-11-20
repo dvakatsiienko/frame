@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
@@ -25,7 +25,7 @@ function keysOf(mod: string) {
         .map((f) => readFileSync(join(MODS, mod, f), 'utf8'))
         .join('\n');
     const consts = new Map(
-        [...text.matchAll(/const ([A-Z_]+) = '(x_herdr_[a-z_]+)'/g)].map(
+        [...text.matchAll(/const ([A-Z_]+) = '(x_herdr_[a-z0-9_]+)'/g)].map(
             ([, name, value]) => [name, value],
         ),
     );
@@ -36,11 +36,14 @@ function keysOf(mod: string) {
     // a bound action is a name (a literal or a const), a pair's name (`action: String(action)`), or one a helper
     // computes from a shared list (`action: viewerAction(step)`), handled when the handler calls the same helper
     const bound = new Set<string>();
+    // a call this reader cannot parse fails the test, never drops its mod from the check
+    const unread: string[] = [];
     for (const call of [...text.matchAll(/cx\.bind_keys\(/g)].map((m) =>
         callAt(text, m.index),
     )) {
+        const had = bound.size;
         for (const [, token] of call.matchAll(
-            /action: ('x_herdr_[a-z_]+'|[A-Z_]+)(?=[\s,)])/g,
+            /action: ('x_herdr_[a-z0-9_]+'|[A-Z_]+)(?=[\s,)])/g,
         ))
             bound.add(named(token));
         if (call.includes('action: String(action)'))
@@ -48,11 +51,12 @@ function keysOf(mod: string) {
                 bound.add(name);
         for (const [, helper] of call.matchAll(/action: ([a-z]\w*)\(/g))
             if (helper !== 'String') bound.add(`${helper}()`);
+        if (bound.size === had) unread.push(call.slice(0, 80));
     }
     const handled = new Set([
         ...[
             ...text.matchAll(
-                /\.on_action\(\s*('x_herdr_[a-z_]+'|[A-Z_]+)(?=[\s,)])/g,
+                /\.on_action\(\s*('x_herdr_[a-z0-9_]+'|[A-Z_]+)(?=[\s,)])/g,
             ),
         ].map(([, token]) => named(token)),
         ...[...text.matchAll(/\.on_action\(\s*([a-z]\w*)\(/g)].map(
@@ -60,13 +64,16 @@ function keysOf(mod: string) {
         ),
     ]);
     const isHandled = (action: string) => handled.has(action);
-    return { bound: [...bound], isHandled };
+    return { bound: [...bound], isHandled, unread };
 }
 
 const binders = readdirSync(MODS, { withFileTypes: true })
     .filter((d) => d.isDirectory() && d.name !== '_shared')
     .map((d) => d.name)
-    .filter((mod) => keysOf(mod).bound.length > 0);
+    .filter((mod) => {
+        const { bound, unread } = keysOf(mod);
+        return bound.length + unread.length > 0;
+    });
 
 describe('the hotkeys our mods bind', () => {
     test('the chat and the deck bind keys', () => {
@@ -74,6 +81,13 @@ describe('the hotkeys our mods bind', () => {
             expect.arrayContaining(['x-herdr-chat', 'x-herdr-deck']),
         );
     });
+
+    test.each(binders)(
+        'every bind_keys call in %s reads as its actions',
+        (mod) => {
+            expect(keysOf(mod).unread).toEqual([]);
+        },
+    );
 
     test.each(binders)('every key %s binds has its handler', (mod) => {
         const { bound, isHandled } = keysOf(mod);
@@ -85,5 +99,9 @@ describe('the hotkeys our mods bind', () => {
             s.kind === 'reload' ? s.mod : null,
         );
         expect(reloaded).toEqual(expect.arrayContaining(binders));
+        // the door reloads a mod by touching its main.js
+        expect(
+            binders.filter((mod) => !existsSync(join(MODS, mod, 'main.js'))),
+        ).toEqual([]);
     });
 });

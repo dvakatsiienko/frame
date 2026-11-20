@@ -344,12 +344,12 @@ export default class Chat extends View {
             );
         if (acts.isFind && !this.pictures.isOpen())
             _cx.timer.after(0, (later) => this.findBar.open(later));
-        // the quill is the chat's one stop in the Tab loop while the chat shows; hidden, it leaves the loop to orbit
-        this.tab.publish(isShown ? ['quill'] : [], (run) =>
-            _cx.timer.after(0, run),
-        );
-        // the Tab loop asks for the quill; an ask made before this load never fires (FRM-620 slice 5c)
-        if (this.tab.take() === 'quill')
+        // the quill is the chat's one Tab stop while the chat shows; the loop asks for it, or a reload hands it back
+        if (
+            this.tab.draw(isShown ? ['quill'] : [], (run) =>
+                _cx.timer.after(0, run),
+            ) === 'quill'
+        )
             _cx.timer.after(0, () => this.quill.focus());
         if (acts.isFocus && !this.pictures.isOpen())
             _cx.timer.after(50, () => {

@@ -29,8 +29,7 @@ function stubWindow() {
     const window = { focused: 'quill' };
     function renderAll() {
         for (const { member, stops } of mods) {
-            member.publish(stops, (run) => queueMicrotask(run));
-            const to = member.take();
+            const to = member.draw(stops, (run) => queueMicrotask(run));
             if (to) window.focused = to;
         }
     }
@@ -71,6 +70,20 @@ describe('the Tab hand-off between mods', () => {
 
 // FRM-673 exit 5: a keys reload restarts the mod; the stop that held the keyboard takes it again. a blur clears the
 // hold only after the draw, so a mod torn down mid-reload never clears it
+test('an ask for a stop this render does not draw is never focused', () => {
+    const store = new Map<string, unknown>([
+        ['tab.stops.x-herdr-chat', ['quill']],
+    ]);
+    const herdr = {
+        layout: () => ({ content: { mod: 'x-herdr-chat' } }),
+        setShared: (key: string, value: unknown) => store.set(key, value),
+        shared: (key: string) => store.get(key),
+    };
+    const chat = createTabMember('x-herdr-chat', herdr);
+    store.set('tab.go', { at: 1, to: 'quill' });
+    expect(chat.draw([], () => {})).toBe(null);
+});
+
 describe('a reload keeps the keyboard where it was', () => {
     function stubHerdr() {
         const store = new Map<string, unknown>([
@@ -87,10 +100,13 @@ describe('a reload keeps the keyboard where it was', () => {
         const herdr = stubHerdr();
         createTabMember('x-herdr-deck', herdr).held('steer-b:o2');
         const reloaded = createTabMember('x-herdr-deck', herdr);
-        expect(reloaded.take()).toBe(null);
-        reloaded.publish(['steer-a:o1', 'steer-b:o2'], (run) => run());
-        expect(reloaded.take()).toBe('steer-b:o2');
-        expect(reloaded.take()).toBe(null);
+        expect(reloaded.draw([], (run) => run())).toBe(null);
+        expect(
+            reloaded.draw(['steer-a:o1', 'steer-b:o2'], (run) => run()),
+        ).toBe('steer-b:o2');
+        expect(
+            reloaded.draw(['steer-a:o1', 'steer-b:o2'], (run) => run()),
+        ).toBe(null);
     });
 
     test('a stop he left keeps nothing for the next load', () => {
@@ -99,8 +115,9 @@ describe('a reload keeps the keyboard where it was', () => {
         deck.held('steer-b:o2');
         deck.left('steer-b:o2', (run) => run());
         const reloaded = createTabMember('x-herdr-deck', herdr);
-        reloaded.publish(['steer-a:o1', 'steer-b:o2'], (run) => run());
-        expect(reloaded.take()).toBe(null);
+        expect(
+            reloaded.draw(['steer-a:o1', 'steer-b:o2'], (run) => run()),
+        ).toBe(null);
     });
 
     test('a mod torn down before its blur runs keeps the hold', () => {
@@ -109,15 +126,17 @@ describe('a reload keeps the keyboard where it was', () => {
         deck.held('steer-b:o2');
         deck.left('steer-b:o2', () => {});
         const reloaded = createTabMember('x-herdr-deck', herdr);
-        reloaded.publish(['steer-a:o1', 'steer-b:o2'], (run) => run());
-        expect(reloaded.take()).toBe('steer-b:o2');
+        expect(
+            reloaded.draw(['steer-a:o1', 'steer-b:o2'], (run) => run()),
+        ).toBe('steer-b:o2');
     });
 
     test('another mod’s hold is never taken', () => {
         const herdr = stubHerdr();
         createTabMember('x-herdr-chat', herdr).held('quill');
         const deck = createTabMember('x-herdr-deck', herdr);
-        deck.publish(['steer-a:o1', 'steer-b:o2'], (run) => run());
-        expect(deck.take()).toBe(null);
+        expect(deck.draw(['steer-a:o1', 'steer-b:o2'], (run) => run())).toBe(
+            null,
+        );
     });
 });
