@@ -327,6 +327,7 @@ func joinThreads(now time.Time, stored []thread) []thread {
 	}
 	nameFallback(threads)
 	for i := range threads {
+		ownBatchOnly(&threads[i])
 		drawNames(&threads[i])
 		if sameName(threads[i].Name, threads[i].Display) {
 			threads[i].Name = threads[i].Display
@@ -465,6 +466,7 @@ func writeThreadRecord(record thread, now time.Time, isMinted bool) error {
 		store.Threads = slices.Delete(store.Threads, i, i+1)
 	}
 	record.At, record.DispatchedAt = now.UnixMilli(), now.UnixMilli()
+	ownBatchOnly(&record)
 	drawNames(&record)
 	store.Threads = append(store.Threads, record)
 	return writeThreadStore(path, now, store.Threads)

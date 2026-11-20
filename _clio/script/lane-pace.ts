@@ -7,7 +7,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 
-// S is about one session, M about two (dima's o2 pick b, FRM-672:W11); a size with no budget reads «no projection»
+// S is 4 h, M 8 h (dima's o2 pick b, FRM-672:W11); a size with no budget reads «no projection»
 const BUDGET_HOURS: Record<string, number> = { M: 8, S: 4 };
 const HOUR_S = 3600;
 // a lane under this is a small-commit lane: right for chores, a cost beside a long wait
@@ -397,7 +397,7 @@ export function lanePace(lane: LaneInput): LanePace {
         projectedHours > budgetHours
     )
         reasons.push(
-            `projected ~${Math.round(projectedHours)} h, budget ${budgetHours === 4 ? 'one session' : 'two sessions'}`,
+            `projected ~${Math.round(projectedHours)} h, budget ${lane.size} ${budgetHours} h`,
         );
     const red = reasons.length > 0;
     const numbers = `${commits.length} commits, ${Math.round(medianLines)} lines a commit, ${Math.round(waiting * 100)} % waiting, ${hoursOf(elapsed)} h in`;
@@ -425,7 +425,7 @@ export function lanePace(lane: LaneInput): LanePace {
         projectedHours === null && !red
             ? ' · no projection (no lane plan tick, or under an hour in)'
             : projectedHours !== null
-              ? ` · projected ~${Math.round(projectedHours)} h${budgetHours ? `, budget ${budgetHours} h` : ', no budget for its size'}`
+              ? ` · projected ~${Math.round(projectedHours)} h${budgetHours ? `, budget ${lane.size} ${budgetHours} h` : ', no budget for its size'}`
               : '';
     const flag = red ? '🔴' : projectedHours === null ? '➖' : '🟢';
     const line = `${flag} ${lane.name} — ${red ? `${reasons.join('; ')} · why: ${numbers} · likely fix: ${fix}` : `${numbers}${tail}`}`;
@@ -460,6 +460,13 @@ export function planOf(file: string): Plan | null {
     const steps = readFileSync(file, 'utf8').match(/^- \[[ xX]\] /gm) ?? [];
     const done = steps.filter((s) => /x/i.test(s)).length;
     return steps.length > 0 && done > 0 ? { done, total: steps.length } : null;
+}
+
+// the ticket of the plan's first open step: the chunk the lane builds now, while its record keeps the ticket it was dispatched with
+export function currentTicketOf(file: string): string | null {
+    if (!existsSync(file)) return null;
+    const open = readFileSync(file, 'utf8').match(/^- \[ \] .*$/m)?.[0];
+    return open?.match(/\b(?:FRM|BYT)-\d+\b/)?.[0] ?? null;
 }
 
 export function commitsSince(dir: string, since: number): Commit[] {
@@ -562,26 +569,26 @@ export function lanePaceSection(
             `${thread.sessionId}.jsonl`,
         );
         if (!existsSync(file)) continue;
+        const planFile = thread.lane
+            ? path.join(
+                  home,
+                  '.local/state/x/lanes',
+                  thread.lane,
+                  'lane-plan.md',
+              )
+            : '';
+        const ticket = (planFile && currentTicketOf(planFile)) || thread.ticket;
         const name =
-            `${thread.area ?? thread.lane ?? thread.sessionId.slice(0, 8)} | ${thread.ticket ?? ''}`.trim();
+            `${thread.area ?? thread.lane ?? thread.sessionId.slice(0, 8)} | ${ticket ?? ''}`.trim();
         try {
             const transcript = readFileSync(file, 'utf8');
             const pace = lanePace({
                 commits: ownCommits(reads.commits(dir, since), transcript),
                 name,
-                plan: thread.lane
-                    ? planOf(
-                          path.join(
-                              home,
-                              '.local/state/x/lanes',
-                              thread.lane,
-                              'lane-plan.md',
-                          ),
-                      )
-                    : null,
+                plan: planFile ? planOf(planFile) : null,
                 scratchpad: `/private/tmp/claude-${process.getuid?.() ?? 501}/${project}/${thread.sessionId}/scratchpad`,
                 since,
-                size: thread.ticket ? reads.size(thread.ticket) : null,
+                size: ticket ? reads.size(ticket) : null,
                 transcript,
             });
             red ||= pace.flag === '🔴';

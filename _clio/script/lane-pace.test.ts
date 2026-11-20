@@ -6,6 +6,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 import {
     type Commit,
     classify,
+    currentTicketOf,
     lanePace,
     lanePaceSection,
     median,
@@ -117,7 +118,7 @@ describe('lanePace', () => {
         });
         expect(pace.flag).toBe('🔴');
         expect(pace.line).toContain('projected ~');
-        expect(pace.line).toContain('budget one session');
+        expect(pace.line).toContain('budget S 4 h');
         expect(pace.line).toMatch(/80 lines a commit, \d+ % waiting/);
         expect(pace.line).toContain('likely fix: bigger cycles');
     });
@@ -675,5 +676,123 @@ describe('lanePaceSection', () => {
         expect(section.exit).toBe(1);
         expect(section.output.split('\n')).toHaveLength(1);
         expect(section.output).toContain('🔴 mods | FRM-662');
+    });
+});
+
+describe('currentTicketOf', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'lane-pace-current-'));
+    afterAll(() => rmSync(dir, { force: true, recursive: true }));
+
+    test("reads the ticket of the plan's first open step, never the record's", () => {
+        writeFileSync(
+            path.join(dir, 'a.md'),
+            '# plan\n\n## FRM-673\n\n- [x] 01 · FRM-673 a\n- [ ] 02 · FRM-618 b\n- [ ] 03 · FRM-700 c\n',
+        );
+        writeFileSync(path.join(dir, 'b.md'), '- [x] 01 · FRM-1 a\n');
+        writeFileSync(path.join(dir, 'c.md'), '- [ ] 01 · no ticket here\n');
+        expect(currentTicketOf(path.join(dir, 'a.md'))).toBe('FRM-618');
+        expect(currentTicketOf(path.join(dir, 'b.md'))).toBeNull();
+        expect(currentTicketOf(path.join(dir, 'c.md'))).toBeNull();
+        expect(currentTicketOf(path.join(dir, 'gone.md'))).toBeNull();
+    });
+});
+
+// 20 Nov 16:50: the herdr lane built FRM-618 (M) while its record still named FRM-673 (S), and the stray kept the mods
+// lane's record: each row reads the chunk its own lane plan marks current, its budget as «S 4 h» or «M 8 h»
+describe('lanePaceSection, the chunk a lane builds', () => {
+    const home = mkdtempSync(path.join(tmpdir(), 'lane-pace-chunk-'));
+    afterAll(() => rmSync(home, { force: true, recursive: true }));
+    const { commits, transcript } = chainLane({
+        cycle: 540,
+        cycles: 27,
+        lines: 80,
+    });
+    const plan = (lane: string, text: string) => {
+        mkdirSync(path.join(home, '.local/state/x/lanes', lane), {
+            recursive: true,
+        });
+        writeFileSync(
+            path.join(home, '.local/state/x/lanes', lane, 'lane-plan.md'),
+            text,
+        );
+    };
+    const ticks = '- [x] 01 · FRM-673 a\n'.repeat(5);
+    mkdirSync(path.join(home, '.claude/shelf'), { recursive: true });
+    mkdirSync(path.join(home, '.claude/projects/-frame'), { recursive: true });
+    for (const sid of ['s1', 's2', 's3'])
+        writeFileSync(
+            path.join(home, `.claude/projects/-frame/${sid}.jsonl`),
+            transcript,
+        );
+    plan('herdr-lane-3', `${ticks}${'- [ ] 02 · FRM-618 b\n'.repeat(3)}`);
+    plan(
+        'mods-lane-8',
+        `${'- [x] 01 · FRM-662 a\n'.repeat(6)}- [ ] 02 · FRM-662 b\n`,
+    );
+    plan('stray-batch-9', '- [ ] 01 · chore 1\n');
+    writeFileSync(
+        path.join(home, '.claude/shelf/threads.json'),
+        JSON.stringify({
+            threads: [
+                {
+                    area: 'herdr',
+                    cwd: '/frame',
+                    lane: 'herdr-lane-3',
+                    role: 'codie',
+                    sessionId: 's1',
+                    ticket: 'FRM-673',
+                },
+                {
+                    area: 'mods',
+                    cwd: '/frame',
+                    lane: 'mods-lane-8',
+                    role: 'codie',
+                    sessionId: 's2',
+                    ticket: 'FRM-662',
+                },
+                {
+                    area: 'stray',
+                    cwd: '/frame',
+                    lane: 'stray-batch-9',
+                    role: 'codie',
+                    sessionId: 's3',
+                },
+            ],
+        }),
+    );
+    const sizes: Record<string, string> = {
+        'FRM-618': 'M',
+        'FRM-662': 'M',
+        'FRM-673': 'S',
+    };
+    const asked: string[] = [];
+    const section = lanePaceSection(home, T0, {
+        commits: () => commits,
+        size: (ticket) => {
+            asked.push(ticket);
+            return sizes[ticket] ?? null;
+        },
+    });
+    const rows = section.output.split('\n');
+
+    test('a row is projected against the size of the chunk its plan marks current', () => {
+        const herdr = rows.find((r) => r.includes('herdr |')) ?? '';
+        expect(herdr).toContain('herdr | FRM-618');
+        expect(herdr).toMatch(/^🟢/);
+        expect(herdr).toContain('budget M 8 h');
+        expect(asked).not.toContain('FRM-673');
+    });
+
+    test('each row reads its own lane plan, the stray never the mods lane', () => {
+        expect(rows.find((r) => r.includes('mods |'))).toContain(
+            'mods | FRM-662',
+        );
+        expect(rows.find((r) => r.includes('stray |'))).not.toContain(
+            'FRM-662',
+        );
+    });
+
+    test('a budget prints as its size and hours, never as sessions', () => {
+        expect(section.output).not.toContain('session');
     });
 });
