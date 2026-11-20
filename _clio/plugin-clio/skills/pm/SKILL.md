@@ -66,7 +66,7 @@ traps:
   over strands, archive closed work; near 200 → propose a restructure pass
 - the approval is one batch, diff-shaped: `field: old → new` per line; silence on a line accepts it
 - labels are steering, dima writes instructions into their descriptions; a canceled ticket counts
-  as resolved in milestone math; a milestone has no close: linear computes `status` done from its tickets, and the only removal is `projectMilestoneDelete` — a delete, asked per milestone (root invariant 8)
+  as resolved in milestone math; a milestone has no close: linear computes `status` done from its tickets, and the only removal is `projectMilestoneDelete`, run unasked the turn its last ticket closes or the boot flags it empty (dima's standing word, `craft-pm` § milestones first)
 
 ## write and close — read the reference first, every time
 

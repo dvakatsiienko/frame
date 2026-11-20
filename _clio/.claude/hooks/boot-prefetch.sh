@@ -386,6 +386,15 @@ else
 fi
 
 echo "-- pocket (Backlog.md, _clio/script/pocket-check.ts; a red is drift to fix today, not a broken boot) --"
+# the halt archives the day's done items; one it missed, done before today, is archived here (PK-349:W1251)
+today=$(date +%Y-%m-%d)
+for f in "$HOME"/frame/_clio/pocket/tasks/pk-*.md; do
+  grep -qs '^status: done' "$f" || continue
+  day=$(sed -n "s/^updated_date: '\([0-9-]*\)T.*/\1/p" "$f")
+  [[ -n "$day" && "$day" < "$today" ]] || continue
+  id=$(sed -n 's/^id: //p' "$f")
+  (cd "$HOME/frame/_clio" && backlog task archive "$id" >/dev/null 2>&1) && echo "📦 $id archived: done $day, missed by the halt"
+done
 if out=$(node "$HOME/frame/_clio/script/pocket-check.ts" 2>&1); then
   echo "$out"
 elif [ -n "$out" ] && [ -z "$(printf '%s\n' "$out" | grep -vE '^(🔴|🟡) ')" ]; then
