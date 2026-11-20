@@ -108,3 +108,22 @@ func TestModsEditTestRangeSkipsACommitThatDeletedTheMod(t *testing.T) {
 		t.Fatalf("commit %v, want %s", row["sha"], first)
 	}
 }
+
+// a merge commit is a commit of the range: its first-parent diff names the mod, so it runs
+func TestModsEditTestRangeRunsAMergeCommit(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	base := strings.TrimSpace(gitT(t, dir, "rev-parse", "HEAD"))
+	gitT(t, dir, "checkout", "-q", "-b", "side")
+	commitFile(t, dir, modTestA, "green, on the side\n")
+	gitT(t, dir, "checkout", "-q", "main")
+	commitFile(t, dir, modTestB, "green, on main\n")
+	gitT(t, dir, "merge", "-q", "--no-ff", "-m", "the side lands", "side")
+	merge := strings.TrimSpace(gitT(t, dir, "rev-parse", "--short=7", "HEAD"))
+
+	got := xIn(t, dir, env, "mods", "edit", "test", "--range", base+"..HEAD")
+
+	if got.code != 0 || !strings.Contains(got.stdout, `"sha":"`+merge+`"`) {
+		t.Fatalf("exit %d, want the merge %s among the commits run\n%s", got.code, merge, got.stdout)
+	}
+}

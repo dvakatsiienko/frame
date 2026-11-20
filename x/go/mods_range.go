@@ -63,9 +63,9 @@ func testRange(r *Run, repo, spec string) (any, error) {
 
 // every mod the commit touches, tested on the commit's tracked files; a mod the commit deleted has nothing to test
 func testCommit(repo, sha string) ([]modReport, error) {
-	changed, _ := run(repo, nil, "", "git", "diff-tree", "--root", "--no-commit-id", "--name-only", "-r", sha)
+	changed, _ := run(repo, nil, "", "git", "show", "--first-parent", "--format=", "--name-only", sha)
 	if !changed.ok {
-		return nil, &Fail{Msg: "git diff-tree " + sha + " failed: " + changed.log, Next: "git show --stat " + sha}
+		return nil, &Fail{Msg: "git show " + sha + " failed: " + changed.log, Next: "git show --stat " + sha}
 	}
 	var reports []modReport
 	for _, mod := range touchedMods(strings.Split(changed.out, "\n")) {
@@ -81,10 +81,17 @@ func testCommit(repo, sha string) ([]modReport, error) {
 		if err != nil {
 			return nil, err
 		}
-		// git does not hold the engine's types or a mod's node_modules, so the checkout's own ride along
-		for _, ignored := range []string{".claude-plugin/types", "node_modules"} {
-			if src := filepath.Join(repo, modsDir, mod, ignored); exists(src) {
+		// git holds none of the engine's types, a mod's node_modules or its tsconfig.json (the repo ignores them), so the checkout's own ride along
+		for _, ignored := range []string{".claude-plugin/types", "node_modules", "tsconfig.json"} {
+			src := filepath.Join(repo, modsDir, mod, ignored)
+			switch info, err := os.Stat(src); {
+			case err != nil:
+			case info.IsDir():
 				if err := os.CopyFS(filepath.Join(overlay, ignored), os.DirFS(src)); err != nil {
+					return nil, err
+				}
+			default:
+				if err := copyFile(src, filepath.Join(overlay, ignored)); err != nil {
 					return nil, err
 				}
 			}

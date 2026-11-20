@@ -749,9 +749,9 @@
   - given a mod the engine wrote types for, when a copy holds a type error or a dropped import, then the verb is red as `typecheck: <first tsc line>` and `claude plugin test` never starts; nothing is written
   - given a mod with no engine types, then the step is skipped, as `pnpm mods:typecheck` skips it
 - ⬜ `x mods edit test` and `push` leave a peer's untracked file out of the overlay (FRM-572)
-  - given an untracked `*.test.ts` in the mod that no scratch copy holds, then the overlay never reads it and its red waits for its own commit; the engine's ignored types stay, and a file `--only` names stays
+  - given an untracked `*.test.ts` in the mod that this session never pulled or landed, then the overlay never reads it and its red waits for its own commit; a file this session landed and has not committed yet, the engine's ignored types and a file `--only` names stay
 - ⬜ `x mods edit test --range <base>..<head>` runs the suite at each commit of a range (FRM-662)
-  - given a range, then each commit that touches a mod runs validate, tsc and the tests on its own tracked bytes (never the working tree), one line per commit: its short sha and the pass or fail count
+  - given a range, then each commit that touches a mod (a merge by its first-parent diff) runs validate, tsc and the tests on its own tracked bytes (never the working tree; the checkout's engine types, node_modules and tsconfig.json ride along, git holds none), one line per commit: its short sha and the pass or fail count
   - given a red commit, then the walk goes on and the failure names every red commit; a range that runs no commit is refused, and `--range` beside `--only` or `--against` is a usage exit
 - ⬜ `x lane commit --dry` runs a commit's gates and commits nothing (FRM-473)
   - given `--dry <msg-file> <paths…>`, then the named paths format as a real commit does, and each pre-commit and commit-msg gate reads a temp index of HEAD plus those paths; every verdict prints, a red exits 1 naming it; HEAD, the index and a peer's staged file stay

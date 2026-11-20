@@ -50,6 +50,7 @@ exit $red
 `)
 	write(t, filepath.Join(bin, "tsc"), `#!/bin/sh
 [ -n "$CLAUDE_CALLS" ] && echo "tsc $*" >> "$CLAUDE_CALLS"
+[ -f "$2/tsconfig.json" ] || { echo "error TS5057: Cannot find a tsconfig.json file at the specified directory: '$2'."; exit 2; }
 if grep -rq TYPE-ERROR "$2/tests" 2>/dev/null; then echo "tests/a.test.ts(1,8): error TS2307: Cannot find module './gone.ts'."; echo "Found 1 error."; exit 2; fi
 `)
 	return dir, []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "CLAUDE_JOB_DIR=" + t.TempDir()}
@@ -620,6 +621,9 @@ func planEngineTypes(t *testing.T, dir string) {
 	types := filepath.Join(dir, modsDir, "m", ".claude-plugin", "types")
 	write(t, filepath.Join(types, "tsconfig.json"), "{}\n")
 	write(t, filepath.Join(types, ".gitignore"), "*\n")
+	// the mod's own tsconfig is ignored too, as the repo's .gitignore leaves it: git holds neither
+	write(t, filepath.Join(dir, modsDir, "m", "tsconfig.json"), "{}\n")
+	write(t, filepath.Join(dir, modsDir, "m", ".gitignore"), "tsconfig.json\n")
 }
 
 // a dropped import is red in seconds, before any test runs, on both verbs that run the overlay
@@ -669,6 +673,25 @@ func TestModsEditOverlayLeavesAPeersUntrackedTestFileOut(t *testing.T) {
 				t.Errorf("the peer's file was touched")
 			}
 		})
+	}
+}
+
+// a file this session landed and has not committed yet is its own work, so the next overlay still holds it
+func TestModsEditOverlayKeepsAFileThisSessionLandedUncommitted(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	copyA := pullCopy(t, dir, env, modTestA)
+	newPath := modsDir + "m/tests/c.test.ts"
+	write(t, filepath.Join(filepath.Dir(copyA), "c.test.ts"), "green\n")
+	if got := xIn(t, dir, env, "mods", "edit", "push", "--add", newPath); got.code != 0 {
+		t.Fatalf("push --add: exit %d\n%s", got.code, got.stdout)
+	}
+	write(t, copyA, "green, edited\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "test")
+
+	if got.code != 0 || !strings.Contains(got.stdout, `"passed":3`) {
+		t.Fatalf("exit %d, want the landed c.test.ts in the overlay beside a and b\n%s", got.code, got.stdout)
 	}
 }
 

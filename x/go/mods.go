@@ -536,8 +536,11 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 		if err := os.CopyFS(overlay, os.DirFS(filepath.Join(repo, modsDir, mod))); err != nil {
 			return nil, err
 		}
-		if err := dropUntracked(repo, overlay, mod, only); err != nil {
-			return nil, err
+		// the verify red harness has no scratch and keeps every file
+		if copies.scratch != "" {
+			if err := dropUntracked(repo, copies.scratch, overlay, mod, only); err != nil {
+				return nil, err
+			}
 		}
 		for _, path := range changed {
 			if m, _ := modOf(path); m == mod {
@@ -600,15 +603,16 @@ func testModOverlay(mod, overlay string) (modReport, error) {
 	return report, nil
 }
 
-// a file git has never seen in the mod is a parallel member's half-done work, never this session's edit (those come in as scratch
-// copies, laid over after; a file --only names stays): left in, one stray test red every run until its owner committed it. an ignored file (the engine's types) stays
-func dropUntracked(repo, overlay, mod, keep string) error {
+// a file git has never seen in the mod, that this session never pulled or landed, is a parallel member's half-done work: left in, one
+// stray test red every run until its owner committed it. what the session pulled or landed has a base copy in scratch and stays, as
+// a file --only names and an ignored file (the engine's types) do; its edited copies lay over after
+func dropUntracked(repo, scratch, overlay, mod, keep string) error {
 	got, _ := run(repo, nil, "", "git", "ls-files", "--others", "--exclude-standard", "-z", "--", modsDir+mod)
 	if !got.ok {
 		return &Fail{Msg: "git ls-files failed: " + got.log, Next: "git status"}
 	}
 	for path := range strings.SplitSeq(got.out, "\x00") {
-		if path == "" || path == keep {
+		if path == "" || path == keep || exists(filepath.Join(scratch, scratchBase, path)) {
 			continue
 		}
 		if err := removeIfThere(filepath.Join(overlay, strings.TrimPrefix(path, modsDir+mod+"/"))); err != nil {
