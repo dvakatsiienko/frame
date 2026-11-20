@@ -54,6 +54,11 @@ func fixtures(t *testing.T) []call {
 var xbin string
 
 func TestMain(m *testing.M) {
+	// a fixture that needs a live pid starts this binary as one: it only waits, so no program ci lacks is spawned for it
+	if os.Getenv("X_TEST_LIVE_PID") != "" {
+		time.Sleep(2 * time.Minute)
+		os.Exit(0)
+	}
 	isInProcessTest = true
 	dir, err := os.MkdirTemp("", "x-test-")
 	if err != nil {

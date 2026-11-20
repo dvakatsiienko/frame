@@ -155,3 +155,18 @@ func threadRoleSwitch(r *Run, key, role string) (any, error) {
 	}
 	return data, nil
 }
+
+// whether x runs under a registered claude session, a thread, and not at dima's own terminal
+func callerIsThread() bool {
+	table, err := readProcessTable()
+	return err == nil && len(callerChain(table, powerSessionsDir())) > 0
+}
+
+// from a thread the switch runs only on dima's typed word: --dima-ok names the thread, and x-mod-guard proves it against his
+// last prompt before the command runs, as it does for a merge; x asks for the flag and says the command
+func seatWordRefusal(flags Flags, key, role string) error {
+	if !callerIsThread() || flagString(flags, "dima-ok") == key {
+		return nil
+	}
+	return &Fail{Refused: true, Msg: "moving the main seat from a thread runs only on dima's typed word naming «" + key + "»", Next: "x thread rename " + key + " --role " + role + " --dima-ok " + key}
+}

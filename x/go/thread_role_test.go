@@ -27,7 +27,8 @@ func newSeatWorld(t *testing.T) seatWorld {
 	sessions, bin := t.TempDir(), t.TempDir()
 	w := seatWorld{store: filepath.Join(t.TempDir(), "threads.json"), mainFile: filepath.Join(t.TempDir(), "main-session"), tabs: filepath.Join(bin, "tabs.log"), sent: filepath.Join(bin, "hc.log"), pids: map[string]int{}}
 	for _, name := range []string{"a", "b", "c", "e"} {
-		sleeper := exec.Command("sleep", "120")
+		sleeper := exec.Command(os.Args[0])
+		sleeper.Env = append(os.Environ(), "X_TEST_LIVE_PID=1")
 		if err := sleeper.Start(); err != nil {
 			t.Fatal(err)
 		}
@@ -210,5 +211,37 @@ func TestThreadRenameRoleTwoAtOnceLeaveOneMain(t *testing.T) {
 	raw, _ := os.ReadFile(w.store)
 	if json.Unmarshal(raw, &parsed) != nil || len(parsed.Threads) != 5 {
 		t.Errorf("the store holds %s, want 5 records", raw)
+	}
+}
+
+// exit 2: from a thread the switch runs only on dima's typed word, which x-mod-guard proves the way it proves --dima-ok on a merge:
+// x asks for the flag naming the thread and says the exact command; from his own terminal it needs none
+func TestThreadRenameRoleFromAThreadNeedsDimaTypedWord(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name   string
+		caller string
+		flags  []string
+		code   int
+		main   string
+	}{
+		{"wing 1 with no word of his", "coordinator", nil, 1, "sid-a"},
+		{"wing 1 with a word naming another thread", "coordinator", []string{"--dima-ok", "wing2"}, 1, "sid-a"},
+		{"wing 1 with his word naming the thread", "coordinator", []string{"--dima-ok", "wing1"}, 0, "sid-b"},
+		{"a codie, even with the word", "codie", []string{"--dima-ok", "wing1"}, 1, "sid-a"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newSeatWorld(t)
+
+			got := xIn(t, t.TempDir(), asCaller(t, w.env, c.caller), append([]string{"thread", "rename", "wing1", "--role", "main"}, c.flags...)...)
+
+			if _, _, main := w.seats(t); got.code != c.code || main != c.main {
+				t.Errorf("exit %d, main-session %q, want exit %d and %s main:\n%s", got.code, main, c.code, c.main, got.stdout)
+			}
+			if c.code == 1 && c.caller == "coordinator" && !strings.Contains(got.next, "--dima-ok wing1") {
+				t.Errorf("next %q, want the exact command with his word", got.next)
+			}
+		})
 	}
 }
