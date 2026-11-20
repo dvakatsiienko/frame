@@ -3,7 +3,7 @@ id: PK-460
 title: >-
   hidden bottlenecks: how many lanes run slower than they could, and how to find
   out
-status: open
+status: done
 assignee: []
 created_date: '2026-11-20T12:38:00Z'
 updated_date: '2026-11-20T13:14:00Z'
@@ -51,4 +51,7 @@ PK-460:W1301 (2026-11-20 15:06, dima): the optimization we applied to the mods c
 PK-460:W1302 (2026-11-20 15:06, dima): is it worth taking this approach as the default for the mods codie to solve mods? ❓ → the crew-codie line under o1
 PK-460:W1303 (2026-11-20 15:06, dima): will this tactic improve the mods codie's shipping speed overall? ❓ → answered 15:06 + the pace read
 PK-460:W1304 (2026-11-20 15:06, dima): does it apply to the herdr codie too? ❓ → the pace read: herdr 🟢, waiting 21 %
+
+15:14 ticket: FRM-672 (lane pace alarm, his o1 tick 15:13)
+close: the bottleneck want moved to FRM-672; W1294, W1298, W1299, W1302 and his o1 «remeasure after 1w» are in its wish block; the answered questions are noted above
 <!-- SECTION:NOTES:END -->
