@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-20T18:17:00Z'
-updated_date: '2026-11-20T18:51:00Z'
+updated_date: '2026-11-20T18:52:00Z'
 labels:
   - s
 dependencies: []
@@ -44,4 +44,6 @@ ordinal: 78000
 close: moved to linear FRM-678
 
 20:51 close: PK-463:W1 done (answered in the reply); PK-463:W2–W16 moved to FRM-678 as FRM-678:W2–W16
+
+close: PK-463:W1 done (answered); PK-463:W2 moved to FRM-678:W2; PK-463:W3 moved to FRM-678:W3; PK-463:W4 moved to FRM-678:W4; PK-463:W5 moved to FRM-678:W5; PK-463:W6 moved to FRM-678:W6; PK-463:W7 moved to FRM-678:W7; PK-463:W8 moved to FRM-678:W8; PK-463:W9 moved to FRM-678:W9; PK-463:W10 moved to FRM-678:W10; PK-463:W11 moved to FRM-678:W11; PK-463:W12 moved to FRM-678:W12; PK-463:W13 moved to FRM-678:W13; PK-463:W14 moved to FRM-678:W14; PK-463:W15 moved to FRM-678:W15; PK-463:W16 moved to FRM-678:W16
 <!-- SECTION:NOTES:END -->
