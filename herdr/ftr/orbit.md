@@ -39,9 +39,11 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given asks in orbit from clio main and wing 1: plain asks, a look card («look …»), a 🧪 test card («try …», «test: …») and a ⚠️ ask
   - then the pinned group leads, every thread's look and test cards in the agents list's order, each under its thread's name; then clio main's section, its ⚠️ asks first, then its plain asks; then wing 1's (W16, W17, W18)
   - and an arriving ask or a tick moves no other row: a section's place follows the agents list, a thread the list does not show goes last by name, never by its status
-  - given his «general › orbit › pinned cards» row in settings set to bottom
+  - given his «general › orbit › look and test cards» row in settings set to bottom
   - then the same pinned group sits last, the threads' sections above in their order
   - decision: the pinned group holds look and 🧪 cards only; a ⚠️ ask leads its own thread's section (clio, 13:14)
+  - and a look card opens with 👀 and wears a soft purple tint with a thin purple border, a 🧪 card opens with 🧪 in blue; no word in orbit says «pinned» (FRM-620 slice 3b, W21–W28)
+  - decision: tint plus border, picked over a tint alone and a border alone (shots `~/.local/state/looks/FRM-620/1344-a|b|c.png`); look purple, 🧪 blue, his 13:44 swap; no gradient: a card's background takes one colour (`gpui-kit.d.ts` `bg(value: Color)`)
   - decision: the draw sorts, the store's order stays untouched; a pinned ask leaves the group when it leaves the deck, as any ask
 - ✅ ask text keeps a literal `<word>`
   - given an ask, a pick or a waiting-on line holds `<target>` outside a code span

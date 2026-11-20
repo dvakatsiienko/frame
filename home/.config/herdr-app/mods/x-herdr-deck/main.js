@@ -26,6 +26,8 @@ import {
     THREADS_KEY,
     askLabel,
     byName,
+    cardKind,
+    cardText,
     createSerial,
     createTurns,
     dropPress,
@@ -50,6 +52,7 @@ import {
     tickAllTakes,
     tickAllThread,
     ticketUrl,
+    tint,
     withBandPress,
     withPending,
 } from './orbit.js';
@@ -71,7 +74,7 @@ import {
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('gpui-kit').AsyncContext} AsyncContext */
 /** @typedef {import('gpui-kit').Color} Color */
-/** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'canvas' | 'dim' | 'foreground' | 'hover' | 'idle' | 'muted' | 'raised' | 'solid' | 'solid_foreground' | 'surface' | 'working', Color>} Theme */
+/** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'ansi5' | 'canvas' | 'dim' | 'foreground' | 'hover' | 'idle' | 'muted' | 'raised' | 'solid' | 'solid_foreground' | 'surface' | 'working', Color>} Theme */
 /** @typedef {import('./orbit.js').Ask} Ask */
 /** @typedef {import('./shelf.js').Row} Row */
 
@@ -154,6 +157,12 @@ const clockOf = (at, parts) =>
         .slice(0, parts)
         .map((n) => String(n).padStart(2, '0'))
         .join(':');
+
+// a look or 🧪 card's own paint: a soft tint of its kind's colour and a thin border of it, so the kind reads before
+// the words (FRM-620:W22, W23, W28); a card's bg takes a colour, never a gradient (gpui-kit.d.ts `bg(value: Color)`)
+/** @template {{ bg: (c: Color) => T, border_1: () => T, border_color: (c: Color) => T }} T @param {T} el @param {Color} c */
+const cardPaint = (el, c) =>
+    el.bg(tint(c, 0.12)).border_1().border_color(tint(c, 0.45));
 
 export default class Deck extends View {
     /** the asker under the pointer, which ⌘⇧K ticks first @type {string | null} */
@@ -838,6 +847,12 @@ export default class Deck extends View {
                 .gap(8)
                 .rounded(8)
                 .bg(t.raised)
+                .when(Boolean(cardKind(ask.text)), (el) =>
+                    cardPaint(
+                        el,
+                        cardKind(ask.text) === 'look' ? t.ansi5 : t.accent,
+                    ),
+                )
                 // the id sits outside the selectable text, so a double-click or a drag takes the ask alone (his F4 reads
                 // the selection aloud, dima 16:33); it lies over the text's first line, held free by leading em spaces,
                 // so the next lines run the full width (16:35: no hanging gap under the id)
@@ -1089,7 +1104,8 @@ export default class Deck extends View {
 
     /** @param {Theme} t @param {Row} s @param {Ask} ask @param {string} id */
     askLine(t, s, ask, id) {
-        if (!ask.id) return prose(id, ask.text, t.foreground, SIZE.main);
+        if (!ask.id)
+            return prose(id, cardText(ask.text), t.foreground, SIZE.main);
         const isUpdated = this.updated?.has(`${s.sid}:${ask.id}`);
         const label = `${isUpdated ? '🆕 ' : ''}${askLabel(s.name, ask.id)}`;
         const width =
@@ -1100,7 +1116,7 @@ export default class Deck extends View {
             .child(
                 prose(
                     id,
-                    `${leadingRoom(width, SIZE.main)}${ask.text}`,
+                    `${leadingRoom(width, SIZE.main)}${cardText(ask.text)}`,
                     t.foreground,
                     SIZE.main,
                 ),
@@ -1142,11 +1158,6 @@ export default class Deck extends View {
                     .px(12)
                     .py(4)
                     .gap(8)
-                    .child(
-                        line(t.foreground, SIZE.main)
-                            .font_semibold()
-                            .child('📌 looks and tests'),
-                    )
                     .children(
                         section.cards.map(({ ask, row }) =>
                             v_flex()

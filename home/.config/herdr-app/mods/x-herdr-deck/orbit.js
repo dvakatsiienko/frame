@@ -62,9 +62,36 @@ const pinRank = (text) => {
     return head.startsWith('⚠') ? 1 : 2;
 };
 
+/**
+ * a look card («look …»), a 🧪 test card («try …», «test: …»), or a plain ask (FRM-620:W16, W18)
+ * @param {string} text @returns {'look' | 'test' | null}
+ */
+export const cardKind = (text) => {
+    const head = text.trimStart();
+    if (/^look\b/i.test(head)) return 'look';
+    return /^(try\b|test:)/i.test(head) ? 'test' : null;
+};
+
 /** a look card or a 🧪 test card: always pinned (FRM-620:W16) @param {string} text */
-export const isPinnedCard = (text) =>
-    /^(look\b|try\b|test:)/i.test(text.trimStart());
+export const isPinnedCard = (text) => cardKind(text) !== null;
+
+/** a card's text as drawn: a look card opens with 👀, a test card with 🧪 (FRM-620:W25) @param {string} text */
+export const cardText = (text) => {
+    const kind = cardKind(text);
+    if (!kind) return text;
+    return `${kind === 'look' ? '👀' : '🧪'} ${text.trimStart()}`;
+};
+
+/**
+ * a theme colour at `alpha` (0–1); a colour that already carries alpha, or is not `#rrggbb`, stays as it is
+ * @param {`#${string}`} color @param {number} alpha @returns {`#${string}`}
+ */
+export const tint = (color, alpha) =>
+    /^#[0-9a-f]{6}$/i.test(color)
+        ? `${color}${Math.round(alpha * 255)
+              .toString(16)
+              .padStart(2, '0')}`
+        : color;
 
 /** @typedef {'top' | 'bottom'} OrbitPin */
 /** @template T @typedef {{ kind: 'pinned', cards: { ask: Ask, row: T }[] } | { kind: 'thread', row: T, asks: Ask[] }} OrbitSection */
