@@ -26,6 +26,11 @@ export const OUR_KEYS = [
         title: 'Pick the effort',
     },
     {
+        action: 'x-herdr-status.find',
+        key: 'cmd-f',
+        title: 'Find in the chat',
+    },
+    {
         action: 'x-herdr-status.settings',
         key: 'cmd-shift-,',
         title: 'Open the settings',

@@ -99,12 +99,18 @@ export default class Chat extends View {
     wasShown = false;
     /** his chat look (look.js), read each render */
     look = lookOf(null);
+    /** the chat's own keyboard focus, where Esc or a press outside the quill leaves it @type {import('gpui-kit').FocusHandle | null} */
+    chatKeys = null;
     /** the chat's seat in the Tab loop: the quill, while the chat shows */
     tab = createTabMember('x-herdr-chat', { layout, setShared, shared });
     /** the quill, its drafts, the files waiting over it and its / menu */
     quill = createQuill({
         column: () => this.list.column(),
         flash: (note, ms, cx) => this.flashNote(note, cx, ms),
+        leave: (cx) => {
+            if (this.findBar.find.state.isOpen) this.findBar.close(cx);
+            else this.chatKeys?.focus();
+        },
         messages: () =>
             this.model.rows
                 .filter((r) => r.kind === 'mine' || r.kind === 'reply')
@@ -267,6 +273,7 @@ export default class Chat extends View {
                 );
             }
         });
+        this.chatKeys = cx.focus_handle();
         this.quill.start(cx);
         this.pickers.start(cx);
         this.pictures.start(cx);
@@ -376,6 +383,13 @@ export default class Chat extends View {
             .size_full()
             .min_h(0)
             .key_context('XChat')
+            .when(Boolean(this.chatKeys), (el) =>
+                el.track_focus(
+                    /** @type {import('gpui-kit').FocusHandle} */ (
+                        this.chatKeys
+                    ),
+                ),
+            )
             .on_action('x_herdr_chat_find', (_e, cx) => this.findBar.open(cx))
             .on_action('x_herdr_chat_find_close', (_e, cx) =>
                 this.findBar.close(cx),

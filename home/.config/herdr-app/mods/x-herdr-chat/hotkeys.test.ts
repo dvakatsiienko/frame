@@ -204,4 +204,14 @@ describe('the x-herdr keys', () => {
             'cmd-shift-k': 'x-herdr-status.tickall',
         });
     });
+
+    test('⌘F opens the chat’s find from any focus, the deck’s steer boxes too; a terminal keeps its own ⌘F', () => {
+        const { keys, refused } = keysWithOurs(
+            { global: {}, terminal: { 'cmd-f': 'terminal.search' } },
+            OUR_KEYS,
+        );
+        expect(refused).toEqual([]);
+        expect(keys.global['cmd-f']).toBe('x-herdr-status.find');
+        expect(keys.terminal).toEqual({ 'cmd-f': 'terminal.search' });
+    });
 });

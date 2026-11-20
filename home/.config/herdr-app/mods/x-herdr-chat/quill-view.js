@@ -31,6 +31,8 @@ export const QUILL_ENTER = 'x_herdr_chat_quill_enter';
 // Tab and shift-Tab in the quill go to orbit's first and last steer box, never herdr's hidden stops (FRM-620 slice 5c)
 const QUILL_TAB = 'x_herdr_chat_quill_tab';
 const QUILL_BACK = 'x_herdr_chat_quill_back';
+// Esc in the quill hands the keyboard back to the chat, as a press outside it does
+const QUILL_ESCAPE = 'x_herdr_chat_quill_escape';
 const SEND_SIZE = 28;
 // a picture waiting over the quill, and how long a paste's «nothing there» note stays
 const THUMB_SIZE = 56;
@@ -62,9 +64,11 @@ const ATTACH_IO = {
  *   flash: (note: string, ms: number, cx: Context) => void,
  *   messages: () => string[],
  *   tab: ReturnType<typeof import('./tab-loop.js').createTabMember>,
+ *   leave: (cx: Context) => void,
  * }} deps the shown thread's transcript, the chat's column width, the pickers drawn in the quill, the send path, the
  *   picture viewer, the note under the quill (said, or shown for a while), and the thread's messages as written, where a
- *   paste finds its list markers, and the chat's seat in the Tab loop
+ *   paste finds its list markers, the chat's seat in the Tab loop, and the keyboard leaving the quill (Esc, a press
+ *   outside it)
  */
 export function createQuill({
     shownFile,
@@ -76,6 +80,7 @@ export function createQuill({
     flash,
     messages,
     tab,
+    leave,
 }) {
     /** the box: herdr draws its text itself, so a key typed in it draws nothing of ours; made at start @type {import('gpui-base').TextareaState | null} */
     let box = null;
@@ -186,6 +191,11 @@ export function createQuill({
                 context: 'XChatQuill > Input',
                 keystroke: 'shift-tab',
             },
+            {
+                action: QUILL_ESCAPE,
+                context: 'XChatQuill > Input',
+                keystroke: 'escape',
+            },
         ]);
         // the / menu's keys, only while it shows (its wrapper carries `ChatSlash` then)
         cx.bind_keys(
@@ -242,6 +252,10 @@ export function createQuill({
                         // the disc and pushes; its repeats keep the one hold going
                         .on_action(QUILL_TAB, () => tabFromQuill(false))
                         .on_action(QUILL_BACK, () => tabFromQuill(true))
+                        .on_action(QUILL_ESCAPE, (_event, cx) => leave(cx))
+                        .on_mouse_down_out((_event, cx) => {
+                            if (isQuillFocused) leave(cx);
+                        })
                         .on_action(QUILL_ENTER, (_event, cx) => {
                             if (quillKeys.pressed() === 'act')
                                 sendPath().press(box, cx, 'enter');
