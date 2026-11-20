@@ -30,8 +30,8 @@ const caps = {
         why: 'the prompt groomer, one file of cases',
     },
     '_clio/script/siesta-gate.test.ts': {
-        cap: 1_531,
-        why: 'the siesta gate, one file of cases',
+        cap: 1_540,
+        why: 'the siesta gate, one file of cases; +9 the queue-run case (dima o7, 2026-11-20)',
     },
     'home/.claude/plugin-x/mods/x-mod-guard/hooks/register.ts': {
         cap: 1_368,
