@@ -3,6 +3,7 @@ import type { EngineInterface } from 'claude-code';
 import type { StashEntry } from '../types/stash.d.ts';
 import { JOIN_OWED, handBackJoins, joinsOf } from './joins.ts';
 import { PREFIX, currentOrbit } from './orbit-store.ts';
+import { backgroundWaits } from './parse.ts';
 import { modelLabel } from './roster.ts';
 import { currentId, identity, sessionName } from './session-identity.ts';
 import { partsShown } from './settings-store.ts';
@@ -43,11 +44,12 @@ export function activityOf(
     },
     now: number,
 ): Activity {
-    const state = seen.isBusy
-        ? 'working'
-        : seen.wait || seen.tasks?.some((t) => !t.state)
-          ? 'waiting'
-          : 'idle';
+    // a reply's 🔭 line is stored with no tasks; beside tasks, `wait` is only their tally («ci done»), so the running
+    // ones decide, clio's standing watches never among them
+    const isWaiting = seen.tasks
+        ? backgroundWaits(seen.tasks).length > 0
+        : Boolean(seen.wait);
+    const state = seen.isBusy ? 'working' : isWaiting ? 'waiting' : 'idle';
     if (was?.state === state) return was;
     const fromTurn = !was || was.state === 'working';
     return {
@@ -55,7 +57,8 @@ export function activityOf(
         state,
     };
 }
-let activity: Activity | null = null;
+// kept in `$.state`, read where it is written: a module copy reset at a reload and moved idle's since back (engine.md)
+const ACTIVITY = { key: 'activity', plugin: 'x-mod-stash' } as const;
 
 // what this process last wrote, without its time, so an unchanged state costs no write
 let stateWritten: string | undefined;
@@ -74,8 +77,11 @@ async function writeState($: EngineInterface) {
     const ctx = await get(CONTEXT + sid);
     const model = await get(MODEL + sid);
     const o = await currentOrbit($);
-    activity = activityOf(
-        activity,
+    const kept = (await $.state.get(ACTIVITY).catch(() => undefined))?.value as
+        | Activity
+        | undefined;
+    const activity = activityOf(
+        kept ?? null,
         {
             endedAt: turn.endedAt,
             isBusy: await isTurnBusy($),
@@ -84,6 +90,8 @@ async function writeState($: EngineInterface) {
         },
         await $.clock.now(),
     );
+    if (activity !== kept)
+        await $.state.set(ACTIVITY, activity).catch(() => undefined);
     const state = {
         asks: entry?.items ?? [],
         assumed: o.assumed ?? [],

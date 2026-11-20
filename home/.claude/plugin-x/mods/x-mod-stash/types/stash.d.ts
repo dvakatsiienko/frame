@@ -309,6 +309,8 @@ declare module 'claude-code' {
             cap: StashCap | null;
             // epoch ms of the last main turn end
             ended: number;
+            // working, waiting or idle and since when, as the herdr state file says it
+            activity: { since: number; state: 'working' | 'waiting' | 'idle' };
             orbit: StashOrbit;
             // each text steer box by its key; no drawing reads it, so its writes redraw nothing
             fields: Record<string, StashField>;

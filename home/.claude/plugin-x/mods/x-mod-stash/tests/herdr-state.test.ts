@@ -184,6 +184,7 @@ async function session($: Engine, on: On) {
         setSid: (next: string) => {
             sid = next;
         },
+        state,
         store,
         taps,
     };
@@ -901,6 +902,38 @@ test('the watch dying flips waiting to idle at that poll', () => {
     ).toEqual({ since: T0 + 90_000, state: 'idle' });
 });
 
+// the stored reply as reply-fix.ts writes it once its last watch ended: `wait` reads «ci done», which is no wait
+test('a finished watch reads idle, though its «ci done» stays in the wait', () => {
+    expect(
+        activityOf(
+            null,
+            {
+                endedAt: T0,
+                isBusy: false,
+                tasks: [{ ...watch, state: 'done' as const }],
+                wait: 'ci done',
+            },
+            T0 + 5,
+        ),
+    ).toEqual({ since: T0, state: 'idle' });
+});
+
+test("clio's standing pr watch alone reads idle", () => {
+    const standing = {
+        command: 'bash ~/frame/_clio/.claude/hooks/watch-once.sh 70',
+        description: 'pr 70',
+        id: 'w2',
+        type: 'monitor',
+    };
+    expect(
+        activityOf(
+            null,
+            { endedAt: T0, isBusy: false, tasks: [standing] },
+            T0 + 5,
+        ),
+    ).toEqual({ since: T0, state: 'idle' });
+});
+
 test('an unchanged state keeps the time it began', () => {
     const was = { since: T0, state: 'waiting' as const };
     expect(
@@ -917,6 +950,15 @@ test("a session's state file carries its state and since", async ($, on) => {
     await orbit($, { lines: ['now: a'], op: 'plan' });
     const file = s.read(A);
     expect([typeof file?.since, file?.state]).toEqual(['number', 'idle']);
+});
+
+// a reload restarts the module: the state and its since come from what the session kept, so «idle 54m» never jumps back
+test('a kept idle state keeps its since through a reload', async ($, on) => {
+    const s = await session($, on);
+    s.state.set('activity', { since: 42, state: 'idle' });
+    await s.clock.advance(60_000);
+    await orbit($, { lines: ['now: b'], op: 'plan' });
+    expect(s.read(A)?.since).toBe(42);
 });
 
 // FRM-618 slice D exit 4: the file carries every field herdr's contract requires, so a rename here reds this test; the
