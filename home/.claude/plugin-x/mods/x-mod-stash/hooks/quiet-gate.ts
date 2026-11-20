@@ -10,6 +10,7 @@ import {
     QUIET_HELD,
     heldKeys,
     heldStore,
+    heldStuckMs,
     isCompactingNow,
     isQuietHome,
     quietHeldOf,
@@ -17,6 +18,7 @@ import {
     quietPingOf,
     saveHeld,
 } from './held.ts';
+import type { ViewDoors } from './keep-warm.ts';
 import {
     QUIET_HELD_LINE,
     QUIET_NOTICE,
@@ -38,11 +40,17 @@ import {
     rowOfTo,
 } from './quiet.ts';
 import {
+    LEDGER_EVERY_MS,
+    QUIET_ALARMED,
+    QUIET_GAP,
     QUIET_PARK_MS,
     QUIET_SENT,
+    quietAlarm,
     quietFlushed,
+    quietLedger,
     quietLogAll,
     quietLogKey,
+    quietSilentMembers,
 } from './quiet-books.ts';
 import { memberOf, registry } from './roster.ts';
 import {
@@ -502,4 +510,38 @@ export async function quietIdle($: EngineInterface) {
         return;
     }
     await quietLocked(() => quietFlushed($, due));
+}
+
+// the ledger runs once a minute in clio's thread; its gaps sit in the store for her next prompt, and each
+// new gap or a held ping stuck past the idle wait + 2 min raises one native alarm
+let ledgerAt = 0;
+export async function quietBooks($: EngineInterface, view: ViewDoors) {
+    if (!(await isQuietHome($))) return;
+    const now = await $.clock.now();
+    if (now - ledgerAt < LEDGER_EVERY_MS) return;
+    ledgerAt = now;
+    const gaps = await quietLedger($, now);
+    await $.store.set(QUIET_GAP, { at: now, gaps });
+    // a member's gap alarms once while it stays open; once it closes, its next gap alarms again
+    const raised =
+        ((await $.store.get(QUIET_ALARMED)) as string[] | undefined) ?? [];
+    const open = new Set(gaps.map((g) => `gap:${g.from}`));
+    const kept = raised.filter((k) => !k.startsWith('gap:') || open.has(k));
+    if (kept.length !== raised.length) await $.store.set(QUIET_ALARMED, kept);
+    for (const g of gaps)
+        await quietAlarm(
+            $,
+            `gap:${g.from}`,
+            `${g.from} sent clio ${g.sent}, her quiet log holds ${g.logged}`,
+        );
+    if (await readSwitch($, 'quiet')) await quietSilentMembers($, now, view);
+    const held = heldOf((await quietOf($)).held);
+    if (!held) return;
+    const oldest = held.reduce((a, b) => (b.at < a.at ? b : a));
+    if (now - oldest.at > (await heldStuckMs($)))
+        await quietAlarm(
+            $,
+            `stuck:${oldest.at}`,
+            `${held.length} held ping${held.length === 1 ? '' : 's'} stuck ${Math.round((now - oldest.at) / 60_000)} min, oldest from ${oldest.from}`,
+        );
 }

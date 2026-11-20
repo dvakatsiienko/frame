@@ -29,7 +29,6 @@ import {
     WIND_DELAY_MS,
     armHeldTells,
     armRelease,
-    heldStuckMs,
     holdAfterQuiet,
     holdSteer,
     isQuietHome,
@@ -182,19 +181,10 @@ import {
     waitSpans,
 } from './parse.ts';
 import { isAppPrompt, peerPing, quietHeldText } from './quiet.ts';
-import {
-    LEDGER_EVERY_MS,
-    QUIET_ALARMED,
-    QUIET_GAP,
-    quietAlarm,
-    quietLedger,
-    quietLog,
-    quietSilentMembers,
-    takeGapNotes,
-} from './quiet-books.ts';
+import { quietLog, takeGapNotes } from './quiet-books.ts';
 import {
     SEND_TOOL,
-    heldOf,
+    quietBooks,
     quietHoldPrompt,
     quietIdle,
     quietKindsOff,
@@ -472,41 +462,6 @@ export const COST_WORDS =
     /\b(?:tokens?|cach(?:e|ed|ing)|(?:ctx|context) costs?|pricing|mtok)\b/i;
 const COST_HINT =
     "💵 a cost question: read ~/frame/home/.claude/plugin-x/skills/crew-lead/references/model-cards.md before answering (each model's price line, and the «cache reads are where agents spend» bullet), never from recall.";
-
-// the ledger runs once a minute in clio's thread; its gaps sit in the store for her next prompt, and each
-// new gap or a held ping stuck past the idle wait + 2 min raises one native alarm
-let ledgerAt = 0;
-async function quietBooks($: EngineInterface) {
-    if (!(await isQuietHome($))) return;
-    const now = await $.clock.now();
-    if (now - ledgerAt < LEDGER_EVERY_MS) return;
-    ledgerAt = now;
-    const gaps = await quietLedger($, now);
-    await $.store.set(QUIET_GAP, { at: now, gaps });
-    // a member's gap alarms once while it stays open; once it closes, its next gap alarms again
-    const raised =
-        ((await $.store.get(QUIET_ALARMED)) as string[] | undefined) ?? [];
-    const open = new Set(gaps.map((g) => `gap:${g.from}`));
-    const kept = raised.filter((k) => !k.startsWith('gap:') || open.has(k));
-    if (kept.length !== raised.length) await $.store.set(QUIET_ALARMED, kept);
-    for (const g of gaps)
-        await quietAlarm(
-            $,
-            `gap:${g.from}`,
-            `${g.from} sent clio ${g.sent}, her quiet log holds ${g.logged}`,
-        );
-    if (await readSwitch($, 'quiet'))
-        await quietSilentMembers($, now, viewDoors($));
-    const held = heldOf((await quietOf($)).held);
-    if (!held) return;
-    const oldest = held.reduce((a, b) => (b.at < a.at ? b : a));
-    if (now - oldest.at > (await heldStuckMs($)))
-        await quietAlarm(
-            $,
-            `stuck:${oldest.at}`,
-            `${held.length} held ping${held.length === 1 ? '' : 's'} stuck ${Math.round((now - oldest.at) / 60_000)} min, oldest from ${oldest.from}`,
-        );
-}
 
 // an idle session whose asks were marked from another board wakes once dima prompts anywhere after the marks: one turn
 // carrying all of them. the submitted prompt skips this plugin's own prompt.submit hook, so the marks ride its text
@@ -1243,7 +1198,10 @@ export const register: Register = (on) => {
                     // pollShelf paces itself every third tick; a gate here would slow it twice over
                     await pollShelf($);
                     await quietIdle($).catch(() => undefined);
-                    if (isBookkept) await quietBooks($).catch(() => undefined);
+                    if (isBookkept)
+                        await quietBooks($, viewDoors($)).catch(
+                            () => undefined,
+                        );
                     await wakeForParkedLanes($, viewDoors($)).catch(
                         () => undefined,
                     );
