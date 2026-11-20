@@ -59,10 +59,12 @@ out=${2:-$(dirname "$brief")/lanes-$(date +%H%M%S)}
 mkdir -p "$out"
 op="$(dirname "$self")/op-run.sh"
 # a one-off research reads the log's newest entries on its topics and files its own entry; a recipe keeps its own record
-case $brief_abs in
-  */recipes/*/last/*) lane_brief=$brief ;;
+log="$(dirname "$self")/research-log.ts"
+lane_brief=$brief
+# a test's copy of this script runs without the log beside it
+[ -f "$log" ] && case $brief_abs in
+  */recipes/*/last/*) ;;
   *)
-    log="$(dirname "$self")/research-log.ts"
     node "$log" check || exit 2
     lane_brief="$out/brief.md"
     { cat "$brief"; node "$log" prior "$brief"; } > "$lane_brief" || exit 2

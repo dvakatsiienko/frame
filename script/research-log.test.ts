@@ -26,6 +26,7 @@ function setup() {
         execFileSync('node', [script, ...args], {
             encoding: 'utf8',
             env: { ...process.env, RESEARCH_LOG_DIR: logDir },
+            timeout: 10_000,
         });
     const entry = (
         file: string,
