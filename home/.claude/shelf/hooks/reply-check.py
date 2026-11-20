@@ -545,6 +545,19 @@ def note_only(path: str, reply: str) -> bool:
     return len(final) < SHORT_REPLY and bool(ON_THE_BOARD.search(final)) and any(len(str(a.get("hiddenNote", ""))) >= NOTE_MIN for a in asks)
 
 
+QUIET_WAKE_MAX = 450
+COMMIT_NEWS = re.compile(r"\b(?:commit(?:ted|s)?|push(?:ed|es)?|landed|origin)\b", re.I)
+# a failure, a finding, a question or a turn in the news is something dima may need, so the reply stays
+OTHER_NEWS = re.compile(r"\b(?:red|fail\w*|refus\w+|errors?|found|finding\w*|bugs?|wisps?|blocked|stuck|declin\w+|conflicts?|rejected|broke\w*|missed|unexpected|surprising|but|however)\b|[?⚠🔴❌]", re.I)
+
+
+def quiet_wake(path: str, reply: str) -> bool:
+    # a wake that only reports a commit or push has nothing dima needs; it rides the next reply (dima, o154: 109 such replies over 14-20 Nov)
+    opener, _ = turn_opener(path)
+    final = FENCE.sub("", reply).strip()
+    return "<task-notification" in opener and 0 < len(final) < QUIET_WAKE_MAX and bool(COMMIT_NEWS.search(final)) and not OTHER_NEWS.search(final)
+
+
 VERDICT_BADGED = re.compile(r"(?<!\*\*)(🌼 clean|🩹 fix|🪜 escalate)(?!\*\*)")
 BARE_CLEAN = re.compile(r"(?<![\w🌼*-])(?<!🌼 )clean\b(?!\*\*)")
 NOT_A_VERDICT = re.compile(r"\b(?:typecheck|lint|biome|tree|checkout|build|tests?|suite|status|merge state)\W+(?:is |was |ran |reads? )?$", re.I)
@@ -625,6 +638,8 @@ def main() -> None:
             hits.append(("round-buried", "a round in a turn dima did not start"))
         if note_only(path, reply):
             hits.append(("note-only", "a proposal only in a hidden note"))
+        if quiet_wake(path, reply):
+            hits.append(("quiet-wake", reply.strip()[:40]))
         # refused once: on the re-stop the hook lets the turn end whatever the reply holds
         if lost and not event.get("stop_hook_active"):
             reason = f"a round never reached your closing message ({'; '.join(lost)}): text between tool calls and the board may never reach dima. print the whole round in the closing message, then end the turn"
@@ -659,6 +674,8 @@ def main() -> None:
         reminds.append("a round closed a turn dima did not start, the next wake buries it — reprint it whole in your reply to his next prompt")
     if by_rule("note-only"):
         reminds.append("the reply pointed at the board while the proposal sat only in an ask's hidden note — print the proposal in the thread")
+    if by_rule("quiet-wake"):
+        reminds.append("a wake that only reports a commit or push prints nothing; it rides the next reply")
     if by_rule("plain-verdict"):
         reminds.append(f"a verdict word printed plain («{by_rule('plain-verdict')[0]}») — bold with its badge: **🌼 clean**, **🩹 fix**, **🪜 escalate**")
     if by_rule("dead-end"):

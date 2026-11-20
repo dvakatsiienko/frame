@@ -694,3 +694,34 @@ describe('a round or a proposal dima never sees (FRM-495)', () => {
         expect(nextPrompt()).not.toContain('hidden note');
     });
 });
+
+const taskWake = '<task-notification><task-id>b1</task-id><status>completed</status></task-notification>';
+
+describe('a wake that only reports a commit or push (dima o154)', () => {
+    const quiet = 'committed and pushed: main matches origin';
+
+    it('logs the line and reminds at the next prompt when a wake only reports the push', () => {
+        expect(loggedAfter(quiet, turnOpenedBy(taskWake))).toContain('quiet-wake');
+        expect(nextPrompt()).toContain('prints nothing; it rides the next reply');
+    });
+
+    it('stays silent when a finding sits beside the push', () => {
+        const found = 'pushed, but the gate refused the first commit on a red test; fixed in the second.';
+        expect(loggedAfter(found, turnOpenedBy(taskWake))).not.toContain('quiet-wake');
+        expect(nextPrompt()).not.toContain('rides the next reply');
+    });
+
+    it('stays silent in a turn dima started', () => {
+        expect(loggedAfter(quiet, turnOpenedBy('push it'))).not.toContain('quiet-wake');
+        expect(nextPrompt()).not.toContain('rides the next reply');
+    });
+
+    it('stays silent on a wake reply that says more than 450 characters', () => {
+        const long = `pushed. ${'the batch landed in order, each commit on origin. '.repeat(10)}`;
+        expect(loggedAfter(long, turnOpenedBy(taskWake))).not.toContain('quiet-wake');
+    });
+
+    it('stays silent on a wake reply with no commit or push in it', () => {
+        expect(loggedAfter('the tests pass on the second try.', turnOpenedBy(taskWake))).not.toContain('quiet-wake');
+    });
+});
