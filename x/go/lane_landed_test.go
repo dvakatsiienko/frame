@@ -34,6 +34,7 @@ func newLandedWorld(t *testing.T) landedWorld {
 	gitT(t, w.repo, "add", "x.txt")
 	gitT(t, w.repo, "commit", "-q", "-m", "the change", "-m", "- ticket: FRM-1")
 	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+	write(t, filepath.Join(w.repo, wishCoverScript), "// the script, which the stub node stands in for\n")
 	write(t, filepath.Join(w.repo, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-1 — the chunk\n\n### exit lines\n\n1. `x lane unlock` prints ok\n")
 	w.server = newFakeLinear(t, func(gqlCall) string {
 		body, _ := json.Marshal(*w.body)
@@ -57,7 +58,13 @@ func (w landedWorld) done(t *testing.T) {
 
 func (w landedWorld) landed(t *testing.T, args ...string) (map[string]any, asRun) {
 	t.Helper()
-	return runLinear(t, w.server, []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubPnpm(t)}, append([]string{"lane", "landed", "FRM-1", "--repo", w.repo}, args...)...)
+	return w.landedWith(t, wishCoverGreen, args...)
+}
+
+// landedWith runs lane landed with a node that answers as the given shell body does
+func (w landedWorld) landedWith(t *testing.T, node string, args ...string) (map[string]any, asRun) {
+	t.Helper()
+	return runLinear(t, w.server, []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubTools(t, node)}, append([]string{"lane", "landed", "FRM-1", "--repo", w.repo}, args...)...)
 }
 
 func linesOf(envelope map[string]any) string {
@@ -671,10 +678,14 @@ func TestLandedPrintsOneWiredLinePerNewVerb(t *testing.T) {
 	}
 }
 
-func stubPnpm(t *testing.T) string {
+func stubPnpm(t *testing.T) string { return stubTools(t, wishCoverGreen) }
+
+// a PATH whose pnpm does nothing and whose node answers as `wish-cover.ts` would: a lane's W-lines are cited unless a case says otherwise
+func stubTools(t *testing.T, node string) string {
 	t.Helper()
 	bin := t.TempDir()
 	write(t, filepath.Join(bin, "pnpm"), "#!/bin/sh\nexit 0\n")
+	write(t, filepath.Join(bin, "node"), "#!/bin/sh\n"+node)
 	return "PATH=" + bin + ":" + os.Getenv("PATH")
 }
 

@@ -311,7 +311,7 @@ var wasInStamp = regexp.MustCompile(`\bwas ((?:PK|FRM|BYT)-\d+:W\d+)\b`)
 // id (` (`); the same words in a line's text name nothing
 func renumberedFrom(body string) []string {
 	var ids []string
-	for _, line := range strings.Split(body, "\n") {
+	for line := range strings.SplitSeq(body, "\n") {
 		at := wishItem.FindStringIndex(line)
 		if at == nil {
 			continue

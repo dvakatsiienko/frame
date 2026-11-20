@@ -273,6 +273,9 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		}
 	}
 	lines = append(lines, look, wish)
+	if line := wishCoverLine(frame, paths, id, issue, issueErr); line != nil {
+		lines = append(lines, *line)
+	}
 	if line := habitsLine(issue.Description, id); issueErr == nil && line != nil {
 		lines = append(lines, *line)
 	}
@@ -1272,6 +1275,12 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 	plan := planned.(landedPlan)
 	if merged := plan.lines[0]; !merged.ok {
 		return nil, &Fail{Refused: true, Msg: "the lane has not landed (" + merged.detail + "): --apply archives and decamps only after the merge", Next: merged.fix}
+	}
+	// a lost ask is the worst close: nothing below runs while a W-line sits in no slice
+	for _, line := range plan.lines {
+		if line.name == "wish-cover" && !line.ok {
+			return nil, &Fail{Refused: true, Msg: plan.id + " holds W-lines no slice cites, so nothing was closed: " + line.detail, Next: line.fix}
+		}
 	}
 	if plan.openClosing != "" {
 		if err := r.Step("closing", plan.id+"'s closing slice in "+home(plan.openClosing), func() (string, error) {

@@ -753,6 +753,11 @@
 - ⬜ `x mods edit test --range <base>..<head>` runs the suite at each commit of a range (FRM-662)
   - given a range, then each commit that touches a mod (a merge by its first-parent diff) runs validate, tsc and the tests on its own tracked bytes (never the working tree; the checkout's engine types, node_modules and tsconfig.json ride along, git holds none), one line per commit: its short sha and the pass or fail count
   - given a red commit, then the walk goes on and the failure names every red commit; a range that runs no commit is refused, `--range` beside `--only` or `--against` is a usage exit, and a `--range` end or an `--against` ref starting with `-` is a usage exit before git sees it
+- ⬜ `x lane landed <ticket> --apply` refuses a close while a W-line sits in no slice (FRM-674)
+  - given a ticket whose wish block holds W-lines and an open lane spec, then the plan prints a `wish-cover` line from `node _clio/script/wish-cover.ts <ticket> --all <spec…>`: green when every line is cited or carries a `→ <home>` note, red naming each uncited line (`FRM-1:W2 uncited: …`) with its fix
+  - given a red `wish-cover` line, when `--apply` runs, then it refuses naming the lines and closes nothing: no closing slice tick, no archive, no decamp
+  - given the line settled (cited, or marked `→ <home>`), then the same call closes; given a ticket with no W-line, or no open spec (archived or none), then the check is not run and prints no line
+  - given the script or `node` missing, or the script refusing (an unreadable ticket, a block with no numbered line), then the line is red with the script's last words: an unread wish never reads as a covered one
 - ⬜ `x lane commit --dry` runs a commit's gates and commits nothing (FRM-473)
   - given `--dry <msg-file> <paths…>`, then the named paths format as a real commit does, and each pre-commit and commit-msg gate reads a temp index of HEAD plus those paths; every verdict prints, a red exits 1 naming it; HEAD, the index and a peer's staged file stay
   - given a real commit of the same bytes within the hour, then the gates that read only the index copy run no second time, through `LEFTHOOK_EXCLUDE`; its message gates still run
