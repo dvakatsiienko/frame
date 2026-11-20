@@ -74,7 +74,7 @@ import {
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('gpui-kit').AsyncContext} AsyncContext */
 /** @typedef {import('gpui-kit').Color} Color */
-/** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'ansi5' | 'canvas' | 'dim' | 'foreground' | 'hover' | 'idle' | 'muted' | 'raised' | 'solid' | 'solid_foreground' | 'surface' | 'working', Color>} Theme */
+/** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'ansi5' | 'ansi6' | 'canvas' | 'dim' | 'foreground' | 'hover' | 'idle' | 'muted' | 'raised' | 'solid' | 'solid_foreground' | 'surface' | 'working', Color>} Theme */
 /** @typedef {import('./orbit.js').Ask} Ask */
 /** @typedef {import('./shelf.js').Row} Row */
 
@@ -850,7 +850,7 @@ export default class Deck extends View {
                 .when(Boolean(cardKind(ask.text)), (el) =>
                     cardPaint(
                         el,
-                        cardKind(ask.text) === 'look' ? t.ansi5 : t.accent,
+                        cardKind(ask.text) === 'look' ? t.ansi5 : t.ansi6,
                     ),
                 )
                 // the id sits outside the selectable text, so a double-click or a drag takes the ask alone (his F4 reads

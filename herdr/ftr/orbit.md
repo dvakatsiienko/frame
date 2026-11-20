@@ -42,8 +42,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given his «general › orbit › look and test cards» row in settings set to bottom
   - then the same pinned group sits last, the threads' sections above in their order
   - decision: the pinned group holds look and 🧪 cards only; a ⚠️ ask leads its own thread's section (clio, 13:14)
-  - and a look card opens with 👀 and wears a soft purple tint with a thin purple border, a 🧪 card opens with 🧪 in blue; no word in orbit says «pinned» (FRM-620 slice 3b, W21–W28)
-  - decision: tint plus border, picked over a tint alone and a border alone (shots `~/.local/state/looks/FRM-620/1344-a|b|c.png`); look purple, 🧪 blue, his 13:44 swap; no gradient: a card's background takes one colour (`gpui-kit.d.ts` `bg(value: Color)`)
+  - and a look card opens with 👀 and wears a soft purple tint with a thin purple border, a 🧪 card opens with 🧪 in teal; no word in orbit says «pinned» (FRM-620 slice 3b, W21–W28)
+  - decision: tint plus border, picked over a tint alone and a border alone (shots `~/.local/state/looks/FRM-620/1344-a|b|c.png`); look purple (his 13:44 swap), 🧪 teal (his 13:47 pick, beside the flask's green); no gradient: a card's background takes one colour (`gpui-kit.d.ts` `bg(value: Color)`)
   - decision: the draw sorts, the store's order stays untouched; a pinned ask leaves the group when it leaves the deck, as any ask
 - ✅ ask text keeps a literal `<word>`
   - given an ask, a pick or a waiting-on line holds `<target>` outside a code span
