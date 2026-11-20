@@ -5,6 +5,7 @@
 import { Button, Input, InputState, h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
 import {
+    agents,
     exec,
     home,
     layout,
@@ -33,6 +34,7 @@ import { SANS, SIZE, clockOf, leadingRoom, line, prose } from './look.js';
 import {
     HOT_ASK,
     ORDER_KEY,
+    PIDS_KEY,
     THREADS_BEAT_MS,
     THREADS_KEY,
     askLabel,
@@ -1114,9 +1116,15 @@ export default class Deck extends View {
                 .child(text);
         /** @param {number} n @param {string} one @param {string} many */
         const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-        // antenna lists the threads; the deck scrolls orbit and glide, and pins every thread's phases to its bottom
+        // antenna lists the threads; the deck scrolls orbit and pins the focused thread's phases to its bottom, its pid
+        // by antenna's address → pid map
+        const focusedAt = agents().find((a) => a.focused)?.address;
+        const pids = /** @type {Record<string, number> | null} */ (
+            shared(PIDS_KEY)
+        );
         const parts = deckParts(this.rows, {
             asks,
+            focusedPid: focusedAt ? (pids?.[focusedAt] ?? null) : null,
             order: /** @type {number[] | null} */ (shared(ORDER_KEY)),
         });
         const scrolling = v_flex()

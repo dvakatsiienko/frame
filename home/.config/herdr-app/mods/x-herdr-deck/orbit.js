@@ -588,6 +588,8 @@ export function nextThreads(prev, threads, now) {
 // the agents list publishes the pids it shows, in its order: his drag there orders the deck too, a thread it does not
 // show going last; one rule, read from shared state, since a mod imports nothing outside its folder
 export const ORDER_KEY = 'x-herdr-agents.order';
+// antenna's address → pid map: the deck finds the focused thread's pid by it
+export const PIDS_KEY = 'x-herdr-antenna.pids';
 
 /**
  * @template {{ pid: number }} T

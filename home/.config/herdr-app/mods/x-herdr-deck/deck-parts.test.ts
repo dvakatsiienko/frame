@@ -39,3 +39,26 @@ describe('the deck parts', () => {
         expect(parts.pinned.map((g) => g.sid)).toEqual(['s1', 's2']);
     });
 });
+
+// FRM-618 slice D exit 4b (his o10, 17:30): the phases are the plan of the thread focused in antenna
+describe("the pinned phases follow antenna's focus", () => {
+    test('a focused thread shows its own plan alone', () => {
+        const parts = deckParts(rows, { asks: 0, focusedPid: 2, order: [] });
+        expect(parts.pinned.map((g) => g.sid)).toEqual(['s2']);
+    });
+
+    test('a focus change swaps the plan', () => {
+        const parts = deckParts(rows, { asks: 0, focusedPid: 1, order: [] });
+        expect(parts.pinned.map((g) => g.sid)).toEqual(['s1']);
+    });
+
+    test('a focused thread with no phases pins nothing', () => {
+        const parts = deckParts(rows, { asks: 0, focusedPid: 3, order: [] });
+        expect(parts.pinned).toEqual([]);
+    });
+
+    test('a focus on no known thread (a plain terminal) pins every plan', () => {
+        const parts = deckParts(rows, { asks: 0, focusedPid: null, order: [] });
+        expect(parts.pinned.map((g) => g.sid)).toEqual(['s1', 's2']);
+    });
+});
