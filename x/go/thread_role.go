@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -17,6 +18,41 @@ import (
 // the file the fork guard reads for who is main: `pid=` and `session=` lines; X_MAIN_SESSION points a test at a fixture
 func mainSessionPath() string {
 	return storePath("X_MAIN_SESSION", ".local/state/clio/main-session")
+}
+
+// under X_TEST a wait says so in the file X_SEAT_LOG names, so a test waits on the line and not on a clock
+func seatSaid(line string) {
+	if os.Getenv("X_TEST") == "" || os.Getenv("X_SEAT_LOG") == "" {
+		return
+	}
+	if f, err := os.OpenFile(os.Getenv("X_SEAT_LOG"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644); err == nil {
+		_, _ = fmt.Fprintln(f, line)
+		_ = f.Close()
+	}
+}
+
+// the old main's `x lane commit` holds the main checkout's index lock while it commits: the seat waits for it to clear and never
+// breaks it, up to the commit's own wait (X_LOCK_WAIT under X_TEST), then refuses with nothing written
+func waitMainIndexLock() error {
+	common, err := exec.Command("git", "-C", frameRoot(), "rev-parse", "--path-format=absolute", "--git-common-dir").Output()
+	if err != nil {
+		return nil
+	}
+	lock := filepath.Join(strings.TrimSpace(string(common)), "index.lock")
+	deadline := durationEnv("X_LOCK_WAIT", lockWait)
+	started := time.Now()
+	for isWaiting := false; ; time.Sleep(lockPause) {
+		if !exists(lock) {
+			return nil
+		}
+		if !isWaiting {
+			seatSaid("waiting on the main checkout's index lock")
+			isWaiting = true
+		}
+		if time.Since(started) >= deadline {
+			return &Fail{Refused: true, Msg: "the main checkout's index lock is still held after " + deadline.String() + ": " + lock + ", so the seat did not move", Next: "x thread rename <thread> --role main|wing:<n>"}
+		}
+	}
 }
 
 var wingAlias = regexp.MustCompile(`^wing(\d+)$`)
@@ -99,10 +135,14 @@ func threadRoleSwitch(r *Run, key, role string) (any, error) {
 		return nil, &Fail{Msg: "no thread store to write", Next: "x thread list"}
 	}
 	r.Open("the thread store")
+	if err := waitMainIndexLock(); err != nil {
+		return nil, err
+	}
 	unlock, err := lockThreadStore(path)
 	if err != nil {
 		return nil, err
 	}
+	before, _ := os.ReadFile(path)
 	store, err := readThreadStore(path)
 	if err != nil {
 		unlock()
@@ -136,9 +176,17 @@ func threadRoleSwitch(r *Run, key, role string) (any, error) {
 	if err == nil {
 		err = writeMainSession(mainSessionPath(), sessionPid(next.SessionID), next.SessionID)
 	}
+	if err != nil && before != nil {
+		// the second write failed after the first took: the store goes back as it was, so no half-moved seat is left
+		if restoreErr := os.WriteFile(path, before, 0o644); restoreErr != nil {
+			unlock()
+			return nil, &Fail{Msg: "the seat file was not written (" + err.Error() + ") and the store could not be put back (" + restoreErr.Error() + "): " + path + " holds the new seat, main-session the old", Next: "x thread list"}
+		}
+		err = fmt.Errorf("%w; the store is as it was", err)
+	}
 	unlock()
 	if err != nil {
-		return nil, &Fail{Msg: "the seat was not written: " + err.Error(), Next: "x thread list"}
+		return nil, &Fail{Msg: "the seat was not moved: " + err.Error(), Next: "x thread list"}
 	}
 	wait, nudge := renameWait()
 	var places []ordered

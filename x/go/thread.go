@@ -232,9 +232,12 @@ func lockThreadStore(path string) (unlock func(), err error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := syscall.Flock(int(lock.Fd()), syscall.LOCK_EX); err != nil {
-		lock.Close()
-		return nil, err
+	if err := syscall.Flock(int(lock.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		seatSaid("waiting on the thread store lock")
+		if err := syscall.Flock(int(lock.Fd()), syscall.LOCK_EX); err != nil {
+			lock.Close()
+			return nil, err
+		}
 	}
 	return func() { lock.Close() }, nil
 }

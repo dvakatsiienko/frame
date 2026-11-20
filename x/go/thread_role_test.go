@@ -18,6 +18,7 @@ import (
 type seatWorld struct {
 	env                         []string
 	store, mainFile, tabs, sent string
+	log                         string
 	pids                        map[string]int
 }
 
@@ -25,7 +26,7 @@ func newSeatWorld(t *testing.T) seatWorld {
 	t.Helper()
 	const rule = "────────────────────────────────────────"
 	sessions, bin := t.TempDir(), t.TempDir()
-	w := seatWorld{store: filepath.Join(t.TempDir(), "threads.json"), mainFile: filepath.Join(t.TempDir(), "main-session"), tabs: filepath.Join(bin, "tabs.log"), sent: filepath.Join(bin, "hc.log"), pids: map[string]int{}}
+	w := seatWorld{store: filepath.Join(t.TempDir(), "threads.json"), mainFile: filepath.Join(t.TempDir(), "main-session"), tabs: filepath.Join(bin, "tabs.log"), sent: filepath.Join(bin, "hc.log"), pids: map[string]int{}, log: filepath.Join(bin, "seat.log")}
 	for _, name := range []string{"a", "b", "c", "e"} {
 		sleeper := exec.Command(os.Args[0])
 		sleeper.Env = append(os.Environ(), "X_TEST_LIVE_PID=1")
@@ -58,12 +59,12 @@ esac
 			t.Fatal(err)
 		}
 	}
-	w.env = []string{"X_SESSIONS=" + sessions, "X_THREADS=" + w.store, "X_MAIN_SESSION=" + w.mainFile, "X_HC=" + filepath.Join(bin, "hc"), "X_HERDR_APP=" + filepath.Join(bin, "herdr-app"), "X_RENAME_WAIT=0", "X_RENAME_NUDGE=0"}
+	w.env = []string{"X_SESSIONS=" + sessions, "X_THREADS=" + w.store, "X_MAIN_SESSION=" + w.mainFile, "X_HC=" + filepath.Join(bin, "hc"), "X_HERDR_APP=" + filepath.Join(bin, "herdr-app"), "X_RENAME_WAIT=0", "X_RENAME_NUDGE=0", "X_SEAT_LOG=" + w.log}
 	return w
 }
 
-// a switch waits for the store's lock before it reads or writes: while the test holds the lock the seat stays where it was, and
-// moves once the lock is let go
+// a switch waits for the store's lock before it reads or writes: while the test holds the lock the child says it waits and the seat
+// stays where it was; it moves once the lock is let go
 func TestThreadRenameRoleWaitsForTheStoreLock(t *testing.T) {
 	t.Parallel()
 	w := newSeatWorld(t)
@@ -74,12 +75,7 @@ func TestThreadRenameRoleWaitsForTheStoreLock(t *testing.T) {
 	done := make(chan scripted)
 	go func() { done <- scriptX(t, w.env, "thread", "rename", "sid-b", "--role", "main") }()
 
-	select {
-	case got := <-done:
-		unlock()
-		t.Fatalf("the switch ran while the lock was held: exit %d\n%s", got.code, got.out)
-	case <-time.After(400 * time.Millisecond):
-	}
+	waitForLine(t, w.log, "waiting on the thread store lock")
 	if _, _, main := w.seats(t); main != "sid-a" {
 		t.Errorf("main-session names %q while the lock was held, want it unmoved", main)
 	}
@@ -89,6 +85,77 @@ func TestThreadRenameRoleWaitsForTheStoreLock(t *testing.T) {
 	}
 	if roles, _, main := w.seats(t); roles["sid-b"] != "coordinator" || main != "sid-b" {
 		t.Errorf("roles %v, main-session %q, want b main once the lock was let go", roles, main)
+	}
+}
+
+// a line a child logged under X_TEST, waited for by its content; the deadline only guards a hang
+func waitForLine(t *testing.T, path, want string) {
+	t.Helper()
+	for deadline := time.Now().Add(30 * time.Second); !strings.Contains(readFile0(path), want); time.Sleep(20 * time.Millisecond) {
+		if time.Now().After(deadline) {
+			t.Fatalf("%s never held %q:\n%s", path, want, readFile0(path))
+		}
+	}
+}
+
+// the old main's `x lane commit` holds the main checkout's index lock: the switch waits for it to clear before it writes the seat,
+// and never breaks it; a lock that does not clear in time refuses the switch with nothing written
+func TestThreadRenameRoleWaitsOutTheMainCheckoutsIndexLock(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name    string
+		release bool
+		code    int
+		main    string
+	}{
+		{"a lock that clears", true, 0, "sid-b"},
+		{"a lock that never clears", false, 1, "sid-a"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newSeatWorld(t)
+			root := repo(t)
+			lock := filepath.Join(root, ".git", "index.lock")
+			write(t, lock, "")
+			env := append(w.env, "X_FRAME_ROOT="+root, "X_LOCK_WAIT=0.6s")
+			done := make(chan scripted)
+			go func() { done <- scriptX(t, env, "thread", "rename", "sid-b", "--role", "main") }()
+
+			waitForLine(t, w.log, "waiting on the main checkout's index lock")
+			if _, _, main := w.seats(t); main != "sid-a" {
+				t.Errorf("main-session names %q while the index lock was held, want it unmoved", main)
+			}
+			if c.release {
+				if err := os.Remove(lock); err != nil {
+					t.Fatal(err)
+				}
+			}
+			got := <-done
+
+			if _, _, main := w.seats(t); got.code != c.code || main != c.main {
+				t.Errorf("exit %d, main-session %q, want exit %d and %s main:\n%s", got.code, main, c.code, c.main, got.out)
+			}
+			if !c.release && !exists(lock) {
+				t.Error("the verb removed the index lock; it must leave it where it is")
+			}
+		})
+	}
+}
+
+// a second write that fails leaves no half-moved seat: the store is put back as it was, and the failure says so
+func TestThreadRenameRoleRestoresTheStoreWhenTheSeatFileCannotBeWritten(t *testing.T) {
+	t.Parallel()
+	w := newSeatWorld(t)
+	blocker := filepath.Join(t.TempDir(), "file")
+	write(t, blocker, "not a dir")
+	env := append(w.env, "X_MAIN_SESSION="+filepath.Join(blocker, "main-session"))
+	before, _ := os.ReadFile(w.store)
+
+	got := scriptX(t, env, "thread", "rename", "sid-b", "--role", "main")
+
+	after, _ := os.ReadFile(w.store)
+	if got.code != 1 || string(after) != string(before) || !strings.Contains(got.out, "the store is as it was") {
+		t.Errorf("exit %d, store changed %v, want exit 1, the store as it was and said so:\n%s", got.code, string(after) != string(before), got.out)
 	}
 }
 
