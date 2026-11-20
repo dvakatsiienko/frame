@@ -1673,7 +1673,7 @@
                     "value": "ref"
                 },
                 "only": {
-                    "description": "run one test file on the overlay, its path read from the repo root: no queue turn, no gates, no stamp, so a push still runs the whole test",
+                    "description": "run one test file on the overlay, its path read from the repo root: no queue turn, no gates, no stamp, so a push still runs the tests its change reaches",
                     "type": "string",
                     "value": "test file"
                 },
@@ -1681,6 +1681,10 @@
                     "description": "run the whole suite at the head of base..head and, at each earlier commit that touches a mod, only the test files its own diff touches, on that commit's own bytes, one line per commit (sha, pass or fail count); no scratch, no gates, no stamp",
                     "type": "string",
                     "value": "base..head"
+                },
+                "whole": {
+                    "description": "run the mod's whole suite, not only the tests the change reaches (imports, a test world, a hooks file's own test); it takes the machine-wide long turn",
+                    "type": "boolean"
                 }
             },
             "name": "mods edit test",
@@ -1706,6 +1710,10 @@
                     "description": "comma-separated scratch files never pulled that may land as new files",
                     "type": "string",
                     "value": "paths"
+                },
+                "whole": {
+                    "description": "test the mod's whole suite before writing, not only the tests the change reaches; it takes the machine-wide long turn",
+                    "type": "boolean"
                 }
             },
             "name": "mods edit push",

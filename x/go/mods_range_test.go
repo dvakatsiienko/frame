@@ -138,7 +138,8 @@ const modHook = modsDir + "m/hooks/register.ts"
 // the files each `claude plugin test` launch of the fake saw, one count a launch, in order
 func launchedFiles(t *testing.T, calls string) string {
 	t.Helper()
-	return strings.Join(strings.Fields(readFile(t, calls+".files")), ",")
+	body, _ := os.ReadFile(calls + ".files")
+	return strings.Join(strings.Fields(string(body)), ",")
 }
 
 // the load fix (FRM-662, dima's o37): the whole suite runs at the head of the range only; each earlier commit runs just the test files
@@ -208,7 +209,8 @@ func TestModsEditTestTakesTheLongTurnForAWholeSuiteOnly(t *testing.T) {
 		turns int
 	}{
 		{"a range: the head only", func(base string) []string { return []string{"--range", base + "..HEAD"} }, 1},
-		{"the overlay run", func(string) []string { return nil }, 1},
+		{"the overlay run, whole", func(string) []string { return []string{"--whole"} }, 1},
+		{"the overlay run, the tests a change reaches", func(string) []string { return nil }, 0},
 		{"one test file", func(string) []string { return []string{"--only", modTestA} }, 0},
 	} {
 		t.Run(c.name, func(t *testing.T) {
@@ -220,10 +222,7 @@ func TestModsEditTestTakesTheLongTurnForAWholeSuiteOnly(t *testing.T) {
 			turns := filepath.Join(t.TempDir(), "turns")
 			write(t, filepath.Join(dir, "script/gate-queue.sh"), "#!/bin/sh\necho \"$*\" >> "+turns+"\necho 'gate-queue: waiting 30s, holder: x lane commit other.txt' >&2\n[ \"$1\" = --long ] && shift\nexec \"$@\"\n")
 			env = append(env, "X_FRAME_ROOT="+dir, "X_STATE="+t.TempDir())
-			if len(c.args(base)) == 0 {
-				write(t, pullCopy(t, dir, env, modTestA), "green, pulled\n")
-			}
-			if c.args(base) != nil && c.args(base)[0] == "--only" {
+			if len(c.args(base)) == 0 || c.args(base)[0] != "--range" {
 				write(t, pullCopy(t, dir, env, modTestA), "green, pulled\n")
 			}
 

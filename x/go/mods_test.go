@@ -36,6 +36,7 @@ for f in "$d"/tests/*.test.ts; do
   if grep -q NO-TESTS "$f"; then continue
   elif grep -q HALF-DONE "$d"/hooks/* 2>/dev/null; then echo "(fail) $n imports a half-done hook [1.0ms]"; red=1
   elif grep -q NO-IMPORT "$f"; then echo "(fail) the file did not load"; red=1
+  elif grep -q ALWAYS-SLOW "$f"; then echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
   elif grep -q SLOW-ONCE "$f" && [ ! -e "$f.slow" ]; then touch "$f.slow"; echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
   elif grep -q PASS-THEN-SLOW "$f" && [ ! -e "$f.slow" ]; then touch "$f.slow"; echo "(pass) $n first [1.0ms]"; echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
   elif grep -q SLOW-SECOND "$f" && [ -e "$f.ran" ]; then echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
@@ -437,7 +438,7 @@ func TestModsEditTestRedNamesTheOverlayBeforeTheRed(t *testing.T) {
 	dir, env := modsFixture(t)
 	write(t, pullCopy(t, dir, env, modHooks), "HALF-DONE\n")
 
-	code, _, stderr := xBoth(t, dir, env, "mods", "edit", "test")
+	code, _, stderr := xBoth(t, dir, env, "mods", "edit", "test", "--whole")
 
 	line, red := strings.Index(stderr, "overlay 1 path differs: "+modHooks), strings.Index(stderr, "imports a half-done hook")
 	if code == 0 || line < 0 || red < line {
@@ -488,7 +489,7 @@ func TestModsEditTestCountsARerunFilesPassesOnce(t *testing.T) {
 	dir, env := modsFixture(t)
 	write(t, pullCopy(t, dir, env, modTestA), "PASS-THEN-SLOW\n")
 
-	got := xIn(t, dir, env, "mods", "edit", "test")
+	got := xIn(t, dir, env, "mods", "edit", "test", "--whole")
 
 	if got.code != 0 || !strings.Contains(got.stdout, `"passed":2`) {
 		t.Fatalf("a's first-run pass counted beside its rerun, exit %d\n%s", got.code, got.stdout)
@@ -639,7 +640,7 @@ func TestModsEditTypeErrorStopsPushAndTestBeforeAnyTestRuns(t *testing.T) {
 			env = append(env, "CLAUDE_CALLS="+calls)
 			write(t, pullCopy(t, dir, env, modTestA), "import './gone.ts'; TYPE-ERROR\n")
 
-			got := xIn(t, dir, env, "mods", "edit", verb)
+			got := xIn(t, dir, env, "mods", "edit", verb, "--whole")
 
 			if got.code == 0 || !strings.Contains(got.stdout, "typecheck: tests/a.test.ts(1,8): error TS2307") {
 				t.Errorf("exit %d, want the tsc line named\n%s", got.code, got.stdout)
@@ -665,7 +666,7 @@ func TestModsEditOverlayLeavesAPeersUntrackedTestFileOut(t *testing.T) {
 			write(t, peer, "RED, a peer's half-done file\n")
 			write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
 
-			got := xIn(t, dir, env, "mods", "edit", verb)
+			got := xIn(t, dir, env, "mods", "edit", verb, "--whole")
 
 			if got.code != 0 || !strings.Contains(got.stdout, `"passed":2`) {
 				t.Errorf("exit %d, want the two tracked tests green and the peer's file unread\n%s", got.code, got.stdout)
@@ -689,7 +690,7 @@ func TestModsEditOverlayKeepsAFileThisSessionLandedUncommitted(t *testing.T) {
 	}
 	write(t, copyA, "green, edited\n")
 
-	got := xIn(t, dir, env, "mods", "edit", "test")
+	got := xIn(t, dir, env, "mods", "edit", "test", "--whole")
 
 	if got.code != 0 || !strings.Contains(got.stdout, `"passed":3`) {
 		t.Fatalf("exit %d, want the landed c.test.ts in the overlay beside a and b\n%s", got.code, got.stdout)

@@ -274,7 +274,7 @@ func TestModsEditTestRedsTheGateTheCommitWouldRed(t *testing.T) {
 			t.Parallel()
 			dir, env := gateFixture(t, realGatesHook)
 			edited(t, dir, env, c.path, c.body)
-			got := xIn(t, dir, env, "mods", "edit", "test")
+			got := xIn(t, dir, env, "mods", "edit", "test", "--whole")
 			if got.code != 1 || !strings.Contains(got.stdout, c.gate) {
 				t.Fatalf("exit %d, want 1 naming %s:\n%s", got.code, c.gate, got.stdout)
 			}
@@ -312,7 +312,7 @@ func TestModsEditTestRerunsAGateRedOnlyOnATimeoutOnce(t *testing.T) {
 			write(t, first, c.first)
 			env = append(env, "X_RUNS="+runs, "X_FIRST="+first)
 			edited(t, dir, env, modHooks, "export const register = () => 1;\n")
-			got := xIn(t, dir, env, "mods", "edit", "test")
+			got := xIn(t, dir, env, "mods", "edit", "test", "--whole")
 			n := strings.Count(readFile(t, runs), "run\n")
 			if n != c.wantRuns || (got.code == 0) != c.isGreen {
 				t.Errorf("ran %d, exit %d; want %d runs, green %v:\n%s", n, got.code, c.wantRuns, c.isGreen, got.stdout)
@@ -325,7 +325,7 @@ func TestModsEditTestPrintsEachGatesVerdictInTheHooksOrder(t *testing.T) {
 	t.Parallel()
 	dir, env := gateFixture(t, realGatesHook)
 	edited(t, dir, env, modHooks, "export const register = () => 1;\n")
-	got := xIn(t, dir, env, "mods", "edit", "test")
+	got := xIn(t, dir, env, "mods", "edit", "test", "--whole")
 	if got.code != 0 {
 		t.Fatalf("exit %d:\n%s", got.code, got.stdout)
 	}
@@ -351,13 +351,13 @@ func TestModsEditTestGateReadsTheOverlaysBytesNeverTheTrees(t *testing.T) {
       run: grep -q OVERLAY {staged_files}
 `)
 	edited(t, dir, env, modHooks, "// OVERLAY\n")
-	if got := xIn(t, dir, env, "mods", "edit", "test"); got.code != 0 {
+	if got := xIn(t, dir, env, "mods", "edit", "test", "--whole"); got.code != 0 {
 		t.Errorf("a gate missed the overlay's bytes: exit %d\n%s", got.code, got.stdout)
 	}
 	write(t, filepath.Join(dir, modHooks), "// OVERLAY in the tree alone\n")
 	xIn(t, dir, env, "mods", "edit", "pull", "--over", modHooks)
 	edited(t, dir, env, modHooks, "// no marker\n")
-	if got := xIn(t, dir, env, "mods", "edit", "test"); got.code != 1 {
+	if got := xIn(t, dir, env, "mods", "edit", "test", "--whole"); got.code != 1 {
 		t.Errorf("a gate read the tree over the overlay: exit %d\n%s", got.code, got.stdout)
 	}
 }
@@ -377,7 +377,7 @@ func TestModsEditTestPassesOnlyTheGlobsPathsToAGate(t *testing.T) {
 `)
 	edited(t, dir, env, modHooks, "export const register = () => 1;\n")
 	edited(t, dir, env, modAgents, "# m, edited\n")
-	if got := xIn(t, dir, env, "mods", "edit", "test"); got.code != 0 {
+	if got := xIn(t, dir, env, "mods", "edit", "test", "--whole"); got.code != 0 {
 		t.Errorf("exit %d:\n%s", got.code, got.stdout)
 	}
 }
@@ -393,7 +393,7 @@ func TestModsEditTestRunsADocOnlyEditPastAnExcludedGate(t *testing.T) {
       run: exit 1
 `)
 	edited(t, dir, env, modAgents, "# m, edited\n")
-	got := xIn(t, dir, env, "mods", "edit", "test")
+	got := xIn(t, dir, env, "mods", "edit", "test", "--whole")
 	if got.code != 0 || verdictsOf(got)["no-md"] != gateNoPath {
 		t.Errorf("exit %d, %q; want 0 and %q\n%s", got.code, verdictsOf(got)["no-md"], gateNoPath, got.stdout)
 	}
@@ -411,7 +411,7 @@ func TestModsEditTestExitsNonZeroNamingAGateItCannotRun(t *testing.T) {
 			t.Parallel()
 			dir, env := gateFixture(t, "pre-commit:\n  commands:\n    odd-gate:\n"+c.gate)
 			edited(t, dir, env, modHooks, "export const register = () => 1;\n")
-			got := xIn(t, dir, env, "mods", "edit", "test")
+			got := xIn(t, dir, env, "mods", "edit", "test", "--whole")
 			if got.code == 0 || !strings.Contains(got.stdout, "odd-gate") || !strings.Contains(got.stdout, c.why) {
 				t.Errorf("exit %d, want non-zero naming odd-gate and %s:\n%s", got.code, c.why, got.stdout)
 			}
@@ -423,7 +423,7 @@ func TestModsEditTestRedsAThrowingHookInATouchedTest(t *testing.T) {
 	t.Parallel()
 	dir, env := gateFixture(t, realGatesHook)
 	edited(t, dir, env, modTestA, "HOOK-THROWS\n")
-	got := xIn(t, dir, env, "mods", "edit", "test")
+	got := xIn(t, dir, env, "mods", "edit", "test", "--whole")
 	if got.code != 1 || !strings.Contains(got.stdout, "hook was skipped") {
 		t.Errorf("exit %d, want 1 naming the skipped hook:\n%s", got.code, got.stdout)
 	}
@@ -461,14 +461,14 @@ func commitHooks(t *testing.T, dir string, env []string) {
 
 func pushOverlay(t *testing.T, dir string, env []string) {
 	t.Helper()
-	if got := xIn(t, dir, env, "mods", "edit", "push"); got.code != 0 {
+	if got := xIn(t, dir, env, "mods", "edit", "push", "--whole"); got.code != 0 {
 		t.Fatalf("push: exit %d\n%s", got.code, got.stdout)
 	}
 }
 
 func testOverlay(t *testing.T, dir string, env []string) {
 	t.Helper()
-	if got := xIn(t, dir, env, "mods", "edit", "test"); got.code != 0 {
+	if got := xIn(t, dir, env, "mods", "edit", "test", "--whole"); got.code != 0 {
 		t.Fatalf("test: exit %d\n%s", got.code, got.stdout)
 	}
 }
@@ -629,7 +629,7 @@ func TestModsEditPushKeepsASaveMadeDuringItsTests(t *testing.T) {
 	copied := pullCopy(t, dir, env, modHooks)
 	write(t, copied, "export const register = () => 1;\n")
 	const saved = "// saved mid-test\n"
-	if got := xIn(t, dir, append(env[:len(env):len(env)], "CLAUDE_MID_TEST=printf '"+saved+"' >> "+copied), "mods", "edit", "push"); got.code != 0 {
+	if got := xIn(t, dir, append(env[:len(env):len(env)], "CLAUDE_MID_TEST=printf '"+saved+"' >> "+copied), "mods", "edit", "push", "--whole"); got.code != 0 {
 		t.Fatalf("push: exit %d\n%s", got.code, got.stdout)
 	}
 	if strings.Contains(readFile(t, filepath.Join(dir, modHooks)), "saved") {
@@ -959,7 +959,7 @@ func TestModsEditTestRedsTheClockReadTheCommitWouldRed(t *testing.T) {
 	t.Parallel()
 	dir, env, _ := modsChain(t)
 	edited(t, dir, env, modHooks, "export const register = () => Date.now();\n")
-	got := xIn(t, dir, env, "mods", "edit", "test")
+	got := xIn(t, dir, env, "mods", "edit", "test", "--whole")
 	if got.code != 1 || verdictsOf(got)["mods-test"] == gateCommits {
 		t.Errorf("exit %d, mods-test %q: a clock read the commit reds passed the overlay\n%s", got.code, verdictsOf(got)["mods-test"], got.stdout)
 	}
@@ -1001,7 +1001,7 @@ func TestModsEditTestGateSeesOnlyTheOverlaysPaths(t *testing.T) {
 `)
 	write(t, filepath.Join(dir, modAgents), "# a peer's half-done edit\n")
 	edited(t, dir, env, modHooks, "export const register = () => 1;\n")
-	if got := xIn(t, dir, env, "mods", "edit", "test"); got.code != 0 {
+	if got := xIn(t, dir, env, "mods", "edit", "test", "--whole"); got.code != 0 {
 		t.Errorf("a gate read a peer's dirt in the mod: exit %d\n%s", got.code, got.stdout)
 	}
 }
@@ -1011,7 +1011,7 @@ func TestModsEditTestRunsTheGatesBesideARedTest(t *testing.T) {
 	dir, env := gateFixture(t, realGatesHook)
 	edited(t, dir, env, modTestA, "HOOK-THROWS\n")
 	edited(t, dir, env, modHooks, "const unused = 1;\nexport const register = () => {};\n")
-	got := xIn(t, dir, env, "mods", "edit", "test")
+	got := xIn(t, dir, env, "mods", "edit", "test", "--whole")
 	for _, want := range []string{"hook was skipped", "typecheck-mods"} {
 		if got.code != 1 || !strings.Contains(got.stdout, want) {
 			t.Errorf("exit %d, want 1 naming %s:\n%s", got.code, want, got.stdout)
@@ -1033,7 +1033,7 @@ func TestModsEditTestFormatGateReadsWhatTheCommitsFormatLeaves(t *testing.T) {
 	gitT(t, dir, "add", "biome.json", ".gitignore")
 	gitT(t, dir, "commit", "-q", "-m", "biome")
 	edited(t, dir, env, modHooks, "import { b } from './b.ts';\nimport { a } from './a.ts';\n\nexport const register = () => [a, b];\n")
-	got := xIn(t, dir, env, "mods", "edit", "test")
+	got := xIn(t, dir, env, "mods", "edit", "test", "--whole")
 	if got.code != 0 || verdictsOf(got)["format"] != gateGreen {
 		t.Errorf("exit %d, format %q: an import order the commit fixes itself reds the overlay\n%s", got.code, verdictsOf(got)["format"], got.stdout)
 	}

@@ -37,7 +37,7 @@ func TestModsEditOverlayLeavesAPeersDirtWhereGitSeesIt(t *testing.T) {
 			c.dirty(t, dir)
 			write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
 
-			got := xIn(t, dir, env, "mods", "edit", "test")
+			got := xIn(t, dir, env, "mods", "edit", "test", "--whole")
 
 			if got.code != 0 || !strings.Contains(got.stdout, `"passed":2`) {
 				t.Errorf("exit %d, want the two tracked tests at HEAD green and the peer's work unread\n%s", got.code, got.stdout)
@@ -81,7 +81,7 @@ func TestModsEditOverlayKeepsAFileTheSessionHolds(t *testing.T) {
 	env = append(env, "X_HOLDS="+store, "CLAUDE_CODE_SESSION_ID=mine")
 	write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
 
-	got := xIn(t, dir, env, "mods", "edit", "test")
+	got := xIn(t, dir, env, "mods", "edit", "test", "--whole")
 
 	if got.code == 0 || !strings.Contains(got.stdout, "b.test.ts") {
 		t.Errorf("exit %d, want the held, red b.test.ts run and named\n%s", got.code, got.stdout)
@@ -144,7 +144,7 @@ func TestModsEditOverlayDecidesByHeadNotByStatusLetters(t *testing.T) {
 	gitT(t, dir, "add", "-N", modsDir+"m/tests/new.test.ts")
 	write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
 
-	got := xIn(t, dir, env, "mods", "edit", "test")
+	got := xIn(t, dir, env, "mods", "edit", "test", "--whole")
 
 	if got.code != 0 || !strings.Contains(got.stdout, `"passed":2`) {
 		t.Fatalf("exit %d, want HEAD's two tests, b restored and the intent-to-add file out\n%s", got.code, got.stdout)

@@ -117,7 +117,7 @@ func testCommit(repo, sha string, whole []string) ([]modReport, error) {
 			}
 		}
 		if whole != nil {
-			report, err := testModOverlay(mod, overlay, true)
+			report, err := testModOverlay(mod, overlay, suiteWhole)
 			if err != nil {
 				return nil, err
 			}
@@ -132,7 +132,7 @@ func testCommit(repo, sha string, whole []string) ([]modReport, error) {
 		if err := setAsideTestsBut(overlay, func(rel string) bool { return slices.Contains(picked, rel) }); err != nil {
 			return nil, err
 		}
-		report, err := testModOverlay(mod, overlay, false)
+		report, err := testModOverlay(mod, overlay, suiteFiles)
 		if err != nil {
 			return nil, err
 		}

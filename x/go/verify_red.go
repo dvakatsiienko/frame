@@ -1026,7 +1026,7 @@ func (m *modHarness) run(content []byte) (redRun, error) {
 	}
 	// the copies are laid as given: a mutant passed through the format step could lose the swap
 	copies := &formattedCopies{repo: m.repo, out: map[string]string{m.file: mutant}}
-	reports, err := overlayTest(m.repo, copies, []string{m.file}, m.test)
+	reports, err := overlayTest(m.repo, copies, []string{m.file}, m.test, false)
 	if err != nil {
 		return redRun{}, err
 	}

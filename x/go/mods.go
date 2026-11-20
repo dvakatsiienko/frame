@@ -143,6 +143,7 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	against, _ := flags["against"].(string)
 	only, _ := flags["only"].(string)
 	span, _ := flags["range"].(string)
+	whole, _ := flags["whole"].(bool)
 	picked := 0
 	for _, flag := range []string{against, only, span} {
 		if flag != "" {
@@ -179,7 +180,7 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	defer copies.done()
 	var reports []modReport
 	if err := r.Step("test", "validate and test on an overlay copy", func() (string, error) {
-		reports, err = overlayTest(repo, copies, changed, "")
+		reports, err = overlayTest(repo, copies, changed, "", whole)
 		return reportLine(reports), err
 	}); err != nil {
 		return nil, err
@@ -232,7 +233,7 @@ func testOneFile(r *Run, repo, scratch string, changed []string, arg string) (an
 			return "", err
 		}
 		defer copies.done()
-		if reports, err = overlayTest(repo, copies, changed, only); err != nil {
+		if reports, err = overlayTest(repo, copies, changed, only, false); err != nil {
 			return "", err
 		}
 		if red := redReports(reports); len(red) > 0 {
@@ -323,6 +324,7 @@ func modsEditPush(r *Run, args []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	whole, _ := flags["whole"].(bool)
 	added := splitList(flags["add"])
 	changed := changedScratch(scratch)
 	r.Open(fmt.Sprintf("%d edited", len(changed)))
@@ -359,7 +361,7 @@ func modsEditPush(r *Run, args []string, flags Flags) (any, error) {
 		if tested, _ := os.ReadFile(filepath.Join(scratch, scratchTested)); string(tested) == stamp {
 			return "x mods edit test passed these bytes", nil
 		}
-		reports, err = overlayTest(repo, copies, changed, "")
+		reports, err = overlayTest(repo, copies, changed, "", whole)
 		if red := redReports(reports); err == nil && len(red) > 0 {
 			err = &Fail{Refused: true, Msg: "red on the overlay, nothing written: " + reportLine(red), Next: "x mods edit test", Log: nonBlank(redLog(red))}
 		}
@@ -523,14 +525,20 @@ type modReport struct {
 	// the test files a range's earlier commit ran (the ones its own diff touches), and a commit touching none (nothing ran)
 	Only    []string `json:"only,omitempty"`
 	NoTests bool     `json:"noTests,omitempty"`
+	// changed code no test reaches: validated and type-checked, never tested
+	Unreached []string `json:"unreached,omitempty"`
+	// the test files that timed out and ran once more: the one rerun a run is allowed, so a loaded machine never multiplies its load
+	Retried []string `json:"retried,omitempty"`
 	log     string
 }
 
 func (m modReport) isRed() bool { return m.Validate != "ok" || len(m.Failed)+len(m.Errored) > 0 }
 
 // each touched mod is copied to the job tmp with the edited copies laid over it as the commit's format step leaves them, then
-// validated, then tested, so its green proves the bytes a commit holds; a named test file narrows the run to its mod and that one file
-func overlayTest(repo string, copies *formattedCopies, changed []string, only string) ([]modReport, error) {
+// validated, then tested, so its green proves the bytes a commit holds; a named test file narrows the run to its mod and that one file.
+// without --whole the tests are the ones the change reaches (mods_reach.go); a change that reaches every test, or --whole, runs the
+// whole suite, which takes the long turn
+func overlayTest(repo string, copies *formattedCopies, changed []string, only string, whole bool) ([]modReport, error) {
 	var reports []modReport
 	mods := touchedMods(changed)
 	if only != "" {
@@ -568,9 +576,35 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 				return nil, err
 			}
 		}
-		report, err := testModOverlay(mod, overlay, only == "")
+		scope, reached, unreached := suiteWhole, []string(nil), []string(nil)
+		if only != "" {
+			scope = suiteFiles
+		} else if !whole {
+			var reachesAll bool
+			reached, unreached, reachesAll = testsReached(overlay, modRelative(changed, mod))
+			switch {
+			case reachesAll:
+			case len(reached) == 0:
+				scope = suiteNone
+			default:
+				scope = suiteFiles
+				if err := setAsideTestsBut(overlay, func(rel string) bool { return slices.Contains(reached, rel) }); err != nil {
+					return nil, err
+				}
+			}
+		}
+		report, err := testModOverlay(mod, overlay, scope)
 		if err != nil {
 			return nil, err
+		}
+		if scope == suiteFiles && only == "" {
+			report.Only = reached
+		}
+		if only == "" && !whole {
+			report.Unreached = unreached
+		}
+		if scope == suiteNone {
+			report.NoTests = true
 		}
 		report.Skipped = skipped
 		reports = append(reports, report)
@@ -578,9 +612,17 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 	return reports, nil
 }
 
-// the validator, the overlay's tsc and the tests on one mod's overlay: the verdict of the bytes it holds. a whole suite (every test
-// file the overlay holds) takes the queue's long turn; a run narrowed to some files does not
-func testModOverlay(mod, overlay string, whole bool) (modReport, error) {
+// how much of a mod's suite a run starts: all of it (it takes the queue's long turn), some files (no turn), or none
+type suiteScope int
+
+const (
+	suiteWhole suiteScope = iota
+	suiteFiles
+	suiteNone
+)
+
+// the validator, the overlay's tsc and the tests on one mod's overlay: the verdict of the bytes it holds
+func testModOverlay(mod, overlay string, scope suiteScope) (modReport, error) {
 	report := modReport{Mod: mod, Validate: "ok"}
 	// the validator reads the hooks module as the engine will: a parse error is red before any test runs (PK-64)
 	if got, _ := run("", nil, "", "claude", "plugin", "validate", overlay); !got.ok {
@@ -593,17 +635,21 @@ func testModOverlay(mod, overlay string, whole bool) (modReport, error) {
 		report.log = typed.log
 		return report, nil
 	}
-	got, _ := runSuite(overlay, whole)
+	if scope == suiteNone {
+		return report, nil
+	}
+	got, _ := runSuite(overlay, scope == suiteWhole)
 	if strings.Contains(got.log, "gate-queue: waited ") {
 		return report, &Fail{Msg: "the long turn was not free in time, so no test ran for " + mod + ": " + firstNonBlank(got.log), Next: "x mods edit test"}
 	}
 	log := got.log
 	report.Passed, report.Failed, report.Errored = testOutcome(log)
 	if !got.ok && timeoutOnly(log) && testTally.MatchString(log) {
-		again, kept, err := runTimedOutFiles(overlay, log)
+		again, kept, retried, err := runTimedOutFiles(overlay, log)
 		if err != nil {
 			return report, err
 		}
+		report.Retried = retried
 		got = again
 		log += "\n" + again.log
 		passed, failed, errored := testOutcome(again.log)
@@ -644,7 +690,7 @@ func firstNonBlank(log string) string {
 // only the files that timed out run again, as `mods/test.ts` does: a second whole run on a loaded machine times out other
 // rows. the rest step aside in this throwaway overlay, so the kit does not find them; answers the second run and the
 // passes of the files it left out
-func runTimedOutFiles(overlay, log string) (result, int, error) {
+func runTimedOutFiles(overlay, log string) (result, int, []string, error) {
 	timedOut := map[string]bool{}
 	passes := map[string]int{}
 	file := ""
@@ -665,10 +711,10 @@ func runTimedOutFiles(overlay, log string) (result, int, error) {
 		}
 	}
 	if err := setAsideTestsBut(overlay, func(rel string) bool { return timedOut[rel] }); err != nil {
-		return result{}, 0, err
+		return result{}, 0, nil, err
 	}
 	got, _ := run("", nil, "", "claude", "plugin", "test", overlay)
-	return got, kept, nil
+	return got, kept, slices.Sorted(maps.Keys(timedOut)), nil
 }
 
 // claude plugin test takes only a folder, so a test file steps aside in the throwaway overlay for the kit not to find it
@@ -729,6 +775,17 @@ func againstRef(r *Run, repo, scratch string, changed []string, ref string) (any
 	return ordered{{"against", ref}, {"mods", reports}}, nil
 }
 
+// the changed paths of one mod, relative to it
+func modRelative(changed []string, mod string) []string {
+	var rel []string
+	for _, path := range changed {
+		if m, _ := modOf(path); m == mod {
+			rel = append(rel, strings.TrimPrefix(filepath.ToSlash(path), modsDir+mod+"/"))
+		}
+	}
+	return rel
+}
+
 /* claude plugin test's words */
 
 var (
@@ -782,12 +839,21 @@ func reportLine(reports []modReport) string {
 		case len(m.Failed)+len(m.Errored) > 0:
 			parts = append(parts, fmt.Sprintf("%s: %d failed (%s), %d errored (%s)", m.Mod, len(m.Failed), strings.Join(m.Failed, "; "),
 				len(m.Errored), strings.Join(m.Errored, "; ")))
+		case m.NoTests && len(m.Unreached) > 0:
+			parts = append(parts, fmt.Sprintf("%s: no test reaches %s, validated and type-checked only", m.Mod, strings.Join(m.Unreached, ", ")))
 		case m.NoTests:
 			parts = append(parts, m.Mod+": skipped, no test file touched")
 		case len(m.Only) > 0:
-			parts = append(parts, fmt.Sprintf("%s: %d pass (only %s)", m.Mod, m.Passed, strings.Join(m.Only, ", ")))
+			line := fmt.Sprintf("%s: %d pass (only %s)", m.Mod, m.Passed, strings.Join(m.Only, ", "))
+			if len(m.Unreached) > 0 {
+				line += ", no test reaches " + strings.Join(m.Unreached, ", ")
+			}
+			parts = append(parts, line)
 		default:
 			parts = append(parts, fmt.Sprintf("%s: %d pass", m.Mod, m.Passed))
+		}
+		if len(m.Retried) > 0 && len(parts) > 0 {
+			parts[len(parts)-1] += ", rerun once: " + strings.Join(m.Retried, ", ")
 		}
 		// a file the overlay left at HEAD is a test or a hook the summary did not run: its count rides the line, so a green never hides it
 		if len(m.Skipped) > 0 && len(parts) > 0 {
