@@ -61,7 +61,7 @@ dima, 2026-10-22 (PK-103): «keep milestones as a first resident of your flows.�
 - a milestone is born when a project gets 2+ tickets serving one outcome he can test, proposed to him first, named by the pattern in `clio:pm`, opened with the sorting phase
 - **a project's first milestone holds what he wants most; each later one holds the less wanted and the nice-to-haves** (dima, 2026-11-16: «most wanted first, least wanted/nice to have last»); no cap on their count, about two is his feel; a ticket is placed by that at its create and at every sort
 - the cross-project order is the initiative's two queues (main road, side tracks): a switch moves one to its top, a born one joins it that turn
-- about 4 open per project, soft; linear has no milestone close, so **a milestone whose last ticket closes, or that the boot flags empty, is deleted that turn, no ask**, named in the reply (PK-349:W1256)
+- about 4 open per project, soft; linear has no milestone close, so **a milestone whose last ticket closes is deleted that turn, no ask**, named in the reply (PK-349:W1256); one the boot flags empty is asked
 
 ## the pace contract — propose before resolving
 

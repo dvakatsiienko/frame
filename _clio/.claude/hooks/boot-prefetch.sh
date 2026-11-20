@@ -390,7 +390,8 @@ echo "-- pocket (Backlog.md, _clio/script/pocket-check.ts; a red is drift to fix
 today=$(date +%Y-%m-%d)
 for f in "$HOME"/frame/_clio/pocket/tasks/pk-*.md; do
   grep -qs '^status: done' "$f" || continue
-  day=$(sed -n "s/^updated_date: '\([0-9-]*\)T.*/\1/p" "$f")
+  stamp=$(sed -n "s/^updated_date: '\([^']*\)'.*/\1/p" "$f")
+  day=$(date -r "$(TZ=UTC date -j -f '%Y-%m-%dT%H:%M:%SZ' "$stamp" +%s 2>/dev/null)" +%Y-%m-%d 2>/dev/null)
   [[ -n "$day" && "$day" < "$today" ]] || continue
   id=$(sed -n 's/^id: //p' "$f")
   (cd "$HOME/frame/_clio" && backlog task archive "$id" >/dev/null 2>&1) && echo "📦 $id archived: done $day, missed by the halt"
