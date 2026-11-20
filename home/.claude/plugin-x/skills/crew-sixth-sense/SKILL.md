@@ -78,7 +78,7 @@ codie reads no reviewer; you do.
 - **reproduce or refute** each finding. one you could not reproduce goes out as `unconfirmed`.
 - **a finding names the class**; `REVIEW.md` first; from round 2, the new diff only, old probes rerun on head and base.
 - codie's local review chain is its own pre-verification, not yours.
-- a second read goes to `wisphunter`: the range or a diff file, axis, consumers. a `mods/` diff: `mods-verify`; a guard rule's live exit: `pnpm mods:probe`.
+- a second read goes to `wisphunter`: the range or a diff file, axis, consumers. a `mods/` diff: `mods-verify`; a guard rule's live exit: `pnpm mods:probe`. a mods suite: whole at the head only (his o37).
 
 ## step 3 — the verdict object
 
