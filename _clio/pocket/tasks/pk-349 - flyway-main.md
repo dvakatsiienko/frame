@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-20T11:38:00Z'
+updated_date: '2026-11-20T11:47:00Z'
 labels:
   - s
   - clio-main
@@ -1260,4 +1260,19 @@ PK-349:W1278 (2026-11-20 13:34, dima): pocket: agreed, the halt archives finishe
 PK-349:W1279 (2026-11-20 13:34, dima): FRM-576: forgotten. 🦉 clio's half is done, but the fleet lift never happened: rules-lazy/ holds no surface pair, and no measure ran. I take it next ← solve now.
 PK-349:W1280 (2026-11-20 13:34, dima): when done — FRM-514, tell more closely, easy words, no tech: what is it, why not met, and what you propose to fix it? ❓
 PK-349:W1281 (2026-11-20 13:34, dima): and why we have nad (?)? worth it? ❓
+
+13:47 13:46 prompt wishes:
+PK-349:W1282 (2026-11-20 13:46, dima): where the Tab-focus wish was: it sat in FRM-620's decided lines since 15 Nov, and your 19 Nov line joined it there. Slices 1–3 were cut from your newer steers, and nobody turned that decided line into a slice of its own. That's my miss; slice 4 is now named ← So if I wouldn't ask about it, it would be lost or what? ❓
+PK-349:W1283 (2026-11-20 13:46, dima): where the Tab-focus wish was: it sat in FRM-620's decided lines since 15 Nov, and your 19 Nov line joined it there. Slices 1–3 were cut from your newer steers, and nobody turned that decided line into a slice of its own. That's my miss; slice 4 is now named ← And how often such a thing happens? ❓
+PK-349:W1284 (2026-11-20 13:46, dima): FRM-514 in plain words ← okay let's try.
+PK-349:W1285 (2026-11-20 13:46, dima): antenna settings proposal approved.
+PK-349:W1286 (2026-11-20 13:46, dima): i go afk 15m. stash our solving state of everything until i return so we resume.
+PK-349:W1287 (2026-11-20 13:46, dima): with tabs hidden, the top bar shows the focused thread's name and its wait line, so the empty space carries what tabs told you ← let's try
+13:47 resume state (PK-349:W1286, dima afk 15 min):
+- mods FRM-662: register.tsx 7,008 on origin (from 9,175 at 13:04), codie chaining moves 23c-28 (view.ts), wind-run.ts named (b)
+- herdr FRM-620: slice 3 clean (f4b25439); codie on slice 3b (look card: no «pinned», 👀, tint/border, 2-3 looks) then slice 4 (Tab outline), both sealed in herdr-lane-3/spec.md; sixth sense parked for its finals
+- stray batch 7: R1 f97c8d75, untracked-skip abc5378f pushed; R2 range flag, verify-red import, item 5 FRM-514 trigger (.ts/.go load guide-code) queued
+- his orbit: o2 plain probe (keep till he says), o6 FRM-576 lift (9 lines into crew-lead surface files)
+- next mine: FRM-618 body gets the antenna lines (W1263-W1275, W1285, W1287: cog popup, sort+sound out, settings, tabs hide, top bar name+wait line); FRM-620 done test gets the Tab outline line; quiet-replies verdict; FRM-516, FRM-586 reads
+- open answer owed: a decided line with no slice and no done-test line would have been lost at close (W1282-W1283)
 <!-- SECTION:NOTES:END -->
