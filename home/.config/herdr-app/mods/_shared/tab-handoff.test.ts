@@ -68,3 +68,56 @@ describe('the Tab hand-off between mods', () => {
         expect(walked).toEqual(['quill', 'steer-a:o1', 'steer-b:o2', 'quill']);
     });
 });
+
+// FRM-673 exit 5: a keys reload restarts the mod; the stop that held the keyboard takes it again. a blur clears the
+// hold only after the draw, so a mod torn down mid-reload never clears it
+describe('a reload keeps the keyboard where it was', () => {
+    function stubHerdr() {
+        const store = new Map<string, unknown>([
+            ['tab.stops.x-herdr-deck', ['steer-a:o1', 'steer-b:o2']],
+        ]);
+        return {
+            layout: () => ({ content: { mod: 'x-herdr-deck' } }),
+            setShared: (key: string, value: unknown) => store.set(key, value),
+            shared: (key: string) => store.get(key),
+        };
+    }
+
+    test('the reloaded mod takes back the stop that held the keyboard once it is drawn, once', () => {
+        const herdr = stubHerdr();
+        createTabMember('x-herdr-deck', herdr).held('steer-b:o2');
+        const reloaded = createTabMember('x-herdr-deck', herdr);
+        expect(reloaded.take()).toBe(null);
+        reloaded.publish(['steer-a:o1', 'steer-b:o2'], (run) => run());
+        expect(reloaded.take()).toBe('steer-b:o2');
+        expect(reloaded.take()).toBe(null);
+    });
+
+    test('a stop he left keeps nothing for the next load', () => {
+        const herdr = stubHerdr();
+        const deck = createTabMember('x-herdr-deck', herdr);
+        deck.held('steer-b:o2');
+        deck.left('steer-b:o2', (run) => run());
+        const reloaded = createTabMember('x-herdr-deck', herdr);
+        reloaded.publish(['steer-a:o1', 'steer-b:o2'], (run) => run());
+        expect(reloaded.take()).toBe(null);
+    });
+
+    test('a mod torn down before its blur runs keeps the hold', () => {
+        const herdr = stubHerdr();
+        const deck = createTabMember('x-herdr-deck', herdr);
+        deck.held('steer-b:o2');
+        deck.left('steer-b:o2', () => {});
+        const reloaded = createTabMember('x-herdr-deck', herdr);
+        reloaded.publish(['steer-a:o1', 'steer-b:o2'], (run) => run());
+        expect(reloaded.take()).toBe('steer-b:o2');
+    });
+
+    test('another mod’s hold is never taken', () => {
+        const herdr = stubHerdr();
+        createTabMember('x-herdr-chat', herdr).held('quill');
+        const deck = createTabMember('x-herdr-deck', herdr);
+        deck.publish(['steer-a:o1', 'steer-b:o2'], (run) => run());
+        expect(deck.take()).toBe(null);
+    });
+});

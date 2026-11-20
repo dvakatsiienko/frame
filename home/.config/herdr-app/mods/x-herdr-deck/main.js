@@ -686,10 +686,12 @@ export default class Deck extends View {
             box.on('blur', (_e, cx) => {
                 this.steerKeys.blurred();
                 if (this.steerFocus === key) this.steerFocus = null;
+                this.tab.left(`steer-${key}`, (run) => cx.timer.after(0, run));
                 cx.notify();
             });
             box.on('focus', (_e, cx) => {
                 this.steerFocus = key;
+                this.tab.held(`steer-${key}`);
                 cx.notify();
             });
             this.steers.set(key, box);

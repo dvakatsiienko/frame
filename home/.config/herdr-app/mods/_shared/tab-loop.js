@@ -51,15 +51,32 @@ const atOf = (go) =>
         ? go.at
         : 0;
 
+/** the stop holding the keyboard, so a reloaded mod takes it back @type {string} */
+export const TAB_HELD = 'tab.held';
+
 /**
- * a mod's seat in the Tab loop: `publish` its stops each draw, `ask` on its stop's Tab, and `take` each draw, which
- * names the stop of its own to focus once per fresh ask; an ask made before the member was made never fires
+ * a mod's seat in the Tab loop: `publish` its stops each draw, `ask` on its stop's Tab, `held` and `left` on its stop's
+ * focus and blur, and `take` each draw, which names the stop of its own to focus once per fresh ask; an ask made before
+ * the member was made never fires. a new member's take also hands back, once it is drawn, its stop that held the keyboard
+ * when the mod went down: a keys reload restarts the mod mid-typing (FRM-673 exit 5)
  * @param {string} mod the mod's folder name, as the layout names it
  * @param {{ shared: (key: string) => unknown, setShared: (key: string, value: unknown) => unknown, layout: () => unknown }} herdr
  */
 export function createTabMember(mod, herdr) {
     const key = tabStopsKey(mod);
     let seen = atOf(herdr.shared(TAB_GO));
+    /** the stops this load published: a hold comes back only once its stop is drawn again @type {string[]} */
+    let drawn = [];
+    let isRestoring = true;
+    /** @param {unknown} stop @returns {stop is string} */
+    const isMine = (stop) => {
+        const mine = herdr.shared(key);
+        return (
+            typeof stop === 'string' &&
+            Array.isArray(mine) &&
+            mine.includes(stop)
+        );
+    };
     return {
         /** @param {string} from the stop holding the keyboard @param {boolean} isBack */
         ask(from, isBack) {
@@ -70,8 +87,24 @@ export function createTabMember(mod, herdr) {
             );
             herdr.setShared(TAB_GO, tabAsk(herdr.shared, to));
         },
+        /** @param {string} stop took the keyboard */
+        held(stop) {
+            isRestoring = false;
+            herdr.setShared(TAB_HELD, stop);
+        },
+        /**
+         * the blur clears the hold after the draw: a mod torn down by a reload never runs it, so the hold outlives it
+         * @param {string} stop lost the keyboard @param {(run: () => void) => void} later after the draw
+         */
+        left(stop, later) {
+            later(() => {
+                if (herdr.shared(TAB_HELD) === stop)
+                    herdr.setShared(TAB_HELD, null);
+            });
+        },
         /** @param {string[]} stops in its own Tab order @param {(run: () => void) => void} later after the draw */
         publish(stops, later) {
+            drawn = stops;
             if (JSON.stringify(herdr.shared(key)) === JSON.stringify(stops))
                 return;
             later(() => herdr.setShared(key, stops));
@@ -80,15 +113,17 @@ export function createTabMember(mod, herdr) {
         take() {
             const go = herdr.shared(TAB_GO);
             const at = atOf(go);
-            if (at <= seen) return null;
-            seen = at;
-            const to = /** @type {{ to?: unknown }} */ (go).to;
-            const mine = herdr.shared(key);
-            return typeof to === 'string' &&
-                Array.isArray(mine) &&
-                mine.includes(to)
-                ? to
-                : null;
+            if (at > seen) {
+                seen = at;
+                isRestoring = false;
+                const to = /** @type {{ to?: unknown }} */ (go).to;
+                return isMine(to) ? to : null;
+            }
+            const was = herdr.shared(TAB_HELD);
+            if (!isRestoring || typeof was !== 'string' || !drawn.includes(was))
+                return null;
+            isRestoring = false;
+            return was;
         },
     };
 }

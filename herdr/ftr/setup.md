@@ -13,4 +13,5 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when dima presses Tab in the quill, then in each steer box
   - then focus walks quill → each steer box → quill, shift-Tab back, the mods in the layout's order, never one of herdr's own hidden stops
   - and a mod moved out of the layout, or renamed, drops out of the loop with no error
+  - and a keys reload (`keys-change.ts`) leaves the keyboard in the stop that held it and a half-typed steer as it was; every hotkey a mod binds has its handler and is reloaded
   - decision: a mod joins by its own Tab member, no list of mods to edit (FRM-673:W2, W3: antenna threads join next)

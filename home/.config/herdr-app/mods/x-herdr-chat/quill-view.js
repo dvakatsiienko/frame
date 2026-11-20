@@ -156,10 +156,12 @@ export function createQuill({
         });
         made.on('focus', (_event, cx) => {
             isQuillFocused = true;
+            tab.held('quill');
             cx.notify();
         });
         made.on('blur', (_event, cx) => {
             isQuillFocused = false;
+            tab.left('quill', (run) => cx.timer.after(0, run));
             cx.notify();
             quillKeys.blurred();
             const event = enterHoldStep(sendPath().hold(), 'blur');

@@ -14,6 +14,20 @@ import { openViewer, viewerAfter, viewerCount, viewerLevel } from './viewer.js';
 /** @typedef {import('./chat-types.js').Theme} Theme */
 /** @typedef {import('./viewer.js').ViewerStep | 'copy' | 'open' | 'folder'} Step */
 
+/** the open viewer's keys, each with the step it takes: ← → move, + − 0 zoom, ⌘C copies, Esc closes */
+const VIEWER_KEYS = /** @type {const} */ ([
+    ['left', 'previous'],
+    ['right', 'next'],
+    ['=', 'zoom in'],
+    ['+', 'zoom in'],
+    ['-', 'zoom out'],
+    ['0', 'fit'],
+    ['cmd-c', 'copy'],
+    ['escape', 'close'],
+]);
+/** @param {Step} step */
+const viewerAction = (step) => `x_herdr_chat_viewer_${step.replace(' ', '_')}`;
+
 /**
  * @param {{
  *   file: () => string | null,
@@ -132,15 +146,6 @@ export function createPictureViewer({
                     step(action, cx);
                 })
                 .child(glyph);
-        const actions = /** @type {const} */ ([
-            'previous',
-            'next',
-            'zoom in',
-            'zoom out',
-            'fit',
-            'copy',
-            'close',
-        ]);
         const root = v_flex()
             .id('chat-viewer')
             .track_focus(/** @type {import('gpui-kit').FocusHandle} */ (keys))
@@ -263,11 +268,8 @@ export function createPictureViewer({
                             .child(image(shown.rel).size_full()),
                     ),
             );
-        for (const action of actions)
-            root.on_action(
-                `x_herdr_chat_viewer_${action.replace(' ', '_')}`,
-                (_e, cx) => step(action, cx),
-            );
+        for (const action of new Set(VIEWER_KEYS.map(([, step]) => step)))
+            root.on_action(viewerAction(action), (_e, cx) => step(action, cx));
         return root;
     }
 
@@ -287,21 +289,12 @@ export function createPictureViewer({
         /** @param {Context} cx */
         start(cx) {
             keys = cx.focus_handle();
-            // the open viewer holds the keyboard: ← → move, + − 0 zoom, ⌘C copies, Esc closes
+            // the open viewer holds the keyboard
             cx.bind_keys(
-                [
-                    ['left', 'previous'],
-                    ['right', 'next'],
-                    ['=', 'zoom in'],
-                    ['+', 'zoom in'],
-                    ['-', 'zoom out'],
-                    ['0', 'fit'],
-                    ['cmd-c', 'copy'],
-                    ['escape', 'close'],
-                ].map(([keystroke, step]) => ({
-                    action: `x_herdr_chat_viewer_${String(step).replace(' ', '_')}`,
+                VIEWER_KEYS.map(([keystroke, step]) => ({
+                    action: viewerAction(step),
                     context: 'ChatViewer',
-                    keystroke: String(keystroke),
+                    keystroke,
                 })),
             );
         },

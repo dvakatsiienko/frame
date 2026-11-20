@@ -43,7 +43,7 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **test card** — 🧪, an ask opening «try» or «test:», a thread's request that dima tries what it cannot test itself
 - **pinned group** — orbit's look and test cards from every thread, drawn together at the top or the bottom by his settings row
 - **Tab loop** — the one ring Tab and shift-Tab walk across our mods (`_shared/tab-loop.js`): each mod's **Tab stops** (the quill, orbit's steer boxes) in the order the layout places the mods, never herdr's own hidden stops
-- **Tab member** — a mod's seat in the Tab loop: it publishes its Tab stops, asks for the next stop, and focuses its own when asked; a mod joins the loop by making one, with no list to edit
+- **Tab member** — a mod's seat in the Tab loop: it publishes its Tab stops, asks for the next stop, and focuses its own when asked, or when its mod reloads under the keyboard; a mod joins the loop by making one, with no list to edit
 - **code block** — a fenced block in a reply, drawn with a ⧉ copy button that copies its text
 - **chip** — inline code in the quill drawn as one monospace token; the caret skips it, one delete removes it
 - **land** — copy a mod from frame into herdr's real mods folder (`pnpm herdr-mods:land`); the **watcher** lands each save that passes `herdr-app check`
