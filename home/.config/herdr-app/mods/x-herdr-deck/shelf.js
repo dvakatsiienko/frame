@@ -6,6 +6,7 @@ import { exec, home, readTextFile } from 'herdr';
 
 import { rejoin } from './joined.js';
 import {
+    activityIn,
     asksOf,
     phasesOf,
     psStartArgs,
@@ -16,7 +17,7 @@ import {
 
 /** @typedef {import('./orbit.js').Ask} Ask */
 
-/** @typedef {{ asks: Ask[], context: number | null, hot: { since: number } | null, model: string | null, name: string, pending: Map<string, import('./orbit.js').Press['verdict']>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
+/** @typedef {{ activity: import('./orbit.js').Activity | null, asks: Ask[], context: number | null, hot: { since: number } | null, model: string | null, name: string, pending: Map<string, import('./orbit.js').Press['verdict']>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
 
 export const CLAUDE = `${home()}/.claude`;
 export const STATES = `${CLAUDE}/shelf/herdr-state`;
@@ -87,6 +88,7 @@ export async function sessions(shelf) {
             const state = stateOfPid(shelf, s.pid);
             const sid = state?.sid ?? s.sessionId;
             return {
+                activity: activityIn(state),
                 asks: asksOf(state),
                 context: state?.ctx ?? null,
                 hot: state?.hot ?? null,
@@ -98,7 +100,7 @@ export async function sessions(shelf) {
                 sid,
                 status: s.status ?? 'unknown',
                 taken: state?.taken ?? 0,
-                wait: waitOf(s.status ?? 'unknown', state?.wait),
+                wait: waitOf(activityIn(state)?.state, state?.wait),
             };
         },
     );

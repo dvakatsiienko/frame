@@ -299,6 +299,7 @@ describe('threads sort by the words of their name', () => {
 
 describe('the deck publishes each thread its three facts', () => {
     const row = (pid: number, status: string, wait: string | null) => ({
+        activity: { since: 9, state: 'waiting' as const },
         context: 40,
         hot: { since: 5 },
         model: 'opus 5.5 · medium',
@@ -308,8 +309,10 @@ describe('the deck publishes each thread its three facts', () => {
         wait,
     });
 
-    test('an idle thread keeps its waiting-on line', () => {
-        expect(waitOf('idle', 'waiting on 🦉 clio')).toBe('waiting on 🦉 clio');
+    test('a waiting thread keeps its waiting-on line', () => {
+        expect(waitOf('waiting', 'waiting on 🦉 clio')).toBe(
+            'waiting on 🦉 clio',
+        );
     });
 
     test('each live thread gets its context, its waiting-on line and the week, keyed by pid', () => {
@@ -320,6 +323,8 @@ describe('the deck publishes each thread its three facts', () => {
                     isHot: true,
                     model: 'opus 5.5',
                     sid: 'sid-7',
+                    since: 9,
+                    state: 'waiting',
                     wait: 'waiting on 🦉 clio',
                     week: 57,
                 },
@@ -334,13 +339,13 @@ describe('the deck publishes each thread its three facts', () => {
         ).toBe('waiting on 🦉 clio');
     });
 
-    test('a thread blocked on a prompt or in an unknown state shows no waiting-on line', () => {
-        expect(waitOf('blocked', 'waiting on 🦉 clio')).toBeNull();
-        expect(waitOf('shell', 'waiting on 🦉 clio')).toBeNull();
+    test('an idle thread, or one with no state file, shows no waiting-on line', () => {
+        expect(waitOf('idle', 'waiting on 🦉 clio')).toBeNull();
+        expect(waitOf(null, 'waiting on 🦉 clio')).toBeNull();
     });
 
     test('a thread mid-turn shows no waiting-on line, its last one is old', () => {
-        expect(waitOf('busy', 'waiting on 🦉 clio')).toBeNull();
+        expect(waitOf('working', 'waiting on 🦉 clio')).toBeNull();
     });
 
     test('a thread with no context read yet carries none, never a guess', () => {
@@ -349,6 +354,7 @@ describe('the deck publishes each thread its three facts', () => {
                 [
                     {
                         ...row(7, 'idle', null),
+                        activity: null,
                         context: null,
                         hot: null,
                         model: null,
@@ -361,6 +367,8 @@ describe('the deck publishes each thread its three facts', () => {
             isHot: false,
             model: null,
             sid: 'sid-7',
+            since: null,
+            state: null,
             wait: null,
             week: null,
         });

@@ -203,6 +203,21 @@ export function ticketUrl(ticket) {
         : null;
 }
 
+/** @typedef {{ state: 'working' | 'waiting' | 'idle', since: number }} Activity */
+
+/**
+ * a thread's activity as its state file says it, by herdr/contracts/herdr-state.schema.json; a file from before the
+ * field, or one that breaks the schema, has none
+ * @param {any} state the parsed file
+ * @returns {Activity | null}
+ */
+export function activityIn(state) {
+    return ['working', 'waiting', 'idle'].includes(state?.state) &&
+        typeof state?.since === 'number'
+        ? { since: state.since, state: state.state }
+        : null;
+}
+
 /**
  * a session's state file, found by the pid its registry file is named for: after a `/clear` the old id's file can
  * linger a moment, so the newest wins
@@ -530,7 +545,7 @@ export async function tickAll(io, dir, rows, sid, stateOf, steerOf, at) {
     return takes;
 }
 
-/** @typedef {{ context: number | null, isHot: boolean, model: string | null, sid: string, wait: string | null, week: number | null }} ThreadFacts */
+/** @typedef {{ context: number | null, isHot: boolean, model: string | null, sid: string, since: number | null, state: 'working' | 'waiting' | 'idle' | null, wait: string | null, week: number | null }} ThreadFacts */
 /** @typedef {{ at: number, threads: Record<string, ThreadFacts> }} DeckThreads */
 
 // herdr's shared state, the one door the chat reads a thread's facts through (a mod imports nothing outside its folder)
@@ -541,7 +556,7 @@ export const THREADS_BEAT_MS = 60 * 1000;
 /**
  * the facts each live thread shows where dima types and in antenna, keyed by pid; the waiting-on line, already `waitOf`'s, is
  * drawn plain, so markdown's ** go
- * @param {{ pid: number, sid: string, status: string, context: number | null, hot: unknown, model: string | null, wait: string | null }[]} rows
+ * @param {{ activity?: Activity | null, pid: number, sid: string, status: string, context: number | null, hot: unknown, model: string | null, wait: string | null }[]} rows
  * @param {number | null} week
  * @returns {Record<string, ThreadFacts>}
  */
@@ -554,6 +569,8 @@ export function threadFacts(rows, week) {
             isHot: Boolean(row.hot),
             model: row.model?.split(' · ')[0] ?? null,
             sid: row.sid,
+            since: row.activity?.since ?? null,
+            state: row.activity?.state ?? null,
             wait: row.wait ? unbold(row.wait) : null,
             week,
         };
@@ -561,13 +578,13 @@ export function threadFacts(rows, week) {
 }
 
 /**
- * the waiting-on line a thread shows, on the deck's row and in the chat's band alike: only an idle thread waits on
- * anything; one mid-turn, blocked on a prompt or in an unknown state carries its last reply's line, which is old
- * @param {string} status
+ * the waiting-on line a thread shows, in the chat's band and in antenna alike: only a thread its state file reads waiting
+ * waits on anything; a working or idle one carries its last reply's line, which is old (FRM-618 slice D)
+ * @param {'working' | 'waiting' | 'idle' | null | undefined} state
  * @param {string | null | undefined} wait
  */
-export const waitOf = (status, wait) =>
-    status === 'idle' ? (wait ?? null) : null;
+export const waitOf = (state, wait) =>
+    state === 'waiting' ? (wait ?? null) : null;
 
 /**
  * the value to publish, or null when the facts are the ones already out and the last beat is recent: setShared

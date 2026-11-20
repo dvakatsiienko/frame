@@ -21,7 +21,7 @@ import {
     writeTextFile,
 } from 'herdr';
 
-import { rowDetails } from './details.js';
+import { activityShown, rowDetails } from './details.js';
 import { createListDrag } from './drag-view.js';
 import { heirs, movedInGroup, nextOrder } from './order.js';
 import { antennaRows, stopOf, tabStops } from './rows.js';
@@ -92,7 +92,7 @@ const HOT_ASK = 'x-herdr-deck.hot';
 // a press shows at once and holds as long as the deck waits on the thread (its PENDING_MS, 20 s) and one redraw more
 const HOT_PENDING_MS = 21_000;
 
-/** @typedef {{ context: number | null, isHot: boolean, model: string | null, sid: string | null, wait: string | null }} Facts */
+/** @typedef {{ activity: import('./details.js').Activity | null, context: number | null, isHot: boolean, model: string | null, sid: string | null, wait: string | null }} Facts */
 
 /** @param {number | null | undefined} pid @returns {Facts | null} */
 function factsOf(pid) {
@@ -102,6 +102,11 @@ function factsOf(pid) {
     const f = pid == null ? null : deck?.threads?.[String(pid)];
     return f
         ? {
+              activity:
+                  ['working', 'waiting', 'idle'].includes(f.state) &&
+                  typeof f.since === 'number'
+                      ? { since: f.since, state: f.state }
+                      : null,
               context: typeof f.context === 'number' ? f.context : null,
               isHot: f.isHot === true,
               model: typeof f.model === 'string' ? f.model : null,
@@ -196,9 +201,6 @@ export default class Antenna extends View {
                     );
             },
         });
-        // each thread's last status and when it changed (ms), kept across restarts: the idle time
-        /** @type {Record<string, { s: string, at: number }>} */
-        this.changed = stored('changed', {});
         cx.spawn(async (cx) => {
             const values = antennaSettings(await readTextFile(SETTINGS));
             if (JSON.stringify(shared(SETTINGS_KEY)) !== JSON.stringify(values))
@@ -243,24 +245,6 @@ export default class Antenna extends View {
         ]);
         this.isSeeded = true;
         localStorage.setItem('seeded', 'true');
-    }
-
-    /** stamps each thread whose status changed; done and idle count as one, a look turns done into idle
-     * @param {import('herdr').AgentInfo[]} list @param {number} now */
-    track(list, now) {
-        let isChanged = false;
-        for (const a of list) {
-            const s = a.status === 'done' ? 'idle' : a.status;
-            if (this.changed[a.address]?.s === s) continue;
-            this.changed[a.address] = { at: now, s };
-            isChanged = true;
-        }
-        if (!isChanged) return;
-        const listed = new Set(list.map((a) => a.address));
-        for (const [k, c] of Object.entries(this.changed))
-            if (!listed.has(k) && now - c.at > 30 * 86400000)
-                delete this.changed[k];
-        localStorage.setItem('changed', JSON.stringify(this.changed));
     }
 
     /** @param {string[]} order */
@@ -323,13 +307,14 @@ export default class Antenna extends View {
                 .rounded(4)
                 .border(1.5)
                 .border_color(t.idle ?? t.dim);
-        // working breathes, a calm pulse in place, never a spin (dima, 16:23: «slightly more alive»)
+        // working breathes, a calm pulse in place, never a spin (dima, 16:23: «slightly more alive»); waiting holds still
+        // in its own colour, so a thread that only waits never reads active (FRM-618 slice D)
         return div()
             .size(7)
             .mx(3)
             .flex_none()
             .rounded(4)
-            .bg(t[status] ?? t.dim)
+            .bg((status === 'waiting' ? t.done : t[status]) ?? t.dim)
             .when(status === 'working', (el) =>
                 el.loop('opacity', { from: 0.3, period: 2000, to: 1 }),
             );
@@ -417,7 +402,6 @@ export default class Antenna extends View {
         const isNarrow = narrow();
         const list = agents();
         const now = Date.now();
-        this.track(list, now);
         const order = this.keepOrder(list);
         setAgentOrder(order.filter((a) => list.some((x) => x.address === a)));
         if (this.isSeeded)
@@ -476,6 +460,9 @@ export default class Antenna extends View {
                     .text_color(t.dim)
                     .child(div().truncate().child(r.name));
             const a = byAddress.get(r.address);
+            const state = factsOf(NAMES.get(r.address)?.pid);
+            // the dot and the time come from the thread's state file, herdr's own status only for a permission prompt
+            const shown = activityShown(r.dot, state?.activity ?? null, now);
             n += 1;
             if (isNarrow)
                 return h_flex()
@@ -505,27 +492,19 @@ export default class Antenna extends View {
                             .child(
                                 this.dot(
                                     t,
-                                    r.dot === 'blocked' ? 'done' : r.dot,
+                                    shown.dot === 'blocked'
+                                        ? 'done'
+                                        : shown.dot,
                                 ),
                             ),
                     );
-            const isQuiet = r.dot === 'idle' && !a.focused;
-            const pid = NAMES.get(r.address)?.pid;
-            const state = factsOf(pid);
-            const more = rowDetails(
-                knobs,
-                {
-                    context: state?.context ?? null,
-                    model: state?.model ?? null,
-                    // a working thread's time says nothing: idle time is for one that waits
-                    since:
-                        r.dot === 'working'
-                            ? 0
-                            : (this.changed[r.address]?.at ?? 0),
-                    wait: state?.wait ?? null,
-                },
-                now,
-            );
+            const isQuiet = shown.dot === 'idle' && !a.focused;
+            const more = rowDetails(knobs, {
+                context: state?.context ?? null,
+                model: state?.model ?? null,
+                time: shown.time,
+                wait: state?.wait ?? null,
+            });
             const { group, members } = groupOf.get(r.address);
             const at = members.indexOf(r.address);
             const key = this.rowKey(r.address);
@@ -622,7 +601,7 @@ export default class Antenna extends View {
                         Boolean(state?.sid),
                     (el) => el.child(this.hotButton(t, state)),
                 )
-                .child(this.dot(t, r.dot));
+                .child(this.dot(t, shown.dot));
         });
         return v_flex()
             .size_full()
