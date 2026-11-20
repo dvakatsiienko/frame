@@ -64,23 +64,38 @@ export function waitRuns(wait) {
 
 /**
  * a wait on a background command shows its first words, cut at the first «=» or «/», never the raw command; a cut that
- * leaves almost nothing reads as a background task; a wait naming a member (`**…**`) passes whole
+ * leaves almost nothing reads as a background task; a «/» counts only as a path's start; a wait naming a member (`**…**`) passes whole
  * @param {string} wait @returns {string}
  */
 export function waitShown(wait) {
-    const cut = wait.search(/[=/]/);
+    // a path starts at a line's start, after a space or after `~`, so «2/3» and «CI/CD» stay words
+    const cut = wait.search(/=|(?<=^|\s|~)\//);
     if (wait.includes('**') || cut < 0) return wait;
     const kept = wait.slice(0, cut).trimEnd();
-    const words = kept.replace(/^waiting on\s*/, '');
+    const words = kept.replace(/^waiting on\s*/i, '');
     return words.length < 3 ? 'waiting on a background task' : kept;
 }
 
-const WARM_AT = 55;
-const HOT_AT = 65;
+/** @typedef {{ notice: number, must: number }} Wind the second wind's lines, his own in chat settings */
 
-/** the context meter's level: warm where the second wind notices, hot where it must @param {number} percent
- * @returns {'calm' | 'warm' | 'hot'} */
-export function meterLevel(percent) {
-    if (percent >= HOT_AT) return 'hot';
-    return percent >= WARM_AT ? 'warm' : 'calm';
+/** the second wind's defaults, while his chat settings were never read */
+export const WIND = { must: 65, notice: 55 };
+
+/** the context meter's level: warm where his second wind notices, hot where it must
+ * @param {number} percent @param {Wind} [wind] @returns {'calm' | 'warm' | 'hot'} */
+export function meterLevel(percent, wind = WIND) {
+    if (percent >= wind.must) return 'hot';
+    return percent >= wind.notice ? 'warm' : 'calm';
+}
+
+/** his wind lines from the chat settings, the defaults for any missing or unfit one @param {unknown} settings
+ * @returns {Wind} */
+export function windOf(settings) {
+    const s = /** @type {Record<string, unknown>} */ (settings ?? {});
+    const at = (/** @type {string} */ key, /** @type {number} */ fallback) =>
+        typeof s[key] === 'number' ? /** @type {number} */ (s[key]) : fallback;
+    return {
+        must: at('stash.wind.must', WIND.must),
+        notice: at('stash.wind.notice', WIND.notice),
+    };
 }

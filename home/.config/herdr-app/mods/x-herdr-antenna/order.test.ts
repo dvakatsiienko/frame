@@ -210,6 +210,18 @@ describe('pinned threads', () => {
 });
 
 // FRM-618 slice E exit 3: a pin and its place survive a store reload; the store is antenna's own `localStorage`
+describe('pins kept true', () => {
+    test('two gone pins of one thread pass to its one live terminal once', () => {
+        expect(
+            pinHeirs(
+                ['t1', 't2'],
+                { t1: 'clio', t2: 'clio', t9: 'clio' },
+                live('t9'),
+            ),
+        ).toEqual(['t9']);
+    });
+});
+
 describe('the pins in the store', () => {
     const storage = () => {
         const kept = new Map<string, string>();

@@ -4,13 +4,15 @@
 import { h_flex } from 'gpui-base';
 import { PathBuilder, div } from 'gpui-kit';
 
-import { meterLevel } from './details.js';
+import { WIND, meterLevel } from './details.js';
 
 /** @typedef {Record<string, import('gpui-kit').Color>} Theme */
 
-/** @param {Theme} t @param {number} percent */
-const levelColor = (t, percent) =>
-    ({ calm: t.ansi2, hot: t.ansi1, warm: t.ansi3 })[meterLevel(percent)];
+/** @typedef {import('./details.js').Wind} Wind */
+
+/** @param {Theme} t @param {number} percent @param {Wind} wind */
+const levelColor = (t, percent, wind) =>
+    ({ calm: t.ansi2, hot: t.ansi1, warm: t.ansi3 })[meterLevel(percent, wind)];
 
 /** @param {Theme} t @param {number} percent */
 const label = (t, percent) =>
@@ -45,8 +47,8 @@ function arc(share) {
     return path.build();
 }
 
-/** a ring filling clockwise, the number beside it @param {Theme} t @param {number} percent */
-export function meterRing(t, percent) {
+/** a ring filling clockwise, the number beside it @param {Theme} t @param {number} percent @param {Wind} [wind] */
+export function meterRing(t, percent, wind = WIND) {
     const paint = (
         /** @type {number} */ share,
         /** @type {import('gpui-kit').Color} */ color,
@@ -69,14 +71,16 @@ export function meterRing(t, percent) {
                     ),
                 )
                 .when(percent > 0, (el) =>
-                    el.child(paint(percent / 100, levelColor(t, percent))),
+                    el.child(
+                        paint(percent / 100, levelColor(t, percent, wind)),
+                    ),
                 ),
         )
         .child(label(t, percent));
 }
 
-/** five slim segments, each a fifth, lit in the level's colour @param {Theme} t @param {number} percent */
-export function meterBars(t, percent) {
+/** five slim segments, each a fifth, lit in the level's colour @param {Theme} t @param {number} percent @param {Wind} [wind] */
+export function meterBars(t, percent, wind = WIND) {
     const lit = Math.ceil(percent / 20);
     return h_flex()
         .flex_none()
@@ -92,16 +96,20 @@ export function meterBars(t, percent) {
                             .w(4)
                             .h(9)
                             .rounded(1.5)
-                            .bg(i < lit ? levelColor(t, percent) : t.border),
+                            .bg(
+                                i < lit
+                                    ? levelColor(t, percent, wind)
+                                    : t.border,
+                            ),
                     ),
                 ),
         )
         .child(label(t, percent));
 }
 
-/** the number in a pill tinted by the level @param {Theme} t @param {number} percent */
-export function meterPill(t, percent) {
-    const color = levelColor(t, percent);
+/** the number in a pill tinted by the level @param {Theme} t @param {number} percent @param {Wind} [wind] */
+export function meterPill(t, percent, wind = WIND) {
+    const color = levelColor(t, percent, wind);
     return div()
         .flex_none()
         .px(6)
@@ -117,8 +125,10 @@ export function meterPill(t, percent) {
 }
 
 /** the meter in his picked look, the ring for any other value @param {Theme} t @param {number} percent
- * @param {unknown} look the «Context meter» knob */
-export function contextMeter(t, percent, look) {
-    if (look === 'bars') return meterBars(t, percent);
-    return look === 'pill' ? meterPill(t, percent) : meterRing(t, percent);
+ * @param {unknown} look the «Context meter» knob @param {Wind} wind */
+export function contextMeter(t, percent, look, wind) {
+    if (look === 'bars') return meterBars(t, percent, wind);
+    return look === 'pill'
+        ? meterPill(t, percent, wind)
+        : meterRing(t, percent, wind);
 }

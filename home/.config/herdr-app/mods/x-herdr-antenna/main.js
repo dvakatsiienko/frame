@@ -23,7 +23,7 @@ import {
     writeTextFile,
 } from 'herdr';
 
-import { activityShown, rowDetails, waitRuns } from './details.js';
+import { activityShown, rowDetails, waitRuns, windOf } from './details.js';
 import { createListDrag } from './drag-view.js';
 import { contextMeter } from './meter.js';
 import {
@@ -69,6 +69,9 @@ const SETTINGS = `${home()}/.claude/shelf/herdr-settings/settings.json`;
 export const SETTINGS_KEY = 'antenna.settings';
 
 /** antenna's knobs as last saved, the defaults before the first read */
+// the second wind's lines, his own from the chat settings the stash reads, so the meter turns where the wind fires
+const windLines = () => windOf(shared('chat.settings'));
+
 const settingsNow = () =>
     /** @type {Record<string, unknown>} */ (
         shared(SETTINGS_KEY) ?? antennaSettings(null)
@@ -314,7 +317,10 @@ export default class Antenna extends View {
         );
         if (JSON.stringify(order) !== JSON.stringify(this.order))
             this.setOrder(order);
-        const pins = pinHeirs(this.pins, this.orderNames, live);
+        // a pin whose terminal left his order (past its cap) leaves too, or no row could ever unpin it
+        const pins = pinHeirs(this.pins, this.orderNames, live).filter((a) =>
+            order.includes(a),
+        );
         if (JSON.stringify(pins) !== JSON.stringify(this.pins))
             this.setPins(pins);
         return order;
@@ -739,6 +745,7 @@ export default class Antenna extends View {
                                 t,
                                 state.context,
                                 knobs['antenna.details.meter'],
+                                windLines(),
                             ),
                         ),
                     )

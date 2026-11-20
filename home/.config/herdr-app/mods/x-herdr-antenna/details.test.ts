@@ -149,4 +149,17 @@ describe('a wait on a background command', () => {
         );
         expect(waitShown('Run the go done')).toBe('Run the go done');
     });
+
+    test('a slash in plain words is no command', () => {
+        expect(waitShown('waiting on 2/3 checks')).toBe(
+            'waiting on 2/3 checks',
+        );
+        expect(waitShown('waiting on CI/CD')).toBe('waiting on CI/CD');
+    });
+
+    test('a capital «Waiting on» cuts the same', () => {
+        expect(waitShown('Waiting on S=/tmp/x')).toBe(
+            'waiting on a background task',
+        );
+    });
 });

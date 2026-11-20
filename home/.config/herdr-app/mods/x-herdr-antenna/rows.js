@@ -28,7 +28,13 @@ export function antennaRows(threads, { isGrouped, names, order, pins = [] }) {
     const rest = ordered.filter((t) => !pinned.has(t.address));
     /** @type {Row[]} */
     const head = top.length
-        ? [{ kind: 'pins' }, ...top.map(row), { kind: 'unpinned' }]
+        ? [
+              { kind: 'pins' },
+              ...top.map(row),
+              ...(rest.length
+                  ? [{ kind: /** @type {const} */ ('unpinned') }]
+                  : []),
+          ]
         : [];
     return [...head, ...spaceRows(rest, isGrouped, row)];
 }

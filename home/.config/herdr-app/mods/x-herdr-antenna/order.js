@@ -116,13 +116,14 @@ export function toggledPin(pins, address) {
  * no heir it stays, so a read that misses threads never drops a pin
  * @param {string[]} pins @param {Record<string, string>} names @param {Set<string>} live @returns {string[]} */
 export function pinHeirs(pins, names, live) {
-    return pins.map((p) => {
+    const heirs = pins.map((p) => {
         if (live.has(p) || !names[p]) return p;
         const heir = [...live].find(
             (a) => names[a] === names[p] && !pins.includes(a),
         );
         return heir ?? p;
     });
+    return [...new Set(heirs)];
 }
 
 /** @typedef {{ getItem: (key: string) => string | null, setItem: (key: string, value: string) => void }} PinStore */

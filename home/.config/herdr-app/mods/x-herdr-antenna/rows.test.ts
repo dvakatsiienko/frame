@@ -133,4 +133,14 @@ describe('pinned threads', () => {
         });
         expect(rows.some((r) => r.kind === 'pins')).toBe(false);
     });
+
+    test('with every thread pinned, no break closes the list', () => {
+        const rows = antennaRows(threads, {
+            isGrouped: false,
+            names,
+            order,
+            pins: ['t1', 't2', 't3', 't4', 't5'],
+        });
+        expect(rows.at(-1)?.kind).toBe('thread');
+    });
 });
