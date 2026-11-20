@@ -14,6 +14,7 @@ ai are essentially free research tools).» dima, 2026-10-20: «i want to spawn o
 - **one brief file, every lane, in parallel.** write the question once (context, numbered
   vectors, the output shape); a brief born from a clio pocket item cites its W-lines and passes `node ~/frame/_clio/script/wish-cover.ts <PK-N> <brief>`, then:
   - `pnpm -C ~/frame --silent research:lanes <brief.md> [out]` — the exa agent run + the parallel core run, side by side under `op-run`; one line per lane: status, seconds, chars, cost (~$0.10 exa, cents parallel)
+  - **the research log** (`docs/research-log/`, one-offs): the brief carries `topics:`; `research:lanes` feeds the lanes the newest entries on them, writes today's stub; the synthesis fills it, a watch for its `look-again-when`; a stale stub blocks
   - **an opus source lane** on the same brief, pointed at what needs SOURCE reading — code, skills, prompts, npm, real api probes. in cc the door is the `researcher` agent (`omitClaudeMd`, no fleet memory), so the brief carries the whole question and the output shape; a surface with no `researcher` type (cloud code) spawns a general-purpose agent on opus whose prompt opens with the body of `home/.claude/agents/researcher.md`
   - **neuroarxiv** when the question is an architecture or method one; **`advise-project-approach`** when a plan or a process is about to be chosen
 - **the brief says «answer in english»**: an exa run on a brief without it came back entirely in french (2026-10-20, cloud code)

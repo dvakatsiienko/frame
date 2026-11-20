@@ -84,6 +84,7 @@
         "reply-check:report": "node ./script/reply-check-report.ts",
         "recipe:brief": "node ./script/recipe-brief.ts",
         "research:lanes": "./script/research-lanes.sh",
+        "research:log": "node script/research-log.ts",
         "test-drive:list": "node ./script/test-drive-list.ts",
         "test-drive:check": "node ./script/test-drive-list.ts --check",
         "schedule:install": "node ./schedule/install.ts",

@@ -58,9 +58,21 @@ esac
 out=${2:-$(dirname "$brief")/lanes-$(date +%H%M%S)}
 mkdir -p "$out"
 op="$(dirname "$self")/op-run.sh"
-timeout 1200 "$op" "$self" --lane exa "$brief" "$out" > "$out/exa.status" 2>&1 &
+# a one-off research reads the log's newest entries on its topics and files its own entry; a recipe keeps its own record
+case $brief_abs in
+  */recipes/*/last/*) lane_brief=$brief ;;
+  *)
+    log="$(dirname "$self")/research-log.ts"
+    node "$log" check || exit 2
+    lane_brief="$out/brief.md"
+    { cat "$brief"; node "$log" prior "$brief"; } > "$lane_brief" || exit 2
+    entry=$(node "$log" stub "$brief") || exit 2
+    echo "research-log: $entry — fill its summary and verdict when the research lands"
+    ;;
+esac
+timeout 1200 "$op" "$self" --lane exa "$lane_brief" "$out" > "$out/exa.status" 2>&1 &
 exa=$!
-timeout 900 "$op" "$self" --lane parallel "$brief" "$out" > "$out/parallel.status" 2>&1 &
+timeout 900 "$op" "$self" --lane parallel "$lane_brief" "$out" > "$out/parallel.status" 2>&1 &
 par=$!
 failed=0
 wait $exa || failed=1
