@@ -8,18 +8,22 @@ import { inListOrder } from './orbit.js';
 
 /**
  * @param {{ name: string, phases: string[], pid: number, sid: string }[]} rows the live threads
- * @param {{ asks: number, focusedPid?: number | null, order: number[] | null }} counts his order is antenna's pids
- * @returns {{ scroll: 'orbit'[], pinned: PhaseGroup[] }}
+ * @param {{ focusedPid?: number | null, order: number[] | null }} seen his order is antenna's pids
+ * @returns {{ pinned: PhaseGroup[] }}
  */
-export function deckParts(rows, { asks, focusedPid = null, order }) {
-    /** @type {'orbit'[]} */
-    const scroll = [];
-    if (asks > 0) scroll.push('orbit');
+export function deckParts(rows, { focusedPid = null, order }) {
     const focused = rows.find((r) => r.pid === focusedPid);
     return {
         pinned: inListOrder(focused ? [focused] : rows, order)
             .filter((r) => r.phases.length > 0)
             .map(({ name, phases, sid }) => ({ name, phases, sid })),
-        scroll,
     };
 }
+
+/**
+ * orbit's header, drawn at every count so nothing below it moves when the last ask goes (rider 4c); at zero a calm
+ * «no asks» line sits under the bare name
+ * @param {number} asks
+ */
+export const orbitHeader = (asks) =>
+    asks > 0 ? `🪐 orbit: ${asks} ${asks === 1 ? 'ask' : 'asks'}` : '🪐 orbit';

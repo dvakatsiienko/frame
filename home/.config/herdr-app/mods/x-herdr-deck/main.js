@@ -26,7 +26,7 @@ import {
     withBandPress,
 } from './band-press.js';
 import { isDeckShown, takeCommands, tickAsker } from './deck-commands.js';
-import { deckParts } from './deck-parts.js';
+import { deckParts, orbitHeader } from './deck-parts.js';
 import { focusBorder } from './focus-ring.js';
 import { createGlide } from './glide-view.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
@@ -1115,8 +1115,6 @@ export default class Deck extends View {
                 .font_semibold()
                 .text_color(t.foreground)
                 .child(text);
-        /** @param {number} n @param {string} one @param {string} many */
-        const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
         // antenna lists the threads; the deck scrolls orbit and pins the focused thread's phases to its bottom, its pid
         // by antenna's address → pid map
         const focusedAt = agents().find((a) => a.focused)?.address;
@@ -1124,7 +1122,6 @@ export default class Deck extends View {
             shared(PIDS_KEY)
         );
         const parts = deckParts(this.rows, {
-            asks,
             focusedPid: focusedAt ? (pids?.[focusedAt] ?? null) : null,
             order: /** @type {number[] | null} */ (shared(ORDER_KEY)),
         });
@@ -1144,19 +1141,25 @@ export default class Deck extends View {
                         .child(`⚠️ ${this.pressError}`),
                 ),
             )
-            .when(parts.scroll.includes('orbit'), (el) =>
-                el
-                    .child(header(`🪐 orbit: ${count(asks, 'ask', 'asks')}`))
-                    .children(orbitRows)
-                    .when(Boolean(this.pressNote), (el2) =>
-                        el2.child(
-                            div()
-                                .px(12)
-                                .text_size(SIZE.secondary)
-                                .text_color(t.muted)
-                                .child(`⏳ ${this.pressNote}`),
-                        ),
-                    ),
+            .child(header(orbitHeader(asks)))
+            .when(asks === 0, (el) =>
+                el.child(
+                    div()
+                        .px(12)
+                        .text_size(SIZE.secondary)
+                        .text_color(t.muted)
+                        .child('no asks'),
+                ),
+            )
+            .children(orbitRows)
+            .when(Boolean(this.pressNote), (el) =>
+                el.child(
+                    div()
+                        .px(12)
+                        .text_size(SIZE.secondary)
+                        .text_color(t.muted)
+                        .child(`⏳ ${this.pressNote}`),
+                ),
             )
             .when(this.footerLine() !== null, (el) =>
                 el.child(
