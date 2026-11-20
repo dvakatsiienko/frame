@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-20T18:17:00Z'
-updated_date: '2026-11-20T18:33:00Z'
+updated_date: '2026-11-20T18:44:00Z'
 labels:
   - s
 dependencies: []
@@ -33,4 +33,10 @@ ordinal: 78000
 - PK-463:W8 (2026-11-20 20:32, dima): fix cc mods: cpu roasting is not allowed, the bottleneck must be resolved. from now on, if we have cpu roasting problems because of tests, the fix door is searching the external internet for similar symptoms and existing solutions, or gh issues.
 - PK-463:W9 (2026-11-20 20:32, dima): now: consult with crow, the mods lane codie and the verifier, and wing 1 and the stray. tell them the problem fully and make sure they know the context, the root of the problem and the solutions you found through the research. propose the final weighted solution.
 - PK-463:W10 (2026-11-20 20:32, dima): then: 1. how to prevent this in future? another roasted cpu bottleneck is treated as a critical failure. 2. create a fix plan and tell when it can be implemented (estimate).
+
+20:44 wish:
+- PK-463:W11 (2026-11-20 20:43, dima): prevention: we definitely need this line in global memory, because cpu roasting now happens across two areas, at least in cc mods tests and in cli tests as well.
+- PK-463:W12 (2026-11-20 20:43, dima): but I was more about cc mods: how to update the cc mods AGENTS.md, based on the problem we just discovered and the solution you likely found in the research. it is still to be proven to work.
+- PK-463:W13 (2026-11-20 20:43, dima): how do we update AGENTS.md in mods so codie never writes tests in a way that leads to such a cpu bottleneck? maybe a line like «keep an eye on the cpu meter, and if tests start to roast my cpu, raise it immediately».
+- PK-463:W14 (2026-11-20 20:43, dima): I don't really like that. we were running tests with this bottleneck for a long time, and you were silently writing more tests, worsening the problem.
 <!-- SECTION:NOTES:END -->
