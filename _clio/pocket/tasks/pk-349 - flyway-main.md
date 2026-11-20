@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-20T15:39:00Z'
+updated_date: '2026-11-20T15:50:00Z'
 labels:
   - s
   - clio-main
@@ -16,13 +16,12 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f60 stray batch 9 rider: crow:plan-critique runs in one second mint the same note ids
-- [ ] #2 f61 herdr drawing: at FRM-618 end, ask the herdr codie how far its drawing goes (his 17:03)
-- [ ] #3 f62 second wind stalls: herdr codie wrote herdr-lane-3-13 at 17:20, no compact or ingest followed, idle 18 min
-- [ ] #4 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-27
-- [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #6 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #7 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #1 f61 herdr drawing: at FRM-618 end, ask the herdr codie how far its drawing goes (his 17:03)
+- [ ] #2 f62 second wind stalls: herdr codie wrote herdr-lane-3-13 at 17:20, no compact or ingest followed, idle 18 min
+- [ ] #3 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-27
+- [ ] #4 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #5 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #6 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1320,4 +1319,10 @@ done 2026-11-20 16:13: f57 stray glide card reborn after each end: its thread re
 16:13 f57 handed to the stray as batch 9 chore 2 (cause found by a scout: lanes.ts:493 vs thread.go:302 re-stamping at)
 
 17:39 second-wind stall cause: armed at 17:20 (op second-wind herdr-lane-3-13), then x-mod-stash reloaded live (the mods lane's push) before the turn end, and the pending wind was lost; a mods wisp for after FRM-662: the armed state survives a reload
+
+done 2026-11-20 17:46: f60 stray batch 9 rider: crow:plan-critique runs in one second mint the same note ids
+
+done 2026-11-20 17:50: f63 wish-cover counts joined lines now: FRM-618 72 uncited, cite them before slice F lands (land gate) (FRM-618 In Progress)
+
+17:50 f63 dropped: the 0 → 72 jump was the stray's overreach (wisphunter P1), fixed in its round 2, no citing needed
 <!-- SECTION:NOTES:END -->
