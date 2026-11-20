@@ -1,10 +1,10 @@
 ---
 id: PK-459
 title: 'herdr: a tab-focus ring on every tabbable element, one shared system'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-20T12:13:00Z'
-updated_date: '2026-11-20T12:22:00Z'
+updated_date: '2026-11-20T12:38:00Z'
 labels:
   - m
 dependencies: []
@@ -31,4 +31,15 @@ PK-459:W5 (2026-11-20 14:12, dima, in the herdr codie's chat): i want this tab-f
 PK-459:W6 (2026-11-20 14:12, dima, in the herdr codie's chat): how complicated/big/long it is? ❓
 
 14:22 dima 14:22 in the herdr codie's chat approved the codie's proposal (one shared focus ring on every tabbable x-herdr element first, then he names what loses focus); «do it a little later»; groom pending to W7+
+
+14:26 PK-459:W7 (2026-11-20 14:22, dima, in the herdr codie's chat): I approve your proposal about focusable elements and I think it is correct.
+PK-459:W8 (2026-11-20 14:22, dima, in the herdr codie's chat): First to identify what actually gets focused, I suspect that those roughly eight tabs are focusing on something useless for me.
+PK-459:W9 (2026-11-20 14:22, dima, in the herdr codie's chat): That's why I proposed to actually add a visual effect for focuses so I see what I focus on and can tell you what to remove focus from.
+PK-459:W10 (2026-11-20 14:22, dima, in the herdr codie's chat): Ensure this is not forgotten and let's do it a little bit later.
+PK-459:W11 (2026-11-20 14:22, dima, in the herdr codie's chat): As for now move on with your plan.
+
+14:38 ticket: FRM-620 — W1–W11 moved as FRM-620:W31–W41, slice 5 in ~/frame/.scratch/herdr-lane-3/spec.md (his 14:37: focus is orbit's)
+close: folded into FRM-620 slice 5
+
+close: PK-459:W1 PK-459:W2 PK-459:W3 PK-459:W4 PK-459:W5 PK-459:W6 PK-459:W7 PK-459:W8 PK-459:W9 PK-459:W10 PK-459:W11 moved to FRM-620 (W31–W41)
 <!-- SECTION:NOTES:END -->
