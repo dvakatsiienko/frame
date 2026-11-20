@@ -546,6 +546,12 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 			reports = append(reports, report)
 			continue
 		}
+		if typed, ran := overlayTypecheck(overlay); ran && !typed.ok {
+			report.Validate = "typecheck: " + firstNonBlank(typed.log)
+			report.log = typed.log
+			reports = append(reports, report)
+			continue
+		}
 		got, _ := run("", nil, "", "claude", "plugin", "test", overlay)
 		log := got.log
 		report.Passed, report.Failed, report.Errored = testOutcome(log)
@@ -570,6 +576,27 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 		reports = append(reports, report)
 	}
 	return reports, nil
+}
+
+// the overlay's tsc, with the flags `mods/typecheck.ts` passes: a dropped import is red here in seconds, before the suite spends minutes on it;
+// a mod the engine wrote no types for is skipped, as there
+func overlayTypecheck(overlay string) (result, bool) {
+	if !exists(filepath.Join(overlay, ".claude-plugin", "types", "tsconfig.json")) {
+		return result{}, false
+	}
+	got, _ := run("", nil, "", "tsc", append([]string{"-p", overlay}, modsTscFlags...)...)
+	return got, true
+}
+
+var modsTscFlags = []string{"--noEmit", "--allowImportingTsExtensions", "--noUnusedLocals", "--noUnusedParameters"}
+
+func firstNonBlank(log string) string {
+	for line := range strings.SplitSeq(log, "\n") {
+		if line = strings.TrimSpace(line); line != "" {
+			return line
+		}
+	}
+	return ""
 }
 
 // only the files that timed out run again, as `mods/test.ts` does: a second whole run on a loaded machine times out other

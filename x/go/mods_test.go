@@ -48,6 +48,10 @@ done
 echo "Ran 2 tests across 2 files."
 exit $red
 `)
+	write(t, filepath.Join(bin, "tsc"), `#!/bin/sh
+[ -n "$CLAUDE_CALLS" ] && echo "tsc $*" >> "$CLAUDE_CALLS"
+if grep -rq TYPE-ERROR "$2/tests" 2>/dev/null; then echo "tests/a.test.ts(1,8): error TS2307: Cannot find module './gone.ts'."; echo "Found 1 error."; exit 2; fi
+`)
 	return dir, []string{"PATH=" + bin + ":" + os.Getenv("PATH"), "CLAUDE_JOB_DIR=" + t.TempDir()}
 }
 
@@ -607,6 +611,57 @@ func TestModsEditPushRefusesAnUnparseableHooksFileBeforeAnyWrite(t *testing.T) {
 	}
 	if !strings.HasPrefix(readFile(t, filepath.Join(dir, modHooks)), "export const register = () => {};") {
 		t.Errorf("the unparseable hooks file reached the mod")
+	}
+}
+
+// a mod the engine wrote types for gets the overlay's tsc, planted as the real engine leaves it: ignored by its own `*` gitignore
+func planEngineTypes(t *testing.T, dir string) {
+	t.Helper()
+	types := filepath.Join(dir, modsDir, "m", ".claude-plugin", "types")
+	write(t, filepath.Join(types, "tsconfig.json"), "{}\n")
+	write(t, filepath.Join(types, ".gitignore"), "*\n")
+}
+
+// a dropped import is red in seconds, before any test runs, on both verbs that run the overlay
+func TestModsEditTypeErrorStopsPushAndTestBeforeAnyTestRuns(t *testing.T) {
+	t.Parallel()
+	for _, verb := range []string{"push", "test"} {
+		t.Run(verb, func(t *testing.T) {
+			t.Parallel()
+			dir, env := modsFixture(t)
+			planEngineTypes(t, dir)
+			calls := filepath.Join(t.TempDir(), "calls")
+			env = append(env, "CLAUDE_CALLS="+calls)
+			write(t, pullCopy(t, dir, env, modTestA), "import './gone.ts'; TYPE-ERROR\n")
+
+			got := xIn(t, dir, env, "mods", "edit", verb)
+
+			if got.code == 0 || !strings.Contains(got.stdout, "typecheck: tests/a.test.ts(1,8): error TS2307") {
+				t.Errorf("exit %d, want the tsc line named\n%s", got.code, got.stdout)
+			}
+			if strings.Contains(readFile(t, calls), "test\n") {
+				t.Errorf("claude plugin test ran after a type error:\n%s", readFile(t, calls))
+			}
+			if readFile(t, filepath.Join(dir, modTestA)) != "green\n" {
+				t.Errorf("the type error reached the mod")
+			}
+		})
+	}
+}
+
+// tsc runs with the flags `mods/typecheck.ts` passes: the engine's tsconfig leaves out the `.ts` import paths every mod writes
+func TestModsEditTypecheckPassesTheModsTypecheckFlags(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	planEngineTypes(t, dir)
+	calls := filepath.Join(t.TempDir(), "calls")
+	env = append(env, "CLAUDE_CALLS="+calls)
+	write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "test")
+
+	if want := "--noEmit --allowImportingTsExtensions --noUnusedLocals --noUnusedParameters\n"; got.code != 0 || !strings.Contains(readFile(t, calls), want) {
+		t.Fatalf("exit %d, tsc calls:\n%s\n%s", got.code, readFile(t, calls), got.stdout)
 	}
 }
 
