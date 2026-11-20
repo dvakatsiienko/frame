@@ -116,6 +116,8 @@ export type ThreadRecord = {
     coordinator?: string;
     wing?: number;
     at?: number;
+    // when a summon or dispatch last wrote the record; `at` moves at every x sync, so it never dates a dispatch
+    dispatchedAt?: number;
     ticket?: string;
 };
 // the standing role ids x's roles.json names (FRM-579): one place here, so a rename of the fleet's roles is a table edit

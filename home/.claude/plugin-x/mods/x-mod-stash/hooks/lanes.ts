@@ -462,8 +462,10 @@ export async function openDispatchedLanes(
                 });
             continue;
         }
-        // a card ended before this dispatch frees the plan for a new one; one ended after it closed the lane for good
-        if (onPlan.some((l) => (l.endedAt ?? 0) >= (codie.at ?? 0))) continue;
+        // a card ended before this dispatch frees the plan for a new one; one ended after it closed the lane for good.
+        // the dispatch's time is `dispatchedAt`: `at` is moved by every x sync, which brought an ended card back
+        if (onPlan.some((l) => (l.endedAt ?? 0) >= (codie.dispatchedAt ?? 0)))
+            continue;
         const text = await $.fs.read(path).catch(() => undefined);
         if (text === undefined) continue;
         const title =

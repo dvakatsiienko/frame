@@ -46,8 +46,8 @@ const caps = {
         why: 'the stash board, one file of cases',
     },
     'home/.claude/plugin-x/mods/x-mod-stash/tests/lane.test.ts': {
-        cap: 2_736,
-        why: 'the stash lane cards, one file of cases',
+        cap: 2_035,
+        why: 'the stash lane cards, one file of cases; the card-opening cases moved to lane-card.test.ts, the shared world to lane-world.ts',
     },
     'home/.claude/plugin-x/mods/x-mod-stash/tests/orbit.test.ts': {
         cap: 5_531,
