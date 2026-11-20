@@ -548,7 +548,7 @@ def note_only(path: str, reply: str) -> bool:
 QUIET_WAKE_MAX = 450
 COMMIT_NEWS = re.compile(r"\b(?:commit(?:ted|s)?|push(?:ed|es)?|landed|origin)\b", re.I)
 # a failure, a finding, a question or a turn in the news is something dima may need, so the reply stays
-OTHER_NEWS = re.compile(r"\b(?:red|fail\w*|refus\w+|errors?|found|finding\w*|bugs?|wisps?|blocked|stuck|declin\w+|conflicts?|rejected|broke\w*|missed|unexpected|surprising|but|however)\b|[?⚠🔴❌]", re.I)
+OTHER_NEWS = re.compile(r"\b(?:red|fail\w*|refus\w+|errors?|found|finding\w*|bugs?|wisps?|blocked|stuck|declin\w+|conflicts?|rejected|broke\w*|missed|unexpected|surprising|but|however|not|denied|abort\w*|timed out|exit(?:ed)? [1-9]|nothing to)\b|n[’']t\b|[?⚠🔴❌]", re.I)
 
 
 def quiet_wake(path: str, reply: str) -> bool:

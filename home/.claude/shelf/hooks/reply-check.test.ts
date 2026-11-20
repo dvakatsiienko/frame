@@ -711,6 +711,15 @@ describe('a wake that only reports a commit or push (dima o154)', () => {
         expect(nextPrompt()).not.toContain('rides the next reply');
     });
 
+    it.each([
+        'couldn’t push: the hook exited 1',
+        'the push did not go through',
+        'push denied by the pre-push gate',
+        'the commit gate timed out',
+    ])('stays silent when the push failed: %s', (failed) => {
+        expect(loggedAfter(failed, turnOpenedBy(taskWake))).not.toContain('quiet-wake');
+    });
+
     it('stays silent in a turn dima started', () => {
         expect(loggedAfter(quiet, turnOpenedBy('push it'))).not.toContain('quiet-wake');
         expect(nextPrompt()).not.toContain('rides the next reply');
