@@ -22,7 +22,7 @@ dima, 2026-11-13 (FRM-626:W10–W15): his day is messy, he loses track of what e
 the lane as a bold header, then each chunk:
 
 - **<ticket link>: <title in plain words>** — 🛼 running (step N of M) or ⏭️ next, its size
-- the four opener lines, each on its own line: what it is, why we have it, what we want out of it, what it buys
+- the four opener lines, each a `-` bullet with a bold label (`habit-dima-comms` § grill): what it is, why we have it, what we want out of it, what it buys
 - what lies inside: 2–4 lines naming its parts in his words, never a file, a function or a flag unless he asks
 - its progress (W17): «step N of M» with a bar of ✅ and ⬜, then the steps one line each in plain words, «← we are here» on the open one
 - ⏱️ an estimate (W16): its open steps × the median minutes per step closed today in any lane (yesterday's when today has under 3), read from the glide history in `~/.claude/shelf/` and the lane plans' commit times; labelled «estimate», with the median it used
