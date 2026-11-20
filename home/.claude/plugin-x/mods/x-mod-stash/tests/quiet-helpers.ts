@@ -395,3 +395,117 @@ export const roundsIn = (files: Record<string, string>) =>
 
 export const kept = (w: { files: Record<string, string> }, lane = LANE) =>
     roundsIn(w.files)[lane];
+
+export const CODIE_SID = 'c0c0c0c0-codie';
+
+export const codiePeer = {
+    name: '☕️ 🔧 codie: mods',
+    pid: 778,
+    sessionId: CODIE_SID,
+    status: 'idle',
+};
+
+export function alarmWorld(
+    on: On,
+    {
+        dropSubmit = (_text: string): boolean => false,
+        files = {} as Record<string, string>,
+        isTestChild = false,
+        lastWrite = (): number | undefined => undefined,
+        // `x linear read <id> --json`'s labels per ticket; a ticket with none fails the read, as a linear outage would
+        labels = {} as Record<string, string[]>,
+        notify = 'no-surface',
+        also = [] as (typeof codiePeer)[],
+        osascript = 0,
+        peer = codiePeer,
+        refuseAppend = false,
+        sends = [] as string[],
+    } = {},
+) {
+    const scripted: string[] = [];
+    const w = world(on, {
+        dropSubmit,
+        files,
+        isTestChild,
+        peers: [peer, ...also],
+        refuseAppend,
+        run: (argv) => {
+            if (argv[0] === 'osascript') {
+                scripted.push(String(argv[3]));
+                return osascript;
+            }
+            if (argv[0] === 'sh' && String(argv[2]).includes('SendMessage'))
+                return sends.join('\n');
+            if (argv[0] === 'x' && argv[1] === 'linear' && argv[2] === 'read') {
+                const got = labels[String(argv[3])];
+                return got
+                    ? JSON.stringify({
+                          data: { tickets: [{ id: argv[3], labels: got }] },
+                          ok: true,
+                      })
+                    : 1;
+            }
+            if (
+                argv[0] === 'sh' &&
+                [peer, ...also].some((p) => p.sessionId === argv[5])
+            )
+                return `${Math.floor((lastWrite() ?? 0) / 1000)}\n`;
+            return undefined;
+        },
+    });
+    const notified: string[] = [];
+    on('ui.notify', (_$, e) => {
+        notified.push(e.text);
+        if (notify === 'deny') return { deny: 'a hook refused it' };
+        return {
+            value:
+                notify === 'sent'
+                    ? { channel: 'ghostty' as const, isSent: true as const }
+                    : {
+                          isSent: false as const,
+                          reason: notify as 'no-surface',
+                      },
+        };
+    });
+    return { ...w, notified, scripted };
+}
+
+export const LANES = '/home/.claude/shelf/lanes.json';
+
+export const laneCard = (over = {}) => ({
+    current: 0,
+    history: [],
+    id: 'l1',
+    items: [{ done: false, text: 'the build' }],
+    members: { codie: codiePeer.name },
+    movedAt: 0,
+    title: 'mods lane',
+    ...over,
+});
+
+// a one-minute wait: three waits are 3 min, so a row's clock stays short of its 5 s budget at load
+export function silentWorld(
+    on: On,
+    {
+        also = [] as (typeof codiePeer)[],
+        card = {} as object,
+        dropSubmit = (_t: string): boolean => false,
+        files = {} as Record<string, string>,
+        labels = {} as Record<string, string[]>,
+        peer = codiePeer,
+        wait = 1,
+    } = {},
+) {
+    const spoke = { at: EVEN };
+    files[LANES] = JSON.stringify({ lanes: [laneCard(card)] });
+    const w = alarmWorld(on, {
+        also,
+        dropSubmit,
+        files,
+        labels,
+        lastWrite: () => spoke.at,
+        peer,
+    });
+    w.store.set('quiet-wait', wait);
+    return { ...w, spoke };
+}
