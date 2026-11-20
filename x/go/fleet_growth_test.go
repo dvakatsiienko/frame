@@ -2,10 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 const (
@@ -25,12 +28,20 @@ func growthWorld(t *testing.T) (root string, env []string) {
 	write(t, filepath.Join(root, "x/go/lane_test.go"), strings.Repeat("x\n", 20))
 	gitT(t, root, "add", "-A")
 	gitT(t, root, "commit", "-q", "-m", "parts")
-	return root, []string{"X_FRAME_ROOT=" + root, "X_STATE=" + t.TempDir()}
+	return root, []string{"X_FRAME_ROOT=" + root, "X_STATE=" + t.TempDir(), "HOME=" + t.TempDir()}
 }
+
+// the clock a fixture reads: a run is «now» unless it says when
+const growthNow = "2026-11-20T12:00:00Z"
 
 func growth(t *testing.T, root string, env []string) growthData {
 	t.Helper()
-	got := xIn(t, root, env, "fleet", "growth", "--json")
+	return growthAt(t, root, env, growthNow)
+}
+
+func growthAt(t *testing.T, root string, env []string, now string) growthData {
+	t.Helper()
+	got := xIn(t, root, append(env, "X_NOW="+now), "fleet", "growth", "--json")
 	if got.code != 0 {
 		t.Fatalf("fleet growth exit %d\n%s", got.code, got.stdout)
 	}
@@ -117,6 +128,129 @@ func TestFleetGrowthNamesAPartAtTwiceItsBaseline(t *testing.T) {
 			want := growthCrossing{Part: "x-mod-alpha", Trigger: "size", Then: 100, Now: 200}
 			if len(got.Crossings) != 1 || got.Crossings[0] != want {
 				t.Errorf("crossings %+v, want only %+v", got.Crossings, want)
+			}
+		})
+	}
+}
+
+// a commit of one new line under a part's directory, dated hoursAgo before growthNow
+func fixCommit(t *testing.T, root, dir, subject string, hoursAgo int) {
+	t.Helper()
+	now, _ := time.Parse(time.RFC3339, growthNow)
+	at := now.Add(-time.Duration(hoursAgo) * time.Hour).Format(time.RFC3339)
+	write(t, filepath.Join(root, dir, fmt.Sprintf("note-%d.txt", time.Now().UnixNano())), "x\n")
+	gitT(t, root, "add", "-A")
+	c := exec.Command("git", "-c", "user.name=fixture", "-c", "user.email=fixture@example.com", "-c", "commit.gpgsign=false", "commit", "-q", "-m", subject)
+	c.Dir = root
+	c.Env = append(cleanEnv(), "GIT_AUTHOR_DATE="+at, "GIT_COMMITTER_DATE="+at)
+	if out, err := c.CombinedOutput(); err != nil {
+		t.Fatalf("git commit: %v\n%s", err, out)
+	}
+}
+
+// one day of his prompts log under the fixture HOME: each block is «HH:MM text»
+func promptsDay(t *testing.T, env []string, day string, blocks ...string) {
+	t.Helper()
+	var body strings.Builder
+	for _, block := range blocks {
+		at, text, _ := strings.Cut(block, " ")
+		fmt.Fprintf(&body, "## %s\n\n%s\n\n", at, text)
+	}
+	write(t, filepath.Join(strings.TrimPrefix(env[2], "HOME="), ".local/state/clio/prompts", day+".md"), body.String())
+}
+
+const (
+	growthAlphaDir = "home/.claude/plugin-x/mods/x-mod-alpha"
+	growthGammaDir = "home/.config/herdr-app/mods/x-herdr-gamma"
+	growthDeltaDir = "home/.claude/plugin-x/skills/guide-delta"
+	growthFix      = "🐞 x-mod-alpha: a fix"
+)
+
+// exit 2, the fixes half: 3 🐞 commits touching one part in 7 days name it «fixes», counted from the seed on; 2, other subjects,
+// commits spread over parts, commits before the seed and commits past the window name nothing
+func TestFleetGrowthNamesAPartWithThreeFixesInSevenDays(t *testing.T) {
+	t.Parallel()
+	type commit struct {
+		dir, subject string
+		hoursAgo     int
+	}
+	for _, c := range []struct {
+		name    string
+		seed    string
+		commits []commit
+		want    int
+	}{
+		{"three fixes after the seed", "2026-11-20T09:00:00Z", []commit{{growthAlphaDir, growthFix, 1}, {growthAlphaDir, growthFix, 2}, {growthAlphaDir, growthFix, 1}}, 3},
+		{"the oldest six days old", "2026-11-01T09:00:00Z", []commit{{growthAlphaDir, growthFix, 1}, {growthAlphaDir, growthFix, 2}, {growthAlphaDir, growthFix, 144}}, 3},
+		{"two fixes", "2026-11-20T09:00:00Z", []commit{{growthAlphaDir, growthFix, 1}, {growthAlphaDir, growthFix, 2}}, 0},
+		{"two fixes and a refactor", "2026-11-20T09:00:00Z", []commit{{growthAlphaDir, growthFix, 1}, {growthAlphaDir, growthFix, 2}, {growthAlphaDir, "✨ x-mod-alpha: split", 1}}, 0},
+		{"three fixes over three parts", "2026-11-20T09:00:00Z", []commit{{growthAlphaDir, growthFix, 1}, {growthGammaDir, growthFix, 2}, {growthDeltaDir, growthFix, 1}}, 0},
+		{"three fixes before the seed", "2026-11-20T11:30:00Z", []commit{{growthAlphaDir, growthFix, 2}, {growthAlphaDir, growthFix, 3}, {growthAlphaDir, growthFix, 4}}, 0},
+		{"two fixes and one eight days old", "2026-11-01T09:00:00Z", []commit{{growthAlphaDir, growthFix, 1}, {growthAlphaDir, growthFix, 2}, {growthAlphaDir, growthFix, 192}}, 0},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			root, env := growthWorld(t)
+			if strings.Contains(c.name, "before the seed") {
+				for _, k := range c.commits {
+					fixCommit(t, root, k.dir, k.subject, k.hoursAgo)
+				}
+				growthAt(t, root, env, c.seed)
+			} else {
+				growthAt(t, root, env, c.seed)
+				for _, k := range c.commits {
+					fixCommit(t, root, k.dir, k.subject, k.hoursAgo)
+				}
+			}
+
+			got := growth(t, root, env)
+
+			if c.want == 0 {
+				if len(got.Crossings) != 0 {
+					t.Errorf("crossings %+v, want none", got.Crossings)
+				}
+				return
+			}
+			want := growthCrossing{Part: "x-mod-alpha", Trigger: "fixes", Count: c.want}
+			if len(got.Crossings) != 1 || got.Crossings[0] != want {
+				t.Errorf("crossings %+v, want only %+v", got.Crossings, want)
+			}
+		})
+	}
+}
+
+// exit 2, the turns half: 3 of his prompt blocks naming one part on one day name it «turns (rough)»; 2, 3 over two days, 3 with one
+// naming another part and 3 before the seed name nothing
+func TestFleetGrowthNamesAPartWithThreeOfHisTurnsInOneDay(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name   string
+		seed   string
+		days   map[string][]string
+		wantIn bool
+	}{
+		{"three turns in a day", "2026-11-20T09:00:00Z", map[string][]string{"2026-11-20": {"22:00 x-mod-alpha is slow", "22:05 the X-MOD-ALPHA band", "22:10 x-mod-alpha again"}}, true},
+		{"two turns", "2026-11-20T09:00:00Z", map[string][]string{"2026-11-20": {"22:00 x-mod-alpha is slow", "22:05 x-mod-alpha again"}}, false},
+		{"three turns over two days", "2026-11-01T09:00:00Z", map[string][]string{"2026-11-19": {"22:00 x-mod-alpha", "22:05 x-mod-alpha"}, "2026-11-20": {"22:00 x-mod-alpha"}}, false},
+		{"one of three names another part", "2026-11-20T09:00:00Z", map[string][]string{"2026-11-20": {"22:00 x-mod-alpha", "22:05 x-mod-alpha", "22:10 x-mod-beta"}}, false},
+		{"three turns before the seed", "2026-11-20T09:00:00Z", map[string][]string{"2026-11-20": {"05:00 x-mod-alpha", "05:05 x-mod-alpha", "05:10 x-mod-alpha"}}, false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			root, env := growthWorld(t)
+			growthAt(t, root, env, c.seed)
+			for day, blocks := range c.days {
+				promptsDay(t, env, day, blocks...)
+			}
+
+			got := growth(t, root, env)
+
+			want := growthCrossing{Part: "x-mod-alpha", Trigger: "turns (rough)", Count: 3}
+			if c.wantIn && (len(got.Crossings) != 1 || got.Crossings[0] != want) {
+				t.Errorf("crossings %+v, want only %+v", got.Crossings, want)
+			}
+			if !c.wantIn && len(got.Crossings) != 0 {
+				t.Errorf("crossings %+v, want none", got.Crossings)
 			}
 		})
 	}

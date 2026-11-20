@@ -806,6 +806,7 @@
   - given the tracked files of each cc mod, herdr mod, skill and `x` verb family, in lines with their tests, and a baseline under `~/.local/state/x/fleet-growth/`
   - when `x fleet growth --json` runs
   - then the first run seeds the baseline from today's sizes and names nothing; later a part whose lines reach 2× its baseline is named with lines then → now and the trigger `size`; a part born after the seed is seeded at its own size
+  - given 3 🐞 commits in 7 days touching one part's files, or 3 of his prompt blocks naming the part on one day of `~/.local/state/clio/prompts/`, both counted from the part's seed on, then it is named with the trigger `fixes` or `turns (rough)`; 2 of either, other commit subjects, three parts with one fix each, events before the seed or past the window name nothing
   - decision: a reader, never a hook, and one metric for every part (his o103: bytes apps later)
 
 ## stats — telemetry
