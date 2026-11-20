@@ -104,6 +104,7 @@ var impls = map[string]Impl{
 	"fleet flow":                  {Run: fleetFlow},
 	"fleet audit-codie":           {Run: fleetAuditCodie},
 	"fleet ops":                   {Run: fleetOps},
+	"fleet growth":                {Run: fleetGrowth},
 	"probe bare":                  {Run: probeBare, Undone: "no answer came back"},
 	"knowledge list":              {Run: knowledgeList},
 	"knowledge read":              {Run: knowledgeRead},

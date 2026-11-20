@@ -802,6 +802,11 @@
   - then it prints tokens and wall time per ticket (codie + sixth sense, each step once), clio's code edits per session, and the cost of a clio boot (full and mini), each with its median
   - decision: no size-miss section: its guessed XS 80 and S 400 turn lines sat far under the measured S median, so every halt printed false misses (dima's o42, FRM-572)
 - ✅ a bad `--days` or `--min-kb` exits 2 with the command that works
+- ✅ `x fleet growth` names a part of the fleet that outgrew its sign (FRM-590)
+  - given the tracked files of each cc mod, herdr mod, skill and `x` verb family, in lines with their tests, and a baseline under `~/.local/state/x/fleet-growth/`
+  - when `x fleet growth --json` runs
+  - then the first run seeds the baseline from today's sizes and names nothing; later a part whose lines reach 2× its baseline is named with lines then → now and the trigger `size`; a part born after the seed is seeded at its own size
+  - decision: a reader, never a hook, and one metric for every part (his o103: bytes apps later)
 
 ## stats — telemetry
 

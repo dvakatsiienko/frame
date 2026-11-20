@@ -1239,6 +1239,15 @@
             ]
         },
         {
+            "name": "fleet growth",
+            "needsApply": false,
+            "purpose": "the parts of the fleet (cc mods, herdr mods, verb families, skills) that outgrew the size they were seeded at",
+            "touches": [
+                "the frame tree's tracked files of each part, read for their lines",
+                "~/.local/state/x/fleet-growth/baseline.json — each part's seeded size, written on the first run and for a part born later"
+            ]
+        },
+        {
             "args": [],
             "name": "thread list",
             "needsApply": false,
