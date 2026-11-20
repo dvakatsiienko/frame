@@ -509,110 +509,134 @@ export default class Antenna extends View {
             const at = members.indexOf(r.address);
             const key = this.rowKey(r.address);
             const isHeld = key?.is_focused() ?? false;
-            return this.drag
-                .item(
-                    h_flex(),
-                    {
-                        from: at,
-                        item: {
-                            address: r.address,
-                            group,
-                            members,
-                            pane: a.pane,
-                        },
-                        key: r.address,
-                        label: r.name,
-                        places: members.length,
-                        targetFor: (/** @type {Dragged} */ held) =>
-                            held.group === group ? at : null,
-                    },
-                    t,
-                )
-                .id(`an-${r.address}`)
-                .flex_none()
-                .items_center()
-                .cursor_pointer()
-                .hover((s) => s.bg(t.hover))
-                .when(Boolean(key), (el) => el.track_focus(key))
-                .key_context('XAntennaRow')
-                .on_action(ROW_TAB, () =>
-                    this.tab.ask(stopOf(r.address), false),
-                )
-                .on_action(ROW_BACK, () =>
-                    this.tab.ask(stopOf(r.address), true),
-                )
-                .on_action(ROW_OPEN, () => run('pane.focus', { pane: a.pane }))
-                .border_1()
-                .border_color(isHeld ? t.accent : '#00000000')
-                .h(rowHeight)
-                .px(8)
-                .gap(9)
-                .rounded(8)
-                .when(a.focused, (el) => el.bg(t.selected))
-                .child(
-                    v_flex()
-                        .flex_1()
-                        .min_w(0)
-                        .child(
-                            div()
-                                .truncate()
-                                .text_color(isQuiet ? t.muted : t.foreground)
-                                .child(r.name),
-                        )
-                        .when(Boolean(more.wait), (el) =>
-                            // markdown, so a fleet name keeps its bold (W41); one line, clipped
-                            el.child(
+            // the row's content, drawn the same in the row and in its drag ghost, so a lifted row never collapses to its
+            // name (dima, 18:39; the tab pills' `look`)
+            /** @param {import('gpui-kit').NativeElement} el @param {string} waitId */
+            const body = (el, waitId) =>
+                el
+                    .child(
+                        v_flex()
+                            .flex_1()
+                            .min_w(0)
+                            .child(
                                 div()
-                                    .h(14)
-                                    .overflow_hidden()
-                                    .child(
-                                        TextView.markdown(
-                                            `an-wait-${r.address}`,
-                                            more.wait ?? '',
-                                        )
-                                            // herdr's UI font ships one face, so bold drew flat in it
-                                            .font_family('.AppleSystemUIFont')
-                                            // antenna is clicked and dragged, never read as text: no I-beam (dima, 18:34)
-                                            .selectable(false)
-                                            .text_size(11)
-                                            .text_color(t.dim),
-                                    ),
+                                    .truncate()
+                                    .text_color(
+                                        isQuiet ? t.muted : t.foreground,
+                                    )
+                                    .child(r.name),
+                            )
+                            .when(Boolean(more.wait), (el) =>
+                                // markdown, so a fleet name keeps its bold (W41); one line, clipped
+                                el.child(
+                                    div()
+                                        .h(14)
+                                        .overflow_hidden()
+                                        .child(
+                                            TextView.markdown(
+                                                waitId,
+                                                more.wait ?? '',
+                                            )
+                                                // herdr's UI font ships one face, so bold drew flat in it
+                                                .font_family(
+                                                    '.AppleSystemUIFont',
+                                                )
+                                                // antenna is clicked and dragged, never read as text: no I-beam (dima, 18:34)
+                                                .selectable(false)
+                                                .text_size(11)
+                                                .text_color(t.dim),
+                                        ),
+                                ),
                             ),
+                    )
+                    .when(Boolean(more.model), (el) =>
+                        el.child(
+                            div()
+                                .flex_none()
+                                .text_size(11)
+                                .text_color(t.dim)
+                                .child(more.model ?? ''),
                         ),
-                )
-                .when(Boolean(more.model), (el) =>
-                    el.child(
-                        div()
-                            .flex_none()
-                            .text_size(11)
-                            .text_color(t.dim)
-                            .child(more.model ?? ''),
-                    ),
-                )
-                .when(Boolean(more.context), (el) =>
-                    el.child(
-                        div()
-                            .flex_none()
-                            .text_size(11)
-                            .text_color(t.dim)
-                            .child(more.context ?? ''),
-                    ),
-                )
-                .when(Boolean(more.idle), (el) =>
-                    el.child(
-                        div()
-                            .flex_none()
-                            .text_size(11)
-                            .text_color(t.dim)
-                            .child(more.idle ?? ''),
-                    ),
-                )
-                .when(
-                    knobs['antenna.details.hot'] === true &&
-                        Boolean(state?.sid),
-                    (el) => el.child(this.hotButton(t, state)),
-                )
-                .child(this.dot(t, shown.dot));
+                    )
+                    .when(Boolean(more.context), (el) =>
+                        el.child(
+                            div()
+                                .flex_none()
+                                .text_size(11)
+                                .text_color(t.dim)
+                                .child(more.context ?? ''),
+                        ),
+                    )
+                    .when(Boolean(more.idle), (el) =>
+                        el.child(
+                            div()
+                                .flex_none()
+                                .text_size(11)
+                                .text_color(t.dim)
+                                .child(more.idle ?? ''),
+                        ),
+                    )
+                    .when(
+                        knobs['antenna.details.hot'] === true &&
+                            Boolean(state?.sid),
+                        (el) => el.child(this.hotButton(t, state)),
+                    )
+                    .child(this.dot(t, shown.dot));
+            return body(
+                this.drag
+                    .item(
+                        h_flex(),
+                        {
+                            from: at,
+                            item: {
+                                address: r.address,
+                                group,
+                                members,
+                                pane: a.pane,
+                            },
+                            key: r.address,
+                            label: r.name,
+                            look: () =>
+                                body(
+                                    h_flex()
+                                        .size_full()
+                                        .min_w(0)
+                                        .px(8)
+                                        .gap(9)
+                                        .items_center(),
+                                    `an-ghost-wait-${r.address}`,
+                                ),
+                            places: members.length,
+                            targetFor: (/** @type {Dragged} */ held) =>
+                                held.group === group ? at : null,
+                        },
+                        t,
+                    )
+                    .id(`an-${r.address}`)
+                    .flex_none()
+                    .items_center()
+                    .cursor_pointer()
+                    .hover((s) => s.bg(t.hover))
+                    .when(Boolean(key), (el) => el.track_focus(key))
+                    .key_context('XAntennaRow')
+                    .on_action(ROW_TAB, () =>
+                        this.tab.ask(stopOf(r.address), false),
+                    )
+                    .on_action(ROW_BACK, () =>
+                        this.tab.ask(stopOf(r.address), true),
+                    )
+                    .on_action(ROW_OPEN, () =>
+                        run('pane.focus', { pane: a.pane }),
+                    )
+                    .border_1()
+                    .border_color(isHeld ? t.accent : '#00000000')
+                    .h(rowHeight)
+                    .px(8)
+                    .gap(9)
+                    .rounded(8)
+                    .when(a.focused, (el) => el.bg(t.selected)),
+                `an-wait-${r.address}`,
+            );
         });
         // empty space keeps the arrow: with no cursor of its own the block showed the I-beam (dima, 17:57); a row's
         // pointer and a drag's grab set their own
