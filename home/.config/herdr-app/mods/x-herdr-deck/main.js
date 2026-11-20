@@ -334,14 +334,12 @@ export default class Deck extends View {
             }
     }
 
-    /** the footer, from the reload chain's one state */
+    /** the footer, from the reload chain's one state: only a read that stalled says so; a fresh one says nothing (his
+     * 18:06: «"updated…" i do not need that — hide it») @returns {string | null} */
     footerLine() {
         const chain = this.reloads.state();
-        if (chain.settledAt === null) return 'reading…';
-        const at = new Date(chain.settledAt);
-        return chain.phase === 'stalled'
-            ? `no read since ${clockOf(at, 2)}, reading again`
-            : `updated ${clockOf(at, 3)}`;
+        if (chain.settledAt === null || chain.phase !== 'stalled') return null;
+        return `no read since ${clockOf(new Date(chain.settledAt), 2)}, reading again`;
     }
 
     /** @param {Context} cx @param {string} sid @param {boolean} on */
@@ -1157,13 +1155,15 @@ export default class Deck extends View {
                         ),
                     ),
             )
-            .child(
-                div()
-                    .px(12)
-                    .py(8)
-                    .text_size(SIZE.small)
-                    .text_color(t.muted)
-                    .child(this.footerLine()),
+            .when(this.footerLine() !== null, (el) =>
+                el.child(
+                    div()
+                        .px(12)
+                        .py(8)
+                        .text_size(SIZE.small)
+                        .text_color(t.muted)
+                        .child(this.footerLine() ?? ''),
+                ),
             );
         return v_flex()
             .id('x-herdr-deck')
