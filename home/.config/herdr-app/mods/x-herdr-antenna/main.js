@@ -530,6 +530,7 @@ export default class Antenna extends View {
                                 // markdown, so a fleet name keeps its bold (W41); one line, clipped
                                 el.child(
                                     div()
+                                        .relative()
                                         .h(14)
                                         .overflow_hidden()
                                         .child(
@@ -541,10 +542,17 @@ export default class Antenna extends View {
                                                 .font_family(
                                                     '.AppleSystemUIFont',
                                                 )
-                                                // antenna is clicked and dragged, never read as text: no I-beam (dima, 18:34)
-                                                .selectable(false)
                                                 .text_size(11)
                                                 .text_color(t.dim),
+                                        )
+                                        // antenna is clicked and dragged, never read: a clear layer keeps the arrow over
+                                        // the text (dima, 18:34); `selectable(false)` here took the I-beam from the whole
+                                        // app (18:47)
+                                        .child(
+                                            div()
+                                                .absolute()
+                                                .inset_0()
+                                                .cursor_default(),
                                         ),
                                 ),
                             ),
