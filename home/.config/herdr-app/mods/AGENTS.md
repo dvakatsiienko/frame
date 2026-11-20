@@ -14,6 +14,7 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 
 - pretty and sharp, never clunky: a shot of every visible change goes to him, its path in the reply
 - ux first: every state, input and edge he meets; hotkeys welcome
+- Tab and hotkeys are core: a change near them proves the Tab loop and every hotkey live; no regression lands (FRM-673)
 - a choice gets its settings row, the essential knobs only; a preference never hides in code. chat settings (`x-herdr-chat-settings`, the header's gear) hold only how the chat reads; every other row goes to settings (`x-herdr-settings`, the band's 🎛️ or ⌘⇧,) (dima, 16:58)
 - slipstream first wherever he talks to a thread, with visible feedback that it worked
 - cheap to change stays cheap: one mod per block, placed by the layout json alone, plain JS, colours from `theme()`

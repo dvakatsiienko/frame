@@ -18,7 +18,7 @@ this leaf loaded means this thread runs in the Claude desktop app (entrypoint `c
 
 ## files and links to him
 
-- the Code tab strips custom url schemes (`rules/fleet-output-format.md` § links); a session links as `[its title](#local_<id>)`
+- the Code tab strips custom url schemes, so a link is https; a session links as `[its title](#local_<id>)`
 
 ## browser
 
