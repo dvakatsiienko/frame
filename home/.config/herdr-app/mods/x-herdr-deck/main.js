@@ -15,6 +15,7 @@ import {
     writeTextFile,
 } from 'herdr';
 
+import { focusProbe } from './focus-probe.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
 import { lanesShown, stepMark } from './lanes.js';
 import { SANS, SIZE, bar, clockOf, leadingRoom, line, prose } from './look.js';
@@ -897,6 +898,13 @@ export default class Deck extends View {
                                             cx.stop_propagation(),
                                         )
                                         .key_context('XDeckSteer')
+                                        .when(true, (el) =>
+                                            focusProbe(
+                                                el,
+                                                `orbit · steer ${ask.id}`,
+                                                this.steerFocus === key,
+                                            ),
+                                        )
                                         .on_action(STEER_ENTER, (_e, cx) =>
                                             this.steerKeyAct(cx, key, false),
                                         )

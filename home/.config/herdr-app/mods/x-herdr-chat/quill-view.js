@@ -8,6 +8,7 @@ import { appHome } from 'herdr';
 
 import { fileName, isImagePath, pickFiles } from './attach.js';
 import { createAttachments } from './attachments.js';
+import { focusProbe } from './focus-probe.js';
 import { ICONS } from './icons.js';
 import { enterHoldStep } from './joins.js';
 import { createKeyPress } from './keypress.js';
@@ -73,6 +74,8 @@ export function createQuill({
 }) {
     /** the box: herdr draws its text itself, so a key typed in it draws nothing of ours; made at start @type {import('gpui-base').TextareaState | null} */
     let box = null;
+    // FRM-620 slice 5a probe: the quill's focus, for its numbered ring
+    let isQuillFocused = false;
     /** the quill's text, and its text one change earlier: Enter types its line break before it submits */
     let typedNow = '';
     let typedBefore = '';
@@ -146,7 +149,13 @@ export function createQuill({
             cx.notify();
             if (await restored) cx.notify();
         });
+        made.on('focus', (_event, cx) => {
+            isQuillFocused = true;
+            cx.notify();
+        });
         made.on('blur', (_event, cx) => {
+            isQuillFocused = false;
+            cx.notify();
             quillKeys.blurred();
             const event = enterHoldStep(sendPath().hold(), 'blur');
             if (event) sendPath().holdStep(made, event, cx);
@@ -206,6 +215,9 @@ export function createQuill({
                         .border(1)
                         .border_color(t.border)
                         .key_context('XChatQuill')
+                        .when(true, (el) =>
+                            focusProbe(el, 'chat · quill', isQuillFocused),
+                        )
                         .on_drop((e, cx) => addFiles(e?.paths ?? [], cx))
                         // Enter runs the send button's hold (FRM-628 W12): a tap joins on its release, a hold fills
                         // the disc and pushes; its repeats keep the one hold going

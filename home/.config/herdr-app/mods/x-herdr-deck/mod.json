@@ -1,1 +1,5 @@
-{ "place": "none", "shared": ["keypress.js"], "title": "x-herdr deck" }
+{
+    "place": "none",
+    "shared": ["focus-probe.js", "keypress.js"],
+    "title": "x-herdr deck"
+}

@@ -4,6 +4,12 @@
         "version": "0.1.16"
     },
     "place": "none",
-    "shared": ["drag.js", "drag-view.js", "tab-drops.js", "tab-status.js"],
+    "shared": [
+        "drag-view.js",
+        "drag.js",
+        "focus-probe.js",
+        "tab-drops.js",
+        "tab-status.js"
+    ],
     "title": "Tab pills"
 }
