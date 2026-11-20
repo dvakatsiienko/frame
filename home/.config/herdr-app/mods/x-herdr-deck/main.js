@@ -59,6 +59,7 @@ import {
     LANES,
     SESSIONS,
     SETTINGS,
+    SETTINGS_DIR,
     STATES,
     TICKS,
     USAGE,
@@ -229,12 +230,14 @@ export default class Deck extends View {
         this.pin = 'top';
         cx.timer.every(THREADS_BEAT_MS, (cx) => this.reload(cx));
         this.reload(cx);
-        // the press folder too: a 🔥 pressed on the band above a chat draws on its row at once
+        // the press folder too: a 🔥 pressed on the band above a chat draws on its row at once; the settings folder
+        // on its own, as the tab pills watch it, since a nested path under the linked shelf never matched (13:27 probe)
         for (const folder of [
             SESSIONS,
             STATES,
             `${CLAUDE}/shelf`,
             `${home()}/${PRESS_DIR}`,
+            SETTINGS_DIR,
         ]) {
             cx.spawn(async (cx) => {
                 for (;;) {
@@ -242,11 +245,7 @@ export default class Deck extends View {
                     if (
                         folder.endsWith('/shelf') &&
                         !changed.some(
-                            (p) =>
-                                p === LANES ||
-                                p === USAGE ||
-                                p === SETTINGS ||
-                                p === folder,
+                            (p) => p === LANES || p === USAGE || p === folder,
                         )
                     )
                         continue;

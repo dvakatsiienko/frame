@@ -26,7 +26,8 @@ export const SESSIONS = `${CLAUDE}/sessions`;
 const THREADS = `${CLAUDE}/shelf/threads.json`;
 export const TICKS = `${CLAUDE}/shelf/orbit-ticks`;
 // x-herdr-settings' file (x-herdr-chat settings-store.js): his «orbit › pinned cards» row
-export const SETTINGS = `${CLAUDE}/shelf/herdr-settings/settings.json`;
+export const SETTINGS_DIR = `${CLAUDE}/shelf/herdr-settings`;
+export const SETTINGS = `${SETTINGS_DIR}/settings.json`;
 
 /**
  * @param {string} path
