@@ -1,11 +1,10 @@
 /* @jsx h */
 import type { EngineInterface, Register } from 'claude-code';
 
-import type { QuietLogLine, StashLane } from '../types/stash.d.ts';
+import type { QuietLogLine } from '../types/stash.d.ts';
 import { renderBand } from './band.tsx';
 import { drawBoard } from './board.tsx';
 import {
-    carried,
     flushFields,
     isTypedHere,
     leaveBoxes,
@@ -19,29 +18,18 @@ import {
     isQuietHome,
     quietLocked,
     steersOnCompact,
-    takeSteers,
 } from './held.ts';
 import { joinsLocked, settleJoins, takeJoins } from './joins.ts';
 import {
-    PING,
     armHot,
     capAtMeasure,
     capAtTurnEnd,
     holdHot,
     paceStep,
-    prepareTurn,
     seatDefaults,
     warm,
 } from './keep-warm.ts';
-import {
-    LANE_STEER,
-    LANE_STEER_OLD,
-    dropLaneOrders,
-    laneSteers,
-    readLanes,
-    showLanes,
-    takeLaneMoves,
-} from './lanes.ts';
+import { readLanes, takeLaneMoves } from './lanes.ts';
 import {
     ORBIT_TOOL,
     isFresh,
@@ -51,18 +39,16 @@ import {
     orbitOp,
     planText,
     turnEnded,
-    wrongText,
 } from './orbit.ts';
-import { DIMA_AT, takeMarks, takePlanMark } from './orbit-presses.ts';
+import { takeMarks, takePlanMark } from './orbit-presses.ts';
 import {
     EMPTY_ORBIT,
     absorbMarks,
     currentOrbit,
     inMarking,
-    orbitNow,
     saveOrbit,
 } from './orbit-store.ts';
-import { LANE_OWNER, LANE_STALE, orbitCall, ticketNote } from './orbit-tool.ts';
+import { LANE_OWNER, orbitCall } from './orbit-tool.ts';
 import {
     boldFleetWords,
     bulletDots,
@@ -71,17 +57,15 @@ import {
     numberCircled,
     parseWait,
 } from './parse.ts';
-import { isAppPrompt, peerPing, quietHeldText } from './quiet.ts';
-import { quietLog, takeGapNotes } from './quiet-books.ts';
+import { AWAY_NOTE, composePrompt, takeLaneSteers } from './prompt-notes.ts';
+import { peerPing, quietHeldText } from './quiet.ts';
+import { quietLog } from './quiet-books.ts';
 import {
     SEND_TOOL,
-    quietHoldPrompt,
     quietKindsOff,
-    quietNote,
     quietOf,
     quietSendEnd,
     quietSendStart,
-    quietTake,
     quietWhy,
     saveQuiet,
 } from './quiet-gate.ts';
@@ -119,26 +103,11 @@ import {
     markNudged,
     markWork,
     markWrapAsked,
-    setPrimed,
     setTurnAfk,
-    startTurn,
     turn,
 } from './turn.ts';
+import { forgetTold, orbitTexts, tickSentence } from './turn-notes.ts';
 import {
-    LANE_STALE_TEXT,
-    filled,
-    forgetTold,
-    noBoardReminder,
-    orbitReminder,
-    orbitTexts,
-    tickSentence,
-    toldOrbit,
-    toldOrbitAs,
-    toldStaleAs,
-    toldStaleLanes,
-} from './turn-notes.ts';
-import {
-    CONTEXT,
     countWords,
     drawFill,
     drawFillAfterCompact,
@@ -150,7 +119,6 @@ import { COMPACTING, windOf } from './wind.ts';
 import {
     COMPACT_SETTLE_MS,
     FILL,
-    nextTurnNo,
     takeFill,
     takeWind,
     windAfterTurn,
@@ -164,16 +132,12 @@ import {
 // afk: one switch every session polls; while it is on, every prompt carries an away note, and a flip reaches a running turn.
 // keep-hot: while on and idle, one ping 50 min after the last turn ended keeps the prompt cache warm; the switch lives in $.store, so a reload keeps it
 
-const AWAY_NOTE =
-    'dima is afk: nothing waits on him. take reversible steps and log them, pick every pending ask and log its undo, raise one in orbit only when blocked, on his design call, or irreversible. send no ping.';
 const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';
 // the fleet board: cc's registry gives each session's state; each session's stash adds its 🔭 wait and context fill
 const BOARD = 'x-cc-deck';
 // 🎛️ is a pane of its own, which the surface tabs beside 🚦: the band is capped by cc, the list outgrew it (dima's pick a of
 // four homes, 16:20); a tab row inside a pane was proven too, kept as an idea in api-map.md
 const SETTINGS_PANE = 'stash-settings';
-// dima at the prompt, typing into a background job, on his phone or the web
-const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
 // a reload keeps `$.state` and resets the module: what must outlive a mod save lives there (FRM-320)
 // what the band and the board draw: renders read it, and a write redraws them, no invalidate
 const VIEW = { key: 'view', plugin: 'x-mod-stash' } as const;
@@ -181,8 +145,6 @@ const VIEW = { key: 'view', plugin: 'x-mod-stash' } as const;
 const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
 // a 📄 line's HH:MM — the same shape reply-check.py reads
 const STAMP = /(📄[^\n]*?\b)(\d{1,2}:\d{2})\b/g;
-// the phases guard, no extra turn and no Stop block: one line at the first prompt, one nudge in a turn's tool results (dima's o14)
-const PHASES_START = `phases are your live plan: set them with ${ORBIT_TOOL}'s plan op and keep them current as the work moves.`;
 const NUDGE_AT = 3;
 // a plan set in either of the last 2 turns still holds: a turn that did not move it gets no nudge (clio's brief 8)
 const PLAN_QUIET_TURNS = 2;
@@ -199,7 +161,6 @@ const BOOT_MS = 3 * 60 * 60 * 1000;
 const START_SESSION_TOOL = 'mcp__ccd_session__start_session';
 const BOOT_NOTE = 'the boot continues; the board ends the turn';
 const MOBILE_OFF = /ARGUMENTS:\s*off\b/i;
-const BACK_AT_MAC = /\bback at the mac\b|\bmobile mode off\b/i;
 
 const WORK_TOOLS = new Set([
     'Edit',
@@ -212,36 +173,6 @@ const WORK_BASH =
     /\b(claude\s+(--bg|-n\s+\S+.*--bg|stop|respawn)|git\s+commit|x\s+lane\s+(commit|push|pr-open|merge-main|seed)|x\s+mods\s+edit\s+push)\b/;
 export const isWork = (tool: string, command?: string) =>
     WORK_TOOLS.has(tool) || (tool === 'Bash' && WORK_BASH.test(command ?? ''));
-
-// dima asking clio about cost: her context points at the price facts once, so she never answers from recall (o171; 10-13
-// she quoted a cache read at 1/10 of input, the file says 1/20)
-export const COST_WORDS =
-    /\b(?:tokens?|cach(?:e|ed|ing)|(?:ctx|context) costs?|pricing|mtok)\b/i;
-const COST_HINT =
-    "💵 a cost question: read ~/frame/home/.claude/plugin-x/skills/crew-lead/references/model-cards.md before answering (each model's price line, and the «cache reads are where agents spend» bullet), never from recall.";
-
-// the lane steers dima took with 🛎️, as clio reads them; each leaves the lane once read
-async function takeLaneSteers($: EngineInterface, lanes: StashLane[]) {
-    const steers = await laneSteers($);
-    const taken = lanes.filter((l) => !l.endedAt && steers[l.id]?.isTaken);
-    if (!taken.length) return [];
-    carried(
-        $,
-        taken.map((l) => `lane:${l.id}:steer`),
-    );
-    for (const l of taken) {
-        await $.store.delete(LANE_STEER + l.id);
-        await $.store.delete(LANE_STEER_OLD + l.id).catch(() => undefined);
-    }
-    await showLanes($, lanes);
-    return taken.map((l) => {
-        const step = `${l.id} «${l.items[l.current]?.text ?? l.title}»`;
-        const steer = steers[l.id]?.steer?.trim();
-        return steer
-            ? `lane steer from dima on ${step}: «${steer}»`
-            : `lane tick from dima on ${step}: 🛎️ good to go`;
-    });
-}
 
 // a clio boot whose board has not printed: the skill loaded in the last hours, no board-length reply since
 async function isBootOpen($: EngineInterface) {
@@ -278,180 +209,9 @@ export const register: Register = (on) => {
         return next(e);
     });
 
-    on('prompt.submit', async ($, e, next) => {
-        await markActive($).catch(() => undefined);
-        await flushFields($, viewDoors($));
-        // the app sends no attachment, and a drop would lose his image with the prompt
-        const isAppShaped = e.origin?.kind === 'sdk' && !e.attachments?.length;
-        // the engine's own idle notice is meta; its parser takes nothing but that notice's whole shape
-        const isEngineNotice = e.isMeta === true && !e.attachments?.length;
-        const hold =
-            isAppShaped || isEngineNotice
-                ? await quietLocked(() =>
-                      quietHoldPrompt($, e.text, isEngineNotice),
-                  ).catch(() => undefined)
-                : undefined;
-        if (hold?.drop !== undefined) return { drop: hold.drop };
-        // a background task's notice may reach the session as a prompt, dequeued when it went idle (the origin's docs)
-        if (e.origin?.kind === 'task-notification')
-            await settleTask($, e.text, viewDoors($)).catch(() => undefined);
-        const isUser =
-            !e.isMeta &&
-            !(isAppShaped && isAppPrompt(e.text)) &&
-            e.text.trim().length > 0 &&
-            (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
-        if (isUser && BACK_AT_MAC.test(e.text))
-            await $.state.set(MOBILE, false).catch(() => undefined);
-        // prompt.submit fires when a prompt is queued (engine.md): one queued behind a running turn is no turn of its own yet
-        const isQueued = turn.isBusy;
-        await startTurn($, isUser, e.text === PING, () =>
-            prepareTurn(viewDoors($)),
-        );
-        // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
-        const at = new Date(await $.clock.now());
-        const offset = -at.getTimezoneOffset() / 60;
-        const clock = `now ${at.toTimeString().slice(0, 5)} UTC${offset >= 0 ? '+' : ''}${offset}`;
-        // only dima's own prompt carries his marks; each joins once and locks until the turn ends
-        if (turn.isUserTurn)
-            await $.store
-                .set(DIMA_AT, await $.clock.now())
-                .catch(() => undefined);
-        await absorbMarks($, () => keepShelf($), isTypedHere);
-        await currentOrbit($);
-        const isOn = await partsShown($);
-        const marked =
-            turn.isUserTurn && isOn('stash.orbit')
-                ? await takeMarks($, (o) => o.asks.filter(isFresh))
-                : [];
-        // an assumption dima sent back joins his prompt once and leaves orbit
-        const wrong =
-            turn.isUserTurn && isOn('stash.assumed')
-                ? (orbitNow().assumed ?? []).filter((x) => x.isWrong)
-                : [];
-        if (wrong.length)
-            await inMarking(async () => {
-                const o = await currentOrbit($);
-                await saveOrbit(
-                    $,
-                    {
-                        ...o,
-                        assumed: (o.assumed ?? []).filter(
-                            (x) => !wrong.some((w) => w.id === x.id),
-                        ),
-                    },
-                    () => keepShelf($),
-                );
-            });
-        const tickets = turn.isUserTurn
-            ? await ticketNote($, e.text)
-            : undefined;
-        const texts = await orbitTexts($);
-        // with no board the whole reply shape rides every prompt; the board's return then prints the state once
-        const isNoBoard =
-            (await $.state.get(MOBILE)).value || !isOn('stash.orbit');
-        const told = isNoBoard
-            ? undefined
-            : orbitReminder(orbitNow(), isOn, toldOrbit, texts.plan);
-        const reminder = isNoBoard
-            ? noBoardReminder(orbitNow(), isOn)
-            : told?.line;
-        const isFirst =
-            orbitNow().turns === 0 && !orbitNow().plan && !turn.isPrimed;
-        setPrimed(true);
-        // the lanes speak only in clio's thread: a lane stale after LANE_STALE of her turns, and dima's steer on a current step
-        // riding her next prompt once, from any board
-        const isOwner = await isLaneOwner($);
-        const laneMoves =
-            isOwner && isOn('stash.glide') ? await takeLaneMoves($) : [];
-        const lanes = isOwner && isOn('stash.glide') ? await readLanes($) : [];
-        const live = lanes.filter((l) => !l.endedAt);
-        const staleNow = live.filter(
-            (l) => !l.runner && orbitNow().turns - l.movedAt >= LANE_STALE,
-        );
-        // a lane is told stale once, and again only after it moved and went stale anew: the move is in the key, since a
-        // turn the mod started itself grows the count with no prompt to clear an id
-        const staleKey = (l: { id: string; movedAt: number }) =>
-            `${l.id}@${l.movedAt}`;
-        const laneStale = staleNow
-            .filter((l) => !toldStaleLanes.has(staleKey(l)))
-            .map((l) =>
-                filled(texts.lane ?? LANE_STALE_TEXT, {
-                    id: l.id,
-                    n: orbitNow().turns - l.movedAt,
-                    title: l.title,
-                }),
-            );
-        const laneSteers = turn.isUserTurn
-            ? await takeLaneSteers($, lanes)
-            : [];
-        if (isOwner) await dropLaneOrders($);
-        // dima's own prompt carries his phases mark
-        const planMark =
-            turn.isUserTurn && isOn('stash.phases')
-                ? await takePlanMark($)
-                : undefined;
-        // held member pings ride the next prompt of any origin, once (quiet comms)
-        const quiet = await quietLocked(() => quietTake($));
-        // herdr's joins ride any turn but the keep-hot ping, in the order written (FRM-584); a prompt queued behind a
-        // running turn takes none, since that turn's end would stamp them before the prompt runs: its tool steps take them
-        const joins =
-            turn.pinged || isQueued
-                ? []
-                : await joinsLocked(() => takeJoins($)).catch(() => []);
-        const gapNotes = isOwner ? await takeGapNotes($).catch(() => []) : [];
-        // 🐦‍🔥 a board asked this session for a second wind: the note rides this turn, whatever started it
-        const costHint =
-            isUser && isOwner && isOn('stash.cost') && COST_WORDS.test(e.text)
-                ? COST_HINT
-                : undefined;
-        const steers = await takeSteers($, isOn).catch(() => []);
-        nextTurnNo();
-        const fillLine = isOn('stash.second-wind')
-            ? await takeFill(
-                  $,
-                  (await $.store
-                      .get(CONTEXT + (await currentId($)))
-                      .catch(() => undefined)) as number | undefined,
-              ).catch(() => undefined)
-            : undefined;
-        const wind = isOn('stash.second-wind')
-            ? await takeWind($, isOwner).catch(() => undefined)
-            : undefined;
-        const sent = await next({
-            ...e,
-            context: [
-                ...(e.context ?? []),
-                clock,
-                ...(warm.afk && isOn('stash.afk') ? [AWAY_NOTE] : []),
-                ...(marked.length
-                    ? [joinText(marked, tickSentence(texts, marked.length))]
-                    : []),
-                ...(wrong.length ? [wrongText(wrong)] : []),
-                ...(isFirst && isOn('stash.phases') ? [PHASES_START] : []),
-                ...(reminder ? [reminder] : []),
-                ...laneStale,
-                ...laneMoves,
-                ...laneSteers,
-                ...(planMark ? [planText(planMark)] : []),
-                ...(quiet.held.length ? [quietNote(quiet.held)] : []),
-                ...(joins.length ? [joinRowsText(joins)] : []),
-                ...gapNotes,
-                ...(tickets ? [tickets] : []),
-                ...(fillLine ? [fillLine] : []),
-                ...(wind ? [wind] : []),
-                ...steers,
-                ...(costHint ? [costHint] : []),
-            ],
-            text: hold?.text ?? e.text,
-        });
-        // told only once the prompt went on: one another hook dropped leaves the state to tell again
-        if (sent.drop === undefined) {
-            toldOrbitAs(told?.key);
-            if (isOwner && isOn('stash.glide'))
-                toldStaleAs(staleNow.map(staleKey));
-        }
-        return sent;
-    });
+    on('prompt.submit', ($, e, next) =>
+        composePrompt($, e, next, viewDoors($)),
+    );
 
     // a long turn outruns the prompt's clock: the stored reply's 📄 stamp is the time it was written
     on('session.append', { door: 'response' }, async ($, e, next) => {

@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing';
 
-import { COST_WORDS } from '../hooks/register.tsx';
+import { COST_WORDS } from '../hooks/prompt-notes.ts';
 
 // todo 17 (o171): the words that send clio to model-cards.md, and the near misses that must not
 const HITS = [
