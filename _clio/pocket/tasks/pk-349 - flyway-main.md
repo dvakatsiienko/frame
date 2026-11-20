@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-20T11:08:00Z'
+updated_date: '2026-11-20T11:26:00Z'
 labels:
   - s
   - clio-main
@@ -1222,4 +1222,21 @@ PK-349:W1244 (2026-11-20 12:58, dima): don't forget about the mods lane bottlene
 PK-349:W1245 (2026-11-20 12:58, dima): i want that fat register solved today (would be nice).
 PK-349:W1246 (2026-11-20 12:58, dima): tell what tails you have, and propose actions to solve them, so you tail free and can take my side requests.
 PK-349:W1247 (2026-11-20 12:58, dima): one thing at a time today.
+
+13:26 13:24 prompt wishes:
+PK-349:W1248 (2026-11-20 13:24, dima): FRM-638 — what's left there? ❓
+PK-349:W1249 (2026-11-20 13:24, dima): when i have focused elements in orbit asks? (to navigate with tab)? ❓
+PK-349:W1250 (2026-11-20 13:24, dima): pocket: 5 finished items archived, and 2 lines in wing 1's plan that came due today had their dates cleared ← i think they should be archived during halt, not during boot.
+PK-349:W1251 (2026-11-20 13:24, dima): pocket: 5 finished items archived, and 2 lines in wing 1's plan that came due today had their dates cleared ← but the check still should archive closed items if forgotten.
+PK-349:W1252 (2026-11-20 13:24, dima): the FRM-514 guide-share read ← what's there? ❓
+PK-349:W1253 (2026-11-20 13:24, dima): the FRM-576 memory lift ← we completed it yesterday, aren't we? or forgotten? ❓
+PK-349:W1254 (2026-11-20 13:24, dima): the quiet-replies trial verdict, which ends today ← let's do it as your nearest steps, after these two tickets are solved.
+PK-349:W1255 (2026-11-20 13:24, dima): ⚠️ delete 2 empty fleet milestones: 🐋 the board reads true, 🐋 pm revamp tails landed ← delete, without asking for confirmation.
+PK-349:W1256 (2026-11-20 13:24, dima): ⚠️ delete 2 empty fleet milestones: 🐋 the board reads true, 🐋 pm revamp tails landed ← you should auto delete a milestone when its last item gets completed, as a habit, so milestones are never strayed.
+PK-349:W1257 (2026-11-20 13:24, dima): two items in wing 1's plan came due today, the FRM-516 🐦‍⬛ crow read and the FRM-586 stray verdict: you take them in wing 1, or I take them in main ← with you, after previous is solved, queued.
+PK-349:W1258 (2026-11-20 13:24, dima): i think i won't summon wing 1 today.
+PK-349:W1259 (2026-11-20 13:24, dima): let's see, likely all stuff is to be solved with you instead.
+PK-349:W1260 (2026-11-20 13:24, dima): i did not understand your proposal yet (i am sleepy).
+PK-349:W1261 (2026-11-20 13:24, dima): tell in a few lines why you think it helps? ❓
+PK-349:W1262 (2026-11-20 13:24, dima): let's try, and i'd like to see number/measured, verified proof that it helped.
 <!-- SECTION:NOTES:END -->
