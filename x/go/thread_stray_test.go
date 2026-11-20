@@ -78,3 +78,27 @@ func TestThreadListDropsAStraysOtherLane(t *testing.T) {
 		}
 	}
 }
+
+// a brief naming the mods lane swaps the stray onto its own batch: that is no dispatch into the batch, so a card of the batch
+// that ended stays ended
+func TestThreadRecordKeepsTheDispatchTimeWhenTheStrayIsSwappedOntoItsBatch(t *testing.T) {
+	// serial: X_THREADS and X_STATE are what writeThreadRecord reads
+	store := filepath.Join(t.TempDir(), "threads.json")
+	t.Setenv("X_THREADS", store)
+	state := t.TempDir()
+	t.Setenv("X_STATE", state)
+	if err := os.MkdirAll(filepath.Join(state, "lanes", "stray-batch-9"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	first := time.UnixMilli(1_000_000)
+	if err := writeThreadRecord(thread{SessionID: "sid-stray", Role: "codie", Area: "stray", Lane: "stray-batch-9"}, first, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := writeThreadRecord(thread{SessionID: "sid-stray", Role: "codie", Area: "stray", Lane: "mods-lane-8", Ticket: "FRM-662"}, first.Add(time.Hour), false); err != nil {
+		t.Fatal(err)
+	}
+	written, _ := readThreadStore(store)
+	if got := written.Threads[0]; got.Lane != "stray-batch-9" || got.DispatchedAt != first.UnixMilli() {
+		t.Fatalf("record %+v, want the stray on stray-batch-9 with dispatchedAt %d kept", got, first.UnixMilli())
+	}
+}

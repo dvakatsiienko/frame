@@ -451,14 +451,14 @@ func writeThreadRecord(record thread, now time.Time, isMinted bool) error {
 		}
 	}
 	// only a write naming a lane dispatches into it: one naming none keeps the summon's lane and its dispatch time
-	isDispatch := record.Lane != ""
+	named := record.Lane
 	// a record for a live thread keeps what the registry gave it, and a dispatch naming no lane keeps the summon's
 	if i := slices.IndexFunc(store.Threads, func(t thread) bool { return t.SessionID == record.SessionID }); i >= 0 {
 		live := store.Threads[i]
 		record.Pid, record.ProcStart, record.Name, record.Cwd = live.Pid, live.ProcStart, live.Name, live.Cwd
+		record.DispatchedAt = live.DispatchedAt
 		if record.Lane == "" {
 			record.Lane, record.Coordinator = live.Lane, cmp.Or(record.Coordinator, live.Coordinator)
-			record.DispatchedAt = live.DispatchedAt
 		}
 		// a kind the call named (a dispatch reads it off the ticket) outranks the record's old one
 		record.LaneKind = cmp.Or(record.LaneKind, live.LaneKind)
@@ -469,10 +469,11 @@ func writeThreadRecord(record thread, now time.Time, isMinted bool) error {
 		store.Threads = slices.Delete(store.Threads, i, i+1)
 	}
 	record.At = now.UnixMilli()
-	if isDispatch {
+	ownBatchOnly(&record)
+	// a lane swapped for the stray's own batch is no dispatch into that batch: its ended card stays ended
+	if named != "" && record.Lane == named {
 		record.DispatchedAt = now.UnixMilli()
 	}
-	ownBatchOnly(&record)
 	drawNames(&record)
 	store.Threads = append(store.Threads, record)
 	return writeThreadStore(path, now, store.Threads)
