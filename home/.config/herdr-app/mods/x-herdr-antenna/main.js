@@ -382,7 +382,13 @@ export default class Antenna extends View {
         const later = (run) => cx.timer.after(0, run);
         const to = this.tab.draw(stops, later);
         const toAddress = to && addresses.find((a) => stopOf(a) === to);
-        if (toAddress) later(() => this.rowKey(toAddress)?.focus());
+        // a focus move redraws nothing by itself: without the notify the ring waited for the next shared write, so
+        // every other Tab drew none (dima, 18:18)
+        if (toAddress)
+            cx.timer.after(0, (after) => {
+                this.rowKey(toAddress)?.focus();
+                after.notify();
+            });
         const holding = addresses.find((a) =>
             this.rowKeys.get(a)?.is_focused(),
         );
