@@ -179,6 +179,7 @@ key to short sources, all read 2026-11-07. clock is local, UTC+2, except a time 
 
 ## 2026-11-20
 
+- the whole mods incident, its silence first: [mods-tests-cpu](../mods-tests-cpu/story.md)
 - seen [read]: 19:20 to 20:12 load 34 to 44 (`uptime`), the mods codie waited 40 min and its sixth sense 20 min on one review; dima, 20:09: «no one can do anything useful because of the test CPU roasting bottleneck»
 - verdict [read]: `x mods edit test --range` (397cd908, built that day for FRM-662's split) ran the whole mods suite at each of 22 commits; `claude plugin test` starts one Claude Code process per test file, 76 files, ~15 at once (`ps`), so ~1,700 launches in a row, beside every mods push's own whole suite and the other lanes' tests; nothing capped heavy suites machine-wide
 - cost [read]: the sixth sense got through 19 of 22 commits in ~40 min and started a rerun; the gate budget section read typecheck p90 13 s against 3 s at median load 47 (siesta-checks, 20:12)

@@ -17,6 +17,7 @@ one problem's arc over days, told so the next session does not walk it again: wh
 ## the stories
 
 - [comms-log](comms-log/story.md) — dima's graded comms cases, rendered from `~/.claude/shelf/comms-log.jsonl`; open
+- [mods-tests-cpu](mods-tests-cpu/story.md) — the mods tests that roasted the cpu for two weeks while nobody said so; open
 - [cpu-overload](cpu-overload/story.md) — why this mac hit 100 % cpu under the lanes, what held; sealed
 - [herdr-band-drift](herdr-band-drift/story.md) — a band built off a misread of his UI; sealed
 - [guard-lockout](guard-lockout/story.md) — the guard clio grew until it locked the fleet out, and its cut to the destructive floor; sealed
