@@ -14,17 +14,26 @@ import {
     type Registered,
     SHORT_MS,
     crowTip,
+    isOpen,
     isResumed,
     isSeated,
     isUnstarted,
     pinOf,
     registry,
 } from './roster.ts';
-import { threadRecords } from './session-identity.ts';
+import {
+    MAIN_ROLE,
+    WING_ROLE,
+    currentId,
+    threadRecords,
+} from './session-identity.ts';
+import { partsShown } from './settings-store.ts';
 import { HOT, MODEL, REPLY, type Reply, hotOf } from './store-keys.ts';
 import { CONTEXT } from './usage.ts';
 import { STALE_MS, text } from './util.ts';
 import { windOf } from './wind.ts';
+
+const CLIO_ASKS = { key: 'clioAsks', plugin: 'x-mod-stash' } as const;
 
 type Entry = StashEntry;
 
@@ -92,4 +101,43 @@ export async function members($: EngineInterface): Promise<Member[]> {
             pinOf(roleOfRow(a.sid)) - pinOf(roleOfRow(b.sid)) ||
             a.name.localeCompare(b.name),
     );
+}
+
+// each live clio, main and wings, with its own orbit asks that wait on dima: unmarked, as it last published them; read at
+// the poll into $.state, since the board draws with no file read
+let clioAsksShown = '';
+export async function showClioAsks($: EngineInterface) {
+    if (!(await isOpen($)) || !(await partsShown($))('stash.orbit')) return;
+    const waiting = await cliosWaiting($);
+    const text = JSON.stringify(waiting);
+    if (text === clioAsksShown) return;
+    clioAsksShown = text;
+    await $.state.set(CLIO_ASKS, waiting).catch(() => undefined);
+}
+async function cliosWaiting($: EngineInterface) {
+    const live = new Set(
+        (await registry($)).filter((r) => r.isAlive).map((r) => r.base.sid),
+    );
+    const self = await currentId($);
+    const clios = (await threadRecords($)).filter(
+        (t) =>
+            (t.role === MAIN_ROLE || t.role === WING_ROLE) &&
+            live.has(t.sessionId),
+    );
+    const waiting: { isSelf: boolean; n: number; name: string; sid: string }[] =
+        [];
+    for (const t of clios) {
+        const entry = (await $.store
+            .get(PREFIX + t.sessionId)
+            .catch(() => undefined)) as Entry | undefined;
+        const n = (entry?.items ?? []).filter((a) => !a.mark).length;
+        if (n)
+            waiting.push({
+                isSelf: t.sessionId === self,
+                n,
+                name: t.display ?? t.name ?? t.sessionId,
+                sid: t.sessionId,
+            });
+    }
+    return waiting;
 }

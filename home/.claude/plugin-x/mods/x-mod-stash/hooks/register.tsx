@@ -5,7 +5,6 @@ import type {
     OrbitAsk,
     QuietLogLine,
     StashCap,
-    StashEntry,
     StashLane,
     StashPlan,
 } from '../types/stash.d.ts';
@@ -194,10 +193,9 @@ import { WRAP_UP_TOOL, settleTask, stopRed, waitsOf } from './reply-fix.ts';
 import type { Member } from './roster.ts';
 import { isOpen, memberOf, modelLabel, registry } from './roster.ts';
 import { laneRoundLine } from './rounds.ts';
+import { showClioAsks } from './rows.ts';
 import {
-    MAIN_ROLE,
     SUCC,
-    WING_ROLE,
     currentId,
     endIdentity,
     identity,
@@ -205,7 +203,6 @@ import {
     refreshThreads,
     sessionName,
     startIdentity,
-    threadRecords,
 } from './session-identity.ts';
 import { dropState, keepShelf, pollShelf } from './session-record.ts';
 import { hoverTip, noteOnHover, settingsListJSX } from './settings-pane.tsx';
@@ -315,8 +312,6 @@ import {
 // afk: one switch every session polls; while it is on, every prompt carries an away note, and a flip reaches a running turn.
 // keep-hot: while on and idle, one ping 50 min after the last turn ended keeps the prompt cache warm; the switch lives in $.store, so a reload keeps it
 
-// label: the repo; name: the session's registry name, when it has one
-type Entry = StashEntry;
 // a card that only shows asks: their keys' prefix, no tick, replay, sound or steer (a lane member's, FRM-643)
 type ViewDoor = { prefix: string };
 // where an ask card's tick, replay and steer go, and the prefix its keys carry
@@ -442,45 +437,6 @@ export const COST_WORDS =
     /\b(?:tokens?|cach(?:e|ed|ing)|(?:ctx|context) costs?|pricing|mtok)\b/i;
 const COST_HINT =
     "💵 a cost question: read ~/frame/home/.claude/plugin-x/skills/crew-lead/references/model-cards.md before answering (each model's price line, and the «cache reads are where agents spend» bullet), never from recall.";
-
-// each live clio, main and wings, with its own orbit asks that wait on dima: unmarked, as it last published them; read at
-// the poll into $.state, since the board draws with no file read
-let clioAsksShown = '';
-async function showClioAsks($: EngineInterface) {
-    if (!(await isOpen($)) || !(await partsShown($))('stash.orbit')) return;
-    const waiting = await cliosWaiting($);
-    const text = JSON.stringify(waiting);
-    if (text === clioAsksShown) return;
-    clioAsksShown = text;
-    await $.state.set(CLIO_ASKS, waiting).catch(() => undefined);
-}
-async function cliosWaiting($: EngineInterface) {
-    const live = new Set(
-        (await registry($)).filter((r) => r.isAlive).map((r) => r.base.sid),
-    );
-    const self = await currentId($);
-    const clios = (await threadRecords($)).filter(
-        (t) =>
-            (t.role === MAIN_ROLE || t.role === WING_ROLE) &&
-            live.has(t.sessionId),
-    );
-    const waiting: { isSelf: boolean; n: number; name: string; sid: string }[] =
-        [];
-    for (const t of clios) {
-        const entry = (await $.store
-            .get(PREFIX + t.sessionId)
-            .catch(() => undefined)) as Entry | undefined;
-        const n = (entry?.items ?? []).filter((a) => !a.mark).length;
-        if (n)
-            waiting.push({
-                isSelf: t.sessionId === self,
-                n,
-                name: t.display ?? t.name ?? t.sessionId,
-                sid: t.sessionId,
-            });
-    }
-    return waiting;
-}
 
 // the lane steers dima took with 🛎️, as clio reads them; each leaves the lane once read
 async function takeLaneSteers($: EngineInterface, lanes: StashLane[]) {
