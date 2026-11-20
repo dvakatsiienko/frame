@@ -32,3 +32,14 @@ export async function writeWhole(
     const r = await $.process.run(['mv', '-f', temp, path]);
     if (r.exitCode !== 0) throw new Error(r.stderr.trim() || 'mv failed');
 }
+
+// one job at a time over a read-change-write that spans awaits: each waits for the one before, and a throw never stops
+// the queue
+export function serial() {
+    let tail: Promise<unknown> = Promise.resolve();
+    return <T>(job: () => Promise<T>) => {
+        const run = tail.then(job);
+        tail = run.catch(() => undefined);
+        return run;
+    };
+}

@@ -18,7 +18,7 @@ import {
 import { currentId, identity, sessionName } from './session-identity.ts';
 import { HERDR_READ } from './store-keys.ts';
 import { markActive } from './turn.ts';
-import { errorText } from './util.ts';
+import { errorText, serial } from './util.ts';
 
 // this session's orbit and dima's tick records: the one owner of `$.state` orbit and ticks, the store's `asks:` mirror
 // and the `kept:` copy a resumed process draws from; every change goes through these functions
@@ -127,13 +127,8 @@ export async function currentOrbit($: EngineInterface) {
 }
 // one mark or steer write at a time: two boxes saved together each read the orbit before the other wrote it, and the
 // later save put the earlier one's steer back to none while its box still showed it (FRM-492)
-let marking: Promise<unknown> = Promise.resolve();
 // a read-change-write of the orbit or the ticks, each whole; a step never queues another, which would wait on itself
-export function inMarking<T>(step: () => Promise<T>) {
-    const run = marking.then(step);
-    marking = run.catch(() => undefined);
-    return run;
-}
+export const inMarking = serial();
 // dima's tick as x-mod-guard reads it: written here, from his own press alone, so no tool call can forge one (FRM-427);
 // one press is one marking step, deciding from one read: a tick's record lands before its mark, so a tool call that
 // takes the mark finds it; an untick clears the mark first, so no tick is ever marked without its record

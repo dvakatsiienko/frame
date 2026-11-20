@@ -3,7 +3,7 @@ import type { EngineInterface } from 'claude-code';
 import { joinRows } from './orbit.ts';
 import { currentId, identity } from './session-identity.ts';
 import { partsShown } from './settings-store.ts';
-import { writeWhole } from './util.ts';
+import { serial, writeWhole } from './util.ts';
 
 // dima's rows herdr writes into a thread's turn: the one reader of `herdr-joins/`, taken into a turn, stamped at its end,
 // handed back when the thread ends
@@ -32,12 +32,7 @@ export async function joinsOf($: EngineInterface, home: string, sid: string) {
     return { done, rows, taken };
 }
 // a take and a turn's settle both read and write the taken list across awaits: parallel tool calls wait their turn
-let joinsTail: Promise<unknown> = Promise.resolve();
-export function joinsLocked<T>(job: () => Promise<T>) {
-    const run = joinsTail.then(job);
-    joinsTail = run.catch(() => undefined);
-    return run;
-}
+export const joinsLocked = serial();
 // the rows no turn took yet, handed into this one in order, and held as taken until it completes; a list that cannot
 // be kept hands nothing in, so a row is never joined unstamped
 export async function takeJoins($: EngineInterface) {

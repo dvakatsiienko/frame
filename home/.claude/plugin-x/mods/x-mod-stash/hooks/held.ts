@@ -28,7 +28,7 @@ import { type IsPartOn, partsShown, readNumber } from './settings-store.ts';
 import { REPLY, type Reply } from './store-keys.ts';
 import { selfSubmit, turn } from './turn.ts';
 import { CONTEXT } from './usage.ts';
-import { bare, errorText } from './util.ts';
+import { bare, errorText, serial } from './util.ts';
 import {
     COMPACTING,
     COMPACT_MAX_MS,
@@ -217,12 +217,7 @@ export function isQuietHome($: EngineInterface) {
 
 // the held list is read, changed and written back across awaits: every change waits its turn, or a message landing
 // between the two is lost
-let quietTail: Promise<unknown> = Promise.resolve();
-export function quietLocked<T>(job: () => Promise<T>) {
-    const run = quietTail.then(job);
-    quietTail = run.catch(() => undefined);
-    return run;
-}
+export const quietLocked = serial();
 // past this a hold reads stuck
 export async function heldStuckMs($: EngineInterface) {
     return (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
