@@ -4,7 +4,7 @@ import type { Register } from 'claude-code';
 import type { QuietLogLine } from '../types/stash.d.ts';
 import { renderBand } from './band.tsx';
 import { drawBoard } from './board.tsx';
-import { closeBoot, openBoot } from './boot.ts';
+import { openBoot } from './boot.ts';
 import { flushFields, leaveBoxes, returnToBoxes } from './fields.ts';
 import {
     WIND_DELAY_MS,
@@ -32,51 +32,33 @@ import {
     saveOrbit,
 } from './orbit-store.ts';
 import { LANE_OWNER } from './orbit-tool.ts';
-import {
-    boldFleetWords,
-    bulletDots,
-    dropWaitAside,
-    linkTickets,
-    numberCircled,
-    parseWait,
-} from './parse.ts';
 import { composePrompt } from './prompt-notes.ts';
 import { peerPing, quietHeldText } from './quiet.ts';
 import { quietLog } from './quiet-books.ts';
 import { quietKindsOff, quietOf, quietWhy, saveQuiet } from './quiet-gate.ts';
-import { settleTask, stopRed, waitsOf } from './reply-fix.ts';
+import {
+    fixDrawnReply,
+    fixStoredReply,
+    settleReply,
+    settleTask,
+} from './reply-fix.ts';
 import { memberOf, openBoard, registry } from './roster.ts';
 import { endSession, forget } from './session-end.ts';
-import { currentId, refreshThreads, sessionName } from './session-identity.ts';
+import { currentId, refreshThreads } from './session-identity.ts';
 import { keepShelf, noteModel } from './session-record.ts';
 import { startSession } from './session-start.ts';
 import { drawSettingsPane } from './settings-pane.tsx';
 import {
     QUIET_ON,
-    SHOWN,
     flipKnob,
     readSwitch,
     setSettingsOpen,
-    shownOf,
 } from './settings-store.ts';
 import { onToolCall } from './step-notes.ts';
-import { HOT, REPLY, type Reply, hotOf } from './store-keys.ts';
-import {
-    clearWrap,
-    endBusy,
-    endStop,
-    endUserTurn,
-    isTurnBusy,
-    markActive,
-    turn,
-} from './turn.ts';
+import { HOT, hotOf } from './store-keys.ts';
+import { endBusy, endStop, isTurnBusy, markActive, turn } from './turn.ts';
 import { forgetTold } from './turn-notes.ts';
-import {
-    countWords,
-    drawFill,
-    drawFillAfterCompact,
-    measureUsage,
-} from './usage.ts';
+import { drawFill, drawFillAfterCompact, measureUsage } from './usage.ts';
 import { errorText } from './util.ts';
 import { load, publish, viewDoors } from './view.ts';
 import { COMPACTING, windOf } from './wind.ts';
@@ -98,11 +80,6 @@ const BOARD = 'x-cc-deck';
 // 🎛️ is a pane of its own, which the surface tabs beside 🚦: the band is capped by cc, the list outgrew it (dima's pick a of
 // four homes, 16:20); a tab row inside a pane was proven too, kept as an idea in api-map.md
 const SETTINGS_PANE = 'stash-settings';
-// a reload keeps `$.state` and resets the module: what must outlive a mod save lives there (FRM-320)
-// what the band and the board draw: renders read it, and a write redraws them, no invalidate
-const VIEW = { key: 'view', plugin: 'x-mod-stash' } as const;
-// a 📄 line's HH:MM — the same shape reply-check.py reads
-const STAMP = /(📄[^\n]*?\b)(\d{1,2}:\d{2})\b/g;
 // mobile mode: mods draw nothing on the phone, so the session prints the open asks as the asks fence instead
 const MOBILE = { key: 'mobile', plugin: 'x-mod-stash' } as const;
 const MOBILE_SKILL = /(^|:)mobile-mode$/;
@@ -138,112 +115,16 @@ export const register: Register = (on) => {
     );
 
     // a long turn outruns the prompt's clock: the stored reply's 📄 stamp is the time it was written
-    on('session.append', { door: 'response' }, async ($, e, next) => {
-        const now = new Date(await $.clock.now()).toTimeString().slice(0, 5);
-        // the 🎛️ switches gate the stored rewrite, not only its look (the part list's 📌)
-        const switches = shownOf(
-            await $.store.get(SHOWN).catch(() => undefined),
-        );
-        const isOn = {
-            bold: switches['stash.boldwords'] !== false,
-            bullets: switches['stash.bullets'] !== false,
-        };
-        let isChanged = false;
-        const hits: Record<string, number> = {};
-        const content = e.message.content.map((b) => {
-            if (b.type !== 'text' || typeof b.text !== 'string') return b;
-            // the stored row is what the Stop hooks read: a ·-list fixed here never trips reply-check
-            const dotted = isOn.bullets ? bulletDots(b.text) : b.text;
-            const fixed = isOn.bold
-                ? boldFleetWords(dotted)
-                : { hits: {}, text: dotted };
-            for (const [word, n] of Object.entries(fixed.hits))
-                hits[word] = (hits[word] ?? 0) + n;
-            const bulleted = fixed.text;
-            if (bulleted !== b.text) isChanged = true;
-            const text = bulleted.replace(
-                STAMP,
-                (whole: string, head: string, at: string) => {
-                    if (at === now) return whole;
-                    isChanged = true;
-                    return `${head}${now}`;
-                },
-            );
-            return { ...b, text };
-        });
-        if (Object.keys(hits).length)
-            await countWords($, hits).catch((err) =>
-                $.ui.log(
-                    `x-mod-stash: the fleet-word count was not kept: ${errorText(err)}`,
-                ),
-            );
-        if (!isChanged) return next(e);
-        return next({ ...e, message: { ...e.message, content } });
-    });
+    on('session.append', { door: 'response' }, ($, e, next) =>
+        fixStoredReply($, e, next),
+    );
 
     // the drawing: the reply's ·-list shows as bullets while it streams, before the stored row exists
-    on('ui.render', { component: 'AssistantMessage' }, async ($, e, next) => {
-        // a fix that throws draws the reply as written, never a blank
-        let text: string;
-        try {
-            const switches = (await $.state.get(VIEW)).value?.shown ?? {};
-            const dotted =
-                switches['stash.bullets'] !== false
-                    ? bulletDots(e.props.text)
-                    : e.props.text;
-            // each fix is mechanical and behind its own switch; reply-check no longer logs what these redraw (todo 29)
-            const fixes: [string, (t: string) => string][] = [
-                ['stash.circled', numberCircled],
-                ['stash.tickets', linkTickets],
-                ['stash.waitaside', dropWaitAside],
-            ];
-            const fixed = fixes.reduce(
-                (t, [key, fix]) => (switches[key] !== false ? fix(t) : t),
-                dotted,
-            );
-            text = (
-                switches['stash.boldwords'] !== false
-                    ? boldFleetWords(fixed)
-                    : { text: fixed }
-            ).text;
-        } catch {
-            return next(e);
-        }
-        if (text === e.props.text) return next(e);
-        return next({ ...e, props: { ...e.props, text } });
-    });
+    on('ui.render', { component: 'AssistantMessage' }, ($, e, next) =>
+        fixDrawnReply($, e, next),
+    );
 
-    on('classic.Stop', async ($, e, next) => {
-        const r = await next(e);
-        await closeBoot($, e.session_id, e.last_assistant_message ?? '');
-        const red = e.stop_hook_active
-            ? undefined
-            : await stopRed($, e.last_assistant_message ?? '');
-        clearWrap();
-        // a keep-hot ping's one-character reply never clears what the session waits on; it only stamps the warm cache
-        const was = turn.pinged
-            ? ((await $.store
-                  .get(REPLY + e.session_id)
-                  .catch(() => undefined)) as Reply | undefined)
-            : undefined;
-        const reply: Reply | undefined = turn.pinged
-            ? was && { ...was, pingedAt: await $.clock.now() }
-            : {
-                  at: await $.clock.now(),
-                  name: await sessionName($),
-                  ...waitsOf(
-                      parseWait(e.last_assistant_message ?? ''),
-                      e.background_tasks,
-                  ),
-              };
-        if (reply)
-            await $.store
-                .set(REPLY + e.session_id, reply)
-                .catch(() => undefined);
-        await endUserTurn($);
-        await load($);
-        return red ? { ...r, block: red } : r;
-    });
+    on('classic.Stop', ($, e, next) => settleReply($, e, next, viewDoors($)));
 
     on('turn.complete', async ($, e, next) => {
         await markActive($).catch(() => undefined);

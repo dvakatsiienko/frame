@@ -1,20 +1,29 @@
 // 🩹 the reply's fixes (FRM-662): the 🔭 waits and tasks a reply names, read for the band, a task's settle, and the stop
 // that sends a red wrap_up back
 
-import type { EngineInterface } from 'claude-code';
+import type { Args, EngineInterface, Next, RenderInput } from 'claude-code';
 
+import { closeBoot } from './boot.ts';
 import type { ViewDoors } from './keep-warm.ts';
 import { currentOrbit } from './orbit-store.ts';
 import {
     type BackgroundTask,
     backgroundWait,
     backgroundWaits,
+    boldFleetWords,
+    bulletDots,
+    dropWaitAside,
+    linkTickets,
     noticeOf,
+    numberCircled,
+    parseWait,
 } from './parse.ts';
-import { isBgSelf } from './session-identity.ts';
-import { partsShown } from './settings-store.ts';
+import { isBgSelf, sessionName } from './session-identity.ts';
+import { SHOWN, partsShown, shownOf } from './settings-store.ts';
 import { REPLY, type Reply } from './store-keys.ts';
-import { turn } from './turn.ts';
+import { clearWrap, endUserTurn, turn } from './turn.ts';
+import { countWords } from './usage.ts';
+import { errorText } from './util.ts';
 
 // the Stop's two reds, once a turn (FRM-427): a wrap_up ask while an orbit ask is open (PK-227, one home for the next
 // move), and an orbit add opening «Q<n>» whose round the reply never printed as «❓ **Q<n>**» (the 10-25 rider); a --bg
@@ -92,4 +101,125 @@ export async function settleTask(
         waits: backgroundWaits(tasks),
     } satisfies Reply);
     await view.load();
+}
+
+// a reload keeps `$.state` and resets the module: what must outlive a mod save lives there (FRM-320)
+// what the band and the board draw: renders read it, and a write redraws them, no invalidate
+const VIEW = { key: 'view', plugin: 'x-mod-stash' } as const;
+// a 📄 line's HH:MM — the same shape reply-check.py reads
+const STAMP = /(📄[^\n]*?\b)(\d{1,2}:\d{2})\b/g;
+// the stored reply: its ·-list as bullets, fleet words bold, its 📄 stamp the time it was written
+export async function fixStoredReply(
+    $: EngineInterface,
+    e: Args<'session.append'>,
+    next: Next<'session.append'>,
+) {
+    const now = new Date(await $.clock.now()).toTimeString().slice(0, 5);
+    // the 🎛️ switches gate the stored rewrite, not only its look (the part list's 📌)
+    const switches = shownOf(await $.store.get(SHOWN).catch(() => undefined));
+    const isOn = {
+        bold: switches['stash.boldwords'] !== false,
+        bullets: switches['stash.bullets'] !== false,
+    };
+    let isChanged = false;
+    const hits: Record<string, number> = {};
+    const content = e.message.content.map((b) => {
+        if (b.type !== 'text' || typeof b.text !== 'string') return b;
+        // the stored row is what the Stop hooks read: a ·-list fixed here never trips reply-check
+        const dotted = isOn.bullets ? bulletDots(b.text) : b.text;
+        const fixed = isOn.bold
+            ? boldFleetWords(dotted)
+            : { hits: {}, text: dotted };
+        for (const [word, n] of Object.entries(fixed.hits))
+            hits[word] = (hits[word] ?? 0) + n;
+        const bulleted = fixed.text;
+        if (bulleted !== b.text) isChanged = true;
+        const text = bulleted.replace(
+            STAMP,
+            (whole: string, head: string, at: string) => {
+                if (at === now) return whole;
+                isChanged = true;
+                return `${head}${now}`;
+            },
+        );
+        return { ...b, text };
+    });
+    if (Object.keys(hits).length)
+        await countWords($, hits).catch((err) =>
+            $.ui.log(
+                `x-mod-stash: the fleet-word count was not kept: ${errorText(err)}`,
+            ),
+        );
+    if (!isChanged) return next(e);
+    return next({ ...e, message: { ...e.message, content } });
+}
+// the drawn reply, while it streams: each mechanical fix behind its own switch
+export async function fixDrawnReply(
+    $: EngineInterface,
+    e: RenderInput<'AssistantMessage'>,
+    next: Next<'ui.render', RenderInput<'AssistantMessage'>>,
+) {
+    // a fix that throws draws the reply as written, never a blank
+    let text: string;
+    try {
+        const switches = (await $.state.get(VIEW)).value?.shown ?? {};
+        const dotted =
+            switches['stash.bullets'] !== false
+                ? bulletDots(e.props.text)
+                : e.props.text;
+        // each fix is mechanical and behind its own switch; reply-check no longer logs what these redraw (todo 29)
+        const fixes: [string, (t: string) => string][] = [
+            ['stash.circled', numberCircled],
+            ['stash.tickets', linkTickets],
+            ['stash.waitaside', dropWaitAside],
+        ];
+        const fixed = fixes.reduce(
+            (t, [key, fix]) => (switches[key] !== false ? fix(t) : t),
+            dotted,
+        );
+        text = (
+            switches['stash.boldwords'] !== false
+                ? boldFleetWords(fixed)
+                : { text: fixed }
+        ).text;
+    } catch {
+        return next(e);
+    }
+    if (text === e.props.text) return next(e);
+    return next({ ...e, props: { ...e.props, text } });
+}
+// a reply's end: the boot closed, the red wrap_up stop, the 🔭 waits kept, dima's turn ended
+export async function settleReply(
+    $: EngineInterface,
+    e: Args<'classic.Stop'>,
+    next: Next<'classic.Stop'>,
+    view: ViewDoors,
+) {
+    const r = await next(e);
+    await closeBoot($, e.session_id, e.last_assistant_message ?? '');
+    const red = e.stop_hook_active
+        ? undefined
+        : await stopRed($, e.last_assistant_message ?? '');
+    clearWrap();
+    // a keep-hot ping's one-character reply never clears what the session waits on; it only stamps the warm cache
+    const was = turn.pinged
+        ? ((await $.store.get(REPLY + e.session_id).catch(() => undefined)) as
+              | Reply
+              | undefined)
+        : undefined;
+    const reply: Reply | undefined = turn.pinged
+        ? was && { ...was, pingedAt: await $.clock.now() }
+        : {
+              at: await $.clock.now(),
+              name: await sessionName($),
+              ...waitsOf(
+                  parseWait(e.last_assistant_message ?? ''),
+                  e.background_tasks,
+              ),
+          };
+    if (reply)
+        await $.store.set(REPLY + e.session_id, reply).catch(() => undefined);
+    await endUserTurn($);
+    await view.load();
+    return red ? { ...r, block: red } : r;
 }
