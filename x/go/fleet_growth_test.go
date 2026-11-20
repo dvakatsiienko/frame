@@ -26,9 +26,11 @@ func growthWorld(t *testing.T) (root string, env []string) {
 		write(t, filepath.Join(root, path), strings.Repeat("x\n", lines))
 	}
 	write(t, filepath.Join(root, "x/go/lane_test.go"), strings.Repeat("x\n", 20))
+	write(t, filepath.Join(root, "_clio/plugin-clio/skills/xq/SKILL.md"), strings.Repeat("x\n", 30))
+	write(t, filepath.Join(root, "home/.claude/plugin-x/skills/gamma/SKILL.md"), strings.Repeat("x\n", 30))
 	gitT(t, root, "add", "-A")
 	gitT(t, root, "commit", "-q", "-m", "parts")
-	return root, []string{"X_FRAME_ROOT=" + root, "X_STATE=" + t.TempDir(), "HOME=" + t.TempDir()}
+	return root, []string{"X_FRAME_ROOT=" + root, "X_STATE=" + t.TempDir(), "HOME=" + t.TempDir(), "TZ=UTC"}
 }
 
 // the clock a fixture reads: a run is «now» unless it says when
@@ -162,12 +164,23 @@ func growthCommit(t *testing.T, root, dir, subject, at string, lines int) {
 // one day of his prompts log under the fixture HOME: each block is «HH:MM text»
 func promptsDay(t *testing.T, env []string, day string, blocks ...string) {
 	t.Helper()
+	promptsFile(t, env, day+".md", blocks...)
+}
+
+// the same under a wing's own dir: `prompts/wing-<n>/<day>.md`
+func promptsWingDay(t *testing.T, env []string, wing int, day string, blocks ...string) {
+	t.Helper()
+	promptsFile(t, env, fmt.Sprintf("wing-%d/%s.md", wing, day), blocks...)
+}
+
+func promptsFile(t *testing.T, env []string, name string, blocks ...string) {
+	t.Helper()
 	var body strings.Builder
 	for _, block := range blocks {
 		at, text, _ := strings.Cut(block, " ")
 		fmt.Fprintf(&body, "## %s\n\n%s\n\n", at, text)
 	}
-	write(t, filepath.Join(strings.TrimPrefix(env[2], "HOME="), ".local/state/clio/prompts", day+".md"), body.String())
+	write(t, filepath.Join(strings.TrimPrefix(env[2], "HOME="), ".local/state/clio/prompts", name), body.String())
 }
 
 const (
@@ -298,7 +311,7 @@ func TestFleetGrowthNamesACrossingOnce(t *testing.T) {
 
 // exit 3, the second half: --keep re-seeds the part at today's size and stamps «kept at»; the 3 fixes still inside 7 days predate it, so
 // nothing crosses, and 3 fixes after the keep make a new crossing
-func TestFleetGrowthKeepAnswersACrossing(t *testing.T) {
+func TestFleetGrowthKeepForgetsTheFixesBeforeItAndCountsThreeAfter(t *testing.T) {
 	t.Parallel()
 	root, env := growthWorld(t)
 	growthAt(t, root, env, "2026-11-20T09:00:00Z")
@@ -372,5 +385,89 @@ func TestFleetGrowthNamesTheGuardBeforeDimaSpotsIt(t *testing.T) {
 		if !strings.Contains(ask, want) {
 			t.Errorf("the ask lacks %q:\n%s", want, ask)
 		}
+	}
+}
+
+// a block names a part by its own words: «nxq» and «5xq» are no `clio:xq`, a hyphenated mod's name is no `x:gamma` skill; a skill's
+// bare name counts only when it holds a hyphen
+func TestFleetGrowthCountsATurnOnlyOnAPartsOwnWords(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name   string
+		blocks []string
+		want   []growthCrossing
+	}{
+		{"nxq and 5xq are no clio:xq", []string{"22:00 nxq install", "22:05 at 5xq", "22:10 nxq run build"}, nil},
+		{"a bare xq is no clio:xq", []string{"22:00 the xq skill", "22:05 xq review", "22:10 a xq"}, nil},
+		{"a hyphenated name inside longer words", []string{"22:00 guide-deltaic", "22:05 preguide-delta", "22:10 the xguide-delta"}, nil},
+		{"x-herdr-gamma is no x:gamma", []string{"22:00 x-herdr-gamma", "22:05 x-herdr-gamma again", "22:10 the x-herdr-gamma tab"}, []growthCrossing{{Part: "x-herdr-gamma", Trigger: "turns (rough)", Count: 3}}},
+		{"the skill by its id", []string{"22:00 clio:xq", "22:05 `clio:xq` again", "22:10 use clio:xq."}, []growthCrossing{{Part: "clio:xq", Trigger: "turns (rough)", Count: 3}}},
+		{"a hyphenated skill by its bare name", []string{"22:00 the guide-delta", "22:05 guide-delta", "22:10 guide-delta"}, []growthCrossing{{Part: "x:guide-delta", Trigger: "turns (rough)", Count: 3}}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			root, env := growthWorld(t)
+			growthAt(t, root, env, "2026-11-20T09:00:00Z")
+			promptsDay(t, env, "2026-11-20", c.blocks...)
+
+			got := growth(t, root, env)
+
+			var bareGot []growthCrossing
+			for _, crossing := range got.Crossings {
+				bareGot = append(bareGot, bare(crossing))
+			}
+			if fmt.Sprint(bareGot) != fmt.Sprint(c.want) {
+				t.Errorf("crossings %+v, want %+v", bareGot, c.want)
+			}
+		})
+	}
+}
+
+// his turns in a wing count too: two in the main's log and one in wing 2's make three
+func TestFleetGrowthCountsHisTurnsInAWingToo(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	growthAt(t, root, env, "2026-11-20T09:00:00Z")
+	promptsDay(t, env, "2026-11-20", "22:00 x-mod-alpha", "22:05 x-mod-alpha")
+	promptsWingDay(t, env, 2, "2026-11-20", "22:10 x-mod-alpha")
+
+	got := growth(t, root, env)
+
+	want := growthCrossing{Part: "x-mod-alpha", Trigger: "turns (rough)", Count: 3}
+	if len(got.Crossings) != 1 || bare(got.Crossings[0]) != want {
+		t.Errorf("crossings %+v, want only %+v", got.Crossings, want)
+	}
+}
+
+// a baseline that exists and does not parse is left as it is: reseeding would drop every named kind and kept stamp
+func TestFleetGrowthLeavesABaselineItCannotParse(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	file := filepath.Join(strings.TrimPrefix(env[1], "X_STATE="), "fleet-growth", "baseline.json")
+	write(t, file, "{not json")
+
+	got := xIn(t, root, append(env, "X_NOW="+growthNow), "fleet", "growth", "--json")
+
+	if left, _ := os.ReadFile(file); got.code != 1 || string(left) != "{not json" || !strings.Contains(got.stdout, "baseline.json") {
+		t.Errorf("exit %d, baseline %q, want exit 1, the file untouched and named:\n%s", got.code, left, got.stdout)
+	}
+}
+
+// the reader never refuses: a tree git cannot read is said in `error`, exit 0
+func TestFleetGrowthSaysWhatItCouldNotReadAndExitsZero(t *testing.T) {
+	t.Parallel()
+	_, env := growthWorld(t)
+	env[0] = "X_FRAME_ROOT=" + t.TempDir()
+
+	got := xIn(t, t.TempDir(), append(env, "X_NOW="+growthNow), "fleet", "growth", "--json")
+
+	var envelope struct {
+		Data growthData `json:"data"`
+	}
+	if err := json.Unmarshal([]byte(got.stdout), &envelope); err != nil {
+		t.Fatalf("%v\n%s", err, got.stdout)
+	}
+	if got.code != 0 || envelope.Data.Error == "" || len(envelope.Data.Crossings) != 0 {
+		t.Errorf("exit %d, data %+v, want exit 0, an error said and no crossing:\n%s", got.code, envelope.Data, got.stdout)
 	}
 }

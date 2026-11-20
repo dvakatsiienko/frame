@@ -47,6 +47,8 @@ type growthData struct {
 	Parts     int              `json:"parts"`
 	Kept      string           `json:"kept,omitempty"`
 	Crossings []growthCrossing `json:"crossings"`
+	// a read that failed (git, the repo): the reader never refuses, so what it could not read is said here and the run exits 0
+	Error string `json:"error,omitempty"`
 }
 
 // at is the instant the part was seeded or last kept: fixes and turns count only from it; reported lists the trigger kinds already
@@ -65,12 +67,15 @@ func fleetGrowth(r *Run, _ []string, flags Flags) (any, error) {
 	root := frameRoot()
 	sizes, err := growthSizes(root)
 	if err != nil {
-		return nil, err
+		return growthData{Crossings: []growthCrossing{}, Error: err.Error()}, nil
 	}
 	path := filepath.Join(stateDir(), "fleet-growth", "baseline.json")
 	baseline, hadBaseline := growthBaseline{Parts: map[string]growthEntry{}}, false
 	if raw, err := os.ReadFile(path); err == nil {
-		hadBaseline = json.Unmarshal(raw, &baseline) == nil && baseline.Parts != nil
+		if err := json.Unmarshal(raw, &baseline); err != nil {
+			return nil, &Fail{Msg: path + " does not parse (" + err.Error() + "), so x leaves it as it is", Next: "jq . " + quote(path)}
+		}
+		hadBaseline = baseline.Parts != nil
 	}
 	now := clock()
 	stamp := now.Format(time.RFC3339)
@@ -100,7 +105,7 @@ func fleetGrowth(r *Run, _ []string, flags Flags) (any, error) {
 	if hadBaseline {
 		fixes, err := growthFixCounts(root, now, baseline)
 		if err != nil {
-			return nil, err
+			data.Error = err.Error()
 		}
 		turns := growthTurnCounts(now, baseline, parts)
 		for _, part := range parts {
@@ -129,7 +134,7 @@ func fleetGrowth(r *Run, _ []string, flags Flags) (any, error) {
 		if len(fresh) > 0 {
 			origins, err := growthOrigins(root)
 			if err != nil {
-				return nil, err
+				data.Error = err.Error()
 			}
 			for i, c := range data.Crossings {
 				data.Crossings[i].Ask = growthAsk(c, baseline.Parts[c.Part].Lines, sizes[c.Part], origins[c.Part], fixes[c.Part], turns[c.Part])
@@ -142,7 +147,11 @@ func fleetGrowth(r *Run, _ []string, flags Flags) (any, error) {
 		}
 	}
 	if r.human {
-		r.Board(textBoard("fleet growth", fmt.Sprintf("%d parts", data.Parts), growthLines(data)))
+		lines := growthLines(data)
+		if data.Error != "" {
+			lines = append(lines, "not read: "+data.Error)
+		}
+		r.Board(textBoard("fleet growth", fmt.Sprintf("%d parts", data.Parts), lines))
 	}
 	return data, nil
 }
@@ -287,43 +296,48 @@ type promptBlock struct {
 
 var promptHead = regexp.MustCompile(`^## (\d\d):(\d\d)\s*$`)
 
-// the most of his prompt blocks naming one part on one day of the last 7, from the part's seed on: a block names a part by its id
-// (a skill also by its bare name), any case; a rough count, a name inside a longer word counts
+// the most of his prompt blocks naming one part on one day of the last 7, from the part's seed on, the main's log and every wing's
+// together: a block names a part by its id (a skill also by its bare name when that holds a hyphen), any case, on word edges; a
+// rough count
 func growthTurnCounts(now time.Time, baseline growthBaseline, parts []string) map[string]int {
 	home, _ := os.UserHomeDir()
-	needles := map[string][]string{}
+	promptsDir := filepath.Join(home, ".local/state/clio/prompts")
+	needles := map[string]*regexp.Regexp{}
 	for _, part := range parts {
-		needles[part] = []string{strings.ToLower(part)}
-		if _, bare, ok := strings.Cut(part, ":"); ok {
-			needles[part] = append(needles[part], bare)
+		names := []string{regexp.QuoteMeta(strings.ToLower(part))}
+		// a bare skill name counts only when it is distinctive (it holds a hyphen): «pm» would name «npm» and «5pm»
+		if _, bare, ok := strings.Cut(part, ":"); ok && strings.Contains(bare, "-") {
+			names = append(names, regexp.QuoteMeta(bare))
 		}
+		needles[part] = regexp.MustCompile(`(?:^|[^a-z0-9:-])(?:` + strings.Join(names, "|") + `)(?:$|[^a-z0-9:-])`)
 	}
 	best := map[string]int{}
 	for back := range 7 {
 		day := now.Local().AddDate(0, 0, -back)
-		raw, err := os.ReadFile(filepath.Join(home, ".local/state/clio/prompts", day.Format("2006-01-02")+".md"))
-		if err != nil {
-			continue
-		}
+		name := day.Format("2006-01-02") + ".md"
+		wings, _ := filepath.Glob(filepath.Join(promptsDir, "wing-*", name))
 		perDay := map[string]int{}
-		var blocks []promptBlock
-		for line := range strings.SplitSeq(string(raw), "\n") {
-			if m := promptHead.FindStringSubmatch(line); m != nil {
-				hour, _ := strconv.Atoi(m[1])
-				minute, _ := strconv.Atoi(m[2])
-				blocks = append(blocks, promptBlock{at: time.Date(day.Year(), day.Month(), day.Day(), hour, minute, 0, 0, time.Local)})
-			} else if len(blocks) > 0 {
-				blocks[len(blocks)-1].body.WriteString(strings.ToLower(line) + "\n")
+		for _, file := range append([]string{filepath.Join(promptsDir, name)}, wings...) {
+			raw, err := os.ReadFile(file)
+			if err != nil {
+				continue
 			}
-		}
-		for _, block := range blocks {
-			text := block.body.String()
-			for _, part := range parts {
-				if _, known := baseline.Parts[part]; !known || block.at.Before(baseline.seededAt(part)) {
-					continue
+			var blocks []promptBlock
+			for line := range strings.SplitSeq(string(raw), "\n") {
+				if m := promptHead.FindStringSubmatch(line); m != nil {
+					hour, _ := strconv.Atoi(m[1])
+					minute, _ := strconv.Atoi(m[2])
+					blocks = append(blocks, promptBlock{at: time.Date(day.Year(), day.Month(), day.Day(), hour, minute, 0, 0, time.Local)})
+				} else if len(blocks) > 0 {
+					blocks[len(blocks)-1].body.WriteString(strings.ToLower(line) + "\n")
 				}
-				if slices.ContainsFunc(needles[part], func(needle string) bool { return strings.Contains(text, needle) }) {
-					perDay[part]++
+			}
+			for _, block := range blocks {
+				text := block.body.String()
+				for _, part := range parts {
+					if _, known := baseline.Parts[part]; known && !block.at.Before(baseline.seededAt(part)) && needles[part].MatchString(text) {
+						perDay[part]++
+					}
 				}
 			}
 		}
