@@ -138,7 +138,7 @@ func copyFixture(t *testing.T, from, to string) {
 			return err
 		}
 		raw = bytes.ReplaceAll(raw, []byte(from), []byte(to))
-		if err := os.WriteFile(target, raw, info.Mode().Perm()); err != nil {
+		if err := writeFile(target, raw, info.Mode().Perm()); err != nil {
 			return err
 		}
 		return os.Chtimes(target, info.ModTime(), info.ModTime())

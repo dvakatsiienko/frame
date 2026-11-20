@@ -13,6 +13,7 @@ import (
 	"slices"
 	"strings"
 	"sync/atomic"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -64,9 +65,19 @@ func write(t *testing.T, path, body string) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(path, []byte(body), 0o755); err != nil {
+	if err := writeFile(path, []byte(body), 0o755); err != nil {
 		t.Fatal(err)
 	}
+}
+
+// writeFile is os.WriteFile with no fork in flight: on linux a child forked by another parallel test holds this file's write
+// descriptor until its exec, and running the fixture script then fails «text file busy» (golang/go#22315; the CI-only reds of
+// 20 Nov, TestShimTurnsTheCollectorOffUnlessTheCallerSetOne and TestShimFiveShellsAtOnceStartOneBuild). A fork takes
+// syscall.ForkLock for reading, so the write holds it for writing
+func writeFile(path string, body []byte, mode os.FileMode) error {
+	syscall.ForkLock.Lock()
+	defer syscall.ForkLock.Unlock()
+	return os.WriteFile(path, body, mode)
 }
 
 func message(t *testing.T) string {

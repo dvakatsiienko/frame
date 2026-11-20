@@ -276,7 +276,7 @@ func TestRefusedCommitHandsTheHookOutputToAnAgent(t *testing.T) {
 	t.Parallel()
 	bin, dir := xbin, world(t)
 	hook := filepath.Join(dir, "repo/.git/hooks/pre-commit")
-	if err := os.WriteFile(hook, []byte("#!/bin/sh\necho 'hook says: line 131 is too wide'\nexit 1\n"), 0o755); err != nil {
+	if err := writeFile(hook, []byte("#!/bin/sh\necho 'hook says: line 131 is too wide'\nexit 1\n"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	cmd := exec.Command(bin, "lane", "commit", filepath.Join(dir, "msg.txt"), "--", "notes.txt")
@@ -299,10 +299,10 @@ func TestARefusedCommitAlsoNamesItsMessagesReds(t *testing.T) {
 	t.Parallel()
 	bin, dir := xbin, world(t)
 	hook := filepath.Join(dir, "repo/.git/hooks/pre-commit")
-	if err := os.WriteFile(hook, []byte("#!/bin/sh\necho 'hook says: line 131 is too wide'\nexit 1\n"), 0o755); err != nil {
+	if err := writeFile(hook, []byte("#!/bin/sh\necho 'hook says: line 131 is too wide'\nexit 1\n"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "repo/.git/hooks/commit-msg"), []byte("#!/bin/sh\necho 'lint says: the subject has no emoji'\nexit 1\n"), 0o755); err != nil {
+	if err := writeFile(filepath.Join(dir, "repo/.git/hooks/commit-msg"), []byte("#!/bin/sh\necho 'lint says: the subject has no emoji'\nexit 1\n"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	cmd := exec.Command(bin, "lane", "commit", filepath.Join(dir, "msg.txt"), "--", "notes.txt")
