@@ -199,3 +199,9 @@ export const ticked = async ($: Engine, w: ReturnType<typeof world>) => {
 
 export const partOff = (w: { store: Map<string, unknown> }, key: string) =>
     w.store.set('shown', { [key]: false });
+
+export const hrefs = async (ui: {
+    findAll: (q: {
+        type: string;
+    }) => Promise<{ props: Record<string, unknown> }[]>;
+}) => (await ui.findAll({ type: 'Link' })).map((n) => n.props.href);
