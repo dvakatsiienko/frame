@@ -128,6 +128,8 @@ export async function composePrompt(
     // prompt.submit fires when a prompt is queued (engine.md): one queued behind a running turn is no turn of its own yet
     const isQueued = turn.isBusy;
     await startTurn($, isUser, e.text === PING, () => prepareTurn(view));
+    // herdr's spinner and antenna's dot read working from the state file, so a turn's start writes it at once
+    await keepShelf($);
     // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
     const at = new Date(await $.clock.now());
     const offset = -at.getTimezoneOffset() / 60;

@@ -961,6 +961,13 @@ test('a kept idle state keeps its since through a reload', async ($, on) => {
     expect(s.read(A)?.since).toBe(42);
 });
 
+// herdr's bar and antenna's dot read working from the file: a turn's start writes it then, never at the next poll
+test('a prompt writes the file working at once', async ($, on) => {
+    const s = await session($, on);
+    await say($);
+    expect(s.read(A)?.state).toBe('working');
+});
+
 // FRM-618 slice D exit 4: the file carries every field herdr's contract requires, so a rename here reds this test; the
 // test runs on an overlay copy that cannot reach frame's herdr/contracts/herdr-state.schema.json, so its `required` and
 // `state.enum` are pinned here, and herdr's state-schema.test.ts pins the schema to the same lists
