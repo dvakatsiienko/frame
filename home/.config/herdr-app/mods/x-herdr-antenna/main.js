@@ -45,6 +45,7 @@ import {
 const ROW_TAB = 'x_herdr_antenna_row_tab';
 const ROW_BACK = 'x_herdr_antenna_row_back';
 const ROW_OPEN = 'x_herdr_antenna_row_open';
+const ROW_KEYS = 64;
 const stopOf = (/** @type {string} */ address) => `thread-${address}`;
 
 const SETTINGS = `${home()}/.claude/shelf/herdr-settings/settings.json`;
@@ -144,6 +145,10 @@ export default class Antenna extends View {
         });
         /** @type {Map<string, import('gpui-kit').FocusHandle>} each thread row's keyboard handle */
         this.rowKeys = new Map();
+        // a handle cannot be made while drawing, so a pool made here hands one to each new row; past it, a row has none
+        this.spareKeys = Array.from({ length: ROW_KEYS }, () =>
+            cx.focus_handle(),
+        );
         /** @type {string | null} the stop that held the keyboard at the last draw */
         this.heldStop = null;
         // one drag; it lives on the view, so a status redraw mid-drag keeps it (FRM-664)
@@ -286,12 +291,12 @@ export default class Antenna extends View {
             .bg(t[status] ?? t.dim);
     }
 
-    /** @param {string} address @param {Context} cx */
-    rowKey(address, cx) {
+    /** @param {string} address @returns {import('gpui-kit').FocusHandle | null} */
+    rowKey(address) {
         const kept = this.rowKeys.get(address);
         if (kept) return kept;
-        const made = cx.focus_handle();
-        this.rowKeys.set(address, made);
+        const made = this.spareKeys.pop() ?? null;
+        if (made) this.rowKeys.set(address, made);
         return made;
     }
 
@@ -302,7 +307,7 @@ export default class Antenna extends View {
         const later = (run) => cx.timer.after(0, run);
         const to = this.tab.draw(addresses.map(stopOf), later);
         const toAddress = to && addresses.find((a) => stopOf(a) === to);
-        if (toAddress) later(() => this.rowKey(toAddress, cx).focus());
+        if (toAddress) later(() => this.rowKey(toAddress)?.focus());
         const holding = addresses.find((a) =>
             this.rowKeys.get(a)?.is_focused(),
         );
@@ -420,8 +425,8 @@ export default class Antenna extends View {
             );
             const { group, members } = groupOf.get(r.address);
             const at = members.indexOf(r.address);
-            const key = this.rowKey(r.address, cx);
-            const isHeld = key.is_focused();
+            const key = this.rowKey(r.address);
+            const isHeld = key?.is_focused() ?? false;
             return this.drag
                 .item(
                     h_flex(),
@@ -446,7 +451,7 @@ export default class Antenna extends View {
                 .items_center()
                 .cursor_pointer()
                 .hover((s) => s.bg(t.hover))
-                .track_focus(key)
+                .when(Boolean(key), (el) => el.track_focus(key))
                 .key_context('XAntennaRow')
                 .on_action(ROW_TAB, () =>
                     this.tab.ask(stopOf(r.address), false),

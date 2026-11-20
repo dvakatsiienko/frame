@@ -7,6 +7,7 @@
 import { h_flex } from 'gpui-base';
 import { View, div, image, svg } from 'gpui-kit';
 import {
+    focused,
     hc,
     home,
     openOverlay,
@@ -21,6 +22,7 @@ import {
 } from 'herdr';
 
 import { createListDrag } from './drag-view.js';
+import { focusedLine } from './focused-line.js';
 import { closeAsks, closeWords, leadPane, pillName, swallow } from './pills.js';
 import { tabDrops } from './tab-drops.js';
 import {
@@ -32,6 +34,10 @@ import {
 
 // the agents list reads each session name and publishes it here (address → name); one reader, one naming rule
 const NAMES_KEY = 'x-herdr-agents.names';
+// antenna's knobs as it saves them; «show tabs» off draws the focused thread in place of the pills
+const ANTENNA_SETTINGS = 'antenna.settings';
+const PIDS_KEY = 'x-herdr-antenna.pids';
+const THREADS_KEY = 'x-herdr-deck.threads';
 
 /** @typedef {import('gpui-kit').Color} Color */
 /** @typedef {Record<string, Color>} Theme */
@@ -174,11 +180,57 @@ export default class TabPills extends View {
         });
     }
 
+    /** the focused thread's name and its wait line, plain text over the bar, so a press on it still moves the window
+     * @param {Theme} t */
+    focusedThread(t) {
+        const line = focusedLine(
+            focused()?.agent,
+            /** @type {Record<string, string> | null} */ (shared(NAMES_KEY)),
+            /** @type {Record<string, number> | null} */ (shared(PIDS_KEY)),
+            shared(THREADS_KEY),
+        );
+        return h_flex()
+            .id('pills-focused')
+            .flex_shrink(1)
+            .min_w(0)
+            .h(36)
+            .px(6)
+            .gap(10)
+            .items_center()
+            .text_size(13)
+            .when(Boolean(line), (el) =>
+                el
+                    .child(
+                        div()
+                            .flex_none()
+                            .max_w(280)
+                            .truncate()
+                            .font_medium()
+                            .text_color(t.foreground)
+                            .child(line?.name ?? ''),
+                    )
+                    .when(Boolean(line?.wait), (el) =>
+                        el.child(
+                            div()
+                                .flex_shrink(1)
+                                .min_w(0)
+                                .truncate()
+                                .text_color(t.dim)
+                                .child(line?.wait ?? ''),
+                        ),
+                    ),
+            );
+    }
+
     render() {
         // herdr's theme colours are hex strings; gpui-kit's style setters want its Color
         const t = /** @type {Theme} */ (theme());
         // hidden leaves more room for the names
         const isStatusShown = this.tabStatus === 'visible';
+        const knobs = /** @type {Record<string, unknown> | null} */ (
+            shared(ANTENNA_SETTINGS)
+        );
+        const isTabsHidden = knobs?.['antenna.showTabs'] === false;
         const dragTheme = /** @type {import('./drag-view.js').DragTheme} */ (t);
         const space = spaces().find((p) => p.active);
         if (!space) return div();
@@ -356,23 +408,28 @@ export default class TabPills extends View {
                                 .child(space.name),
                         ),
                 )
-                .child(
-                    // the drag's zone: leaving the tray springs a dragged pill home
-                    this.drag
-                        .zone(
-                            h_flex()
-                                .id('pills-tray')
-                                .relative()
-                                .flex_shrink(1)
-                                .min_w(0)
-                                .h(36)
-                                .p(3)
-                                .gap(3)
-                                .rounded(16)
-                                .bg(t.chrome),
-                        )
-                        .children(space.tabs.map(pill))
-                        .children([this.drag.ghost(dragTheme)].filter(Boolean)),
+                .when(isTabsHidden, (el) => el.child(this.focusedThread(t)))
+                .when(!isTabsHidden, (el) =>
+                    el.child(
+                        // the drag's zone: leaving the tray springs a dragged pill home
+                        this.drag
+                            .zone(
+                                h_flex()
+                                    .id('pills-tray')
+                                    .relative()
+                                    .flex_shrink(1)
+                                    .min_w(0)
+                                    .h(36)
+                                    .p(3)
+                                    .gap(3)
+                                    .rounded(16)
+                                    .bg(t.chrome),
+                            )
+                            .children(space.tabs.map(pill))
+                            .children(
+                                [this.drag.ghost(dragTheme)].filter(Boolean),
+                            ),
+                    ),
                 )
                 .child(div().flex_1())
         );

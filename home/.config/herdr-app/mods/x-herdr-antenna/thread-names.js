@@ -92,7 +92,18 @@ export function publishNames() {
         if (name) next[address] = name;
     if (JSON.stringify(shared(NAMES_KEY) ?? {}) !== JSON.stringify(next))
         setShared(NAMES_KEY, next);
+    /** @type {Record<string, number>} */
+    const pids = {};
+    for (const [address, { pid }] of [...NAMES].sort(([a], [b]) =>
+        a.localeCompare(b),
+    ))
+        if (pid) pids[address] = pid;
+    if (JSON.stringify(shared(PIDS_KEY) ?? {}) !== JSON.stringify(pids))
+        setShared(PIDS_KEY, pids);
 }
+
+// each thread's pid by its address: the top bar reads a thread's wait line from the deck's facts, keyed by pid
+export const PIDS_KEY = 'x-herdr-antenna.pids';
 
 // the pids in his order: the deck orders its sessions and orbit by it (dima, 20:20: «The order in the agents list is the
 // true source for the order in Orbit for threads»); written only on a change
