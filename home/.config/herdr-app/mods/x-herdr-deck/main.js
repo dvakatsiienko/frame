@@ -27,6 +27,7 @@ import {
     askLabel,
     byName,
     cardKind,
+    cardPaint,
     cardText,
     createSerial,
     createTurns,
@@ -42,6 +43,7 @@ import {
     nextThreads,
     orbitPinIn,
     orbitSections,
+    orbitTabOrder,
     pressLabel,
     pressOf,
     roundsKept,
@@ -52,7 +54,6 @@ import {
     tickAllTakes,
     tickAllThread,
     ticketUrl,
-    tint,
     withBandPress,
     withPending,
 } from './orbit.js';
@@ -158,12 +159,6 @@ const clockOf = (at, parts) =>
         .map((n) => String(n).padStart(2, '0'))
         .join(':');
 
-// a look or 🧪 card's own paint: a soft tint of its kind's colour and a thin border of it, so the kind reads before
-// the words (FRM-620:W22, W23, W28); a card's bg takes a colour, never a gradient (gpui-kit.d.ts `bg(value: Color)`)
-/** @template {{ bg: (c: Color) => T, border_1: () => T, border_color: (c: Color) => T }} T @param {T} el @param {Color} c */
-const cardPaint = (el, c) =>
-    el.bg(tint(c, 0.12)).border_1().border_color(tint(c, 0.45));
-
 export default class Deck extends View {
     /** the asker under the pointer, which ⌘⇧K ticks first @type {string | null} */
     hoverSid = null;
@@ -181,6 +176,9 @@ export default class Deck extends View {
     // Enter in every steer box, one press at a time: a held key's repeats act once
     steerKeys = createKeyPress();
     steerCmdKeys = createCmdEnter();
+    /** each orbit control's Tab place; the control a press landed on, ringless until a Tab @type {Map<string, number>} */
+    tabAt = new Map();
+    pressed = /** @type {string | null} */ (null);
     /** @param {unknown} _props @param {Context} cx */
     init(_props, cx) {
         cx.bind_keys([
@@ -803,6 +801,7 @@ export default class Deck extends View {
     /** @param {Theme} t @param {Row} s @param {Ask} ask */
     ask(t, s, ask) {
         const key = `${s.sid}:${ask.id}`;
+        const steerTab = this.tabAt.get(`steer-${key}`) ?? 0;
         const steer = this.steers.get(key);
         const state = this.pressStateOf(s, ask.id);
         const record = this.presses.get(key);
@@ -814,6 +813,13 @@ export default class Deck extends View {
         /** @param {string} id @param {string} label @param {string} tip @param {(cx: Context) => void} onClick @param {boolean} [isPrimary] */
         const button = (id, label, tip, onClick, isPrimary = false) =>
             Button.new(`${id}-${key}`)
+                .tab_index(this.tabAt.get(`${id}-${key}`) ?? 0)
+                .on_mouse_down('left', () => {
+                    this.pressed = `${id}-${key}`;
+                })
+                .when(this.pressed !== `${id}-${key}`, (el) =>
+                    el.focus((st) => st.border_color(t.accent).border_2()),
+                )
                 .h(28)
                 .px(12)
                 .flex_none()
@@ -982,6 +988,7 @@ export default class Deck extends View {
                                                           steer
                                                       ),
                                                   )
+                                                      .tab_index(steerTab)
                                                       .w_full()
                                                       .text_size(SIZE.secondary)
                                                       .text_color(t.foreground),
@@ -1151,6 +1158,9 @@ export default class Deck extends View {
             this.rows,
             /** @type {number[] | null} */ (shared(ORDER_KEY)),
             this.pin,
+        );
+        this.tabAt = new Map(
+            orbitTabOrder(sections).map((id, i) => [id, i + 1]),
         );
         return sections.map((section) => {
             if (section.kind === 'pinned')
@@ -1397,57 +1407,67 @@ export default class Deck extends View {
                 .child(text);
         /** @param {number} n @param {string} one @param {string} many */
         const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-        return v_flex()
-            .id('x-herdr-deck')
-            .font_family(SANS)
-            .size_full()
-            .overflow_y_scroll()
-            .bg(t.canvas)
-            .child(
-                header(
-                    `🧵 sessions: ${this.rows.length}${busy ? `, ${busy} working` : ''}${this.isStale ? ' · stale, the last list kept' : ''}`,
-                ),
-            )
-            .children(rows.map((s, i) => this.session(t, s, i)))
-            .when(asks > 0, (el) =>
-                el
-                    .child(header(`🪐 orbit: ${count(asks, 'ask', 'asks')}`))
-                    .children(this.orbit(t))
-                    .when(Boolean(this.pressError), (el2) =>
-                        el2.child(
-                            div()
-                                .px(12)
-                                .text_size(SIZE.secondary)
-                                .text_color(t.blocked)
-                                .child(`⚠️ ${this.pressError}`),
-                        ),
-                    )
-                    .when(Boolean(this.pressNote), (el2) =>
-                        el2.child(
-                            div()
-                                .px(12)
-                                .text_size(SIZE.secondary)
-                                .text_color(t.muted)
-                                .child(`⏳ ${this.pressNote}`),
-                        ),
+        return (
+            v_flex()
+                .id('x-herdr-deck')
+                // the focus ring is the keyboard's: a press hides it, a Tab brings it back (FRM-620:W14, his 14:57)
+                .on_key_down((e, cx) => {
+                    if (e.key !== 'tab' || this.pressed === null) return;
+                    this.pressed = null;
+                    cx.notify();
+                })
+                .font_family(SANS)
+                .size_full()
+                .overflow_y_scroll()
+                .bg(t.canvas)
+                .child(
+                    header(
+                        `🧵 sessions: ${this.rows.length}${busy ? `, ${busy} working` : ''}${this.isStale ? ' · stale, the last list kept' : ''}`,
                     ),
-            )
-            .when(this.lanes.length > 0, (el) =>
-                el
-                    .child(
-                        header(
-                            `🛼 glide: ${count(this.lanes.length, 'lane', 'lanes')}`,
+                )
+                .children(rows.map((s, i) => this.session(t, s, i)))
+                .when(asks > 0, (el) =>
+                    el
+                        .child(
+                            header(`🪐 orbit: ${count(asks, 'ask', 'asks')}`),
+                        )
+                        .children(this.orbit(t))
+                        .when(Boolean(this.pressError), (el2) =>
+                            el2.child(
+                                div()
+                                    .px(12)
+                                    .text_size(SIZE.secondary)
+                                    .text_color(t.blocked)
+                                    .child(`⚠️ ${this.pressError}`),
+                            ),
+                        )
+                        .when(Boolean(this.pressNote), (el2) =>
+                            el2.child(
+                                div()
+                                    .px(12)
+                                    .text_size(SIZE.secondary)
+                                    .text_color(t.muted)
+                                    .child(`⏳ ${this.pressNote}`),
+                            ),
                         ),
-                    )
-                    .children(this.lanes.map((l) => this.lane(t, l))),
-            )
-            .child(
-                div()
-                    .px(12)
-                    .py(8)
-                    .text_size(SIZE.small)
-                    .text_color(t.muted)
-                    .child(this.footerLine()),
-            );
+                )
+                .when(this.lanes.length > 0, (el) =>
+                    el
+                        .child(
+                            header(
+                                `🛼 glide: ${count(this.lanes.length, 'lane', 'lanes')}`,
+                            ),
+                        )
+                        .children(this.lanes.map((l) => this.lane(t, l))),
+                )
+                .child(
+                    div()
+                        .px(12)
+                        .py(8)
+                        .text_size(SIZE.small)
+                        .text_color(t.muted)
+                        .child(this.footerLine()),
+                )
+        );
     }
 }

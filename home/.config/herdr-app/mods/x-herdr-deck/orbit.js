@@ -82,6 +82,12 @@ export const cardText = (text) => {
     return `${kind === 'look' ? '👀' : '🧪'} ${text.trimStart()}`;
 };
 
+// a look or 🧪 card's own paint: a soft tint of its kind's colour and a thin border of it, so the kind reads before
+// the words (FRM-620:W22, W23, W28); a card's bg takes a colour, never a gradient (gpui-kit.d.ts `bg(value: Color)`)
+/** @template {{ bg: (c: `#${string}`) => T, border_1: () => T, border_color: (c: `#${string}`) => T }} T @param {T} el @param {`#${string}`} c */
+export const cardPaint = (el, c) =>
+    el.bg(tint(c, 0.12)).border_1().border_color(tint(c, 0.45));
+
 /**
  * a theme colour at `alpha` (0–1); a colour that already carries alpha, or is not `#rrggbb`, stays as it is
  * @param {`#${string}`} color @param {number} alpha @returns {`#${string}`}
@@ -123,6 +129,26 @@ export function orbitSections(rows, pids, pin) {
     /** @type {OrbitSection<T>} */
     const pinned = { cards, kind: 'pinned' };
     return pin === 'bottom' ? [...threads, pinned] : [pinned, ...threads];
+}
+
+/**
+ * the Tab order of orbit's controls (FRM-620:W14): each ask's tick, replay and steer, in the order the sections draw;
+ * an id is `<control>-<sid>:<ask id>`, the key the deck's own ids carry
+ * @param {OrbitSection<{ sid: string }>[]} sections
+ */
+export function orbitTabOrder(sections) {
+    return sections
+        .flatMap((s) =>
+            s.kind === 'pinned'
+                ? s.cards
+                : s.asks.map((ask) => ({ ask, row: s.row })),
+        )
+        .filter(({ ask }) => ask.id)
+        .flatMap(({ ask, row }) =>
+            ['tick', 'replay', 'steer'].map(
+                (control) => `${control}-${row.sid}:${ask.id}`,
+            ),
+        );
 }
 
 // his «orbit › pinned cards» row in x-herdr-settings (x-herdr-chat settings-model.js)
