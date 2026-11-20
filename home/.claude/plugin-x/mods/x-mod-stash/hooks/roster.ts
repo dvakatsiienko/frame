@@ -230,3 +230,7 @@ export async function isOpen($: EngineInterface) {
     const panes = await $.ui.panes().catch(() => undefined);
     return panes?.some((p) => p.id === BOARD);
 }
+
+export async function openBoard($: EngineInterface) {
+    await $.ui.open({ closeOnEscape: true, id: BOARD, title: '🚦 board' });
+}

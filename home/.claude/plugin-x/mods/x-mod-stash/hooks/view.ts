@@ -33,6 +33,7 @@ import {
     SUCC,
     clearedNow,
     continueFromCleared,
+    currentId,
     identity,
     isLaneOwner,
     refreshSelfId,
@@ -219,4 +220,28 @@ export async function pressSwitch(
         pressEnd();
     }
     await publish($);
+}
+
+export async function pressPace($: EngineInterface) {
+    const sid = await currentId($);
+    if (!sid) return;
+    patchBand({ isPaced: !band.isPaced });
+    await pressSwitch(
+        $,
+        '🔋',
+        { isPaced: band.isPaced },
+        async () =>
+            $.store.set(
+                PACE + sid,
+                isPaceOn(await $.store.get(PACE + sid))
+                    ? { off: true }
+                    : { on: true },
+            ),
+        async () => {
+            patchBand({ isPaced: !band.isPaced });
+        },
+    );
+    await load($);
+    await publish($);
+    $.ui.invalidate('ui.render');
 }
