@@ -5,6 +5,8 @@ import { type SpawnSyncReturns, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
+import { lanePaceSection } from './lane-pace.ts';
+
 const OUTPUT_LINES = 40;
 const RUN_TIMEOUT_MS = 60_000;
 // wish-cover's own exit when the tracker read fails: an outage, never a missed wish
@@ -47,6 +49,7 @@ function main(home: string, since: string) {
         fleetChromePages(home),
         gateBudget(home),
         retros(home),
+        lanePaceSection(home, sinceDate(since).getTime() / 1000),
     ];
     for (const s of sections)
         console.log(

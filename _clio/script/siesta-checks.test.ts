@@ -136,6 +136,7 @@ describe('siesta-checks', () => {
             '## fleet chrome',
             '## gate budget',
             '## retros',
+            '## lane pace',
         ]);
         expect(heads.every((h) => h.endsWith('exit 0'))).toBe(true);
     });
