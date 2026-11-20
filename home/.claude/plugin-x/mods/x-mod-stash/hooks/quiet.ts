@@ -1,4 +1,8 @@
 // the quiet gate's words, one source for the hold, the sender's line and the 11-03 replay: pure, no `$`
+
+import { type Registered, memberOf } from './roster.ts';
+import { memberKey } from './util.ts';
+
 // flags are regional indicators and a keycap is a digit with its mark: neither is Extended_Pictographic
 const EMOJI_RUN = String.raw`^(?:[\s\p{Extended_Pictographic}\p{Regional_Indicator}\p{Emoji_Modifier}\u{E0020}-\u{E007F}\uFE0F\u200D]|[0-9#*]\uFE0F?\u20E3)*`;
 const PUSH_TAG = new RegExp(
@@ -267,4 +271,16 @@ export function peerPing(text: string) {
     const tag = quietTag(body);
     const deliveryTest = body.match(QUIET_DELIVERY_TEST)?.[1];
     return { body, from, tag, ...(deliveryTest ? { deliveryTest } : {}) };
+}
+
+export const bareTo = (to: string) => to.replace(/\s*\[[^\]]*\]$/, '');
+// the registry row a SendMessage `to` names: a name with or without its ref, a session id, a host id or a socket
+export function rowOfTo(rows: Registered[], to: string) {
+    const socket = to.match(/cc-socks\/(\d+)\.sock$/)?.[1];
+    if (socket) return rows.find((r) => r.isAlive && r.pid === Number(socket));
+    const key = memberKey(bareTo(to));
+    return (
+        rows.find((r) => r.isAlive && memberKey(r.base.name) === key) ??
+        memberOf(rows, bareTo(to))
+    );
 }
