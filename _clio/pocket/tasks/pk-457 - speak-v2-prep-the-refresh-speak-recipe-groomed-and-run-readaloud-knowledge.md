@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: done
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-20T14:26:00Z'
+updated_date: '2026-11-20T14:52:00Z'
 labels:
   - s
 dependencies: []
@@ -104,4 +104,6 @@ close: PK-457:W1 done; PK-457:W2 moved to the speak v2 lane (dima-fleet-priority
 16:20 reopened: the close above covered W1–W8 only; the item holds W1–W55, each verified before any close
 
 close: PK-457:W1 done; PK-457:W2 moved; PK-457:W3 done; PK-457:W4 done; PK-457:W5 done; PK-457:W6 done; PK-457:W7 answered; PK-457:W8 done; PK-457:W9 done; PK-457:W10 done; PK-457:W11 moved; PK-457:W12 answered; PK-457:W13 answered; PK-457:W14 done; PK-457:W15 answered; PK-457:W16 answered; PK-457:W17 answered; PK-457:W18 moved; PK-457:W19 done; PK-457:W20 moved; PK-457:W21 answered; PK-457:W22 done; PK-457:W23 answered; PK-457:W24 answered; PK-457:W25 answered; PK-457:W26 done; PK-457:W27 done; PK-457:W28 done; PK-457:W29 done; PK-457:W30 done; PK-457:W31 answered; PK-457:W32 done; PK-457:W33 done; PK-457:W34 done; PK-457:W35 done; PK-457:W36 done; PK-457:W37 done; PK-457:W38 done; PK-457:W39 done; PK-457:W40 done; PK-457:W41 moved; PK-457:W42 done; PK-457:W43 moved; PK-457:W44 moved; PK-457:W45 done; PK-457:W46 done; PK-457:W47 done; PK-457:W48 done; PK-457:W49 moved; PK-457:W50 answered; PK-457:W51 done; PK-457:W52 done; PK-457:W53 moved; PK-457:W54 done; PK-457:W55 done (verified line by line, /private/tmp/claude-501/-Users-dima-frame--clio/02e545e1-5d45-4b79-9c41-4a9066cbb71a/scratchpad/pk457-verify.md summary: 34 done, 12 answered, 9 moved: W49 tail and W53 live as wing 1 flyway f47, f46)
+
+16:52 homes of the close (wishkeeper 16:50): PK-457:W2 → the speak v2 lane: FRM-288; PK-457:W7 → recipe.md:57 the bar is wispr-grade on four axes;  his own ideas are vectors 5-11; PK-457:W11 → FRM-668:W5; PK-457:W12 → playbook:91 «a launchd daemon plus a warm local server holds for one user», next step in-process CoreML :92; PK-457:W13 → playbook:47-56; PK-457:W15 → playbook:37-43; PK-457:W16 → wing 1's chat print 11-19 16:43 «How kokoro runs on your mac, plainly»;  chat only, no file holds the plain ; PK-457:W17 → same 16:43 print: 54 voices on disk, speak page shows 15, favourites live in speak's own settings, what an ; PK-457:W18 → FRM-669:W2; PK-457:W20 → FRM-669:W1; PK-457:W21 → grill 2 Q8 settled by W26;  recipe.md:37 «the name stays refresh-speak»; PK-457:W23 → grill 2 Q7 yes; PK-457:W24 → wing 1 chat 17:03: global uv tool, evergreen's `uv tool upgrade --all` moved it;  evergreen/SKILL.md:19, pla; PK-457:W25 → evergreen prints kokoro each run; PK-457:W31 → model-cards.md:34; PK-457:W41 → _clio/memory/_reminders.md:84; PK-457:W43 → docs/test-drive/effort-raise.md; PK-457:W44 → effort-raise.md:30-31 round 1 read 2026-11-26, round 2 and the verdict 2026-12-03; PK-457:W49 → recipe vector 2; PK-457:W50 → wing 1 chat 17:57: loupe is a retire candidate; PK-457:W53 → pk-346 #3 f46 «design-loupe probe: a cheap summon»;  not run yet
 <!-- SECTION:NOTES:END -->
