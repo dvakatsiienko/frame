@@ -7,6 +7,7 @@ import {
     exec,
     home,
     layout,
+    nextCommand,
     props,
     readTextFile,
     setShared,
@@ -22,6 +23,7 @@ import {
     pressLine,
     withBandPress,
 } from './band-press.js';
+import { takeCommands } from './deck-commands.js';
 import { deckParts } from './deck-parts.js';
 import { focusBorder } from './focus-ring.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
@@ -178,9 +180,9 @@ export default class Deck extends View {
         this.passedOver = new Set();
         /** a key in a steer box that did nothing, and why, by ask key @type {Map<string, { text: string, until: number }>} */
         this.keyNotes = new Map();
-        /** @type {number | null} the last ⌘⇧K press seen */
-        this.tickAsk = /** @type {number | null} */ (
-            shared('deck.tickAll') ?? null
+        // ⌘⇧K reaches this copy alone: a `view` copy returned above and never waits on a command
+        cx.spawn((cx) =>
+            takeCommands(nextCommand, { tickall: () => this.tickShown(cx) }),
         );
         // antenna's 🔥 asks land here; one made before this load never fires
         /** @type {number} */
@@ -459,6 +461,30 @@ export default class Deck extends View {
             });
         }
         cx.notify();
+    }
+
+    // ⌘⇧K (FRM-589): the asker under the pointer, else the one he picked, else the thread the chat shows (by pid)
+    /** @param {Context} cx */
+    tickShown(cx) {
+        const pid = /** @type {{ pid?: number } | null} */ (
+            shared('chat.shown')
+        )?.pid;
+        const sid = tickAllThread(
+            this.rows
+                .filter(
+                    (r) =>
+                        tickAllTakes(r.asks, (id) => this.pressStateOf(r, id))
+                            .length > 0,
+                )
+                .map((r) => r.sid),
+            {
+                hovered: this.hoverSid ?? null,
+                picked: this.pickedSid ?? null,
+                shown: this.rows.find((r) => r.pid === pid)?.sid ?? null,
+            },
+        );
+        const asker = this.rows.find((r) => r.sid === sid);
+        if (asker) cx.spawn((cx) => this.pressAll(cx, asker));
     }
 
     // «tick all» (FRM-589): every open, ungated ask of one thread in one write; the asks draw ticked at once, and a
@@ -1173,35 +1199,6 @@ export default class Deck extends View {
         if (hotAsk) {
             this.hotAskSeen = hotAsk.at;
             cx.timer.after(0, (cx) => this.pressHot(cx, hotAsk.sid, hotAsk.on));
-        }
-        // ⌘⇧K (FRM-589): the status bar relays the key, the chat names the thread it shows by pid; a press older than
-        // 2 s, or one made before this load, never fires
-        const tickAsk = /** @type {number | null} */ (
-            shared('deck.tickAll') ?? null
-        );
-        if (tickAsk !== this.tickAsk) {
-            this.tickAsk = tickAsk;
-            const pid = /** @type {{ pid?: number } | null} */ (
-                shared('chat.shown')
-            )?.pid;
-            const sid = tickAllThread(
-                this.rows
-                    .filter(
-                        (r) =>
-                            tickAllTakes(r.asks, (id) =>
-                                this.pressStateOf(r, id),
-                            ).length > 0,
-                    )
-                    .map((r) => r.sid),
-                {
-                    hovered: this.hoverSid ?? null,
-                    picked: this.pickedSid ?? null,
-                    shown: this.rows.find((r) => r.pid === pid)?.sid ?? null,
-                },
-            );
-            const asker = this.rows.find((r) => r.sid === sid);
-            if (asker && tickAsk && Date.now() - tickAsk < 2000)
-                cx.spawn((cx) => this.pressAll(cx, asker));
         }
         // his order from the agents list, read at every draw, so a drag there moves the deck at once; the read's own
         // order (blocked, working, then by name) stays for a thread the list does not show

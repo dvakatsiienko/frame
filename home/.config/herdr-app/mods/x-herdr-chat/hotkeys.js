@@ -36,7 +36,7 @@ export const OUR_KEYS = [
         title: 'Open the settings',
     },
     {
-        action: 'x-herdr-status.tickall',
+        action: 'x-herdr-deck.tickall',
         key: 'cmd-shift-k',
         title: "Tick all of the shown thread's asks",
     },

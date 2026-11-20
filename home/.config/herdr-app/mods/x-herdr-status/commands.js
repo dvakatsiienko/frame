@@ -54,8 +54,6 @@ export async function takeCommands() {
             // ⌘⇧, opens the settings (x-herdr-settings) on its first page; the window's key keeps one open. no
             // «anything open?» gate: after a herdr restart it kept ⌘⇧, dead until settings opened once (dima, 19:11)
             openOverlay(settingsOverlay('general'));
-        } else if (command === 'tickall') {
-            setShared('deck.tickAll', Date.now());
         } else if (command === 'deck') {
             const deck = blockOf(
                 (c) => c?.mod === 'x-herdr-deck' && !c.props?.view,
