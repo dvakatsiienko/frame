@@ -145,3 +145,15 @@ export function pressRace(on: On) {
 
 export const askOf = (race: ReturnType<typeof pressRace>, id: string) =>
     race.orbit?.asks.find((a) => a.id === id);
+
+// FRM-552: herdr's board writes one press per line of the session's ticks file, and stash keeps how far it read
+export const HERDR_FILE = `/home/.claude/shelf/orbit-ticks/${SID}.jsonl`;
+
+// a press herdr's board appends to this session's ticks file
+export const herdrPress = (
+    w: { files: Record<string, string> },
+    id: string,
+    p: Record<string, unknown>,
+) => {
+    w.files[HERDR_FILE] = `${w.files[HERDR_FILE] ?? ''}${press({ id, ...p })}`;
+};
