@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { activityShown, rowDetails } from './details.js';
+import { activityShown, rowDetails, waitRuns } from './details.js';
 
 // FRM-618 slice A exit 2: each row detail off in turn, that detail alone leaves the row
 const facts = {
@@ -91,5 +91,23 @@ describe("a row's activity from the state file", () => {
         expect(
             activityShown('blocked', { since: at, state: 'working' }, at),
         ).toEqual({ dot: 'blocked', time: null });
+    });
+});
+
+// a wait line is plain text in bold and regular runs, so a row's wait is never selectable (dima, 18:51)
+describe('a wait line', () => {
+    test('splits into bold and regular runs', () => {
+        expect(waitRuns('waiting on **🔧 codie**, **🙋‍♂️ dima**')).toEqual([
+            { isBold: false, text: 'waiting on ' },
+            { isBold: true, text: '🔧 codie' },
+            { isBold: false, text: ', ' },
+            { isBold: true, text: '🙋‍♂️ dima' },
+        ]);
+    });
+
+    test('with no bold is one regular run', () => {
+        expect(waitRuns('waiting on the push')).toEqual([
+            { isBold: false, text: 'waiting on the push' },
+        ]);
     });
 });

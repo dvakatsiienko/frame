@@ -1252,17 +1252,26 @@ export default class Deck extends View {
                                             .relative()
                                             .flex_1()
                                             .min_w(0)
+                                            // one line tall whatever the text view does, so the card never grows
+                                            .h(20)
+                                            .overflow_hidden()
                                             .on_size_change((size, cx) =>
                                                 measured('box', size.width, cx),
                                             )
                                             .when(isCut, (el) =>
                                                 el.tooltip(phase),
                                             )
+                                            // a text view, so he can select a phase to copy or read aloud (F4, 18:51)
                                             .child(
-                                                div()
-                                                    .truncate()
-                                                    .text_color(color)
-                                                    .child(p.text),
+                                                prose(
+                                                    `phase-text-${i}-${j}`,
+                                                    p.text,
+                                                    color,
+                                                    SIZE.secondary,
+                                                )
+                                                    .whitespace_nowrap()
+                                                    .overflow_hidden()
+                                                    .text_ellipsis(),
                                             )
                                             .child(
                                                 div()

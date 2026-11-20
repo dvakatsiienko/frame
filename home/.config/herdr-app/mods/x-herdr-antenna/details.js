@@ -48,3 +48,14 @@ export function rowDetails(settings, { context, model, time, wait }) {
         wait: (settings['antenna.details.wait'] && wait) || null,
     };
 }
+
+/**
+ * a wait line's runs, its `**bold**` marks read: antenna draws them as plain text, never a selectable text view
+ * @param {string} wait @returns {{ isBold: boolean, text: string }[]}
+ */
+export function waitRuns(wait) {
+    return wait
+        .split(/\*\*(.+?)\*\*/)
+        .map((text, i) => ({ isBold: i % 2 === 1, text }))
+        .filter((run) => run.text);
+}

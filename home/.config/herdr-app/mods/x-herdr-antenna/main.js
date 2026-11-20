@@ -1,7 +1,7 @@
 // x-herdr-antenna (FRM-618): every thread once, in his order, grouped under its space or not, each row its name and a
 // still status dot; the look is herdr's own agents list, calmer: no spinner, no sort, no sound
 
-import { TextView, h_flex, v_flex } from 'gpui-base';
+import { h_flex, v_flex } from 'gpui-base';
 import { View, div, svg } from 'gpui-kit';
 import {
     agents,
@@ -21,7 +21,7 @@ import {
     writeTextFile,
 } from 'herdr';
 
-import { activityShown, rowDetails } from './details.js';
+import { activityShown, rowDetails, waitRuns } from './details.js';
 import { createListDrag } from './drag-view.js';
 import { heirs, movedInGroup, nextOrder } from './order.js';
 import { antennaRows, stopOf, tabStops } from './rows.js';
@@ -511,8 +511,8 @@ export default class Antenna extends View {
             const isHeld = key?.is_focused() ?? false;
             // the row's content, drawn the same in the row and in its drag ghost, so a lifted row never collapses to its
             // name (dima, 18:39; the tab pills' `look`)
-            /** @param {import('gpui-kit').NativeElement} el @param {string} waitId */
-            const body = (el, waitId) =>
+            /** @param {import('gpui-kit').NativeElement} el */
+            const body = (el) =>
                 el
                     .child(
                         v_flex()
@@ -527,32 +527,28 @@ export default class Antenna extends View {
                                     .child(r.name),
                             )
                             .when(Boolean(more.wait), (el) =>
-                                // markdown, so a fleet name keeps its bold (W41); one line, clipped
+                                // plain runs, a fleet name bold (W41), one line, clipped: a row is clicked and dragged,
+                                // never selected, so no text view and no I-beam here (dima, 18:34 and 18:51); a
+                                // `selectable(false)` text view took the I-beam from the whole app (18:47)
                                 el.child(
-                                    div()
-                                        .relative()
+                                    h_flex()
                                         .h(14)
                                         .overflow_hidden()
-                                        .child(
-                                            TextView.markdown(
-                                                waitId,
-                                                more.wait ?? '',
-                                            )
-                                                // herdr's UI font ships one face, so bold drew flat in it
-                                                .font_family(
-                                                    '.AppleSystemUIFont',
-                                                )
-                                                .text_size(11)
-                                                .text_color(t.dim),
-                                        )
-                                        // antenna is clicked and dragged, never read: a clear layer keeps the arrow over
-                                        // the text (dima, 18:34); `selectable(false)` here took the I-beam from the whole
-                                        // app (18:47)
-                                        .child(
-                                            div()
-                                                .absolute()
-                                                .inset_0()
-                                                .cursor_default(),
+                                        .whitespace_nowrap()
+                                        // herdr's UI font ships one face, so bold drew flat in it
+                                        .font_family('.AppleSystemUIFont')
+                                        .text_size(11)
+                                        .text_color(t.dim)
+                                        .children(
+                                            waitRuns(more.wait ?? '').map(
+                                                (run) =>
+                                                    div()
+                                                        .flex_none()
+                                                        .when(run.isBold, (b) =>
+                                                            b.font_semibold(),
+                                                        )
+                                                        .child(run.text),
+                                            ),
                                         ),
                                 ),
                             ),
@@ -612,7 +608,6 @@ export default class Antenna extends View {
                                         .px(8)
                                         .gap(9)
                                         .items_center(),
-                                    `an-ghost-wait-${r.address}`,
                                 ),
                             places: members.length,
                             targetFor: (/** @type {Dragged} */ held) =>
@@ -643,7 +638,6 @@ export default class Antenna extends View {
                     .gap(9)
                     .rounded(8)
                     .when(a.focused, (el) => el.bg(t.selected)),
-                `an-wait-${r.address}`,
             );
         });
         // empty space keeps the arrow: with no cursor of its own the block showed the I-beam (dima, 17:57); a row's
