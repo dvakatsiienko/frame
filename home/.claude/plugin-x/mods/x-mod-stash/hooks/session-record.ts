@@ -16,6 +16,7 @@ import {
     WAKER_KEY,
     hotOf,
 } from './store-keys.ts';
+import { isTurnBusy, turn } from './turn.ts';
 import { CONTEXT } from './usage.ts';
 import { errorText, writeWhole } from './util.ts';
 import { windOf } from './wind.ts';
@@ -28,6 +29,34 @@ import { windOf } from './wind.ts';
 const STATE_DIR = 'herdr-state';
 const FLEET_FILE = 'fleet.json';
 const stateDir = (home: string) => `${home}/.claude/shelf/${STATE_DIR}`;
+// what the thread is doing, by herdr/contracts/herdr-state.schema.json: a running turn is working, a turn's end with a
+// background task alive or a 🔭 wait is waiting, else idle; `since` is when that began, a turn's end for the first state
+// after it (FRM-618 slice D: a spinner that ran on while a thread only waited, W22, W23)
+type Activity = { since: number; state: 'working' | 'waiting' | 'idle' };
+export function activityOf(
+    was: Activity | null,
+    seen: {
+        endedAt?: number;
+        isBusy: boolean;
+        tasks?: Reply['tasks'];
+        wait?: string | null;
+    },
+    now: number,
+): Activity {
+    const state = seen.isBusy
+        ? 'working'
+        : seen.wait || seen.tasks?.some((t) => !t.state)
+          ? 'waiting'
+          : 'idle';
+    if (was?.state === state) return was;
+    const fromTurn = !was || was.state === 'working';
+    return {
+        since: state !== 'working' && fromTurn ? (seen.endedAt ?? now) : now,
+        state,
+    };
+}
+let activity: Activity | null = null;
+
 // what this process last wrote, without its time, so an unchanged state costs no write
 let stateWritten: string | undefined;
 let fleetWritten: string | undefined;
@@ -45,6 +74,16 @@ async function writeState($: EngineInterface) {
     const ctx = await get(CONTEXT + sid);
     const model = await get(MODEL + sid);
     const o = await currentOrbit($);
+    activity = activityOf(
+        activity,
+        {
+            endedAt: turn.endedAt,
+            isBusy: await isTurnBusy($),
+            tasks: reply?.tasks,
+            wait: reply?.wait ?? null,
+        },
+        await $.clock.now(),
+    );
     const state = {
         asks: entry?.items ?? [],
         assumed: o.assumed ?? [],
@@ -78,6 +117,8 @@ async function writeState($: EngineInterface) {
         plan: o.plan ? { lines: o.plan.lines } : null,
         rounds: null,
         sid,
+        since: activity.since,
+        state: activity.state,
         // the id this session continued from at a /clear, the fallback when a reader cannot match the pid
         succ: identity.clearedFrom ?? null,
         taken: typeof taken === 'number' ? taken : 0,

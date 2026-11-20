@@ -1,6 +1,8 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { activityOf } from '../hooks/session-record.ts';
+
 // FRM-568: what herdr draws for each session, written to the shelf, since herdr reads no private store
 const TOOL = 'mcp__x-mod-stash__orbit';
 const DIR = '/home/.claude/shelf/herdr-state';
@@ -843,4 +845,76 @@ test("an ask's link rides its row in the state file beside its pick", async ($, 
         pick: 'yes',
     });
     expect(asks[1]?.link).toBeUndefined();
+});
+
+// FRM-618 slice D exit 1: working, waiting or idle, written beside the wait, each with the time it began
+const T0 = 1_000_000;
+const watch = { description: 'ci', id: 'w1', type: 'monitor' };
+
+test('a running turn reads working', () => {
+    expect(activityOf(null, { isBusy: true }, T0)).toEqual({
+        since: T0,
+        state: 'working',
+    });
+});
+
+test("a turn that ended with a watch alive reads waiting from the turn's end", () => {
+    const was = { since: T0, state: 'working' as const };
+    expect(
+        activityOf(
+            was,
+            { endedAt: T0 + 50, isBusy: false, tasks: [watch] },
+            T0 + 60,
+        ),
+    ).toEqual({ since: T0 + 50, state: 'waiting' });
+});
+
+test('a 🔭 line naming dima reads waiting with no watch alive', () => {
+    expect(
+        activityOf(
+            null,
+            { endedAt: T0, isBusy: false, wait: 'waiting on **🙋‍♂️ dima**' },
+            T0 + 5,
+        ),
+    ).toEqual({ since: T0, state: 'waiting' });
+});
+
+test('a turn that ended with neither reads idle', () => {
+    expect(activityOf(null, { endedAt: T0, isBusy: false }, T0 + 5)).toEqual({
+        since: T0,
+        state: 'idle',
+    });
+});
+
+test('the watch dying flips waiting to idle at that poll', () => {
+    const was = { since: T0, state: 'waiting' as const };
+    expect(
+        activityOf(
+            was,
+            {
+                endedAt: T0,
+                isBusy: false,
+                tasks: [{ ...watch, state: 'done' as const }],
+            },
+            T0 + 90_000,
+        ),
+    ).toEqual({ since: T0 + 90_000, state: 'idle' });
+});
+
+test('an unchanged state keeps the time it began', () => {
+    const was = { since: T0, state: 'waiting' as const };
+    expect(
+        activityOf(
+            was,
+            { endedAt: T0, isBusy: false, tasks: [watch] },
+            T0 + 600_000,
+        ),
+    ).toEqual(was);
+});
+
+test("a session's state file carries its state and since", async ($, on) => {
+    const s = await session($, on);
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    const file = s.read(A);
+    expect([typeof file?.since, file?.state]).toEqual(['number', 'idle']);
 });

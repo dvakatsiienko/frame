@@ -1,0 +1,31 @@
+{
+    "$id": "herdr-state.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "~/.claude/shelf/herdr-state/<sid>.json: written by x-mod-stash's hooks/session-record.ts, read by herdr; any harness that writes this shape draws in herdr (FRM-618 slice D, W27, W42)",
+    "properties": {
+        "at": {
+            "description": "when the file was written, ms",
+            "type": "number"
+        },
+        "pid": {
+            "description": "the thread's process; a pid no longer live reads idle from `at`",
+            "type": ["number", "null"]
+        },
+        "sid": { "type": "string" },
+        "since": {
+            "description": "when `state` began, ms: a turn's end for waiting or idle after a turn",
+            "type": "number"
+        },
+        "state": {
+            "description": "working: a turn runs; waiting: no turn, a background watch or agent alive or the last reply's 🔭 line names a wait; idle: neither",
+            "enum": ["working", "waiting", "idle"]
+        },
+        "wait": {
+            "description": "the last reply's 🔭 line, else its background tasks, in fleet names",
+            "type": ["string", "null"]
+        }
+    },
+    "required": ["at", "pid", "sid", "since", "state", "wait"],
+    "title": "a thread's state file on the shelf",
+    "type": "object"
+}
