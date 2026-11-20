@@ -558,6 +558,27 @@ def quiet_wake(path: str, reply: str) -> bool:
     return "<task-notification" in opener and 0 < len(final) < QUIET_WAKE_MAX and bool(COMMIT_NEWS.search(final)) and not OTHER_NEWS.search(final)
 
 
+QUEUE_DIR = os.environ.get("CLIO_QUEUE_RUN", os.path.expanduser("~/.local/state/clio/queue-run"))
+QUEUE_TTL_S = 12 * 3600
+NEXT_ITEM = re.compile(r"next item:", re.I)
+MEMBER_OPENERS = ("Another Claude session sent", "<task-notification", "[SYSTEM NOTIFICATION", "<cross-session-message")
+
+
+def queue_run(session: str) -> bool:
+    if not session:
+        return False
+    try:
+        return time.time() - os.path.getmtime(os.path.join(QUEUE_DIR, session)) < QUEUE_TTL_S
+    except OSError:
+        return False
+
+
+def no_next_item(path: str, reply: str, session: str) -> bool:
+    # in a queue run, a reply to dima ends with the next item and my take (dima, 2026-11-20 15:41: asked ~10 times)
+    opener, _ = turn_opener(path)
+    return queue_run(session) and not opener.startswith(MEMBER_OPENERS) and not NEXT_ITEM.search(FENCE.sub("", reply))
+
+
 VERDICT_BADGED = re.compile(r"(?<!\*\*)(🌼 clean|🩹 fix|🪜 escalate)(?!\*\*)")
 BARE_CLEAN = re.compile(r"(?<![\w🌼*-])(?<!🌼 )clean\b(?!\*\*)")
 NOT_A_VERDICT = re.compile(r"\b(?:typecheck|lint|biome|tree|checkout|build|tests?|suite|status|merge state)\W+(?:is |was |ran |reads? )?$", re.I)
@@ -640,6 +661,8 @@ def main() -> None:
             hits.append(("note-only", "a proposal only in a hidden note"))
         if quiet_wake(path, reply):
             hits.append(("quiet-wake", reply.strip()[:40]))
+        if no_next_item(path, reply, str(event.get("session_id", ""))):
+            hits.append(("no-next-item", "queue run"))
         # refused once: on the re-stop the hook lets the turn end whatever the reply holds
         if lost and not event.get("stop_hook_active"):
             reason = f"a round never reached your closing message ({'; '.join(lost)}): text between tool calls and the board may never reach dima. print the whole round in the closing message, then end the turn"
@@ -674,6 +697,8 @@ def main() -> None:
         reminds.append("a round closed a turn dima did not start, the next wake buries it — reprint it whole in your reply to his next prompt")
     if by_rule("note-only"):
         reminds.append("the reply pointed at the board while the proposal sat only in an ask's hidden note — print the proposal in the thread")
+    if by_rule("no-next-item"):
+        reminds.append("a queue-run reply with no «next item:» — end every done report with the next item and «my take:» (clio:lowtide), its pick an orbit ask")
     if by_rule("quiet-wake"):
         reminds.append("a wake that only reports a commit or push prints nothing; it rides the next reply")
     if by_rule("plain-verdict"):

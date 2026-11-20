@@ -51,7 +51,7 @@ dima's words:
 
 - **pretty and sharp, no clunky UI.** a shot of every visible change goes to him; a sixth sense on a herdr chunk grades the look by taste, and a look it dislikes does not pass
 - **ux first, hotkeys welcome.** every state, input and edge he meets counts; `x:guide-ui-ux` holds the defaults
-- **Tab and hotkeys are core modules, his navigation door into herdr**: one Tab loop every mod joins, robust, sharp and scalable, beside the hotkeys (dima, 2026-11-20 15:19, FRM-620)
+- **Tab and hotkeys are core modules, his main navigation door into herdr**: one Tab loop every mod joins, robust, sharp and scalable, beside the hotkeys; a herdr codie maintains them with special care, and a change that regresses either never lands (dima, 2026-11-20 15:19 and 15:22; FRM-673)
 - **every feature gets its settings row**, the essential knobs only, in one clean settings surface
 - **slipstream first** wherever he talks to a thread: a send that joins the next turn before a send that starts one, each with visible feedback
 - **cheap to modify stays cheap**: one mod per feature, plain JS, no clever layers

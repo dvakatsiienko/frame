@@ -8,6 +8,7 @@ import {
     mkdirSync,
     readFileSync,
     readdirSync,
+    statSync,
     writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
@@ -20,6 +21,7 @@ const MISSED_AFTER_MS = 30 * 60_000;
 // an ignored nudge comes back, and a card nobody closed stops pausing the count
 const RENUDGE_AFTER_MS = 60 * 60_000;
 const OPEN_GRACE_MS = 30 * 60_000;
+const QUEUE_RUN_TTL_MS = 12 * 60 * 60_000;
 // a run of a pocket door, at the start of a command, after `&&`, `;` or `|`, or a loop's `do`; a read of the script (sed, rg) never counts
 const POCKET_WRITE =
     /(^|[;&|]\s*|\b(do|then|else)\s+)(node\s+\S*pocket-(add|move)\.ts|(BACKLOG_CWD=\S+\s+)?backlog task (create|edit|archive)\b)/m;
@@ -109,7 +111,10 @@ export function stop(home: string, input: StopInput) {
         checks.push(
             '⏱️ a lane member got «resume» with no 5h window read this turn — read it before the next one',
         );
-    if (ranAheadOfDima(input.transcript_path))
+    if (
+        !isQueueRun(home, input.session_id) &&
+        ranAheadOfDima(input.transcript_path)
+    )
         checks.push(
             "🙋 this turn began on a member's or a job's event and opened one of dima's items (an orbit ask, a grill round): his items wait for his prompt or his tick on the orbit «next:» ask (habit-dima-comms)",
         );
@@ -439,6 +444,18 @@ function ranAheadOfDima(transcriptPath?: string) {
             /grill-\d+-proposal\.md/.test(
                 c.input?.file_path ?? c.input?.command ?? '',
             ),
+    );
+}
+
+// a queue run (the lowtide start marks it) is dima's chore line: his items ride every reply, so the hint stays off; reply-check reads the same file
+function isQueueRun(home: string, sessionId?: string) {
+    if (!sessionId) return false;
+    const dir =
+        process.env.CLIO_QUEUE_RUN ?? path.join(stateDir(home), 'queue-run');
+    const file = path.join(dir, sessionId);
+    return (
+        existsSync(file) &&
+        Date.now() - statSync(file).mtimeMs < QUEUE_RUN_TTL_MS
     );
 }
 

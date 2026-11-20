@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -288,11 +288,11 @@ describe('the never-reached text', () => {
 });
 
 // the log a reply leaves when its turn's transcript is known
-const loggedAfter = (reply: string, transcript: string) => {
+const loggedAfter = (reply: string, transcript: string, extraEnv: Record<string, string> = {}) => {
     const log = join(mkdtempSync(join(tmpdir(), 'rc-')), 'log.tsv');
-    execFileSync('python3', [HOOK], { timeout: 10_000, 
+    execFileSync('python3', [HOOK], { timeout: 10_000,
         encoding: 'utf8',
-        env: { ...process.env, REPLY_CHECK_LOG: log, REPLY_CHECK_NOW: '15:10', REPLY_CHECK_REMIND: REMIND },
+        env: { ...process.env, REPLY_CHECK_LOG: log, REPLY_CHECK_NOW: '15:10', REPLY_CHECK_REMIND: REMIND, ...extraEnv },
         input: JSON.stringify({ last_assistant_message: reply, session_id: SESSION, transcript_path: transcript }),
     });
     try {
@@ -732,5 +732,39 @@ describe('a wake that only reports a commit or push (dima o154)', () => {
 
     it('stays silent on a wake reply with no commit or push in it', () => {
         expect(loggedAfter('the tests pass on the second try.', turnOpenedBy(taskWake))).not.toContain('quiet-wake');
+    });
+});
+
+describe('a queue-run reply with no next item (dima, 2026-11-20)', () => {
+    const done = 'FRM-1 fixed and closed.';
+    // a queue-run dir with the flag set for this session, its mtime `ageS` seconds old
+    const queueDir = (ageS = 0) => {
+        const dir = mkdtempSync(join(tmpdir(), 'rc-queue-'));
+        const flag = join(dir, SESSION);
+        writeFileSync(flag, '');
+        const at = new Date(Date.now() - ageS * 1000);
+        utimesSync(flag, at, at);
+        return { CLIO_QUEUE_RUN: dir };
+    };
+
+    it('logs a done report with no «next item:» in a turn dima started', () => {
+        expect(loggedAfter(done, turnOpenedBy('go on'), queueDir())).toContain('no-next-item');
+        expect(nextPrompt()).toContain('a queue-run reply with no «next item:»');
+    });
+
+    it('passes a done report that ends with the next item', () => {
+        expect(loggedAfter(`${done}\n\nnext item: FRM-2, the flyway fix.\nmy take: rename it.`, turnOpenedBy('go on'), queueDir())).not.toContain('no-next-item');
+    });
+
+    it('passes a turn a task-notification opened', () => {
+        expect(loggedAfter(done, turnOpenedBy(taskWake), queueDir())).not.toContain('no-next-item');
+    });
+
+    it('passes a run with no flag', () => {
+        expect(loggedAfter(done, turnOpenedBy('go on'), { CLIO_QUEUE_RUN: mkdtempSync(join(tmpdir(), 'rc-queue-')) })).not.toContain('no-next-item');
+    });
+
+    it('passes a flag older than 12 h', () => {
+        expect(loggedAfter(done, turnOpenedBy('go on'), queueDir(12 * 3600 + 60))).not.toContain('no-next-item');
     });
 });

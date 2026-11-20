@@ -16,6 +16,7 @@ read the flyways' notes for today's `hoist MM-DD` line:
 - `proposing` → wait for dima's yes on that split
 - `done` → work your own flyway in its order
 - a wing opened after the hoist, its flyway empty → take only items no plan holds, your label on at the pick
+- mark the queue run: `mkdir -p ~/.local/state/clio/queue-run && touch ~/.local/state/clio/queue-run/$CLAUDE_CODE_SESSION_ID` — reply-check then holds every reply to the next-item shape for 12 h
 
 ## each pick
 
@@ -23,7 +24,7 @@ read the flyways' notes for today's `hoist MM-DD` line:
 - **a batch** (dima, 2026-11-07, folded: «it is good to batch them. one at a time is more for stuff that is quite bigger and wants my decision»): items passing the freebie test (`craft-pm`) run together with no ask, reported after as `PK-N → what happened`; an almost-freebie is one helper card
 - **one at a time**: an unsure item, and anything irreversible or visible outside. print what it is, why it is parked, how to solve it, then wait for his steer or go
 - **big stuff** goes last and is proposed for its own shaping, never started in this run, unless he asks to prioritize it
-- **every done report ends with the next item**, never a bare «done» (dima, 2026-11-20 15:41: «each time that you solve stuff and print me a done report, in the same reply I want you to propose the next item right away, along with a description of what that next item to solve is and your proposal for how to solve it»): `next item:` what it is, then `my take:` how I'd solve it, its pick also an orbit ask
+- **every done report ends with the next item**, never a bare «done» (dima, 2026-11-20 15:41: «each time that you solve stuff and print me a done report, in the same reply I want you to propose the next item right away, along with a description of what that next item to solve is and your proposal for how to solve it»): two next items, each `next item:` what it is in plain words, then `my take:` the action I'd run, so his «ok» on the first still shows the second (his 15:54); the first's pick also an orbit ask
 - **then**: fully solved, its item closed (a close carrying his asks takes the ask-guard, `craft-pm`), its flyway line moved into the done note (`node script/flyway-done.ts <PK> <fN>`), synced with main (a wing lands per its banner)
 
 ## a handover
