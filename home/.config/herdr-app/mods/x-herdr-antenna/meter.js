@@ -124,10 +124,43 @@ export function meterPill(t, percent, wind = WIND) {
         .child(`${percent}%`);
 }
 
+/** one slim line, filled to the share in the level's colour @param {Theme} t @param {number} percent
+ * @param {Wind} [wind] */
+export function meterLine(t, percent, wind = WIND) {
+    return h_flex()
+        .flex_none()
+        .gap(5)
+        .items_center()
+        .child(
+            div()
+                .relative()
+                .w(28)
+                .h(3)
+                .rounded(2)
+                .bg(
+                    /** @type {import('gpui-kit').Color} */ (
+                        `${t.foreground}26`
+                    ),
+                )
+                .child(
+                    div()
+                        .absolute()
+                        .left(0)
+                        .top(0)
+                        .h(3)
+                        .rounded(2)
+                        .w(Math.round((28 * Math.min(percent, 100)) / 100))
+                        .bg(levelColor(t, percent, wind)),
+                ),
+        )
+        .child(label(t, percent));
+}
+
 /** the meter in his picked look, the ring for any other value @param {Theme} t @param {number} percent
  * @param {unknown} look the «Context meter» knob @param {Wind} wind */
 export function contextMeter(t, percent, look, wind) {
     if (look === 'bars') return meterBars(t, percent, wind);
+    if (look === 'line') return meterLine(t, percent, wind);
     return look === 'pill'
         ? meterPill(t, percent, wind)
         : meterRing(t, percent, wind);

@@ -8,7 +8,8 @@ import { ANTENNA_KNOBS } from './settings.js';
 
 /** @typedef {import('./main.js').Theme} Theme */
 
-export const POPUP_WIDTH = 236;
+// «Context meter» and its four choices on one row
+export const POPUP_WIDTH = 300;
 // the title, every knob's row and the padding: the popup fits its rows exactly
 export const POPUP_HEIGHT = 30 + ANTENNA_KNOBS.length * 32 + 12;
 

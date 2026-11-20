@@ -16,6 +16,7 @@ export const ANTENNA_KNOBS = [
             { label: 'Ring', value: 'ring' },
             { label: 'Bars', value: 'bars' },
             { label: 'Pill', value: 'pill' },
+            { label: 'Line', value: 'line' },
         ],
         default: 'ring',
         key: 'antenna.details.meter',

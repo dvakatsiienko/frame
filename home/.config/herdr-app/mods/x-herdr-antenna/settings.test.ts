@@ -58,6 +58,13 @@ describe('antenna settings', () => {
     });
 
     // FRM-618 rider E1, his 19:49: all three meters, picked in the popup; «Context fill» off draws none
+    test('the context meter can be a plain line too', () => {
+        const text = antennaSettingsText(file, {
+            'antenna.details.meter': 'line',
+        });
+        expect(antennaSettings(text)['antenna.details.meter']).toBe('line');
+    });
+
     test('the context meter is a ring, bars or a pill, any other value the ring', () => {
         const text = antennaSettingsText(file, {
             'antenna.details.meter': 'bars',
