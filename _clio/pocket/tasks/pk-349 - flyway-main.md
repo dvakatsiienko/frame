@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-20T15:50:00Z'
+updated_date: '2026-11-20T16:10:00Z'
 labels:
   - s
   - clio-main
@@ -18,10 +18,11 @@ ordinal: 1000
 <!-- AC:BEGIN -->
 - [ ] #1 f61 herdr drawing: at FRM-618 end, ask the herdr codie how far its drawing goes (his 17:03)
 - [ ] #2 f62 second wind stalls: herdr codie wrote herdr-lane-3-13 at 17:20, no compact or ingest followed, idle 18 min
-- [ ] #3 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-27
-- [ ] #4 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #5 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #6 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #3 f65 FRM-618: cite its pocket-folded W-lines in the spec before slice F lands; wish-cover reds 66
+- [ ] #4 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-27
+- [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #6 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #7 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1325,4 +1326,6 @@ done 2026-11-20 17:46: f60 stray batch 9 rider: crow:plan-critique runs in one s
 done 2026-11-20 17:50: f63 wish-cover counts joined lines now: FRM-618 72 uncited, cite them before slice F lands (land gate) (FRM-618 In Progress)
 
 17:50 f63 dropped: the 0 → 72 jump was the stray's overreach (wisphunter P1), fixed in its round 2, no citing needed
+
+done 2026-11-20 18:10: f64 FRM-618: cite its pocket-folded lines (PK-424, PK-349) in the spec before slice F lands; wish-cover reds 66 (FRM-618 In Progress, PK-424 done, PK-349 open)
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-20T15:32:00Z'
+updated_date: '2026-11-20T16:10:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,7 +16,7 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f25 speak v2 with dima: bytes move → mess hunt (FRM-629:W26–W27) → wisps → design; FRM-497 rides it
+- [ ] #1 f49 speak v2 prep with dima: his two remaining parts; every speak v2 ticket signed and chained (18:10)
 - [ ] #2 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
 - [ ] #3 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
 - [ ] #4 f48 📅 wishkeeper card verdict: highs real ≥ 4 in 5 on the 5 min cache, then close the trial — on: 2026-11-26
@@ -754,4 +754,6 @@ done 2026-11-20 17:20: f43 📅 wishkeeper-cache verdict: the 1 h arm's 7 days r
 done 2026-11-20 17:26: f47 designer W49 tail: answer how to search and how to query for design refs before speak v2's design day
 
 done 2026-11-20 17:32: f46 design-loupe probe: a cheap summon tests artifact comments on dima's account, then keep or retire (o13)
+
+done 2026-11-20 18:09: f25 speak v2 with dima: bytes move → mess hunt (FRM-629:W26–W27) → wisps → design; FRM-497 rides it (FRM-629 Todo, FRM-497 Todo)
 <!-- SECTION:NOTES:END -->
