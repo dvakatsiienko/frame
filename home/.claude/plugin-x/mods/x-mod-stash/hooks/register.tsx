@@ -4,13 +4,8 @@ import type { Register } from 'claude-code';
 import type { QuietLogLine } from '../types/stash.d.ts';
 import { renderBand } from './band.tsx';
 import { drawBoard } from './board.tsx';
-import { bootNote, closeBoot, openBoot } from './boot.ts';
-import {
-    flushFields,
-    isTypedHere,
-    leaveBoxes,
-    returnToBoxes,
-} from './fields.ts';
+import { closeBoot, openBoot } from './boot.ts';
+import { flushFields, leaveBoxes, returnToBoxes } from './fields.ts';
 import {
     WIND_DELAY_MS,
     armRelease,
@@ -20,36 +15,23 @@ import {
     quietLocked,
     steersOnCompact,
 } from './held.ts';
-import { joinsLocked, settleJoins, takeJoins } from './joins.ts';
+import { joinsLocked, settleJoins } from './joins.ts';
 import {
     armHot,
     capAtMeasure,
     capAtTurnEnd,
     holdHot,
-    paceStep,
     seatDefaults,
     warm,
 } from './keep-warm.ts';
-import { readLanes, takeLaneMoves } from './lanes.ts';
-import {
-    ORBIT_TOOL,
-    isFresh,
-    joinRowsText,
-    joinText,
-    oneLine,
-    orbitOp,
-    planText,
-    turnEnded,
-} from './orbit.ts';
-import { takeMarks, takePlanMark } from './orbit-presses.ts';
+import { turnEnded } from './orbit.ts';
 import {
     EMPTY_ORBIT,
-    absorbMarks,
     currentOrbit,
     inMarking,
     saveOrbit,
 } from './orbit-store.ts';
-import { LANE_OWNER, orbitCall } from './orbit-tool.ts';
+import { LANE_OWNER } from './orbit-tool.ts';
 import {
     boldFleetWords,
     bulletDots,
@@ -58,28 +40,14 @@ import {
     numberCircled,
     parseWait,
 } from './parse.ts';
-import { AWAY_NOTE, composePrompt, takeLaneSteers } from './prompt-notes.ts';
+import { composePrompt } from './prompt-notes.ts';
 import { peerPing, quietHeldText } from './quiet.ts';
 import { quietLog } from './quiet-books.ts';
-import {
-    SEND_TOOL,
-    quietKindsOff,
-    quietOf,
-    quietSendEnd,
-    quietSendStart,
-    quietWhy,
-    saveQuiet,
-} from './quiet-gate.ts';
-import { WRAP_UP_TOOL, settleTask, stopRed, waitsOf } from './reply-fix.ts';
+import { quietKindsOff, quietOf, quietWhy, saveQuiet } from './quiet-gate.ts';
+import { settleTask, stopRed, waitsOf } from './reply-fix.ts';
 import { memberOf, openBoard, registry } from './roster.ts';
-import { laneRoundLine } from './rounds.ts';
 import { endSession, forget } from './session-end.ts';
-import {
-    currentId,
-    isLaneOwner,
-    refreshThreads,
-    sessionName,
-} from './session-identity.ts';
+import { currentId, refreshThreads, sessionName } from './session-identity.ts';
 import { keepShelf, noteModel } from './session-record.ts';
 import { startSession } from './session-start.ts';
 import { drawSettingsPane } from './settings-pane.tsx';
@@ -87,27 +55,22 @@ import {
     QUIET_ON,
     SHOWN,
     flipKnob,
-    partsShown,
     readSwitch,
     setSettingsOpen,
     shownOf,
 } from './settings-store.ts';
+import { onToolCall } from './step-notes.ts';
 import { HOT, REPLY, type Reply, hotOf } from './store-keys.ts';
 import {
     clearWrap,
-    countTool,
     endBusy,
     endStop,
     endUserTurn,
     isTurnBusy,
     markActive,
-    markNudged,
-    markWork,
-    markWrapAsked,
-    setTurnAfk,
     turn,
 } from './turn.ts';
-import { forgetTold, orbitTexts, tickSentence } from './turn-notes.ts';
+import { forgetTold } from './turn-notes.ts';
 import {
     countWords,
     drawFill,
@@ -120,10 +83,7 @@ import { COMPACTING, windOf } from './wind.ts';
 import {
     COMPACT_SETTLE_MS,
     FILL,
-    takeFill,
-    takeWind,
     windAfterTurn,
-    windBlock,
     windOnCompact,
 } from './wind-run.ts';
 
@@ -133,7 +93,6 @@ import {
 // afk: one switch every session polls; while it is on, every prompt carries an away note, and a flip reaches a running turn.
 // keep-hot: while on and idle, one ping 50 min after the last turn ended keeps the prompt cache warm; the switch lives in $.store, so a reload keeps it
 
-const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';
 // the fleet board: cc's registry gives each session's state; each session's stash adds its 🔭 wait and context fill
 const BOARD = 'x-cc-deck';
 // 🎛️ is a pane of its own, which the surface tabs beside 🚦: the band is capped by cc, the list outgrew it (dima's pick a of
@@ -142,29 +101,12 @@ const SETTINGS_PANE = 'stash-settings';
 // a reload keeps `$.state` and resets the module: what must outlive a mod save lives there (FRM-320)
 // what the band and the board draw: renders read it, and a write redraws them, no invalidate
 const VIEW = { key: 'view', plugin: 'x-mod-stash' } as const;
-// the running turn, so a mid-turn reload still knows it is busy
-const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
 // a 📄 line's HH:MM — the same shape reply-check.py reads
 const STAMP = /(📄[^\n]*?\b)(\d{1,2}:\d{2})\b/g;
-const NUDGE_AT = 3;
-// a plan set in either of the last 2 turns still holds: a turn that did not move it gets no nudge (clio's brief 8)
-const PLAN_QUIET_TURNS = 2;
 // mobile mode: mods draw nothing on the phone, so the session prints the open asks as the asks fence instead
 const MOBILE = { key: 'mobile', plugin: 'x-mod-stash' } as const;
 const MOBILE_SKILL = /(^|:)mobile-mode$/;
 const MOBILE_OFF = /ARGUMENTS:\s*off\b/i;
-
-const WORK_TOOLS = new Set([
-    'Edit',
-    'Write',
-    'NotebookEdit',
-    'MultiEdit',
-    'Agent',
-]);
-const WORK_BASH =
-    /\b(claude\s+(--bg|-n\s+\S+.*--bg|stop|respawn)|git\s+commit|x\s+lane\s+(commit|push|pr-open|merge-main|seed)|x\s+mods\s+edit\s+push)\b/;
-export const isWork = (tool: string, command?: string) =>
-    WORK_TOOLS.has(tool) || (tool === 'Bash' && WORK_BASH.test(command ?? ''));
 
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
@@ -618,163 +560,7 @@ export const register: Register = (on) => {
 
     // orbit's write door, where the session adds, resolves and follows up its asks and sets its plan; and afk flipped
     // mid-turn: the next tool result carries the new state once
-    on('tool.call', async ($, e, next) => {
-        await flushFields($, viewDoors($));
-        if ((e.tool as string) === ORBIT_TOOL) {
-            const input = e as Record<string, unknown>;
-            const ops = Array.isArray(input.ops)
-                ? input.ops.filter(
-                      (x): x is Record<string, unknown> =>
-                          typeof x === 'object' && x !== null,
-                  )
-                : [input];
-            if (!ops.length)
-                return { deny: 'orbit: ops needs one { op, … } or more' };
-            // a «changed:» resolve needs a follow or an add that lands: each is tried on the orbit as it stands, op is pure
-            const was = await currentOrbit($);
-            const isAmended = ops.some(
-                (x) =>
-                    (x.op === 'follow' || x.op === 'add') &&
-                    !('deny' in orbitOp(was, x, true)),
-            );
-            if (ops.length === 1) {
-                const r = await orbitCall(
-                    $,
-                    ops[0] as Record<string, unknown>,
-                    isAmended,
-                );
-                return ('deny' in r ? r : { result: r.result }) as never;
-            }
-            const lines: string[] = [];
-            let landed = 0;
-            for (const [i, x] of ops.entries()) {
-                const r = await orbitCall($, x, isAmended);
-                if ('deny' in r)
-                    lines.push(`${i + 1} ${String(x.op)}: refused — ${r.deny}`);
-                else {
-                    landed++;
-                    lines.push(`${i + 1} ${String(x.op)}: ${r.result}`);
-                }
-            }
-            const text = lines.join('\n');
-            return (landed ? { result: text } : { deny: text }) as never;
-        }
-        // a wind blocks on work that STARTS after «pending: none», so the check runs before the call does
-        if (!e.agentId)
-            await windBlock($, e as Record<string, unknown>).catch(
-                () => undefined,
-            );
-        const send =
-            (e.tool as string) === SEND_TOOL && !e.agentId
-                ? await quietSendStart($, e as Record<string, unknown>).catch(
-                      () => undefined,
-                  )
-                : undefined;
-        const r = await next(e);
-        if (r.deny !== undefined || e.agentId) return r;
-        if (
-            (e.tool as string) === WRAP_UP_TOOL &&
-            oneLine((e as Record<string, unknown>).ask)
-        )
-            markWrapAsked();
-        if (
-            isWork(
-                e.tool as string,
-                (e as { command?: unknown }).command as string | undefined,
-            )
-        )
-            markWork();
-        const notes: string[] = [];
-        const sent = send
-            ? await quietSendEnd($, send, r.result).catch(() => undefined)
-            : undefined;
-        if (sent?.line) notes.push(sent.line);
-        // a fresh answer: core's `text` and `ref` still name the refusal
-        const answer = sent?.held ? ({ result: sent.held } as never) : r;
-        const isOn = await partsShown($);
-        if ((e.tool as string) === SEND_TOOL && isOn('stash.rounds')) {
-            const round = await laneRoundLine(
-                $,
-                e as Record<string, unknown>,
-                r.result,
-            ).catch(() => undefined);
-            if (round) notes.push(round);
-        }
-        if (turn.turnAfk !== undefined && turn.turnAfk !== warm.afk) {
-            setTurnAfk(warm.afk);
-            if (isOn('stash.afk')) notes.push(warm.afk ? AWAY_NOTE : BACK_NOTE);
-        }
-        const boot = await bootNote($, e.tool as string, isOn);
-        if (boot) notes.push(boot);
-        // a mark dima made while any turn of this session runs joins it here, model-only, and locks — a peer's or a task's
-        // turn too, only the keep-hot ping never takes one (dima's o10, 2026-10-11); the turn is read from $.state, which a
-        // mid-turn reload keeps
-        await absorbMarks($, () => keepShelf($), isTypedHere);
-        const isPing = (await $.state.get(TURN)).value?.isPinged ?? turn.pinged;
-        const fresh =
-            isPing || !isOn('stash.orbit')
-                ? []
-                : await takeMarks($, (o) => o.asks.filter(isFresh));
-        if (fresh.length)
-            notes.push(
-                joinText(
-                    fresh,
-                    tickSentence(await orbitTexts($), fresh.length),
-                ),
-            );
-        // a lane steer dima took while clio's turn runs joins it here too, as an orbit mark does
-        if (!isPing && isOn('stash.glide') && (await isLaneOwner($))) {
-            notes.push(...(await takeLaneMoves($)));
-            notes.push(...(await takeLaneSteers($, await readLanes($))));
-        }
-        // 🐦‍🔥 a press while this session works slipstreams into its next tool step, as a tick does; an idle one waits
-        // for its next turn, never woken (dima, 19:14)
-        if (isOn('stash.second-wind')) {
-            // a long turn crosses the lines with no prompt: the step reads its fill live (probed, 2.1.322)
-            const fill = await $.session
-                .usage()
-                .then((u) => u.context.percent)
-                .catch(() => undefined);
-            const fillLine = await takeFill($, fill).catch(() => undefined);
-            if (fillLine) notes.push(fillLine);
-            const wind = await takeWind($, await isLaneOwner($)).catch(
-                () => undefined,
-            );
-            if (wind) notes.push(wind);
-        }
-        // dima's phases mark joins the running turn at its next tool call
-        const p =
-            !isPing && isOn('stash.phases') ? await takePlanMark($) : undefined;
-        if (p) notes.push(planText(p));
-        const o = await currentOrbit($);
-        if (
-            !turn.isNudged &&
-            isOn('stash.phases') &&
-            countTool() >= NUDGE_AT &&
-            turn.isWorkTurn &&
-            !(o.plan && o.plan.at >= o.turns + 1 - PLAN_QUIET_TURNS)
-        ) {
-            markNudged();
-            notes.push(
-                o.plan
-                    ? `phases not set for ${PLAN_QUIET_TURNS + 1} turns — update them with ${ORBIT_TOOL} plan`
-                    : `no phases yet — set them with ${ORBIT_TOOL} plan`,
-            );
-        }
-        // last: the rung moves here, and everything above may still throw
-        if (!isPing) {
-            const pace = await paceStep($).catch(() => undefined);
-            if (pace) notes.push(pace);
-        }
-        // a join herdr wrote mid-turn lands at the next tool step, as a tick does; taken after every step that could
-        // throw, since a taken row is stamped joined at the turn's end
-        const joins = isPing
-            ? []
-            : await joinsLocked(() => takeJoins($)).catch(() => []);
-        if (joins.length) notes.push(joinRowsText(joins));
-        if (!notes.length) return answer;
-        return { ...answer, context: [...(r.context ?? []), ...notes] };
-    });
+    on('tool.call', ($, e, next) => onToolCall($, e, next, viewDoors($)));
 
     // the band: one row — the meters' readings, the 🔭 mark, the switches — then the bars
     // and a refused threshold's one line

@@ -436,3 +436,39 @@ export async function registerOrbitTool($: EngineInterface) {
             $.ui.log('x-mod-stash: the orbit tool was not registered'),
         );
 }
+
+// one orbit call, its ops in order: a batch lands when one op does, each op's line in the answer
+export async function orbitToolCall(
+    $: EngineInterface,
+    input: Record<string, unknown>,
+): Promise<{ result: string } | { deny: string }> {
+    const ops = Array.isArray(input.ops)
+        ? input.ops.filter(
+              (x): x is Record<string, unknown> =>
+                  typeof x === 'object' && x !== null,
+          )
+        : [input];
+    if (!ops.length) return { deny: 'orbit: ops needs one { op, … } or more' };
+    // a «changed:» resolve needs a follow or an add that lands: each is tried on the orbit as it stands, op is pure
+    const was = await currentOrbit($);
+    const isAmended = ops.some(
+        (x) =>
+            (x.op === 'follow' || x.op === 'add') &&
+            !('deny' in orbitOp(was, x, true)),
+    );
+    if (ops.length === 1)
+        return orbitCall($, ops[0] as Record<string, unknown>, isAmended);
+    const lines: string[] = [];
+    let landed = 0;
+    for (const [i, x] of ops.entries()) {
+        const r = await orbitCall($, x, isAmended);
+        if ('deny' in r)
+            lines.push(`${i + 1} ${String(x.op)}: refused — ${r.deny}`);
+        else {
+            landed++;
+            lines.push(`${i + 1} ${String(x.op)}: ${r.result}`);
+        }
+    }
+    const text = lines.join('\n');
+    return landed ? { result: text } : { deny: text };
+}
