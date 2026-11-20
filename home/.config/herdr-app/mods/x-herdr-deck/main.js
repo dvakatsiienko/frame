@@ -6,6 +6,7 @@ import { View, div } from 'gpui-kit';
 import {
     exec,
     home,
+    layout,
     props,
     readTextFile,
     setShared,
@@ -72,7 +73,7 @@ import {
     sessions,
     states,
 } from './shelf.js';
-import { TAB_GO, loopOf, nextStop, tabAsk, tabStopsKey } from './tab-loop.js';
+import { createTabMember } from './tab-loop.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('gpui-kit').AsyncContext} AsyncContext */
@@ -125,8 +126,8 @@ export default class Deck extends View {
     /** each steer box's Tab place, and the one holding the keyboard @type {Map<string, number>} */
     tabAt = new Map();
     steerFocus = /** @type {string | null} */ (null);
-    /** the last Tab-loop ask acted on, by its time */
-    tabGo = 0;
+    /** the deck's seat in the Tab loop: its drawn steer boxes */
+    tab = createTabMember('x-herdr-deck', { layout, setShared, shared });
     /** @param {unknown} _props @param {Context} cx */
     init(_props, cx) {
         cx.bind_keys([
@@ -151,8 +152,6 @@ export default class Deck extends View {
                 keystroke: 'shift-tab',
             },
         ]);
-        this.tabGo =
-            /** @type {{ at?: number } | null} */ (shared(TAB_GO))?.at ?? 0;
         // the thread strip is gone (dima, 20:12: «it eats UI»), its block hidden; a `view: seat` copy herdr still keeps
         // alive draws nothing and reads nothing, so it never runs a second deck. «seat» is the layout's own value in
         // layouts/itrout.json: renaming it means a layout edit, never done while a thread holds focus
@@ -674,22 +673,6 @@ export default class Deck extends View {
         cx.notify();
     }
 
-    /** the deck's stops in the Tab loop, published when they change @param {Context} cx @param {string[]} stops */
-    publishStops(cx, stops) {
-        if (
-            JSON.stringify(shared(tabStopsKey('x-herdr-deck'))) ===
-            JSON.stringify(stops)
-        )
-            return;
-        cx.timer.after(0, () => setShared(tabStopsKey('x-herdr-deck'), stops));
-    }
-
-    /** asks the Tab loop for the stop after `from`; its owner focuses it @param {string} from @param {boolean} isBack */
-    tabTo(from, isBack) {
-        const to = nextStop(loopOf(shared), from, isBack);
-        setShared(TAB_GO, tabAsk(shared, to));
-    }
-
     /** @param {string} key */
     makeSteerBox(key) {
         try {
@@ -941,10 +924,10 @@ export default class Deck extends View {
                                             this.steerKeyAct(cx, key, true),
                                         )
                                         .on_action(STEER_TAB, () =>
-                                            this.tabTo(`steer-${key}`, false),
+                                            this.tab.ask(`steer-${key}`, false),
                                         )
                                         .on_action(STEER_BACK, () =>
-                                            this.tabTo(`steer-${key}`, true),
+                                            this.tab.ask(`steer-${key}`, true),
                                         )
                                         // a let-go key ends a press, so the next Enter acts however soon; ⌘ let go
                                         // ends a cmd-enter, whose Enter key-up macOS never sends
@@ -1154,7 +1137,7 @@ export default class Deck extends View {
                 this.pressStateOf(s, ask.id) !== 'locked',
         );
         this.tabAt = new Map(stops.map((id, i) => [id, i + 1]));
-        this.publishStops(cx, stops);
+        this.tab.publish(stops, (run) => cx.timer.after(0, run));
         return sections.map((section) => {
             if (section.kind === 'pinned')
                 return v_flex()
@@ -1377,15 +1360,9 @@ export default class Deck extends View {
                 cx.spawn((cx) => this.pressAll(cx, asker));
         }
         // the Tab loop asks for one of the steer boxes; an ask made before this load never fires
-        const go = /** @type {{ at?: number, to?: string } | null} */ (
-            shared(TAB_GO)
-        );
-        if ((go?.at ?? 0) > this.tabGo) {
-            this.tabGo = go?.at ?? 0;
-            const box = this.steers.get(String(go?.to).slice('steer-'.length));
-            if (go?.to?.startsWith('steer-') && box)
-                cx.timer.after(0, () => box.focus());
-        }
+        const to = this.tab.take();
+        const box = to && this.steers.get(to.slice('steer-'.length));
+        if (box) cx.timer.after(0, () => box.focus());
         // his order from the agents list, read at every draw, so a drag there moves the deck at once; the read's own
         // order (blocked, working, then by name) stays for a thread the list does not show
         const rows = inListOrder(
@@ -1396,7 +1373,7 @@ export default class Deck extends View {
             (s) => STATE[s.status] === 'working',
         ).length;
         const asks = this.rows.reduce((n, s) => n + s.asks.length, 0);
-        if (asks === 0) this.publishStops(cx, []);
+        if (asks === 0) this.tab.publish([], (run) => cx.timer.after(0, run));
         // one head for every section: a hairline above, its emoji, its name and its count in words
         /** @param {string} text */
         const header = (text) =>

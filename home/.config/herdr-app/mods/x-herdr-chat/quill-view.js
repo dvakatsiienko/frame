@@ -4,7 +4,7 @@
 
 import { Textarea, TextareaState, h_flex, v_flex } from 'gpui-base';
 import { div, image } from 'gpui-kit';
-import { appHome, setShared, shared } from 'herdr';
+import { appHome } from 'herdr';
 
 import { fileName, isImagePath, pickFiles } from './attach.js';
 import { createAttachments } from './attachments.js';
@@ -23,7 +23,6 @@ import {
     saveShots,
 } from './shots.js';
 import { createSlashMenu, listedSkills, menuNames } from './slash.js';
-import { TAB_GO, loopOf, nextStop, tabAsk } from './tab-loop.js';
 
 /** @typedef {import('./chat-types.js').Context} Context */
 /** @typedef {import('./chat-types.js').Theme} Theme */
@@ -62,9 +61,10 @@ const ATTACH_IO = {
  *   say: (note: string | null, cx: Context) => void,
  *   flash: (note: string, ms: number, cx: Context) => void,
  *   messages: () => string[],
+ *   tab: ReturnType<typeof import('./tab-loop.js').createTabMember>,
  * }} deps the shown thread's transcript, the chat's column width, the pickers drawn in the quill, the send path, the
  *   picture viewer, the note under the quill (said, or shown for a while), and the thread's messages as written, where a
- *   paste finds its list markers
+ *   paste finds its list markers, and the chat's seat in the Tab loop
  */
 export function createQuill({
     shownFile,
@@ -75,6 +75,7 @@ export function createQuill({
     say,
     flash,
     messages,
+    tab,
 }) {
     /** the box: herdr draws its text itself, so a key typed in it draws nothing of ours; made at start @type {import('gpui-base').TextareaState | null} */
     let box = null;
@@ -202,8 +203,7 @@ export function createQuill({
 
     /** Tab and shift-Tab in the quill ask the Tab loop for the next stop @param {boolean} isBack */
     function tabFromQuill(isBack) {
-        const to = nextStop(loopOf(shared), 'quill', isBack);
-        setShared(TAB_GO, tabAsk(shared, to));
+        tab.ask('quill', isBack);
     }
 
     /**

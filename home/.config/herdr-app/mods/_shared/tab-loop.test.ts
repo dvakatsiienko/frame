@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { loopOf, nextStop, tabAsk } from './tab-loop.js';
+import { createTabMember, loopOf, nextStop, tabAsk } from './tab-loop.js';
 
 // FRM-620 slice 5c: Tab walks one loop of stops our mods register, never herdr's hidden ones; a mod joins by
 // publishing its stops (his 14:59: later the antenna's threads, the header's gear)
@@ -26,13 +26,62 @@ describe('the Tab loop', () => {
         expect(nextStop(loop, 'steer-gone:o9', false)).toBe('quill');
     });
 
-    test('the loop takes each mod’s stops in the mods’ order, a mod with none adding nothing', () => {
+    // a real layout's shape, trimmed (layouts/itrout.json): blocks nest in `children`, a mod sits in `content`
+    const layout = {
+        children: [
+            { content: { mod: 'x-herdr-tab-pills' } },
+            {
+                children: [
+                    { content: { mod: 'x-herdr-chat' } },
+                    { content: { mod: 'x-herdr-deck' } },
+                ],
+            },
+        ],
+    };
+
+    test('the loop takes each mod’s stops in layout order, a mod with none adding nothing', () => {
         const stops: Record<string, unknown> = {
             'tab.stops.x-herdr-chat': ['quill'],
             'tab.stops.x-herdr-deck': ['steer-a:o1'],
         };
-        expect(loopOf((key) => stops[key])).toEqual(['quill', 'steer-a:o1']);
-        expect(loopOf(() => 'garbage')).toEqual([]);
+        expect(loopOf((key) => stops[key], layout)).toEqual([
+            'quill',
+            'steer-a:o1',
+        ]);
+        expect(loopOf(() => 'garbage', layout)).toEqual([]);
+    });
+
+    test('a mod that registers a stop joins the loop where the layout places it, with no shared list edited', () => {
+        const store = new Map<string, unknown>([
+            ['tab.stops.x-herdr-chat', ['quill']],
+            ['tab.stops.x-herdr-deck', ['steer-a:o1']],
+        ]);
+        const herdr = {
+            layout: () => ({
+                children: [
+                    { content: { mod: 'x-herdr-chat' } },
+                    { content: { mod: 'x-test-gear' } },
+                    { content: { mod: 'x-herdr-deck' } },
+                ],
+            }),
+            setShared: (key: string, value: unknown) => store.set(key, value),
+            shared: (key: string) => store.get(key),
+        };
+        createTabMember('x-test-gear', herdr).publish(['gear'], (run) => run());
+        expect(loopOf(herdr.shared, herdr.layout())).toEqual([
+            'quill',
+            'gear',
+            'steer-a:o1',
+        ]);
+    });
+
+    test('a mod gone from the layout leaves the loop, its old stops skipped', () => {
+        const stops: Record<string, unknown> = {
+            'tab.stops.x-herdr-chat': ['quill'],
+            'tab.stops.x-herdr-deck-old': ['steer-a:o1'],
+        };
+        expect(loopOf((key) => stops[key], layout)).toEqual(['quill']);
+        expect(loopOf((key) => stops[key], null)).toEqual([]);
     });
 });
 
