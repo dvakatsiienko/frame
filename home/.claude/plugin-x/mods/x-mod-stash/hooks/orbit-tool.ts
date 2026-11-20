@@ -45,7 +45,7 @@ import { keepShelf } from './session-record.ts';
 import { partRefusal, readNumber } from './settings-store.ts';
 import { addGridQs, markWork, turn } from './turn.ts';
 import { STALE_TURNS } from './turn-notes.ts';
-import { bare } from './util.ts';
+import { bare, expandHome } from './util.ts';
 import { windReady } from './wind-run.ts';
 
 // the running turn, so a mid-turn reload still knows it is busy
@@ -283,10 +283,7 @@ export async function orbitCall(
                     deny: 'orbit glide: plan is an absolute or ~/ path to the lane plan file',
                 };
             const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';
-            const read = await readPlanSteps(
-                $,
-                input.plan.replace(/^~(?=\/)/, home),
-            );
+            const read = await readPlanSteps($, expandHome(input.plan, home));
             if ('state' in read)
                 return {
                     deny:
@@ -311,10 +308,10 @@ export async function orbitCall(
             if (input.act === 'create')
                 given = { ...given, items: steps, planHome: home };
             else if (
-                before
-                    .find((l) => l.id === oneLine(input.id))
-                    ?.plan?.replace(/^~(?=\/)/, home) !==
-                input.plan.replace(/^~(?=\/)/, home)
+                expandHome(
+                    before.find((l) => l.id === oneLine(input.id))?.plan,
+                    home,
+                ) !== expandHome(input.plan, home)
             )
                 return {
                     deny: `orbit glide: edit cannot link a plan; lane ${oneLine(input.id)} takes one at create`,

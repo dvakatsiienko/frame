@@ -43,3 +43,11 @@ export function serial() {
         return run;
     };
 }
+
+// a path's leading `~/` as the home dir; any other path, or none, as it is
+export function expandHome<T extends string | undefined>(
+    path: T,
+    home: string,
+) {
+    return path?.replace(/^~(?=\/)/, home) as T;
+}

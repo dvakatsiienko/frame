@@ -56,6 +56,7 @@ import { isSpeakingNow, playPress, refreshSpeaking, speak } from './speak.ts';
 import { cleanTree, drawn } from './tree.ts';
 import { STALE_TURNS, planAge } from './turn-notes.ts';
 import { meterNow } from './usage.ts';
+import { expandHome } from './util.ts';
 import { load, publish, viewDoors } from './view.ts';
 import { flipWind } from './wind.ts';
 import { WIND_EMOJI, windSay } from './wind-run.ts';
@@ -108,7 +109,7 @@ const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
 async function openPath($: EngineInterface, path: string) {
     const home = (await $.env.get('HOME')) ?? '';
     await $.process
-        .run(['open', path.replace(/^~(?=\/)/, home)])
+        .run(['open', expandHome(path, home)])
         .catch(() => undefined);
 }
 async function pressWind($: EngineInterface, sid: string) {

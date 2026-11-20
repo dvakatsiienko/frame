@@ -23,7 +23,7 @@ import {
     threadRecords,
 } from './session-identity.ts';
 import { partsShown } from './settings-store.ts';
-import { bare, errorText } from './util.ts';
+import { bare, errorText, expandHome } from './util.ts';
 import { xRead } from './x-cli.ts';
 
 type Entry = StashEntry;
@@ -214,7 +214,7 @@ function laneCreate(
     if (!title) return { deny: 'orbit glide: a title names the lane' };
     const plan = oneLine(input.plan);
     const expanded = (path: string | undefined) =>
-        path?.replace(/^~(?=\/)/, oneLine(input.planHome));
+        expandHome(path, oneLine(input.planHome));
     // the same lane is the same topic or the same lane plan file, whatever the title says
     const open = lanes.find(
         (l) =>
@@ -425,11 +425,9 @@ export async function openDispatchedLanes(
     }
     for (const { codie, member } of newest.values()) {
         const plan = `~/.local/state/x/lanes/${codie.lane}/lane-plan.md`;
-        const path = plan.replace(/^~(?=\/)/, home);
+        const path = expandHome(plan, home);
         const lanes = await readLanes($);
-        const onPlan = lanes.filter(
-            (l) => l.plan?.replace(/^~(?=\/)/, home) === path,
-        );
+        const onPlan = lanes.filter((l) => expandHome(l.plan, home) === path);
         const open = onPlan.find((l) => !l.endedAt);
         const shown = await laneShown($, codie);
         if (open && shown.isFresh && shown.title && open.title !== shown.title)
@@ -507,10 +505,7 @@ export async function followPlans($: EngineInterface) {
             next.push(lane);
             continue;
         }
-        const read = await readPlanSteps(
-            $,
-            lane.plan.replace(/^~(?=\/)/, home),
-        );
+        const read = await readPlanSteps($, expandHome(lane.plan, home));
         if ('state' in read) {
             const isMarked =
                 read.state === 'gone' ? lane.isPlanGone : lane.isPlanStale;
