@@ -11,7 +11,7 @@ const OWNERS = {
     'fleet.json': 'session-record.ts',
     'herdr-joins': 'joins.ts',
     'herdr-state': 'session-record.ts',
-    'lane-rounds.json': 'register.tsx',
+    'lane-rounds.json': 'rounds.ts',
     'lanes.json': 'lanes.ts',
     'operator-override.json': 'override.ts',
     'relay.json': 'parked-wake.ts',
