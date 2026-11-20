@@ -1,40 +1,32 @@
-# herdr — x-herdr-deck — sessions
+# herdr — x-herdr-deck — phases and the deck's reads
 
 wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 
 - ⬜ the deck reads at one type scale, each section under one head
   - given the deck draws
   - then names and ask text are 15 px, secondary lines 13 px, nothing under 12 px, and no secondary text is the theme's `dim` (2.95:1 on white; `muted` is 5.48:1, 5.07:1 on a card)
-  - and the three heads read «🧵 sessions: N, M working», «🪐 orbit: N asks», «🛼 glide: N lanes», semibold 13 px under a hairline
-  - and the sessions are x's thread store's live threads (`~/.claude/shelf/threads.json`, FRM-570 rule 8), each status from cc's registry file; an unreadable store or a `ps` with no answer keeps the last rows, the head adding «· stale, the last list kept»; not checked: the stale head in a shot
-  - and a row stays only while its own process runs: a thread whose process ended, or whose pid came back as another process (its start time no longer the store's `procStart`), leaves at the next read, its 🔥 with it (FRM-601; shots `~/.local/state/looks/FRM-601/`)
+  - and the three heads read «🪐 orbit: N asks», «🛼 glide: N lanes», «🌔 phases», semibold 13 px under a hairline
+  - and the deck's threads are x's thread store's live threads (`~/.claude/shelf/threads.json`, FRM-570 rule 8), each status from cc's registry file; an unreadable store or a `ps` with no answer keeps the last rows
+  - and a row stays only while its own process runs: a thread whose process ended, or whose pid came back as another process (its start time no longer the store's `procStart`), leaves at the next read, its phases with it (FRM-601; shots `~/.local/state/looks/FRM-601/`)
   - and each ask is a card led by its bold id, its tick a filled button and replay a quiet one, each 28 px tall; past 60 % a thread's ctx turns red and semibold (shot 1953, before and after)
   - not checked: the glide cards (below the fold in the shot), the focus ring by keyboard, the dark theme
-- ⬜ the deck's sessions and orbit sections follow the agents list's order
-  - given dima drags a thread in the agents list
-  - then the deck's sessions rows and its orbit sections move to the same order at once, and an ask arriving never reorders them (shot 2024)
-  - decision: the agents list publishes the pids it shows as shared `x-herdr-agents.order`, the deck reads that one key (dima, 20:20: «The order in the agents list is the true source for the order in Orbit for threads»); this replaces blocked-first for the listed threads, their state still shows by the dot
-  - decision: a `claude --bg` thread shows in herdr as `claude attach <job id>`, so the list finds its session by the registry file's `jobId`
+- ⬜ the deck's orbit sections and phases follow antenna's order
+  - given dima drags a thread in antenna
+  - then the deck's orbit sections and its phases groups move to the same order at once, and an ask arriving never reorders them (shot 2024)
+  - decision: antenna publishes the pids it shows as shared `x-herdr-agents.order`, the deck reads that one key (dima, 20:20: «The order in the agents list is the true source for the order in Orbit for threads»); this replaces blocked-first for the listed threads
+  - decision: a `claude --bg` thread shows in herdr as `claude attach <job id>`, so antenna finds its session by the registry file's `jobId`
   - not checked: a drag by his hand
-- ✅ every live thread on one list
-  - given threads run on this mac
-  - when the deck draws
-  - then each live thread shows as one row by its session name, in the agents list's order; a thread the list does not show goes last, blocked first, then working, then by name
-  - decision: a thread whose process is gone draws no row, so no press goes to a dead thread
-  - decision: the name sorts by its words, past a leading badge, so 🦉 and 🎀 never decide the order
-- ✅ a thread's row reads its model and context
-  - given a thread has run a turn
-  - then its row shows its model and a context bar with its percent, red from 60 %
-- ✅ a thread's waiting-on line
-  - given a thread's last reply ended with a 🔭 line
-  - then its row shows that line under the name, selectable
-- ⬜ a thread's phases fold open
-  - given a thread has phases
-  - when dima clicks its row
-  - then its phases show under it, and a second click folds them
+- ⬜ the deck leaves the thread list to antenna
+  - given the deck draws
+  - then orbit is its first section and glide follows; the threads are antenna's alone (FRM-618:W1290, FRM-618:W1292)
+  - decision: the deck publishes each thread's facts by pid (context, wait line, model, keep hot, sid) under shared `x-herdr-deck.threads`; antenna draws them, and its 🔥 asks the deck through `x-herdr-deck.hot`, so the deck stays the press file's one writer
+- ⬜ every thread's phases pinned at the deck's bottom
+  - given threads with phases
+  - when the deck draws, and when orbit scrolls
+  - then one block at the bottom holds a group per thread under its name, in antenna's order, a thread with none left out; it stays pinned while orbit scrolls, and scrolls on its own past 320 px (FRM-618:W1291)
 - ⬜ the deck draws from the state files on the shelf, never the stash's private store
   - given x-mod-stash writes each thread's `~/.claude/shelf/herdr-state/<sid>.json`
-  - then every thread's asks, phases, waiting-on line, context and model draw from it, a thread after `/clear` included, and `rg x-mod-stash_inline` over x-herdr-deck prints nothing
+  - then every thread's asks, phases, waiting-on line, context, model and keep hot draw from it, a thread after `/clear` included, and `rg x-mod-stash_inline` over x-herdr-deck prints nothing
   - decision: a thread's file is found by its pid, the newest `at` winning, since the registry keeps the old id after a `/clear` (FRM-568)
 - ⬜ a glide card shows each lane's steps as the stash ticked them
   - given a lane in `~/.claude/shelf/lanes.json` that has not ended

@@ -27,12 +27,12 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **x-herdr-terminal-header** — the head row of the tray (the bottom quick terminal), part of x-herdr-terminal
 - **x-herdr-status** — the status bar along the bottom of the middle column, under the tray: branch, folder, the open-in commands (VS Code), the command palette
 - **sidebar** — the window's left column: antenna today; settled to hold glide at its bottom
-- **deck** — the window's right column, drawn by x-herdr-deck: today every thread's row, then orbit, then glide; settled to hold orbit on top and phases at its bottom
+- **deck** — the window's right column, drawn by x-herdr-deck: orbit on top, then glide, phases pinned at its bottom; no thread list, antenna holds it
 - **antenna** — the sidebar's list of every thread, once each, in his order, grouped by space or not, a still dot per row; drawn by `x-herdr-antenna`, its knobs in its ⚙️ popup; it replaced the agents list (FRM-618)
 - **orbit** — the asks threads put to dima, in the deck; one ask is **ticked** or **replayed**
-- **phases** — planned in the deck: each thread's next moves, the lines it keeps with orbit's plan op
+- **phases** — each thread's next moves, the lines it keeps with orbit's plan op; one block pinned at the deck's bottom, a group per thread in antenna's order
 - **glide** — one card per running lane, its steps and «we are here»; drawn in the deck today, settled at the sidebar's bottom, stuck there and growing upward
-- **x-herdr-deck** — our deck mod: the deck column today (thread rows, orbit, glide)
+- **x-herdr-deck** — our deck mod: orbit, glide and phases; it publishes each thread's facts for antenna and the chat
 - **x-herdr-agents** — our old agents list, out of the layout since antenna took the sidebar; kept in the tree until his word
 - **x-herdr-tabs** — our tab bar above a space's panes, each agent tab by its session name; copied from zoo's `my-tabs` (FRM-567)
 - **draft** — what dima has typed in the quill and not yet sent; kept per thread across a reload

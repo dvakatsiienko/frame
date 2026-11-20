@@ -10,8 +10,12 @@ wish: FRM-618 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ the ⚙️ cog opens antenna's settings, a small popup beside it
   - given antenna's header
   - when he clicks ⚙️
-  - then a small popup opens (never the settings window) with Group by space, Show tabs, Idle time, Context fill, Wait line and Row height; each flip redraws antenna while the popup stays open, and the values live in `~/.claude/shelf/herdr-settings/settings.json` (PK-349:W1270, PK-349:W1271)
+  - then a small popup opens (never the settings window) with Group by space, Show tabs, Idle time, Context fill, Wait line, Keep hot 🔥, Model and Row height; each flip redraws antenna while the popup stays open, and the values live in `~/.claude/shelf/herdr-settings/settings.json` (PK-349:W1270, PK-349:W1271)
   - and with Group by space off the rows list ungrouped in his one order; each detail off leaves that detail alone (PK-349:W1267)
+- ⬜ a row carries keep hot 🔥 and the model, once the deck's
+  - given Keep hot 🔥 on (its default) and Model off (its default)
+  - when antenna draws
+  - then each row shows its 🔥, filled while kept hot, and a press keeps that thread hot as the deck's did; with Model on, each row shows its model (FRM-618:W1292)
 - ⬜ a drag orders the rows, no sort and no sound button
   - given antenna's rows
   - when he drags one within its space
