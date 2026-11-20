@@ -268,7 +268,7 @@ func bodyDamage(id, source, held, edit string, pulledSize int, shrink bool) *Fai
 			Msg:  fmt.Sprintf("%s holds %d bytes, under a fifth of the %d pulled; nothing was written", source, len(edit), pulledSize),
 			Next: set + " --shrink — only when the cut is meant"}
 	}
-	kept := wishIDs(id, edit)
+	kept := append(wishIDs(id, edit), renumberedFrom(edit)...)
 	if lost := slices.DeleteFunc(wishIDs(id, held), func(n string) bool { return slices.Contains(kept, n) }); len(lost) > 0 {
 		return &Fail{Refused: true,
 			Msg:  fmt.Sprintf("%s lost %s of %s's wish: a W-line is dima's words, reworded but never dropped; nothing was written", source, strings.Join(lost, ", "), id),
@@ -301,6 +301,27 @@ func wishIDs(id, body string) []string {
 	for _, line := range wishItem.FindAllString(body, -1) {
 		home := cmp.Or(wishHome.FindString(line), id)
 		ids = append(ids, home+":"+wishNumber.FindString(line))
+	}
+	return ids
+}
+
+var wasInStamp = regexp.MustCompile(`\bwas ((?:PK|FRM|BYT)-\d+:W\d+)\b`)
+
+// the old ids a move to linear renumbered, each named «was <old id>» in its new line's stamp, the parenthesis right after the
+// id (` (`); the same words in a line's text name nothing
+func renumberedFrom(body string) []string {
+	var ids []string
+	for _, line := range strings.Split(body, "\n") {
+		at := wishItem.FindStringIndex(line)
+		if at == nil {
+			continue
+		}
+		if stamp, ok := strings.CutPrefix(line[at[1]:], " ("); ok {
+			stamp, _, _ = strings.Cut(stamp, ")")
+			for _, m := range wasInStamp.FindAllStringSubmatch(stamp, -1) {
+				ids = append(ids, m[1])
+			}
+		}
 	}
 	return ids
 }

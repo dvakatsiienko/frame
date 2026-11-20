@@ -366,6 +366,38 @@ func TestBodySetRefusesALostWLine(t *testing.T) {
 	}
 }
 
+// a move to linear renumbers: the new line says in its stamp which line it was, and that old id is kept, not lost
+func TestBodySetKeepsARenumberedWLineItsStampNames(t *testing.T) {
+	t.Parallel()
+	const pulled = "## wish\n\n* PK-349:W1290 (2026-11-20 14:20, dima): the thing\n* PK-460:W1294 (2026-11-20 14:45, dima): another\n"
+	cases := []struct {
+		name, edit string
+		lost       string
+	}{
+		{"both renumbered, each stamp says was",
+			"## wish\n\n* FRM-672:W1 (2026-11-20 14:20, dima, was PK-349:W1290): the thing\n* FRM-672:W2 (2026-11-20 14:45, dima, was PK-460:W1294): another\n", ""},
+		{"one renumbered, the other dropped",
+			"## wish\n\n* FRM-672:W1 (2026-11-20 14:20, dima, was PK-349:W1290): the thing\n", "PK-460:W1294"},
+		{"renumbered with no was",
+			"## wish\n\n* FRM-672:W1 (2026-11-20 14:20, dima): the thing\n* FRM-672:W2 (2026-11-20 14:45, dima, was PK-460:W1294): another\n", "PK-349:W1290"},
+		{"was names another line",
+			"## wish\n\n* FRM-672:W1 (2026-11-20 14:20, dima, was PK-349:W1291): the thing\n* FRM-672:W2 (2026-11-20 14:45, dima, was PK-460:W1294): another\n", "PK-349:W1290"},
+		{"was said in the line's words, not its stamp",
+			"## wish\n\n* FRM-672:W1 (2026-11-20 14:20, dima): the thing, was PK-349:W1290\n* FRM-672:W2 (2026-11-20 14:45, dima, was PK-460:W1294): another\n", "PK-349:W1290"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			server := liveBodyServer(t, pulled)
+			envelope, got := setAfterPull(t, server, c.edit, "--shrink")
+			said := fmt.Sprint(envelope["error"])
+			if refused := got.code == 1 && len(mutations(server)) == 0; refused != (c.lost != "") || !strings.Contains(said, c.lost) {
+				t.Errorf("exit %d, %d mutations, want refused %v naming %q: %s", got.code, len(mutations(server)), c.lost != "", c.lost, got.stdout)
+			}
+		})
+	}
+}
+
 func TestBodySetHoldsASignedBlock(t *testing.T) {
 	t.Parallel()
 	const above = "## wish\n\n* FRM-1:W1 (2026-10-30, dima): a thing\n\n"
