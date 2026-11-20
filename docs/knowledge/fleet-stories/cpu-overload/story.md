@@ -1,7 +1,7 @@
 ---
-status: sealed
-dates: 2026-08-26 → 2026-11-11
-tickets: [FRM-525, FRM-537, FRM-532, FRM-528]
+status: open
+dates: 2026-08-26 → 2026-11-20
+tickets: [FRM-525, FRM-537, FRM-532, FRM-528, FRM-662, FRM-590]
 tags: [cpu, perf, git, go-suite]
 fed-by: incidents
 ---
@@ -176,5 +176,13 @@ key to short sources, all read 2026-11-07. clock is local, UTC+2, except a time 
 - tried [read]: a git with no gettext and no CoreServices, 85 libraries against 706: the go suite 394 → 322 cpu-s, abba, on main before the fixture cut. FRM-532, signed 18:24, wires it into every agent shell
 - tried [read]: `posix_spawn` against Go's fork, one small program: 23 % less cpu per spawn. no suite number yet
 - verdict [read]: lane rows to 18:35: 3 lanes 12.8 and 13.5 cores, 2 lanes 8.0 to 13.8, 1 lane 6.7 to 9.4; the 13.8 held my own slim git suites. what runs moves the cores more than the count, still
+
+## 2026-11-20
+
+- seen [read]: 19:20 to 20:12 load 34 to 44 (`uptime`), the mods codie waited 40 min and its sixth sense 20 min on one review; dima, 20:09: «no one can do anything useful because of the test CPU roasting bottleneck»
+- verdict [read]: `x mods edit test --range` (397cd908, built that day for FRM-662's split) ran the whole mods suite at each of 22 commits; `claude plugin test` starts one Claude Code process per test file, 76 files, ~15 at once (`ps`), so ~1,700 launches in a row, beside every mods push's own whole suite and the other lanes' tests; nothing capped heavy suites machine-wide
+- cost [read]: the sixth sense got through 19 of 22 commits in ~40 min and started a rerun; the gate budget section read typecheck p90 13 s against 3 s at median load 47 (siesta-checks, 20:12)
+- wrong call: clio's — the range verb was signed into the review without a cost line; a per-commit whole suite was never weighed against the head plus the touched tests
+- tried: 20:10 the range walk stopped on clio's word; the stray builds the fix (dima's o37 tick, widened at 20:11): the whole suite at the head only, each commit its touched tests, every whole suite through `gate-queue.sh --long`, and a cap on files at once if `claude plugin test` has one (not checked)
 
 <!-- end -->
