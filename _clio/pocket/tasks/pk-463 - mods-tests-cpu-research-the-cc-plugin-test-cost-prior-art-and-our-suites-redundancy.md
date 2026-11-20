@@ -42,4 +42,6 @@ ordinal: 78000
 
 20:51 ticket: FRM-678 (every W-line moved, the plan, the proposal, the story linked)
 close: moved to linear FRM-678
+
+20:51 close: PK-463:W1 done (answered in the reply); PK-463:W2–W16 moved to FRM-678 as FRM-678:W2–W16
 <!-- SECTION:NOTES:END -->
