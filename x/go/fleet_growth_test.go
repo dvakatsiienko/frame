@@ -54,6 +54,12 @@ func growthAt(t *testing.T, root string, env []string, now string) growthData {
 	return envelope.Data
 }
 
+// a crossing without its ask text, for the tests that compare what crossed
+func bare(c growthCrossing) growthCrossing {
+	c.Ask = ""
+	return c
+}
+
 // each part's seeded lines, read off the baseline file the run left in the fixture's state dir
 func seededLines(t *testing.T, env []string) map[string]int {
 	t.Helper()
@@ -126,7 +132,7 @@ func TestFleetGrowthNamesAPartAtTwiceItsBaseline(t *testing.T) {
 				return
 			}
 			want := growthCrossing{Part: "x-mod-alpha", Trigger: "size", Then: 100, Now: 200}
-			if len(got.Crossings) != 1 || got.Crossings[0] != want {
+			if len(got.Crossings) != 1 || bare(got.Crossings[0]) != want {
 				t.Errorf("crossings %+v, want only %+v", got.Crossings, want)
 			}
 		})
@@ -137,8 +143,13 @@ func TestFleetGrowthNamesAPartAtTwiceItsBaseline(t *testing.T) {
 func fixCommit(t *testing.T, root, dir, subject string, hoursAgo int) {
 	t.Helper()
 	now, _ := time.Parse(time.RFC3339, growthNow)
-	at := now.Add(-time.Duration(hoursAgo) * time.Hour).Format(time.RFC3339)
-	write(t, filepath.Join(root, dir, fmt.Sprintf("note-%d.txt", time.Now().UnixNano())), "x\n")
+	growthCommit(t, root, dir, subject, now.Add(-time.Duration(hoursAgo)*time.Hour).Format(time.RFC3339), 1)
+}
+
+// a commit of one new file of `lines` lines under a part's directory, dated at
+func growthCommit(t *testing.T, root, dir, subject, at string, lines int) {
+	t.Helper()
+	write(t, filepath.Join(root, dir, fmt.Sprintf("note-%d.txt", time.Now().UnixNano())), strings.Repeat("x\n", lines))
 	gitT(t, root, "add", "-A")
 	c := exec.Command("git", "-c", "user.name=fixture", "-c", "user.email=fixture@example.com", "-c", "commit.gpgsign=false", "commit", "-q", "-m", subject)
 	c.Dir = root
@@ -212,7 +223,7 @@ func TestFleetGrowthNamesAPartWithThreeFixesInSevenDays(t *testing.T) {
 				return
 			}
 			want := growthCrossing{Part: "x-mod-alpha", Trigger: "fixes", Count: c.want}
-			if len(got.Crossings) != 1 || got.Crossings[0] != want {
+			if len(got.Crossings) != 1 || bare(got.Crossings[0]) != want {
 				t.Errorf("crossings %+v, want only %+v", got.Crossings, want)
 			}
 		})
@@ -246,7 +257,7 @@ func TestFleetGrowthNamesAPartWithThreeOfHisTurnsInOneDay(t *testing.T) {
 			got := growth(t, root, env)
 
 			want := growthCrossing{Part: "x-mod-alpha", Trigger: "turns (rough)", Count: 3}
-			if c.wantIn && (len(got.Crossings) != 1 || got.Crossings[0] != want) {
+			if c.wantIn && (len(got.Crossings) != 1 || bare(got.Crossings[0]) != want) {
 				t.Errorf("crossings %+v, want only %+v", got.Crossings, want)
 			}
 			if !c.wantIn && len(got.Crossings) != 0 {
@@ -316,7 +327,7 @@ func TestFleetGrowthKeepAnswersACrossing(t *testing.T) {
 	}
 	got := growthAt(t, root, env, "2026-11-20T14:00:00Z")
 	want := growthCrossing{Part: "x-mod-alpha", Trigger: "fixes", Count: 3}
-	if len(got.Crossings) != 1 || got.Crossings[0] != want {
+	if len(got.Crossings) != 1 || bare(got.Crossings[0]) != want {
 		t.Errorf("3 fixes after the keep %+v, want only %+v", got.Crossings, want)
 	}
 }
@@ -331,5 +342,35 @@ func TestFleetGrowthKeepNamesNoUnknownPart(t *testing.T) {
 
 	if got.code != 2 || !strings.Contains(got.next, "x fleet growth") {
 		t.Errorf("exit %d next %q, want 2 and the verb to run", got.code, got.next)
+	}
+}
+
+// exit 6, the want line (W14: «we was building a guard for 26 days, and only after i spotted an issue an raised»): the guard's
+// history replayed, 932 lines on 6 Nov and 2,617 on 12 Nov; the reader at the 12 Nov point names x-mod-guard with the ask
+func TestFleetGrowthNamesTheGuardBeforeDimaSpotsIt(t *testing.T) {
+	t.Parallel()
+	const guardDir = "home/.claude/plugin-x/mods/x-mod-guard"
+	root, env := growthWorld(t)
+	growthCommit(t, root, guardDir, "✨ x-mod-guard: the guard stands in for the permission prompt", "2026-11-06T10:00:00Z", 932)
+	growthAt(t, root, env, "2026-11-06T12:00:00Z")
+	growthCommit(t, root, guardDir, "🔧 x-mod-guard: the command rules", "2026-11-08T10:00:00Z", 900)
+	for _, at := range []string{"2026-11-09T10:00:00Z", "2026-11-10T10:00:00Z", "2026-11-11T10:00:00Z"} {
+		growthCommit(t, root, guardDir, "🐞 x-mod-guard: a refusal", at, 1)
+	}
+	growthCommit(t, root, guardDir, "🔧 x-mod-guard: the rest", "2026-11-12T10:00:00Z", 782)
+	promptsDay(t, env, "2026-11-12", "13:00 x-mod-guard grew again", "13:05 the x-mod-guard story")
+
+	got := growthAt(t, root, env, "2026-11-12T12:00:00Z")
+
+	var ask string
+	for _, c := range got.Crossings {
+		if c.Part == "x-mod-guard" && c.Trigger == "size" {
+			ask = c.Ask
+		}
+	}
+	for _, want := range []string{"x-mod-guard", "932 → 2,617 lines", "first commit «✨ x-mod-guard: the guard stands in for the permission prompt» on 2026-11-06", "fixes in 7 days: 3", "his turns in a day (rough): 2", "keep, shrink or delete"} {
+		if !strings.Contains(ask, want) {
+			t.Errorf("the ask lacks %q:\n%s", want, ask)
+		}
 	}
 }

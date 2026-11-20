@@ -38,6 +38,8 @@ type growthCrossing struct {
 	Then    int    `json:"then,omitempty"`
 	Now     int    `json:"now,omitempty"`
 	Count   int    `json:"count,omitempty"`
+	// the ask clio puts on the board: the part's origin, its size then → now, its fixes and his turns, and the three answers
+	Ask string `json:"ask"`
 }
 
 type growthData struct {
@@ -124,6 +126,15 @@ func fleetGrowth(r *Run, _ []string, flags Flags) (any, error) {
 			fresh, changed = append(fresh, c), true
 		}
 		data.Crossings = fresh
+		if len(fresh) > 0 {
+			origins, err := growthOrigins(root)
+			if err != nil {
+				return nil, err
+			}
+			for i, c := range data.Crossings {
+				data.Crossings[i].Ask = growthAsk(c, baseline.Parts[c.Part].Lines, sizes[c.Part], origins[c.Part], fixes[c.Part], turns[c.Part])
+			}
+		}
 	}
 	if changed {
 		if err := writeGrowthBaseline(path, baseline); err != nil {
@@ -148,14 +159,7 @@ func growthLines(data growthData) []string {
 	}
 	var lines []string
 	for _, c := range data.Crossings {
-		switch c.Trigger {
-		case "size":
-			lines = append(lines, fmt.Sprintf("%s: %d → %d lines (size)", c.Part, c.Then, c.Now))
-		case "fixes":
-			lines = append(lines, fmt.Sprintf("%s: %d fixes in 7 days", c.Part, c.Count))
-		default:
-			lines = append(lines, fmt.Sprintf("%s: %d of his turns in one day (rough)", c.Part, c.Count))
-		}
+		lines = append(lines, c.Ask)
 	}
 	return lines
 }
@@ -328,4 +332,48 @@ func growthTurnCounts(now time.Time, baseline growthBaseline, parts []string) ma
 		}
 	}
 	return best
+}
+
+type growthOrigin struct{ subject, date string }
+
+// each part's first commit: the oldest commit that added a file of it, one git read over the five roots
+func growthOrigins(root string) (map[string]growthOrigin, error) {
+	out, err := exec.Command("git", "-C", root, "log", "--reverse", "--diff-filter=A", "--name-only", "--format=%x1e%cs%x09%s", "--",
+		growthModsDir, growthHerdrDir, growthSkillsX, growthSkillsClo, growthGoDir).Output()
+	if err != nil {
+		return nil, &Fail{Msg: "git log failed: " + err.Error(), Next: "git status"}
+	}
+	var families []string
+	for _, family := range familyList {
+		families = append(families, family.Name)
+	}
+	origins := map[string]growthOrigin{}
+	for commit := range strings.SplitSeq(string(out), "\x1e") {
+		head, files, _ := strings.Cut(commit, "\n")
+		date, subject, ok := strings.Cut(head, "\t")
+		if !ok {
+			continue
+		}
+		for file := range strings.SplitSeq(files, "\n") {
+			if part, ok := growthPartOf(file, families); ok {
+				if _, seen := origins[part]; !seen {
+					origins[part] = growthOrigin{subject: subject, date: date}
+				}
+			}
+		}
+	}
+	return origins, nil
+}
+
+func growthAsk(c growthCrossing, then, now int, origin growthOrigin, fixes, turns int) string {
+	return fmt.Sprintf("%s crossed on %s: %s → %s lines. first commit «%s» on %s. fixes in 7 days: %d, his turns in a day (rough): %d. keep, shrink or delete?",
+		c.Part, c.Trigger, thousands(then), thousands(now), origin.subject, origin.date, fixes, turns)
+}
+
+func thousands(n int) string {
+	digits := strconv.Itoa(n)
+	for i := len(digits) - 3; i > 0; i -= 3 {
+		digits = digits[:i] + "," + digits[i:]
+	}
+	return digits
 }
