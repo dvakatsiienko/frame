@@ -81,8 +81,6 @@ import {
 
 /** @typedef {import("./lanes.js").Lane} Lane */
 
-// orbit's Tab places with a focus handle: three per ask (tick, replay, steer), 40 asks
-const FOCUS_PLACES = 120;
 // how long a key that did nothing says why under its steer box
 const KEY_NOTE_MS = 3000;
 // Enter and ⌘Enter in a steer box are the deck's own actions, ahead of the box's submit (FRM-648 step 111)
@@ -119,12 +117,9 @@ export default class Deck extends View {
     // Enter in every steer box, one press at a time: a held key's repeats act once
     steerKeys = createKeyPress();
     steerCmdKeys = createCmdEnter();
-    /** each orbit control's Tab place; the control a press landed on, ringless until a Tab @type {Map<string, number>} */
+    /** each steer box's Tab place, and the one holding the keyboard @type {Map<string, number>} */
     tabAt = new Map();
-    pressed = /** @type {string | null} */ (null);
     steerFocus = /** @type {string | null} */ (null);
-    /** @type {import('gpui-kit').FocusHandle[]} */
-    focusAt = [];
     /** @param {unknown} _props @param {Context} cx */
     init(_props, cx) {
         cx.bind_keys([
@@ -181,11 +176,6 @@ export default class Deck extends View {
         this.week = null;
         /** @type {import('./orbit.js').OrbitPin} */
         this.pin = 'top';
-        // a Button takes the keyboard only through a handle it tracks, and a handle is made only here or in a handler:
-        // one per Tab place, lent by place each draw (FRM-620:W14, his 14:04 try: Tab skipped every button)
-        this.focusAt = Array.from({ length: FOCUS_PLACES }, () =>
-            cx.focus_handle(),
-        );
         cx.timer.every(THREADS_BEAT_MS, (cx) => this.reload(cx));
         this.reload(cx);
         // the press folder too: a 🔥 pressed on the band above a chat draws on its row at once; the settings folder
@@ -473,6 +463,7 @@ export default class Deck extends View {
             Date.now(),
         );
         return Button.new(`hot-${s.sid}`)
+            .tab_stop(false)
             .size(22)
             .flex_none()
             .flex()
@@ -767,22 +758,12 @@ export default class Deck extends View {
             record?.phase === 'failed' ? (record.reason ?? '') : null;
         const isLocked = state === 'locked';
         const labels = pressLabel(state, ask.mark);
-        /** @param {string} id */
-        const focusOf = (id) => this.focusAt[(this.tabAt.get(id) ?? 0) - 1];
         // tick is the main act, so it is the one filled button
         /** @param {string} id @param {string} label @param {string} tip @param {(cx: Context) => void} onClick @param {boolean} [isPrimary] */
         const button = (id, label, tip, onClick, isPrimary = false) =>
             Button.new(`${id}-${key}`)
-                .tab_index(this.tabAt.get(`${id}-${key}`) ?? 0)
-                .tab_stop(!isLocked)
-                .when(Boolean(focusOf(`${id}-${key}`)), (el) =>
-                    el.track_focus(
-                        /** @type {any} */ (focusOf(`${id}-${key}`)),
-                    ),
-                )
-                .on_mouse_down('left', () => {
-                    this.pressed = `${id}-${key}`;
-                })
+                // the steer box's Enter and ⌘Enter press these, so Tab skips them (his 14:12 steer)
+                .tab_stop(false)
                 .h(28)
                 .px(12)
                 .flex_none()
@@ -790,14 +771,7 @@ export default class Deck extends View {
                 .items_center()
                 .rounded(6)
                 .border_1()
-                .border_color(
-                    focusOf(`${id}-${key}`)?.is_focused() &&
-                        this.pressed !== `${id}-${key}`
-                        ? t.accent
-                        : isPrimary
-                          ? t.solid
-                          : t.border,
-                )
+                .border_color(isPrimary ? t.solid : t.border)
                 .bg(isPrimary ? t.solid : t.surface)
                 .text_size(SIZE.secondary)
                 .text_color(isPrimary ? t.solid_foreground : t.foreground)
@@ -1156,6 +1130,7 @@ export default class Deck extends View {
             const isPicked = this.pickedSid === s.sid;
             return v_flex()
                 .id(`asker-${s.sid}`)
+                .tab_stop(false)
                 .px(12)
                 .py(4)
                 .gap(8)
@@ -1184,6 +1159,7 @@ export default class Deck extends View {
                         .when(canTickAll, (row) =>
                             row.child(
                                 Button.new(`tick-all-${s.sid}`)
+                                    .tab_stop(false)
                                     .h(24)
                                     .px(10)
                                     .flex_none()
@@ -1377,67 +1353,57 @@ export default class Deck extends View {
                 .child(text);
         /** @param {number} n @param {string} one @param {string} many */
         const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-        return (
-            v_flex()
-                .id('x-herdr-deck')
-                // the focus ring is the keyboard's: a press hides it, a Tab brings it back (FRM-620:W14, his 14:57)
-                .on_key_down((e, cx) => {
-                    if (e.key !== 'tab' || this.pressed === null) return;
-                    this.pressed = null;
-                    cx.notify();
-                })
-                .font_family(SANS)
-                .size_full()
-                .overflow_y_scroll()
-                .bg(t.canvas)
-                .child(
-                    header(
-                        `🧵 sessions: ${this.rows.length}${busy ? `, ${busy} working` : ''}${this.isStale ? ' · stale, the last list kept' : ''}`,
-                    ),
-                )
-                .children(rows.map((s, i) => this.session(t, s, i)))
-                .when(asks > 0, (el) =>
-                    el
-                        .child(
-                            header(`🪐 orbit: ${count(asks, 'ask', 'asks')}`),
-                        )
-                        .children(this.orbit(t))
-                        .when(Boolean(this.pressError), (el2) =>
-                            el2.child(
-                                div()
-                                    .px(12)
-                                    .text_size(SIZE.secondary)
-                                    .text_color(t.blocked)
-                                    .child(`⚠️ ${this.pressError}`),
-                            ),
-                        )
-                        .when(Boolean(this.pressNote), (el2) =>
-                            el2.child(
-                                div()
-                                    .px(12)
-                                    .text_size(SIZE.secondary)
-                                    .text_color(t.muted)
-                                    .child(`⏳ ${this.pressNote}`),
-                            ),
+        return v_flex()
+            .id('x-herdr-deck')
+            .font_family(SANS)
+            .size_full()
+            .overflow_y_scroll()
+            .bg(t.canvas)
+            .child(
+                header(
+                    `🧵 sessions: ${this.rows.length}${busy ? `, ${busy} working` : ''}${this.isStale ? ' · stale, the last list kept' : ''}`,
+                ),
+            )
+            .children(rows.map((s, i) => this.session(t, s, i)))
+            .when(asks > 0, (el) =>
+                el
+                    .child(header(`🪐 orbit: ${count(asks, 'ask', 'asks')}`))
+                    .children(this.orbit(t))
+                    .when(Boolean(this.pressError), (el2) =>
+                        el2.child(
+                            div()
+                                .px(12)
+                                .text_size(SIZE.secondary)
+                                .text_color(t.blocked)
+                                .child(`⚠️ ${this.pressError}`),
                         ),
-                )
-                .when(this.lanes.length > 0, (el) =>
-                    el
-                        .child(
-                            header(
-                                `🛼 glide: ${count(this.lanes.length, 'lane', 'lanes')}`,
-                            ),
-                        )
-                        .children(this.lanes.map((l) => this.lane(t, l))),
-                )
-                .child(
-                    div()
-                        .px(12)
-                        .py(8)
-                        .text_size(SIZE.small)
-                        .text_color(t.muted)
-                        .child(this.footerLine()),
-                )
-        );
+                    )
+                    .when(Boolean(this.pressNote), (el2) =>
+                        el2.child(
+                            div()
+                                .px(12)
+                                .text_size(SIZE.secondary)
+                                .text_color(t.muted)
+                                .child(`⏳ ${this.pressNote}`),
+                        ),
+                    ),
+            )
+            .when(this.lanes.length > 0, (el) =>
+                el
+                    .child(
+                        header(
+                            `🛼 glide: ${count(this.lanes.length, 'lane', 'lanes')}`,
+                        ),
+                    )
+                    .children(this.lanes.map((l) => this.lane(t, l))),
+            )
+            .child(
+                div()
+                    .px(12)
+                    .py(8)
+                    .text_size(SIZE.small)
+                    .text_color(t.muted)
+                    .child(this.footerLine()),
+            );
     }
 }

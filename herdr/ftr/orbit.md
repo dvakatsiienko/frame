@@ -88,9 +88,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ Tab walks orbit, its ring always in sight (FRM-620 slice 4)
   - given orbit's asks, the look and 🧪 cards drawn first
   - when dima presses Tab, or shift+Tab
-  - then focus walks each ask's tick, replay and steer in the drawn order, and the control he is on wears an accent ring
-  - and a mouse press on a button leaves it ringless, the next Tab brings the ring back (his 14:57 «no border on a pressed button»)
-  - not checked: the Tab walk itself, by his hand
+  - then focus walks each ask's steer box in the drawn order, the one he is in wearing an accent border; Enter ticks, ⌘Enter replays
+  - and no button, asker head or link takes a Tab, so one Tab moves him from one steer box to the next
+  - decision: tick and replay take no focus, the steer box's keys press them (his 14:12 steer)
 - ⬜ no ring on a pressed button, and no tooltip on a steer box
   - and the tick's tooltip reads «tick: agree», the replay's «replay: another round», no key hint in either: herdr's tooltip takes text alone, so no key icon can be drawn there (dima, 2026-11-16 18:26: «if no cool good-looking icons are possible in tooltips, then remove hotkey suggestions and keep tooltips clean»)
   - given dima presses 🛎️ tick, 🔁 replay or a 🔥 keep-hot button, or hovers a steer box

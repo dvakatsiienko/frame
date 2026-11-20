@@ -132,8 +132,8 @@ export function orbitSections(rows, pids, pin) {
 }
 
 /**
- * the Tab order of orbit's controls (FRM-620:W14): each ask's tick, replay and steer, in the order the sections draw;
- * an id is `<control>-<sid>:<ask id>`, the key the deck's own ids carry
+ * the Tab order of orbit (FRM-620:W14, his 14:12 steer): each ask's steer box, in the order the sections draw; Enter
+ * and ⌘Enter there tick and replay, so no button takes Tab. an id is `steer-<sid>:<ask id>`, the deck's own key
  * @param {OrbitSection<{ sid: string }>[]} sections
  */
 export function orbitTabOrder(sections) {
@@ -144,11 +144,7 @@ export function orbitTabOrder(sections) {
                 : s.asks.map((ask) => ({ ask, row: s.row })),
         )
         .filter(({ ask }) => ask.id)
-        .flatMap(({ ask, row }) =>
-            ['tick', 'replay', 'steer'].map(
-                (control) => `${control}-${row.sid}:${ask.id}`,
-            ),
-        );
+        .map(({ ask, row }) => `steer-${row.sid}:${ask.id}`);
 }
 
 // his «orbit › pinned cards» row in x-herdr-settings (x-herdr-chat settings-model.js)
