@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-20T15:21:00Z'
+updated_date: '2026-11-20T15:32:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,17 +17,15 @@ ordinal: 1001
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 f25 speak v2 with dima: bytes move → mess hunt (FRM-629:W26–W27) → wisps → design; FRM-497 rides it
-- [ ] #2 f46 design-loupe probe: a cheap summon tests artifact comments on dima's account, then keep or retire (o13)
-- [ ] #3 f47 designer W49 tail: answer how to search and how to query for design refs before speak v2's design day
-- [ ] #4 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
-- [ ] #5 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
-- [ ] #6 f48 📅 wishkeeper card verdict: highs real ≥ 4 in 5 on the 5 min cache, then close the trial — on: 2026-11-26
-- [ ] #7 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #8 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-07
-- [ ] #9 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #10 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #11 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #12 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #2 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
+- [ ] #3 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
+- [ ] #4 f48 📅 wishkeeper card verdict: highs real ≥ 4 in 5 on the 5 min cache, then close the trial — on: 2026-11-26
+- [ ] #5 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #6 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-07
+- [ ] #7 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #8 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #9 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #10 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -752,4 +750,8 @@ done 2026-11-20 17:20: f42 wishkeeper 1 h arm: confirm runs read 1h, then the 10
 done 2026-11-20 17:20: f43 📅 wishkeeper-cache verdict: the 1 h arm's 7 days read against the 5 min week — on: 2026-11-26
 
 17:20 wing 1: f42 done, the kill rule fired (1 h arm $2.81 a run vs 5 min $2.34, 17 runs all 1h), cacheTtl dropped from the wishkeeper card; f43 reworded to the card's own verdict on 11-26; f46 answered from the ArtifactComments tool text: an agent reads, replies and resolves threads a person opened and sent to Claude, it cannot open a thread or pin a spot, so no summon is needed
+
+done 2026-11-20 17:26: f47 designer W49 tail: answer how to search and how to query for design refs before speak v2's design day
+
+done 2026-11-20 17:32: f46 design-loupe probe: a cheap summon tests artifact comments on dima's account, then keep or retire (o13)
 <!-- SECTION:NOTES:END -->
