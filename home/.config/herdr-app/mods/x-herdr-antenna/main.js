@@ -284,9 +284,10 @@ export default class Antenna extends View {
         return order;
     }
 
-    /** a still dot: blocked asks for him, working and unread fill, idle is a ring @param {Theme} t @param {string} status */
-    dot(t, status) {
-        if (status === 'blocked')
+    /** a still dot: blocked asks for him, working and unread fill, idle is a ring; the rail has no room for the pill, so
+     * blocked is a dot in its own colour there @param {Theme} t @param {string} status @param {boolean} [isRail] */
+    dot(t, status, isRail = false) {
+        if (status === 'blocked' && !isRail)
             return div()
                 .flex_none()
                 .px(6)
@@ -495,14 +496,7 @@ export default class Antenna extends View {
                             .w(14)
                             .flex_none()
                             .justify_center()
-                            .child(
-                                this.dot(
-                                    t,
-                                    shown.dot === 'blocked'
-                                        ? 'done'
-                                        : shown.dot,
-                                ),
-                            ),
+                            .child(this.dot(t, shown.dot, true)),
                     );
             const isQuiet = shown.dot === 'idle' && !a.focused;
             const more = rowDetails(knobs, {
