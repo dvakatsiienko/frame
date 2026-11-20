@@ -1,5 +1,6 @@
 // the board's one palette, every card's colours read from it (dima's o107, 21:17): mid-tones at 3.2:1 or more on a light
 // pane and 4.2:1 on a dark one; `dim` is the theme's own gray; `calm` is the ctx meter's blue
+
 export const PALETTE = {
     accent: '#d97757',
     calm: '#4f83e0',
@@ -355,3 +356,9 @@ export const markOf = (m: {
     isOffPattern: boolean;
 }) =>
     m.isOffPattern ? '⚠' : m.isIdle && m.ms >= CACHE_TTL_MS ? '❄️' : undefined;
+
+export const span = (ms: number) => {
+    // a status stamped a moment ahead of this clock reads 0m, never -1m
+    const m = Math.max(0, Math.floor(ms / 60000));
+    return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
+};

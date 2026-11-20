@@ -12,7 +12,12 @@ import {
     paceRung,
 } from './pace.ts';
 import { isSeated, registry } from './roster.ts';
-import { MAIN_ROLE, currentId, selfLive } from './session-identity.ts';
+import {
+    MAIN_ROLE,
+    currentId,
+    selfLive,
+    selfRecord,
+} from './session-identity.ts';
 import { writeFleet } from './session-record.ts';
 import { partsShown, readNumber } from './settings-store.ts';
 import { AFK_KEY, HOT, WAKER_KEY, hotOf } from './store-keys.ts';
@@ -459,4 +464,31 @@ export async function restoreAfk(
     was: { at?: number; on?: boolean; wakerBefore?: boolean } | undefined,
 ) {
     await $.store.set(AFK_KEY, was ?? { on: false }).catch(() => undefined);
+}
+
+export const AUTO_WIND = 'second-wind-auto:';
+export type AutoWind = { on: boolean; at: number };
+// 🍃 second-wind-auto, per session (W1909–W1918, his ticks o38, o40): a press writes `{ on, at }`; unpressed, every
+// thread is on, the coordinator's too (FRM-634, his tick); 💨 afk on or a shift turn a coordinator's pressed-off one on at
+// read time, never by a write, and a press after the override's start wins until the next one
+export async function isAutoWind($: EngineInterface) {
+    if (!(await partsShown($))('stash.second-wind-auto')) return false;
+    const sid = await currentId($);
+    if (!sid) return false;
+    const pressed = (await $.store.get(AUTO_WIND + sid)) as
+        | AutoWind
+        | undefined;
+    if ((await selfRecord($))?.role !== MAIN_ROLE) return pressed?.on ?? true;
+    const away = (await $.store.get(AFK_KEY)) as
+        | { on?: boolean; at?: number }
+        | undefined;
+    const shift = (await $.store.get(PACE + sid)) as
+        | { since?: number }
+        | undefined;
+    const starts = [away?.on ? (away.at ?? 0) : undefined, shift?.since].filter(
+        (t): t is number => typeof t === 'number',
+    );
+    const since = starts.length ? Math.max(...starts) : undefined;
+    if (since !== undefined && (!pressed || pressed.at < since)) return true;
+    return pressed?.on ?? true;
 }

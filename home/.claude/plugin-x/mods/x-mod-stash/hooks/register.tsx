@@ -9,7 +9,6 @@ import type {
     StashLane,
     StashOrbit,
     StashPlan,
-    StashView,
     StashWind,
 } from '../types/stash.d.ts';
 import {
@@ -20,15 +19,12 @@ import {
     flushFields,
     forgetMountedText,
     isTypedHere,
-    isTypingAt,
-    keptSteers,
     leaveBoxes,
     offerBack,
     retakeFields,
     returnToBoxes,
     steerOf,
     takeFieldsOnce,
-    typedAts,
 } from './fields.ts';
 import {
     WIND_DELAY_MS,
@@ -52,11 +48,12 @@ import {
     takeJoins,
 } from './joins.ts';
 import {
+    AUTO_WIND,
+    type AutoWind,
     MINUTE_MS,
     PACE,
     PING,
     POLL_MS,
-    type ViewDoors,
     WAKE_SLACK_MS,
     armHot,
     followHot,
@@ -64,12 +61,11 @@ import {
     holdHot,
     holdWaker,
     hotLate,
+    isAutoWind,
     isPaceOn,
     pacePoll,
     paceStep,
     prepareTurn,
-    pressBegin,
-    pressEnd,
     pressHot,
     restoreAfk,
     seatDefaults,
@@ -126,6 +122,7 @@ import {
     idleTint,
     markOf,
     meterSvg,
+    span,
     statusOf,
 } from './look.ts';
 import {
@@ -169,8 +166,6 @@ import {
     startOrbit,
 } from './orbit-store.ts';
 import {
-    isOverrideOn,
-    readOverrideOn,
     setOverrideOn,
     takeOverridePress,
     writeOverrideOff,
@@ -221,27 +216,17 @@ import {
     saveQuiet,
 } from './quiet-gate.ts';
 import type { Member } from './roster.ts';
-import {
-    isOpen,
-    memberOf,
-    modelLabel,
-    registry,
-    staleProbes,
-} from './roster.ts';
+import { isOpen, memberOf, modelLabel, registry } from './roster.ts';
 import { laneRoundLine } from './rounds.ts';
-import { members } from './rows.ts';
 import {
     MAIN_ROLE,
     SUCC,
     WING_ROLE,
-    clearedNow,
-    continueFromCleared,
     currentId,
     endIdentity,
     identity,
     isBgSelf,
     isLaneOwner,
-    refreshSelfId,
     refreshThreads,
     runnerOf,
     selfLive,
@@ -268,10 +253,8 @@ import {
     partsShown,
     readNumber,
     readSwitch,
-    refreshShown,
     setKnobNumber,
     setSettingsOpen,
-    settings,
     shownOf,
     takeHerdrRows,
     windEditsOf,
@@ -317,6 +300,16 @@ import {
     setCompactAt,
 } from './usage.ts';
 import { STALE_MS, bare, errorText, writeWhole } from './util.ts';
+import {
+    band,
+    drawBand,
+    load,
+    patchBand,
+    pressSwitch,
+    publish,
+    viewDoors,
+    viewOf,
+} from './view.ts';
 import {
     COMPACTING,
     WIND,
@@ -535,13 +528,7 @@ const ORBIT_PROPS = {
     },
 } as const;
 
-// this session's own second wind as the store holds it, read at each load for the band's button
-let selfWind: StashWind['state'] | undefined;
-let isAutoWindOn = true;
-// what this session's last reply waits on, its 🔭 line
-let wait: string | undefined;
 let isPolling = false;
-let isPaced = false;
 
 const WORK_TOOLS = new Set([
     'Edit',
@@ -601,8 +588,6 @@ const windRefused = (what: string) =>
 const NOTICE_REARM = 10;
 const OVERRUN = 5;
 const FILL = 'fill:';
-const AUTO_WIND = 'second-wind-auto:';
-type AutoWind = { on: boolean; at: number };
 // noticed, asked and proposed hold the turn they landed in; windAt the wind line the notice saw, so a lowered knob never
 // asks a thread already past it; proposed is the 🍃-off coordinator's line, so afk turning on past it still asks
 type FillMark = {
@@ -1229,64 +1214,6 @@ async function countWords($: EngineInterface, hits: Record<string, number>) {
         if (old.startsWith(WORDS) && old < oldest) await $.store.delete(old);
 }
 
-async function load($: EngineInterface) {
-    if (warm.pressing) return;
-    await readOverrideOn($).catch(() => undefined);
-    const flag = (await $.store.get(AFK_KEY)) as { on?: boolean } | undefined;
-    const wasAfk = warm.afk;
-    holdAfk(flag?.on === true);
-    // afk flipped from any board re-arms keep-hot here, since afk warms a remote-controlled session
-    if (warm.afk !== wasAfk) await armHot($, viewDoors($));
-    const waker = (await $.store.get(WAKER_KEY)) as
-        | { on?: boolean }
-        | undefined;
-    holdWaker(waker?.on === true);
-    await refreshShown($);
-    // after a /clear the process goes on under a new id, and no session.start fires
-    await refreshSelfId($);
-    isPaced = isPaceOn(await $.store.get(PACE + (identity.selfId ?? '')));
-    selfWind = identity.selfId
-        ? (await windOf($, identity.selfId))?.state
-        : undefined;
-    isAutoWindOn = await isAutoWind($).catch(() => isAutoWindOn);
-    const cleared = clearedNow();
-    if (cleared) {
-        await $.store
-            .set(SUCC + cleared, {
-                at: await $.clock.now(),
-                sid: identity.selfId,
-            })
-            .catch(() => undefined);
-        continueFromCleared();
-    }
-    // the band's 🔭 line: what this session's last reply said it waits on
-    const reply = identity.selfId
-        ? ((await $.store
-              .get(REPLY + identity.selfId)
-              .catch(() => undefined)) as Partial<Reply> | undefined)
-        : undefined;
-    wait = reply?.wait;
-    await publish($);
-}
-
-// the band's view the module's values make
-function viewOf(isBoardOpen: boolean): StashView {
-    return {
-        afk: warm.afk,
-        isAutoWind: isAutoWindOn,
-        isBoardOpen,
-        isHot: Boolean(warm.hot),
-        isOverrideOn: isOverrideOn(),
-        isPaced,
-        isSettingsOpen: settings.isSettingsOpen,
-        isWaker: warm.isWaker,
-        selfId: identity.selfId,
-        shown: settings.shown,
-        wait,
-        wind: selfWind,
-    };
-}
-
 // how far this thread read the band presses: the `at` of the newest line taken, from the thread's start on
 const BAND_READ = 'band-read:';
 // `band-refused:<sid>`: the times of lines this thread saw dated ahead of now
@@ -1349,31 +1276,6 @@ async function takeBandPresses($: EngineInterface) {
 async function pressWind($: EngineInterface, sid: string) {
     await flipWind($, sid);
     await load($);
-}
-
-// 🍃 second-wind-auto, per session (W1909–W1918, his ticks o38, o40): a press writes `{ on, at }`; unpressed, every
-// thread is on, the coordinator's too (FRM-634, his tick); 💨 afk on or a shift turn a coordinator's pressed-off one on at
-// read time, never by a write, and a press after the override's start wins until the next one
-async function isAutoWind($: EngineInterface) {
-    if (!(await partsShown($))('stash.second-wind-auto')) return false;
-    const sid = await currentId($);
-    if (!sid) return false;
-    const pressed = (await $.store.get(AUTO_WIND + sid)) as
-        | AutoWind
-        | undefined;
-    if ((await selfRecord($))?.role !== MAIN_ROLE) return pressed?.on ?? true;
-    const away = (await $.store.get(AFK_KEY)) as
-        | { on?: boolean; at?: number }
-        | undefined;
-    const shift = (await $.store.get(PACE + sid)) as
-        | { since?: number }
-        | undefined;
-    const starts = [away?.on ? (away.at ?? 0) : undefined, shift?.since].filter(
-        (t): t is number => typeof t === 'number',
-    );
-    const since = starts.length ? Math.max(...starts) : undefined;
-    if (since !== undefined && (!pressed || pressed.at < since)) return true;
-    return pressed?.on ?? true;
 }
 
 // a band press: the session's own key, and an off takes back the mod's pending ask, never one dima pressed
@@ -1801,19 +1703,14 @@ async function armWake($: EngineInterface) {
 
 const WIND_STALE_MS = 30 * MINUTE_MS;
 
-// the view's two doors, built per call for a module that must reach up: the one upward door (clio, 19:27)
-function viewDoors($: EngineInterface): ViewDoors {
-    return { load: () => load($), publish: () => publish($) };
-}
-
 async function pressPace($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
-    isPaced = !isPaced;
+    patchBand({ isPaced: !band.isPaced });
     await pressSwitch(
         $,
         '🔋',
-        { isPaced },
+        { isPaced: band.isPaced },
         async () =>
             $.store.set(
                 PACE + sid,
@@ -1822,122 +1719,13 @@ async function pressPace($: EngineInterface) {
                     : { on: true },
             ),
         async () => {
-            isPaced = !isPaced;
+            patchBand({ isPaced: !band.isPaced });
         },
     );
     await load($);
     await publish($);
     $.ui.invalidate('ui.render');
 }
-
-let published = '';
-let boardPublished = '';
-// writes the view to $.state when it changed; every site that reads it while drawing redraws
-async function publish($: EngineInterface) {
-    const isBoardOpen = await isOpen($);
-    // a closed board unmounts its fields: the next open draws the stored text, not a held one; a board typed into
-    // within the quiet window is on screen, whatever the read said (FRM-492)
-    if (
-        isBoardOpen === false &&
-        // clock-ok: compared with the fields' own Date.now() stamps, so both sides read one clock
-        !isTypingAt(typedAts(), Date.now())
-    ) {
-        await flushFields($, viewDoors($));
-        await forgetMountedText($);
-    }
-    // a lane clio moved shows on this board at its next poll
-    if (isBoardOpen) await showLanes($, await readLanes($));
-    if (isBoardOpen) {
-        // each board write redraws the pane, and the desktop then rebuilds the bars' svg in the band (a blink and a
-        // restarted breath, FRM-354): it writes only when what the board shows changes — a row's facts, or a span such as
-        // `busy 3m` turning its minute — never for the clock alone
-        const now = await $.clock.now();
-        const board = {
-            at: now,
-            isColour: await readSwitch($, 'colour'),
-            isRing: await readSwitch($, 'ring'),
-            members: await members($).catch(() => undefined),
-            ...(keptSteers.size
-                ? { keptSteers: Object.fromEntries(keptSteers) }
-                : {}),
-            ...((await isLaneOwner($))
-                ? {
-                      staleProbes: await staleProbes($, now).catch(
-                          () => undefined,
-                      ),
-                  }
-                : {}),
-        };
-        const boardText = JSON.stringify({
-            ...board,
-            at: board.members?.map((m) =>
-                m.statusSince === undefined ? null : span(now - m.statusSince),
-            ),
-        });
-        // the poll's board redraw waits while a steer is typed into: a redraw scrolled the field back to its start
-        // (dima's o8, 16:54: «far less often» after the save delay; the poll was what was left)
-        if (
-            boardText !== boardPublished &&
-            !isTypingAt(
-                typedAts(),
-                // clock-ok: compared with the drafts' own Date.now() stamps, so both sides read one clock
-                Date.now(),
-            )
-        ) {
-            boardPublished = boardText;
-            await $.state.set(BOARD_VIEW, board).catch(() => undefined);
-        }
-    }
-    const view = viewOf(isBoardOpen === true);
-    const text = JSON.stringify(view);
-    if (text === published) return;
-    published = text;
-    await $.state
-        .set(VIEW, view)
-        .catch((err) =>
-            $.ui.log(`x-mod-stash: the view was not kept: ${errorText(err)}`),
-        );
-}
-
-// a press answers at once: only the pressed chip is drawn here, and the publish after the write settles the rest
-async function drawBand($: EngineInterface, patch: Partial<StashView>) {
-    const view = {
-        ...((await $.state.get(VIEW)).value ?? viewOf(false)),
-        ...patch,
-    };
-    published = JSON.stringify(view);
-    await $.state
-        .set(VIEW, view)
-        .catch((err) =>
-            $.ui.log(`x-mod-stash: the view was not kept: ${errorText(err)}`),
-        );
-}
-
-async function pressSwitch(
-    $: EngineInterface,
-    name: string,
-    patch: Partial<StashView>,
-    write: () => Promise<unknown>,
-    undo: () => Promise<unknown>,
-) {
-    pressBegin();
-    try {
-        await drawBand($, patch);
-        await write();
-    } catch (err) {
-        await undo();
-        await $.ui.log(`x-mod-stash: ${name} was not kept: ${errorText(err)}`);
-    } finally {
-        pressEnd();
-    }
-    await publish($);
-}
-
-const span = (ms: number) => {
-    // a status stamped a moment ahead of this clock reads 0m, never -1m
-    const m = Math.max(0, Math.floor(ms / 60000));
-    return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
-};
 
 // each fact column's width in cells, sized to its usual reading — `🪐 12`, `FRM-306`, `ctx 54%`, `idle 12m` — so little slack shows between columns; a longer one is cut at its end
 const COLUMNS = {
@@ -5432,29 +5220,29 @@ export const register: Register = (on) => {
                     const handleWindFlip = () => {
                         const sid = view.selfId ?? '';
                         const wanted = windAfterPress(view.wind);
-                        selfWind = wanted;
+                        patchBand({ selfWind: wanted });
                         return pressSwitch(
                             $,
                             '🐦‍🔥',
                             { wind: wanted },
                             async () => {
-                                selfWind = await flipWind($, sid);
+                                patchBand({ selfWind: await flipWind($, sid) });
                             },
                             async () => {
-                                selfWind = view.wind;
+                                patchBand({ selfWind: view.wind });
                             },
                         );
                     };
                     const handleAutoWindFlip = async () => {
-                        const wasOn = isAutoWindOn;
-                        isAutoWindOn = !view.isAutoWind;
+                        const wasOn = band.isAutoWindOn;
+                        patchBand({ isAutoWindOn: !view.isAutoWind });
                         await pressSwitch(
                             $,
                             '🍃',
-                            { isAutoWind: isAutoWindOn },
-                            () => setAutoWind($, isAutoWindOn),
+                            { isAutoWind: band.isAutoWindOn },
+                            () => setAutoWind($, band.isAutoWindOn),
                             async () => {
-                                isAutoWindOn = wasOn;
+                                patchBand({ isAutoWindOn: wasOn });
                             },
                         );
                     };
