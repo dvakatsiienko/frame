@@ -4,14 +4,17 @@
 import { inOrder } from './order.js';
 
 /** @typedef {{ address: string, space: string, space_name: string, status: string }} Thread */
-/** @typedef {{ kind: 'space', name: string, space: string } | { kind: 'thread', address: string, dot: string, name: string }} Row */
+/** @typedef {{ kind: 'pins' } | { kind: 'unpinned' } | { kind: 'space', name: string, space: string }
+ *     | { kind: 'thread', address: string, dot: string, name: string, isPinned?: true }} Row */
 
 /**
  * @param {Thread[]} threads herdr's `agents()`
- * @param {{ isGrouped: boolean, names: Record<string, string>, order: string[] }} seen his order and the thread names
+ * @param {{ isGrouped: boolean, names: Record<string, string>, order: string[], pins?: string[] }} seen his order,
+ *     the thread names and his pins: the pinned threads sit in one group above all, each group the order filtered
  * @returns {Row[]}
  */
-export function antennaRows(threads, { isGrouped, names, order }) {
+export function antennaRows(threads, { isGrouped, names, order, pins = [] }) {
+    const pinned = new Set(pins);
     const ordered = inOrder(threads, order);
     /** @param {Thread} t @returns {Row} */
     const row = (t) => ({
@@ -19,7 +22,19 @@ export function antennaRows(threads, { isGrouped, names, order }) {
         dot: t.status,
         kind: 'thread',
         name: names[t.address] || t.address,
+        ...(pinned.has(t.address) && { isPinned: /** @type {const} */ (true) }),
     });
+    const top = ordered.filter((t) => pinned.has(t.address));
+    const rest = ordered.filter((t) => !pinned.has(t.address));
+    /** @type {Row[]} */
+    const head = top.length
+        ? [{ kind: 'pins' }, ...top.map(row), { kind: 'unpinned' }]
+        : [];
+    return [...head, ...spaceRows(rest, isGrouped, row)];
+}
+
+/** @param {Thread[]} ordered @param {boolean} isGrouped @param {(t: Thread) => Row} row @returns {Row[]} */
+function spaceRows(ordered, isGrouped, row) {
     if (!isGrouped) return ordered.map(row);
     /** @type {Map<string, Thread[]>} */
     const bySpace = new Map();

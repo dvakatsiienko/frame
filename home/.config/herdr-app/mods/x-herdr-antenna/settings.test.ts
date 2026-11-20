@@ -11,6 +11,7 @@ describe('antenna settings', () => {
             'antenna.details.context': false,
             'antenna.details.hot': true,
             'antenna.details.idle': true,
+            'antenna.details.meter': 'ring',
             'antenna.details.model': false,
             'antenna.details.wait': true,
             'antenna.groupBySpace': true,
@@ -54,5 +55,18 @@ describe('antenna settings', () => {
         });
         expect(antennaSettings(text)['antenna.rowHeight']).toBe('roomy');
         expect(antennaSettings(text)['antenna.showTabs']).toBe(true);
+    });
+
+    // FRM-618 rider E1, his 19:49: all three meters, picked in the popup; «Context fill» off draws none
+    test('the context meter is a ring, bars or a pill, any other value the ring', () => {
+        const text = antennaSettingsText(file, {
+            'antenna.details.meter': 'bars',
+        });
+        expect(antennaSettings(text)['antenna.details.meter']).toBe('bars');
+        expect(
+            antennaSettings(
+                JSON.stringify({ rows: { 'antenna.details.meter': 'gauge' } }),
+            )['antenna.details.meter'],
+        ).toBe('ring');
     });
 });

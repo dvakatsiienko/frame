@@ -80,11 +80,15 @@ export function moved(order, from, to) {
  * @param {string} to */
 export function movedInGroup(order, members, from, to) {
     const inGroup = new Set(members);
-    const next = moved(
-        order.filter((a) => inGroup.has(a)),
-        from,
-        to,
-    );
+    const group = order.filter((a) => inGroup.has(a));
+    // a slot outside the group (a pinned row dropped among the unpinned) means the group's edge nearest it
+    const target =
+        inGroup.has(to) || group.length === 0
+            ? to
+            : order.indexOf(to) < order.indexOf(group[0])
+              ? group[0]
+              : group.at(-1);
+    const next = moved(group, from, target);
     let i = 0;
     return order.map((a) => (inGroup.has(a) ? next[i++] : a));
 }
@@ -98,4 +102,45 @@ export function orderPids(order, listed, readOf) {
     if (listed.length === 0 || listed.some((a) => readOf(a) === undefined))
         return null;
     return order.map(readOf).filter((pid) => typeof pid === 'number');
+}
+
+/** his pin press: a pin joins the set, a second press leaves it; the order never moves, so an unpin returns the row to
+ * its old place @param {string[]} pins @param {string} address @returns {string[]} */
+export function toggledPin(pins, address) {
+    return pins.includes(address)
+        ? pins.filter((a) => a !== address)
+        : [...pins, address];
+}
+
+/** a pin on a gone terminal passes to the live terminal of the same thread name, the way `heirs` moves its place; with
+ * no heir it stays, so a read that misses threads never drops a pin
+ * @param {string[]} pins @param {Record<string, string>} names @param {Set<string>} live @returns {string[]} */
+export function pinHeirs(pins, names, live) {
+    return pins.map((p) => {
+        if (live.has(p) || !names[p]) return p;
+        const heir = [...live].find(
+            (a) => names[a] === names[p] && !pins.includes(a),
+        );
+        return heir ?? p;
+    });
+}
+
+/** @typedef {{ getItem: (key: string) => string | null, setItem: (key: string, value: string) => void }} PinStore */
+
+/** his pins as antenna's store holds them; anything but a list of addresses reads as none @param {PinStore} storage
+ * @returns {string[]} */
+export function loadPins(storage) {
+    try {
+        const pins = JSON.parse(storage.getItem('pins') ?? '[]');
+        return Array.isArray(pins)
+            ? pins.filter((a) => typeof a === 'string')
+            : [];
+    } catch {
+        return [];
+    }
+}
+
+/** @param {PinStore} storage @param {string[]} pins */
+export function savePins(storage, pins) {
+    storage.setItem('pins', JSON.stringify(pins));
 }

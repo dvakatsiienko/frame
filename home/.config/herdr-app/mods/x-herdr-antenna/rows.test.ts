@@ -74,3 +74,63 @@ describe('antenna rows', () => {
         expect(rows[0]).toEqual({ kind: 'space', name: 'space', space: 'sC' });
     });
 });
+
+// FRM-618 slice E exit 1: two of five pinned sit in one group at the very top, above every space, in their own order;
+// the rest below in theirs
+describe('pinned threads', () => {
+    const pins = ['t4', 't5'];
+
+    test('grouped by space: the pins first in his order, then each space with its unpinned threads', () => {
+        const rows = antennaRows(threads, {
+            isGrouped: true,
+            names,
+            order,
+            pins,
+        });
+        expect(rows).toEqual([
+            { kind: 'pins' },
+            {
+                address: 't5',
+                dot: 'idle',
+                isPinned: true,
+                kind: 'thread',
+                name: 'codie a',
+            },
+            {
+                address: 't4',
+                dot: 'done',
+                isPinned: true,
+                kind: 'thread',
+                name: 'helga',
+            },
+            { kind: 'unpinned' },
+            { kind: 'space', name: 'frame', space: 'sA' },
+            { address: 't2', dot: 'idle', kind: 'thread', name: 'crow' },
+            { address: 't1', dot: 'working', kind: 'thread', name: 'clio' },
+            { kind: 'space', name: 'bytes', space: 'sB' },
+            { address: 't3', dot: 'blocked', kind: 'thread', name: 'codie b' },
+        ]);
+    });
+
+    test('ungrouped: the pins first, a break, then the rest in the one order', () => {
+        const rows = antennaRows(threads, {
+            isGrouped: false,
+            names,
+            order,
+            pins,
+        });
+        expect(
+            rows.map((r) => (r.kind === 'thread' ? r.address : r.kind)),
+        ).toEqual(['pins', 't5', 't4', 'unpinned', 't2', 't1', 't3']);
+    });
+
+    test('a pin on a thread not listed draws no group', () => {
+        const rows = antennaRows(threads, {
+            isGrouped: false,
+            names,
+            order,
+            pins: ['t9'],
+        });
+        expect(rows.some((r) => r.kind === 'pins')).toBe(false);
+    });
+});

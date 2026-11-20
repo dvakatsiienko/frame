@@ -5,9 +5,11 @@ import { h_flex, v_flex } from 'gpui-base';
 import { View, div, svg } from 'gpui-kit';
 import {
     agents,
+    closeOverlay,
     exec,
     home,
     layout,
+    nextCommand,
     openOverlay,
     props,
     readTextFile,
@@ -23,7 +25,16 @@ import {
 
 import { activityShown, rowDetails, waitRuns } from './details.js';
 import { createListDrag } from './drag-view.js';
-import { heirs, movedInGroup, nextOrder } from './order.js';
+import { contextMeter } from './meter.js';
+import {
+    heirs,
+    loadPins,
+    movedInGroup,
+    nextOrder,
+    pinHeirs,
+    savePins,
+    toggledPin,
+} from './order.js';
 import { antennaRows, stopOf, tabStops } from './rows.js';
 import { antennaSettings, antennaSettingsText } from './settings.js';
 import { POPUP_HEIGHT, POPUP_WIDTH, settingsPopup } from './settings-view.js';
@@ -40,12 +51,16 @@ import {
 /** @typedef {import('gpui-kit').Context} Context */
 /** a dragged row: its thread, and its group's addresses in drawn order, so a drop lands in that group
  * @typedef {{ address: string, pane: string, group: string, members: string[] }} Dragged */
+/** @typedef {{ address: string, at: number }} PinPress */
 
 // a thread row holds the keyboard: Tab and shift-Tab walk the one Tab loop, Enter opens the thread
 const ROW_TAB = 'x_herdr_antenna_row_tab';
 const ROW_BACK = 'x_herdr_antenna_row_back';
 const ROW_OPEN = 'x_herdr_antenna_row_open';
 const ROW_KEYS = 64;
+// his pins live in antenna's store; the pin menu, a popup copy of antenna, sends its press through `shared`
+const PINS = 'x-herdr-antenna.pins';
+const PIN_PRESS = 'x-herdr-antenna.pinPress';
 
 // the old list's saved order, in herdr's store for its mod: read once, so his order comes over by address
 const OLD_STORE = `${home()}/.config/herdr-app/data/x-herdr-agents/store.json`;
@@ -157,6 +172,11 @@ export default class Antenna extends View {
     init(_props, cx) {
         this.isPopup = Boolean(props()?.settings);
         if (this.isPopup) return;
+        if (props()?.pinMenu) {
+            this.menuKeys = cx.focus_handle();
+            this.menuKeys.focus();
+            return;
+        }
         cx.bind_keys([
             { action: ROW_TAB, context: 'XAntennaRow', keystroke: 'tab' },
             {
@@ -206,6 +226,19 @@ export default class Antenna extends View {
             if (JSON.stringify(shared(SETTINGS_KEY)) !== JSON.stringify(values))
                 setShared(SETTINGS_KEY, values);
             cx.notify();
+        });
+        /** @type {string[]} his pinned addresses, a set beside the order */
+        this.pins = loadPins(localStorage);
+        setShared(PINS, this.pins);
+        // a press made before this copy started (a reload) is not his press now
+        this.pinSeen =
+            /** @type {PinPress | null} */ (shared(PIN_PRESS))?.at ?? 0;
+        cx.spawn(async (cx) => {
+            for (;;) {
+                if ((await nextCommand()) === 'pin')
+                    this.togglePin(this.pinTarget());
+                cx.notify();
+            }
         });
         /** @type {string[]} his order of addresses, antenna's own; empty until it is seeded once */
         this.order = stored('order', []);
@@ -281,7 +314,121 @@ export default class Antenna extends View {
         );
         if (JSON.stringify(order) !== JSON.stringify(this.order))
             this.setOrder(order);
+        const pins = pinHeirs(this.pins, this.orderNames, live);
+        if (JSON.stringify(pins) !== JSON.stringify(this.pins))
+            this.setPins(pins);
         return order;
+    }
+
+    /** @param {string[]} pins */
+    setPins(pins) {
+        this.pins = pins;
+        savePins(localStorage, pins);
+        setShared(PINS, pins);
+    }
+
+    /** @param {string | null} address */
+    togglePin(address) {
+        if (address) this.setPins(toggledPin(this.pins, address));
+    }
+
+    /** ⌘⌥P's row: the one holding the keyboard, else the thread he has open */
+    pinTarget() {
+        for (const [address, key] of this.rowKeys)
+            if (key.is_focused()) return address;
+        return agents().find((a) => a.focused)?.address ?? null;
+    }
+
+    /** @param {string} address @param {Context} cx */
+    openPinMenu(address, cx) {
+        cx.stop_propagation();
+        openOverlay({
+            height: 41,
+            kind: 'popup',
+            mod: 'x-herdr-antenna',
+            props: { pinMenu: { address } },
+            width: 180,
+        });
+    }
+
+    /** the pinned group's head @param {Theme} t */
+    pinsHeader(t) {
+        return h_flex()
+            .id('an-pins')
+            .px(8)
+            .pt(8)
+            .h(30)
+            .gap(6)
+            .flex_none()
+            .items_center()
+            .text_size(11)
+            .font_medium()
+            .text_color(t.dim)
+            .child(svg('mods/workspace-chrome/pin.svg').size(11).flex_none())
+            .child(div().child('Pinned'));
+    }
+
+    /** the line under the pinned group, when no space header follows it @param {Theme} t @param {boolean} isNarrow */
+    pinsBreak(t, isNarrow) {
+        return div()
+            .id('an-pins-break')
+            .flex_none()
+            .mx(isNarrow ? 8 : 10)
+            .my(6)
+            .h(1)
+            .bg(t.border);
+    }
+
+    /** the pin menu, a popup at the pointer: one item, Enter picks it, Escape closes @param {Theme} t */
+    pinMenu(t) {
+        const { address } = props().pinMenu;
+        const { overlay } = props();
+        const isPinned = /** @type {string[]} */ (shared(PINS) ?? []).includes(
+            address,
+        );
+        const pick = () => {
+            setShared(PIN_PRESS, { address, at: Date.now() });
+            closeOverlay(overlay);
+        };
+        return v_flex()
+            .id('an-pin-menu')
+            .track_focus(this.menuKeys)
+            .w_full()
+            .p(5)
+            .bg(t.popover)
+            .text_size(12.8)
+            .on_key_down((/** @type {{ key: string }} */ e) => {
+                if (e.key === 'enter') pick();
+                else if (e.key === 'escape') closeOverlay(overlay);
+            })
+            .child(
+                h_flex()
+                    .id('an-pin-item')
+                    .h(31)
+                    .px(8)
+                    .gap(9)
+                    .rounded(7)
+                    .items_center()
+                    .bg(t.selected)
+                    .hover((s) => s.bg(t.hover))
+                    .cursor_pointer()
+                    .text_color(t.foreground)
+                    .on_click(pick)
+                    .child(
+                        svg(
+                            `mods/workspace-chrome/${isPinned ? 'pin-off' : 'pin'}.svg`,
+                        )
+                            .size(14)
+                            .flex_none()
+                            .text_color(t.muted),
+                    )
+                    .child(
+                        div()
+                            .flex_1()
+                            .child(isPinned ? 'Unpin' : 'Pin'),
+                    )
+                    .child(div().text_size(11).text_color(t.dim).child('⌘⌥P')),
+            );
     }
 
     /** a still dot: blocked asks for him, working and unread fill, idle is a ring; the rail has no room for the pill, so
@@ -406,6 +553,12 @@ export default class Antenna extends View {
         const t = /** @type {Theme} */ (theme());
         const knobs = settingsNow();
         if (this.isPopup) return settingsPopup(t, knobs, saveSetting);
+        if (props()?.pinMenu) return this.pinMenu(t);
+        const press = /** @type {PinPress | null} */ (shared(PIN_PRESS));
+        if (press && press.at > this.pinSeen) {
+            this.pinSeen = press.at;
+            this.togglePin(press.address);
+        }
         const isNarrow = narrow();
         const list = agents();
         const now = Date.now();
@@ -424,6 +577,7 @@ export default class Antenna extends View {
             isGrouped: !isNarrow && knobs['antenna.groupBySpace'] === true,
             names,
             order,
+            pins: this.pins,
         });
         // each thread row's group, in drawn order: a drag moves a row within its group, so a space header never sits
         // between a row and its slot, and the slots stay one row tall
@@ -432,6 +586,9 @@ export default class Antenna extends View {
         let group = { group: 'all', members: /** @type {string[]} */ ([]) };
         for (const r of rows)
             if (r.kind === 'space') group = { group: r.space, members: [] };
+            else if (r.kind === 'pins') group = { group: 'pins', members: [] };
+            else if (r.kind === 'unpinned')
+                group = { group: 'all', members: [] };
             else {
                 group.members.push(r.address);
                 groupOf.set(r.address, group);
@@ -454,6 +611,8 @@ export default class Antenna extends View {
             (isCompact ? 26 : 30) + (knobs['antenna.details.wait'] ? 16 : 0);
         let n = 0;
         const drawn = rows.map((r) => {
+            if (r.kind === 'pins') return isNarrow ? null : this.pinsHeader(t);
+            if (r.kind === 'unpinned') return this.pinsBreak(t, isNarrow);
             if (r.kind === 'space')
                 return h_flex()
                     .id(`sp-${r.space}`)
@@ -479,6 +638,9 @@ export default class Antenna extends View {
                     .cursor_pointer()
                     .hover((s) => s.bg(t.hover))
                     .on_click(() => run('pane.focus', { pane: a.pane }))
+                    .on_mouse_down('right', (_e, cx) =>
+                        this.openPinMenu(r.address, cx),
+                    )
                     .h(26)
                     .px(8)
                     .gap(4)
@@ -573,11 +735,11 @@ export default class Antenna extends View {
                     )
                     .when(Boolean(more.context), (el) =>
                         el.child(
-                            div()
-                                .flex_none()
-                                .text_size(11)
-                                .text_color(t.dim)
-                                .child(more.context ?? ''),
+                            contextMeter(
+                                t,
+                                state.context,
+                                knobs['antenna.details.meter'],
+                            ),
                         ),
                     )
                     .when(Boolean(more.idle), (el) =>
@@ -640,6 +802,9 @@ export default class Antenna extends View {
                     )
                     .on_action(ROW_OPEN, () =>
                         run('pane.focus', { pane: a.pane }),
+                    )
+                    .on_mouse_down('right', (_e, cx) =>
+                        this.openPinMenu(r.address, cx),
                     )
                     .border_1()
                     .border_color(isHeld ? t.accent : '#00000000')
@@ -736,7 +901,7 @@ export default class Antenna extends View {
                             .min_h(0)
                             .px(isNarrow ? 0 : 8)
                             .overflow_y_scrollbar()
-                            .children(drawn),
+                            .children(drawn.filter(Boolean)),
                     )
                     .children([this.drag.ghost(t)].filter(Boolean)),
             )

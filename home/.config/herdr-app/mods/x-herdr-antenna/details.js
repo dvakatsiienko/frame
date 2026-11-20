@@ -45,7 +45,9 @@ export function rowDetails(settings, { context, model, time, wait }) {
                 : null,
         idle: (settings['antenna.details.idle'] && time) || null,
         model: (settings['antenna.details.model'] && model) || null,
-        wait: (settings['antenna.details.wait'] && wait) || null,
+        wait:
+            (settings['antenna.details.wait'] && wait && waitShown(wait)) ||
+            null,
     };
 }
 
@@ -58,4 +60,27 @@ export function waitRuns(wait) {
         .split(/\*\*(.+?)\*\*/)
         .map((text, i) => ({ isBold: i % 2 === 1, text }))
         .filter((run) => run.text);
+}
+
+/**
+ * a wait on a background command shows its first words, cut at the first «=» or «/», never the raw command; a cut that
+ * leaves almost nothing reads as a background task; a wait naming a member (`**…**`) passes whole
+ * @param {string} wait @returns {string}
+ */
+export function waitShown(wait) {
+    const cut = wait.search(/[=/]/);
+    if (wait.includes('**') || cut < 0) return wait;
+    const kept = wait.slice(0, cut).trimEnd();
+    const words = kept.replace(/^waiting on\s*/, '');
+    return words.length < 3 ? 'waiting on a background task' : kept;
+}
+
+const WARM_AT = 55;
+const HOT_AT = 65;
+
+/** the context meter's level: warm where the second wind notices, hot where it must @param {number} percent
+ * @returns {'calm' | 'warm' | 'hot'} */
+export function meterLevel(percent) {
+    if (percent >= HOT_AT) return 'hot';
+    return percent >= WARM_AT ? 'warm' : 'calm';
 }

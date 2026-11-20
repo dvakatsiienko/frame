@@ -4,10 +4,14 @@ import {
     ORDER_CAP,
     heirs,
     inOrder,
+    loadPins,
     moved,
     movedInGroup,
     nextOrder,
     orderPids,
+    pinHeirs,
+    savePins,
+    toggledPin,
 } from './order.js';
 
 const live = (...a: string[]) => new Set(a);
@@ -167,5 +171,66 @@ describe('the order antenna publishes', () => {
 
     test('nothing before any thread is listed', () => {
         expect(orderPids(['t1'], [], readOf)).toBe(null);
+    });
+});
+
+// FRM-618 slice E exits 2 and 3: the pins are a set beside the order, so a pin never moves a row in it; a drag stays in
+// its own group, a pinned row dropped on an unpinned slot lands at its group's nearest edge
+describe('pinned threads', () => {
+    test("a pinned row dropped onto an unpinned slot lands at the pinned group's nearest edge, still pinned", () => {
+        const order = ['p1', 'u1', 'p2', 'u2'];
+        expect(movedInGroup(order, ['p1', 'p2'], 'p1', 'u2')).toEqual([
+            'p2',
+            'u1',
+            'p1',
+            'u2',
+        ]);
+        expect(movedInGroup(order, ['p1', 'p2'], 'p2', 'u1')).toEqual(order);
+    });
+
+    test('a pin joins the set and leaves the order as it was; a second press unpins', () => {
+        const pinned = toggledPin([], 't3');
+        expect(pinned).toEqual(['t3']);
+        expect(toggledPin(pinned, 't3')).toEqual([]);
+        expect(toggledPin(['t1'], 't3')).toEqual(['t1', 't3']);
+    });
+
+    test('a pin on a gone terminal passes to the live terminal of the same thread', () => {
+        const names = { t1: 'clio', t2: 'crow', t9: 'clio' };
+        expect(pinHeirs(['t1', 't2'], names, live('t9', 't2'))).toEqual([
+            't9',
+            't2',
+        ]);
+    });
+
+    test('a gone pin with no heir stays, so a read that misses threads never drops it', () => {
+        expect(pinHeirs(['t1'], { t1: 'clio' }, live('t2'))).toEqual(['t1']);
+        expect(pinHeirs(['t1'], { t1: 'clio' }, live())).toEqual(['t1']);
+    });
+});
+
+// FRM-618 slice E exit 3: a pin and its place survive a store reload; the store is antenna's own `localStorage`
+describe('the pins in the store', () => {
+    const storage = () => {
+        const kept = new Map<string, string>();
+        return {
+            getItem: (k: string) => kept.get(k) ?? null,
+            setItem: (k: string, v: string) => void kept.set(k, v),
+        };
+    };
+
+    test('pins saved, then read by a fresh load, come back in their order', () => {
+        const kept = storage();
+        savePins(kept, ['t3', 't1']);
+        expect(loadPins(kept)).toEqual(['t3', 't1']);
+    });
+
+    test('a store with no pins or a broken value reads as none', () => {
+        const kept = storage();
+        expect(loadPins(kept)).toEqual([]);
+        kept.setItem('pins', '{oops');
+        expect(loadPins(kept)).toEqual([]);
+        kept.setItem('pins', '"t1"');
+        expect(loadPins(kept)).toEqual([]);
     });
 });

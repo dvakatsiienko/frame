@@ -11,6 +11,16 @@ export const ANTENNA_KNOBS = [
     { default: true, key: 'antenna.showTabs', label: 'Show tabs' },
     { default: true, key: 'antenna.details.idle', label: 'Idle time' },
     { default: false, key: 'antenna.details.context', label: 'Context fill' },
+    {
+        choices: [
+            { label: 'Ring', value: 'ring' },
+            { label: 'Bars', value: 'bars' },
+            { label: 'Pill', value: 'pill' },
+        ],
+        default: 'ring',
+        key: 'antenna.details.meter',
+        label: 'Context meter',
+    },
     { default: true, key: 'antenna.details.wait', label: 'Wait line' },
     { default: true, key: 'antenna.details.hot', label: 'Keep hot 🔥' },
     { default: false, key: 'antenna.details.model', label: 'Model' },

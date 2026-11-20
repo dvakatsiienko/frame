@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { activityShown, rowDetails, waitRuns } from './details.js';
+import { activityShown, rowDetails, waitRuns, waitShown } from './details.js';
 
 // FRM-618 slice A exit 2: each row detail off in turn, that detail alone leaves the row
 const facts = {
@@ -109,5 +109,44 @@ describe('a wait line', () => {
         expect(waitRuns('waiting on the push')).toEqual([
             { isBold: false, text: 'waiting on the push' },
         ]);
+    });
+});
+
+// FRM-618 rider E2: a 🔭 line never shows a raw shell command; a wait with a fleet name passes as it is
+describe('a wait on a background command', () => {
+    test('a raw command is cut at its first «=» or «/», keeping its first words', () => {
+        expect(waitShown('waiting on npm run build --watch=1')).toBe(
+            'waiting on npm run build --watch',
+        );
+        expect(waitShown('waiting on pnpm -C ~/frame test')).toBe(
+            'waiting on pnpm -C ~',
+        );
+    });
+
+    test('a cut that leaves almost nothing reads as a background task', () => {
+        expect(
+            waitShown('waiting on S=/private/tmp/claude-501/x; until [ +2'),
+        ).toBe('waiting on a background task');
+    });
+
+    test("a row's wait line draws the cut, never the raw command", () => {
+        expect(
+            rowDetails(
+                { 'antenna.details.wait': true },
+                {
+                    context: null,
+                    model: null,
+                    time: null,
+                    wait: 'waiting on S=/private/tmp/x',
+                },
+            ).wait,
+        ).toBe('waiting on a background task');
+    });
+
+    test('a wait naming a member or a plain task stays whole', () => {
+        expect(waitShown('waiting on **⚡ 🔧 herdr | FRM-673**')).toBe(
+            'waiting on **⚡ 🔧 herdr | FRM-673**',
+        );
+        expect(waitShown('Run the go done')).toBe('Run the go done');
     });
 });
