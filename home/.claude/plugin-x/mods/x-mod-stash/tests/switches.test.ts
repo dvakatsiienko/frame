@@ -345,6 +345,8 @@ const SCENARIOS: Record<string, Scenario> = {
         name: '⚡ 🔧 codie: x',
         trace: /^🐦‍🔥 context at \d+ %/,
     },
+    // the wake waits out the 5h reset, held as 🔥's ping is: a reset 30 min out sat through every band poll on the way,
+    // past the 10 s hook budget at load 14 (20 Nov). a reset 1 min out times the wake's path alone, and a slowed path still reds
     'stash.waker': {
         arm: async ($, w, ui) => {
             w.store.set(`pace:${SID}`, { off: true });
@@ -356,13 +358,20 @@ const SCENARIOS: Record<string, Scenario> = {
                     {
                         kind: 'five_hour',
                         percentUsed: 100,
-                        resetsAt: new Date(NOW + 30 * MIN).toISOString(),
+                        resetsAt: new Date(NOW + MIN).toISOString(),
                     },
                 ],
             });
             await endTurn($, CAPPED, 'error');
         },
-        fire: (_$, w) => w.clock.advance(40 * MIN),
+        fire: async (_$, w) => {
+            for (
+                let i = 0;
+                i < 2 && !w.lines.some((l) => /^turn: .*waker/.test(l));
+                i++
+            )
+                await w.clock.advance(MIN);
+        },
         trace: /^turn: .*waker/,
     },
 };
