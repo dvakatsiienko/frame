@@ -251,6 +251,24 @@ func TestThreadRecordStampsItsDispatchTime(t *testing.T) {
 	}
 }
 
+// a reused codie summoned with no lane keeps its old lane: that write is no dispatch, so an ended card of the lane stays ended
+func TestThreadRecordKeepsItsDispatchTimeWhenTheWriteNamesNoLane(t *testing.T) {
+	// serial: X_THREADS is the store writeThreadRecord reads
+	store := filepath.Join(t.TempDir(), "threads.json")
+	t.Setenv("X_THREADS", store)
+	first := time.UnixMilli(1_000_000)
+	if err := writeThreadRecord(thread{SessionID: "sid-1", Role: "codie", Lane: "mods-lane-9"}, first, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := writeThreadRecord(thread{SessionID: "sid-1", Role: "codie", Ticket: "FRM-1"}, first.Add(time.Hour), false); err != nil {
+		t.Fatal(err)
+	}
+	written, _ := readThreadStore(store)
+	if got := written.Threads[0]; got.Lane != "mods-lane-9" || got.DispatchedAt != first.UnixMilli() || got.At != first.Add(time.Hour).UnixMilli() {
+		t.Fatalf("record %+v, want the lane and dispatchedAt %d kept while at moves", got, first.UnixMilli())
+	}
+}
+
 func TestThreadRecordsWrittenAtOnceAllLand(t *testing.T) {
 	// serial: X_THREADS is the store writeThreadRecord reads
 	store := filepath.Join(t.TempDir(), "threads.json")

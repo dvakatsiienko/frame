@@ -812,25 +812,39 @@ describe('the cli on a ticket whose wish block holds PK-prefixed lines', () => {
         expect(done.stdout).toContain('PK-349:W1263 text missing');
     });
 
-    // 20 Nov, FRM-618: its block joins FRM-567:W1–W4 and PK-424:W1–W4 beside its own W1–W4, each keeping its prefix
-    test('lines of three homes numbered W1 are three lines, never «numbered twice»', () => {
+    // 20 Nov, FRM-618: its block holds PK-424:W1–W4 and PK-349 lines beside its own W1–W4, each keeping its prefix
+    test('lines of two pocket homes numbered W1 are separate lines, never «numbered twice»', () => {
         const joined = wish(
             '* FRM-7:W1 its own words',
-            '* FRM-567:W1 joined from a ticket',
-            '* PK-424:W1 joined from the pocket',
+            '* PK-349:W1 folded from one item',
+            '* PK-424:W1 folded from another',
         );
         const draft =
-            'FRM-7:W1 its own words\nFRM-567:W1 joined from a ticket\nPK-424:W1 joined from the pocket';
+            'FRM-7:W1 its own words\nPK-349:W1 folded from one item\nPK-424:W1 folded from another';
         const done = run(joined, draft, ['--all']);
         expect(done.stdout).not.toContain('numbered twice');
         expect(done.status).toBe(0);
         const missed = run(
             joined,
-            'FRM-7:W1 its own words\nPK-424:W1 joined from the pocket',
+            'FRM-7:W1 its own words\nPK-424:W1 folded from another',
             ['--all'],
         );
         expect(missed.status).toBe(1);
-        expect(missed.stdout).toContain('FRM-567:W1 uncited');
+        expect(missed.stdout).toContain('PK-349:W1 uncited');
+    });
+
+    test("a line of another ticket quoted in the block is still not this block's", () => {
+        const done = run(
+            wish(
+                '* FRM-7:W1 its own words',
+                '* FRM-9:W5 someone else',
+                '* FRM-567:W1 a quote',
+            ),
+            'FRM-7:W1 its own words',
+            ['--all'],
+        );
+        expect(done.stdout).not.toContain('FRM-9');
+        expect(done.status).toBe(0);
     });
 
     test("a pocket item standing in for an empty block keeps another home's quoted line a quote", () => {

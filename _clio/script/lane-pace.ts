@@ -588,7 +588,7 @@ export function lanePaceSection(
             : '';
         const ticket = (planFile && currentTicketOf(planFile)) || thread.ticket;
         const name =
-            `${thread.area ?? thread.lane ?? thread.sessionId.slice(0, 8)} | ${ticket ?? ''}`.trim();
+            `${thread.area ?? thread.lane ?? thread.sessionId.slice(0, 8)} | ${ticket ?? thread.lane ?? ''}`.trim();
         try {
             const transcript = readFileSync(file, 'utf8');
             const pace = lanePace({

@@ -69,14 +69,18 @@ export function wishLines(
     return lines;
 }
 
-// the prefixes a block's own lines carry beyond its homes: lines joined from the pocket or another ticket
+// the prefixes a block's own lines carry beyond its homes: lines folded in from the pocket, «PK-424:W1». another ticket's
+// prefix is a quote of that ticket's line, never this one's, and stays skipped
 export function joinedPrefixes(item: string, homes: string[] = []) {
     const own = homes.map((home) => home.toUpperCase());
     return [
         ...new Set(
             [...item.matchAll(/^\s*[-*]?\s*((?:PK|FRM|BYT)-\d+):W\d+\b/gm)]
                 .map((m) => m[1]?.toUpperCase() ?? '')
-                .filter((prefix) => prefix && !own.includes(prefix)),
+                .filter(
+                    (prefix) =>
+                        prefix.startsWith('PK-') && !own.includes(prefix),
+                ),
         ),
     ];
 }

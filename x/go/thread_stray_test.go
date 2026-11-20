@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -13,18 +14,26 @@ func TestThreadRecordKeepsAStrayOffAnotherLane(t *testing.T) {
 	// serial: X_THREADS is the store writeThreadRecord reads
 	store := filepath.Join(t.TempDir(), "threads.json")
 	t.Setenv("X_THREADS", store)
+	state := t.TempDir()
+	t.Setenv("X_STATE", state)
 	now := time.UnixMilli(2_000_000)
 	for _, c := range []struct {
 		name         string
+		batches      []string
 		lane, ticket string
 		wantLane     string
 		wantTicket   string
 	}{
-		{"a mods dispatch's lane and ticket", "mods-lane-8", "FRM-662", "", ""},
-		{"its own batch", "stray-batch-9", "FRM-700", "stray-batch-9", "FRM-700"},
-		{"its standing lane", "strays-lane", "FRM-701", "strays-lane", "FRM-701"},
-		{"another lane again, after its batch", "mods-lane-8", "FRM-662", "", ""},
+		{"a mods dispatch's lane, no batch plan yet", nil, "mods-lane-8", "FRM-662", "", ""},
+		{"a mods dispatch's lane, the newest batch is its own", []string{"stray-batch-8", "stray-batch-10", "stray-batch-9"}, "mods-lane-8", "FRM-662", "stray-batch-10", ""},
+		{"its own batch", nil, "stray-batch-9", "FRM-700", "stray-batch-9", "FRM-700"},
+		{"its standing lane", nil, "strays-lane", "FRM-701", "strays-lane", "FRM-701"},
 	} {
+		for _, batch := range c.batches {
+			if err := os.MkdirAll(filepath.Join(state, "lanes", batch), 0o755); err != nil {
+				t.Fatal(err)
+			}
+		}
 		if err := writeThreadRecord(thread{SessionID: "sid-stray", Role: "codie", Area: "stray", Lane: c.lane, Ticket: c.ticket}, now, true); err != nil {
 			t.Fatalf("%s: %v", c.name, err)
 		}

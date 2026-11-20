@@ -798,9 +798,10 @@ describe('lanePaceSection, the chunk a lane builds', () => {
         expect(rows.find((r) => r.includes('mods |'))).toContain(
             'mods | FRM-662',
         );
-        expect(rows.find((r) => r.includes('stray |'))).not.toContain(
-            'FRM-662',
-        );
+        const stray = rows.find((r) => r.includes('stray |'));
+        expect(stray).not.toContain('FRM-662');
+        // a lane with no ticket on its steps names its lane after the bar, never an empty «stray |»
+        expect(stray).toContain('stray | stray-batch-9');
     });
 
     test('a budget prints as its size and hours, never as sessions', () => {
