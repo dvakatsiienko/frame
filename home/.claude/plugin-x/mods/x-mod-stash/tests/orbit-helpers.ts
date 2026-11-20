@@ -1,7 +1,16 @@
 import type { On } from 'claude-code';
 import type { Engine } from 'claude-code/testing';
 
-import { type Board, SID, orbit, start } from './orbit-world.ts';
+import {
+    type Board,
+    SID,
+    add,
+    board,
+    orbit,
+    say,
+    start,
+    type world,
+} from './orbit-world.ts';
 
 // the steer as the session's published asks hold it, the store mirror every board reads
 export const savedSteer = (store: Map<string, unknown>) =>
@@ -157,3 +166,36 @@ export const herdrPress = (
 ) => {
     w.files[HERDR_FILE] = `${w.files[HERDR_FILE] ?? ''}${press({ id, ...p })}`;
 };
+
+// FRM-427: dima's 🛎️ press is his word — the tick record lives in this mod's $.state, written by the press alone
+export function tickLog(on: On) {
+    const writes: unknown[] = [];
+    on('state.set', (_$, e, next) => {
+        if (e.plugin === 'x-mod-stash' && e.key === 'ticks')
+            writes.push(e.value);
+        return next(e);
+    });
+    return writes;
+}
+
+export const addLinked = ($: Engine, link: string) =>
+    orbit($, {
+        asks: [
+            { link, pick: 'read it', text: 'the proposal for the catch kinds' },
+        ],
+        op: 'add',
+    }) as Promise<{ deny?: string }>;
+
+// PK-204: a resolve on a ticked ask says what shipped — «as ticked», or «changed: <what>» beside a new round
+export const ticked = async ($: Engine, w: ReturnType<typeof world>) => {
+    const ui = await board($);
+    await add($, ['name the band', 'breathing bars']);
+    await say($, 'go');
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await w.clock.advance(5_000);
+    await $.tool.call({ command: 'true', tool: 'Bash' });
+    return ui;
+};
+
+export const partOff = (w: { store: Map<string, unknown> }, key: string) =>
+    w.store.set('shown', { [key]: false });
