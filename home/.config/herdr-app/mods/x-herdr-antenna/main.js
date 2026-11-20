@@ -89,8 +89,8 @@ async function saveSetting(key, value) {
 const THREADS_KEY = 'x-herdr-deck.threads';
 // a 🔥 press is the deck's to write: antenna asks it here, {at, on, sid} (x-herdr-deck orbit.js HOT_ASK)
 const HOT_ASK = 'x-herdr-deck.hot';
-// a press shows at once and holds this long while the deck writes it
-const HOT_PENDING_MS = 8000;
+// a press shows at once and holds as long as the deck waits on the thread (its PENDING_MS, 20 s) and one redraw more
+const HOT_PENDING_MS = 21_000;
 
 /** @typedef {{ context: number | null, isHot: boolean, model: string | null, sid: string | null, wait: string | null }} Facts */
 

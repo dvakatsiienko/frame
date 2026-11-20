@@ -24,7 +24,6 @@ import { SANS, SIZE, bar, clockOf, leadingRoom, line, prose } from './look.js';
 import {
     HOT_ASK,
     ORDER_KEY,
-    PENDING_MS,
     PRESS_DIR,
     PRESS_FILE,
     THREADS_BEAT_MS,
@@ -38,10 +37,7 @@ import {
     createTurns,
     dropPress,
     freshHotAsk,
-    hotOf,
     hotPressLine,
-    hotPresses,
-    inListOrder,
     keep,
     kept,
     linkOf,
@@ -184,15 +180,10 @@ export default class Deck extends View {
         this.tickAsk = /** @type {number | null} */ (
             shared('deck.tickAll') ?? null
         );
-        // his 🔥 presses by sid, drawn until the thread's state file reads them
-        /** @type {Map<string, { at: number, on: boolean }>} */
-        this.hotPressed = new Map();
         // antenna's 🔥 asks land here; one made before this load never fires
         /** @type {number} */
         this.hotAskSeen =
             /** @type {{ at?: number } | null} */ (shared(HOT_ASK))?.at ?? 0;
-        /** @type {Map<string, { at: number, on: boolean }>} */
-        this.filePresses = new Map();
         /** @type {string | null} */
         this.pressError = null;
         /** @type {string | null} */
@@ -255,11 +246,6 @@ export default class Deck extends View {
     async read(isCurrent) {
         const shelf = await states();
         const lanes = lanesShown(await json(LANES));
-        const filePresses = hotPresses(
-            await readTextFile(`${home()}/${PRESS_FILE}`).catch(
-                () => /** @type {string | null} */ (null),
-            ),
-        );
         const week =
             (await json(USAGE))?.rate_limits?.seven_day?.used_percentage ??
             null;
@@ -273,7 +259,6 @@ export default class Deck extends View {
         const pin = orbitPinIn(await readTextFile(SETTINGS).catch(() => null));
         if (!isCurrent()) return;
         this.pin = pin;
-        this.filePresses = filePresses;
         this.week = week;
         this.isStale = listed === null;
         this.rows = !listed
@@ -359,8 +344,6 @@ export default class Deck extends View {
     /** @param {Context} cx @param {string} sid @param {boolean} on */
     pressHot(cx, sid, on) {
         const at = Date.now();
-        this.hotPressed.set(sid, { at, on });
-        cx.notify();
         const line = hotPressLine(sid, on, at);
         cx.spawn(async (cx) => {
             try {
@@ -388,12 +371,9 @@ export default class Deck extends View {
                 }
                 this.pressError = null;
             } catch (err) {
-                this.hotPressed.delete(sid);
                 this.pressError = `keep hot not written: ${err instanceof Error ? err.message : err}`;
             }
             cx.notify();
-            // the button gives its state back if the thread never answers
-            cx.timer.after(PENDING_MS + 1000, (cx) => cx.notify());
         });
     }
 
@@ -1252,21 +1232,23 @@ export default class Deck extends View {
         const scrolling = v_flex()
             .id('x-herdr-deck-scroll')
             .flex_1()
-            .min_h(0)
+            .min_h(120)
             .overflow_y_scroll()
+            // a press antenna asked for can fail with no ask on orbit, so its error draws above every section
+            .when(Boolean(this.pressError), (el) =>
+                el.child(
+                    div()
+                        .px(12)
+                        .pt(8)
+                        .text_size(SIZE.secondary)
+                        .text_color(t.blocked)
+                        .child(`⚠️ ${this.pressError}`),
+                ),
+            )
             .when(parts.scroll.includes('orbit'), (el) =>
                 el
                     .child(header(`🪐 orbit: ${count(asks, 'ask', 'asks')}`))
                     .children(orbitRows)
-                    .when(Boolean(this.pressError), (el2) =>
-                        el2.child(
-                            div()
-                                .px(12)
-                                .text_size(SIZE.secondary)
-                                .text_color(t.blocked)
-                                .child(`⚠️ ${this.pressError}`),
-                        ),
-                    )
                     .when(Boolean(this.pressNote), (el2) =>
                         el2.child(
                             div()
@@ -1307,7 +1289,7 @@ export default class Deck extends View {
 
     /**
      * every thread's phases, pinned under orbit and glide: a group per thread under its name; past its height it scrolls
-     * on its own, so orbit above always keeps its room
+     * on its own, and the scroll part above keeps at least 120 px, so orbit never vanishes
      * @param {Theme} t @param {import('./deck-parts.js').PhaseGroup[]} groups @param {(text: string) => any} header
      */
     phasesBlock(t, groups, header) {
