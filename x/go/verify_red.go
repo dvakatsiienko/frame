@@ -755,7 +755,8 @@ func (h *copyHarness) typeErrorsNow() []string {
 		if (h.project != "" && dir != h.project) || !exists(filepath.Join(dir, "tsconfig.json")) || tsc == "" {
 			continue
 		}
-		c := exec.Command(tsc, "--noEmit", "--listFiles", "-p", dir)
+		// a `.ts` import path is plain code in a mod, though its engine tsconfig leaves the option out: a planted one reads as the mutant, never TS5097
+		c := exec.Command(tsc, "--noEmit", "--allowImportingTsExtensions", "--listFiles", "-p", dir)
 		c.Dir = dir
 		// tsc prints its errors and its file list on stdout; stderr holds its own crash, never a type error
 		out, _ := c.Output()
