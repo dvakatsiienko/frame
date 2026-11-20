@@ -273,7 +273,8 @@ func TestShimFiveShellsAtOnceStartOneBuild(t *testing.T) {
 }
 
 // a mkdir that answers yes to a directory another caller made a moment before, as uutils' does on ubuntu 26.04 (CI, 20 Nov: the
-// five shells took one lock twice): the lock holds anyway, so the second shell starts no build of its own
+// five shells took one lock twice): the lock holds anyway, so the second shell starts no build of its own. the fake mkdir only
+// matters on the shim that took its lock by mkdir: on the fixed one it is never called for the lock
 func TestShimLockHoldsWhenMkdirAnswersYesToAnExistingDir(t *testing.T) {
 	t.Parallel()
 	w := newPushedWorld(t)
@@ -396,12 +397,15 @@ func TestShimFallsBackWhenThePushedBuildFails(t *testing.T) {
 func TestShimTakesOverAStaleLockOnly(t *testing.T) {
 	t.Parallel()
 	for _, c := range []struct {
-		name   string
-		age    time.Duration
-		builds int
+		name    string
+		age     time.Duration
+		builds  int
+		oldForm bool
 	}{
-		{"a lock older than 5 min", 6 * time.Minute, 1},
-		{"a fresh lock", time.Minute, 0},
+		{"a lock older than 5 min", 6 * time.Minute, 1, false},
+		{"a fresh lock", time.Minute, 0, false},
+		{"a directory lock an older shim left, older than 5 min", 6 * time.Minute, 1, true},
+		{"a directory lock an older shim left, fresh", time.Minute, 0, true},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
@@ -411,7 +415,13 @@ func TestShimTakesOverAStaleLockOnly(t *testing.T) {
 			waitFor(t, w.stamp(), w.pushedTree(t))
 			w.originMoves(t, "pushed-v3")
 			lock := filepath.Join(w.tree, "x/go/bin/.x-pushed.lock")
-			write(t, lock, "")
+			if c.oldForm {
+				if err := os.Mkdir(lock, 0o755); err != nil {
+					t.Fatal(err)
+				}
+			} else {
+				write(t, lock, "")
+			}
 			old := time.Now().Add(-c.age)
 			_ = os.Chtimes(lock, old, old)
 			before := w.pushedBuilds(t)
@@ -423,6 +433,9 @@ func TestShimTakesOverAStaleLockOnly(t *testing.T) {
 
 			if got.out != "pushed-v1" || w.pushedBuilds(t)-before != c.builds {
 				t.Errorf("%q, %d new pushed builds, want the last build and %d", got.out, w.pushedBuilds(t)-before, c.builds)
+			}
+			if left, _ := filepath.Glob(lock + ".stale.*"); len(left) != 0 {
+				t.Errorf("the taken-over lock left %v behind", left)
 			}
 		})
 	}
