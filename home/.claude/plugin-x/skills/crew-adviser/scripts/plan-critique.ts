@@ -13,7 +13,6 @@ import {
     oneShotModel,
     runOneShot,
     tokensIn,
-    wakeIdOf,
 } from './lib.ts';
 import {
     type PlanReview,
@@ -22,6 +21,7 @@ import {
     blindSections,
     planNotes,
     planPrompt,
+    planRunIdOf,
     planSchema,
 } from './notes.ts';
 
@@ -50,7 +50,7 @@ if (!planText.trim()) fail(`plan is empty: ${planPath}`);
 const now = new Date();
 const arm = liveArm;
 const effort = 'high';
-const id = `${wakeIdOf(now)}${String(now.getSeconds()).padStart(2, '0')}`;
+const id = planRunIdOf(now);
 const runDir = `${STATE_DIR}/plans/${id}`;
 mkdirSync(runDir, { recursive: true });
 // no tools: a one-shot that can read would reach clio's transcripts and the earlier verdicts

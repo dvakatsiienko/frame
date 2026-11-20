@@ -22,10 +22,12 @@ import {
     ledgerLine,
     planNotes,
     planPrompt,
+    planRunIdOf,
 } from './notes.ts';
 import { buildPacket } from './packet.ts';
 import { fixtures, lines } from './test-rows.ts';
 import { readLines, transcriptDelta } from './transcript.ts';
+import { unvettedIds } from './unvetted-ids.ts';
 
 describe('appendNoteOnce', () => {
     test('a second note with the same id is not appended', () => {
@@ -202,6 +204,32 @@ describe('planNotes', () => {
             findings: Array.from({ length: 5 }, () => finding),
         });
         expect(notes.reduce((sum, n) => sum + (n.costUsd ?? 0), 0)).toBe(0.4);
+    });
+
+    // 20 Nov (flyway f60): four runs in one second minted one id, so the vet count read 5 findings as 20
+    test('four runs in one second, two on one plan, never share a note id, and each finding is owed once', () => {
+        const second = new Date(2026, 10, 20, 17, 12, 30);
+        const finding = {
+            problem: 'p',
+            quote: 'a go binary, state in one json file',
+            severity: 'high',
+            test: 't',
+        } as const;
+        const notes = Array.from({ length: 4 }, () =>
+            planNotes(
+                { ...run, runId: planRunIdOf(second) },
+                { ...review, findings: [finding] },
+            ).map((note) => ({ ...note, thread: 'main' })),
+        ).flat();
+        const ids = notes.map((n) => n.id);
+        expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);
+        expect(unvettedIds(notes, new Set(), 'main')).toHaveLength(4);
+    });
+
+    test('a run id reads as its minute and second, then a random suffix', () => {
+        expect(planRunIdOf(new Date(2026, 10, 20, 17, 12, 30))).toMatch(
+            /^20261120171230-[0-9a-f]{6}$/,
+        );
     });
 });
 

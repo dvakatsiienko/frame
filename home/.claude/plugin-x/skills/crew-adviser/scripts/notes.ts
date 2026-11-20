@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import {
     closeSync,
     mkdirSync,
@@ -21,7 +22,14 @@ import {
     localDay,
     pad,
     threadOfNoteId,
+    wakeIdOf,
 } from './lib.ts';
+
+// four parallel critiques in one second minted one id (flyway f60): a random suffix keeps every run's note ids its own,
+// and no shared counter means two processes never wait on each other
+export function planRunIdOf(now: Date) {
+    return `${wakeIdOf(now)}${pad(now.getSeconds())}-${randomBytes(3).toString('hex')}`;
+}
 
 export function appendJsonl(path: string, value: Note | PlanNote | Verdict) {
     mkdirSync(STATE_DIR, { recursive: true });
