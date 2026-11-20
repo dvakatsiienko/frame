@@ -33,7 +33,6 @@ import {
     tickAllTakes,
     tickAllThread,
     ticketUrl,
-    unbold,
     waitOf,
     withPending,
     withPress,
@@ -266,14 +265,6 @@ describe('ask text draws as typed', () => {
     });
 });
 
-describe('a plain one-line label', () => {
-    test('a bold name shows without its stars', () => {
-        expect(unbold('waiting on **🙋 dima**, **🔧 codie** (mods)')).toBe(
-            'waiting on 🙋 dima, 🔧 codie (mods)',
-        );
-    });
-});
-
 describe('threads sort by the words of their name', () => {
     test('a leading badge never decides the order', () => {
         const names = [
@@ -332,11 +323,11 @@ describe('the deck publishes each thread its three facts', () => {
         );
     });
 
-    test('a bold name in the waiting-on line arrives plain', () => {
+    test('a bold fleet name in the waiting-on line arrives bold, for every view to draw (FRM-618:W41)', () => {
         expect(
             threadFacts([row(7, 'idle', 'waiting on **🦉 clio**')], 57)['7']
                 ?.wait,
-        ).toBe('waiting on 🦉 clio');
+        ).toBe('waiting on **🦉 clio**');
     });
 
     test('an idle thread, or one with no state file, shows no waiting-on line', () => {

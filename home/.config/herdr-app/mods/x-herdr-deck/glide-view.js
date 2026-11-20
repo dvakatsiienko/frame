@@ -200,6 +200,7 @@ export function createGlide(block) {
                       );
             return v_flex()
                 .id('x-herdr-glide')
+                .cursor_default()
                 .font_family(SANS)
                 .size_full()
                 .bg(t.canvas)

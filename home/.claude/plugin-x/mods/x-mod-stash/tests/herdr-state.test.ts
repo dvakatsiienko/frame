@@ -918,3 +918,16 @@ test("a session's state file carries its state and since", async ($, on) => {
     const file = s.read(A);
     expect([typeof file?.since, file?.state]).toEqual(['number', 'idle']);
 });
+
+// FRM-618 slice D exit 4: the file carries every field herdr's contract requires, so a rename here reds this test; the
+// test runs on an overlay copy that cannot reach frame's herdr/contracts/herdr-state.schema.json, so its `required` and
+// `state.enum` are pinned here, and herdr's state-schema.test.ts pins the schema to the same lists
+const SCHEMA_REQUIRED = ['at', 'pid', 'sid', 'since', 'state', 'wait'];
+const SCHEMA_STATES = ['working', 'waiting', 'idle'];
+test('the state file holds every field herdr/contracts/herdr-state.schema.json requires', async ($, on) => {
+    const s = await session($, on);
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    const file = s.read(A) ?? {};
+    expect(SCHEMA_REQUIRED.filter((k) => !(k in file))).toEqual([]);
+    expect(SCHEMA_STATES).toContain(file.state);
+});

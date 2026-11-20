@@ -1,7 +1,7 @@
 // x-herdr-antenna (FRM-618): every thread once, in his order, grouped under its space or not, each row its name and a
 // still status dot; the look is herdr's own agents list, calmer: no spinner, no sort, no sound
 
-import { h_flex, v_flex } from 'gpui-base';
+import { TextView, h_flex, v_flex } from 'gpui-base';
 import { View, div, svg } from 'gpui-kit';
 import {
     agents,
@@ -560,12 +560,21 @@ export default class Antenna extends View {
                                 .child(r.name),
                         )
                         .when(Boolean(more.wait), (el) =>
+                            // markdown, so a fleet name keeps its bold (W41); one line, clipped
                             el.child(
                                 div()
-                                    .truncate()
-                                    .text_size(11)
-                                    .text_color(t.dim)
-                                    .child(more.wait ?? ''),
+                                    .h(14)
+                                    .overflow_hidden()
+                                    .child(
+                                        TextView.markdown(
+                                            `an-wait-${r.address}`,
+                                            more.wait ?? '',
+                                        )
+                                            // herdr's UI font ships one face, so bold drew flat in it
+                                            .font_family('.AppleSystemUIFont')
+                                            .text_size(11)
+                                            .text_color(t.dim),
+                                    ),
                             ),
                         ),
                 )
@@ -603,7 +612,11 @@ export default class Antenna extends View {
                 )
                 .child(this.dot(t, shown.dot));
         });
+        // empty space keeps the arrow: with no cursor of its own the block showed the I-beam (dima, 17:57); a row's
+        // pointer and a drag's grab set their own
         return v_flex()
+            .id('x-herdr-antenna')
+            .cursor_default()
             .size_full()
             .min_h(0)
             .bg(t.chrome)

@@ -4,7 +4,7 @@
 // `colors` block sets `chrome`, `selected` and `input` for the tray, the shown pill and its edge), a × that asks before
 // it ends something, no window buttons, no palette button, no + (it lives in x-herdr-chat-header).
 
-import { h_flex } from 'gpui-base';
+import { TextView, h_flex } from 'gpui-base';
 import { View, div, image, svg } from 'gpui-kit';
 import {
     focused,
@@ -214,9 +214,17 @@ export default class TabPills extends View {
                             div()
                                 .flex_shrink(1)
                                 .min_w(0)
-                                .truncate()
-                                .text_color(t.dim)
-                                .child(line?.wait ?? ''),
+                                .h(18)
+                                .overflow_hidden()
+                                .child(
+                                    // markdown, its fleet names bold (FRM-618:W41); the system font has the bold face
+                                    TextView.markdown(
+                                        'pills-wait',
+                                        line?.wait ?? '',
+                                    )
+                                        .font_family('.AppleSystemUIFont')
+                                        .text_color(t.dim),
+                                ),
                         ),
                     ),
             );

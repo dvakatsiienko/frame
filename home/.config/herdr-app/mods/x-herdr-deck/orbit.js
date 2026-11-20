@@ -243,12 +243,6 @@ export const literalAngles = (text) =>
         .join('');
 
 /**
- * a one-line plain label shows markdown's ** as typed, so they go
- * @param {string} text
- */
-export const unbold = (text) => text.replaceAll('**', '');
-
-/**
  * threads sort by the words of their name: a leading badge (🦉, ⚡ 🔧) would otherwise order them by emoji code point
  * @param {string} a
  * @param {string} b
@@ -571,7 +565,7 @@ export function threadFacts(rows, week) {
             sid: row.sid,
             since: row.activity?.since ?? null,
             state: row.activity?.state ?? null,
-            wait: row.wait ? unbold(row.wait) : null,
+            wait: row.wait ?? null,
             week,
         };
     return facts;

@@ -2,7 +2,7 @@
 // over the quill, its state line, turn clock and Stop under it. the rules live in band.js; this file draws them and
 // owns the facts they read: the stash's state, the presses, the override, each thread's 🍃
 
-import { h_flex, v_flex } from 'gpui-base';
+import { TextView, h_flex, v_flex } from 'gpui-base';
 import { div, svg } from 'gpui-kit';
 import {
     agents,
@@ -451,8 +451,25 @@ export function createBand({ shownAddress, pid, turnStart, column }) {
                                 .min_w(0)
                                 .truncate()
                                 .text_color(isWorking ? t.foreground : t.muted)
-                                .tooltip(line)
-                                .child(line),
+                                .tooltip(line.replaceAll('**', ''))
+                                // a wait is markdown, its fleet names bold (FRM-618:W41); the system font has the bold face
+                                .child(
+                                    isWorking
+                                        ? line
+                                        : div()
+                                              .h(18)
+                                              .overflow_hidden()
+                                              .child(
+                                                  TextView.markdown(
+                                                      'chat-bar-wait',
+                                                      line,
+                                                  )
+                                                      .font_family(
+                                                          '.AppleSystemUIFont',
+                                                      )
+                                                      .text_color(t.muted),
+                                              ),
+                                ),
                         )
                         .when(clock !== null, (el) =>
                             el.child(
