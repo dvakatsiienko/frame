@@ -277,6 +277,7 @@ describe('memory-load-rule-lazy', () => {
 
 describe('guide-load-before-edit', () => {
     const typescript = 'x:guide-typescript';
+    const loaded = [skillCall(typescript), skillCall('x:guide-code')];
 
     it('refuses the first .ts edit once, naming the guide', () => {
         const out = session().edit('/w/a.ts');
@@ -315,7 +316,7 @@ describe('guide-load-before-edit', () => {
         const s = session();
         s.edit('/w/a.ts');
         const out = s.edit('/w/b.ts', {
-            transcript_path: s.transcript([skillCall(typescript)]),
+            transcript_path: s.transcript(loaded),
         });
         expect(out).toEqual({});
     });
@@ -353,7 +354,7 @@ describe('guide-load-before-edit', () => {
         s.edit('/w/a.ts');
         s.compact();
         const out = s.edit('/w/b.ts', {
-            transcript_path: s.transcript([boundary, skillCall(typescript)]),
+            transcript_path: s.transcript([boundary, ...loaded]),
         });
         expect(out).toEqual({});
     });
@@ -436,26 +437,26 @@ describe('guide-load-before-edit', () => {
 
         it('passes after a real Skill call', () => {
             const s = session();
-            expect(edit(s, [skillCall(typescript)])).toEqual({});
+            expect(edit(s, loaded)).toEqual({});
         });
 
         it('passes a Skill call past the last boundary', () => {
             const s = session();
-            expect(edit(s, [boundary, skillCall(typescript)])).toEqual({});
+            expect(edit(s, [boundary, ...loaded])).toEqual({});
         });
 
         it('passes through garbled lines', () => {
             const s = session();
-            expect(
-                edit(s, ['{broken "Skill"', '"Skill"', skillCall(typescript)]),
-            ).toEqual({});
+            expect(edit(s, ['{broken "Skill"', '"Skill"', ...loaded])).toEqual(
+                {},
+            );
         });
 
         it('passes when a tool result only quotes a boundary', () => {
             const s = session();
             expect(
                 edit(s, [
-                    skillCall(typescript),
+                    ...loaded,
                     {
                         message: {
                             content: 'subtype compact_boundary "Skill"',
@@ -497,6 +498,18 @@ describe('guide-load-before-edit', () => {
             expect(edit(s, entries).permissionDecision).toBe('deny');
         });
 
+        it('names x:guide-code when only the language guide loaded', () => {
+            const s = session();
+            const out = s.edit('/w/a.ts', {
+                transcript_path: s.transcript([skillCall(typescript)]),
+            });
+            expect(out.permissionDecision).toBe('deny');
+            expect(out.permissionDecisionReason).toContain('x:guide-code');
+            expect(out.permissionDecisionReason).not.toContain(
+                'guide-load-before-edit-typescript',
+            );
+        });
+
         it('fires for a subagent whose parent loaded the guide', () => {
             const s = session();
             const out = s.edit('/w/a.ts', {
@@ -508,10 +521,7 @@ describe('guide-load-before-edit', () => {
 
         it('passes a subagent that loaded the guide itself', () => {
             const s = session();
-            s.transcript(
-                [skillCall(typescript)],
-                'session/subagents/agent-sub.jsonl',
-            );
+            s.transcript(loaded, 'session/subagents/agent-sub.jsonl');
             const out = s.edit('/w/a.ts', {
                 agent_id: 'sub',
                 transcript_path: join(s.dir, 'session.jsonl'),

@@ -1,7 +1,7 @@
 {
     "guide-load-before-edit-code": {
         "command": [],
-        "file_path": ["\\.(?:py|sh)$"],
+        "file_path": ["\\.(?:py|sh|tsx?|go)$"],
         "input": [],
         "project": [],
         "prompt": [],
