@@ -12,7 +12,8 @@ const NOW = new Date(2026, 10, 20, 17, 20).getTime();
 const SLUG = 'herdr-lane-3-13';
 const NAME = '⚡ 🔧 herdr | FRM-620';
 
-function world(on: On) {
+// `compactMs` holds the compact open that long, so a second timer meets the first run mid-flight
+function world(on: On, compactMs = 0) {
     const clock = mock.clock(on, { now: NOW });
     const store = new Map<string, unknown>();
     const commands: string[] = [];
@@ -77,13 +78,15 @@ function world(on: On) {
             },
         ],
     }));
-    on('command.run', (_$, e) => {
+    on('command.run', async (_$, e) => {
         commands.push(
             e.command === 'compact' ? '/compact' : `/${e.command} ${e.args}`,
         );
+        if (e.command === 'compact' && compactMs) await clock.sleep(compactMs);
         return { text: '' };
     });
     on('session.compact', (_$, e) => ({ messages: e.messages }));
+    on('turn.complete', () => ({ text: '' }));
     return { clock, commands, store };
 }
 
@@ -128,13 +131,45 @@ test('a wind blocked by work it started stays refused across a reload, never run
     ]).toEqual([[], 'refused']);
 });
 
-test('two starts inside the beat run the wind once', async ($, on) => {
-    const w = world(on);
+test('two starts inside the beat run the wind once, the second timer meeting the first run mid-compact', async ($, on) => {
+    const w = world(on, 5_000);
     w.store.set(`wind:${SID}`, { at: NOW, slug: SLUG, state: 'refreshing' });
     await start($);
     await start($);
     await w.clock.advance(2_000);
+    await w.clock.advance(6_000);
     expect(w.commands).toEqual(['/compact', `/x:handoff-ingest ${SLUG}`]);
+});
+
+const say = ($: Engine) =>
+    $.prompt.submit({
+        origin: { kind: 'composer' } as never,
+        text: 'go',
+        wait: false,
+    });
+const endTurn = ($: Engine) =>
+    $.turn.complete({
+        answer: '',
+        durationMs: 1,
+        isAborted: false,
+        reason: 'answer',
+        turnId: 't',
+    });
+
+test('a reload mid-turn leaves the named wind to that turn end, never compacting the running turn', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await say($);
+    w.store.set(`wind:${SID}`, { at: NOW, slug: SLUG, state: 'refreshing' });
+    await start($);
+    await w.clock.advance(2_000);
+    const midTurn = [...w.commands];
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect([midTurn, w.commands]).toEqual([
+        [],
+        ['/compact', `/x:handoff-ingest ${SLUG}`],
+    ]);
 });
 
 // spec 2b: a 🌀 row a lost run left holds the thread's messages no longer than a compact's longest run (10 min)
