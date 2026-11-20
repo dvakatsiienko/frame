@@ -3,6 +3,7 @@
 
 import { exec, layout, nextCommand, openOverlay, run, setShared } from 'herdr';
 
+import { deckToggleId, findBlock } from './blocks.js';
 import { settingsOverlay } from './chat-asks.js';
 
 /** whether a window, dialog or popup sits over the layout: no mod api lists them, the window's status does */
@@ -15,20 +16,10 @@ async function isOverlayOpen() {
     }
 }
 
+const shownTree = () => /** @type {any} */ (layout())?.root ?? layout();
+
 /** the first block of the shown layout whose content passes `test` @param {(content: any) => unknown} test */
-function blockOf(test) {
-    /** @param {any} node @returns {any} */
-    const walk = (node) => {
-        if (!node || typeof node !== 'object') return null;
-        if (test(node.content)) return node;
-        for (const child of node.children ?? []) {
-            const found = walk(child);
-            if (found) return found;
-        }
-        return null;
-    };
-    return walk(/** @type {any} */ (layout())?.root ?? layout());
-}
+const blockOf = (test) => findBlock(shownTree(), test)?.block;
 
 /** every x-herdr key's command, for the mod's life */
 export async function takeCommands() {
@@ -55,10 +46,8 @@ export async function takeCommands() {
             // «anything open?» gate: after a herdr restart it kept ⌘⇧, dead until settings opened once (dima, 19:11)
             openOverlay(settingsOverlay('general'));
         } else if (command === 'deck') {
-            const deck = blockOf(
-                (c) => c?.mod === 'x-herdr-deck' && !c.props?.view,
-            );
-            if (deck) run('layout.toggle', { id: deck.id });
+            const id = deckToggleId(shownTree());
+            if (id) run('layout.toggle', { id });
         }
     }
 }

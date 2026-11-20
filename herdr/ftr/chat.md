@@ -281,6 +281,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - makes: our entries in herdr's `keys.json` `global`, told apart by an `x-herdr-*` action; the file before each change kept in `data/x-herdr-chat/keys-before/`
   - given herdr focused, when dima presses ⌘K, then the Chat view comes forward and the caret sits in the quill
   - given herdr focused, when he presses ⌘E, then the deck shows or hides
+  - and with antenna and glide moved into the deck (`itrout-deck`), they show and hide with it, its whole column (FRM-618 slice F)
   - given a key of ours that herdr already binds, then the keys page marks ours refused and herdr's key keeps working
   - and x-herdr-settings' keys page lists ours, then herdr's own, each rebindable: a click on a key's cap takes the next chord, Esc gives up; cmd-enter is listed, never written into his keys.json
   - and a rebind reloads every x-herdr mod through `keys-change.ts reload`, so no mod's keys go dead, and the window stays on the keys page (FRM-569; dima, 19 Nov 18:53: «after rebind tab switches to dock tab»)
