@@ -6,6 +6,7 @@ import type { EngineInterface, RenderElement, RenderInput } from 'claude-code';
 
 import type { OrbitAsk, StashLane, StashPlan } from '../types/stash.d.ts';
 import { LINE_GAP, boardKit } from './board-kit.tsx';
+import { orbitCard } from './board-orbit.tsx';
 import { dropKept, field, steerOf, takeFieldsOnce } from './fields.ts';
 import { pressHot } from './keep-warm.ts';
 import { LANE_ROLES, changeLaneSteer, laneRows, laneSpan } from './lanes.ts';
@@ -29,14 +30,8 @@ import {
     span,
     statusOf,
 } from './look.ts';
-import { isAllAsksMarkable, moved } from './orbit.ts';
-import { pressAllAsks } from './orbit-presses.ts';
-import {
-    changeAssumed,
-    currentOrbit,
-    inMarking,
-    saveOrbit,
-} from './orbit-store.ts';
+import { moved } from './orbit.ts';
+import { currentOrbit, inMarking, saveOrbit } from './orbit-store.ts';
 import { memberBadge, ticketOf, unbold, waitSpans } from './parse.ts';
 import { type Member, openBoard } from './roster.ts';
 import { keepShelf } from './session-record.ts';
@@ -91,11 +86,8 @@ export async function drawBoard($: EngineInterface, e: RenderInput<'Pane'>) {
                     me,
                     o,
                     Input,
-                    open,
                     age,
-                    handleAssumedSteer,
                     isPartOn,
-                    speakAssumed,
                     foldedOf,
                     isFolded,
                     foldJSX,
@@ -104,169 +96,7 @@ export async function drawBoard($: EngineInterface, e: RenderInput<'Pane'>) {
                     linkedJSX,
                     askJSX,
                 } = k;
-                const orbitJSX = drawn('orbit', () => (
-                    <Box key='orbit' {...cardProps} marginTop={1} rowGap={0.5}>
-                        <Box flexDirection='row' justifyContent='space-between'>
-                            <Text bold>🪐 orbit</Text>
-                            <Box
-                                alignItems='center'
-                                flexDirection='row'
-                                gap={1}>
-                                {open.some(isAllAsksMarkable) ? (
-                                    <Button
-                                        key='orbit:all'
-                                        onPress={() =>
-                                            void pressAllAsks(
-                                                $,
-                                                open.map(({ id, text }) => ({
-                                                    id,
-                                                    text,
-                                                })),
-                                            )
-                                        }
-                                        plain>
-                                        ✅
-                                    </Button>
-                                ) : null}
-                                {foldJSX('orbit')}
-                            </Box>
-                        </Box>
-                        {/* an answered ask stays until its turn ends, so dima sees it go */}
-                        {isFolded('orbit')
-                            ? null
-                            : o.asks.map((a, i) => askJSX(a, i))}
-                        {!isFolded('orbit') &&
-                        o.assumed?.length &&
-                        isPartOn('stash.assumed') ? (
-                            <Box
-                                flexDirection='column'
-                                key='orbit:assumed'
-                                marginTop={1}
-                                rowGap={LINE_GAP}>
-                                <Text bold>assumed</Text>
-                                {o.assumed.map((x) => {
-                                    return (
-                                        <Box
-                                            flexDirection='column'
-                                            key={`orbit:assumption:${x.id}`}
-                                            rowGap={LINE_GAP}>
-                                            <Text>
-                                                <Text bold>{x.id}</Text>
-                                                {`: ${x.text}`}
-                                            </Text>
-                                            <Box
-                                                alignItems='center'
-                                                flexDirection='row'
-                                                gap={1}>
-                                                <Button
-                                                    key={`orbit:right:${x.id}`}
-                                                    onPress={() =>
-                                                        void changeAssumed(
-                                                            $,
-                                                            () => keepShelf($),
-                                                            (y) =>
-                                                                y.id === x.id
-                                                                    ? undefined
-                                                                    : y,
-                                                            true,
-                                                        )
-                                                    }
-                                                    plain>
-                                                    🛎️
-                                                </Button>
-                                                <Button
-                                                    key={`orbit:wrong:${x.id}`}
-                                                    onPress={() =>
-                                                        void changeAssumed(
-                                                            $,
-                                                            () => keepShelf($),
-                                                            (y) =>
-                                                                y.id === x.id
-                                                                    ? {
-                                                                          ...y,
-                                                                          isWrong:
-                                                                              !y.isWrong,
-                                                                      }
-                                                                    : y,
-                                                            true,
-                                                        )
-                                                    }
-                                                    {...(x.isWrong
-                                                        ? {
-                                                              variant:
-                                                                  'secondary' as const,
-                                                          }
-                                                        : {
-                                                              plain: true as const,
-                                                          })}>
-                                                    ↩️
-                                                </Button>
-                                                {speakAssumed
-                                                    ? speakJSX(x.id, x.text)
-                                                    : null}
-                                                {Input ? (
-                                                    <Box
-                                                        flexGrow={1}
-                                                        flexShrink={1}
-                                                        minWidth={0}>
-                                                        <Input
-                                                            key={
-                                                                field(
-                                                                    $,
-                                                                    `orbit:asteer:${x.id}`,
-                                                                    x.steer ??
-                                                                        '',
-                                                                ).key
-                                                            }
-                                                            onInput={(
-                                                                value: string,
-                                                            ) => {
-                                                                field(
-                                                                    $,
-                                                                    `orbit:asteer:${x.id}`,
-                                                                    x.steer ??
-                                                                        '',
-                                                                ).type(
-                                                                    value,
-                                                                    () => {
-                                                                        return handleAssumedSteer(
-                                                                            x.id,
-                                                                            value,
-                                                                        );
-                                                                    },
-                                                                );
-                                                            }}
-                                                            onSubmit={(
-                                                                value: string,
-                                                            ) =>
-                                                                handleAssumedSteer(
-                                                                    x.id,
-                                                                    value,
-                                                                )
-                                                            }
-                                                            placeholder='steer'
-                                                            value={
-                                                                field(
-                                                                    $,
-                                                                    `orbit:asteer:${x.id}`,
-                                                                    x.steer ??
-                                                                        '',
-                                                                ).value
-                                                            }
-                                                        />
-                                                    </Box>
-                                                ) : null}
-                                                {keptJSX(
-                                                    `orbit:asteer:${x.id}`,
-                                                )}
-                                            </Box>
-                                        </Box>
-                                    );
-                                })}
-                            </Box>
-                        ) : null}
-                    </Box>
-                ));
+                const orbitJSX = orbitCard($, k);
                 // 🛼 glide (FRM-385): each live lane a card on every board, its whole scope in order, done steps kept and marked, the
                 // current one «← we are here»; a steer on it reaches clio's next prompt, whichever board took it
                 const lanes = (await $.state.get(LANES)).value ?? [];
