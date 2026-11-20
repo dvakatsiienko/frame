@@ -778,6 +778,10 @@ func reportLine(reports []modReport) string {
 		default:
 			parts = append(parts, fmt.Sprintf("%s: %d pass", m.Mod, m.Passed))
 		}
+		// a file the overlay left at HEAD is a test or a hook the summary did not run: its count rides the line, so a green never hides it
+		if len(m.Skipped) > 0 && len(parts) > 0 {
+			parts[len(parts)-1] += fmt.Sprintf(", %d skipped (not yours)", len(m.Skipped))
+		}
 	}
 	return strings.Join(parts, " · ")
 }

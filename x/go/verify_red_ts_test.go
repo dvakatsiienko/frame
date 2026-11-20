@@ -9,6 +9,10 @@ import (
 func TestVerifyRedPlantsAnImportOfATsPath(t *testing.T) {
 	t.Parallel()
 	f := typedRedFixture(t)
+	// with no tsc the typecheck skips silently, and this test would pass without proving there is no TS5097
+	if nearestBin(f.dir, "tsc") == "" {
+		t.Fatal("no tsc beside the fixture: install the repo's node_modules, this test proves nothing without it")
+	}
 	write(t, filepath.Join(f.dir, "tsconfig.json"), `{"compilerOptions": {"strict": true, "noEmit": true, "module": "esnext", "moduleResolution": "bundler", "target": "es2022", "types": []}, "include": ["*.ts"]}`+"\n")
 	write(t, filepath.Join(f.dir, "extra.ts"), "export const extra = 4;\n")
 	commitAll(t, f.dir)

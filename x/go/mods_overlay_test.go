@@ -49,6 +49,23 @@ func TestModsEditOverlayLeavesAPeersDirtWhereGitSeesIt(t *testing.T) {
 	}
 }
 
+// a file the session wrote from Bash holds nothing, so the overlay resets it to HEAD: the summary line says so beside its pass count,
+// where a red own test would otherwise read green with one stderr line (the independent read of 4aeda287)
+func TestModsEditSummaryCountsWhatTheOverlayLeftAtHead(t *testing.T) {
+	t.Parallel()
+	reports := []modReport{
+		{Mod: "m", Validate: "ok", Passed: 2, Skipped: []string{"tests/b.test.ts, not yours"}},
+		{Mod: "n", Validate: "ok", Passed: 5},
+	}
+	if got, want := reportLine(reports), "m: 2 pass, 1 skipped (not yours) · n: 5 pass"; got != want {
+		t.Errorf("summary %q, want %q", got, want)
+	}
+	red := []modReport{{Mod: "m", Validate: "ok", Failed: []string{"a"}, Skipped: []string{"x, not yours"}}}
+	if got := reportLine(red); !strings.Contains(got, "1 skipped (not yours)") {
+		t.Errorf("a red mod's summary %q lost its skipped count", got)
+	}
+}
+
 // a file this session's own hold names is its edit (it wrote it straight in the tree), so the overlay keeps it
 func TestModsEditOverlayKeepsAFileTheSessionHolds(t *testing.T) {
 	t.Parallel()
