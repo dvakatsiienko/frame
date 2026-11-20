@@ -248,7 +248,6 @@ export default class Deck extends View {
         ]) {
             cx.spawn(async (cx) => {
                 for (;;) {
-                    // a folder not made yet (settings before its first save) is asked again later, as the tab pills do
                     const changed = await watchFolder(folder).catch(
                         () =>
                             /** @type {Promise<string[]>} */ (
@@ -814,11 +813,12 @@ export default class Deck extends View {
         const button = (id, label, tip, onClick, isPrimary = false) =>
             Button.new(`${id}-${key}`)
                 .tab_index(this.tabAt.get(`${id}-${key}`) ?? 0)
+                .tab_stop(!isLocked)
                 .on_mouse_down('left', () => {
                     this.pressed = `${id}-${key}`;
                 })
                 .when(this.pressed !== `${id}-${key}`, (el) =>
-                    el.focus((st) => st.border_color(t.accent).border_2()),
+                    el.focus((st) => st.border_color(t.accent)),
                 )
                 .h(28)
                 .px(12)
