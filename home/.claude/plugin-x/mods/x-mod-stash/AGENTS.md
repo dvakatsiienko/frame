@@ -20,7 +20,7 @@ dima's board, band and orbit in one cc mod: `hooks/register.tsx` is the hook wir
 - a `$`-using helper past an import is a `function` declaration: `claude plugin validate` refuses an arrow (`const f = ($) => …`)
 - a module-level `let` changes only inside its own module; another module calls its setter (`reshowLanes`, `retakeFields`, `toldOrbitAs`, `nextTurnNo`, `patchBand`)
 - a sibling module reruns with the entry on a hot reload, so its lets reset as register.tsx's did (`../engine.md` § engine facts by area, probed 19 Nov)
-- `store-keys.ts` is a waystation: a key there names why it stays
+- `store-keys.ts` holds the keys more than one layer writes; a key there names why it stays
 
 ## who owns what
 

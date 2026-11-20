@@ -1,5 +1,6 @@
-// a waystation, not a home: the store keys whose owners still sit in register.tsx; each one leaves with its
-// owner's move, and FRM-662 slice B's last step deletes this file or names why a key stays
+// the store keys more than one layer writes, below them all so none imports upward; each names why it stays here:
+// `reply:` is written at a turn's end (register.tsx), by a settled task (reply-fix.ts) and a held tell (held.ts), and read
+// by the view, the rows and the shelf; `model:` and `herdr-read:` are read by session-record.ts, which every writer sits above
 import type { BackgroundTask } from './parse.ts';
 
 // a session's last reply: when it ended, its 🔭 wait; `ended` once the session itself exited
