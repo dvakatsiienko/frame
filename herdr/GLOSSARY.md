@@ -39,8 +39,8 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **mark** — the quill's words marked to join a thread's turn (🍕), kept with the draft by one owner (`quill.js`) until a turn takes them or he takes the mark off
 - **press** — dima's tick, replay or untick on an ask, one record each in the deck (`createPresses`) until the thread's shelf shows it
 - **ask** — an orbit ask a thread put on his deck (and on cc's own board); a **tick** (🛎️) accepts it, a **replay** (🔁) sends it back with his steer
-- **look card** — an ask opening «look», a thread's request that dima looks at a finished change
-- **test card** — 🧪, an ask opening «try» or «test:», a thread's request that dima tries what it cannot test itself
+- **look card** — an ask opening «look:» (a 👀 before it allowed), a thread's request that dima looks at a finished change
+- **test card** — 🧪, an ask opening «test:» (a 🧪 before it allowed); «try …» alone is a plain ask; a thread's request that dima tries what it cannot test itself
 - **pinned group** — orbit's look and test cards from every thread, drawn together at the top or the bottom by his settings row
 - **Tab loop** — the one ring Tab and shift-Tab walk across our mods (`_shared/tab-loop.js`): each mod's **Tab stops** (the quill, orbit's steer boxes) in the order the layout places the mods, never herdr's own hidden stops
 - **Tab member** — a mod's seat in the Tab loop: it publishes its Tab stops, asks for the next stop, and focuses its own when asked, or when its mod reloads under the keyboard; a mod joins the loop by making one, with no list to edit

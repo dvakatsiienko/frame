@@ -51,7 +51,7 @@ export function asksOf(state) {
 }
 
 /**
- * look and 🧪 test cards first («look», «try», «test:»), then hazards, then the rest; a stable sort keeps the store's
+ * look and 🧪 test cards first («look:», «test:»), then hazards, then the rest; a stable sort keeps the store's
  * order inside each group (FRM-620:W12, W16, W18)
  * @param {string} text
  */
@@ -62,24 +62,28 @@ const pinRank = (text) => {
     return head.startsWith('⚠') ? 1 : 2;
 };
 
+/** an ask's text past a 👀 or 🧪 a thread led it with, so the kind reads the words @param {string} text */
+const wordsOf = (text) => text.trimStart().replace(/^(👀|🧪)\s*/u, '');
+
 /**
- * a look card («look …»), a 🧪 test card («try …», «test: …»), or a plain ask (FRM-620:W16, W18)
+ * a look card («look: …»), a 🧪 test card («test: …»), or a plain ask; only the colon form counts, so «try a) or b)?»
+ * stays plain (FRM-620:W16, W18; crow 15:24)
  * @param {string} text @returns {'look' | 'test' | null}
  */
 export const cardKind = (text) => {
-    const head = text.trimStart();
-    if (/^look\b/i.test(head)) return 'look';
-    return /^(try\b|test:)/i.test(head) ? 'test' : null;
+    const words = wordsOf(text);
+    if (/^look:/i.test(words)) return 'look';
+    return /^test:/i.test(words) ? 'test' : null;
 };
 
 /** a look card or a 🧪 test card: always pinned (FRM-620:W16) @param {string} text */
 export const isPinnedCard = (text) => cardKind(text) !== null;
 
-/** a card's text as drawn: a look card opens with 👀, a test card with 🧪 (FRM-620:W25) @param {string} text */
+/** a card's text as drawn: a look card opens with 👀, a test card with 🧪, once (FRM-620:W25) @param {string} text */
 export const cardText = (text) => {
     const kind = cardKind(text);
     if (!kind) return text;
-    return `${kind === 'look' ? '👀' : '🧪'} ${text.trimStart()}`;
+    return `${kind === 'look' ? '👀' : '🧪'} ${wordsOf(text)}`;
 };
 
 // a look or 🧪 card's own paint: a soft tint of its kind's colour and a thin border of it, so the kind reads before

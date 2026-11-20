@@ -8,9 +8,20 @@ describe('a card opens with its kind', () => {
         expect(cardText('look: the dock')).toBe('👀 look: the dock');
     });
 
-    test('a test card opens with 🧪, «try» and «test:» alike', () => {
-        expect(cardText('try a drag')).toBe('🧪 try a drag');
+    test('a test card opens with 🧪', () => {
         expect(cardText('  test: the quill')).toBe('🧪 test: the quill');
+    });
+
+    // crow 15:24 (FRM-673 rider): the kind is read from «look:» and «test:» alone, an emoji a thread led with skipped
+    test('a card a thread already led with its emoji keeps its kind and one emoji', () => {
+        expect(cardText('🧪 test: the quill')).toBe('🧪 test: the quill');
+        expect(cardText('👀 look: the tints')).toBe('👀 look: the tints');
+    });
+
+    test('a plain ask opening «try» or «look» without the colon stays plain', () => {
+        expect(
+            ['try a) or b)?', 'look at it', '🧪 try the quill'].map(cardKind),
+        ).toEqual([null, null, null]);
     });
 
     test('a plain ask, «trying» and «lookup» keep their text', () => {
@@ -20,7 +31,7 @@ describe('a card opens with its kind', () => {
     });
 
     test('the kind names look, test or none', () => {
-        expect(['Look at it', 'Try it', 'merge #9'].map(cardKind)).toEqual([
+        expect(['Look: it', 'Test: it', 'merge #9'].map(cardKind)).toEqual([
             'look',
             'test',
             null,

@@ -19,7 +19,7 @@ const clio: Row = {
 const wing: Row = {
     asks: [
         { id: 'o1', text: 'rename the band' },
-        { id: 'o2', text: 'try a drag' },
+        { id: 'o2', text: 'test: a drag' },
     ],
     name: '🦉🪽 clio: wing 1',
     pid: 20,

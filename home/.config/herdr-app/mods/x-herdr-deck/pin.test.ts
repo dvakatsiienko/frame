@@ -15,17 +15,17 @@ describe('pinned asks draw first', () => {
                 { id: 'o2', text: 'rename the band' },
                 { id: 'o3', text: 'look: the new chat' },
                 { id: 'o4', text: '⚠️ merge #9' },
-                { id: 'o5', text: 'try the dock with a long name' },
+                { id: 'o5', text: 'test: the dock with a long name' },
             ]),
         ).toEqual(['o3', 'o5', 'o4', 'o1', 'o2']);
     });
 
-    test('an ask opening «test:» or «try» is a test card, one opening «trying» is not', () => {
+    test('an ask opening «test:» is a test card, one opening «try» or «tests» is not', () => {
         expect(
             ids([
-                { id: 'o1', text: 'trying the dock' },
+                { id: 'o1', text: 'try a) or b)?' },
                 { id: 'o2', text: 'test: the quill keeps its text' },
-                { id: 'o3', text: 'Try a drag' },
+                { id: 'o3', text: 'Test: a drag' },
                 { id: 'o4', text: 'tests ran' },
             ]),
         ).toEqual(['o2', 'o3', 'o1', 'o4']);
@@ -42,11 +42,11 @@ describe('pinned asks draw first', () => {
         ).toEqual(['o1', 'o3', 'o2', 'o4']);
     });
 
-    test('a bare ⚠, a leading space and a capital Look pin too', () => {
+    test('a bare ⚠, a leading space and a capital Look: pin too', () => {
         expect(
             ids([
                 { id: 'o1', text: 'push FRM-1' },
-                { id: 'o2', text: 'Look at the dock' },
+                { id: 'o2', text: 'Look: the dock' },
                 { id: 'o3', text: '  ⚠ push main' },
             ]),
         ).toEqual(['o2', 'o3', 'o1']);
