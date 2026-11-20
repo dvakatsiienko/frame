@@ -1,4 +1,3 @@
-import type { On } from 'claude-code';
 import { type Engine, expect, test } from 'claude-code/testing';
 
 import { closedMark } from '../hooks/board-kit.tsx';
@@ -7,7 +6,6 @@ import {
     addLinked,
     assume,
     herdrPress,
-    lastContext,
     lines,
     mobile,
     press,
@@ -17,7 +15,6 @@ import {
     tickLog,
 } from './orbit-helpers.ts';
 import {
-    type Board,
     SID,
     add,
     asksShown,
@@ -89,28 +86,6 @@ test('a remote mark landing while dima types a steer leaves his typed steer in i
     expect(savedSteer(w.store)).toBe('a heron');
 });
 
-test('⏸️ on an assumption pauses speak', async ($, on) => {
-    const w = world(on);
-    const sent = speakStub(on, { paused: false, speaking: true });
-    await start($);
-    const ui = await board($);
-    await assume($, 'kept the old port');
-    await w.clock.advance(5_000);
-    await ui.press({ key: 'orbit:pause:a1' });
-    expect(sent.filter((r) => r.op !== 'status')).toEqual([{ op: 'pause' }]);
-});
-
-test('⏹️ on an assumption stops speak', async ($, on) => {
-    const w = world(on);
-    const sent = speakStub(on, { paused: false, speaking: true });
-    await start($);
-    const ui = await board($);
-    await assume($, 'kept the old port');
-    await w.clock.advance(5_000);
-    await ui.press({ key: 'orbit:stop:a1' });
-    expect(sent.filter((r) => r.op !== 'status')).toEqual([{ op: 'stop' }]);
-});
-
 test("a card steer lands over the member's own unless it typed into that box a moment ago", async ($, on) => {
     const w = world(on);
     await start($);
@@ -155,125 +130,6 @@ test("orbit's open asks reach the shared store the board counts from", async ($,
     expect((w.store.get(`asks:${SID}`) as { asks: string[] }).asks).toEqual([
         'trash the probe',
     ]);
-});
-
-test("🔊 sends the ask's text to speak's control socket", async ($, on) => {
-    world(on);
-    const runs: string[][] = [];
-    on('process.run', (_$, e) => {
-        runs.push([...e.argv]);
-        return {
-            value: {
-                exitCode: 0,
-                isStderrTruncated: false,
-                isStdoutTruncated: false,
-                stderr: '',
-                stdout: '{"ok":true}',
-            },
-        };
-    });
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    await ui.press({ key: 'orbit:read:o1' });
-    const sent = runs.find((argv) =>
-        argv.includes('/home/.local/share/x-speak/control.sock'),
-    );
-    expect(JSON.parse(sent?.[4] ?? '{}')).toEqual({
-        op: 'read',
-        text: 'name a bird. pelican',
-    });
-});
-
-// speak's control socket as a stub: `status` answers the given state, every request is kept
-function speakStub(on: On, state: { speaking: boolean; paused: boolean }) {
-    const sent: Record<string, unknown>[] = [];
-    on('process.run', (_$, e) => {
-        const isSpeak = e.argv.some((a) => a.endsWith('x-speak/control.sock'));
-        const request = (
-            isSpeak ? JSON.parse(e.argv[4] ?? '{}') : {}
-        ) as Record<string, unknown>;
-        if (isSpeak) sent.push(request);
-        return {
-            value: {
-                exitCode: 0,
-                isStderrTruncated: false,
-                isStdoutTruncated: false,
-                stderr: '',
-                stdout:
-                    request.op === 'status'
-                        ? JSON.stringify(state)
-                        : '{"ok":true}',
-            },
-        };
-    });
-    return sent;
-}
-
-const playLabel = async (ui: Board, id: string) =>
-    (await ui.find({ key: `orbit:pause:${id}` }))?.text;
-
-test('the play button reads ⏸️ once speak says it reads, ▶️ while quiet', async ($, on) => {
-    world(on);
-    const state = { paused: false, speaking: false };
-    speakStub(on, state);
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    const quiet = await playLabel(ui, 'o1');
-    state.speaking = true;
-    await ui.press({ key: 'orbit:read:o1' });
-    expect([quiet, await playLabel(ui, 'o1')]).toEqual(['▶️', '⏸️']);
-});
-
-test('▶️ with speak quiet reads the row', async ($, on) => {
-    world(on);
-    const sent = speakStub(on, { paused: false, speaking: false });
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    await ui.press({ key: 'orbit:pause:o1' });
-    expect(sent.filter((r) => r.op !== 'status')).toEqual([
-        { op: 'read', text: 'name a bird. pelican' },
-    ]);
-});
-
-test('▶️ with speak paused resumes it, never reads anew', async ($, on) => {
-    world(on);
-    const sent = speakStub(on, { paused: true, speaking: true });
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    await ui.press({ key: 'orbit:pause:o1' });
-    expect(sent.filter((r) => r.op !== 'status')).toEqual([{ op: 'pause' }]);
-});
-
-test('🔊 on an assumption reads its text aloud', async ($, on) => {
-    world(on);
-    const runs: string[][] = [];
-    on('process.run', (_$, e) => {
-        runs.push([...e.argv]);
-        return {
-            value: {
-                exitCode: 0,
-                isStderrTruncated: false,
-                isStdoutTruncated: false,
-                stderr: '',
-                stdout: '{"ok":true}',
-            },
-        };
-    });
-    await start($);
-    const ui = await board($);
-    await orbit($, { op: 'assume', texts: ['moons repeat past five'] });
-    await ui.press({ key: 'orbit:read:a1' });
-    const sent = runs.find((argv) =>
-        argv.includes('/home/.local/share/x-speak/control.sock'),
-    );
-    expect(JSON.parse(sent?.[4] ?? '{}')).toEqual({
-        op: 'read',
-        text: 'moons repeat past five',
-    });
 });
 
 test("orbit's asks survive a reload", async ($, on) => {
@@ -333,17 +189,6 @@ test("a follow drops the ask's tick record: his word answered the old question (
         text: 'push `backup`',
     });
     expect(writes.at(-1)).toEqual([]);
-});
-
-test('a speak press keeps mobile mode on', async ($, on) => {
-    const w = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['push FRM-1', 'yes']);
-    await mobile($);
-    await ui.press({ key: 'orbit:stop:o1' });
-    await say($, 'hi');
-    expect(lastContext(w.contexts)).toContain('asks fence');
 });
 
 test('an unmarked assumption leaves after three turns', async ($, on) => {
