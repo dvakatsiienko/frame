@@ -49,14 +49,14 @@ import {
     saveOrbit,
 } from './orbit-store.ts';
 import { memberBadge, ticketOf, unbold, waitSpans } from './parse.ts';
-import type { Member } from './roster.ts';
+import { type Member, openBoard } from './roster.ts';
 import { keepShelf } from './session-record.ts';
-import { readSwitch } from './settings-store.ts';
+import { flipKnob, readSwitch } from './settings-store.ts';
 import { isSpeakingNow, playPress, refreshSpeaking, speak } from './speak.ts';
 import { cleanTree, drawn } from './tree.ts';
 import { STALE_TURNS, planAge } from './turn-notes.ts';
 import { meterNow } from './usage.ts';
-import { load, viewDoors } from './view.ts';
+import { load, publish, viewDoors } from './view.ts';
 import { flipWind } from './wind.ts';
 import { WIND_EMOJI, windSay } from './wind-run.ts';
 
@@ -1592,4 +1592,22 @@ export async function drawBoard($: EngineInterface, e: RenderInput<'Pane'>) {
             </Box>,
         );
     }
+}
+
+// `/board`, `/board colour`, `/board breathe`
+export async function boardCommand($: EngineInterface, args: string) {
+    if (args.trim() === 'breathe') {
+        const isOn = await flipKnob($, 'always', () => publish($));
+        return {
+            text: `bars breathe ${isOn ? 'all the time' : 'only while a turn runs'}`,
+        };
+    }
+    const isColourFlip = /^colou?r$/.test(args.trim());
+    const isColour = isColourFlip
+        ? await flipKnob($, 'colour', () => publish($))
+        : undefined;
+    await openBoard($);
+    await publish($);
+    if (isColour === undefined) return { text: 'fleet board opened' };
+    return { text: `fleet board colour ${isColour ? 'on' : 'off'}` };
 }

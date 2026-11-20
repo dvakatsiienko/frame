@@ -613,3 +613,18 @@ export async function capAtMeasure(
         await armWake($, view);
     }
 }
+
+// 🔥 at a turn's end: the store's key read back, its clock counted from this end, the ping armed
+export async function hotAtTurnEnd($: EngineInterface, view: ViewDoors) {
+    // the store is 🔥's truth: crow writes its key after session.start, and a written off turns it off
+    const sid = await currentId($);
+    if (sid) holdHot(hotOf(await $.store.get(HOT + sid).catch(() => warm.hot)));
+    // it counts from this turn's end, kept in $.state; it never writes the key back, which once undid a 🌌 sessions
+    // chip's delete landing between this read and the write (FRM-499)
+    if (warm.hot)
+        holdHot({
+            ...warm.hot,
+            since: turn.endedAt ?? (await $.clock.now()),
+        });
+    await armHot($, view);
+}

@@ -1,10 +1,15 @@
 // 🐦‍🔥 second wind's run (FRM-505, FRM-662): the state machine above held — the fill notices and asks, the handoff
 // named, the compact at a turn's end and the ingest after it — and the one writer of second-wind.json
 
-import type { EngineInterface } from 'claude-code';
+import type { Args, EngineInterface, Next } from 'claude-code';
 
 import type { StashWind } from '../types/stash.d.ts';
-import { WIND_DELAY_MS, releaseHeldSteers } from './held.ts';
+import {
+    WIND_DELAY_MS,
+    armRelease,
+    releaseHeldSteers,
+    steersOnCompact,
+} from './held.ts';
 import {
     AUTO_WIND,
     type AutoWind,
@@ -21,11 +26,13 @@ import {
     sessionName,
     threadRecords,
 } from './session-identity.ts';
+import { keepShelf } from './session-record.ts';
 import { partsShown, readNumber, windEditsOf } from './settings-store.ts';
 import { REPLY, type Reply } from './store-keys.ts';
-import { CONTEXT } from './usage.ts';
+import { forgetTold } from './turn-notes.ts';
+import { CONTEXT, drawFill, drawFillAfterCompact } from './usage.ts';
 import { errorText, writeWhole } from './util.ts';
-import { WIND, WIND_HOW, WIND_WORDS, windOf } from './wind.ts';
+import { COMPACTING, WIND, WIND_HOW, WIND_WORDS, windOf } from './wind.ts';
 import {
     WIND_STORE_FILE,
     WIND_TEXT_CAP,
@@ -571,4 +578,50 @@ export async function syncWindStore($: EngineInterface) {
     if (left.length)
         await $.store.set(WIND_TEXT_EDITS, Object.fromEntries(left));
     else await $.store.delete(WIND_TEXT_EDITS);
+}
+
+// a compact: the session marked compacting while it runs; after it, the told notes go, a wind's ingest is left to run,
+// the held list waits to settle, and the fill from before is cleared off the band
+export async function compactSession(
+    $: EngineInterface,
+    e: Args<'session.compact'>,
+    next: Next<'session.compact'>,
+    view: ViewDoors,
+) {
+    const isOwn = !e.agentId && e.trigger !== 'precompute';
+    const compacting = isOwn
+        ? await currentId($).catch(() => undefined)
+        : undefined;
+    if (compacting)
+        await $.store
+            .set(COMPACTING + compacting, await $.clock.now())
+            .catch(() => undefined);
+    const r = await next(e).finally(() =>
+        compacting
+            ? $.store.delete(COMPACTING + compacting).catch(() => undefined)
+            : undefined,
+    );
+    // cc sends the whole skill list again after a compact (2.1.304), so none is reloaded here; a compact another hook
+    // skipped changed nothing
+    if (!e.agentId && e.trigger !== 'precompute' && !('skip' in r)) {
+        // a wind's own compact: its ingest is queued behind it, and runWind hands the held messages over after it
+        const wind = compacting ? await windOf($, compacting) : undefined;
+        const isWinds = wind?.state === 'refreshing' && !wind.slug;
+        forgetTold();
+        await windOnCompact($).catch(() => undefined);
+        await steersOnCompact($).catch(() => undefined);
+        if (!isWinds) armRelease($, view, COMPACT_SETTLE_MS);
+        // the next measure comes only at this turn's end, and a wind's ingest is one long turn: until then the
+        // fill from before the compact would stand on the band and every board
+        await drawFill($, undefined).catch(() => undefined);
+        const compacted = await currentId($);
+        if (compacted)
+            await $.store.delete(FILL + compacted).catch(() => undefined);
+        $.clock.after(COMPACT_SETTLE_MS, () =>
+            drawFillAfterCompact($).catch(() => undefined),
+        );
+        await keepShelf($);
+        await view.load();
+    }
+    return r;
 }
