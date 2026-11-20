@@ -221,6 +221,7 @@ export function createPickers({
             pickNow();
         const trigger = h_flex()
             .id('chat-pick-trigger')
+            .tab_stop(false)
             .flex_none()
             .gap(4)
             .px(6)
