@@ -54,6 +54,7 @@ import {
     orbitSections,
     orbitTabOrder,
     phaseParts,
+    planPress,
     pressLabel,
     pressOf,
     roundsKept,
@@ -129,6 +130,10 @@ export default class Deck extends View {
     steerCmdKeys = createCmdEnter();
     /** each steer box's Tab place, and the one holding the keyboard @type {Map<string, number>} */
     tabAt = new Map();
+    /** orbit's steer stops this draw, published by the render with the phases' box after them @type {string[]} */
+    orbitStops = [];
+    /** each thread's plan ticked here, by sid, until the stash reads the press (slice E wires the read) @type {Set<string>} */
+    planTicked = new Set();
     steerFocus = /** @type {string | null} */ (null);
     /** the deck's seat in the Tab loop: its drawn steer boxes */
     tab = createTabMember('x-herdr-deck', { layout, setShared, shared });
@@ -313,9 +318,12 @@ export default class Deck extends View {
                 });
         for (const key of this.steers.keys()) {
             const s = this.rows.find((r) => r.sid === key.split(':')[0]);
-            const ask = askOf(key);
+            // the phases' box (`<sid>:plan`) lives while its thread has phases
+            const isKept = key.endsWith(':plan')
+                ? Boolean(s?.phases.length)
+                : Boolean(askOf(key));
             // his steer stays, stored and shown, until the ask leaves (dima, 21:03)
-            if (!s || !ask) {
+            if (!s || !isKept) {
                 this.steers.delete(key);
                 keep(localStorage, `steer:${key}`, '');
             }
@@ -327,7 +335,9 @@ export default class Deck extends View {
         );
         this.updated = rounds.updated;
         for (const key of rounds.cleared) this.steers.get(key)?.set_value('');
-        for (const s of this.rows)
+        for (const s of this.rows) {
+            if (s.phases.length && !this.steers.has(`${s.sid}:plan`))
+                this.makeSteerBox(`${s.sid}:plan`);
             for (const ask of s.asks) {
                 const key = `${s.sid}:${ask.id}`;
                 if (ask.id && !this.steers.has(key))
@@ -335,6 +345,7 @@ export default class Deck extends View {
                     // the reload that redraws the whole deck
                     this.makeSteerBox(key);
             }
+        }
     }
 
     /** the footer, from the reload chain's one state: only a read that stalled says so; a fresh one says nothing (his
@@ -463,6 +474,121 @@ export default class Deck extends View {
         cx.notify();
     }
 
+    /**
+     * the phases' header with «tick» and its steer box, as an ask's (rider 4d, his 18:09 shot): the box is the Tab stop
+     * after orbit's, Enter ticks or unticks, no replay
+     * @param {Theme} t @param {any} head @param {string} key `<sid>:plan`
+     */
+    planHead(t, head, key) {
+        const box = /** @type {InputState} */ (this.steers.get(key));
+        const sid = key.slice(0, -':plan'.length);
+        const isTicked = this.planTicked.has(sid);
+        return head
+            .flex()
+            .items_center()
+            .gap(8)
+            .child(div().flex_1())
+            .child(
+                Button.new(`plan-tick-${sid}`)
+                    .tab_stop(false)
+                    .h(26)
+                    .px(10)
+                    .flex_none()
+                    .flex()
+                    .items_center()
+                    .rounded(6)
+                    .border_1()
+                    .border_color(isTicked ? t.border : t.solid)
+                    .bg(isTicked ? t.surface : t.solid)
+                    .text_size(SIZE.secondary)
+                    .text_color(isTicked ? t.foreground : t.solid_foreground)
+                    .cursor_pointer()
+                    .on_click((_e, cx) =>
+                        cx.spawn((cx) => this.pressPlan(cx, key)),
+                    )
+                    .child(isTicked ? '✓ ticked' : '🛎️ tick'),
+            )
+            .child(
+                div()
+                    .id(`plan-steer-${sid}`)
+                    .w(180)
+                    .flex_none()
+                    .h(26)
+                    .px(8)
+                    .flex()
+                    .items_center()
+                    .rounded(6)
+                    .border_1()
+                    .border_color(
+                        focusBorder(this.steerFocus === key, t, t.border),
+                    )
+                    .bg(t.surface)
+                    .font_weight(400)
+                    .cursor_text()
+                    .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
+                    .key_context('XDeckSteer')
+                    .on_action(STEER_ENTER, (_e, cx) =>
+                        this.steerKeyAct(cx, key, false),
+                    )
+                    .on_action(STEER_CMD_ENTER, (_e, cx) =>
+                        this.steerKeyAct(cx, key, true),
+                    )
+                    .on_action(STEER_TAB, () =>
+                        this.tab.ask(`steer-${key}`, false),
+                    )
+                    .on_action(STEER_BACK, () =>
+                        this.tab.ask(`steer-${key}`, true),
+                    )
+                    .on_key_up((e) => {
+                        if (e.key === 'enter') this.steerKeys.released();
+                    })
+                    .child(
+                        Input.new(box)
+                            .tab_index(this.tabAt.get(`steer-${key}`) ?? 0)
+                            .w_full()
+                            .text_size(SIZE.secondary)
+                            .text_color(t.foreground),
+                    ),
+            );
+    }
+
+    // the phases' tick (rider 4d): a press naming the whole plan into the thread's ticks file; a second press unticks
+    /** @param {Context} cx @param {string} key `<sid>:plan` */
+    async pressPlan(cx, key) {
+        const sid = key.slice(0, -':plan'.length);
+        const s = this.rows.find((r) => r.sid === sid);
+        if (!s) return;
+        const isTick = !this.planTicked.has(sid);
+        if (isTick) this.planTicked.add(sid);
+        else this.planTicked.delete(sid);
+        cx.notify();
+        try {
+            const made = await exec('mkdir', ['-p', TICKS]);
+            if (made.code !== 0)
+                throw new Error(
+                    made.stderr.trim() || `mkdir exited ${made.code}`,
+                );
+            await this.turns(() =>
+                savePress(
+                    { read: readTextFile, write: writeTextFile },
+                    `${TICKS}/${sid}.jsonl`,
+                    planPress(
+                        s.phases,
+                        isTick ? 'tick' : 'untick',
+                        Date.now(),
+                        this.steers.get(key)?.value().trim(),
+                    ),
+                    s.taken,
+                ),
+            );
+        } catch (err) {
+            if (isTick) this.planTicked.delete(sid);
+            else this.planTicked.add(sid);
+            this.pressError = `phases not ticked: ${err instanceof Error ? err.message : err}`;
+        }
+        cx.notify();
+    }
+
     // ⌘⇧K (FRM-589): the asker under the pointer, else the one he picked, else the thread the chat shows; a hidden
     // deck's copy stays alive in its block, so it checks its own block is shown
     /** @param {Context} cx */
@@ -569,6 +695,11 @@ export default class Deck extends View {
             ? this.steerCmdKeys.pressed(Date.now())
             : this.steerKeys.pressed();
         if (said === 'repeat') return;
+        // the phases' box: Enter ticks or unticks the plan, and it has no replay
+        if (key.endsWith(':plan')) {
+            if (!isCmd) cx.spawn((cx) => this.pressPlan(cx, key));
+            return;
+        }
         const step = steerKeyAct(this.rows, key, isCmd, (s, id) =>
             this.pressStateOf(s, id),
         );
@@ -999,10 +1130,8 @@ export default class Deck extends View {
                 this.steers.has(`${s.sid}:${ask.id}`) &&
                 this.pressStateOf(s, ask.id) !== 'locked',
         );
-        this.tabAt = new Map(stops.map((id, i) => [id, i + 1]));
-        const to = this.tab.draw(stops, (run) => cx.timer.after(0, run));
-        const box = to && this.steers.get(to.slice('steer-'.length));
-        if (box) cx.timer.after(0, () => box.focus());
+        // the render publishes these with the phases' box after them, one Tab loop
+        this.orbitStops = stops;
         return sections.map((section) => {
             if (section.kind === 'pinned')
                 return v_flex()
@@ -1099,8 +1228,8 @@ export default class Deck extends View {
         // order (blocked, working, then by name) stays for a thread the list does not show
         const asks = this.rows.reduce((n, s) => n + s.asks.length, 0);
         // orbit draws its steer boxes as Tab stops and focuses the one the loop asks for; with no asks it draws none
+        this.orbitStops = [];
         const orbitRows = asks > 0 ? this.orbit(t, cx) : [];
-        if (asks === 0) this.tab.draw([], (run) => cx.timer.after(0, run));
         // one head for every section: a hairline above, its emoji, its name and its count in words
         /** @param {string} text */
         const header = (text) =>
@@ -1125,6 +1254,19 @@ export default class Deck extends View {
             focusedPid: focusedAt ? (pids?.[focusedAt] ?? null) : null,
             order: /** @type {number[] | null} */ (shared(ORDER_KEY)),
         });
+        // the phases' steer box is the Tab stop right after orbit's (rider 4d); it shows for one thread's plan only
+        const planKey =
+            parts.pinned.length === 1 ? `${parts.pinned[0]?.sid}:plan` : null;
+        const stops = [
+            ...this.orbitStops,
+            ...(planKey && this.steers.has(planKey)
+                ? [`steer-${planKey}`]
+                : []),
+        ];
+        this.tabAt = new Map(stops.map((id, i) => [id, i + 1]));
+        const to = this.tab.draw(stops, (run) => cx.timer.after(0, run));
+        const box = to && this.steers.get(to.slice('steer-'.length));
+        if (box) cx.timer.after(0, () => box.focus());
         const scrolling = v_flex()
             .id('x-herdr-deck-scroll')
             .flex_1()
@@ -1188,13 +1330,19 @@ export default class Deck extends View {
      * @param {Theme} t @param {import('./deck-parts.js').PhaseGroup[]} groups @param {(text: string) => any} header
      */
     phasesBlock(t, groups, header) {
+        const planKey = groups.length === 1 ? `${groups[0]?.sid}:plan` : null;
+        const head = header('🌔 phases');
         return v_flex()
             .id('x-herdr-deck-phases')
             .flex_none()
             .max_h(320)
             .overflow_y_scroll()
             .pb(8)
-            .child(header('🌔 phases'))
+            .child(
+                planKey && this.steers.has(planKey)
+                    ? this.planHead(t, head, planKey)
+                    : head,
+            )
             .children(
                 groups.map((g, i) =>
                     v_flex()

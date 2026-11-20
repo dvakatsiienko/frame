@@ -23,6 +23,18 @@ export const pressOf = (ask, verdict, at, steer) => ({
 });
 
 /**
+ * the phases' tick (rider 4d): one press naming the whole plan, in the ticks file an ask's press goes to
+ * @param {string[]} phases @param {'tick' | 'untick'} verdict @param {number} at @param {string} [steer]
+ */
+export const planPress = (phases, verdict, at, steer) => ({
+    at,
+    id: 'plan',
+    text: phases.join('\n'),
+    verdict,
+    ...(verdict === 'tick' && steer ? { steer } : {}),
+});
+
+/**
  * the open asks in a session's state file (`~/.claude/shelf/herdr-state/<sid>.json`, which x-mod-stash writes); an
  * item without an id cannot be pressed and does not draw
  * @param {any} state

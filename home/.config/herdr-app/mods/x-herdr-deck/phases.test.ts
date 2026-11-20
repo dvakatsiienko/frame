@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { phaseParts } from './orbit.js';
+import { phaseParts, planPress } from './orbit.js';
 
 // FRM-618 66d: phases read as the old board did, a moon per line filling by nearness, its lead word bold
 describe('a phases line', () => {
@@ -37,6 +37,29 @@ describe('a phases line', () => {
         expect(phaseParts('fix 1: a watch', 0)).toMatchObject({
             lead: '',
             text: 'fix 1: a watch',
+        });
+    });
+});
+
+// rider 4d (his 18:11): the phases header ticks the whole plan as orbit ticks an ask, into the same ticks file; the
+// stash reads `id: 'plan'` once the mods lane frees it (slice E)
+describe("the phases' tick", () => {
+    test('writes one press naming the plan, its lines as its text', () => {
+        expect(planPress(['now: a', 'next: b'], 'tick', 7, 'go on')).toEqual({
+            at: 7,
+            id: 'plan',
+            steer: 'go on',
+            text: 'now: a\nnext: b',
+            verdict: 'tick',
+        });
+    });
+
+    test('an untick carries no steer', () => {
+        expect(planPress(['now: a'], 'untick', 8)).toEqual({
+            at: 8,
+            id: 'plan',
+            text: 'now: a',
+            verdict: 'untick',
         });
     });
 });
