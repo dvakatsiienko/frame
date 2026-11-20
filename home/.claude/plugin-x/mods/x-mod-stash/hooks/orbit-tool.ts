@@ -38,7 +38,7 @@ import {
     WING_ROLE,
     currentId,
     runnerOf,
-    selfLive,
+    selfRecord,
     sessionName,
 } from './session-identity.ts';
 import { keepShelf } from './session-record.ts';
@@ -249,7 +249,7 @@ export async function orbitCall(
     }
     if (input.op === 'glide') {
         // main clio or a wing by its record; a wing's cards carry its display, drawn from that record
-        const self = await selfLive($);
+        const self = await selfRecord($);
         const isOwner = self?.role === MAIN_ROLE;
         const side = self?.role === WING_ROLE ? runnerOf(self) : undefined;
         if (!isOwner && !side)

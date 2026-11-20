@@ -18,7 +18,7 @@ import {
     type ThreadRecord,
     WING_ROLE,
     isLaneOwner,
-    selfLive,
+    selfRecord,
     successorOf,
     threadRecords,
 } from './session-identity.ts';
@@ -421,7 +421,7 @@ export async function openDispatchedLanes(
     $: EngineInterface,
     glide: (input: Record<string, unknown>) => Promise<object>,
 ) {
-    const self = await selfLive($);
+    const self = await selfRecord($);
     const label =
         self?.role === MAIN_ROLE
             ? 'clio-main'

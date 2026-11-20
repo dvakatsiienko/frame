@@ -14,12 +14,7 @@ import {
 } from './pace.ts';
 import { TRANSCRIPT_TAIL, capOf } from './parse.ts';
 import { isSeated, registry } from './roster.ts';
-import {
-    MAIN_ROLE,
-    currentId,
-    selfLive,
-    selfRecord,
-} from './session-identity.ts';
+import { MAIN_ROLE, currentId, selfRecord } from './session-identity.ts';
 import { writeFleet } from './session-record.ts';
 import { partsShown, readNumber } from './settings-store.ts';
 import { AFK_KEY, HOT, WAKER_KEY, hotOf } from './store-keys.ts';
@@ -370,7 +365,7 @@ export async function seatDefaults($: EngineInterface, view: ViewDoors) {
     const sid = await currentId($);
     if (!sid) return;
     const now = await $.clock.now();
-    const role = (await selfLive($))?.role;
+    const role = (await selfRecord($))?.role;
     if (role === MAIN_ROLE && (await $.store.get(PACE + sid)) === undefined) {
         if ((await partsShown($))('stash.pace-watch'))
             await $.store.set(PACE + sid, { on: true });

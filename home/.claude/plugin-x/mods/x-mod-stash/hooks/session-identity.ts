@@ -63,7 +63,7 @@ export async function currentId($: EngineInterface) {
 
 // main clio by her record, so a handoff's new clio keeps the lanes once summon records her, and no name grants them
 export async function isLaneOwner($: EngineInterface) {
-    return (await selfLive($))?.role === MAIN_ROLE;
+    return (await selfRecord($))?.role === MAIN_ROLE;
 }
 
 // the name ListAgents shows lives in the session registry, keyed by the claude process id
@@ -127,7 +127,7 @@ export const ADVISER_ROLE = 'adviser';
 
 // a power read (a lane's owner, the glide door, a coordinator's message) reads the record x wrote, never a name; x alone
 // writes the store and x-mod-guard refuses every session's write to it
-export async function selfLive($: EngineInterface) {
+export async function selfRecord($: EngineInterface) {
     const sid = await currentId($);
     return sid
         ? (await threadRecords($)).find((t) => t.sessionId === sid)
@@ -155,13 +155,6 @@ export async function threadRecords(
         const kept = await $.store.get(THREADS_KEPT);
         return Array.isArray(kept) ? (kept as ThreadRecord[]) : [];
     }
-}
-
-export async function selfRecord($: EngineInterface) {
-    const sid = await currentId($);
-    return sid
-        ? (await threadRecords($)).find((t) => t.sessionId === sid)
-        : undefined;
 }
 
 // x rewrites the store from cc's registry; run from home so the shim runs main's x; a failed run keeps the last file
