@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-20T11:26:00Z'
+updated_date: '2026-11-20T11:38:00Z'
 labels:
   - s
   - clio-main
@@ -1239,4 +1239,25 @@ PK-349:W1259 (2026-11-20 13:24, dima): let's see, likely all stuff is to be solv
 PK-349:W1260 (2026-11-20 13:24, dima): i did not understand your proposal yet (i am sleepy).
 PK-349:W1261 (2026-11-20 13:24, dima): tell in a few lines why you think it helps? ❓
 PK-349:W1262 (2026-11-20 13:24, dima): let's try, and i'd like to see number/measured, verified proof that it helped.
+
+13:38 13:34 prompt wishes (antenna lines move to FRM-618 at its next body write):
+PK-349:W1263 (2026-11-20 13:34, dima): fyi (about antenna): the current agents list has two buttons, a left one opens sorting settings, a right one sounds.
+PK-349:W1264 (2026-11-20 13:34, dima): sounds don't survive; i have sounds set up via a hook.
+PK-349:W1265 (2026-11-20 13:34, dima): sorting: i think it's redundant; i will have sorting manual via dnd (already).
+PK-349:W1266 (2026-11-20 13:34, dima): the only thing i consider configurable is show/hide space name by group (if i'll have multiple threads in multiple spaces, to easily distinguish them).
+PK-349:W1267 (2026-11-20 13:34, dima): if off, everyone is listed without grouping by space.
+PK-349:W1268 (2026-11-20 13:34, dima): propose other settings that would make sense here, given the full antenna picture.
+PK-349:W1269 (2026-11-20 13:34, dima): where are the settings? ❓
+PK-349:W1270 (2026-11-20 13:34, dima): i think a cog like with x-chat-settings: x-antenna-settings (small popup with antenna settings).
+PK-349:W1271 (2026-11-20 13:34, dima): why not global? because settings in antenna are visual, so it's better to see changes right away, not hidden behind a big modal.
+PK-349:W1272 (2026-11-20 13:34, dima): another concern (bigger SS): tabs vs antenna. they're dupes, so i am not sure if i want them along with antenna.
+PK-349:W1273 (2026-11-20 13:34, dima): i think, at least as an option, i want to have an option to hide/show them too (i think in the same antenna cog settings).
+PK-349:W1274 (2026-11-20 13:34, dima): gotcha: current layout assumes tabs; if they go, the top bar will have too much empty wasted space.
+PK-349:W1275 (2026-11-20 13:34, dima): how to solve? ❓
+PK-349:W1276 (2026-11-20 13:34, dima): Tab focus in orbit is FRM-620's focus-outline wish (W14), already decided. I'm writing it up as slice 4 for the herdr 🔧 codie, next after slice 3's review, today ← nice.
+PK-349:W1277 (2026-11-20 13:34, dima): Tab focus in orbit is FRM-620's focus-outline wish (W14), already decided. I'm writing it up as slice 4 for the herdr 🔧 codie, next after slice 3's review, today ← where it was before i asked about it? ❓
+PK-349:W1278 (2026-11-20 13:34, dima): pocket: agreed, the halt archives finished items. The halt missed these 5, so I'll make the pocket check archive forgotten ones itself ← applied fix? ❓
+PK-349:W1279 (2026-11-20 13:34, dima): FRM-576: forgotten. 🦉 clio's half is done, but the fleet lift never happened: rules-lazy/ holds no surface pair, and no measure ran. I take it next ← solve now.
+PK-349:W1280 (2026-11-20 13:34, dima): when done — FRM-514, tell more closely, easy words, no tech: what is it, why not met, and what you propose to fix it? ❓
+PK-349:W1281 (2026-11-20 13:34, dima): and why we have nad (?)? worth it? ❓
 <!-- SECTION:NOTES:END -->
