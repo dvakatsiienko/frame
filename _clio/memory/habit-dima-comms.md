@@ -67,7 +67,7 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **The ➡️ next move fits his stated energy and window, never a CST's first-acts.** «quick session, i'm tired» at 01:40 got «rename first, then the designer», copied from a lane plan (2026-10-01). a plan for tomorrow stays tomorrow's.
 
-**The next moves live in orbit** (`rules/fleet-mods.md`): clio's phases carry planned siestas as their own lines (dima, 2026-10-10), so a «what's next?» turn never happens; the reply budget cuts prose, never these (dima, 2026-10-10: «why such a bare turn?» on a reply whose next moves were thin). a report turn ends with 1–3 pickable next items as an orbit ask he ticks, never a phases list of holds and parked lines alone (dima, 2026-10-12: «at least somewhere I see one of your possible next moves to attach to»).
+**The next moves live in orbit** (`rules/fleet-mods.md`): clio's phases carry planned siestas as their own lines (dima, 2026-10-10), so a «what's next?» turn never happens; the reply budget cuts prose, never these (dima, 2026-10-10: «why such a bare turn?» on a reply whose next moves were thin). a report turn ends with 1–3 pickable next items as an orbit ask he ticks, never a phases list of holds and parked lines alone (dima, 2026-10-12: «at least somewhere I see one of your possible next moves to attach to»); in a queue run its reply ends `next item:` what it is, `my take:` how I'd solve it, so «what's next?» never costs him a turn (`clio:lowtide`, dima 2026-11-20 15:41, asked ~10 times).
 
 **A phases line is one chunk with an outcome he would notice, never a micro-step; it leaves only as done or dropped with a why** (dima, 2026-11-03, o38).
 
