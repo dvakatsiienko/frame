@@ -4,7 +4,7 @@ title: 'speak v2 prep: the refresh-speak recipe groomed and run, readaloud knowl
 status: open
 assignee: []
 created_date: '2026-11-19T14:41:00Z'
-updated_date: '2026-11-19T19:27:00Z'
+updated_date: '2026-11-20T14:20:00Z'
 labels:
   - s
 dependencies: []
@@ -96,4 +96,10 @@ the 19:08 fold, restored: his raw text read «after it ends ~5 nov i most likely
 20:58 o6: dima confirmed the plan move is ~5 Dec («yes, ~5 dec»); the effort-raise trial re-measures its rate then. o5: he kept the model-cards quote cut.
 
 21:27 handed back at wing 1's halt: the three refreshes done (read-aloud, fable 5.2 and model cards, designer); left: the W-lines fold into FRM-288's re-sign at speak v2's shape-idea, the design-loupe probe and the W49 search/query tail (wing 1 flyway f46, f47).
+
+16:20 close: verified on dima's 16:19 ask — wing 1 groomed and ran refresh-speak on 11-19 (42c673d9, 67ead9ef): W1 met (fresh data on practices, models and kokoro: unchanged upstream, af_heart safe, speak/docs/readaloud-playbook.md, 117 lines); W2 → the speak v2 lane, next on dima-fleet-priority; W3 met (the playbook is the fold); W4 printed by wing 1 at its run (inference, not re-read); W5 met (groomed 2026-11-19, the new recipe shape); W6 met (the recipe's want holds his wishes and vectors); W7 answered (the bar is wispr-grade on four axes, recipe line 57); W8 kept (recipe line 16)
+
+close: PK-457:W1 done; PK-457:W2 moved to the speak v2 lane (dima-fleet-priority next); PK-457:W3 done; PK-457:W4 done (wing 1's run print, inference); PK-457:W5 done; PK-457:W6 done; PK-457:W7 done (answered: wispr-grade bar); PK-457:W8 done (kept in the recipe)
+
+16:20 reopened: the close above covered W1–W8 only; the item holds W1–W55, each verified before any close
 <!-- SECTION:NOTES:END -->
