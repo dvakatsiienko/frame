@@ -283,6 +283,7 @@ import {
     endStop,
     endUserTurn,
     idleTurn,
+    isTurnBusy,
     markActive,
     markNudged,
     markWork,
@@ -1426,10 +1427,6 @@ async function quietWhy($: EngineInterface, from: string, body: string) {
     return why;
 }
 
-const quietIsBusy = async ($: EngineInterface) =>
-    (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
-    turn.isBusy;
-
 // the held list is read, changed and written back across awaits: every change waits its turn, or a message landing
 // between the two is lost
 let quietTail: Promise<unknown> = Promise.resolve();
@@ -1745,7 +1742,7 @@ async function quietSilentMembers($: EngineInterface, now: number) {
                 .map((k) => Number(k.slice(prefix.length)));
             const key = `${prefix}${Math.max(...known, 0) >= at ? Math.max(...known) : at}`;
             await quietAlarm($, key, words);
-            if (!isShift || (await quietIsBusy($))) continue;
+            if (!isShift || (await isTurnBusy($))) continue;
             const raised =
                 ((await $.store.get(QUIET_ALARMED)) as string[] | undefined) ??
                 [];
@@ -1901,7 +1898,7 @@ async function wakeForParkedLanes($: EngineInterface) {
                 `x-mod-stash: lane ${lane.id} reads no live session for ${unread.join(', ')}; counted as gone`,
             );
         }
-        if (now - at < wakeAfter || (await quietIsBusy($))) continue;
+        if (now - at < wakeAfter || (await isTurnBusy($))) continue;
         // a ping moves `at` back to the reply before it, so only a newer word re-arms
         const key = `${PARKED_WOKE}${lane.id}`;
         const woke = (await $.store.get(key)) as number | undefined;
@@ -2076,7 +2073,7 @@ async function quietHoldPrompt(
         const isOn = await readSwitch($, 'quiet');
         arm = isOn ? 'on' : 'off';
         const isHolding = isOn && (await $.state.get(MOBILE)).value !== true;
-        const isBusyNow = await quietIsBusy($);
+        const isBusyNow = await isTurnBusy($);
         const members = await registry($);
         const held: QuietPing[] = [];
         const lines: QuietLogLine[] = [];
@@ -5374,7 +5371,7 @@ export const register: Register = (on) => {
                 const isOn = await readSwitch($, 'quiet');
                 arm = isOn ? 'on' : 'off';
                 const isMobile = (await $.state.get(MOBILE)).value === true;
-                const isBusyNow = await quietIsBusy($);
+                const isBusyNow = await isTurnBusy($);
                 const sid = memberOf(await registry($), from)?.base.sid;
                 const why = await quietWhy($, from, body);
                 const line = {
