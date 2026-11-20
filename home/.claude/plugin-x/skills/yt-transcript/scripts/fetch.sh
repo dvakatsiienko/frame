@@ -54,11 +54,10 @@ if [[ -n $hit ]]; then
   exit 0
 fi
 
-# 3. exactly one language code: manual (en* first), else the -orig auto key, else en
+# 3. exactly one language code: manual en*, manual in the spoken language, the spoken language's -orig, en-orig, any manual, else en
+# a dubbed video lists an -orig key per audio track (ar-orig … uk-orig), so the first -orig key is a dub, never the original
 if [[ -z $lang ]]; then
-  lang=$(jq -r '(.subtitles // {} | keys | map(select(. != "live_chat"))) as $m
-    | ((.automatic_captions // {} | keys) | map(select(endswith("-orig")))) as $o
-    | ($m | map(select(startswith("en"))) + $m + $o + ["en"])[0]' "$work/meta.json")
+  lang=$(jq -r -f "$scripts/pick-lang.jq" "$work/meta.json")
 fi
 
 # 4. the name is built on its own so a failure can never turn dir into the shelf root
