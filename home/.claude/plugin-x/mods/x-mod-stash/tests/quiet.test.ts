@@ -1,8 +1,8 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { parkedWakeMs } from '../hooks/parked-wake.ts';
 import { clioAddress, peerPing } from '../hooks/quiet.ts';
-import { parkedWakeMs } from '../hooks/register.tsx';
 import { laneMemberRow } from '../hooks/roster.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 

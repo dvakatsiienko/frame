@@ -14,7 +14,7 @@ const OWNERS = {
     'lane-rounds.json': 'register.tsx',
     'lanes.json': 'lanes.ts',
     'operator-override.json': 'override.ts',
-    'relay.json': 'register.tsx',
+    'relay.json': 'parked-wake.ts',
     // syncWindStore writes it from register.tsx until the wind move hands that write to wind-store.ts
     'second-wind.json': ['register.tsx', 'wind-store.ts'],
 } as const satisfies Record<string, string | readonly string[]>;
