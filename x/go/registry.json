@@ -1277,11 +1277,6 @@
                 }
             ],
             "flags": {
-                "dima-ok": {
-                    "description": "from a thread, --role runs only on dima's typed word: the thread it names, proven by x-mod-guard against his last prompt",
-                    "type": "string",
-                    "value": "thread"
-                },
                 "role": {
                     "description": "move the main seat instead of naming: main makes this wing the main and the old main takes its wing number; wing:<n> hands the seat to wing n",
                     "type": "string",

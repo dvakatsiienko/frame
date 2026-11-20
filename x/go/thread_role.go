@@ -210,11 +210,11 @@ func callerIsThread() bool {
 	return err == nil && len(callerChain(table, powerSessionsDir())) > 0
 }
 
-// from a thread the switch runs only on dima's typed word: --dima-ok names the thread, and x-mod-guard proves it against his
-// last prompt before the command runs, as it does for a merge; x asks for the flag and says the command
-func seatWordRefusal(flags Flags, key, role string) error {
-	if !callerIsThread() || flagString(flags, "dima-ok") == key {
+// from a thread the switch is refused: it runs only on dima's typed word, which x-mod-guard is to prove against his last prompt, and
+// that guard half is not built (FRM-596 slice 07), so no flag a thread can type unlocks it; his own terminal needs no word
+func seatWordRefusal(key, role string) error {
+	if !callerIsThread() {
 		return nil
 	}
-	return &Fail{Refused: true, Msg: "moving the main seat from a thread runs only on dima's typed word naming «" + key + "»", Next: "x thread rename " + key + " --role " + role + " --dima-ok " + key}
+	return &Fail{Refused: true, Msg: "moving the main seat from a thread runs only on dima's typed word, and the guard that proves it is not built yet: run it from his own terminal", Next: "x thread rename " + key + " --role " + role + " (in dima's own terminal)"}
 }

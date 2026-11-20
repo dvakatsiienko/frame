@@ -130,7 +130,12 @@ func TestThreadRenameRoleWaitsOutTheMainCheckoutsIndexLock(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			got := <-done
+			var got scripted
+			select {
+			case got = <-done:
+			case <-time.After(20 * time.Second):
+				t.Fatal("the switch did not return: a lock that stays must refuse it once the wait is up")
+			}
 
 			if _, _, main := w.seats(t); got.code != c.code || main != c.main {
 				t.Errorf("exit %d, main-session %q, want exit %d and %s main:\n%s", got.code, main, c.code, c.main, got.out)
@@ -281,21 +286,19 @@ func TestThreadRenameRoleTwoAtOnceLeaveOneMain(t *testing.T) {
 	}
 }
 
-// exit 2: from a thread the switch runs only on dima's typed word, which x-mod-guard proves the way it proves --dima-ok on a merge:
-// x asks for the flag naming the thread and says the exact command; from his own terminal it needs none
-func TestThreadRenameRoleFromAThreadNeedsDimaTypedWord(t *testing.T) {
+// exit 2: from a thread the switch is refused whatever it types: the guard that proves dima's typed word is not built (slice 07's mods
+// half), so a flag naming the thread would unlock any wing by itself; the refusal says to run it from his own terminal and names no flag
+func TestThreadRenameRoleFromAThreadIsRefused(t *testing.T) {
 	t.Parallel()
 	for _, c := range []struct {
 		name   string
 		caller string
 		flags  []string
 		code   int
-		main   string
 	}{
-		{"wing 1 with no word of his", "coordinator", nil, 1, "sid-a"},
-		{"wing 1 with a word naming another thread", "coordinator", []string{"--dima-ok", "wing2"}, 1, "sid-a"},
-		{"wing 1 with his word naming the thread", "coordinator", []string{"--dima-ok", "wing1"}, 0, "sid-b"},
-		{"a codie, even with the word", "codie", []string{"--dima-ok", "wing1"}, 1, "sid-a"},
+		{"wing 1", "coordinator", nil, 1},
+		{"wing 1 typing a word of its own", "coordinator", []string{"--dima-ok", "wing1"}, 2},
+		{"a codie", "codie", nil, 1},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
@@ -303,11 +306,11 @@ func TestThreadRenameRoleFromAThreadNeedsDimaTypedWord(t *testing.T) {
 
 			got := xIn(t, t.TempDir(), asCaller(t, w.env, c.caller), append([]string{"thread", "rename", "wing1", "--role", "main"}, c.flags...)...)
 
-			if _, _, main := w.seats(t); got.code != c.code || main != c.main {
-				t.Errorf("exit %d, main-session %q, want exit %d and %s main:\n%s", got.code, main, c.code, c.main, got.stdout)
+			if _, _, main := w.seats(t); got.code != c.code || main != "sid-a" {
+				t.Errorf("exit %d, main-session %q, want exit %d and sid-a still main:\n%s", got.code, main, c.code, got.stdout)
 			}
-			if c.code == 1 && c.caller == "coordinator" && !strings.Contains(got.next, "--dima-ok wing1") {
-				t.Errorf("next %q, want the exact command with his word", got.next)
+			if c.code == 1 && c.caller == "coordinator" && (strings.Contains(got.next, "--dima-ok") || !strings.Contains(got.next, "own terminal")) {
+				t.Errorf("next %q, want the way to dima's own terminal and no flag that unlocks it", got.next)
 			}
 		})
 	}

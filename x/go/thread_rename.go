@@ -416,7 +416,7 @@ func threadRenameRun(r *Run, args []string, flags Flags) (any, error) {
 		if err := coordinatorOnly("x thread rename --role"); err != nil {
 			return nil, err
 		}
-		if err := seatWordRefusal(flags, args[0], role); err != nil {
+		if err := seatWordRefusal(args[0], role); err != nil {
 			return nil, err
 		}
 		return threadRoleSwitch(r, args[0], role)
