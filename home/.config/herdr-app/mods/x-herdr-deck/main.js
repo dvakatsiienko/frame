@@ -24,7 +24,7 @@ import {
     pressLine,
     withBandPress,
 } from './band-press.js';
-import { takeCommands } from './deck-commands.js';
+import { isDeckShown, takeCommands, tickAsker } from './deck-commands.js';
 import { deckParts } from './deck-parts.js';
 import { focusBorder } from './focus-ring.js';
 import { createGlide } from './glide-view.js';
@@ -59,7 +59,6 @@ import {
     threadFacts,
     tickAll,
     tickAllTakes,
-    tickAllThread,
     withPending,
 } from './orbit.js';
 import { SENT_MS, next, pressState, untickDoor } from './press.js';
@@ -461,24 +460,24 @@ export default class Deck extends View {
         cx.notify();
     }
 
-    // ⌘⇧K (FRM-589): the asker under the pointer, else the one he picked, else the thread the chat shows (by pid)
+    // ⌘⇧K (FRM-589): the asker under the pointer, else the one he picked, else the thread the chat shows; a hidden
+    // deck's copy stays alive in its block, so it checks its own block is shown
     /** @param {Context} cx */
     tickShown(cx) {
-        const pid = /** @type {{ pid?: number } | null} */ (
-            shared('chat.shown')
-        )?.pid;
-        const sid = tickAllThread(
-            this.rows
-                .filter(
-                    (r) =>
-                        tickAllTakes(r.asks, (id) => this.pressStateOf(r, id))
-                            .length > 0,
-                )
-                .map((r) => r.sid),
+        const sid = tickAsker(
+            this.rows.map((r) => ({
+                pid: r.pid,
+                sid: r.sid,
+                takes: tickAllTakes(r.asks, (id) => this.pressStateOf(r, id))
+                    .length,
+            })),
             {
                 hovered: this.hoverSid ?? null,
+                isShown: isDeckShown(layout()),
                 picked: this.pickedSid ?? null,
-                shown: this.rows.find((r) => r.pid === pid)?.sid ?? null,
+                pid: /** @type {{ pid?: number } | null} */ (
+                    shared('chat.shown')
+                )?.pid,
             },
         );
         const asker = this.rows.find((r) => r.sid === sid);

@@ -5,7 +5,7 @@ import { h_flex, v_flex } from 'gpui-base';
 import { div } from 'gpui-kit';
 import { exec, run, theme, watchFolder } from 'herdr';
 
-import { GLIDE_MAX_PX, glideBlockPx } from './glide-size.js';
+import { GLIDE_MAX_PX, glideResize } from './glide-size.js';
 import { lanesShown, stepMark } from './lanes.js';
 import { SANS, SIZE, bar, line } from './look.js';
 import { ticketUrl } from './orbit.js';
@@ -26,8 +26,9 @@ export function createGlide(block) {
     /** the cards opened to every step @type {Set<string>} */
     const open = new Set();
     let width = Infinity;
-    /** the px last asked of the layout @type {number | null} */
-    let asked = null;
+    // the block's own height and its cards' height, both measured
+    let blockPx = 0;
+    let contentPx = 0;
 
     /** @param {Context} cx */
     const read = (cx) =>
@@ -36,12 +37,9 @@ export function createGlide(block) {
             cx.notify();
         });
 
-    /** @param {number} contentPx */
-    const fit = (contentPx) => {
-        const px = glideBlockPx(lanes.length, contentPx);
-        if (px === asked) return;
-        asked = px;
-        run('layout.resize', { id: block, px });
+    const fit = () => {
+        const px = glideResize({ blockPx, contentPx, lanes: lanes.length });
+        if (px !== null) run('layout.resize', { id: block, px });
     };
 
     /** @param {Theme} t @param {Lane} l */
@@ -71,6 +69,7 @@ export function createGlide(block) {
                 );
         return v_flex()
             .id(`lane-${key}`)
+            .min_w(0)
             .mx(12)
             .my(4)
             .p(12)
@@ -166,7 +165,12 @@ export function createGlide(block) {
                                 )
                             ),
                     );
-                    if (changed.includes(LANES)) read(cx);
+                    // a batch holding the folder itself is herdr's «refresh everything»
+                    if (
+                        changed.includes(LANES) ||
+                        changed.includes(`${CLAUDE}/shelf`)
+                    )
+                        read(cx);
                 }
             });
         },
@@ -202,12 +206,16 @@ export function createGlide(block) {
                 .on_size_change((size, cx) => {
                     const wasRail = isRail;
                     width = size.width;
+                    blockPx = size.height;
+                    fit();
                     if (width < RAIL_PX !== wasRail) cx.notify();
                 })
                 .child(
-                    div()
+                    v_flex()
                         .id('x-herdr-glide-scroll')
                         .size_full()
+                        .min_w(0)
+                        .overflow_x_hidden()
                         .max_h(GLIDE_MAX_PX)
                         .overflow_y_scroll()
                         .child(
@@ -216,7 +224,10 @@ export function createGlide(block) {
                                 .w_full()
                                 .pb(8)
                                 .when(isRail, (el) => el.items_center())
-                                .on_size_change((size) => fit(size.height))
+                                .on_size_change((size) => {
+                                    contentPx = size.height;
+                                    fit();
+                                })
                                 .when(lanes.length > 0, (el) =>
                                     el
                                         .child(head)
