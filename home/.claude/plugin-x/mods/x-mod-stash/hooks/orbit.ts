@@ -479,6 +479,17 @@ export function moved<T>(list: readonly T[], i: number, by: -1 | 1): T[] {
 }
 
 // dima's hand on the phases card — a reorder or a tick, his steer riding with them — that a turn has not taken yet
+// herdr's phases header presses the whole plan under `id: 'plan'` (FRM-618 rider 4d): a tick marks it with its steer, an
+// untick takes both back, as the board's own plan tick does
+export function planMarked(
+    plan: StashPlan | undefined,
+    press: RemoteMark | undefined,
+): StashPlan | undefined {
+    if (!plan || !press) return plan;
+    return press.mark === 'accepted'
+        ? { ...plan, mark: 'accepted', steer: press.steer ?? plan.steer }
+        : { ...plan, mark: undefined, steer: undefined };
+}
 export const hasPlanMark = (p: StashPlan | undefined): p is StashPlan =>
     Boolean(p && (p.isMoved || p.mark));
 

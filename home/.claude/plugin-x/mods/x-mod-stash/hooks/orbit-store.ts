@@ -13,6 +13,7 @@ import {
     isGuardGated,
     isPressOn,
     mounted,
+    planMarked,
     steeredOrbit,
 } from './orbit.ts';
 import { currentId, identity, sessionName } from './session-identity.ts';
@@ -314,6 +315,7 @@ export async function absorbMarks(
                                 : (a.steer ?? m.steer),
                     };
                 }),
+                plan: planMarked(o.plan, herdr.marks.plan),
             },
             onSaved,
         );

@@ -775,3 +775,40 @@ test('of a herdr tick and his untick read together, the untick wins', async ($, 
     await say($, 'go on');
     expect(joined(w.contexts).join('\n')).not.toMatch(/o1 🛎️/);
 });
+
+// FRM-618 rider 4d: herdr's phases header writes `id: 'plan'` into the ticks file; the press marks the plan as the
+// board's own tick does, so its steer rides dima's next prompt (dima, 19:08: «it should join same way as orbit asks»)
+test("herdr's phases tick and steer ride an idle thread's next prompt", async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    files[`/home/.claude/shelf/orbit-ticks/${SID}.jsonl`] = `${JSON.stringify({
+        at: w.clock.now() + 1,
+        id: 'plan',
+        steer: 'a first',
+        text: 'now: a',
+        verdict: 'tick',
+    })}\n`;
+    await say($, 'go');
+    expect((w.contexts.at(-1) ?? []).join('\n')).toMatch(
+        /🛎️ ticked their order[\s\S]*his steer: «a first»/,
+    );
+});
+
+test("herdr's phases tick joins a running turn at its next step", async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    await say($, 'go');
+    files[`/home/.claude/shelf/orbit-ticks/${SID}.jsonl`] = `${JSON.stringify({
+        at: w.clock.now() + 1,
+        id: 'plan',
+        steer: 'b next',
+        text: 'now: a',
+        verdict: 'tick',
+    })}\n`;
+    const step = await $.tool.call({ command: 'ls', tool: 'Bash' });
+    expect((step.context ?? []).join('\n')).toMatch(/his steer: «b next»/);
+});
