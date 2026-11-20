@@ -187,3 +187,22 @@ async function procOf($: EngineInterface): Promise<Proc | undefined> {
         : undefined;
 }
 // twin end
+
+// `succ:<old id>` → the id a /clear continued under, so a lane linked by a session id follows it (todo 21: a clear left
+// the l14 card on the codie's old id, its asks gone from the card); dropped a week after it was written
+export const SUCC = 'succ:';
+
+// the id a session continues under after its /clears, followed a few hops; the id itself when it never cleared
+export async function successorOf($: EngineInterface, sid: string) {
+    let id = sid;
+    for (let hop = 0; hop < 5; hop++) {
+        const next = (
+            (await $.store.get(SUCC + id).catch(() => undefined)) as
+                | { sid?: string }
+                | undefined
+        )?.sid;
+        if (!next || next === id) break;
+        id = next;
+    }
+    return id;
+}

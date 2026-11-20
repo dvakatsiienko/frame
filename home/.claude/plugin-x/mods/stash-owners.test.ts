@@ -12,7 +12,7 @@ const OWNERS = {
     'herdr-joins': 'joins.ts',
     'herdr-state': 'session-record.ts',
     'lane-rounds.json': 'register.tsx',
-    'lanes.json': 'register.tsx',
+    'lanes.json': 'lanes.ts',
     'operator-override.json': 'override.ts',
     'relay.json': 'register.tsx',
     // syncWindStore writes it from register.tsx until the wind move hands that write to wind-store.ts
