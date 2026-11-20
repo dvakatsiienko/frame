@@ -92,3 +92,8 @@ Ticket: FRM-586
 ## verdict
 
 **adopted** 2026-11-20 (dima's o13 tick, «i like stray and i think it is very useful. adopted»): standing on Sonnet 5.5, an Opus 5.5 lane only for a chore that fails twice. the deciding numbers, 12–20 Nov: 94 % of chores needed no rework after [done] (Sonnet 48 of 51, target 80 %); one session ran 67 card rows (~60 chores) against 2–3 summons; 0 chores failed twice. the effort stays open: Sonnet 5.5 high vs medium runs its own 2-week trial (`docs/test-drive/effort-raise.md`, week-1 read 2026-11-26, verdict 2026-12-03).
+
+## open after the close (FRM-586, crow 16:17)
+
+- FRM-586:W6 «it takes a second wind before each big spec. test drive it» → partly met: the wind fires at 55 % context, not before each big spec, and no round measured it; a round here logs whether a big-spec batch started under 55 %
+- FRM-586:W7 «figure out how the threads won't fight over the lane» → partly met: batches queue as messages, and only main fed it on 11-20 (the wings were down); a round here logs the first day two clios feed it at once
