@@ -600,6 +600,7 @@ export default class Antenna extends View {
                             },
                             key: r.address,
                             label: r.name,
+                            // the row as it was at mouse-down: a drag lasts a second, so a status flip mid-drag can wait
                             look: () =>
                                 body(
                                     h_flex()

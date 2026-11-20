@@ -132,8 +132,10 @@ export default class Deck extends View {
     tabAt = new Map();
     /** orbit's steer stops this draw, published by the render with the phases' box after them @type {string[]} */
     orbitStops = [];
-    /** each thread's plan ticked here, by sid, until the stash reads the press (slice E wires the read) @type {Set<string>} */
-    planTicked = new Set();
+    /** each thread's plan ticked here, by sid, the plan's text as ticked, until slice E wires the stash's read @type {Map<string, string>} */
+    planTicked = new Map();
+    /** the threads whose plan press is being written, so a second press waits for the first @type {Set<string>} */
+    planWriting = new Set();
     steerFocus = /** @type {string | null} */ (null);
     /** the deck's seat in the Tab loop: its drawn steer boxes */
     tab = createTabMember('x-herdr-deck', { layout, setShared, shared });
@@ -482,7 +484,8 @@ export default class Deck extends View {
     planHead(t, head, key) {
         const box = /** @type {InputState} */ (this.steers.get(key));
         const sid = key.slice(0, -':plan'.length);
-        const isTicked = this.planTicked.has(sid);
+        const plan = this.rows.find((r) => r.sid === sid)?.phases.join('\n');
+        const isTicked = this.planTicked.get(sid) === plan;
         return head
             .flex()
             .items_center()
@@ -557,10 +560,14 @@ export default class Deck extends View {
     async pressPlan(cx, key) {
         const sid = key.slice(0, -':plan'.length);
         const s = this.rows.find((r) => r.sid === sid);
-        if (!s) return;
-        const isTick = !this.planTicked.has(sid);
-        if (isTick) this.planTicked.add(sid);
+        if (!s || this.planWriting.has(sid)) return;
+        // a tick belongs to the plan it ticked: a new plan reads open again
+        const plan = s.phases.join('\n');
+        const was = this.planTicked.get(sid);
+        const isTick = was !== plan;
+        if (isTick) this.planTicked.set(sid, plan);
         else this.planTicked.delete(sid);
+        this.planWriting.add(sid);
         cx.notify();
         try {
             const made = await exec('mkdir', ['-p', TICKS]);
@@ -581,11 +588,13 @@ export default class Deck extends View {
                     s.taken,
                 ),
             );
+            this.pressError = null;
         } catch (err) {
-            if (isTick) this.planTicked.delete(sid);
-            else this.planTicked.add(sid);
+            if (was === undefined) this.planTicked.delete(sid);
+            else this.planTicked.set(sid, was);
             this.pressError = `phases not ticked: ${err instanceof Error ? err.message : err}`;
         }
+        this.planWriting.delete(sid);
         cx.notify();
     }
 
@@ -1132,6 +1141,8 @@ export default class Deck extends View {
         );
         // the render publishes these with the phases' box after them, one Tab loop
         this.orbitStops = stops;
+        // built before the cards draw, which read their box's place from it
+        this.tabAt = new Map(stops.map((id, i) => [id, i + 1]));
         return sections.map((section) => {
             if (section.kind === 'pinned')
                 return v_flex()
@@ -1229,6 +1240,7 @@ export default class Deck extends View {
         const asks = this.rows.reduce((n, s) => n + s.asks.length, 0);
         // orbit draws its steer boxes as Tab stops and focuses the one the loop asks for; with no asks it draws none
         this.orbitStops = [];
+        this.tabAt = new Map();
         const orbitRows = asks > 0 ? this.orbit(t, cx) : [];
         // one head for every section: a hairline above, its emoji, its name and its count in words
         /** @param {string} text */
@@ -1263,7 +1275,8 @@ export default class Deck extends View {
                 ? [`steer-${planKey}`]
                 : []),
         ];
-        this.tabAt = new Map(stops.map((id, i) => [id, i + 1]));
+        if (stops.length > this.orbitStops.length)
+            this.tabAt.set(stops.at(-1) ?? '', stops.length);
         const to = this.tab.draw(stops, (run) => cx.timer.after(0, run));
         const box = to && this.steers.get(to.slice('steer-'.length));
         if (box) cx.timer.after(0, () => box.focus());
@@ -1360,7 +1373,8 @@ export default class Deck extends View {
                                 // stash board's look, dima's 66d)
                                 const p = phaseParts(phase, j);
                                 const color = j > 1 ? t.muted : t.foreground;
-                                const key = `${i}-${j}-${p.text}`;
+                                // one entry per drawn line: its uncut copy measures again whenever its text changes width
+                                const key = `${i}-${j}`;
                                 const w = this.phaseW.get(key);
                                 const isCut = Boolean(
                                     w && w.full > w.box + 0.5,
