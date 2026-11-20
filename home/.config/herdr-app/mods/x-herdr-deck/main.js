@@ -137,6 +137,8 @@ export default class Deck extends View {
     planTicked = new Map();
     /** the threads whose plan press is being written, so a second press waits for the first @type {Set<string>} */
     planWriting = new Set();
+    /** each thread's plan tick written and not read yet, by sid, the press's time @type {Map<string, number>} */
+    planSent = new Map();
     steerFocus = /** @type {string | null} */ (null);
     /** the deck's seat in the Tab loop: its drawn steer boxes */
     tab = createTabMember('x-herdr-deck', { layout, setShared, shared });
@@ -338,6 +340,15 @@ export default class Deck extends View {
         );
         this.updated = rounds.updated;
         for (const key of rounds.cleared) this.steers.get(key)?.set_value('');
+        // a plan press the thread has read reached it: the box empties and «tick» comes back, as an ask's does (19:19)
+        for (const [sid, at] of this.planSent) {
+            const s = this.rows.find((r) => r.sid === sid);
+            if (s && s.taken < at) continue;
+            this.planSent.delete(sid);
+            this.planTicked.delete(sid);
+            this.steers.get(`${sid}:plan`)?.set_value('');
+            keep(localStorage, `steer:${sid}:plan`, '');
+        }
         for (const s of this.rows) {
             if (s.phases.length && !this.steers.has(`${s.sid}:plan`))
                 this.makeSteerBox(`${s.sid}:plan`);
@@ -546,6 +557,7 @@ export default class Deck extends View {
         if (isTick) this.planTicked.set(sid, plan);
         else this.planTicked.delete(sid);
         this.planWriting.add(sid);
+        const at = Date.now();
         cx.notify();
         try {
             const made = await exec('mkdir', ['-p', TICKS]);
@@ -560,12 +572,14 @@ export default class Deck extends View {
                     planPress(
                         s.phases,
                         isTick ? 'tick' : 'untick',
-                        Date.now(),
+                        at,
                         this.steers.get(key)?.value().trim(),
                     ),
                     s.taken,
                 ),
             );
+            if (isTick) this.planSent.set(sid, at);
+            else this.planSent.delete(sid);
             this.pressError = null;
         } catch (err) {
             if (was === undefined) this.planTicked.delete(sid);
@@ -1230,7 +1244,11 @@ export default class Deck extends View {
      */
     phasesBlock(t, groups, header) {
         const planKey = groups.length === 1 ? `${groups[0]?.sid}:plan` : null;
-        const head = header('🌔 phases');
+        // one thread's plan names it in the header, one line (dima, 19:18); several keep a name line each
+        const isOne = groups.length === 1;
+        const head = header(
+            isOne ? `🌔 phases: ${groups[0]?.name ?? ''}` : '🌔 phases',
+        );
         return v_flex()
             .id('x-herdr-deck-phases')
             .flex_none()
@@ -1248,10 +1266,12 @@ export default class Deck extends View {
                         .px(12)
                         .py(4)
                         .gap(2)
-                        .child(
-                            line(t.foreground, SIZE.secondary)
-                                .font_semibold()
-                                .child(g.name),
+                        .when(!isOne, (el) =>
+                            el.child(
+                                line(t.foreground, SIZE.secondary)
+                                    .font_semibold()
+                                    .child(g.name),
+                            ),
                         )
                         .children(
                             g.phases.map((phase, j) => {
