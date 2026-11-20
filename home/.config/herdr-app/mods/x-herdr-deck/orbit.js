@@ -429,12 +429,18 @@ export const dropPress = (io, path, id, taken) =>
 
 /**
  * the asks «tick all» takes (FRM-589): open and pressable, never gated, since a gated ask unlocks an action and stays
- * his own press, one each (mods AGENTS.md § never)
+ * his own press, one each (mods AGENTS.md § never); never a look or 🧪 card either, drawn apart in the pinned group
  * @param {Ask[]} asks
  * @param {(id: string) => PressState} stateOf
  */
 export const tickAllTakes = (asks, stateOf) =>
-    asks.filter((a) => a.id !== null && !a.isGated && stateOf(a.id) === 'open');
+    asks.filter(
+        (a) =>
+            a.id !== null &&
+            !a.isGated &&
+            !isPinnedCard(a.text) &&
+            stateOf(a.id) === 'open',
+    );
 
 /**
  * «tick all» on the one thread `sid` names: a tick line per ask it takes, the single tick's shape, in that thread's

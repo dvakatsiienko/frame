@@ -39,6 +39,9 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **mark** — the quill's words marked to join a thread's turn (🍕), kept with the draft by one owner (`quill.js`) until a turn takes them or he takes the mark off
 - **press** — dima's tick, replay or untick on an ask, one record each in the deck (`createPresses`) until the thread's shelf shows it
 - **ask** — an orbit ask a thread put on his deck (and on cc's own board); a **tick** (🛎️) accepts it, a **replay** (🔁) sends it back with his steer
+- **look card** — an ask opening «look», a thread's request that dima looks at a finished change
+- **test card** — 🧪, an ask opening «try» or «test:», a thread's request that dima tries what it cannot test itself
+- **pinned group** — orbit's look and test cards from every thread, drawn together at the top or the bottom by his settings row
 - **code block** — a fenced block in a reply, drawn with a ⧉ copy button that copies its text
 - **chip** — inline code in the quill drawn as one monospace token; the caret skips it, one delete removes it
 - **land** — copy a mod from frame into herdr's real mods folder (`pnpm herdr-mods:land`); the **watcher** lands each save that passes `herdr-app check`

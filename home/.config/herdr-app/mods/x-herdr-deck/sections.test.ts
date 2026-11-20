@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { orbitPinIn, orbitSections } from './orbit.js';
+import { orbitPinIn, orbitSections, tickAllTakes } from './orbit.js';
 
 // FRM-620 slice 3 (W16, W17): look and 🧪 cards from every thread in one pinned group, at the top or the bottom by his
 // setting; then each thread's other asks in the agents list's order, so an arriving ask moves no other row
@@ -110,5 +110,25 @@ describe('the pin setting', () => {
         expect(orbitPinIn(file({ 'tabs.status': 'hidden' }))).toBe('top');
         expect(orbitPinIn('{"rows": {"orbit.p')).toBe('top');
         expect(orbitPinIn(file({ 'orbit.pin': 'left' }))).toBe('top');
+    });
+});
+
+describe('«tick all» leaves the pinned cards', () => {
+    test("a thread's tick all takes its plain asks, never its look or 🧪 cards, which sit in the pinned group", () => {
+        const plain = {
+            isGated: false,
+            isLocked: false,
+            link: null,
+            mark: null,
+            pick: null,
+        };
+        const asks = [
+            { ...plain, id: 'o1', text: 'push FRM-1' },
+            { ...plain, id: 'o2', text: 'look: the dock' },
+            { ...plain, id: 'o3', text: 'test: a drag' },
+        ];
+        expect(tickAllTakes(asks, () => 'open').map((a) => a.id)).toEqual([
+            'o1',
+        ]);
     });
 });

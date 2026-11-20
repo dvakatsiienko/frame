@@ -35,10 +35,14 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given an ask on the deck, with or without his steer typed or his tick on it
   - when its thread follows it up: a new text or pick under the same id
   - then 🆕 leads its label, its steer box is empty, and it reads open, his old tick gone; 🆕 stays until he presses it or the ask leaves (W1, W2, W13)
-- ✅ a ⚠️ ask draws first, a look card second, the rest after in their order (FRM-620 slice 2)
-  - given a thread's asks in orbit: plain asks, a look card («look: …») and a ⚠️ ask
-  - then each thread's ⚠️ asks lead, the look cards follow, the plain asks after; each group keeps its order, and a tick moves nothing (W12)
-  - decision: the draw sorts, the store's order stays untouched; a pinned ask leaves the top when it leaves the deck, as any ask
+- ⬜ look and 🧪 test cards from every thread draw first, as one pinned group (FRM-620 slices 2, 3)
+  - given asks in orbit from clio main and wing 1: plain asks, a look card («look …»), a 🧪 test card («try …», «test: …») and a ⚠️ ask
+  - then the pinned group leads, every thread's look and test cards in the agents list's order, each under its thread's name; then clio main's section, its ⚠️ asks first, then its plain asks; then wing 1's (W16, W17, W18)
+  - and an arriving ask or a tick moves no other row: a section's place follows the agents list, a thread the list does not show goes last by name, never by its status
+  - given his «general › orbit › pinned cards» row in settings set to bottom
+  - then the same pinned group sits last, the threads' sections above in their order
+  - decision: the pinned group holds look and 🧪 cards only; a ⚠️ ask leads its own thread's section (clio, 13:14)
+  - decision: the draw sorts, the store's order stays untouched; a pinned ask leaves the group when it leaves the deck, as any ask
 - ✅ ask text keeps a literal `<word>`
   - given an ask, a pick or a waiting-on line holds `<target>` outside a code span
   - then the deck draws it as written, never dropped as html

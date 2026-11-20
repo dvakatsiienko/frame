@@ -784,8 +784,8 @@ export default class Deck extends View {
     // a gated ask (the stash marks it: a sign, a ⚠️, a merge, a quoted command) takes the same 🛎️: his click writes the
     // press only his click writes, and x-mod-guard reads it as his word for that ask, once (FRM-544). a click, never a key:
     // a keyed mod command is any shell's
-    /** @param {Theme} t @param {Row} s @param {Ask} ask @param {number} i @param {number} j */
-    ask(t, s, ask, i, j) {
+    /** @param {Theme} t @param {Row} s @param {Ask} ask */
+    ask(t, s, ask) {
         const key = `${s.sid}:${ask.id}`;
         const steer = this.steers.get(key);
         const state = this.pressStateOf(s, ask.id);
@@ -834,11 +834,11 @@ export default class Deck extends View {
                 // the id sits outside the selectable text, so a double-click or a drag takes the ask alone (his F4 reads
                 // the selection aloud, dima 16:33); it lies over the text's first line, held free by leading em spaces,
                 // so the next lines run the full width (16:35: no hanging gap under the id)
-                .child(this.askLine(t, s, ask, `ask-${i}-${j}`))
+                .child(this.askLine(t, s, ask, `ask-${key}`))
                 .when(Boolean(ask.pick), (el) =>
                     el.child(
                         prose(
-                            `pick-${i}-${j}`,
+                            `pick-${key}`,
                             ask.pick ?? '',
                             t.muted,
                             SIZE.secondary,
@@ -846,10 +846,10 @@ export default class Deck extends View {
                     ),
                 )
                 .when(Boolean(linkOf(ask.link)), (el) =>
-                    el.child(this.linkLine(t, ask, `link-${i}-${j}`)),
+                    el.child(this.linkLine(t, ask, `link-${key}`)),
                 )
                 .when(Boolean(ask.id) && this.linkShown?.id === ask.id, (el) =>
-                    el.child(this.linkPreview(t, `linked-${i}-${j}`)),
+                    el.child(this.linkPreview(t, `linked-${key}`)),
                 )
                 .when(Boolean(ask.id), (el) =>
                     el.child(
@@ -1129,7 +1129,7 @@ export default class Deck extends View {
             /** @type {number[] | null} */ (shared(ORDER_KEY)),
             this.pin,
         );
-        return sections.map((section, i) => {
+        return sections.map((section) => {
             if (section.kind === 'pinned')
                 return v_flex()
                     .px(12)
@@ -1141,13 +1141,13 @@ export default class Deck extends View {
                             .child('📌 looks and tests'),
                     )
                     .children(
-                        section.cards.map(({ ask, row }, j) =>
+                        section.cards.map(({ ask, row }) =>
                             v_flex()
                                 .gap(4)
                                 .child(
                                     line(t.muted, SIZE.small).child(row.name),
                                 )
-                                .child(this.ask(t, row, ask, i, j)),
+                                .child(this.ask(t, row, ask)),
                         ),
                     );
             const s = section.row;
@@ -1210,9 +1210,7 @@ export default class Deck extends View {
                             ),
                         ),
                 )
-                .children(
-                    section.asks.map((ask, j) => this.ask(t, s, ask, i, j)),
-                );
+                .children(section.asks.map((ask) => this.ask(t, s, ask)));
         });
     }
 
@@ -1337,7 +1335,11 @@ export default class Deck extends View {
                 shared('chat.shown')
             )?.pid;
             const sid = tickAllThread(
-                this.rows.filter((r) => r.asks.length > 0).map((r) => r.sid),
+                this.rows
+                    .filter(
+                        (r) => tickAllTakes(r.asks, () => 'open').length > 0,
+                    )
+                    .map((r) => r.sid),
                 {
                     hovered: this.hoverSid ?? null,
                     picked: this.pickedSid ?? null,
