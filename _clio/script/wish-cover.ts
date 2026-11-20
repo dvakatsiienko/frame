@@ -184,8 +184,23 @@ export function followMoved(
     return { rest, unchecked: [...unchecked] };
 }
 
-// a line he settled elsewhere says so: «→ FRM-585» (moved, answered, dropped on his word) is no loss for --all to red
+// a line he settled elsewhere says so: «→ FRM-585» (moved, answered, dropped on his word) is no loss for --all to red;
+// the note sits outside his quote, so an arrow inside «…» or "…" is his words, never the note
 const settledElsewhere = /→\s*(?:PK|FRM|BYT)-\d+/;
+const quotedWords = /«[^»]*»|“[^”]*”|"[^"]*"/g;
+const isSettledElsewhere = (text: string) =>
+    settledElsewhere.test(text.replace(quotedWords, ''));
+
+// the prefix each W-line of an item carries, by its W id: a ticket's block may hold folded pocket lines, «PK-349:W1263»
+export function wishPrefixes(item: string) {
+    const prefixes = new Map<string, string>();
+    for (const [, prefix, id] of item.matchAll(
+        /^\s*[-*]?\s*((?:PK|FRM|BYT)-\d+):(W\d+)\b/gm,
+    ))
+        if (prefix && id && !prefixes.has(id))
+            prefixes.set(id, prefix.toUpperCase());
+    return prefixes;
+}
 
 export function uncovered(
     item: string,
@@ -194,7 +209,7 @@ export function uncovered(
 ) {
     const cited = citedIds(drafts.join('\n'), homes);
     return [...wishLines(item, homes)].filter(
-        ([id, text]) => !cited.has(id) && !settledElsewhere.test(text),
+        ([id, text]) => !cited.has(id) && !isSettledElsewhere(text),
     );
 }
 
@@ -369,6 +384,10 @@ if (import.meta.main) {
             item = owned ?? item;
             if (owned && owners[0]) homes.push(owners[0]);
         }
+        // pocket lines folded into the block keep their PK prefix: they are this ticket's wish, never another item's quote
+        for (const prefix of wishPrefixes(item).values())
+            if (prefix.startsWith('PK-') && !homes.includes(prefix))
+                homes.push(prefix);
     } else {
         item = readItem(items, id);
     }
@@ -422,14 +441,16 @@ if (import.meta.main) {
     );
     const uncited = all ? uncovered(item, drafts, homes) : [];
     if (missing.length + uncited.length > 0) stopIfMoved();
+    const prefixes = wishPrefixes(item);
+    const named = (lineId: string) => `${prefixes.get(lineId) ?? id}:${lineId}`;
     for (const [lineId, text] of missing)
         console.log(
             text === ''
-                ? `✗ ${id}:${lineId} has no text`
-                : `✗ ${id}:${lineId} text missing: ${text.slice(0, 60)}`,
+                ? `✗ ${named(lineId)} has no text`
+                : `✗ ${named(lineId)} text missing: ${text.slice(0, 60)}`,
         );
     for (const [lineId, text] of uncited)
-        console.log(`✗ ${id}:${lineId} uncited: ${text.slice(0, 60)}`);
+        console.log(`✗ ${named(lineId)} uncited: ${text.slice(0, 60)}`);
     if (missing.length + uncited.length === 0) {
         if (unchecked.length > 0) {
             console.log(

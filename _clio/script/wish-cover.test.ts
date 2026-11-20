@@ -155,6 +155,10 @@ describe('wish-cover', () => {
         ['a → with no home', 'W3 plain words →', ['W3']],
         ['a home with no →', 'W3 plain words, see FRM-1', ['W3']],
         ['a → to a word, not a home', 'W3 plain words → later', ['W3']],
+        ['a → inside his «quote»', 'W3 his «words → FRM-1 here»', ['W3']],
+        ['a → inside his "quote"', 'W3 his "words → FRM-1 here"', ['W3']],
+        ['a → after his «quote»', 'W3 his «words» → FRM-1', []],
+        ['a (→ home) at the line end', 'W3 his words (→ FRM-1)', []],
     ])('--all passes a line settled elsewhere: %s', (_name, line, red) => {
         expect(
             uncovered(`- W1 a\n- W2 b\n- ${line}`, ['W1 W2']).map(([id]) => id),
@@ -588,6 +592,7 @@ describe('the cli on a moved wish, with an x that answers by ticket', () => {
         tickets: Record<string, string>,
         draft: string,
         pocket: Record<string, string> = {},
+        flags: string[] = [],
     ) => {
         const root = mkdtempSync(join(tmpdir(), 'wish-moved-'));
         try {
@@ -627,6 +632,7 @@ describe('the cli on a moved wish, with an x that answers by ticket', () => {
                 [
                     join(root, 'script', 'wish-cover.ts'),
                     id,
+                    ...flags,
                     join(root, 'draft.md'),
                 ],
                 {
@@ -708,5 +714,103 @@ describe('the cli on a moved wish, with an x that answers by ticket', () => {
         });
         expect(done.status).toBe(3);
         expect(done.stdout).toContain('moved, not re-checked: FRM-616');
+    });
+});
+
+describe('the cli on a ticket whose wish block holds PK-prefixed lines', () => {
+    const here = import.meta.dirname;
+    const wish = (...lines: string[]) => `## wish\n\n${lines.join('\n')}\n`;
+    const run = (body: string, draft: string, flags: string[] = []) => {
+        const root = mkdtempSync(join(tmpdir(), 'wish-pk-'));
+        try {
+            mkdirSync(join(root, 'script'));
+            for (const file of [
+                'wish-cover.ts',
+                'flyway-done.ts',
+                'pocket-check.ts',
+                'prompt-groom.ts',
+                'chat-lines.ts',
+                'session-registry.ts',
+            ])
+                copyFileSync(join(here, file), join(root, 'script', file));
+            mkdirSync(join(root, 'pocket', 'tasks'), { recursive: true });
+            mkdirSync(join(root, 'pocket', 'archive', 'tasks'), {
+                recursive: true,
+            });
+            mkdirSync(join(root, 'bin'));
+            writeFileSync(
+                join(root, 'ticket.json'),
+                JSON.stringify({ data: { tickets: [{ description: body }] } }),
+            );
+            writeFileSync(
+                join(root, 'bin', 'x'),
+                '#!/bin/sh\ncat "$(dirname "$0")/../ticket.json"\n',
+                { mode: 0o755 },
+            );
+            writeFileSync(join(root, 'draft.md'), draft);
+            return spawnSync(
+                process.execPath,
+                [
+                    join(root, 'script', 'wish-cover.ts'),
+                    'FRM-7',
+                    ...flags,
+                    join(root, 'draft.md'),
+                ],
+                {
+                    encoding: 'utf8',
+                    env: {
+                        ...process.env,
+                        PATH: `${join(root, 'bin')}:${process.env.PATH}`,
+                    },
+                    timeout: 10_000,
+                },
+            );
+        } finally {
+            rmSync(root, { force: true, recursive: true });
+        }
+    };
+    const block = wish(
+        '* FRM-7:W1 its own words',
+        '* PK-349:W1263 a folded pocket line',
+    );
+
+    test('--all counts both kinds and exits 0 when the draft cites both', () => {
+        const done = run(
+            block,
+            'FRM-7:W1 its own words\nPK-349:W1263 a folded pocket line',
+            ['--all'],
+        );
+        expect(done.stdout).toContain('every cited W-line');
+        expect(done.status).toBe(0);
+    });
+
+    test('a block of PK-prefixed lines alone is read, not refused with exit 2', () => {
+        const done = run(
+            wish('* PK-349:W1263 a folded pocket line'),
+            'PK-349:W1263 a folded pocket line',
+            ['--all'],
+        );
+        expect(done.status).toBe(0);
+    });
+
+    test('--all names the uncited PK line by its own prefix, exit 1', () => {
+        const done = run(block, 'FRM-7:W1 its own words', ['--all']);
+        expect(done.status).toBe(1);
+        expect(done.stdout).toContain('PK-349:W1263 uncited');
+    });
+
+    test('a PK line cited with other words is reworded, exit 1', () => {
+        const done = run(block, 'FRM-7:W1 its own words\nPK-349:W1263 changed');
+        expect(done.status).toBe(1);
+        expect(done.stdout).toContain('PK-349:W1263 text missing');
+    });
+
+    test("a line of another ticket quoted in the block is still not this block's", () => {
+        const done = run(
+            wish('* FRM-7:W1 its own words', '* FRM-9:W5 someone else'),
+            'FRM-7:W1 its own words',
+            ['--all'],
+        );
+        expect(done.status).toBe(0);
     });
 });
