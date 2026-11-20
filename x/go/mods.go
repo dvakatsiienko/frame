@@ -520,6 +520,9 @@ type modReport struct {
 	Passed   int      `json:"passed"`
 	// a peer's work the overlay left at HEAD, «<path>, not yours»
 	Skipped []string `json:"skipped,omitempty"`
+	// the test files a range's earlier commit ran (the ones its own diff touches), and a commit touching none (nothing ran)
+	Only    []string `json:"only,omitempty"`
+	NoTests bool     `json:"noTests,omitempty"`
 	log     string
 }
 
@@ -565,7 +568,7 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 				return nil, err
 			}
 		}
-		report, err := testModOverlay(mod, overlay)
+		report, err := testModOverlay(mod, overlay, only == "")
 		if err != nil {
 			return nil, err
 		}
@@ -575,8 +578,9 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 	return reports, nil
 }
 
-// the validator, the overlay's tsc and the tests on one mod's overlay: the verdict of the bytes it holds
-func testModOverlay(mod, overlay string) (modReport, error) {
+// the validator, the overlay's tsc and the tests on one mod's overlay: the verdict of the bytes it holds. a whole suite (every test
+// file the overlay holds) takes the queue's long turn; a run narrowed to some files does not
+func testModOverlay(mod, overlay string, whole bool) (modReport, error) {
 	report := modReport{Mod: mod, Validate: "ok"}
 	// the validator reads the hooks module as the engine will: a parse error is red before any test runs (PK-64)
 	if got, _ := run("", nil, "", "claude", "plugin", "validate", overlay); !got.ok {
@@ -589,7 +593,10 @@ func testModOverlay(mod, overlay string) (modReport, error) {
 		report.log = typed.log
 		return report, nil
 	}
-	got, _ := run("", nil, "", "claude", "plugin", "test", overlay)
+	got, _ := runSuite(overlay, whole)
+	if strings.Contains(got.log, "gate-queue: waited ") {
+		return report, &Fail{Msg: "the long turn was not free in time, so no test ran for " + mod + ": " + firstNonBlank(got.log), Next: "x mods edit test"}
+	}
 	log := got.log
 	report.Passed, report.Failed, report.Errored = testOutcome(log)
 	if !got.ok && timeoutOnly(log) && testTally.MatchString(log) {
@@ -775,6 +782,10 @@ func reportLine(reports []modReport) string {
 		case len(m.Failed)+len(m.Errored) > 0:
 			parts = append(parts, fmt.Sprintf("%s: %d failed (%s), %d errored (%s)", m.Mod, len(m.Failed), strings.Join(m.Failed, "; "),
 				len(m.Errored), strings.Join(m.Errored, "; ")))
+		case m.NoTests:
+			parts = append(parts, m.Mod+": skipped, no test file touched")
+		case len(m.Only) > 0:
+			parts = append(parts, fmt.Sprintf("%s: %d pass (only %s)", m.Mod, m.Passed, strings.Join(m.Only, ", ")))
 		default:
 			parts = append(parts, fmt.Sprintf("%s: %d pass", m.Mod, m.Passed))
 		}

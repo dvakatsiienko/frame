@@ -22,6 +22,7 @@ func modsFixture(t *testing.T) (dir string, env []string) {
 	write(t, filepath.Join(bin, "claude"), `#!/bin/sh
 d="$3"
 [ -n "$CLAUDE_CALLS" ] && echo "$2" >> "$CLAUDE_CALLS"
+[ "$2" = test ] && [ -n "$CLAUDE_CALLS" ] && ls "$d"/tests/*.test.ts 2>/dev/null | wc -l | tr -d ' ' >> "$CLAUDE_CALLS.files"
 [ "$2" = test ] && [ -n "$CLAUDE_MID_TEST" ] && sh -c "$CLAUDE_MID_TEST"
 [ "$2" = test ] && [ -n "$CLAUDE_SAW" ] && cat "$d"/hooks/* >> "$CLAUDE_SAW"
 if [ "$2" = validate ]; then

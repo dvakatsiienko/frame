@@ -1683,7 +1683,7 @@
                     "value": "test file"
                 },
                 "range": {
-                    "description": "run the whole suite at each commit of base..head that touches a mod, on that commit's own bytes, one line per commit (sha, pass or fail count); no scratch, no gates, no stamp",
+                    "description": "run the whole suite at the head of base..head and, at each earlier commit that touches a mod, only the test files its own diff touches, on that commit's own bytes, one line per commit (sha, pass or fail count); no scratch, no gates, no stamp",
                     "type": "string",
                     "value": "base..head"
                 }

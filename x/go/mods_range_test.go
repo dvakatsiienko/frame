@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -128,4 +131,128 @@ func TestModsEditTestRangeRunsAMergeCommit(t *testing.T) {
 	if got.code != 0 || !strings.Contains(got.stdout, `"sha":"`+merge+`"`) {
 		t.Fatalf("exit %d, want the merge %s among the commits run\n%s", got.code, merge, got.stdout)
 	}
+}
+
+const modHook = modsDir + "m/hooks/register.ts"
+
+// the files each `claude plugin test` launch of the fake saw, one count a launch, in order
+func launchedFiles(t *testing.T, calls string) string {
+	t.Helper()
+	return strings.Join(strings.Fields(readFile(t, calls+".files")), ",")
+}
+
+// the load fix (FRM-662, dima's o37): the whole suite runs at the head of the range only; each earlier commit runs just the test files
+// its own diff touches, and one that touches none is skipped and said
+func TestModsEditTestRangeRunsTheWholeSuiteAtTheHeadOnly(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	calls := filepath.Join(t.TempDir(), "calls")
+	env = append(env, "CLAUDE_CALLS="+calls)
+	base := strings.TrimSpace(gitT(t, dir, "rev-parse", "HEAD"))
+	skipped := commitFile(t, dir, modHook, "export const register = () => 1;\n")
+	middle := commitFile(t, dir, modTestA, "green, edited\n")
+	head := commitFile(t, dir, modTestB, "green, edited too\n")
+
+	out, errs, code := xStderr(t, dir, env, "mods", "edit", "test", "--range", base+"..HEAD", "--json")
+
+	if files := launchedFiles(t, calls); code != 0 || files != "1,2" {
+		t.Errorf("exit %d, test launches saw %q files, want 1,2: the middle commit's one file, then the whole suite at the head\n%s\n%s", code, files, out, errs)
+	}
+	for _, want := range []string{skipped + ": m: skipped, no test file touched", middle + ": m: 1 pass (only tests/a.test.ts)", head + ": m: 2 pass"} {
+		if !strings.Contains(errs, want) {
+			t.Errorf("want %q in\n%s", want, errs)
+		}
+	}
+}
+
+// a hooks file names its test: hooks/<name>.ts runs tests/<name>.test.ts, wherever the test sits under the mod
+func TestModsEditTestRangeRunsTheTestAHooksFileNames(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	calls := filepath.Join(t.TempDir(), "calls")
+	env = append(env, "CLAUDE_CALLS="+calls)
+	base := strings.TrimSpace(gitT(t, dir, "rev-parse", "HEAD"))
+	commitFile(t, dir, modsDir+"m/hooks/a.ts", "export const a = 1;\n")
+	commitFile(t, dir, modsDir+"m/hooks/rules/b.tsx", "export const b = 1;\n")
+	commitFile(t, dir, "readme.txt", "head touches no mod\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "test", "--range", base+"..HEAD")
+
+	if files := launchedFiles(t, calls); got.code != 0 || files != "1,1,2" {
+		t.Errorf("exit %d, launches saw %q files, want 1,1,2: a.ts runs a.test.ts, rules/b.tsx runs b.test.ts, the whole suite at the head\n%s", got.code, files, got.stdout)
+	}
+}
+
+// a red file at an earlier commit still names that commit
+func TestModsEditTestRangeNamesARedEarlierCommitFromItsFiles(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	base := strings.TrimSpace(gitT(t, dir, "rev-parse", "HEAD"))
+	red := commitFile(t, dir, modTestA, "RED\n")
+	commitFile(t, dir, modTestA, "green again\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "test", "--range", base+"..HEAD")
+
+	if got.code != 1 || !strings.Contains(got.stdout, red+": m: 1 failed") {
+		t.Errorf("exit %d, want the red earlier commit %s named\n%s", got.code, red, got.stdout)
+	}
+}
+
+// every whole suite takes the machine-wide long turn, a file-only run never does, and a wait says who holds it: the queue here is a
+// fake that logs its argv and prints the line the real one prints
+func TestModsEditTestTakesTheLongTurnForAWholeSuiteOnly(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name  string
+		args  func(base string) []string
+		turns int
+	}{
+		{"a range: the head only", func(base string) []string { return []string{"--range", base + "..HEAD"} }, 1},
+		{"the overlay run", func(string) []string { return nil }, 1},
+		{"one test file", func(string) []string { return []string{"--only", modTestA} }, 0},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir, env := modsFixture(t)
+			base := strings.TrimSpace(gitT(t, dir, "rev-parse", "HEAD"))
+			commitFile(t, dir, modTestA, "green, edited\n")
+			commitFile(t, dir, modTestB, "green, edited too\n")
+			turns := filepath.Join(t.TempDir(), "turns")
+			write(t, filepath.Join(dir, "script/gate-queue.sh"), "#!/bin/sh\necho \"$*\" >> "+turns+"\necho 'gate-queue: waiting 30s, holder: x lane commit other.txt' >&2\n[ \"$1\" = --long ] && shift\nexec \"$@\"\n")
+			env = append(env, "X_FRAME_ROOT="+dir, "X_STATE="+t.TempDir())
+			if len(c.args(base)) == 0 {
+				write(t, pullCopy(t, dir, env, modTestA), "green, pulled\n")
+			}
+			if c.args(base) != nil && c.args(base)[0] == "--only" {
+				write(t, pullCopy(t, dir, env, modTestA), "green, pulled\n")
+			}
+
+			out, errs, code := xStderr(t, dir, env, append([]string{"mods", "edit", "test"}, c.args(base)...)...)
+
+			queued := strings.Count(readFile0(turns), "--long claude plugin test")
+			if code != 0 || queued != c.turns {
+				t.Errorf("exit %d, %d whole suites took the long turn, want %d:\n%s\n%s", code, queued, c.turns, out, errs)
+			}
+			if c.turns > 0 && !strings.Contains(errs, "gate-queue: waiting 30s, holder: x lane commit other.txt") {
+				t.Errorf("the wait line, who holds the turn, did not reach stderr (turns log %q):\n%s", readFile0(turns), errs)
+			}
+		})
+	}
+}
+
+func readFile0(path string) string {
+	body, _ := os.ReadFile(path)
+	return string(body)
+}
+
+// x with stderr kept apart: stdout, stderr and the exit code
+func xStderr(t *testing.T, dir string, env []string, args ...string) (string, string, int) {
+	t.Helper()
+	c := exec.Command(xbin, args...)
+	c.Dir = dir
+	c.Env = append(append(cleanEnv(), "X_TEST=1"), env...)
+	var stdout, stderr bytes.Buffer
+	c.Stdout, c.Stderr = &stdout, &stderr
+	code := exitOf(c.Run())
+	return stdout.String(), stderr.String(), code
 }
