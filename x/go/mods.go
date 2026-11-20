@@ -152,6 +152,9 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	if picked > 1 {
 		return nil, usageFail("--only, --against and --range each pick what runs; name one", "x mods edit test --only <test file>")
 	}
+	if strings.HasPrefix(against, "-") {
+		return nil, usageFail("--against reads a ref, never an option; got "+against, "x mods edit test --against <ref>")
+	}
 	if span != "" {
 		r.Open("range " + span)
 		r.skip("gates")

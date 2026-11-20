@@ -16,8 +16,8 @@ type rangeRow struct {
 // move batch. it reads no scratch, writes no stamp and runs no gate; a red commit does not stop the walk, so one run names every one
 func testRange(r *Run, repo, spec string) (any, error) {
 	base, head, ok := strings.Cut(spec, "..")
-	if !ok || base == "" || head == "" || strings.HasPrefix(head, ".") {
-		return nil, usageFail("--range reads <base>..<head>, two ends and two dots; got "+spec, "x mods edit test --range <base>..<head>")
+	if !ok || base == "" || head == "" || strings.HasPrefix(base, "-") || strings.HasPrefix(head, "-") || strings.HasPrefix(head, ".") {
+		return nil, usageFail("--range reads <base>..<head>, two ends and two dots, never an option; got "+spec, "x mods edit test --range <base>..<head>")
 	}
 	listed, _ := run(repo, nil, "", "git", "rev-list", "--reverse", spec)
 	if !listed.ok {

@@ -72,6 +72,8 @@ func TestModsEditTestRangeRefusesWhatItCannotRun(t *testing.T) {
 		{"a range of no commit", []string{"--range", "HEAD..HEAD"}, 1},
 		{"a range with no two ends", []string{"--range", "HEAD"}, 2},
 		{"a three-dot range", []string{"--range", "HEAD~1...HEAD"}, 2},
+		{"a base that reads as an option", []string{"--range=--all..HEAD"}, 2},
+		{"a head that reads as an option", []string{"--range=HEAD..--all"}, 2},
 		{"beside --only", []string{"--range", "HEAD~1..HEAD", "--only", modTestA}, 2},
 		{"beside --against", []string{"--range", "HEAD~1..HEAD", "--against", "HEAD"}, 2},
 	} {

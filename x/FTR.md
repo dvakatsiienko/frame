@@ -752,7 +752,7 @@
   - given an untracked `*.test.ts` in the mod that this session never pulled or landed, then the overlay never reads it and its red waits for its own commit; a file this session landed and has not committed yet, the engine's ignored types and a file `--only` names stay
 - ⬜ `x mods edit test --range <base>..<head>` runs the suite at each commit of a range (FRM-662)
   - given a range, then each commit that touches a mod (a merge by its first-parent diff) runs validate, tsc and the tests on its own tracked bytes (never the working tree; the checkout's engine types, node_modules and tsconfig.json ride along, git holds none), one line per commit: its short sha and the pass or fail count
-  - given a red commit, then the walk goes on and the failure names every red commit; a range that runs no commit is refused, and `--range` beside `--only` or `--against` is a usage exit
+  - given a red commit, then the walk goes on and the failure names every red commit; a range that runs no commit is refused, `--range` beside `--only` or `--against` is a usage exit, and a `--range` end or an `--against` ref starting with `-` is a usage exit before git sees it
 - ⬜ `x lane commit --dry` runs a commit's gates and commits nothing (FRM-473)
   - given `--dry <msg-file> <paths…>`, then the named paths format as a real commit does, and each pre-commit and commit-msg gate reads a temp index of HEAD plus those paths; every verdict prints, a red exits 1 naming it; HEAD, the index and a peer's staged file stay
   - given a real commit of the same bytes within the hour, then the gates that read only the index copy run no second time, through `LEFTHOOK_EXCLUDE`; its message gates still run

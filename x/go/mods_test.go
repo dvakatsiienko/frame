@@ -822,6 +822,19 @@ func TestModsEditTestAgainstHeadNamesFailedApartFromErrored(t *testing.T) {
 	}
 }
 
+// an --against value that reads as a git option is refused before git sees it, with an edited test that would otherwise reach it
+func TestModsEditTestAgainstRefusesARefThatReadsAsAnOption(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "test", "--against=--exec=x")
+
+	if got.code != 2 {
+		t.Fatalf("exit %d, want 2: an option is no ref\n%s", got.code, got.stdout)
+	}
+}
+
 func TestModsEditPullRefusesAPathOutsideAMod(t *testing.T) {
 	t.Parallel()
 	dir, env := modsFixture(t)
