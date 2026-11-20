@@ -408,7 +408,19 @@ func threadToRename(threads []thread, key string) (int, error) {
 // a rename on dima's word, by session id or display: the record's title, behind summon's caller gate, then the herdr tab
 // and the live thread's own /rename; a later refresh keeps the title, since the record carries it. every place is said,
 // and any place that did not take the name fails the verb with its exact command
-func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
+func threadRenameRun(r *Run, args []string, flags Flags) (any, error) {
+	if role := flagString(flags, "role"); role != "" {
+		if len(args) > 1 {
+			return nil, usageFail("--role moves the main seat and takes no new name", "x thread rename <thread> --role main|wing:<n>")
+		}
+		if err := coordinatorOnly("x thread rename --role"); err != nil {
+			return nil, err
+		}
+		return threadRoleSwitch(r, args[0], role)
+	}
+	if len(args) < 2 {
+		return nil, usageFail("a rename takes the new name, or --role", "x thread rename <sid or display> '<name>'")
+	}
 	key, title := args[0], strings.TrimSpace(args[1])
 	if title == "" {
 		return nil, usageFail("an empty name draws nothing", "x thread rename <sid or display> '<name>'")

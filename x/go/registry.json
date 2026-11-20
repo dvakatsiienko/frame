@@ -1271,15 +1271,24 @@
                     "name": "id"
                 },
                 {
-                    "description": "the name it draws from now on, quoted",
+                    "description": "the name it draws from now on, quoted; none with --role",
+                    "isOptional": true,
                     "name": "name"
                 }
             ],
+            "flags": {
+                "role": {
+                    "description": "move the main seat instead of naming: main makes this wing the main and the old main takes its wing number; wing:<n> hands the seat to wing n",
+                    "type": "string",
+                    "value": "main|wing:<n>"
+                }
+            },
             "name": "thread rename",
             "needsApply": false,
-            "purpose": "rename a recorded thread on dima's word, by session id or display: its record, herdr tab and cc name take the name",
+            "purpose": "rename a recorded thread on dima's word, or with --role move the main seat to it; by id, display or main, wing1",
             "touches": [
-                "~/.claude/shelf/threads.json — the record's title, written ($X_THREADS in tests)",
+                "~/.claude/shelf/threads.json — the record's title or role, written ($X_THREADS in tests)",
+                "~/.local/state/clio/main-session — the main seat's pid and session, written by --role ($X_MAIN_SESSION in tests)",
                 "herdr-app — the thread's tab, renamed (a terminal with none gets one by terminal.keep)",
                 "hc — the thread's herdr terminal, sent /rename when idle"
             ]
