@@ -1,20 +1,11 @@
 /* @jsx h */
 import type { Register } from 'claude-code';
 
-import type { QuietLogLine } from '../types/stash.d.ts';
 import { renderBand } from './band.tsx';
 import { drawBoard } from './board.tsx';
 import { openBoot } from './boot.ts';
 import { flushFields, leaveBoxes, returnToBoxes } from './fields.ts';
-import {
-    WIND_DELAY_MS,
-    armRelease,
-    holdAfterQuiet,
-    holdSteer,
-    isQuietHome,
-    quietLocked,
-    steersOnCompact,
-} from './held.ts';
+import { WIND_DELAY_MS, armRelease, steersOnCompact } from './held.ts';
 import { joinsLocked, settleJoins } from './joins.ts';
 import {
     armHot,
@@ -31,32 +22,23 @@ import {
     inMarking,
     saveOrbit,
 } from './orbit-store.ts';
-import { LANE_OWNER } from './orbit-tool.ts';
 import { composePrompt } from './prompt-notes.ts';
-import { peerPing, quietHeldText } from './quiet.ts';
-import { quietLog } from './quiet-books.ts';
-import { quietKindsOff, quietOf, quietWhy, saveQuiet } from './quiet-gate.ts';
 import {
-    fixDrawnReply,
-    fixStoredReply,
-    settleReply,
-    settleTask,
-} from './reply-fix.ts';
-import { memberOf, openBoard, registry } from './roster.ts';
+    quietCommand,
+    quietDeliveryTest,
+    receiveMessage,
+} from './quiet-gate.ts';
+import { fixDrawnReply, fixStoredReply, settleReply } from './reply-fix.ts';
+import { openBoard } from './roster.ts';
 import { endSession, forget } from './session-end.ts';
 import { currentId, refreshThreads } from './session-identity.ts';
 import { keepShelf, noteModel } from './session-record.ts';
 import { startSession } from './session-start.ts';
 import { drawSettingsPane } from './settings-pane.tsx';
-import {
-    QUIET_ON,
-    flipKnob,
-    readSwitch,
-    setSettingsOpen,
-} from './settings-store.ts';
+import { flipKnob, setSettingsOpen } from './settings-store.ts';
 import { onToolCall } from './step-notes.ts';
 import { HOT, hotOf } from './store-keys.ts';
-import { endBusy, endStop, isTurnBusy, markActive, turn } from './turn.ts';
+import { endBusy, endStop, markActive, turn } from './turn.ts';
 import { forgetTold } from './turn-notes.ts';
 import { drawFill, drawFillAfterCompact, measureUsage } from './usage.ts';
 import { errorText } from './util.ts';
@@ -215,148 +197,15 @@ export const register: Register = (on) => {
         return yield* next(e);
     });
 
-    // `/board colour` flips the colour MVP for every session's board, and opens it to look
-    // quiet comms: in clio's thread a message that does not push is held; every delivery is logged
-    on('session.receive', async ($, e, next) => {
-        await markActive($).catch(() => undefined);
-        const kind = e.origin.kind;
-        if (kind === 'task-notification' && !e.agentId) {
-            await settleTask($, e.text, viewDoors($)).catch(() => undefined);
-            return next(e);
-        }
-        if ((kind !== 'peer' && kind !== 'peer-send-message') || e.agentId)
-            return next(e);
-        const steer = await holdSteer($, e.text, viewDoors($)).catch((err) => {
-            $.ui.log(`x-mod-stash: a steer passed unheld: ${errorText(err)}`);
-            return undefined;
-        });
-        if (steer && 'consumed' in steer) return steer;
-        if (steer) return next({ ...e, text: steer.text });
-        if (!(await isQuietHome($).catch(() => false))) return next(e);
-        const { body, deliveryTest, from, tag } = peerPing(e.text);
-        const marks = deliveryTest ? { deliveryTest } : {};
-        let arm: QuietLogLine['arm'] = 'on';
-        // fail open: a throw anywhere below passes the delivery unjudged and logs it, so a broken hold never loses a ping
-        try {
-            const verdict = await quietLocked(async () => {
-                const now = await $.clock.now();
-                const isOn = await readSwitch($, 'quiet');
-                arm = isOn ? 'on' : 'off';
-                const isMobile = (await $.state.get(MOBILE)).value === true;
-                const isBusyNow = await isTurnBusy($);
-                const sid = memberOf(await registry($), from)?.base.sid;
-                const why = await quietWhy($, from, body);
-                const line = {
-                    arm,
-                    at: now,
-                    from,
-                    tag,
-                    ...(sid ? { sid } : {}),
-                    ...marks,
-                } as const;
-                if (isOn && !isMobile && !why) {
-                    const q = await quietOf($);
-                    // consumed only once both the held list and its log line landed: a ping no store holds is a lost one
-                    const isSaved = await saveQuiet($, {
-                        ...q,
-                        held: [
-                            ...q.held,
-                            {
-                                at: now,
-                                from,
-                                tag,
-                                text: quietHeldText(body),
-                                ...marks,
-                            },
-                        ],
-                    });
-                    if (!isSaved) throw new Error('the held list did not save');
-                    const isLogged = await quietLog($, {
-                        ...line,
-                        startedTurn: false,
-                        verdict: 'held',
-                    });
-                    if (!isLogged) {
-                        await saveQuiet($, q);
-                        throw new Error('the held line did not log');
-                    }
-                    return {
-                        consumed: `quiet comms held ${from}'s message`,
-                    };
-                }
-                await quietLog($, {
-                    ...line,
-                    startedTurn: !isBusyNow,
-                    verdict: 'passed',
-                    ...(why ? { why } : {}),
-                });
-                return undefined;
-            });
-            if (verdict) return verdict;
-        } catch (err) {
-            const at = await $.clock.now().catch(() => Date.now());
-            await quietLocked(() =>
-                quietLog($, {
-                    arm,
-                    at,
-                    from,
-                    startedTurn: false,
-                    tag,
-                    verdict: 'failed-open',
-                    ...marks,
-                }),
-            );
-            $.ui.log(
-                `x-mod-stash: quiet comms failed open on ${from}'s ping: ${errorText(err)}`,
-            );
-        }
-        const compact = await holdAfterQuiet($, e.text, viewDoors($)).catch(
-            (err) => {
-                $.ui.log(
-                    `x-mod-stash: a steer passed unheld: ${errorText(err)}`,
-                );
-                return undefined;
-            },
-        );
-        return compact ?? next(e);
-    });
+    on('session.receive', ($, e, next) =>
+        receiveMessage($, e, next, viewDoors($)),
+    );
 
-    // the delivery test: a model-free test [progress] ping to clio through the real peer path; its run reads the log by nonce
-    on('command.run', { command: 'quiet-delivery-test' }, async ($, e) => {
-        const nonce = e.args.trim() || `c${(await $.clock.now()).toString(36)}`;
-        const r = await $.session
-            .send({
-                text: `[progress] quiet delivery test ${nonce}: a test ping from /quiet-delivery-test, nothing to do`,
-                to: LANE_OWNER,
-            })
-            .catch((err) => ({
-                isDelivered: false as const,
-                reason: errorText(err),
-            }));
-        return {
-            text: r.isDelivered
-                ? `quiet delivery test ${nonce}: sent`
-                : `quiet delivery test ${nonce}: FAIL, ${r.reason}`,
-        };
-    });
+    on('command.run', { command: 'quiet-delivery-test' }, ($, e) =>
+        quietDeliveryTest($, e.args),
+    );
 
-    on('command.run', { command: 'quiet' }, async ($, e) => {
-        const arg = e.args.trim();
-        if (arg === 'on' || arg === 'off') {
-            await $.store.set(QUIET_ON, arg === 'on');
-            $.ui.invalidate('ui.render');
-            return {
-                text: `quiet comms ${arg}: ${arg === 'on' ? "members' messages wait for your next turn unless they push" : 'every member ping passes'}`,
-            };
-        }
-        const isOn = await readSwitch($, 'quiet');
-        const kindsOff = isOn
-            ? (await quietKindsOff($)).map((k) => `[${k}]`)
-            : [];
-        return {
-            text: `quiet comms ${isOn ? 'on' : 'off'}, ${(await quietOf($)).held.length} held${kindsOff.length ? `; ${kindsOff.join(', ')} switched off, held like an untagged line` : ''}; /quiet on | off${arg ? ` («${arg}» is neither)` : ''}`,
-        };
-    });
+    on('command.run', { command: 'quiet' }, ($, e) => quietCommand($, e.args));
 
     on('command.run', { command: 'board' }, async ($, e) => {
         if (e.args.trim() === 'breathe') {

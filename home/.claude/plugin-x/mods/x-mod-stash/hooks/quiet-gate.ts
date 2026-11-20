@@ -1,7 +1,7 @@
 // 🤫 quiet comms' gate (FRM-662): both sides of a ping to clio — the sender's SendMessage start and end, the hold in
 // clio's thread until her next prompt or idle, its release, the asked and answered marks; held messages go through held.ts
 
-import type { EngineInterface } from 'claude-code';
+import type { Args, EngineInterface, Next } from 'claude-code';
 
 import type { QuietLogLine, QuietPing, StashQuiet } from '../types/stash.d.ts';
 import {
@@ -11,6 +11,8 @@ import {
     heldKeys,
     heldStore,
     heldStuckMs,
+    holdAfterQuiet,
+    holdSteer,
     isCompactingNow,
     isQuietHome,
     quietHeldOf,
@@ -19,6 +21,7 @@ import {
     saveHeld,
 } from './held.ts';
 import type { ViewDoors } from './keep-warm.ts';
+import { LANE_OWNER } from './orbit-tool.ts';
 import {
     QUIET_HELD_LINE,
     QUIET_NOTICE,
@@ -48,10 +51,12 @@ import {
     quietAlarm,
     quietFlushed,
     quietLedger,
+    quietLog,
     quietLogAll,
     quietLogKey,
     quietSilentMembers,
 } from './quiet-books.ts';
+import { settleTask } from './reply-fix.ts';
 import { memberOf, registry } from './roster.ts';
 import {
     MAIN_ROLE,
@@ -62,15 +67,17 @@ import {
 } from './session-identity.ts';
 import {
     QUIET_KINDS,
+    QUIET_ON,
     partsShown,
     readNumber,
     readSwitch,
 } from './settings-store.ts';
-import { isTurnBusy } from './turn.ts';
+import { isTurnBusy, markActive } from './turn.ts';
 import { bare, errorText, memberKey, text } from './util.ts';
 
 // mobile mode: mods draw nothing on the phone, so the session prints the open asks as the asks fence instead
 const MOBILE = { key: 'mobile', plugin: 'x-mod-stash' } as const;
+
 // the running turn, so a mid-turn reload still knows it is busy
 const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
 
@@ -544,4 +551,145 @@ export async function quietBooks($: EngineInterface, view: ViewDoors) {
             `stuck:${oldest.at}`,
             `${held.length} held ping${held.length === 1 ? '' : 's'} stuck ${Math.round((now - oldest.at) / 60_000)} min, oldest from ${oldest.from}`,
         );
+}
+
+// a message from outside the turn: a task's notice settles its wait, a steer is held, and in clio's thread quiet
+// comms holds a ping that does not push; every delivery is logged, and a broken hold fails open
+export async function receiveMessage(
+    $: EngineInterface,
+    e: Args<'session.receive'>,
+    next: Next<'session.receive'>,
+    view: ViewDoors,
+) {
+    await markActive($).catch(() => undefined);
+    const kind = e.origin.kind;
+    if (kind === 'task-notification' && !e.agentId) {
+        await settleTask($, e.text, view).catch(() => undefined);
+        return next(e);
+    }
+    if ((kind !== 'peer' && kind !== 'peer-send-message') || e.agentId)
+        return next(e);
+    const steer = await holdSteer($, e.text, view).catch((err) => {
+        $.ui.log(`x-mod-stash: a steer passed unheld: ${errorText(err)}`);
+        return undefined;
+    });
+    if (steer && 'consumed' in steer) return steer;
+    if (steer) return next({ ...e, text: steer.text });
+    if (!(await isQuietHome($).catch(() => false))) return next(e);
+    const { body, deliveryTest, from, tag } = peerPing(e.text);
+    const marks = deliveryTest ? { deliveryTest } : {};
+    let arm: QuietLogLine['arm'] = 'on';
+    // fail open: a throw anywhere below passes the delivery unjudged and logs it, so a broken hold never loses a ping
+    try {
+        const verdict = await quietLocked(async () => {
+            const now = await $.clock.now();
+            const isOn = await readSwitch($, 'quiet');
+            arm = isOn ? 'on' : 'off';
+            const isMobile = (await $.state.get(MOBILE)).value === true;
+            const isBusyNow = await isTurnBusy($);
+            const sid = memberOf(await registry($), from)?.base.sid;
+            const why = await quietWhy($, from, body);
+            const line = {
+                arm,
+                at: now,
+                from,
+                tag,
+                ...(sid ? { sid } : {}),
+                ...marks,
+            } as const;
+            if (isOn && !isMobile && !why) {
+                const q = await quietOf($);
+                // consumed only once both the held list and its log line landed: a ping no store holds is a lost one
+                const isSaved = await saveQuiet($, {
+                    ...q,
+                    held: [
+                        ...q.held,
+                        {
+                            at: now,
+                            from,
+                            tag,
+                            text: quietHeldText(body),
+                            ...marks,
+                        },
+                    ],
+                });
+                if (!isSaved) throw new Error('the held list did not save');
+                const isLogged = await quietLog($, {
+                    ...line,
+                    startedTurn: false,
+                    verdict: 'held',
+                });
+                if (!isLogged) {
+                    await saveQuiet($, q);
+                    throw new Error('the held line did not log');
+                }
+                return {
+                    consumed: `quiet comms held ${from}'s message`,
+                };
+            }
+            await quietLog($, {
+                ...line,
+                startedTurn: !isBusyNow,
+                verdict: 'passed',
+                ...(why ? { why } : {}),
+            });
+            return undefined;
+        });
+        if (verdict) return verdict;
+    } catch (err) {
+        const at = await $.clock.now().catch(() => Date.now());
+        await quietLocked(() =>
+            quietLog($, {
+                arm,
+                at,
+                from,
+                startedTurn: false,
+                tag,
+                verdict: 'failed-open',
+                ...marks,
+            }),
+        );
+        $.ui.log(
+            `x-mod-stash: quiet comms failed open on ${from}'s ping: ${errorText(err)}`,
+        );
+    }
+    const compact = await holdAfterQuiet($, e.text, view).catch((err) => {
+        $.ui.log(`x-mod-stash: a steer passed unheld: ${errorText(err)}`);
+        return undefined;
+    });
+    return compact ?? next(e);
+}
+// the delivery test: a model-free test [progress] ping to clio through the real peer path; its run reads the log by nonce
+export async function quietDeliveryTest($: EngineInterface, args: string) {
+    const nonce = args.trim() || `c${(await $.clock.now()).toString(36)}`;
+    const r = await $.session
+        .send({
+            text: `[progress] quiet delivery test ${nonce}: a test ping from /quiet-delivery-test, nothing to do`,
+            to: LANE_OWNER,
+        })
+        .catch((err) => ({
+            isDelivered: false as const,
+            reason: errorText(err),
+        }));
+    return {
+        text: r.isDelivered
+            ? `quiet delivery test ${nonce}: sent`
+            : `quiet delivery test ${nonce}: FAIL, ${r.reason}`,
+    };
+}
+// `/quiet on | off`, bare shows the state
+export async function quietCommand($: EngineInterface, args: string) {
+    const arg = args.trim();
+    if (arg === 'on' || arg === 'off') {
+        await $.store.set(QUIET_ON, arg === 'on');
+        $.ui.invalidate('ui.render');
+        return {
+            text: `quiet comms ${arg}: ${arg === 'on' ? "members' messages wait for your next turn unless they push" : 'every member ping passes'}`,
+        };
+    }
+    const isOn = await readSwitch($, 'quiet');
+    const kindsOff = isOn ? (await quietKindsOff($)).map((k) => `[${k}]`) : [];
+    return {
+        text: `quiet comms ${isOn ? 'on' : 'off'}, ${(await quietOf($)).held.length} held${kindsOff.length ? `; ${kindsOff.join(', ')} switched off, held like an untagged line` : ''}; /quiet on | off${arg ? ` («${arg}» is neither)` : ''}`,
+    };
 }
