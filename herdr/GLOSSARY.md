@@ -26,14 +26,14 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **x-herdr-chat-header** — the whole top row of a thread, in the Chat view and the Terminal view alike: the thread's name and folder, + Files Changes, search, the chat look's ⚙ and the Chat | Terminal switch; one mod placed twice by the layout
 - **x-herdr-terminal-header** — the head row of the tray (the bottom quick terminal), part of x-herdr-terminal
 - **x-herdr-status** — the status bar along the bottom of the middle column, under the tray: branch, folder, the open-in commands (VS Code), the command palette
-- **sidebar** — the window's left column: today the agents list over the spaces; settled to hold antenna on top and glide at its bottom
+- **sidebar** — the window's left column: antenna today; settled to hold glide at its bottom
 - **deck** — the window's right column, drawn by x-herdr-deck: today every thread's row, then orbit, then glide; settled to hold orbit on top and phases at its bottom
-- **antenna** — planned: one list of every thread (clio, wings, crew), each with its lane and state, at the sidebar's top; it replaces the agents list and the deck's thread rows
+- **antenna** — the sidebar's list of every thread, once each, in his order, grouped by space or not, a still dot per row; drawn by `x-herdr-antenna`, its knobs in its ⚙️ popup; it replaced the agents list (FRM-618)
 - **orbit** — the asks threads put to dima, in the deck; one ask is **ticked** or **replayed**
 - **phases** — planned in the deck: each thread's next moves, the lines it keeps with orbit's plan op
 - **glide** — one card per running lane, its steps and «we are here»; drawn in the deck today, settled at the sidebar's bottom, stuck there and growing upward
 - **x-herdr-deck** — our deck mod: the deck column today (thread rows, orbit, glide)
-- **x-herdr-agents** — our agents list in the sidebar, each agent by its session name; antenna replaces it
+- **x-herdr-agents** — our old agents list, out of the layout since antenna took the sidebar; kept in the tree until his word
 - **x-herdr-tabs** — our tab bar above a space's panes, each agent tab by its session name; copied from zoo's `my-tabs` (FRM-567)
 - **draft** — what dima has typed in the quill and not yet sent; kept per thread across a reload
 - **mark** — the quill's words marked to join a thread's turn (🍕), kept with the draft by one owner (`quill.js`) until a turn takes them or he takes the mark off
