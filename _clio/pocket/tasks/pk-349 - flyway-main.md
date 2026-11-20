@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-20T13:06:00Z'
+updated_date: '2026-11-20T13:59:00Z'
 labels:
   - s
   - clio-main
@@ -18,7 +18,7 @@ ordinal: 1000
 <!-- AC:BEGIN -->
 - [ ] #1 f55 pr-watch alarm for a conflicting pr (FRM-572, dima's o78 tick): watch-pr.sh wakes on mergeState DIRTY
 - [ ] #2 f57 stray glide card reborn after each end: its thread record restamps «at» on sync (mods wisp, after FRM-662)
-- [ ] #3 f58 mods lane tomorrow: watch it closely, unwind its bottleneck, FRM-662 off the giant file (FRM-662:W11)
+- [ ] #3 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-27
 - [ ] #4 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
 - [ ] #5 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
 - [ ] #6 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
@@ -1309,4 +1309,6 @@ PK-349:W1311 (2026-11-20 14:31, dima): Try this.
 PK-349:W1312 (2026-11-20 14:35, dima): stray - we still have another measure planned, now testing another thing - sonnet on high vs medium? ❓
 PK-349:W1313 (2026-11-20 14:35, dima): Also — I asked codie to solve
 15:06 homes: W1309–W1311 landed as the gain-lines rule (rules/fleet-output-format.md § shapes, 14:43); W1312 answered: the stray's Sonnet 5.5 high vs medium trial reads 26 Nov, verdict 3 Dec (docs/test-drive/stray-lane.md); W1313 cut off mid-sentence in the raw, its object asked at the next siesta card
+
+done 2026-11-20 15:59: f58 mods lane tomorrow: watch it closely, unwind its bottleneck, FRM-662 off the giant file (FRM-662:W11) (FRM-662 In Progress)
 <!-- SECTION:NOTES:END -->
