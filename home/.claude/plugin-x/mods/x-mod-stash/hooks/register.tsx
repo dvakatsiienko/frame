@@ -271,6 +271,7 @@ import {
 } from './turn-notes.ts';
 import {
     CONTEXT,
+    countWords,
     drawFill,
     drawFillAfterCompact,
     freshMeter,
@@ -532,24 +533,6 @@ async function pruneEnded($: EngineInterface) {
         if (v?.ended !== undefined && now - v.ended >= STALE_MS)
             await $.store.delete(key);
     }
-}
-
-// one `words:<yyyy-mm-dd>:<session>` key a day, the fleet words a reply had bolded for it, so a halt reads the hits;
-// a key past WORDS_DAYS is dropped
-const WORDS = 'words:';
-const WORDS_DAYS = 30;
-async function countWords($: EngineInterface, hits: Record<string, number>) {
-    const at = await $.clock.now();
-    const day = (ms: number) => new Date(ms).toLocaleDateString('sv');
-    const key = `${WORDS}${day(at)}:${await $.session.id()}`;
-    const was = ((await $.store.get(key)) ?? {}) as Record<string, number>;
-    const next = { ...was };
-    for (const [word, n] of Object.entries(hits))
-        next[word] = (next[word] ?? 0) + n;
-    await $.store.set(key, next);
-    const oldest = `${WORDS}${day(at - WORDS_DAYS * 86_400_000)}`;
-    for (const old of await $.store.keys())
-        if (old.startsWith(WORDS) && old < oldest) await $.store.delete(old);
 }
 
 async function pressWind($: EngineInterface, sid: string) {
