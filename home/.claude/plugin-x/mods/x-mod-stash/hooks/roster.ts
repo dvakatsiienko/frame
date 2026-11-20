@@ -4,6 +4,9 @@ import type { StashMember } from '../types/stash.d.ts';
 import { ADVISER_ROLE, MAIN_ROLE } from './session-identity.ts';
 import { STALE_MS, bare, short, text } from './util.ts';
 
+// the fleet board: cc's registry gives each session's state; each session's stash adds its 🔭 wait and context fill
+const BOARD = 'x-cc-deck';
+
 // the fleet roster as cc's registry and x's thread records show it: who runs, who is a probe, who sits where; reads
 // only, owns no file
 
@@ -221,3 +224,9 @@ export const isSeated = (role?: string) => Boolean(role);
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10), read by role, never by name
 export const pinOf = (role?: string) =>
     role === MAIN_ROLE ? 0 : role === ADVISER_ROLE ? 1 : 2;
+
+// undefined when the read fails: a failed read says nothing about the board (FRM-492)
+export async function isOpen($: EngineInterface) {
+    const panes = await $.ui.panes().catch(() => undefined);
+    return panes?.some((p) => p.id === BOARD);
+}
