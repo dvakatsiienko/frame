@@ -23,7 +23,7 @@ export function planPartMove(
     const from = parentOf(tree, part);
     if (!from) return { error: `no part «${part}» in this layout` };
     const into = nodeOf(tree, target);
-    if (!into || !Array.isArray(into.children))
+    if (!into?.children || (into.type !== 'column' && into.type !== 'row'))
         return { error: `no column or row «${target}» in this layout` };
     if (from === into)
         return { error: `«${part}» already sits in «${target}»` };
@@ -37,15 +37,26 @@ export function planPartMove(
     const lines = text.split('\n');
     const cut = cutBlock(lines, part, size);
     if (!cut) return unreadable;
-    if (from.children.length === 1) hide(lines, from.id);
+    if (from.children.length === 1 && from.hidden !== true)
+        hide(lines, from.id);
     if (!paste(lines, target, before, cut)) return unreadable;
 
     const next = lines.join('\n');
     expectMove(tree, from, into, node, move);
-    return isDeepStrictEqual(JSON.parse(next), tree)
-        ? { text: next }
-        : unreadable;
+    return readsAs(next, tree) ? { text: next } : notReadBack;
 }
+
+function readsAs(text: string, tree: Node) {
+    try {
+        return isDeepStrictEqual(JSON.parse(text), tree);
+    } catch {
+        return false;
+    }
+}
+
+const notReadBack = {
+    error: 'the move would not read back as the layout it means, so nothing is written',
+};
 
 const unreadable = {
     error: 'the layout is not in 2-space json form, so a line move would break it',
@@ -162,8 +173,9 @@ function paste(
     } else if (children.close - 1 !== children.open) {
         lines[children.close - 1] += ',';
     }
+    const wasEmpty = children.close - 1 === children.open;
     lines.splice(at, 0, ...block);
-    if (hidden >= 0) lines.splice(hidden, 1);
+    if (wasEmpty && hidden >= 0) lines.splice(hidden, 1);
     return true;
 }
 
@@ -179,11 +191,11 @@ function expectMove(
     if (from.children.length === 0) from.hidden = true;
     if (size) node.size = size;
     const children = into.children as Node[];
+    if (children.length === 0) delete into.hidden;
     const at = before
         ? children.findIndex((c) => c.id === before)
         : children.length;
     children.splice(at, 0, node);
-    if (into.hidden === true) delete into.hidden;
     return tree;
 }
 

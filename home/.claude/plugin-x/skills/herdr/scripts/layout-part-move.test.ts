@@ -89,6 +89,24 @@ describe('planPartMove', () => {
         expect(find(JSON.parse(back), 'sidebar')).not.toHaveProperty('hidden');
     });
 
+    it('a hidden column that already holds parts stays hidden when one joins', () => {
+        const tree = JSON.parse(
+            moved(sidebar, { part: 'glide', target: 'panel' }),
+        );
+        expect(find(tree, 'panel')?.hidden).toBe(true);
+    });
+
+    it('emptying a column already hidden keeps one hidden line, and the part goes back', () => {
+        const out = moved(sidebar, { part: 'panel-body', target: 'deck' });
+        expect(out.match(/"hidden": true/g)?.length).toBe(
+            sidebar.match(/"hidden": true/g)?.length,
+        );
+        expect(
+            'text' in
+                planPartMove(out, { part: 'panel-body', target: 'panel' }),
+        ).toBe(true);
+    });
+
     it('a part the layout does not hold is refused, naming it', () => {
         expect(planPartMove(sidebar, { part: 'nope', target: 'deck' })).toEqual(
             { error: 'no part «nope» in this layout' },
@@ -102,6 +120,9 @@ describe('planPartMove', () => {
         expect(
             planPartMove(sidebar, { part: 'antenna', target: 'glide' }),
         ).toEqual({ error: 'no column or row «glide» in this layout' });
+        expect(
+            planPartMove(sidebar, { part: 'antenna', target: 'views' }),
+        ).toEqual({ error: 'no column or row «views» in this layout' });
     });
 
     it('a --before that is not a child of the target is refused', () => {
@@ -121,6 +142,18 @@ describe('planPartMove', () => {
         expect(
             planPartMove(sidebar, { part: 'body', target: 'sidebar' }),
         ).toEqual({ error: '«sidebar» sits inside «body»' });
+    });
+
+    it('a valid file the line move cannot follow is refused as that, never as broken json', () => {
+        const oneLine = sidebar.replace(
+            '"children": [\n            {\n              "id": "orbit"',
+            '"children": [],\n          "kids": [\n            {\n              "id": "orbit"',
+        );
+        expect(
+            planPartMove(oneLine, { part: 'glide', target: 'deck' }),
+        ).toEqual({
+            error: 'the move would not read back as the layout it means, so nothing is written',
+        });
     });
 
     it('the root never moves', () => {
