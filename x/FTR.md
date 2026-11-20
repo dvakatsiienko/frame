@@ -744,6 +744,14 @@
   - given a green `test`, when push runs on the same bytes, then its test step reads «passed these bytes»; an edit or a repo change since, or a save during the test, runs the test again
 - ⬜ `x mods edit test` and `push` run a timeout-only red once more (FRM-470)
   - given an overlay whose every failed row timed out, then only the files holding those rows run once more, and that second run is their verdict; a run that died with no tally runs no second time (proof: mods_test.go::TestModsEditTestRunsOnlyTheTimedOutFileAgain; ::TestModsEditTestRunsNoSecondTimeWhenTheRunDiedPartway)
+- ⬜ `x mods edit test` and `push` run the overlay's tsc before any test (FRM-662)
+  - given a mod the engine wrote types for, when a copy holds a type error or a dropped import, then the verb is red as `typecheck: <first tsc line>` and `claude plugin test` never starts; nothing is written
+  - given a mod with no engine types, then the step is skipped, as `pnpm mods:typecheck` skips it
+- ⬜ `x mods edit test` and `push` leave a peer's untracked file out of the overlay (FRM-572)
+  - given an untracked `*.test.ts` in the mod that no scratch copy holds, then the overlay never reads it and its red waits for its own commit; the engine's ignored types stay, and a file `--only` names stays
+- ⬜ `x mods edit test --range <base>..<head>` runs the suite at each commit of a range (FRM-662)
+  - given a range, then each commit that touches a mod runs validate, tsc and the tests on its own tracked bytes (never the working tree), one line per commit: its short sha and the pass or fail count
+  - given a red commit, then the walk goes on and the failure names every red commit; a range that runs no commit is refused, and `--range` beside `--only` or `--against` is a usage exit
 - ⬜ `x lane commit --dry` runs a commit's gates and commits nothing (FRM-473)
   - given `--dry <msg-file> <paths…>`, then the named paths format as a real commit does, and each pre-commit and commit-msg gate reads a temp index of HEAD plus those paths; every verdict prints, a red exits 1 naming it; HEAD, the index and a peer's staged file stay
   - given a real commit of the same bytes within the hour, then the gates that read only the index copy run no second time, through `LEFTHOOK_EXCLUDE`; its message gates still run

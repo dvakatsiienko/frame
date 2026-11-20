@@ -1651,6 +1651,11 @@
                     "description": "run one test file on the overlay, its path read from the repo root: no queue turn, no gates, no stamp, so a push still runs the whole test",
                     "type": "string",
                     "value": "test file"
+                },
+                "range": {
+                    "description": "run the whole suite at each commit of base..head that touches a mod, on that commit's own bytes, one line per commit (sha, pass or fail count); no scratch, no gates, no stamp",
+                    "type": "string",
+                    "value": "base..head"
                 }
             },
             "name": "mods edit test",

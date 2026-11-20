@@ -140,12 +140,24 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	changed := changedScratch(scratch)
-	r.Open(fmt.Sprintf("%d edited", len(changed)))
 	against, _ := flags["against"].(string)
 	only, _ := flags["only"].(string)
-	if against != "" && only != "" {
-		return nil, usageFail("--only and --against each pick what runs; name one", "x mods edit test --only <test file>")
+	span, _ := flags["range"].(string)
+	picked := 0
+	for _, flag := range []string{against, only, span} {
+		if flag != "" {
+			picked++
+		}
 	}
+	if picked > 1 {
+		return nil, usageFail("--only, --against and --range each pick what runs; name one", "x mods edit test --only <test file>")
+	}
+	if span != "" {
+		r.Open("range " + span)
+		r.skip("gates")
+		return testRange(r, repo, span)
+	}
+	r.Open(fmt.Sprintf("%d edited", len(changed)))
 	printOverlayHeader(r, scratch, changed)
 	if only != "" {
 		r.skip("gates")
@@ -541,44 +553,51 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 				return nil, err
 			}
 		}
-		report := modReport{Mod: mod, Validate: "ok"}
-		// the validator reads the hooks module as the engine will: a parse error is red before any test runs (PK-64)
-		if got, _ := run("", nil, "", "claude", "plugin", "validate", overlay); !got.ok {
-			report.Validate = firstErrorLine(got.log)
-			report.log = got.log
-			reports = append(reports, report)
-			continue
+		report, err := testModOverlay(mod, overlay)
+		if err != nil {
+			return nil, err
 		}
-		if typed, ran := overlayTypecheck(overlay); ran && !typed.ok {
-			report.Validate = "typecheck: " + firstNonBlank(typed.log)
-			report.log = typed.log
-			reports = append(reports, report)
-			continue
-		}
-		got, _ := run("", nil, "", "claude", "plugin", "test", overlay)
-		log := got.log
-		report.Passed, report.Failed, report.Errored = testOutcome(log)
-		if !got.ok && timeoutOnly(log) && testTally.MatchString(log) {
-			again, kept, err := runTimedOutFiles(overlay, log)
-			if err != nil {
-				return nil, err
-			}
-			got = again
-			log += "\n" + again.log
-			passed, failed, errored := testOutcome(again.log)
-			report.Passed, report.Failed, report.Errored = kept+passed, failed, errored
-		}
-		// the engine runs on past a throwing hook, so a test beside it still passes (`engine.md`)
-		if skipped := hookSkipped.FindString(log); skipped != "" {
-			report.Errored = append(report.Errored, skipped)
-		}
-		if !got.ok && len(report.Failed)+len(report.Errored) == 0 {
-			report.Errored = []string{"claude plugin test exited red with no failing test named"}
-		}
-		report.log = log
 		reports = append(reports, report)
 	}
 	return reports, nil
+}
+
+// the validator, the overlay's tsc and the tests on one mod's overlay: the verdict of the bytes it holds
+func testModOverlay(mod, overlay string) (modReport, error) {
+	report := modReport{Mod: mod, Validate: "ok"}
+	// the validator reads the hooks module as the engine will: a parse error is red before any test runs (PK-64)
+	if got, _ := run("", nil, "", "claude", "plugin", "validate", overlay); !got.ok {
+		report.Validate = firstErrorLine(got.log)
+		report.log = got.log
+		return report, nil
+	}
+	if typed, ran := overlayTypecheck(overlay); ran && !typed.ok {
+		report.Validate = "typecheck: " + firstNonBlank(typed.log)
+		report.log = typed.log
+		return report, nil
+	}
+	got, _ := run("", nil, "", "claude", "plugin", "test", overlay)
+	log := got.log
+	report.Passed, report.Failed, report.Errored = testOutcome(log)
+	if !got.ok && timeoutOnly(log) && testTally.MatchString(log) {
+		again, kept, err := runTimedOutFiles(overlay, log)
+		if err != nil {
+			return report, err
+		}
+		got = again
+		log += "\n" + again.log
+		passed, failed, errored := testOutcome(again.log)
+		report.Passed, report.Failed, report.Errored = kept+passed, failed, errored
+	}
+	// the engine runs on past a throwing hook, so a test beside it still passes (`engine.md`)
+	if skipped := hookSkipped.FindString(log); skipped != "" {
+		report.Errored = append(report.Errored, skipped)
+	}
+	if !got.ok && len(report.Failed)+len(report.Errored) == 0 {
+		report.Errored = []string{"claude plugin test exited red with no failing test named"}
+	}
+	report.log = log
+	return report, nil
 }
 
 // a file git has never seen in the mod is a parallel member's half-done work, never this session's edit (those come in as scratch
@@ -683,14 +702,10 @@ func againstRef(r *Run, repo, scratch string, changed []string, ref string) (any
 				return "", err
 			}
 			defer os.RemoveAll(dir)
-			archive, err := run(repo, nil, "", "git", "archive", "--format=tar", "-o", filepath.Join(dir, "ref.tar"), ref, modsDir+mod)
-			if !archive.ok {
-				return "", &Fail{Msg: "git archive " + ref + " failed: " + archive.log, Next: "git log -1 " + ref, Log: nonBlank(archive.log)}
+			overlay, err := modAtRef(repo, dir, ref, mod)
+			if err != nil {
+				return "", err
 			}
-			if got, _ := run(dir, nil, "", "tar", "-xf", "ref.tar"); !got.ok || err != nil {
-				return "", &Fail{Msg: "unpacking " + ref + " failed: " + got.log, Next: "x mods edit test"}
-			}
-			overlay := filepath.Join(dir, modsDir, mod)
 			for _, path := range tests {
 				if m, _ := modOf(path); m == mod {
 					rel := strings.TrimPrefix(filepath.ToSlash(path), modsDir+mod+"/")
