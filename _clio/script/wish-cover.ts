@@ -37,30 +37,71 @@ function isForeign(prefix: string | undefined, homes: string[]) {
     );
 }
 
-export function wishLines(item: string, homes: string[] = []) {
+// a ticket's block may hold lines joined from other homes, each keeping its prefix: those are this ticket's wish, and their
+// id is the whole «PK-424:W1», so two homes' W1 never collide. `joined` names such prefixes; a line of a home in `homes`
+// keeps its bare id, as ever
+const keyOf = (prefix: string | undefined, id: string, joined: string[]) =>
+    prefix && joined.includes(prefix.toUpperCase())
+        ? `${prefix.toUpperCase()}:${id}`
+        : id;
+
+export function wishLines(
+    item: string,
+    homes: string[] = [],
+    joined: string[] = [],
+) {
     const lines = new Map<string, string>();
     for (const match of item.matchAll(
         /^\s*[-*]?\s*(?:((?:PK|FRM|BYT)-\d+):)?(W\d+)\b[ \t]*(.*)$/gm,
     )) {
         const [, prefix, id, text] = match;
-        if (isForeign(prefix, homes)) continue;
+        if (
+            !id ||
+            (!joined.includes(prefix?.toUpperCase() ?? '') &&
+                isForeign(prefix, homes))
+        )
+            continue;
+        const key = keyOf(prefix, id, joined);
         // a leading «(Q1)» or «(band 4)» is clio's source tag, never his words
-        if (id && !lines.has(id))
-            lines.set(id, (text ?? '').replace(/^\(.*?\)\s*:?\s*/, '').trim());
+        if (!lines.has(key))
+            lines.set(key, (text ?? '').replace(/^\(.*?\)\s*:?\s*/, '').trim());
     }
     return lines;
 }
 
+// the prefixes a block's own lines carry beyond its homes: lines joined from the pocket or another ticket
+export function joinedPrefixes(item: string, homes: string[] = []) {
+    const own = homes.map((home) => home.toUpperCase());
+    return [
+        ...new Set(
+            [...item.matchAll(/^\s*[-*]?\s*((?:PK|FRM|BYT)-\d+):W\d+\b/gm)]
+                .map((m) => m[1]?.toUpperCase() ?? '')
+                .filter((prefix) => prefix && !own.includes(prefix)),
+        ),
+    ];
+}
+
 // a wish joining an old block that restarts at W1 hides its lines behind the first of each number
-export function repeatedIds(item: string, homes: string[] = []) {
+export function repeatedIds(
+    item: string,
+    homes: string[] = [],
+    joined: string[] = [],
+) {
     // a twin under the same stamp is one prompt recorded twice (a typo'd copy kept by append-only notes), not two wishes
     const entries = [
         ...item.matchAll(
             /^\s*[-*]?\s*(?:((?:PK|FRM|BYT)-\d+):)?(W\d+)\b(?:\s*(\([^)]*\)))?/gm,
         ),
     ]
-        .filter((m) => !isForeign(m[1], homes))
-        .map((m) => `${m[2]} ${m[3] ?? `#${m.index}`}`);
+        .filter(
+            (m) =>
+                joined.includes(m[1]?.toUpperCase() ?? '') ||
+                !isForeign(m[1], homes),
+        )
+        .map(
+            (m) =>
+                `${keyOf(m[1], m[2] ?? '', joined)} ${m[3] ?? `#${m.index}`}`,
+        );
     const ids = [...new Set(entries)].map((entry) => entry.split(' ')[0]);
     return [...new Set(ids.filter((id, i) => ids.indexOf(id) !== i))];
 }
@@ -74,13 +115,21 @@ export function wishBlock(body: string) {
 
 // a single id, bare or «PK-159:W3»; the ends of a range like «W1–W3» cite nothing, and a range never spans a line break;
 // a bare cite is this home's, a prefixed one counts only when its home is in homes, else it is another item's
-export function citedIds(draft: string, homes: string[] = []) {
+export function citedIds(
+    draft: string,
+    homes: string[] = [],
+    joined: string[] = [],
+) {
     const own = homes.map((home) => home.toUpperCase());
     const ids = new Set<string>();
     for (const [, home, id] of unwrapIds(draft).matchAll(
         /(?<!W?\d+[ \t]*[–-][ \t]*)(?:\b((?:PK|FRM|BYT|pk|frm|byt)-\d+):|(?<!:))\b(W\d+)\b(?![ \t]*[–-][ \t]*(?:(?:PK|FRM|BYT)-\d+:)?W?\d)/g,
-    ))
-        if (id && (!home || own.includes(home.toUpperCase()))) ids.add(id);
+    )) {
+        if (!id) continue;
+        if (home && joined.includes(home.toUpperCase()))
+            ids.add(keyOf(home, id, joined));
+        else if (!home || own.includes(home.toUpperCase())) ids.add(id);
+    }
     return ids;
 }
 
@@ -125,19 +174,24 @@ export function missingText(
     item: string,
     drafts: string[],
     homes: string[] = [],
+    joined: string[] = [],
 ) {
-    const joined = drafts.join('\n');
-    const body = normalize(joined);
-    const lines = wishLines(item, homes);
+    const text = drafts.join('\n');
+    const body = normalize(text);
+    const lines = wishLines(item, homes, joined);
     // an id a W-line's own words mention («moved here as its W14») rides the verbatim copy, never cites
     const quoted = citedIds([...lines.values()].join('\n'));
-    return [...citedIds(joined, homes)].flatMap((id): [string, string][] => {
-        const text = lines.get(id);
-        if (text === undefined)
-            return quoted.has(id) ? [] : [[id, '(no such W-line in the item)']];
-        if (text === '') return [[id, '']];
-        return body.includes(normalize(text)) ? [] : [[id, text]];
-    });
+    return [...citedIds(text, homes, joined)].flatMap(
+        (id): [string, string][] => {
+            const words = lines.get(id);
+            if (words === undefined)
+                return quoted.has(id)
+                    ? []
+                    : [[id, '(no such W-line in the item)']];
+            if (words === '') return [[id, '']];
+            return body.includes(normalize(words)) ? [] : [[id, words]];
+        },
+    );
 }
 
 // the stub a wish keeps where a line moved: «moved → FRM-585:W19», the new home and its line
@@ -191,24 +245,14 @@ const quotedWords = /«[^»]*»|“[^”]*”|"[^"]*"/g;
 const isSettledElsewhere = (text: string) =>
     settledElsewhere.test(text.replace(quotedWords, ''));
 
-// the prefix each W-line of an item carries, by its W id: a ticket's block may hold folded pocket lines, «PK-349:W1263»
-export function wishPrefixes(item: string) {
-    const prefixes = new Map<string, string>();
-    for (const [, prefix, id] of item.matchAll(
-        /^\s*[-*]?\s*((?:PK|FRM|BYT)-\d+):(W\d+)\b/gm,
-    ))
-        if (prefix && id && !prefixes.has(id))
-            prefixes.set(id, prefix.toUpperCase());
-    return prefixes;
-}
-
 export function uncovered(
     item: string,
     drafts: string[],
     homes: string[] = [],
+    joined: string[] = [],
 ) {
-    const cited = citedIds(drafts.join('\n'), homes);
-    return [...wishLines(item, homes)].filter(
+    const cited = citedIds(drafts.join('\n'), homes, joined);
+    return [...wishLines(item, homes, joined)].filter(
         ([id, text]) => !cited.has(id) && !isSettledElsewhere(text),
     );
 }
@@ -375,7 +419,7 @@ if (import.meta.main) {
             process.exit(2);
         }
         // the ticket's block is the wish's home; one pocket item that carries it stands in only for a block with no W-lines
-        if (wishLines(item).size === 0) {
+        if (wishLines(item, homes, joinedPrefixes(item, homes)).size === 0) {
             const owners = itemsForTicket(items, id);
             const owned =
                 owners.length === 1 && owners[0]
@@ -384,10 +428,6 @@ if (import.meta.main) {
             item = owned ?? item;
             if (owned && owners[0]) homes.push(owners[0]);
         }
-        // pocket lines folded into the block keep their PK prefix: they are this ticket's wish, never another item's quote
-        for (const prefix of wishPrefixes(item).values())
-            if (prefix.startsWith('PK-') && !homes.includes(prefix))
-                homes.push(prefix);
     } else {
         item = readItem(items, id);
     }
@@ -405,7 +445,9 @@ if (import.meta.main) {
         console.log(`${id}: moved, not re-checked: ${movedHome}`);
         process.exit(3);
     };
-    if (wishLines(item, homes).size === 0) {
+    // lines joined into the block keep their home's prefix and count as this ticket's, each by its whole id
+    const joined = joinedPrefixes(item, homes);
+    if (wishLines(item, homes, joined).size === 0) {
         console.error(
             isTicket
                 ? `${id}: number the ticket's wish block into ${id}:W1… lines first`
@@ -413,7 +455,7 @@ if (import.meta.main) {
         );
         process.exit(2);
     }
-    const repeated = repeatedIds(item, homes);
+    const repeated = repeatedIds(item, homes, joined);
     if (repeated.length > 0) {
         stopIfMoved();
         console.log(
@@ -421,14 +463,14 @@ if (import.meta.main) {
         );
         process.exit(1);
     }
-    if (citedIds(drafts.join('\n'), homes).size === 0) {
+    if (citedIds(drafts.join('\n'), homes, joined).size === 0) {
         stopIfMoved();
         console.log(`✗ ${id}: cites no W-line`);
         process.exit(1);
     }
     const linearHomes = new Map<string, string | undefined>();
     const { rest: missing, unchecked } = followMoved(
-        missingText(item, drafts, homes),
+        missingText(item, drafts, homes, joined),
         drafts.join('\n'),
         (home, lineId) => {
             if (!/^(FRM|BYT)-/i.test(home))
@@ -439,10 +481,10 @@ if (import.meta.main) {
             return wishLines(linearHomes.get(home) ?? '', [home]).get(lineId);
         },
     );
-    const uncited = all ? uncovered(item, drafts, homes) : [];
+    const uncited = all ? uncovered(item, drafts, homes, joined) : [];
     if (missing.length + uncited.length > 0) stopIfMoved();
-    const prefixes = wishPrefixes(item);
-    const named = (lineId: string) => `${prefixes.get(lineId) ?? id}:${lineId}`;
+    const named = (lineId: string) =>
+        lineId.includes(':') ? lineId : `${id}:${lineId}`;
     for (const [lineId, text] of missing)
         console.log(
             text === ''

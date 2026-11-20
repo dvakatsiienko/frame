@@ -805,12 +805,32 @@ describe('the cli on a ticket whose wish block holds PK-prefixed lines', () => {
         expect(done.stdout).toContain('PK-349:W1263 text missing');
     });
 
-    test("a line of another ticket quoted in the block is still not this block's", () => {
-        const done = run(
-            wish('* FRM-7:W1 its own words', '* FRM-9:W5 someone else'),
-            'FRM-7:W1 its own words',
+    // 20 Nov, FRM-618: its block joins FRM-567:W1–W4 and PK-424:W1–W4 beside its own W1–W4, each keeping its prefix
+    test('lines of three homes numbered W1 are three lines, never «numbered twice»', () => {
+        const joined = wish(
+            '* FRM-7:W1 its own words',
+            '* FRM-567:W1 joined from a ticket',
+            '* PK-424:W1 joined from the pocket',
+        );
+        const draft =
+            'FRM-7:W1 its own words\nFRM-567:W1 joined from a ticket\nPK-424:W1 joined from the pocket';
+        const done = run(joined, draft, ['--all']);
+        expect(done.stdout).not.toContain('numbered twice');
+        expect(done.status).toBe(0);
+        const missed = run(
+            joined,
+            'FRM-7:W1 its own words\nPK-424:W1 joined from the pocket',
             ['--all'],
         );
-        expect(done.status).toBe(0);
+        expect(missed.status).toBe(1);
+        expect(missed.stdout).toContain('FRM-567:W1 uncited');
+    });
+
+    test('a W number twice under one home is still numbered twice', () => {
+        const done = run(
+            wish('* FRM-7:W1 a', '* FRM-7:W1 b', '* PK-424:W1 c'),
+            'FRM-7:W1 a',
+        );
+        expect(done.stdout).toContain('W1 numbered twice');
     });
 });
