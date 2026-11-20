@@ -34,3 +34,14 @@ export function antennaRows(threads, { isGrouped, names, order }) {
         ...members.map(row),
     ]);
 }
+
+/** a thread row's Tab stop @param {string} address */
+export const stopOf = (address) => `thread-${address}`;
+
+/**
+ * antenna's Tab stops: each drawn thread row that holds a keyboard handle, in drawn order; narrow, none
+ * @param {string[]} addresses @param {{ isNarrow: boolean, hasKey: (address: string) => boolean }} drawn
+ */
+export function tabStops(addresses, { hasKey, isNarrow }) {
+    return isNarrow ? [] : addresses.filter(hasKey).map(stopOf);
+}

@@ -303,7 +303,10 @@ describe('threads sort by the words of their name', () => {
 describe('the deck publishes each thread its three facts', () => {
     const row = (pid: number, status: string, wait: string | null) => ({
         context: 40,
+        hot: { since: 5 },
+        model: 'opus 5.5 · medium',
         pid,
+        sid: `sid-${pid}`,
         status,
         wait,
     });
@@ -315,7 +318,14 @@ describe('the deck publishes each thread its three facts', () => {
     test('each live thread gets its context, its waiting-on line and the week, keyed by pid', () => {
         expect(threadFacts([row(7, 'idle', 'waiting on 🦉 clio')], 57)).toEqual(
             {
-                '7': { context: 40, wait: 'waiting on 🦉 clio', week: 57 },
+                '7': {
+                    context: 40,
+                    isHot: true,
+                    model: 'opus 5.5',
+                    sid: 'sid-7',
+                    wait: 'waiting on 🦉 clio',
+                    week: 57,
+                },
             },
         );
     });
@@ -338,11 +348,22 @@ describe('the deck publishes each thread its three facts', () => {
 
     test('a thread with no context read yet carries none, never a guess', () => {
         expect(
-            threadFacts([{ ...row(7, 'idle', null), context: null }], null)[
-                '7'
-            ],
+            threadFacts(
+                [
+                    {
+                        ...row(7, 'idle', null),
+                        context: null,
+                        hot: null,
+                        model: null,
+                    },
+                ],
+                null,
+            )['7'],
         ).toEqual({
             context: null,
+            isHot: false,
+            model: null,
+            sid: 'sid-7',
             wait: null,
             week: null,
         });

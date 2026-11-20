@@ -528,7 +528,7 @@ export async function tickAll(io, dir, rows, sid, stateOf, steerOf, at) {
     return takes;
 }
 
-/** @typedef {{ context: number | null, wait: string | null, week: number | null }} ThreadFacts */
+/** @typedef {{ context: number | null, isHot: boolean, model: string | null, sid: string, wait: string | null, week: number | null }} ThreadFacts */
 /** @typedef {{ at: number, threads: Record<string, ThreadFacts> }} DeckThreads */
 
 // herdr's shared state, the one door the chat reads a thread's facts through (a mod imports nothing outside its folder)
@@ -537,9 +537,9 @@ export const THREADS_KEY = 'x-herdr-deck.threads';
 export const THREADS_BEAT_MS = 60 * 1000;
 
 /**
- * the three facts each live thread shows where dima types, keyed by pid; the waiting-on line, already `waitOf`'s, is
+ * the facts each live thread shows where dima types and in antenna, keyed by pid; the waiting-on line, already `waitOf`'s, is
  * drawn plain, so markdown's ** go
- * @param {{ pid: number, status: string, context: number | null, wait: string | null }[]} rows
+ * @param {{ pid: number, sid: string, status: string, context: number | null, hot: unknown, model: string | null, wait: string | null }[]} rows
  * @param {number | null} week
  * @returns {Record<string, ThreadFacts>}
  */
@@ -549,6 +549,9 @@ export function threadFacts(rows, week) {
     for (const row of [...rows].sort((a, b) => a.pid - b.pid))
         facts[String(row.pid)] = {
             context: typeof row.context === 'number' ? row.context : null,
+            isHot: Boolean(row.hot),
+            model: row.model?.split(' · ')[0] ?? null,
+            sid: row.sid,
             wait: row.wait ? unbold(row.wait) : null,
             week,
         };
@@ -910,4 +913,27 @@ export function roundsKept(store, updated, rows) {
     keep(store, 'seen', JSON.stringify(seen));
     keep(store, 'updated', JSON.stringify([...now]));
     return { cleared, updated: now };
+}
+
+// antenna's 🔥 asks the deck to press keep hot, so the deck stays the press file's one writer (FRM-618 slice B)
+export const HOT_ASK = 'x-herdr-deck.hot';
+
+/**
+ * a keep-hot ask made after `seen`, or null: an ask from before the deck started never fires
+ * @param {unknown} ask what `shared(HOT_ASK)` holds @param {number} seen
+ * @returns {{ at: number, on: boolean, sid: string } | null}
+ */
+export function freshHotAsk(ask, seen) {
+    const a =
+        /** @type {{ at?: unknown, on?: unknown, sid?: unknown } | null} */ (
+            ask
+        );
+    if (
+        typeof a?.at !== 'number' ||
+        a.at <= seen ||
+        typeof a.on !== 'boolean' ||
+        typeof a.sid !== 'string'
+    )
+        return null;
+    return { at: a.at, on: a.on, sid: a.sid };
 }

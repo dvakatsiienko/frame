@@ -16,11 +16,13 @@ import {
     writeTextFile,
 } from 'herdr';
 
+import { deckParts } from './deck-parts.js';
 import { focusBorder } from './focus-ring.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
 import { lanesShown, stepMark } from './lanes.js';
 import { SANS, SIZE, bar, clockOf, leadingRoom, line, prose } from './look.js';
 import {
+    HOT_ASK,
     ORDER_KEY,
     PENDING_MS,
     PRESS_DIR,
@@ -35,6 +37,7 @@ import {
     createSerial,
     createTurns,
     dropPress,
+    freshHotAsk,
     hotOf,
     hotPressLine,
     hotPresses,
@@ -184,6 +187,10 @@ export default class Deck extends View {
         // his 🔥 presses by sid, drawn until the thread's state file reads them
         /** @type {Map<string, { at: number, on: boolean }>} */
         this.hotPressed = new Map();
+        // antenna's 🔥 asks land here; one made before this load never fires
+        /** @type {number} */
+        this.hotAskSeen =
+            /** @type {{ at?: number } | null} */ (shared(HOT_ASK))?.at ?? 0;
         /** @type {Map<string, { at: number, on: boolean }>} */
         this.filePresses = new Map();
         /** @type {string | null} */
@@ -347,160 +354,6 @@ export default class Deck extends View {
         return chain.phase === 'stalled'
             ? `no read since ${clockOf(at, 2)}, reading again`
             : `updated ${clockOf(at, 3)}`;
-    }
-
-    /** @param {Theme} t @param {Row} s @param {number} i */
-    session(t, s, i) {
-        const state = STATE[s.status] ?? s.status;
-        const key = `phases:${s.sid}`;
-        const isOpen = this.open.has(key);
-        const color =
-            state === 'working'
-                ? t.working
-                : state === 'blocked'
-                  ? t.blocked
-                  : t.idle;
-        const model = s.model?.split(' · ')[0] ?? null;
-        // drawn only when the thread has one
-        const context = s.context ?? 0;
-        return v_flex()
-            .px(12)
-            .py(4)
-            .gap(2)
-            .child(
-                h_flex()
-                    .id(`row-${s.sid}`)
-                    .gap(8)
-                    .items_center()
-                    .when(s.phases.length > 0, (el) =>
-                        el
-                            .cursor_pointer()
-                            .tooltip(
-                                isOpen ? 'hide its phases' : 'show its phases',
-                            )
-                            .on_click((_e, cx) => {
-                                isOpen
-                                    ? this.open.delete(key)
-                                    : this.open.add(key);
-                                cx.notify();
-                            }),
-                    )
-                    .child(div().w(7).h(7).rounded(4).flex_none().bg(color))
-                    .child(
-                        line(
-                            state === 'idle' ? t.muted : t.foreground,
-                            SIZE.main,
-                        ).child(s.name),
-                    )
-                    // 🔥 before the model, one aligned column down the rows, as the old desktop list had it (dima,
-                    // 23:22): the model and the meter keep their width on a row that has neither
-                    .child(this.hotButton(t, s))
-                    .child(
-                        div()
-                            .w(64)
-                            .flex_none()
-                            .flex()
-                            .justify_end()
-                            .text_size(SIZE.secondary)
-                            .text_color(t.muted)
-                            .child(model ?? ''),
-                    )
-                    .when(s.context == null, (el) =>
-                        el.child(div().w(84).flex_none()),
-                    )
-                    .when(s.context != null, (el) =>
-                        el
-                            .child(
-                                bar(
-                                    t,
-                                    context,
-                                    40,
-                                    context >= 60 ? t.blocked : t.muted,
-                                ),
-                            )
-                            // a fixed width and right-aligned digits stand in for tabular-nums, which gpui does not offer
-                            .child(
-                                div()
-                                    .w(36)
-                                    .flex_none()
-                                    .flex()
-                                    .justify_end()
-                                    .text_size(SIZE.secondary)
-                                    .when(context >= 60, (el2) =>
-                                        el2.font_semibold(),
-                                    )
-                                    .text_color(
-                                        context >= 60 ? t.blocked : t.muted,
-                                    )
-                                    .child(`${context}%`),
-                            ),
-                    ),
-            )
-            .when(isOpen, (el) =>
-                el.children(
-                    s.phases.map((phase, j) =>
-                        div()
-                            .pl(15)
-                            .child(
-                                prose(
-                                    `phase-${i}-${j}`,
-                                    `🌔 ${phase}`,
-                                    t.muted,
-                                    SIZE.secondary,
-                                ),
-                            ),
-                    ),
-                ),
-            )
-            .when(Boolean(s.wait), (el) =>
-                el.child(
-                    div()
-                        .pl(15)
-                        .child(
-                            prose(
-                                `wait-${i}`,
-                                `🔭 ${s.wait}`,
-                                t.muted,
-                                SIZE.secondary,
-                            ),
-                        ),
-                ),
-            );
-    }
-
-    // keep hot for this row's thread, as the old desktop board had it (dima, 23:16): filled when on, a click is its
-    // own, never the row's phases toggle
-    /** @param {Theme} t @param {Row} s */
-    hotButton(t, s) {
-        // the newest press for this thread, its own click or one from any band
-        const own = this.hotPressed.get(s.sid);
-        const filed = this.filePresses?.get(s.sid);
-        const hot = hotOf(
-            s.hot,
-            own && (!filed || own.at >= filed.at) ? own : filed,
-            Date.now(),
-        );
-        return Button.new(`hot-${s.sid}`)
-            .tab_stop(false)
-            .size(22)
-            .flex_none()
-            .flex()
-            .items_center()
-            .justify_center()
-            .rounded(11)
-            .border_1()
-            .border_color(hot.isOn ? t.solid : t.border)
-            .bg(hot.isOn ? t.solid : t.surface)
-            .text_size(SIZE.small)
-            .tooltip(hot.tip)
-            .cursor_pointer()
-            .hover((st) => st.opacity(0.85))
-            .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
-            .on_click((_e, cx) => {
-                cx.stop_propagation();
-                this.pressHot(cx, s.sid, !hot.isOn);
-            })
-            .child('🔥');
     }
 
     /** @param {Context} cx @param {string} sid @param {boolean} on */
@@ -1334,6 +1187,11 @@ export default class Deck extends View {
     render(cx) {
         const t = /** @type {Theme} */ (theme());
         if (this.isThread) return div();
+        const hotAsk = freshHotAsk(shared(HOT_ASK), this.hotAskSeen);
+        if (hotAsk) {
+            this.hotAskSeen = hotAsk.at;
+            cx.timer.after(0, (cx) => this.pressHot(cx, hotAsk.sid, hotAsk.on));
+        }
         // ⌘⇧K (FRM-589): the status bar relays the key, the chat names the thread it shows by pid; a press older than
         // 2 s, or one made before this load, never fires
         const tickAsk = /** @type {number | null} */ (
@@ -1365,13 +1223,6 @@ export default class Deck extends View {
         }
         // his order from the agents list, read at every draw, so a drag there moves the deck at once; the read's own
         // order (blocked, working, then by name) stays for a thread the list does not show
-        const rows = inListOrder(
-            this.rows,
-            /** @type {number[] | null} */ (shared(ORDER_KEY)),
-        );
-        const busy = this.rows.filter(
-            (s) => STATE[s.status] === 'working',
-        ).length;
         const asks = this.rows.reduce((n, s) => n + s.asks.length, 0);
         // orbit draws its steer boxes as Tab stops and focuses the one the loop asks for; with no asks it draws none
         const orbitRows = asks > 0 ? this.orbit(t, cx) : [];
@@ -1392,19 +1243,18 @@ export default class Deck extends View {
                 .child(text);
         /** @param {number} n @param {string} one @param {string} many */
         const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-        return v_flex()
-            .id('x-herdr-deck')
-            .font_family(SANS)
-            .size_full()
+        // antenna lists the threads; the deck scrolls orbit and glide, and pins every thread's phases to its bottom
+        const parts = deckParts(this.rows, {
+            asks,
+            lanes: this.lanes.length,
+            order: /** @type {number[] | null} */ (shared(ORDER_KEY)),
+        });
+        const scrolling = v_flex()
+            .id('x-herdr-deck-scroll')
+            .flex_1()
+            .min_h(0)
             .overflow_y_scroll()
-            .bg(t.canvas)
-            .child(
-                header(
-                    `🧵 sessions: ${this.rows.length}${busy ? `, ${busy} working` : ''}${this.isStale ? ' · stale, the last list kept' : ''}`,
-                ),
-            )
-            .children(rows.map((s, i) => this.session(t, s, i)))
-            .when(asks > 0, (el) =>
+            .when(parts.scroll.includes('orbit'), (el) =>
                 el
                     .child(header(`🪐 orbit: ${count(asks, 'ask', 'asks')}`))
                     .children(orbitRows)
@@ -1427,7 +1277,7 @@ export default class Deck extends View {
                         ),
                     ),
             )
-            .when(this.lanes.length > 0, (el) =>
+            .when(parts.scroll.includes('glide'), (el) =>
                 el
                     .child(
                         header(
@@ -1443,6 +1293,57 @@ export default class Deck extends View {
                     .text_size(SIZE.small)
                     .text_color(t.muted)
                     .child(this.footerLine()),
+            );
+        return v_flex()
+            .id('x-herdr-deck')
+            .font_family(SANS)
+            .size_full()
+            .bg(t.canvas)
+            .child(scrolling)
+            .when(parts.pinned.length > 0, (el) =>
+                el.child(this.phasesBlock(t, parts.pinned, header)),
+            );
+    }
+
+    /**
+     * every thread's phases, pinned under orbit and glide: a group per thread under its name; past its height it scrolls
+     * on its own, so orbit above always keeps its room
+     * @param {Theme} t @param {import('./deck-parts.js').PhaseGroup[]} groups @param {(text: string) => any} header
+     */
+    phasesBlock(t, groups, header) {
+        return v_flex()
+            .id('x-herdr-deck-phases')
+            .flex_none()
+            .max_h(320)
+            .overflow_y_scroll()
+            .pb(8)
+            .child(header('🌔 phases'))
+            .children(
+                groups.map((g, i) =>
+                    v_flex()
+                        .px(12)
+                        .py(4)
+                        .gap(2)
+                        .child(
+                            line(t.foreground, SIZE.secondary)
+                                .font_semibold()
+                                .child(g.name),
+                        )
+                        .children(
+                            g.phases.map((phase, j) =>
+                                div()
+                                    .pl(8)
+                                    .child(
+                                        prose(
+                                            `phase-${i}-${j}`,
+                                            phase,
+                                            t.muted,
+                                            SIZE.secondary,
+                                        ),
+                                    ),
+                            ),
+                        ),
+                ),
             );
     }
 }

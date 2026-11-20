@@ -184,7 +184,7 @@ export default class TabPills extends View {
      * @param {Theme} t */
     focusedThread(t) {
         const line = focusedLine(
-            focused()?.agent,
+            focused()?.agent ?? focused()?.terminal,
             /** @type {Record<string, string> | null} */ (shared(NAMES_KEY)),
             /** @type {Record<string, number> | null} */ (shared(PIDS_KEY)),
             shared(THREADS_KEY),

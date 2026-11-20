@@ -12,6 +12,8 @@ export const ANTENNA_KNOBS = [
     { default: true, key: 'antenna.details.idle', label: 'Idle time' },
     { default: false, key: 'antenna.details.context', label: 'Context fill' },
     { default: false, key: 'antenna.details.wait', label: 'Wait line' },
+    { default: true, key: 'antenna.details.hot', label: 'Keep hot 🔥' },
+    { default: false, key: 'antenna.details.model', label: 'Model' },
     {
         choices: [
             { label: 'Compact', value: 'compact' },

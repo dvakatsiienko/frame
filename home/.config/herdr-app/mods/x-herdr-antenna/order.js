@@ -88,3 +88,12 @@ export function movedInGroup(order, members, from, to) {
     let i = 0;
     return order.map((a) => (inGroup.has(a) ? next[i++] : a));
 }
+
+/** his order as pids, or null until every listed thread has its pid: after a restart the names arrive one by one, and
+ * a partial order would move orbit's sections @param {string[]} order @param {string[]} listed
+ * @param {(address: string) => number | null | undefined} pidOf @returns {number[] | null} */
+export function orderPids(order, listed, pidOf) {
+    if (listed.length === 0 || listed.some((a) => typeof pidOf(a) !== 'number'))
+        return null;
+    return order.map(pidOf).filter((pid) => typeof pid === 'number');
+}

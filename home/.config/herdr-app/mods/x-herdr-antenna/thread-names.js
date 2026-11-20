@@ -6,6 +6,7 @@ import { readdir } from 'fs/promises';
 import { hc, home, readTextFile, setShared, shared } from 'herdr';
 
 import { rejoin } from './joined.js';
+import { orderPids } from './order.js';
 
 // a live session's registry name never changes, so the pretty name x draws from its record wins (PK-378)
 /** @param {{ name?: string, display?: string } | null} session */
@@ -109,11 +110,13 @@ export const PIDS_KEY = 'x-herdr-antenna.pids';
 // true source for the order in Orbit for threads»); written only on a change
 export const ORDER_KEY = 'x-herdr-agents.order';
 
-/** @param {string[]} addresses */
-export function publishOrder(addresses) {
-    const pids = addresses
-        .map((a) => NAMES.get(a)?.pid)
-        .filter((pid) => typeof pid === 'number');
-    if (JSON.stringify(shared(ORDER_KEY) ?? []) !== JSON.stringify(pids))
+/** his order as pids once every listed thread has its pid, written only on a change
+ * @param {string[]} order @param {string[]} listed */
+export function publishOrder(order, listed) {
+    const pids = orderPids(order, listed, (a) => NAMES.get(a)?.pid);
+    if (
+        pids &&
+        JSON.stringify(shared(ORDER_KEY) ?? []) !== JSON.stringify(pids)
+    )
         setShared(ORDER_KEY, pids);
 }

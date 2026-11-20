@@ -1,0 +1,41 @@
+import { describe, expect, test } from 'vitest';
+
+import { deckParts } from './deck-parts.js';
+
+// FRM-618 slice B exits 1 and 2: no sessions section, orbit first, every thread's phases in one block pinned at the
+// deck's bottom, a group per thread in antenna's order
+const rows = [
+    { name: 'crow', phases: [], pid: 3, sid: 's3' },
+    {
+        name: '🦉 clio',
+        phases: ['read the inbox', 'siesta'],
+        pid: 1,
+        sid: 's1',
+    },
+    { name: 'codie', phases: ['probe'], pid: 2, sid: 's2' },
+];
+
+describe('the deck parts', () => {
+    test('orbit leads, glide follows, nothing draws the sessions list', () => {
+        const parts = deckParts(rows, { asks: 2, lanes: 1, order: [2, 1, 3] });
+        expect(parts.scroll).toEqual(['orbit', 'glide']);
+    });
+
+    test('phases sit in the pinned block, a group per thread in his order, a thread with none left out', () => {
+        const parts = deckParts(rows, { asks: 0, lanes: 0, order: [2, 1, 3] });
+        expect(parts.pinned).toEqual([
+            { name: 'codie', phases: ['probe'], sid: 's2' },
+            {
+                name: '🦉 clio',
+                phases: ['read the inbox', 'siesta'],
+                sid: 's1',
+            },
+        ]);
+    });
+
+    test('with no asks and no lanes the scroll part is empty, the phases still pinned', () => {
+        const parts = deckParts(rows, { asks: 0, lanes: 0, order: [] });
+        expect(parts.scroll).toEqual([]);
+        expect(parts.pinned.map((g) => g.sid)).toEqual(['s1', 's2']);
+    });
+});

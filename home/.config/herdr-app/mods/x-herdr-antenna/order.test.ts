@@ -7,6 +7,7 @@ import {
     moved,
     movedInGroup,
     nextOrder,
+    orderPids,
 } from './order.js';
 
 const live = (...a: string[]) => new Set(a);
@@ -132,5 +133,31 @@ describe('a drag within a space', () => {
         expect(
             movedInGroup(['a', 'x', 'b', 'c'], ['a', 'b', 'c'], 'c', 'a'),
         ).toEqual(['c', 'x', 'a', 'b']);
+    });
+});
+
+// FRM-618 slice A, round 1: after a restart the names come in one by one; a partial order would make orbit jump
+describe('the order antenna publishes', () => {
+    const pids = new Map([
+        ['t1', 11],
+        ['t2', 12],
+    ]);
+
+    test('his order as pids once every listed thread has its pid', () => {
+        expect(
+            orderPids(['t2', 'gone', 't1'], ['t1', 't2'], (a) => pids.get(a)),
+        ).toEqual([12, 11]);
+    });
+
+    test('nothing while a listed thread still has no pid', () => {
+        expect(
+            orderPids(['t1', 't2', 't3'], ['t1', 't2', 't3'], (a) =>
+                pids.get(a),
+            ),
+        ).toBe(null);
+    });
+
+    test('nothing before any thread is listed', () => {
+        expect(orderPids(['t1'], [], (a) => pids.get(a))).toBe(null);
     });
 });

@@ -12,11 +12,11 @@ export function duration(ms) {
 
 /**
  * @param {Record<string, unknown>} settings antenna's knobs
- * @param {{ since: number, context: number | null, wait: string | null }} facts
+ * @param {{ since: number, context: number | null, model: string | null, wait: string | null }} facts
  * @param {number} now
- * @returns {{ idle: string | null, context: string | null, wait: string | null }}
+ * @returns {{ idle: string | null, context: string | null, model: string | null, wait: string | null }}
  */
-export function rowDetails(settings, { context, since, wait }, now) {
+export function rowDetails(settings, { context, model, since, wait }, now) {
     return {
         context:
             settings['antenna.details.context'] && typeof context === 'number'
@@ -26,6 +26,7 @@ export function rowDetails(settings, { context, since, wait }, now) {
             settings['antenna.details.idle'] && since > 0
                 ? duration(now - since)
                 : null,
+        model: (settings['antenna.details.model'] && model) || null,
         wait: (settings['antenna.details.wait'] && wait) || null,
     };
 }

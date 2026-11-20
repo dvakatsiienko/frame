@@ -9,7 +9,9 @@ describe('antenna settings', () => {
     test('a file with no antenna row reads every knob at its default', () => {
         expect(antennaSettings(file)).toEqual({
             'antenna.details.context': false,
+            'antenna.details.hot': true,
             'antenna.details.idle': true,
+            'antenna.details.model': false,
             'antenna.details.wait': false,
             'antenna.groupBySpace': true,
             'antenna.rowHeight': 'roomy',
@@ -43,5 +45,14 @@ describe('antenna settings', () => {
                 antennaSettingsText(null, { 'antenna.showTabs': false }),
             ),
         ).toEqual({ rows: { 'antenna.showTabs': false }, v: 1 });
+    });
+
+    test('a stored value that does not fit its knob reads as the default', () => {
+        const text = JSON.stringify({
+            rows: { 'antenna.rowHeight': 'huge', 'antenna.showTabs': 'no' },
+            v: 1,
+        });
+        expect(antennaSettings(text)['antenna.rowHeight']).toBe('roomy');
+        expect(antennaSettings(text)['antenna.showTabs']).toBe(true);
     });
 });

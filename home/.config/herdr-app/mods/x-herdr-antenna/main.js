@@ -5,6 +5,7 @@ import { h_flex, v_flex } from 'gpui-base';
 import { View, div, svg } from 'gpui-kit';
 import {
     agents,
+    exec,
     home,
     layout,
     openOverlay,
@@ -23,7 +24,7 @@ import {
 import { rowDetails } from './details.js';
 import { createListDrag } from './drag-view.js';
 import { heirs, movedInGroup, nextOrder } from './order.js';
-import { antennaRows } from './rows.js';
+import { antennaRows, stopOf, tabStops } from './rows.js';
 import { antennaSettings, antennaSettingsText } from './settings.js';
 import { POPUP_HEIGHT, POPUP_WIDTH, settingsPopup } from './settings-view.js';
 import { createTabMember } from './tab-loop.js';
@@ -45,7 +46,6 @@ const ROW_TAB = 'x_herdr_antenna_row_tab';
 const ROW_BACK = 'x_herdr_antenna_row_back';
 const ROW_OPEN = 'x_herdr_antenna_row_open';
 const ROW_KEYS = 64;
-const stopOf = (/** @type {string} */ address) => `thread-${address}`;
 
 // the old list's saved order, in herdr's store for its mod: read once, so his order comes over by address
 const OLD_STORE = `${home()}/.config/herdr-app/data/x-herdr-agents/store.json`;
@@ -71,6 +71,7 @@ function isJson(text) {
 
 /** a knob's change saved beside every other row: the write holds only against the text it read, so one retry @param {string} key @param {unknown} value */
 async function saveSetting(key, value) {
+    await exec('mkdir', ['-p', SETTINGS.slice(0, SETTINGS.lastIndexOf('/'))]);
     for (const _ of [1, 2]) {
         const text = await readTextFile(SETTINGS);
         // a file that does not parse holds his other rows: antenna never writes over it
@@ -84,10 +85,16 @@ async function saveSetting(key, value) {
     }
 }
 
-// the deck reads each thread's state file and publishes its context fill and wait line by pid; antenna reads them here
+// the deck reads each thread's state file and publishes its facts by pid; antenna reads them here
 const THREADS_KEY = 'x-herdr-deck.threads';
+// a 🔥 press is the deck's to write: antenna asks it here, {at, on, sid} (x-herdr-deck orbit.js HOT_ASK)
+const HOT_ASK = 'x-herdr-deck.hot';
+// a press shows at once and holds this long while the deck writes it
+const HOT_PENDING_MS = 8000;
 
-/** @param {number | null | undefined} pid @returns {{ context: number | null, wait: string | null } | null} */
+/** @typedef {{ context: number | null, isHot: boolean, model: string | null, sid: string | null, wait: string | null }} Facts */
+
+/** @param {number | null | undefined} pid @returns {Facts | null} */
 function factsOf(pid) {
     const deck = /** @type {{ threads?: Record<string, any> } | null} */ (
         shared(THREADS_KEY)
@@ -96,6 +103,9 @@ function factsOf(pid) {
     return f
         ? {
               context: typeof f.context === 'number' ? f.context : null,
+              isHot: f.isHot === true,
+              model: typeof f.model === 'string' ? f.model : null,
+              sid: typeof f.sid === 'string' ? f.sid : null,
               wait: typeof f.wait === 'string' ? f.wait : null,
           }
         : null;
@@ -162,6 +172,8 @@ export default class Antenna extends View {
         this.spareKeys = Array.from({ length: ROW_KEYS }, () =>
             cx.focus_handle(),
         );
+        /** @type {Map<string, { at: number, on: boolean }>} his 🔥 presses by sid, shown until the deck reads them */
+        this.hotPressed = new Map();
         /** @type {string | null} the stop that held the keyboard at the last draw */
         this.heldStop = null;
         // one drag; it lives on the view, so a status redraw mid-drag keeps it (FRM-664)
@@ -323,6 +335,40 @@ export default class Antenna extends View {
             );
     }
 
+    /** keep hot for a row's thread, the deck's own 🔥: filled while on; its press is the deck's to write
+     * @param {Theme} t @param {Facts} f */
+    hotButton(t, f) {
+        const own = this.hotPressed.get(f.sid);
+        const isPending =
+            own != null &&
+            own.on !== f.isHot &&
+            Date.now() - own.at < HOT_PENDING_MS;
+        const isOn = isPending ? own.on : f.isHot;
+        return div()
+            .id(`hot-${f.sid}`)
+            .size(20)
+            .flex_none()
+            .flex()
+            .items_center()
+            .justify_center()
+            .rounded(10)
+            .border_1()
+            .border_color(isOn ? t.solid : t.border)
+            .bg(isOn ? t.solid : t.surface)
+            .text_size(11)
+            .cursor_pointer()
+            .hover((s) => s.opacity(0.85))
+            .tooltip(isOn ? 'keep hot: on' : 'keep hot')
+            .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
+            .on_click((_e, cx) => {
+                cx.stop_propagation();
+                const at = Date.now();
+                this.hotPressed.set(f.sid, { at, on: !isOn });
+                setShared(HOT_ASK, { at, on: !isOn, sid: f.sid });
+            })
+            .child('🔥');
+    }
+
     /** @param {string} address @returns {import('gpui-kit').FocusHandle | null} */
     rowKey(address) {
         const kept = this.rowKeys.get(address);
@@ -335,19 +381,21 @@ export default class Antenna extends View {
     /** a handle of a row no longer drawn goes back to the pool @param {string[]} addresses */
     freeRowKeys(addresses) {
         const drawn = new Set(addresses);
+        // a handle still holding the keyboard waits: handed to a new row, Enter there would open a thread he never picked
         for (const [a, key] of this.rowKeys)
-            if (!drawn.has(a)) {
+            if (!drawn.has(a) && !key.is_focused()) {
                 this.rowKeys.delete(a);
                 this.spareKeys.push(key);
             }
     }
 
     /** the Tab loop's turn: publish this draw's stops, take the stop it names, and keep the hold in step with focus
-     * @param {string[]} addresses the thread rows in drawn order @param {Context} cx */
-    joinTabLoop(addresses, cx) {
+     * @param {string[]} addresses the thread rows in drawn order @param {string[]} stops the ones that are Tab stops
+     * @param {Context} cx */
+    joinTabLoop(addresses, stops, cx) {
         /** @param {() => void} run */
         const later = (run) => cx.timer.after(0, run);
-        const to = this.tab.draw(addresses.map(stopOf), later);
+        const to = this.tab.draw(stops, later);
         const toAddress = to && addresses.find((a) => stopOf(a) === to);
         if (toAddress) later(() => this.rowKey(toAddress)?.focus());
         const holding = addresses.find((a) =>
@@ -372,7 +420,11 @@ export default class Antenna extends View {
         this.track(list, now);
         const order = this.keepOrder(list);
         setAgentOrder(order.filter((a) => list.some((x) => x.address === a)));
-        if (this.isSeeded) publishOrder(order);
+        if (this.isSeeded)
+            publishOrder(
+                order,
+                list.map((a) => a.address),
+            );
         const byAddress = new Map(list.map((a) => [a.address, a]));
         const names = Object.fromEntries(
             list.map((a) => [a.address, sessionName(a.address) ?? a.title]),
@@ -398,7 +450,11 @@ export default class Antenna extends View {
         );
         this.freeRowKeys(addresses);
         this.joinTabLoop(
-            isNarrow ? [] : addresses.filter((a) => this.rowKey(a)),
+            addresses,
+            tabStops(addresses, {
+                hasKey: (a) => Boolean(this.rowKey(a)),
+                isNarrow,
+            }),
             cx,
         );
         const isCompact = knobs['antenna.rowHeight'] === 'compact';
@@ -460,6 +516,7 @@ export default class Antenna extends View {
                 knobs,
                 {
                     context: state?.context ?? null,
+                    model: state?.model ?? null,
                     // a working thread's time says nothing: idle time is for one that waits
                     since:
                         r.dot === 'working'
@@ -533,6 +590,15 @@ export default class Antenna extends View {
                             ),
                         ),
                 )
+                .when(Boolean(more.model), (el) =>
+                    el.child(
+                        div()
+                            .flex_none()
+                            .text_size(11)
+                            .text_color(t.dim)
+                            .child(more.model ?? ''),
+                    ),
+                )
                 .when(Boolean(more.context), (el) =>
                     el.child(
                         div()
@@ -550,6 +616,11 @@ export default class Antenna extends View {
                             .text_color(t.dim)
                             .child(more.idle ?? ''),
                     ),
+                )
+                .when(
+                    knobs['antenna.details.hot'] === true &&
+                        Boolean(state?.sid),
+                    (el) => el.child(this.hotButton(t, state)),
                 )
                 .child(this.dot(t, r.dot));
         });
