@@ -52,7 +52,10 @@ func holdsDir() string {
 	return filepath.Join(userHome, ".claude", "plugins", "store")
 }
 
-func heldByOthers(tree string, paths []string) []heldPath {
+func heldByOthers(tree string, paths []string) []heldPath { return heldBy(tree, paths, false) }
+
+// heldBy lists the live holds on the paths that belong to this session (mine) or to any other
+func heldBy(tree string, paths []string, mine bool) []heldPath {
 	dir := holdsDir()
 	if dir == "" {
 		return nil
@@ -80,7 +83,7 @@ func heldByOthers(tree string, paths []string) []heldPath {
 			rest, ok := strings.CutPrefix(name, "hold:")
 			session, file, cut := strings.Cut(rest, ":")
 			// a named dir takes every held file under it
-			if !ok || !cut || (file != key && !strings.HasPrefix(file, key+"/")) || session == self {
+			if !ok || !cut || (file != key && !strings.HasPrefix(file, key+"/")) || (session == self) != mine {
 				continue
 			}
 			var hold modHold

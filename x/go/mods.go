@@ -516,7 +516,9 @@ type modReport struct {
 	Failed   []string `json:"failed,omitempty"`
 	Errored  []string `json:"errored,omitempty"`
 	Passed   int      `json:"passed"`
-	log      string
+	// a peer's work the overlay left at HEAD, «<path>, not yours»
+	Skipped []string `json:"skipped,omitempty"`
+	log     string
 }
 
 func (m modReport) isRed() bool { return m.Validate != "ok" || len(m.Failed)+len(m.Errored) > 0 }
@@ -540,8 +542,10 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 			return nil, err
 		}
 		// the verify red harness has no scratch and keeps every file
+		var skipped []string
 		if copies.scratch != "" {
-			if err := dropUntracked(repo, copies.scratch, overlay, mod, only); err != nil {
+			var err error
+			if skipped, err = leavePeersOut(repo, copies.scratch, overlay, mod, only); err != nil {
 				return nil, err
 			}
 		}
@@ -563,6 +567,7 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 		if err != nil {
 			return nil, err
 		}
+		report.Skipped = skipped
 		reports = append(reports, report)
 	}
 	return reports, nil
@@ -604,25 +609,6 @@ func testModOverlay(mod, overlay string) (modReport, error) {
 	}
 	report.log = log
 	return report, nil
-}
-
-// a file git has never seen in the mod, that this session never pulled or landed, is a parallel member's half-done work: left in, one
-// stray test red every run until its owner committed it. what the session pulled or landed has a base copy in scratch and stays, as
-// a file --only names and an ignored file (the engine's types) do; its edited copies lay over after
-func dropUntracked(repo, scratch, overlay, mod, keep string) error {
-	got, _ := run(repo, nil, "", "git", "ls-files", "--others", "--exclude-standard", "-z", "--", modsDir+mod)
-	if !got.ok {
-		return &Fail{Msg: "git ls-files failed: " + got.log, Next: "git status"}
-	}
-	for path := range strings.SplitSeq(got.out, "\x00") {
-		if path == "" || path == keep || exists(filepath.Join(scratch, scratchBase, path)) {
-			continue
-		}
-		if err := removeIfThere(filepath.Join(overlay, strings.TrimPrefix(path, modsDir+mod+"/"))); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 // the overlay's tsc, with the flags `mods/typecheck.ts` passes: a dropped import is red here in seconds, before the suite spends minutes on it;

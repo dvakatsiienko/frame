@@ -748,8 +748,9 @@
 - ⬜ `x mods edit test` and `push` run the overlay's tsc before any test (FRM-662)
   - given a mod the engine wrote types for, when a copy holds a type error or a dropped import, then the verb is red as `typecheck: <first tsc line>` and `claude plugin test` never starts; nothing is written
   - given a mod with no engine types, then the step is skipped, as `pnpm mods:typecheck` skips it
-- ⬜ `x mods edit test` and `push` leave a peer's untracked file out of the overlay (FRM-572)
-  - given an untracked `*.test.ts` in the mod that this session never pulled or landed, then the overlay never reads it and its red waits for its own commit; a file this session landed and has not committed yet, the engine's ignored types and a file `--only` names stay
+- ⬜ `x mods edit test` and `push` leave a peer's work in the mod out of the overlay (FRM-572)
+  - given a file git sees dirty in the mod that this session never pulled, landed or held (untracked, staged new, an uncommitted edit or a delete of a tracked one), then the overlay holds HEAD's bytes of it, or none when HEAD has none, and its red waits for its owner's commit; each is named «skipped: <path>, not yours» on stderr and in the mod's `skipped` list, so no run reads green or red for it silently
+  - given a file this session pulled, landed (not committed yet), holds in x-mod-holds or names with `--only`, then it stays; so do the engine's ignored types
 - ⬜ `x mods edit test --range <base>..<head>` runs the suite at each commit of a range (FRM-662)
   - given a range, then each commit that touches a mod (a merge by its first-parent diff) runs validate, tsc and the tests on its own tracked bytes (never the working tree; the checkout's engine types, node_modules and tsconfig.json ride along, git holds none), one line per commit: its short sha and the pass or fail count
   - given a red commit, then the walk goes on and the failure names every red commit; a range that runs no commit is refused, `--range` beside `--only` or `--against` is a usage exit, and a `--range` end or an `--against` ref starting with `-` is a usage exit before git sees it
