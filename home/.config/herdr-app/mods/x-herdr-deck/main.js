@@ -25,6 +25,7 @@ import {
     pressLine,
     withBandPress,
 } from './band-press.js';
+import { createCardFiles } from './card-files.js';
 import { isDeckShown, takeCommands, tickAsker } from './deck-commands.js';
 import { deckParts, orbitHeader } from './deck-parts.js';
 import { createGlide } from './glide-view.js';
@@ -140,6 +141,8 @@ export default class Deck extends View {
     /** each thread's plan tick written and not read yet, by sid, the press's time @type {Map<string, number>} */
     planSent = new Map();
     steerFocus = /** @type {string | null} */ (null);
+    /** the files each ask names, previewed or listed in its card (FRM-676) */
+    files = createCardFiles();
     /** the deck's seat in the Tab loop: its drawn steer boxes */
     tab = createTabMember('x-herdr-deck', { layout, setShared, shared });
     /** @param {unknown} _props @param {Context} cx */
@@ -253,6 +256,7 @@ export default class Deck extends View {
             );
             // drawn once the chain holds the read's end: settled, failed or let go as stalled
             cx.notify();
+            if (await this.files.look(this.rows ?? [])) cx.notify();
         });
     }
 
@@ -808,8 +812,13 @@ export default class Deck extends View {
                         ),
                     ),
                 )
-                .when(Boolean(linkOf(ask.link)), (el) =>
+                .when(linkOf(ask.link)?.kind === 'web', (el) =>
                     el.child(this.linkLine(t, ask, `link-${key}`)),
+                )
+                .children(
+                    this.files.view(t, ask, key, (id) =>
+                        this.linkLine(t, ask, id),
+                    ),
                 )
                 .when(Boolean(ask.id) && this.linkShown?.id === ask.id, (el) =>
                     el.child(this.linkPreview(t, `linked-${key}`)),

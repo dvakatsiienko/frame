@@ -2,6 +2,8 @@
     "place": "none",
     "shared": [
         "band-press.js",
+        "chat-asks.js",
+        "file-links.js",
         "focus-ring.js",
         "joined.js",
         "keypress.js",

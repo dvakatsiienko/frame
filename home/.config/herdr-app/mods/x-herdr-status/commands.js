@@ -3,8 +3,8 @@
 
 import { exec, layout, nextCommand, openOverlay, run, setShared } from 'herdr';
 
-import { deckToggleId, findBlock } from './blocks.js';
-import { settingsOverlay } from './chat-asks.js';
+import { deckToggleId } from './blocks.js';
+import { chatSelectArgs, settingsOverlay } from './chat-asks.js';
 
 /** whether a window, dialog or popup sits over the layout: no mod api lists them, the window's status does */
 async function isOverlayOpen() {
@@ -18,9 +18,6 @@ async function isOverlayOpen() {
 
 const shownTree = () => /** @type {any} */ (layout())?.root ?? layout();
 
-/** the first block of the shown layout whose content passes `test` @param {(content: any) => unknown} test */
-const blockOf = (test) => findBlock(shownTree(), test)?.block;
-
 /** every x-herdr key's command, for the mod's life */
 export async function takeCommands() {
     for (;;) {
@@ -29,14 +26,8 @@ export async function takeCommands() {
         if (command === 'find' && (await isOverlayOpen())) continue;
         // ⌘F from any focus opens the chat's find; a terminal keeps its own ⌘F (keys.json's terminal section)
         if (command === 'quill' || command === 'effort' || command === 'find') {
-            const chat = blockOf(
-                (c) => c?.mod === 'x-herdr-chat' && c.props?.stack,
-            );
-            if (chat)
-                run('layout.select', {
-                    child: chat.content.props.self,
-                    stack: chat.content.props.stack,
-                });
+            const chat = chatSelectArgs(layout());
+            if (chat) run('layout.select', chat);
             setShared(`chat.${command}`, Date.now());
         } else if (command === 'escape') {
             // the chat on screen closes its viewer or find; no view is switched for it

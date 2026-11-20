@@ -56,11 +56,11 @@ export function createPictureViewer({
 
     /**
      * a click on a picture: the viewer over the chat, or with ⌘ held his desktop app (CleanShot annotate by default)
-     * @param {string[]} files @param {number} at @param {Context} cx
+     * @param {string[]} files @param {number} at @param {Context} cx @param {boolean} [isDesktop] the press asks for his app
      */
-    function show(files, at, cx) {
+    function show(files, at, cx, isDesktop = isCmdHeld()) {
         const clicked = files[at];
-        if (isCmdHeld() && clicked)
+        if (isDesktop && clicked)
             exec('open', pictureOpenArgs(clicked, isCleanShot())).catch(
                 () => {},
             );

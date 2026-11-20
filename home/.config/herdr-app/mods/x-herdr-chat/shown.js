@@ -92,6 +92,14 @@ export const isFreshAsk = (ask, now) =>
     typeof ask === 'number' && now - ask < ASK_FRESH_MS;
 
 /**
+ * a viewer ask from another mod (orbit's previews) opens once, on the chat on screen, while fresh
+ * @param {import('./chat-asks.js').ChatView | null} ask @param {number | null} last the time of the ask opened last
+ * @param {boolean} isShown @param {number} now
+ */
+export const isViewAsked = (ask, last, isShown, now) =>
+    isShown && ask !== null && ask.time !== last && isFreshAsk(ask.time, now);
+
+/**
  * what a draw does about the keyboard and the picker: only the chat on screen acts, so a hidden one never opens a
  * second picker on the same thread. the quill takes the keyboard when the chat comes on screen, on a thread switch
  * and on a fresh ⌘K; a fresh ⌘⇧E not acted on yet opens the picker on the effort, or applies it

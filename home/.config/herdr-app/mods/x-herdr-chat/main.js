@@ -24,7 +24,7 @@ import {
 
 import { createBand } from './band-view.js';
 import { createBlockedPanel } from './blocked-panel.js';
-import { CHAT_SHOWN } from './chat-asks.js';
+import { CHAT_SHOWN, CHAT_VIEW, chatViewOf } from './chat-asks.js';
 import { readableTheme } from './contrast.js';
 import { createFindBar } from './find-bar.js';
 import { createHeights } from './heights.js';
@@ -40,7 +40,7 @@ import { SENT_DIR, createSentPictures } from './sent-pictures.js';
 import { readSettings, settingsDir } from './settings-io.js';
 import { createSettingsWindow } from './settings-window.js';
 import { saveSquareThumb } from './shots.js';
-import { asksActedOn, isShownIn, shownThread } from './shown.js';
+import { asksActedOn, isShownIn, isViewAsked, shownThread } from './shown.js';
 import { createTabMember } from './tab-loop.js';
 import { START_ROW, createThreadFeed } from './thread-feed.js';
 
@@ -91,6 +91,8 @@ export default class Chat extends View {
     findAsk = null;
     /** Esc's last ask from outside the chat (the status bar takes the key and writes the time) @type {unknown} */
     escapeAsk = null;
+    /** the time of the last viewer ask opened @type {number | null} */
+    viewAsk = null;
     /** ⌘⇧E's last ask @type {unknown} */
     effortAsk = null;
     /** what this chat last wrote in `chat.shown`, as json: its thread on screen and whether find is open @type {string} */
@@ -349,6 +351,22 @@ export default class Chat extends View {
                     ? this.pictures.step('close', later)
                     : this.findBar.close(later),
             );
+        // a click on an orbit preview brings the chat into view and asks its viewer here (FRM-676)
+        const viewAsk = chatViewOf(shared(CHAT_VIEW));
+        if (
+            isViewAsked(viewAsk, this.viewAsk, isShown, Date.now()) &&
+            viewAsk
+        ) {
+            this.viewAsk = viewAsk.time;
+            _cx.timer.after(0, (later) =>
+                this.pictures.show(
+                    viewAsk.files,
+                    viewAsk.at,
+                    later,
+                    viewAsk.isDesktop,
+                ),
+            );
+        }
         if (acts.isFind && !this.pictures.isOpen())
             _cx.timer.after(0, (later) => this.findBar.open(later));
         // the quill is the chat's one Tab stop while the chat shows; the loop asks for it, or a reload hands it back

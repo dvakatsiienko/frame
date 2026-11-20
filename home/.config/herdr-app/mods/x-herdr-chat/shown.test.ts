@@ -4,6 +4,7 @@ import {
     asksActedOn,
     isFreshAsk,
     isShownIn,
+    isViewAsked,
     pidFor,
     shownThread,
 } from './shown.js';
@@ -301,5 +302,22 @@ describe('Esc from anywhere in the window closes the chat’s viewer or find (di
 
     test('the same Esc is acted on once', () => {
         expect(asksActedOn({ ...at, lastEscape: 9_500 }).isEscape).toBe(false);
+    });
+});
+
+describe("orbit's preview opens the viewer once, on the chat in view (FRM-676)", () => {
+    const ask = { at: 0, files: ['/a.png'], isDesktop: false, time: 9_000 };
+
+    test('a fresh ask the chat on screen has not opened yet is opened', () => {
+        expect(isViewAsked(ask, null, true, 10_000)).toBe(true);
+    });
+
+    test('the same ask again is not opened twice', () => {
+        expect(isViewAsked(ask, 9_000, true, 10_000)).toBe(false);
+    });
+
+    test('a hidden chat, or a stale ask, opens nothing', () => {
+        expect(isViewAsked(ask, null, false, 10_000)).toBe(false);
+        expect(isViewAsked(ask, null, true, 20_000)).toBe(false);
     });
 });

@@ -97,3 +97,11 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given dima presses 🛎️ tick, 🔁 replay or a 🔥 keep-hot button, or hovers a steer box
   - then no blue border flashes while he holds the click, and no tooltip shows over the steer field
   - decision: his word, 14:57: «remove this border entirely for all buttons»; 16:09: the steer boxes lose their tooltips
+- ⬜ a picture an ask names previews in its card, a click opens the chat's viewer (FRM-676 slice A)
+  - given an ask whose link, or a path in its text, ends in png, jpg, jpeg, gif or webp
+  - then the card shows it as a preview the card's width at most and never taller than 120 px, the link first, then the text's paths
+  - and any other file path is a 📄 row that opens the file; a link to a text file keeps its 🔗 row that folds its text open
+  - and a file that does not exist reads «not found: <name>», the rest of the card as ever
+  - when he clicks a preview
+  - then the chat comes into view and its picture viewer opens on it, ← → through the ask's other pictures; with ⌘ held his desktop app opens it, CleanShot annotate when that setting is on
+  - decision: the deck asks the chat's own viewer through the shared value `chat.view`, one viewer for both, nothing moved to `_shared/` but the path finder (clio's spec, 20 Nov)

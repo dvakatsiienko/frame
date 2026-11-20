@@ -14,6 +14,7 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **dock** — the stack under the Chat view's log, inside x-herdr-chat: the band on top, the quill, the ledge under it
 - **band** — the dock's top card: the thread's meters (context, weekly use); not cc's own band, the row cc draws in the Terminal view
 - **quill** — the dock's text box, where dima writes to a thread
+- **picture viewer** — the chat's one in-app viewer, over the whole Chat view: a click on a picture in a message, a reply or an orbit card's **preview** opens it, ← → steps through that message's or ask's pictures
 - **ledge** — the dock's bottom card: the thread's status line with its clock and Stop, the buttons, the agent's progress
 - **x-herdr key** — a key of ours in herdr's `keys.json`, its action naming an x-herdr mod (`x-herdr-status.quill`); listed in `hotkeys.js`, shown on x-herdr-settings' keys page
 - **x-herdr-settings** — «settings» in speech: the one dialog for x-herdr's choices (pages general, dock, chat, claude code mods, keys), opened by the band's 🎛️ or ⌘⇧,; drawn by x-herdr-chat today, not a mod of its own; its values live in `~/.claude/shelf/herdr-settings/settings.json`
