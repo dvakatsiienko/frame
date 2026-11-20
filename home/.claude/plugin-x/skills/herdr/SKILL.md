@@ -36,22 +36,20 @@ hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<re
 ```
 
 - this is every member's summon door; a wing starts by `~/frame/_clio/script/clio-start.sh wing <N> '<first prompt>'`, the prompt before `--remote-control`; a lane member's line carries its brief, `"$(cat <brief file>)"`, its argv per role and its preflight (`x brief summon '<the line>'`) in `x:crew-lead`
-- 📌 then its tab, the same turn (a `--no-parent` thread has none, so herdr's agents list skips it): `node scripts/thread-tab.ts <t> '<registry name>'` prints the tab id (it runs `terminal.keep`, then `tab.rename`; exit 1 and one line when no tab came back); both calls need no new word from dima. done when `herdr-app ls` shows the tab by its registry name
-- 📌 the cc `-n` is its name for `ListAgents` and `threadOf` (`🦉🪽 clio: wing <N>` makes a wing; `SendMessage` by it, inference); herdr's `--name` and `--label` only tag the pane; `hc ls --json` lists the live threads
-- a probe started by a plain `hc run` stays unrecorded in `x thread list`, known by its `-n` alone: a record gives a role and its powers
-- its session id: the `~/.claude/sessions/<pid>.json` of the pid `hc get <t> --json` reports; its idle notice lands when your own turn ends
+- 📌 then its tab, the same turn (a `--no-parent` thread has none, so herdr's agents list skips it): `node scripts/thread-tab.ts <t> '<registry name>'` prints the tab id (it runs `terminal.keep`, then `tab.rename`; exit 1 and one line when no tab came back); done when `herdr-app ls` shows the tab by its registry name
+- 📌 the cc `-n` is its name for `ListAgents` and `threadOf` (`🦉🪽 clio: wing <N>` makes a wing; `SendMessage` by it); herdr's `--name` and `--label` only tag the pane; `hc ls --json` lists the live threads
+- a plain `hc run` probe stays out of `x thread list`, known by its `-n` alone
+- its session id: `~/.claude/sessions/<pid>.json`, the pid from `hc get <t> --json`; its idle notice lands when your own turn ends
 - stop it with `hc kill <t>`; a `claude --bg` member runs unchanged from a herdr thread, `claude attach <id>` opens it in a pane, `claude stop <id>` ends it
-- `--no-parent`: by default a terminal started from inside another dies with its parent's program
-- `--no-notify`: by default hc types notes about the child into the parent's prompt
-- `--keep` is not a restart: it puts a shell where a lost program was and never re-runs `claude`
+- `--no-parent` keeps it alive past its parent's program; `--no-notify` keeps hc's notes out of the parent's prompt; `--keep` only puts a shell where a lost program was
 
 **a dead clio thread** — `~/frame/_clio/script/clio-revive.sh main|wing <N>` (dima's alias `clio-revive`) resumes it in its own tab, cache hot; never a hand `claude --resume` line
 
-**hand another agent thread a message, then read it** — `hc send <t> '<text>'` once `hc get <t> --json` reads `done` or `idle`, then `hc read <t> --lines 80`. an agent thread takes the text as its next prompt; `--if idle` refuses every thread that has finished a turn, its status staying `done` (probe, 2026-11-09); a plain shell reports no status, so it gets a bare `hc send` too
+**hand another agent thread a message, then read it** — `hc send <t> '<text>'` once `hc get <t> --json` reads `done` or `idle`, then `hc read <t> --lines 80`. an agent thread takes the text as its next prompt; `--if idle` refuses any thread done with a turn, its status staying `done`; a plain shell reports no status, so it gets a bare `hc send` too
 
 **prefill a command for dima's hand** — the enter is his
 
-- `hc keys <t> g i t space s t a t u s` types without Enter; `hc keys <t> enter` submits (proven in a scratch shell)
+- `hc keys <t> g i t space s t a t u s` types without Enter; `hc keys <t> enter` submits
 - it takes letters, digits, `space`, `- / . ' =`, and `shift+<letter>` for a capital; it types `4` for `shift+4` and refuses `~ " | $`
 - a command with a pipe, a double quote, `$` or `~` goes to a Rex tab instead (`x:rex`)
 - aim it only at a terminal you started for this; his own threads are his
@@ -63,6 +61,8 @@ printf '\e]7501;id=%s:state=%s:msg=%s\e\\' build working "$(printf %s 'building'
 ```
 
 **map his window** — `uv run -q --with pillow python -I scripts/window-map.py <out.png>`: shoots it, boxes from its layout (`window-map.json`), a hidden panel listed, never drawn; open nothing for it
+
+**move a part between the sidebar and the deck** — `node scripts/layout-part-move.ts antenna deck --before orbit --size px:279`, then `glide deck --before orbit`; back: `antenna sidebar --size weight:1`, then `glide sidebar`. one part a call, the shown layout unless `--layout <name>`
 
 **change a key** — only `node scripts/keys-change.ts set|remove <global|terminal> <key> [command|json]`, or `reload` after a save elsewhere: a bare `keys.json` save kills x-herdr mods' keys
 
