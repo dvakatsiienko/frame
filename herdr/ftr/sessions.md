@@ -18,7 +18,12 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - not checked: a drag by his hand
 - ⬜ the deck leaves the thread list to antenna
   - given the deck draws
-  - then orbit is its first section and glide follows; the threads are antenna's alone (FRM-618:W1290, FRM-618:W1292)
+  - then orbit is its one scrolling section over the pinned phases; the threads are antenna's alone (FRM-618:W1290, FRM-618:W1292)
+- 🧭 glide sits under antenna, growing up as lanes join
+  - given his window with lanes running
+  - when it draws
+  - then glide's cards sit at the sidebar's bottom under antenna, the block as tall as its cards up to 480 px, past that they scroll; with no lane the block takes no room and antenna fills the sidebar (FRM-618:W10)
+  - decision: glide is the deck drawn with `view: 'glide'` in the sidebar column of `layouts/itrout.json`; herdr sizes a block by px or weight only, so glide measures its cards and asks `layout.resize` for its own block
   - decision: the deck publishes each thread's facts by pid (context, wait line, model, keep hot, sid) under shared `x-herdr-deck.threads`; antenna draws them, and its 🔥 asks the deck through `x-herdr-deck.hot`, so the deck stays the press file's one writer
 - ⬜ every thread's phases pinned at the deck's bottom
   - given threads with phases

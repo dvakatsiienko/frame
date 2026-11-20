@@ -1,5 +1,6 @@
 // x-herdr-deck: the live sessions from Claude Code's registry with what each waits on and its phases, the open
-// orbit asks x-mod-stash keeps on disk, ticked here into each session's ticks file, and each lane's glide card.
+// orbit asks x-mod-stash keeps on disk, ticked here into each session's ticks file; a `view: 'glide'` copy draws each
+// lane's glide card under antenna (glide-view.js).
 
 import { Button, Input, InputState, h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
@@ -26,9 +27,9 @@ import {
 import { takeCommands } from './deck-commands.js';
 import { deckParts } from './deck-parts.js';
 import { focusBorder } from './focus-ring.js';
+import { createGlide } from './glide-view.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
-import { lanesShown, stepMark } from './lanes.js';
-import { SANS, SIZE, bar, clockOf, leadingRoom, line, prose } from './look.js';
+import { SANS, SIZE, clockOf, leadingRoom, line, prose } from './look.js';
 import {
     HOT_ASK,
     ORDER_KEY,
@@ -59,13 +60,11 @@ import {
     tickAll,
     tickAllTakes,
     tickAllThread,
-    ticketUrl,
     withPending,
 } from './orbit.js';
 import { SENT_MS, next, pressState, untickDoor } from './press.js';
 import {
     CLAUDE,
-    LANES,
     SESSIONS,
     SETTINGS,
     SETTINGS_DIR,
@@ -84,8 +83,6 @@ import { createTabMember } from './tab-loop.js';
 /** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'ansi5' | 'ansi6' | 'canvas' | 'dim' | 'foreground' | 'hover' | 'idle' | 'muted' | 'raised' | 'solid' | 'solid_foreground' | 'surface' | 'working', Color>} Theme */
 /** @typedef {import('./orbit.js').Ask} Ask */
 /** @typedef {import('./shelf.js').Row} Row */
-
-/** @typedef {import("./lanes.js").Lane} Lane */
 
 // how long a key that did nothing says why under its steer box
 const KEY_NOTE_MS = 3000;
@@ -112,6 +109,8 @@ const rankOf = (status) => RANK[STATE[status] ?? ''] ?? 2;
 export default class Deck extends View {
     /** the asker under the pointer, which ⌘⇧K ticks first @type {string | null} */
     hoverSid = null;
+    /** the copy drawing glide under antenna, `view: 'glide'` @type {ReturnType<typeof createGlide> | null} */
+    glide = null;
     /** the asker he clicked last, ringed @type {string | null} */
     pickedSid = null;
     // the ticks files, one write at a time
@@ -164,10 +163,13 @@ export default class Deck extends View {
         this.linkShown = null;
         this.isThread = props()?.view === 'seat';
         if (this.isThread) return;
+        if (props()?.view === 'glide') {
+            this.glide = createGlide(props().block);
+            this.glide.init(cx);
+            return;
+        }
         /** @type {Row[]} */
         this.rows = [];
-        /** @type {Lane[]} */
-        this.lanes = [];
         /** @type {Set<string>} */
         this.open = new Set();
         // a steer box per open ask, made when a read finds the ask: an InputState is never made while drawing
@@ -219,9 +221,7 @@ export default class Deck extends View {
                     );
                     if (
                         folder.endsWith('/shelf') &&
-                        !changed.some(
-                            (p) => p === LANES || p === USAGE || p === folder,
-                        )
+                        !changed.some((p) => p === USAGE || p === folder)
                     )
                         continue;
                     this.reload(cx);
@@ -249,7 +249,6 @@ export default class Deck extends View {
      */
     async read(isCurrent) {
         const shelf = await states();
-        const lanes = lanesShown(await json(LANES));
         const week =
             (await json(USAGE))?.rate_limits?.seven_day?.used_percentage ??
             null;
@@ -278,7 +277,6 @@ export default class Deck extends View {
             Date.now(),
         );
         if (next) setShared(THREADS_KEY, next);
-        this.lanes = lanes;
         /** @param {string} key */
         const askOf = (key) => {
             const [sid, id] = key.split(':');
@@ -1085,114 +1083,9 @@ export default class Deck extends View {
         });
     }
 
-    /** @param {Theme} t @param {Lane} l */
-    lane(t, l) {
-        const items = l.items ?? [];
-        const current = Math.min(l.current ?? 0, items.length);
-        const key = l.id ?? l.title;
-        const open = this.open.has(key);
-        const now = items[current];
-        const ticket = ticketUrl(l.ticket);
-        /** @param {import('./lanes.js').LaneItem} item @param {number} i */
-        const step = (item, i) =>
-            h_flex()
-                .gap(6)
-                .child(
-                    div()
-                        .w(12)
-                        .flex_none()
-                        .text_size(SIZE.secondary)
-                        .text_color(item.isDone ? t.working : t.muted)
-                        .child(stepMark(item, i, current)),
-                )
-                .child(
-                    line(i === current ? t.foreground : t.muted, SIZE.secondary)
-                        .when(i === current, (el) => el.font_semibold())
-                        .child(item.text),
-                );
-        return v_flex()
-            .id(`lane-${key}`)
-            .mx(12)
-            .my(4)
-            .p(12)
-            .gap(8)
-            .rounded(8)
-            .border_1()
-            .border_color(t.border)
-            .cursor_pointer()
-            .hover((st) => st.bg(t.hover))
-            .tooltip(open ? 'collapse' : 'show every step')
-            .on_click((_e, cx) => {
-                open ? this.open.delete(key) : this.open.add(key);
-                cx.notify();
-            })
-            .child(
-                h_flex()
-                    .gap(8)
-                    .items_center()
-                    .child(line(t.foreground, SIZE.main).child(`🛼 ${l.title}`))
-                    .when(Boolean(ticket), (el) =>
-                        el.child(
-                            div()
-                                .id(`lane-ticket-${key}`)
-                                .flex_none()
-                                .px(6)
-                                .rounded(4)
-                                .border_1()
-                                .border_color(t.border)
-                                .text_size(SIZE.small)
-                                .text_color(t.muted)
-                                .cursor_pointer()
-                                .hover((st) =>
-                                    st.text_color(t.foreground).underline(),
-                                )
-                                .tooltip(`open ${l.ticket} in linear`)
-                                .on_mouse_down('left', (_e, cx) =>
-                                    cx.stop_propagation(),
-                                )
-                                .on_click((_e, cx) => {
-                                    cx.stop_propagation();
-                                    cx.spawn(async () => {
-                                        await exec('open', [
-                                            ticket ?? '',
-                                        ]).catch(
-                                            /** @returns {null} */ () => null,
-                                        );
-                                    });
-                                })
-                                .child(l.ticket ?? ''),
-                        ),
-                    )
-                    .child(
-                        div()
-                            .flex_none()
-                            .text_size(SIZE.small)
-                            .text_color(t.muted)
-                            .child(`${l.done ?? current}/${items.length}`),
-                    ),
-            )
-            .child(
-                div()
-                    .w_full()
-                    .child(
-                        bar(
-                            t,
-                            items.length
-                                ? (100 * (l.done ?? current)) / items.length
-                                : 0,
-                            '100%',
-                            t.working,
-                        ),
-                    ),
-            )
-            .when(open, (el) => el.children(items.map((it, i) => step(it, i))))
-            .when(!open && Boolean(now), (el) =>
-                now ? el.child(step(now, current)) : el,
-            );
-    }
-
     /** @param {Context} cx */
     render(cx) {
+        if (this.glide) return this.glide.render();
         const t = /** @type {Theme} */ (theme());
         if (this.isThread) return div();
         const hotAsk = freshHotAsk(shared(HOT_ASK), this.hotAskSeen);
@@ -1225,7 +1118,6 @@ export default class Deck extends View {
         // antenna lists the threads; the deck scrolls orbit and glide, and pins every thread's phases to its bottom
         const parts = deckParts(this.rows, {
             asks,
-            lanes: this.lanes.length,
             order: /** @type {number[] | null} */ (shared(ORDER_KEY)),
         });
         const scrolling = v_flex()
@@ -1257,15 +1149,6 @@ export default class Deck extends View {
                                 .child(`⏳ ${this.pressNote}`),
                         ),
                     ),
-            )
-            .when(parts.scroll.includes('glide'), (el) =>
-                el
-                    .child(
-                        header(
-                            `🛼 glide: ${count(this.lanes.length, 'lane', 'lanes')}`,
-                        ),
-                    )
-                    .children(this.lanes.map((l) => this.lane(t, l))),
             )
             .child(
                 div()

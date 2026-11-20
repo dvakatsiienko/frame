@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
 import { createKeyPress } from '../_shared/keypress.js';

@@ -12,7 +12,7 @@ describe('antenna settings', () => {
             'antenna.details.hot': true,
             'antenna.details.idle': true,
             'antenna.details.model': false,
-            'antenna.details.wait': false,
+            'antenna.details.wait': true,
             'antenna.groupBySpace': true,
             'antenna.rowHeight': 'roomy',
             'antenna.showTabs': true,
