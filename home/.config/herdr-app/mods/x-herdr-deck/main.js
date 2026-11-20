@@ -1,7 +1,7 @@
 // x-herdr-deck: the live sessions from Claude Code's registry with what each waits on and its phases, the open
 // orbit asks x-mod-stash keeps on disk, ticked here into each session's ticks file, and each lane's glide card.
 
-import { Button, Input, InputState, TextView, h_flex, v_flex } from 'gpui-base';
+import { Button, Input, InputState, h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
 import {
     exec,
@@ -17,6 +17,7 @@ import {
 
 import { createCmdEnter, createKeyPress } from './keypress.js';
 import { lanesShown, stepMark } from './lanes.js';
+import { SANS, SIZE, bar, clockOf, leadingRoom, line, prose } from './look.js';
 import {
     ORDER_KEY,
     PENDING_MS,
@@ -39,7 +40,6 @@ import {
     keep,
     kept,
     linkOf,
-    literalAngles,
     nextThreads,
     orbitPinIn,
     orbitSections,
@@ -81,6 +81,8 @@ import {
 
 /** @typedef {import("./lanes.js").Lane} Lane */
 
+// orbit's Tab places with a focus handle: three per ask (tick, replay, steer), 40 asks
+const FOCUS_PLACES = 120;
 // how long a key that did nothing says why under its steer box
 const KEY_NOTE_MS = 3000;
 // Enter and ⌘Enter in a steer box are the deck's own actions, ahead of the box's submit (FRM-648 step 111)
@@ -100,65 +102,6 @@ const STATE = {
 const RANK = { blocked: 0, working: 1 };
 /** blocked threads first, then working, then the rest @param {string} status */
 const rankOf = (status) => RANK[STATE[status] ?? ''] ?? 2;
-// the system font: herdr's own UI font (Geist) ships one face, so markdown's **bold** drew flat in it
-const SANS = '.AppleSystemUIFont';
-// one type scale: names and ask text, secondary lines, the smallest anywhere; secondary text is `muted`, never `dim`,
-// which reads 2.95:1 on paper's white (muted 5.48:1, 5.07:1 on a card's `raised`)
-const SIZE = { main: 15, secondary: 13, small: 12 };
-
-/**
- * @param {Theme} t
- * @param {number} pct
- * @param {number | `${number}%`} width
- * @param {Color} color
- */
-function bar(t, pct, width, color) {
-    const fill = Math.max(0, Math.min(100, Math.round(pct)));
-    return div()
-        .w(width)
-        .h(4)
-        .flex_none()
-        .rounded(2)
-        .bg(t.border)
-        .child(div().w(`${fill}%`).h(4).rounded(2).bg(color));
-}
-
-/** @param {Color} color @param {number} size */
-const line = (color, size) =>
-    div()
-        .flex_1()
-        .min_w(0)
-        .overflow_hidden()
-        .whitespace_nowrap()
-        .text_ellipsis()
-        .text_size(size)
-        .text_color(color);
-
-// blank room at a line's start, `width` px wide at `size` px text: em spaces, then sixth-of-an-em spaces for the rest;
-// both are unicode spaces markdown keeps, where it drops leading ascii ones
-/** @param {number} width @param {number} size */
-const leadingRoom = (width, size) => {
-    const ems = Math.floor(width / size);
-    const sixths = Math.ceil(((width - ems * size) * 6) / size);
-    return ' '.repeat(ems) + ' '.repeat(sixths);
-};
-
-// TextView is the one element whose text can be selected, so anything worth reading aloud goes through it.
-/** @param {string} id @param {string} markdown @param {Color} color @param {number} size */
-const prose = (id, markdown, color, size) =>
-    TextView.markdown(id, literalAngles(markdown))
-        .selectable()
-        .w_full()
-        .text_size(size)
-        .text_color(color);
-
-/** a time as HH:MM, or HH:MM:SS with 3 parts @param {Date} at @param {2 | 3} parts */
-const clockOf = (at, parts) =>
-    [at.getHours(), at.getMinutes(), at.getSeconds()]
-        .slice(0, parts)
-        .map((n) => String(n).padStart(2, '0'))
-        .join(':');
-
 export default class Deck extends View {
     /** the asker under the pointer, which ⌘⇧K ticks first @type {string | null} */
     hoverSid = null;
@@ -179,6 +122,9 @@ export default class Deck extends View {
     /** each orbit control's Tab place; the control a press landed on, ringless until a Tab @type {Map<string, number>} */
     tabAt = new Map();
     pressed = /** @type {string | null} */ (null);
+    steerFocus = /** @type {string | null} */ (null);
+    /** @type {import('gpui-kit').FocusHandle[]} */
+    focusAt = [];
     /** @param {unknown} _props @param {Context} cx */
     init(_props, cx) {
         cx.bind_keys([
@@ -235,6 +181,11 @@ export default class Deck extends View {
         this.week = null;
         /** @type {import('./orbit.js').OrbitPin} */
         this.pin = 'top';
+        // a Button takes the keyboard only through a handle it tracks, and a handle is made only here or in a handler:
+        // one per Tab place, lent by place each draw (FRM-620:W14, his 14:04 try: Tab skipped every button)
+        this.focusAt = Array.from({ length: FOCUS_PLACES }, () =>
+            cx.focus_handle(),
+        );
         cx.timer.every(THREADS_BEAT_MS, (cx) => this.reload(cx));
         this.reload(cx);
         // the press folder too: a 🔥 pressed on the band above a chat draws on its row at once; the settings folder
@@ -723,7 +674,15 @@ export default class Deck extends View {
             const save = () => keep(localStorage, `steer:${key}`, box.value());
             box.on('change', save);
             // Enter and ⌘Enter are the box's own actions (STEER_ENTER), never its submit; focus leaving ends a press
-            box.on('blur', () => this.steerKeys.blurred());
+            box.on('blur', (_e, cx) => {
+                this.steerKeys.blurred();
+                if (this.steerFocus === key) this.steerFocus = null;
+                cx.notify();
+            });
+            box.on('focus', (_e, cx) => {
+                this.steerFocus = key;
+                cx.notify();
+            });
             this.steers.set(key, box);
         } catch (err) {
             this.pressError = `steer box not made: ${err instanceof Error ? err.message : err}`;
@@ -808,18 +767,22 @@ export default class Deck extends View {
             record?.phase === 'failed' ? (record.reason ?? '') : null;
         const isLocked = state === 'locked';
         const labels = pressLabel(state, ask.mark);
+        /** @param {string} id */
+        const focusOf = (id) => this.focusAt[(this.tabAt.get(id) ?? 0) - 1];
         // tick is the main act, so it is the one filled button
         /** @param {string} id @param {string} label @param {string} tip @param {(cx: Context) => void} onClick @param {boolean} [isPrimary] */
         const button = (id, label, tip, onClick, isPrimary = false) =>
             Button.new(`${id}-${key}`)
                 .tab_index(this.tabAt.get(`${id}-${key}`) ?? 0)
                 .tab_stop(!isLocked)
+                .when(Boolean(focusOf(`${id}-${key}`)), (el) =>
+                    el.track_focus(
+                        /** @type {any} */ (focusOf(`${id}-${key}`)),
+                    ),
+                )
                 .on_mouse_down('left', () => {
                     this.pressed = `${id}-${key}`;
                 })
-                .when(this.pressed !== `${id}-${key}`, (el) =>
-                    el.focus((st) => st.border_color(t.accent)),
-                )
                 .h(28)
                 .px(12)
                 .flex_none()
@@ -827,7 +790,14 @@ export default class Deck extends View {
                 .items_center()
                 .rounded(6)
                 .border_1()
-                .border_color(isPrimary ? t.solid : t.border)
+                .border_color(
+                    focusOf(`${id}-${key}`)?.is_focused() &&
+                        this.pressed !== `${id}-${key}`
+                        ? t.accent
+                        : isPrimary
+                          ? t.solid
+                          : t.border,
+                )
                 .bg(isPrimary ? t.solid : t.surface)
                 .text_size(SIZE.secondary)
                 .text_color(isPrimary ? t.solid_foreground : t.foreground)
@@ -938,13 +908,12 @@ export default class Deck extends View {
                                         .flex()
                                         .items_center()
                                         .rounded(6)
-                                        .focus((st) =>
-                                            st
-                                                .border_color(t.accent)
-                                                .border_2(),
-                                        )
                                         .border_1()
-                                        .border_color(t.border)
+                                        .border_color(
+                                            this.steerFocus === key
+                                                ? t.accent
+                                                : t.border,
+                                        )
                                         .bg(t.surface)
                                         .when(isLocked, (el) => el.opacity(0.6))
                                         .when(!isLocked, (el) =>
@@ -1037,6 +1006,7 @@ export default class Deck extends View {
         const isOpen = this.linkShown?.id === ask.id;
         return h_flex()
             .id(id)
+            .tab_stop(false)
             .gap(6)
             .items_center()
             .text_size(SIZE.secondary)
