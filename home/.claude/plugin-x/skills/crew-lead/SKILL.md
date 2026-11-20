@@ -38,8 +38,7 @@ the split is **disposable vs watchable**, never research vs code.
 - **everyone is summoned in herdr, the mods codie and clio's wings too** (dima, 2026-11-11: «Everyone gets summoned in Herdr. The desktop app fallback was when I was running everyone in the Claude desktop app but now we're in Herdr so everyone is in Herdr»)
   - a mods lane is a quick lane, on main in dima's checkout, never a worktree or a pr, so he sees each mod change live, unless he asks for a stack (it needs prs); its sixth sense is optional, his call per lane (dima, 2026-10-27)
 - **cloud** (`claude --cloud`) — codie on an anthropic vm: survives the mac sleeping, the cloud credit pays first, carries nothing of ours, cannot message back. the procedure is `x:crew-cloud`.
-- **`/fork [prompt]`** (dima's door) copies this conversation into a new background session; reach for it when a brief would be longer than the context it replaces. the desktop's **side chat** (`/btw`) opened from clio's tab is a live fork, fork-guard's banner and all; opened from a fork's tab it is a read-only copy that fires no hooks and sends nothing, its keepers reaching the main by dima's paste (both proven 2026-10-27).
-
+- **`/fork [prompt]`** (dima's door) copies this conversation into a new background session; reach for it when a brief would be longer than the context it replaces.
 ### pick-ups and refreshes
 
 - **a pick-up is a summon** (dima, 2026-10-10): when dima reinits a member or opens a thread and says «pick it up», the first message inits it by role, the same as a fresh brief; a handoff ingest never replaces it. per role:
@@ -47,7 +46,7 @@ the split is **disposable vs watchable**, never research vs code.
   - cli codie: `x:crew-codie`, `x:guide-go`, `x/AGENTS.md`, `x/PRODUCT.md`
   - bytes codie: `x:crew-codie`, `x:guide-typescript` + `x:guide-react`, the app's essentials (§ preflight, app essentials)
   - sixth sense: `x:crew-sixth-sense` with its four arguments
-- **a «resume» to a parked member** reads the 5h window in the same turn first (`get_usage`, or `~/.claude/shelf/cc-usage-window.json`); clio's Stop gate warns on one that did not
+- **a «resume» to a parked member** reads the 5h window in the same turn first (`~/.claude/shelf/cc-usage-window.json`); clio's Stop gate warns on one that did not
 - **a session claiming a lane** (a fork, a resumed twin) is checked against who started it before anyone moves; a member is addressed by the uds path from its last message, which always delivers.
 - **a refresh without dima's hands**: a member clio did not start clears itself (`clear_session` with `"self"` as its turn's last act; clio's clear is refused on a tab dima opened); its registry name stops resolving after the clear, so the pick-up goes by its `local_…` session id.
 
@@ -65,7 +64,7 @@ the mechanical steps run as one: `x brief summon "<command>" --area <scope word>
 - **the brief file** — written to clio's scratchpad, opening `/x:crew-codie BYT-N <job> coordinator: <clio registry name>`; `x brief check --repo <repo> <file>` passes before the summon; its `wish:` line (or `wish: none`) sits in the first 10 lines. the brief names every live trial whose `fits:` matches the member: each with how the lane uses it, or «trial skipped: <name> — <why>»; sixth sense's argv carries the same names after its four arguments, behind the word `trials:`.
 - **the pr mode** — a side-lane or shift brief says `pr mode: plain` or `pr mode: stacked`; stacked only while the stacked-prs trial runs, for 2+ dependent parts, its brief naming `docs/test-drive/stacked-prs.md`; once a lower layer is verified clean, the next ones go as plain prs on main
 - **the argv** — the base `claude` line, literal, `-n` before the prompt, the prompt before `--remote-control`; each runs through `x brief summon '<line>' --area <scope word>` first, then with `--apply`:
-  - the surface's head comes first (`hc run … --` on herdr, its file)
+  - the surface's head comes first (its file)
   - side lane: `… claude -n '🌗 🔧 <area> | BYT-N' --model opus --effort medium "$(cat <brief file>)" --remote-control`
   - quick lane on main: the same line with `-n '⚡ 🔧 <area> | BYT-N'`
   - a lane's first chunk only; later chunks get a `next:` (a quick lane's from codie, `x:crew-sixth-sense`)

@@ -14,6 +14,7 @@ this leaf loaded means this thread runs in herdr (`HC_TERMINAL_ID` set); the Cla
 ## the screen he reads
 
 - he lives in herdr's Chat view (`x-herdr-chatter`): cc's own band and board do not draw there; herdr redraws them from the stash's shelf files (`x-herdr-deck`)
+- the Chat view joins unmarked lines: a line led by an emoji takes a `-` bullet too (dima, 2026-11-10: «an unreadable wall of text»)
 - a ui part is shown as a shot of herdr's window: `x:herdr` § recipes, «map his window»
 
 ## presses and asks
@@ -31,4 +32,5 @@ this leaf loaded means this thread runs in herdr (`HC_TERMINAL_ID` set); the Cla
 
 - never start a second Herdr window, even on a throwaway home: his window reloads and loses his typed draft (twin: herdr mods `AGENTS.md` § never)
 - a herdr restart is his hand alone
+- closing a live thread through `hc` is refused by `x-mod-guard` (`rules/fleet-mods.md`)
 - stopping a space's last thread pops «Close space?»: say so before the stop (his «not a good surprise»)

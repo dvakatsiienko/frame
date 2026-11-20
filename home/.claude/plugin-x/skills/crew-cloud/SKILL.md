@@ -96,9 +96,9 @@ coding rules inline, the `<crew-dna>` slot filled by `crew-dna-cloud`.
   session costs nothing, its VM is reclaimed; the archive is sidebar hygiene. the pr merged or
   closed → the session is archived by the coordinator, never left for dima (his call, 2026-09-28:
   «if another army appears — you clean»), one line per archived name in the reply. probed 2026-10-28 (FRM-442): a
-  cli-made cloud session opens on claude.ai/code in clio's browser pane, but its row menu holds no
+  cli-made cloud session opens on claude.ai/code, but its row menu holds no
   Archive, only Delete, which stays dima's word; until a door exists, clio names each finished
-  session in the reply and dima archives it in the desktop sidebar, hover → archive.
+  session in the reply and dima archives it.
 - sixth sense, the ci reviewer (`review.yml`, subscription oauth) and the done-comment in linear
   are the local flow's, unchanged: clio reads the pr and writes the comment.
 

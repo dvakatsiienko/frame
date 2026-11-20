@@ -32,7 +32,7 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 - **a list's marker by its lines** (dima, 2026-10-22: «a bullet point plus an emoji that leads a line reads poorly»; reversed 11-10):
   - lines with no leading emoji → `-` bullets
   - an order that matters (steps, a ranked top 10) → numbers
-  - every line led by an emoji → a `-` bullet too: a chat joins unmarked lines (dima, 2026-11-10: «an unreadable wall of text»)
+  - every line led by an emoji → a `-` bullet too
 - **operations get list shape.** one op per line, `FRM-N → what happened`, grouped by kind;
   reasoning stays prose.
 
@@ -91,7 +91,7 @@ a page you named, never navigates from a site root to the page you meant.
   before asking at all, look for the door that does it for him (a `defaults write`, a script).
 - **ticket ids are always an https link plus a short tldr**, never bare — including inside
   lists: `[FRM-N](https://linear.app/x-com/issue/FRM-N): <tldr> — in progress`. https is the
-  one form every surface renders (the desktop Code tab and cloud chat strip custom schemes); dima opens a
+  one form every surface renders (cloud chat strips custom schemes); dima opens a
   ticket in the app with his Hyper+G raycast command.
 - **an issue or pr from another repo is a full link** — `[vhs#787](https://github.com/charmbracelet/vhs/issues/787)`.
   a bare `#787` autolinks to the repo in view.

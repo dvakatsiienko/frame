@@ -51,6 +51,12 @@ same 6 slips, same transcript, through the FRM-502 `packWake` and `decisionOf` u
 📌 **claim wake: 0 of the 4 claims.** the gate (a claim word in the first line, or a `✅` line) fired on none of the four «done» replies, each read as the last text before dima's next prompt: the 19:34 opens «finished and stopped», off the word list. so on those four the receipts reach crow only at the next cadence wake, up to 30 min later; only the batch got a wake at the act. a bare word anywhere hit 36 % of replies, over the 30 % bar.
 - 2026-11-05 · the 11-04 share, owed from that halt · 6 tagged lines · crow first on 1, the PK-296 close, 18:12 vs 18:13; 0 of the 5 dima caught · keyword match over `notes.jsonl`, each line not read by hand · inference
 
+## held notes he caught himself (20 → 27 Nov, FRM-516)
+
+his o2 tick, 2026-11-20 15:28: one crow, her bar unchanged; each catch of his that a held note of hers had named is one line here, read at the 27 Nov verdict beside her sent precision
+
+- (none yet)
+
 ## the weekly grade (standing)
 once a week clio draws 5 notes from `notes.jsonl` for dima to grade, and logs a round here: his grades, the `--changed` share over `verdicts.jsonl`, and the `#dima-caught` lines crow flagged first.
 

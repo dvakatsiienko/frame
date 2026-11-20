@@ -8,6 +8,8 @@ the claude desktop app is dima's second door to the fleet: herdr is still unstab
   - mods UI draws only in a native desktop thread, so this is the door when dima tests a mod's look in a code thread
   - a steer clio relays is never dima's grant to the member, who confirms with him
 - `claude --bg` is cc native, no surface: `crew-lead` § the doors
+- the side chat (`/btw`) opened from clio's tab is a live fork, fork-guard's banner and all; opened from a fork's tab it is a read-only copy that fires no hooks and sends nothing, its keepers reaching the main by dima's paste (both proven 2026-10-27)
+- a cli-made cloud session opens on claude.ai/code in clio's browser pane (probed 2026-10-28, FRM-442); dima archives a finished one in the desktop sidebar, hover → archive (`x:crew-cloud`)
 
 ## how it ran before herdr
 

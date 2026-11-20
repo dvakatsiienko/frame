@@ -21,7 +21,7 @@
 
 ## 🛡️ x-mod-guard — only the destructive floor is refused
 
-- refused: a delete (`rm`, `find -delete`), a kill by pattern, a discard of uncommitted git work, a force push, a remote delete, `--no-verify` and identity flags, a raw merge, a herdr close of a live thread; every other command runs. the list: `plugin-x/mods/x-mod-guard/FTR.md`
+- refused: a delete (`rm`, `find -delete`), a kill by pattern, a discard of uncommitted git work, a force push, a remote delete, `--no-verify` and identity flags, a raw merge; every other command runs. the list: `plugin-x/mods/x-mod-guard/FTR.md`
 - a refusal stops one command, never the session, and names its safe door (`trash`, `x lane merge-auto`)
 - a refusal that looks wrong is a guard bug: one line to the coordinator, never a route around it
 

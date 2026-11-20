@@ -23,7 +23,6 @@ this leaf loaded means this thread runs in the Claude desktop app (entrypoint `c
 ## browser
 
 - the web clicking (`habit-capability-tips`) runs in the built-in browser pane; his hand: the pane, or his Chrome
-
 ## traps
 
 - `/reload-plugins` in a running desktop-born session lists no new skill: a plugin edit binds in a fresh session
