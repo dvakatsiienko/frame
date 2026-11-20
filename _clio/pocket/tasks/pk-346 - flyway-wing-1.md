@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-19T18:58:00Z'
+updated_date: '2026-11-20T11:01:00Z'
 labels:
   - s
   - clio-wing-1
@@ -20,9 +20,9 @@ ordinal: 1001
 - [ ] #2 f42 wishkeeper 1 h arm: confirm runs read 1h, then the 10-run measure; revert if dearer (o1)
 - [ ] #3 f46 design-loupe probe: a cheap summon tests artifact comments on dima's account, then keep or retire (o13)
 - [ ] #4 f47 designer W49 tail: answer how to search and how to query for design refs before speak v2's design day
-- [ ] #5 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
-- [ ] #6 f28 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-20
-- [ ] #7 f30 📅 strays lane verdict (FRM-586): model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-20
+- [ ] #5 f28 FRM-516 crow per thread: the week's read (W15, W21), then close
+- [ ] #6 f30 strays lane verdict (FRM-586): model pick, Sonnet 5.5 spec shape, at its trial end
+- [ ] #7 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
 - [ ] #8 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
 - [ ] #9 f43 📅 wishkeeper-cache verdict: the 1 h arm's 7 days read against the 5 min week — on: 2026-11-26
 - [ ] #10 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
