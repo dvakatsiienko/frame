@@ -241,7 +241,15 @@ export default class Deck extends View {
         ]) {
             cx.spawn(async (cx) => {
                 for (;;) {
-                    const changed = await watchFolder(folder);
+                    // a folder not made yet (settings before its first save) is asked again later, as the tab pills do
+                    const changed = await watchFolder(folder).catch(
+                        () =>
+                            /** @type {Promise<string[]>} */ (
+                                new Promise((done) =>
+                                    cx.timer.after(5000, () => done([])),
+                                )
+                            ),
+                    );
                     if (
                         folder.endsWith('/shelf') &&
                         !changed.some(
@@ -1336,7 +1344,10 @@ export default class Deck extends View {
             const sid = tickAllThread(
                 this.rows
                     .filter(
-                        (r) => tickAllTakes(r.asks, () => 'open').length > 0,
+                        (r) =>
+                            tickAllTakes(r.asks, (id) =>
+                                this.pressStateOf(r, id),
+                            ).length > 0,
                     )
                     .map((r) => r.sid),
                 {
