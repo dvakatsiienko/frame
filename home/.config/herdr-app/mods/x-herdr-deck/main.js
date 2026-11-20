@@ -53,6 +53,7 @@ import {
     orbitPinIn,
     orbitSections,
     orbitTabOrder,
+    phaseParts,
     pressLabel,
     pressOf,
     roundsKept,
@@ -81,7 +82,7 @@ import { createTabMember } from './tab-loop.js';
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('gpui-kit').AsyncContext} AsyncContext */
 /** @typedef {import('gpui-kit').Color} Color */
-/** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'ansi5' | 'ansi6' | 'canvas' | 'dim' | 'foreground' | 'hover' | 'idle' | 'muted' | 'raised' | 'solid' | 'solid_foreground' | 'surface' | 'working', Color>} Theme */
+/** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'ansi2' | 'ansi5' | 'ansi6' | 'canvas' | 'dim' | 'foreground' | 'hover' | 'idle' | 'muted' | 'raised' | 'solid' | 'solid_foreground' | 'surface' | 'working', Color>} Theme */
 /** @typedef {import('./orbit.js').Ask} Ask */
 /** @typedef {import('./shelf.js').Row} Row */
 
@@ -1201,18 +1202,42 @@ export default class Deck extends View {
                                 .child(g.name),
                         )
                         .children(
-                            g.phases.map((phase, j) =>
-                                div()
+                            g.phases.map((phase, j) => {
+                                // the moon fills by nearness, the later lines dim, only the first lead green (the
+                                // stash board's look, dima's 66d)
+                                const p = phaseParts(phase, j);
+                                const color = j > 1 ? t.muted : t.foreground;
+                                return h_flex()
                                     .pl(8)
-                                    .child(
-                                        prose(
-                                            `phase-${i}-${j}`,
-                                            phase,
-                                            t.muted,
-                                            SIZE.secondary,
+                                    .gap(6)
+                                    .items_start()
+                                    .text_size(SIZE.secondary)
+                                    .child(div().flex_none().child(p.moon))
+                                    .when(Boolean(p.lead), (el) =>
+                                        el.child(
+                                            div()
+                                                .flex_none()
+                                                .font_semibold()
+                                                .text_color(
+                                                    j === 0 ? t.ansi2 : color,
+                                                )
+                                                .child(p.lead),
                                         ),
-                                    ),
-                            ),
+                                    )
+                                    .child(
+                                        div()
+                                            .flex_1()
+                                            .min_w(0)
+                                            .child(
+                                                prose(
+                                                    `phase-${i}-${j}`,
+                                                    p.rest.trim(),
+                                                    color,
+                                                    SIZE.secondary,
+                                                ),
+                                            ),
+                                    );
+                            }),
                         ),
                 ),
             );

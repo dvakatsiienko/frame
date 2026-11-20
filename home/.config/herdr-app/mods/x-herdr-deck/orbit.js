@@ -265,6 +265,25 @@ export function phasesOf(state) {
         : [];
 }
 
+// the stash board's moons (board-phases.tsx): the nearest step full, a siesta a pause in place of its moon
+const PHASE_MOONS = ['🌕', '🌔', '🌓', '🌒', '🌑'];
+const PHASE_LEAD = /^[a-z]{2,10}:/i;
+
+/**
+ * one phases line as drawn: its moon by place, its lead word (`now:`) apart for the bold
+ * @param {string} line @param {number} i its place in the plan
+ */
+export function phaseParts(line, i) {
+    const lead = line.match(PHASE_LEAD)?.[0] ?? '';
+    return {
+        lead,
+        moon: /^siesta:/i.test(line)
+            ? '🌤️'
+            : (PHASE_MOONS[Math.min(i, PHASE_MOONS.length - 1)] ?? '🌑'),
+        rest: line.slice(lead.length),
+    };
+}
+
 /**
  * the ticks file after one more press: the lines the stash has not taken yet (`at` past its `herdr-read:<sid>`), then
  * the press, its `at` above every line in the file, since the stash reads only presses past the newest `at` it took;
