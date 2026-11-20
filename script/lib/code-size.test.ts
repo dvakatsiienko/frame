@@ -53,10 +53,6 @@ const caps = {
         cap: 1_318,
         why: 'the stash pace, one file of cases',
     },
-    'home/.claude/plugin-x/mods/x-mod-stash/tests/quiet.test.ts': {
-        cap: 4_463,
-        why: 'the quiet pings, one file of cases',
-    },
     'home/.claude/plugin-x/mods/x-mod-stash/tests/wind.test.ts': {
         cap: 2_780,
         why: 'the second wind, one file of cases',
