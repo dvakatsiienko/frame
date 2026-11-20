@@ -188,7 +188,7 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	var verdicts []gateVerdict
 	// a red test does not stop the gates: one run names every red a commit would meet
 	gatesErr := r.Step("gates", "the commit hook's gates on the overlay", func() (string, error) {
-		verdicts, err = overlayGates(repo, scratch, copies, changed, stamp, len(red) == 0)
+		verdicts, err = overlayGates(repo, scratch, copies, changed, stamp, len(red) == 0 && !anySkipped(reports))
 		if err != nil {
 			return "", err
 		}
@@ -210,8 +210,10 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	if isRed {
 		return nil, stopped
 	}
-	// a lost stamp costs one test run at the push, nothing more
-	_ = os.WriteFile(filepath.Join(scratch, scratchTested), []byte(stamp), 0o644)
+	// a lost stamp costs one test run at the push, nothing more; a run that left a peer's work at HEAD stamps nothing
+	if !anySkipped(reports) {
+		_ = os.WriteFile(filepath.Join(scratch, scratchTested), []byte(stamp), 0o644)
+	}
 	r.Done(reportLine(reports), "x mods edit push")
 	return ordered{{"mods", reports}, {"gates", verdicts}}, nil
 }
@@ -361,7 +363,7 @@ func modsEditPush(r *Run, args []string, flags Flags) (any, error) {
 		if red := redReports(reports); err == nil && len(red) > 0 {
 			err = &Fail{Refused: true, Msg: "red on the overlay, nothing written: " + reportLine(red), Next: "x mods edit test", Log: nonBlank(redLog(red))}
 		}
-		if err == nil && overlayStamp(repo, scratch, changed) == stamp {
+		if err == nil && !anySkipped(reports) && overlayStamp(repo, scratch, changed) == stamp {
 			recordTestedMods(repo, copies, changed)
 		}
 		return reportLine(reports), err

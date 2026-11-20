@@ -73,3 +73,66 @@ func TestModsEditOverlayKeepsAFileTheSessionHolds(t *testing.T) {
 		t.Errorf("a file the session holds is its own\n%s", got.stdout)
 	}
 }
+
+// a run that left a peer's work at HEAD tested bytes the tree does not hold: its green stamps nothing and records no mod green, or the
+// commit hook's --skip-tested would pass the peer's red file unrun (the wisphunter read of 4aeda287)
+func TestModsEditARunThatSkippedAPeerProvesNothingForTheTree(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name     string
+		peerEdit bool
+		want     bool
+	}{
+		{"a peer's edit left at HEAD", true, false},
+		{"no peer work in the mod", false, true},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			fresh := func() (string, []string, string) {
+				dir, env := modsFixture(t)
+				state := t.TempDir()
+				env = append(env, "X_STATE="+state)
+				if c.peerEdit {
+					write(t, filepath.Join(dir, modTestB), "RED, a peer's half edit\n")
+				}
+				write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
+				return dir, env, state
+			}
+			dir, env, _ := fresh()
+			if got := xIn(t, dir, env, "mods", "edit", "test"); got.code != 0 {
+				t.Fatalf("test exit %d\n%s", got.code, got.stdout)
+			}
+			scratch, _ := xIn(t, dir, env, "mods", "edit", "status").data["scratch"].(string)
+			if stamped := exists(filepath.Join(scratch, scratchTested)); stamped != c.want {
+				t.Errorf("a green test left its stamp %v, want %v", stamped, c.want)
+			}
+
+			dir, env, state := fresh()
+			if got := xIn(t, dir, env, "mods", "edit", "push", modTestA); got.code != 0 {
+				t.Fatalf("push exit %d\n%s", got.code, got.stdout)
+			}
+			if recorded := strings.Contains(readFile(t, filepath.Join(state, "gates-green.tsv")), "mod m"); recorded != c.want {
+				t.Errorf("a push recorded the mod green %v, want %v", recorded, c.want)
+			}
+		})
+	}
+}
+
+// a peer's `git rm --cached` file reads «D» and «??» at once, and an intent-to-add file reads « A»: HEAD, not the letters, decides
+func TestModsEditOverlayDecidesByHeadNotByStatusLetters(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	gitT(t, dir, "rm", "-q", "--cached", modTestB)
+	write(t, filepath.Join(dir, modsDir, "m", "tests", "new.test.ts"), "RED, intent to add\n")
+	gitT(t, dir, "add", "-N", modsDir+"m/tests/new.test.ts")
+	write(t, pullCopy(t, dir, env, modTestA), "green, edited\n")
+
+	got := xIn(t, dir, env, "mods", "edit", "test")
+
+	if got.code != 0 || !strings.Contains(got.stdout, `"passed":2`) {
+		t.Fatalf("exit %d, want HEAD's two tests, b restored and the intent-to-add file out\n%s", got.code, got.stdout)
+	}
+	if strings.Count(got.stdout, "tests/b.test.ts, not yours") != 1 {
+		t.Errorf("want b named once\n%s", got.stdout)
+	}
+}
