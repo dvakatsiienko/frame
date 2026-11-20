@@ -413,3 +413,26 @@ export async function orbitCall(
         });
     return { result: op.result };
 }
+
+export async function registerOrbitTool($: EngineInterface) {
+    await $.tool
+        .register({
+            description: ORBIT_ABOUT,
+            inputSchema: {
+                properties: {
+                    ...ORBIT_PROPS,
+                    ops: {
+                        items: { properties: ORBIT_PROPS, type: 'object' },
+                        type: 'array',
+                    },
+                },
+                type: 'object',
+            },
+            // loaded up front: behind ToolSearch a session met «add your asks to orbit» with no schema to call
+            isDeferred: false,
+            name: 'orbit',
+        })
+        .catch(() =>
+            $.ui.log('x-mod-stash: the orbit tool was not registered'),
+        );
+}

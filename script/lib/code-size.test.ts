@@ -41,10 +41,6 @@ const caps = {
         cap: 1_236,
         why: 'the command rules the guard refuses or hints',
     },
-    'home/.claude/plugin-x/mods/x-mod-stash/hooks/register.tsx': {
-        cap: 1_250,
-        why: 'the stash mod: orbit, phases, glide, wind and quiet in one register',
-    },
     'home/.claude/plugin-x/mods/x-mod-stash/tests/board.test.ts': {
         cap: 1_856,
         why: 'the stash board, one file of cases',

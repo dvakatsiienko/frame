@@ -3,19 +3,16 @@ import type { EngineInterface, Register } from 'claude-code';
 
 import type { QuietLogLine, StashLane } from '../types/stash.d.ts';
 import { renderBand } from './band.tsx';
-import { takeBandPresses } from './band-presses.ts';
 import { drawBoard } from './board.tsx';
 import {
     carried,
     flushFields,
     isTypedHere,
     leaveBoxes,
-    retakeFields,
     returnToBoxes,
 } from './fields.ts';
 import {
     WIND_DELAY_MS,
-    armHeldTells,
     armRelease,
     holdAfterQuiet,
     holdSteer,
@@ -27,16 +24,10 @@ import {
 import { joinsLocked, settleJoins, takeJoins } from './joins.ts';
 import {
     PING,
-    POLL_MS,
     armHot,
-    armWake,
     capAtMeasure,
     capAtTurnEnd,
-    followHot,
-    holdCap,
     holdHot,
-    hotLate,
-    pacePoll,
     paceStep,
     prepareTurn,
     seatDefaults,
@@ -46,12 +37,8 @@ import {
     LANE_STEER,
     LANE_STEER_OLD,
     dropLaneOrders,
-    followCodies,
-    followPlans,
     laneSteers,
-    openDispatchedLanes,
     readLanes,
-    reshowLanes,
     showLanes,
     takeLaneMoves,
 } from './lanes.ts';
@@ -66,31 +53,16 @@ import {
     turnEnded,
     wrongText,
 } from './orbit.ts';
-import {
-    DIMA_AT,
-    takeMarks,
-    takePlanMark,
-    wakeForMarks,
-} from './orbit-presses.ts';
+import { DIMA_AT, takeMarks, takePlanMark } from './orbit-presses.ts';
 import {
     EMPTY_ORBIT,
     absorbMarks,
     currentOrbit,
     inMarking,
-    keepState,
     orbitNow,
     saveOrbit,
-    startOrbit,
 } from './orbit-store.ts';
-import {
-    LANE_OWNER,
-    LANE_STALE,
-    ORBIT_ABOUT,
-    ORBIT_PROPS,
-    orbitCall,
-    ticketNote,
-} from './orbit-tool.ts';
-import { relayCrowWake, wakeForParkedLanes } from './parked-wake.ts';
+import { LANE_OWNER, LANE_STALE, orbitCall, ticketNote } from './orbit-tool.ts';
 import {
     boldFleetWords,
     bulletDots,
@@ -103,9 +75,7 @@ import { isAppPrompt, peerPing, quietHeldText } from './quiet.ts';
 import { quietLog, takeGapNotes } from './quiet-books.ts';
 import {
     SEND_TOOL,
-    quietBooks,
     quietHoldPrompt,
-    quietIdle,
     quietKindsOff,
     quietNote,
     quietOf,
@@ -116,19 +86,17 @@ import {
     saveQuiet,
 } from './quiet-gate.ts';
 import { WRAP_UP_TOOL, settleTask, stopRed, waitsOf } from './reply-fix.ts';
-import { isOpen, memberOf, openBoard, registry } from './roster.ts';
+import { memberOf, openBoard, registry } from './roster.ts';
 import { laneRoundLine } from './rounds.ts';
-import { showClioAsks } from './rows.ts';
-import { endSession, forget, pruneEnded } from './session-end.ts';
+import { endSession, forget } from './session-end.ts';
 import {
     currentId,
-    identity,
     isLaneOwner,
     refreshThreads,
     sessionName,
-    startIdentity,
 } from './session-identity.ts';
-import { keepShelf, noteModel, pollShelf } from './session-record.ts';
+import { keepShelf, noteModel } from './session-record.ts';
+import { startSession } from './session-start.ts';
 import { drawSettingsPane } from './settings-pane.tsx';
 import {
     QUIET_ON,
@@ -138,12 +106,9 @@ import {
     readSwitch,
     setSettingsOpen,
     shownOf,
-    takeHerdrRows,
 } from './settings-store.ts';
-import { refreshSpeaking } from './speak.ts';
 import { HOT, REPLY, type Reply, hotOf } from './store-keys.ts';
 import {
-    bookkeep,
     clearWrap,
     countTool,
     endBusy,
@@ -154,7 +119,6 @@ import {
     markNudged,
     markWork,
     markWrapAsked,
-    restoreTurn,
     setPrimed,
     setTurnAfk,
     startTurn,
@@ -178,7 +142,6 @@ import {
     countWords,
     drawFill,
     drawFillAfterCompact,
-    freshMeter,
     measureUsage,
 } from './usage.ts';
 import { errorText } from './util.ts';
@@ -188,8 +151,6 @@ import {
     COMPACT_SETTLE_MS,
     FILL,
     nextTurnNo,
-    seedTurnNo,
-    syncWindStore,
     takeFill,
     takeWind,
     windAfterTurn,
@@ -206,14 +167,8 @@ import {
 const AWAY_NOTE =
     'dima is afk: nothing waits on him. take reversible steps and log them, pick every pending ask and log its undo, raise one in orbit only when blocked, on his design call, or irreversible. send no ping.';
 const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';
-// 5 min past its last event, a session's bookkeeping jobs tick every 30 s; what dima pressed, typed or ticked, and the
-// wakes, keep 4 s (FRM-555, dima o58, o59)
-const IDLE_AFTER_MS = 5 * 60_000;
-const IDLE_POLL_MS = 30_000;
 // the fleet board: cc's registry gives each session's state; each session's stash adds its 🔭 wait and context fill
 const BOARD = 'x-cc-deck';
-// read-both: the board's id before dima's x-cc-deck name (o25); a reload finds it open and swaps it
-const OLD_BOARD = 'fleet-board';
 // 🎛️ is a pane of its own, which the surface tabs beside 🚦: the band is capped by cc, the list outgrew it (dima's pick a of
 // four homes, 16:20); a tab row inside a pane was proven too, kept as an idea in api-map.md
 const SETTINGS_PANE = 'stash-settings';
@@ -224,14 +179,8 @@ const DIMA_ORIGINS = ['composer', 'sdk', 'bridge'] as const;
 const VIEW = { key: 'view', plugin: 'x-mod-stash' } as const;
 // the running turn, so a mid-turn reload still knows it is busy
 const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
-// when the last main turn ended: 🔥 switched on while idle counts its 50 min from here, so the ping lands inside the cache's hour
-const ENDED = { key: 'ended', plugin: 'x-mod-stash' } as const;
 // a 📄 line's HH:MM — the same shape reply-check.py reads
 const STAMP = /(📄[^\n]*?\b)(\d{1,2}:\d{2})\b/g;
-const CAP = { key: 'cap', plugin: 'x-mod-stash' } as const;
-// 🪐 orbit: the session's asks to dima, ticked in the board instead of pasted back; the session writes them through
-// its own tool, never a reply block
-const ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
 // the phases guard, no extra turn and no Stop block: one line at the first prompt, one nudge in a turn's tool results (dima's o14)
 const PHASES_START = `phases are your live plan: set them with ${ORBIT_TOOL}'s plan op and keep them current as the work moves.`;
 const NUDGE_AT = 3;
@@ -251,8 +200,6 @@ const START_SESSION_TOOL = 'mcp__ccd_session__start_session';
 const BOOT_NOTE = 'the boot continues; the board ends the turn';
 const MOBILE_OFF = /ARGUMENTS:\s*off\b/i;
 const BACK_AT_MAC = /\bback at the mac\b|\bmobile mode off\b/i;
-
-let isPolling = false;
 
 const WORK_TOOLS = new Set([
     'Edit',
@@ -306,157 +253,7 @@ async function isBootOpen($: EngineInterface) {
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
     on('session.start', async ($, e, next) => {
-        await startIdentity($, e.cwd);
-        await seedTurnNo($, identity.selfId).catch(() => undefined);
-        await refreshThreads($);
-        await seatDefaults($, viewDoors($)).catch(() => undefined);
-        await syncWindStore($).catch(() => undefined);
-        await armHeldTells($, viewDoors($)).catch(() => undefined);
-        const panes = await $.ui.panes().catch(() => undefined);
-        if (panes?.some((p) => p.id === OLD_BOARD)) {
-            await $.ui.close({ id: OLD_BOARD }).catch(() => undefined);
-            await openBoard($).catch(() => undefined);
-        }
-        // what a reload finds in `$.state`, read once: every get of one dispatch reads the moment it began
-        const kept = {
-            cap: (await $.state.get(CAP)).value,
-            ended: (await $.state.get(ENDED)).value,
-            orbit: (await $.state.get(ORBIT)).value,
-            turn: (await $.state.get(TURN)).value,
-            view: (await $.state.get(VIEW)).value,
-        };
-        await startOrbit($, kept.orbit);
-        // a start is where a reload lands: it always takes the kept boxes back
-        await retakeFields($);
-        // a reload after the steer rename or the catch removal keeps a held text: the migrated orbit is written back once
-        // through saveOrbit, so a resumed orbit's open asks reach the store every board counts from
-        if (
-            JSON.stringify(orbitNow()) !==
-            JSON.stringify(kept.orbit ?? EMPTY_ORBIT)
-        )
-            await saveOrbit($, orbitNow(), () => keepShelf($));
-        // every board reads the fleet's lanes from the shelf file: at a start, a reload, and on each poll
-        await reshowLanes($);
-        await $.tool
-            .register({
-                description: ORBIT_ABOUT,
-                inputSchema: {
-                    properties: {
-                        ...ORBIT_PROPS,
-                        ops: {
-                            items: { properties: ORBIT_PROPS, type: 'object' },
-                            type: 'array',
-                        },
-                    },
-                    type: 'object',
-                },
-                // loaded up front: behind ToolSearch a session met «add your asks to orbit» with no schema to call
-                isDeferred: false,
-                name: 'orbit',
-            })
-            .catch(() =>
-                $.ui.log('x-mod-stash: the orbit tool was not registered'),
-            );
-        holdCap(kept.cap ?? undefined);
-        // a mid-turn reload: the turn goes on, busy, and the band keeps what only it held
-        restoreTurn(kept.ended ?? undefined, kept.turn ?? undefined);
-        await pruneEnded($).catch(() => undefined);
-        const stored = hotOf(await $.store.get(HOT + identity.selfId));
-        holdHot(stored && { since: turn.endedAt ?? stored.since });
-        // a reload drops the release timer: a compact-held list waiting for it goes in once the session is idle; armed after
-        // a mid-turn reload's busy flag is back, so it never submits into a running turn
-        armRelease($, viewDoors($), COMPACT_SETTLE_MS);
-        await load($);
-        await armHot($, viewDoors($));
-        await armWake($, viewDoors($));
-        await $.command
-            .register({
-                description:
-                    'open the fleet board: every live session, busy or idle, its last message; `/board colour` flips its colour',
-                name: 'board',
-            })
-            .catch(() => $.ui.log('x-mod-stash: /board was not registered'));
-        if (await isQuietHome($))
-            await $.command
-                .register({
-                    description:
-                        "quiet comms: `/quiet on` holds members' messages off this thread unless they push, `off` passes them all; bare shows it",
-                    name: 'quiet',
-                })
-                .catch(() =>
-                    $.ui.log('x-mod-stash: /quiet was not registered'),
-                );
-        else
-            await $.command
-                .register({
-                    description:
-                        'quiet comms delivery test: send clio a test [progress] ping, no model; `pnpm mods:quiet-delivery-test` reads held → delivered',
-                    name: 'quiet-delivery-test',
-                })
-                .catch(() =>
-                    $.ui.log(
-                        'x-mod-stash: /quiet-delivery-test was not registered',
-                    ),
-                );
-        if (!isPolling) {
-            isPolling = true;
-            // a test's seam: a slower poll, read once, so a test over hours of mock time crosses fewer ticks; never a faster one
-            const asked = Number(
-                await $.env.get('X_STASH_POLL_MS').catch(() => undefined),
-            );
-            const pollMs = asked >= POLL_MS ? asked : POLL_MS;
-            await markActive($).catch(() => undefined);
-            const tick = () =>
-                $.clock.after(pollMs, async () => {
-                    const now = await $.clock.now();
-                    const isBookkept =
-                        turn.isBusy ||
-                        now - turn.activeAt < IDLE_AFTER_MS ||
-                        now - turn.bookkeptAt >= IDLE_POLL_MS;
-                    if (isBookkept) bookkeep(now);
-                    await takeHerdrRows($).catch(() => undefined);
-                    await syncWindStore($).catch(() => undefined);
-                    // an open board's view carries the tick's clock, so its «ago» times move on their own
-                    await load($);
-                    await followHot($, viewDoors($)).catch(() => undefined);
-                    if (isBookkept) await freshMeter($).catch(() => undefined);
-                    await absorbMarks($, () => keepShelf($), isTypedHere).catch(
-                        () => undefined,
-                    );
-                    await wakeForMarks($, viewDoors($)).catch(() => undefined);
-                    await takeBandPresses($, viewDoors($)).catch(
-                        () => undefined,
-                    );
-                    // pollShelf paces itself every third tick; a gate here would slow it twice over
-                    await pollShelf($);
-                    await quietIdle($).catch(() => undefined);
-                    if (isBookkept)
-                        await quietBooks($, viewDoors($)).catch(
-                            () => undefined,
-                        );
-                    await wakeForParkedLanes($, viewDoors($)).catch(
-                        () => undefined,
-                    );
-                    await pacePoll($, viewDoors($)).catch(() => undefined);
-                    await hotLate($, viewDoors($)).catch(() => undefined);
-                    await relayCrowWake($).catch(() => undefined);
-                    if (isBookkept) {
-                        await followCodies($).catch(() => undefined);
-                        await openDispatchedLanes($, (input) =>
-                            orbitCall($, input, false),
-                        ).catch(() => undefined);
-                        await showClioAsks($).catch(() => undefined);
-                        await followPlans($).catch(() => undefined);
-                    }
-                    // a fold or mobile mode is kept within one poll of its change
-                    await keepState($).catch(() => undefined);
-                    // speak's own controls move its play state: a press reads it fresh
-                    if (await isOpen($))
-                        await refreshSpeaking($).catch(() => undefined);
-                    tick();
-                });
-            tick();
-        }
+        await startSession($, e.cwd, viewDoors($));
         return next(e);
     });
 
