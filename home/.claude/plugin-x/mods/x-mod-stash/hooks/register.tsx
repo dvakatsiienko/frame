@@ -3,7 +3,7 @@ import type { EngineInterface, Register } from 'claude-code';
 
 import type { QuietLogLine, StashLane } from '../types/stash.d.ts';
 import { renderBand } from './band.tsx';
-import { BAND_READ, BAND_REFUSED, takeBandPresses } from './band-presses.ts';
+import { takeBandPresses } from './band-presses.ts';
 import { drawBoard } from './board.tsx';
 import {
     carried,
@@ -24,15 +24,8 @@ import {
     steersOnCompact,
     takeSteers,
 } from './held.ts';
+import { joinsLocked, settleJoins, takeJoins } from './joins.ts';
 import {
-    JOIN_OWED,
-    handBackJoins,
-    joinsLocked,
-    settleJoins,
-    takeJoins,
-} from './joins.ts';
-import {
-    AUTO_WIND,
     PING,
     POLL_MS,
     armHot,
@@ -81,8 +74,6 @@ import {
 } from './orbit-presses.ts';
 import {
     EMPTY_ORBIT,
-    KEPT,
-    PREFIX,
     absorbMarks,
     currentOrbit,
     inMarking,
@@ -125,20 +116,19 @@ import {
     saveQuiet,
 } from './quiet-gate.ts';
 import { WRAP_UP_TOOL, settleTask, stopRed, waitsOf } from './reply-fix.ts';
-import { isOpen, memberOf, modelLabel, openBoard, registry } from './roster.ts';
+import { isOpen, memberOf, openBoard, registry } from './roster.ts';
 import { laneRoundLine } from './rounds.ts';
 import { showClioAsks } from './rows.ts';
+import { endSession, forget, pruneEnded } from './session-end.ts';
 import {
-    SUCC,
     currentId,
-    endIdentity,
     identity,
     isLaneOwner,
     refreshThreads,
     sessionName,
     startIdentity,
 } from './session-identity.ts';
-import { dropState, keepShelf, pollShelf } from './session-record.ts';
+import { keepShelf, noteModel, pollShelf } from './session-record.ts';
 import { drawSettingsPane } from './settings-pane.tsx';
 import {
     QUIET_ON,
@@ -151,7 +141,7 @@ import {
     takeHerdrRows,
 } from './settings-store.ts';
 import { refreshSpeaking } from './speak.ts';
-import { HOT, MODEL, REPLY, type Reply, hotOf } from './store-keys.ts';
+import { HOT, REPLY, type Reply, hotOf } from './store-keys.ts';
 import {
     bookkeep,
     clearWrap,
@@ -191,9 +181,9 @@ import {
     freshMeter,
     measureUsage,
 } from './usage.ts';
-import { STALE_MS, errorText } from './util.ts';
+import { errorText } from './util.ts';
 import { load, publish, viewDoors } from './view.ts';
-import { COMPACTING, WIND, windOf } from './wind.ts';
+import { COMPACTING, windOf } from './wind.ts';
 import {
     COMPACT_SETTLE_MS,
     FILL,
@@ -213,7 +203,6 @@ import {
 // afk: one switch every session polls; while it is on, every prompt carries an away note, and a flip reaches a running turn.
 // keep-hot: while on and idle, one ping 50 min after the last turn ended keeps the prompt cache warm; the switch lives in $.store, so a reload keeps it
 
-const KEPT_MS = 7 * 24 * 60 * 60 * 1000;
 const AWAY_NOTE =
     'dima is afk: nothing waits on him. take reversible steps and log them, pick every pending ask and log its undo, raise one in orbit only when blocked, on his design call, or irreversible. send no ping.';
 const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';
@@ -276,8 +265,6 @@ const WORK_BASH =
     /\b(claude\s+(--bg|-n\s+\S+.*--bg|stop|respawn)|git\s+commit|x\s+lane\s+(commit|push|pr-open|merge-main|seed)|x\s+mods\s+edit\s+push)\b/;
 export const isWork = (tool: string, command?: string) =>
     WORK_TOOLS.has(tool) || (tool === 'Bash' && WORK_BASH.test(command ?? ''));
-// the model label last written for this session, so a step writes the store only when it changes
-let modelSeen: string | undefined;
 
 // dima asking clio about cost: her context points at the price facts once, so she never answers from recall (o171; 10-13
 // she quoted a cache read at 1/10 of input, the file says 1/20)
@@ -314,64 +301,6 @@ async function isBootOpen($: EngineInterface) {
     if (!(await isLaneOwner($))) return false;
     const at = await $.store.get(BOOT + (await $.session.id()));
     return typeof at === 'number' && (await $.clock.now()) - at < BOOT_MS;
-}
-
-// everything this mod keeps for one conversation: one store key per prefix, the session id after it, plus its pending
-// lane marks; a new per-session key joins this list, or a /clear leaves it behind for good (marks did, FRM-400)
-const SESSION_KEYS = [
-    PREFIX,
-    HOT,
-    REPLY,
-    CONTEXT,
-    MODEL,
-    WIND,
-    FILL,
-    AUTO_WIND,
-] as const;
-
-async function forget($: EngineInterface, sid: string) {
-    const home = await $.env.get('HOME').catch(() => undefined);
-    const isHandedBack = home
-        ? await handBackJoins($, home, sid).catch(() => false)
-        : true;
-    if (!isHandedBack)
-        await $.store.set(JOIN_OWED + sid, true).catch(() => undefined);
-    await dropState($, sid).catch(() => undefined);
-    await $.store.delete(BAND_READ + sid);
-    await $.store.delete(BAND_REFUSED + sid);
-    for (const prefix of SESSION_KEYS) await $.store.delete(prefix + sid);
-}
-
-// a session that exited keeps only its last reply, marked ended, dropped a day later
-async function retire($: EngineInterface, sid: string) {
-    const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
-    const heat = await $.store.get(HOT + sid);
-    const autoWind = await $.store.get(AUTO_WIND + sid);
-    await forget($, sid);
-    if (autoWind) await $.store.set(AUTO_WIND + sid, autoWind);
-    // a resume of this id keeps dima's off: a seat's default fills only a key never written
-    if (heat && !hotOf(heat)) await $.store.set(HOT + sid, heat);
-    if (reply)
-        await $.store.set(REPLY + sid, {
-            ...reply,
-            ended: await $.clock.now(),
-        } satisfies Reply);
-}
-
-// an ended session's reply is dropped a day after it ended, a kept state a week after its last save
-async function pruneEnded($: EngineInterface) {
-    const now = await $.clock.now();
-    for (const key of await $.store.keys()) {
-        if (key.startsWith(KEPT) || key.startsWith(SUCC)) {
-            const v = (await $.store.get(key)) as { at?: number } | undefined;
-            if (now - (v?.at ?? 0) >= KEPT_MS) await $.store.delete(key);
-            continue;
-        }
-        if (!key.startsWith(REPLY)) continue;
-        const v = (await $.store.get(key)) as Reply | undefined;
-        if (v?.ended !== undefined && now - v.ended >= STALE_MS)
-            await $.store.delete(key);
-    }
 }
 
 export const register: Register = (on) => {
@@ -921,14 +850,7 @@ export const register: Register = (on) => {
 
     // the board shows each session's model and effort as its main loop's last request named them; a subagent's step never counts
     on('turn.step', async function* ($, e, next) {
-        if (!e.agentId) {
-            const sid = await currentId($);
-            const said = modelLabel(e.model, e.effort);
-            if (sid && modelSeen !== `${sid}\u0000${said}`) {
-                modelSeen = `${sid}\u0000${said}`;
-                await $.store.set(MODEL + sid, said).catch(() => undefined);
-            }
-        }
+        if (!e.agentId) await noteModel($, e.model, e.effort);
         return yield* next(e);
     });
 
@@ -1134,21 +1056,12 @@ export const register: Register = (on) => {
         drawBoard($, e),
     );
 
-    // a /clear or a resume leaves the conversation behind; an exit keeps only its last reply
     on('session.end', async ($, e, next) => {
-        await refreshThreads($);
-        if (e.reason === 'clear' || e.reason === 'resume') {
-            // the process outlives a /clear, so the next conversation is primed again: no session.start fires for it
-            setPrimed(false);
-            forgetTold();
-            // the process goes on under a new id with no session.start: the next read takes it fresh
-            endIdentity(e.sessionId);
-            await forget($, e.sessionId);
-        } else {
-            // a quit keeps what the board drew, so the resumed session draws it again
-            await keepState($).catch(() => undefined);
-            await retire($, e.sessionId);
-        }
+        await endSession(
+            $,
+            e.sessionId,
+            e.reason === 'clear' || e.reason === 'resume',
+        );
         return next(e);
     });
 

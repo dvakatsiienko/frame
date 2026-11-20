@@ -3,6 +3,7 @@ import type { EngineInterface } from 'claude-code';
 import type { StashEntry } from '../types/stash.d.ts';
 import { JOIN_OWED, handBackJoins, joinsOf } from './joins.ts';
 import { PREFIX, currentOrbit } from './orbit-store.ts';
+import { modelLabel } from './roster.ts';
 import { currentId, identity, sessionName } from './session-identity.ts';
 import { partsShown } from './settings-store.ts';
 import {
@@ -178,4 +179,19 @@ export async function pollShelf($: EngineInterface) {
     if (shelfPolls++ % SHELF_POLLS) return;
     await keepShelf($);
     await pruneStates($).catch(() => undefined);
+}
+
+// the model label last written for this session, so a step writes the store only when it changes
+let modelSeen: string | undefined;
+// the model label a step named, written only when it changes
+export async function noteModel(
+    $: EngineInterface,
+    model: string,
+    effort: string | number | undefined,
+) {
+    const sid = await currentId($);
+    const said = modelLabel(model, effort);
+    if (!sid || modelSeen === `${sid}\u0000${said}`) return;
+    modelSeen = `${sid}\u0000${said}`;
+    await $.store.set(MODEL + sid, said).catch(() => undefined);
 }
