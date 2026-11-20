@@ -16,7 +16,11 @@ export function tabAsk(read, to) {
     return { at: atOf(read(TAB_GO)) + 1, to };
 }
 
-/** every mod block's name in the layout, in its document order, each once @param {unknown} tree @returns {string[]} */
+/**
+ * every mod block's name in the layout, in its document order, each once; a `view` copy (glide is the deck drawn in the
+ * sidebar) holds no stops, so only a mod's own block places it
+ * @param {unknown} tree @returns {string[]}
+ */
 function modsOf(tree) {
     /** @type {string[]} */
     const mods = [];
@@ -24,9 +28,11 @@ function modsOf(tree) {
     const walk = (node) => {
         if (Array.isArray(node)) return node.forEach(walk);
         if (!node || typeof node !== 'object') return;
+        const view = /** @type {{ props?: { view?: unknown } }} */ (node).props
+            ?.view;
         for (const [key, value] of Object.entries(node))
             if (key === 'mod' && typeof value === 'string') {
-                if (!mods.includes(value)) mods.push(value);
+                if (!view && !mods.includes(value)) mods.push(value);
             } else walk(value);
     };
     walk(tree);

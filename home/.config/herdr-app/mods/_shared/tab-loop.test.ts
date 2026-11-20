@@ -75,6 +75,38 @@ describe('the Tab loop', () => {
         ]);
     });
 
+    // dima, 18:00: from the quill Tab walks orbit's asks, then antenna's threads; shift-Tab reaches antenna first. glide,
+    // a `view` copy of the deck in the sidebar, must not pull the deck's stops ahead of the quill
+    test("a mod's place is its own block, never a `view` copy of it drawn earlier", () => {
+        const stops: Record<string, unknown> = {
+            'tab.stops.x-herdr-antenna': ['thread-t1', 'thread-t2'],
+            'tab.stops.x-herdr-chat': ['quill'],
+            'tab.stops.x-herdr-deck': ['steer-a:o1'],
+        };
+        const withGlide = {
+            children: [
+                {
+                    children: [
+                        { content: { mod: 'x-herdr-antenna' } },
+                        {
+                            content: {
+                                mod: 'x-herdr-deck',
+                                props: { block: 'glide', view: 'glide' },
+                            },
+                        },
+                    ],
+                },
+                { content: { mod: 'x-herdr-chat' } },
+                { content: { mod: 'x-herdr-deck' } },
+            ],
+        };
+        const loop = loopOf((key) => stops[key], withGlide);
+        expect(nextStop(loop, 'quill', false)).toBe('steer-a:o1');
+        expect(nextStop(loop, 'steer-a:o1', false)).toBe('thread-t1');
+        expect(nextStop(loop, 'thread-t2', false)).toBe('quill');
+        expect(nextStop(loop, 'quill', true)).toBe('thread-t2');
+    });
+
     test('a mod gone from the layout leaves the loop, its old stops skipped', () => {
         const stops: Record<string, unknown> = {
             'tab.stops.x-herdr-chat': ['quill'],
