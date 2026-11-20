@@ -35,6 +35,7 @@ two passes, both wide (dima, 2026-09-28: «encourage yourself to proactively use
 `pnpm test-drive:check` (the boot digest runs it) names what is due within 3 days and reds what is overdue or undated. for each:
 - read the file's rounds against its «we're right if»
 - one orbit ask per trial: **adopt** · **drop** · **extend once** with the reason and a new date; a second extension needs a new test card
+- the reply beside the ask prints its deciding numbers as gain lines (`rules/fleet-output-format.md` § shapes) and one verdict line; a verdict ask with no numbers is not ready (PK-349:W1296)
 - dima's tick decides; silence decides nothing
 
 ## 5. close — done when nothing still points at it as live

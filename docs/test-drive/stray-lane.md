@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-20
 dies-when: the verdict line below is written
 ---
@@ -91,4 +91,4 @@ Ticket: FRM-586
 
 ## verdict
 
-**adopted** 2026-11-20 (dima's o13 tick, «i like stray and i think it is very useful. adopted»): standing on Sonnet 5.5, an Opus 5.5 lane only for a chore that fails twice. the deciding numbers, 12–20 Nov: 94 % of chores needed no rework after [done] (Sonnet 48 of 51, target 80 %); one session ran 67 chores against 2 summons; 0 chores failed twice.
+**adopted** 2026-11-20 (dima's o13 tick, «i like stray and i think it is very useful. adopted»): standing on Sonnet 5.5, an Opus 5.5 lane only for a chore that fails twice. the deciding numbers, 12–20 Nov: 94 % of chores needed no rework after [done] (Sonnet 48 of 51, target 80 %); one session ran 67 card rows (~60 chores) against 2–3 summons; 0 chores failed twice. the effort stays open: Sonnet 5.5 high vs medium runs its own 2-week trial (`docs/test-drive/effort-raise.md`, week-1 read 2026-11-26, verdict 2026-12-03).
