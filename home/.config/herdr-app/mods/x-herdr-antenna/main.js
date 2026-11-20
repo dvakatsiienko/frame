@@ -311,12 +311,16 @@ export default class Antenna extends View {
                 .rounded(4)
                 .border(1.5)
                 .border_color(t.idle ?? t.dim);
+        // working breathes, a calm pulse in place, never a spin (dima, 16:23: «slightly more alive»)
         return div()
             .size(7)
             .mx(3)
             .flex_none()
             .rounded(4)
-            .bg(t[status] ?? t.dim);
+            .bg(t[status] ?? t.dim)
+            .when(status === 'working', (el) =>
+                el.loop('opacity', { from: 0.3, period: 2000, to: 1 }),
+            );
     }
 
     /** @param {string} address @returns {import('gpui-kit').FocusHandle | null} */
