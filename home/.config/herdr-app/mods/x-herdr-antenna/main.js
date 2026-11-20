@@ -572,6 +572,8 @@ export default class Antenna extends View {
                                         )
                                             // herdr's UI font ships one face, so bold drew flat in it
                                             .font_family('.AppleSystemUIFont')
+                                            // antenna is clicked and dragged, never read as text: no I-beam (dima, 18:34)
+                                            .selectable(false)
                                             .text_size(11)
                                             .text_color(t.dim),
                                     ),
@@ -682,10 +684,18 @@ export default class Antenna extends View {
             )
             .child(
                 this.drag
-                    .zone(v_flex().id('an-zone').relative().flex_1().min_h(0))
+                    .zone(
+                        v_flex()
+                            .id('an-zone')
+                            .relative()
+                            .flex_1()
+                            .min_h(0)
+                            .cursor_default(),
+                    )
                     .child(
                         v_flex()
                             .id('an-list')
+                            .cursor_default()
                             .flex_1()
                             .min_h(0)
                             .px(isNarrow ? 0 : 8)
