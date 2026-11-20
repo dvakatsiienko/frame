@@ -18,6 +18,7 @@ each chunk his pick names gets `clio:lowtide-peek-chunk` and its gate before the
 
 read matt's `to-spec` and follow it whole; the spec is wholly mine (dima, 2026-11-05): its «check with the user» is my seam check, never a wait on him:
 - the spec sits in `.scratch/<feature>/spec.md`, one section per chunk, each section opening with its own `wish: <ticket>` line; every lane with a member gets one, a quick lane too
+- a chunk's whole signed scope is sliced at dispatch: every scope line lands in a named slice (A of N, B of N…), never a first slice with the rest left for later (dima, 2026-11-20 16:30: «I expected that since antenna started, you brought us the full spec for the entire antenna»)
 - a `wisphunter` card reads the spec's paths, premises, «already exists» claims and each chunk's `decided` against live code, its brief naming the spec file and opening «no diff exists», each finding folded before the seal (FRM-503); a signed `decided` the code has broken stops that chunk for a re-sign (`clio:shape-lane`); in a shift it parks with its reason in the spec and the next chunk runs
 - `PRODUCT.md` is written here when the chunk makes or changes an app, a skill or a fleet tool — it opens with his words, so it stays mine
 - every rider rides in the spec, named at dispatch or added as a steer; a rider found only in a commit is a sixth sense finding
