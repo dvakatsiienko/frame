@@ -3,6 +3,24 @@ import { type Engine, expect, test } from 'claude-code/testing';
 
 import { closedMark } from '../hooks/board-kit.tsx';
 import {
+    SETTINGS,
+    askOf,
+    assume,
+    boxValue,
+    glide,
+    keptState,
+    lastContext,
+    lines,
+    mobile,
+    press,
+    pressRace,
+    reload,
+    savedSteer,
+    stateOf,
+    texts,
+    typed,
+} from './orbit-helpers.ts';
+import {
     type Board,
     SID,
     add,
@@ -25,254 +43,6 @@ test('asks the tool adds list in orbit oldest first, each by its id', async ($, 
     await add($, ['push FRM-1', 'yes'], ['trash the old probe', 'yes']);
     await add($, ['rename the band', 'later']);
     expect(await asksShown(ui)).toEqual(['o1', 'o2', 'o3']);
-});
-
-test('a steer being typed keeps the value it showed, so a redraw never moves the caret', async ($, on) => {
-    world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a' });
-    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'ab' });
-    expect(
-        (await ui.find({ key: 'orbit:steer:o1', type: 'Input' }))?.props.value,
-    ).toBe('');
-});
-
-// FRM-492: a typed steer survives every redraw — what the box mounted with stays its value until a deliberate
-// replacement, whatever else redraws the board
-test('a long burst after a saved steer never redraws the field to the old save', async ($, on) => {
-    const { clock } = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    const key = 'orbit:steer:o1';
-    await ui.input({ key, kind: 'change', text: 'a heron' });
-    await clock.advance(1600);
-    let text = 'a heron';
-    for (let i = 0; i < 60; i++) {
-        text += 'x';
-        await ui.input({ key, kind: 'change', text });
-    }
-    await add($, ['a second ask', 'x']);
-    expect((await ui.find({ key, type: 'Input' }))?.props.value).toBe('');
-});
-
-test('after a reload the steer box draws what it mounted with, not the steer typed since', async ($, on) => {
-    world(on);
-    // a fresh module after a reload mid-typing: the box mounted empty, its typing saved a steer
-    const state: Record<string, unknown> = {
-        orbit: {
-            asks: [
-                {
-                    id: 'o1',
-                    pick: 'pelican',
-                    shown: '',
-                    steer: 'a heron',
-                    text: 'name a bird',
-                },
-            ],
-            next: 2,
-            turns: 1,
-        },
-    };
-    on('state.get', (_$, e) => ({
-        value: { value: state[e.key], version: e.key in state ? 1 : 0 },
-    }));
-    on('state.set', (_$, e) => {
-        state[e.key] = e.value;
-        return { value: { isSet: true, version: 2 } };
-    });
-    await start($);
-    const ui = await board($);
-    expect(
-        (await ui.find({ key: 'orbit:steer:o1', type: 'Input' }))?.props.value,
-    ).toBe('');
-});
-
-test('a poll that reads the board closed while a steer is typed keeps the field as drawn', async ($, on) => {
-    const { clock, panes } = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    const key = 'orbit:steer:o1';
-    await ui.input({ key, kind: 'change', text: 'a heron' });
-    await clock.advance(1600);
-    await ui.input({ key, kind: 'change', text: 'a heron in' });
-    panes.isClosed = true;
-    await clock.advance(2500);
-    panes.isClosed = false;
-    await add($, ['a second ask', 'x']);
-    expect((await ui.find({ key, type: 'Input' }))?.props.value).toBe('');
-});
-
-// FRM-492 sixth sense round 1: a read that fails says nothing about the board, so it clears nothing even with no typing
-// in the quiet window — a fresh module holds no typing stamp, the state a pause past 3 s leaves
-test('a failed panes read after a quiet pause keeps the box as drawn', async ($, on) => {
-    const { clock, panes } = world(on);
-    const seeded = {
-        asks: [
-            {
-                id: 'o1',
-                pick: 'pelican',
-                rev: 1,
-                shown: '',
-                steer: 'a heron',
-                text: 'name a bird',
-            },
-        ],
-        next: 2,
-        turns: 1,
-    };
-    const state: Record<string, unknown> = { orbit: seeded };
-    on('state.get', (_$, e) => ({
-        value: { value: state[e.key], version: e.key in state ? 1 : 0 },
-    }));
-    on('state.set', (_$, e) => {
-        state[e.key] = e.value;
-        return { value: { isSet: true, version: 2 } };
-    });
-    await start($);
-    const ui = await board($);
-    // a fold forgets every typing stamp, the module's and the earlier tests' alike; the box is then seeded as it mounted
-    await ui.press({ key: 'fold:orbit' });
-    await ui.press({ key: 'fold:orbit' });
-    state.orbit = seeded;
-    panes.isFailed = true;
-    await clock.advance(4100);
-    panes.isFailed = false;
-    // a state the test answers redraws nothing by itself
-    await ui.redraw();
-    expect(
-        (await ui.find({ key: 'orbit:steer:o1', type: 'Input' }))?.props.value,
-    ).toBe('');
-});
-
-// FRM-492 sixth sense round 1: two boxes saved together each keep their own steer — one save once wrote the other's
-// older read over it, and the first box still showed text the orbit no longer held
-const steersOf = (store: Map<string, unknown>) =>
-    (
-        (
-            store.get(`asks:${SID}`) as
-                | { items: { id: string; steer?: string }[] }
-                | undefined
-        )?.items ?? []
-    ).map((i) => [i.id, i.steer ?? null]);
-
-test('two steer boxes flushed together keep both steers', async ($, on) => {
-    const { store } = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican'], ['name a fish', 'cod']);
-    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a heron' });
-    await ui.input({ key: 'orbit:steer:o2', kind: 'change', text: 'a trout' });
-    await orbit($, { lines: ['one'], op: 'plan' });
-    await add($, ['third', 'x']);
-    expect([
-        (await ui.find({ key: 'orbit:steer:o1', type: 'Input' }))?.props.value,
-        steersOf(store).slice(0, 2),
-    ]).toEqual([
-        '',
-        [
-            ['o1', 'a heron'],
-            ['o2', 'a trout'],
-        ],
-    ]);
-});
-
-// FRM-492 local review: a prompt waits for the steer saves it flushed, so a marked ask locks with its steer
-test('a prompt right after typing a steer on a ticked ask joins it with that steer', async ($, on) => {
-    const w = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican'], ['name a fish', 'cod']);
-    await ui.press({ key: 'orbit:accepted:o1' });
-    await ui.press({ key: 'orbit:accepted:o2' });
-    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a heron' });
-    await say($, 'next');
-    expect(joined(w.contexts).join('\n')).toContain('his steer: «a heron»');
-});
-
-test('two steer boxes saved by their timers in one step keep both steers', async ($, on) => {
-    const { clock, store } = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican'], ['name a fish', 'cod']);
-    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a heron' });
-    await ui.input({ key: 'orbit:steer:o2', kind: 'change', text: 'a trout' });
-    await clock.advance(1600);
-    await add($, ['third', 'x']);
-    expect(steersOf(store).slice(0, 2)).toEqual([
-        ['o1', 'a heron'],
-        ['o2', 'a trout'],
-    ]);
-});
-
-// the steer as the session's published asks hold it, the store mirror every board reads
-const savedSteer = (store: Map<string, unknown>) =>
-    (store.get(`asks:${SID}`) as { items: { steer?: string }[] } | undefined)
-        ?.items[0]?.steer;
-
-test('a steer saves once typing pauses 1.5 s, never on each keystroke', async ($, on) => {
-    const { clock, store } = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a' });
-    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'ab' });
-    const typing = savedSteer(store);
-    await clock.advance(1600);
-    expect([typing, savedSteer(store)]).toEqual([undefined, 'ab']);
-});
-
-// a save mid-typing keeps the text as typed: a trimmed save was drawn back once typing went quiet, and the desktop
-// field lost what the trim cut (dima's wisp, 10-13 15:42)
-test('a steer saved after a pause keeps its trailing space, so the field never loses it', async ($, on) => {
-    const { clock, store } = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'not a ' });
-    await clock.advance(1600);
-    expect(savedSteer(store)).toBe('not a ');
-});
-
-test('a steer of only spaces saves as no steer', async ($, on) => {
-    const { clock, store } = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: '   ' });
-    await clock.advance(1600);
-    expect(savedSteer(store)).toBe(undefined);
-});
-
-test('a steer typed with a trailing space joins the turn trimmed', async ($, on) => {
-    const w = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a heron ' });
-    await ui.press({ key: 'orbit:accepted:o1' });
-    await say($, 'next');
-    expect(joined(w.contexts).join('\n')).toContain('his steer: «a heron»');
-});
-
-test('a tick pressed right after typing carries the steer still waiting to save', async ($, on) => {
-    const w = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    await ui.input({
-        key: 'orbit:steer:o1',
-        kind: 'change',
-        text: 'not a pelican',
-    });
-    await ui.press({ key: 'orbit:accepted:o1' });
-    await say($, 'next');
-    expect(joined(w.contexts).join('\n')).toContain(
-        'his steer: «not a pelican»',
-    );
 });
 
 test("an ask's row reads its text and clio's pick", async ($, on) => {
@@ -478,21 +248,6 @@ test('a held mark swaps its emoji for ✅, and only one of the two holds it', as
     ]);
 });
 
-test('a steer is kept as it is typed, with no Enter', async ($, on) => {
-    const w = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['push FRM-1', 'yes']);
-    await ui.press({ key: 'orbit:rejected:o1' });
-    await ui.input({
-        key: 'orbit:steer:o1',
-        kind: 'change',
-        text: 'wait for ci',
-    });
-    await say($, 'next');
-    expect(joined(w.contexts).join('\n')).toContain('his steer: «wait for ci»');
-});
-
 test('a resolved ask leaves orbit when the turn ends', async ($, on) => {
     world(on);
     await start($);
@@ -506,9 +261,6 @@ test('a resolved ask leaves orbit when the turn ends', async ($, on) => {
     await endTurn($);
     expect(await asksShown(ui)).toEqual(['o2']);
 });
-
-const texts = async (ui: Board) =>
-    (await ui.findAll({ type: 'Text' })).map((t) => t.text ?? '').join('\n');
 
 test('a resolved ask reads its closing word on a line of its own under it', async ($, on) => {
     world(on);
@@ -545,6 +297,7 @@ test('an ask resolved with a closing word shows dim with it for one more turn, t
         await asksShown(ui),
     ]).toEqual([['o1'], true, []]);
 });
+
 test("a follow-up clears dima's steer on the old question", async ($, on) => {
     world(on);
     await start($);
@@ -721,39 +474,6 @@ test('⏹️ on an assumption stops speak', async ($, on) => {
     expect(sent.filter((r) => r.op !== 'status')).toEqual([{ op: 'stop' }]);
 });
 
-test("an assumption's steer box is empty once ↩️ sent it back", async ($, on) => {
-    world(on);
-    await start($);
-    const ui = await board($);
-    await assume($, 'kept the old port');
-    await ui.press({ key: 'orbit:wrong:a1' });
-    await ui.input({
-        key: 'orbit:asteer:a1',
-        kind: 'change',
-        text: 'use 7374',
-    });
-    await say($, 'next');
-    await endTurn($);
-    expect(
-        (await ui.find({ key: 'orbit:asteer:a1', type: 'Input' }))?.props
-            .value ?? '',
-    ).toBe('');
-});
-
-test('a card folded and opened again draws the saved steer, not the text from before he typed', async ($, on) => {
-    const w = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a heron' });
-    await w.clock.advance(5_000);
-    await ui.press({ key: 'fold:orbit' });
-    await ui.press({ key: 'fold:orbit' });
-    expect(
-        (await ui.find({ key: 'orbit:steer:o1', type: 'Input' }))?.props.value,
-    ).toBe('a heron');
-});
-
 test("a card steer lands over the member's own unless it typed into that box a moment ago", async ($, on) => {
     const w = world(on);
     await start($);
@@ -791,6 +511,7 @@ test('a steer typed on another board replaces the one the ask already holds', as
 
 const orbitNote = (w: { contexts: string[][] }) =>
     (w.contexts.at(-1) ?? []).filter((c) => c.startsWith('orbit holds'));
+
 const nextPrompt = async ($: Engine) => {
     await endTurn($);
     await say($, 'more');
@@ -942,10 +663,6 @@ test('a compaction tells the orbit state once again, then keeps quiet', async ($
     ]);
 });
 
-const SETTINGS = '/home/.claude/shelf/herdr-settings/settings.json';
-const typed = (rows: Record<string, string>) => ({
-    [SETTINGS]: JSON.stringify({ rows, v: 1 }),
-});
 const stalePlan = async ($: Engine) => {
     await start($);
     await say($, 'go');
@@ -1457,15 +1174,6 @@ test("a plan line's lead word prints bold", async ($, on) => {
     ]);
 });
 
-const mobile = ($: Engine, args = '') =>
-    $.skill.prompt({
-        skill: 'x:mobile-mode',
-        text: `# mobile-mode${args ? `\n\nARGUMENTS: ${args}` : ''}`,
-    });
-
-const lastContext = (contexts: string[][]) =>
-    (contexts.at(-1) ?? []).join('\n');
-
 test('after /mobile-mode the next prompt asks for the asks fence with the ids', async ($, on) => {
     const w = world(on);
     await start($);
@@ -1788,17 +1496,6 @@ test('a speak press keeps mobile mode on', async ($, on) => {
     expect(lastContext(w.contexts)).toContain('asks fence');
 });
 
-test('a typed steer keeps mobile mode on', async ($, on) => {
-    const w = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['push FRM-1', 'yes']);
-    await mobile($);
-    await ui.input({ key: 'orbit:steer:o1', text: 'after ci' });
-    await say($, 'hi');
-    expect(lastContext(w.contexts)).toContain('asks fence');
-});
-
 test('mobile mode survives a reload', async ($, on) => {
     const w = world(on);
     const state: Record<string, unknown> = {
@@ -1936,9 +1633,6 @@ test('with x down a prompt carries no ticket line', async ($, on) => {
     );
 });
 
-const assume = ($: Engine, ...texts: string[]) =>
-    orbit($, { op: 'assume', texts });
-
 test('an assumption shows under «assumed» below the asks', async ($, on) => {
     world(on);
     await start($);
@@ -2066,6 +1760,7 @@ const BOARD_PARTS: [string, (ui: Board) => Promise<boolean>][] = [
             undefined,
     ],
 ];
+
 for (const [part, drawn] of BOARD_PARTS)
     test(`the ${part} switch hides its part of the board`, async ($, on) => {
         world(on).store.set('shown', { [part]: false });
@@ -2076,6 +1771,7 @@ for (const [part, drawn] of BOARD_PARTS)
         await orbit($, { lines: ['now: a'], op: 'plan' });
         expect(await drawn(ui)).toBe(false);
     });
+
 for (const [part, drawn] of BOARD_PARTS)
     test(`the ${part} part draws while its switch is on`, async ($, on) => {
         world(on);
@@ -2419,7 +2115,7 @@ test('a running turn takes a tick at its next tool call', async ($, on) => {
 
 // FRM-552: herdr's board writes one press per line of the session's ticks file, and stash keeps how far it read
 const HERDR_FILE = `/home/.claude/shelf/orbit-ticks/${SID}.jsonl`;
-const press = (p: Record<string, unknown>) => `${JSON.stringify(p)}\n`;
+
 // a press herdr's board appends to this session's ticks file
 const herdrPress = (
     w: { files: Record<string, string> },
@@ -2428,6 +2124,7 @@ const herdrPress = (
 ) => {
     w.files[HERDR_FILE] = `${w.files[HERDR_FILE] ?? ''}${press({ id, ...p })}`;
 };
+
 const turnContext = async ($: Engine) =>
     ((await $.tool.call({ command: 'ls', tool: 'Bash' })).context ?? []).join(
         '\n',
@@ -2702,18 +2399,6 @@ test("a phases tick and its steer ride dima's next prompt", async ($, on) => {
     expect((w.contexts.at(-1) ?? []).join('\n')).toMatch(
         /🛎️ ticked their order[\s\S]*his steer: «a first, it unblocks b»/,
     );
-});
-
-test("the session's new plan keeps the steer dima typed, and the box keeps his text", async ($, on) => {
-    world(on);
-    await start($);
-    const ui = await board($);
-    await orbit($, { lines: ['now: a'], op: 'plan' });
-    await ui.input({ key: 'plan:steer', kind: 'submit', text: 'b before a' });
-    await orbit($, { lines: ['now: b', 'next: a'], op: 'plan' });
-    expect(
-        (await ui.find({ key: 'plan:steer', type: 'Input' }))?.props.value,
-    ).toBe('b before a');
 });
 
 test('a phases steer alone never joins a turn', async ($, on) => {
@@ -2998,9 +2683,6 @@ test('a tick on an ask just followed up mid-turn lands at once', async ($, on) =
 const partOff = (w: { store: Map<string, unknown> }, key: string) =>
     w.store.set('shown', { [key]: false });
 
-const lines = (w: { contexts: string[][] }) =>
-    (w.contexts.at(-1) ?? []).join('\n');
-
 test('with assumed switched off, a sent-back assumption joins no prompt', async ($, on) => {
     const w = world(on);
     await start($);
@@ -3102,6 +2784,7 @@ test("with 🌔 phases switched off, dima's phases tick joins no running turn", 
 /* one no-board reply reminder: 📱 mobile mode and 🪐 orbit switched off both inject it (dima's o162) */
 
 const NO_BOARD = /^no board reaches dima/;
+
 const noBoard = (w: { contexts: string[][] }) =>
     (w.contexts.at(-1) ?? []).filter((c) => NO_BOARD.test(c));
 
@@ -3136,20 +2819,6 @@ test('with mobile mode off and orbit on, no prompt carries the no-board reminder
 });
 
 /* a mac reboot relaunches every session: its orbit comes back (dima's ✨ wisp, 10-13 16:26: o169 was gone) */
-
-// the session's $.state as a map the test can wipe, as a new process starts with none
-function stateOf(on: On) {
-    const state = new Map<string, unknown>();
-    on('state.get', (_$, e) => ({
-        value: { value: state.get(e.key), version: state.has(e.key) ? 1 : 0 },
-    }));
-    on('state.set', (_$, e) => {
-        state.set(e.key, e.value);
-        return { value: { isSet: true, version: 2 } };
-    });
-    on('session.end', (_$, e) => ({ sessionId: e.sessionId }));
-    return state;
-}
 
 // the old process quits as a reboot quits it: session.end, not a /clear
 const quit = ($: Engine) =>
@@ -3204,34 +2873,6 @@ test('a process that quits before its start leaves the kept asks for the next on
     await start($);
     const ui = await board($);
     expect(await asksShown(ui)).toEqual(['o1']);
-});
-
-// FRM-492 local review: a new process draws a fresh pane, so what the old box mounted with is gone
-test('a steer box resumed in a new process draws the kept steer', async ($, on) => {
-    const w = world(on);
-    stateOf(on);
-    w.store.set(`kept:${SID}`, {
-        at: w.clock.now(),
-        orbit: {
-            asks: [
-                {
-                    id: 'o1',
-                    pick: 'yes',
-                    rev: 1,
-                    shown: '',
-                    steer: 'a heron',
-                    text: 'name a bird',
-                },
-            ],
-            next: 2,
-            turns: 4,
-        },
-    });
-    await start($);
-    const ui = await board($);
-    expect(
-        (await ui.find({ key: 'orbit:steer:o1', type: 'Input' }))?.props.value,
-    ).toBe('a heron');
 });
 
 test('a resumed orbit keeps counting its ids where it stopped', async ($, on) => {
@@ -3373,12 +3014,14 @@ test('a cost question in a session that is not clio carries no cost hint', async
 
 // PK-227: one home for the next move — a wrap_up ask while an orbit ask is open reds the Stop once
 const WRAP_UP = 'mcp__ccd_turn__wrap_up';
+
 const stop = ($: Engine, text = 'done.', isActive = false) =>
     $.classic.Stop({
         last_assistant_message: text,
         session_id: SID,
         stop_hook_active: isActive,
     } as never);
+
 const wrapUp = ($: Engine, ask?: string) =>
     $.tool.call({
         ...(ask ? { ask } : {}),
@@ -3599,437 +3242,8 @@ test('an ask that breaks the orbit card blanks the card alone, the board still d
 /* FRM-492 round 3: a hot reload keeps $.state and starts a fresh module. the harness keeps one module per file, so a
    row forgets the module's boxes with a fold, lays back the $.state the old module left, and runs the reload's start */
 
-function keptState(on: On, state: Record<string, unknown> = {}) {
-    let version = 0;
-    on('state.get', (_$, e) => ({
-        value: { value: state[e.key], version: e.key in state ? ++version : 0 },
-    }));
-    on('state.set', (_$, e) => {
-        state[e.key] = e.value;
-        return { value: { isSet: true, version: ++version } };
-    });
-    return state;
-}
-
-async function reload(
-    $: Engine,
-    ui: Board,
-    state: Record<string, unknown>,
-    card: string,
-) {
-    const left = JSON.parse(JSON.stringify(state)) as Record<string, unknown>;
-    await ui.press({ key: `fold:${card}` });
-    await ui.press({ key: `fold:${card}` });
-    for (const key of Object.keys(state)) delete state[key];
-    Object.assign(state, left);
-    await start($);
-    await ui.redraw();
-}
-
-const LANES = '/home/.claude/shelf/lanes.json';
-const glide = (members: Record<string, string> = {}, id = 'l9') => ({
-    [LANES]: JSON.stringify({
-        lanes: [
-            {
-                current: 0,
-                history: [],
-                id,
-                items: [
-                    { isDone: false, text: 'a' },
-                    { isDone: false, text: 'b' },
-                ],
-                members,
-                movedAt: 0,
-                title: 'reload lane',
-            },
-        ],
-    }),
-});
-const boxValue = async (ui: Board, key: string) =>
-    (await ui.find({ key, type: 'Input' }))?.props.value;
-
-test('a glide steer box keeps what it mounted with across a reload', async ($, on) => {
-    const w = world(on, glide());
-    const state = keptState(on);
-    await start($);
-    const ui = await board($);
-    await ui.input({
-        key: 'lane:l9:steer',
-        kind: 'change',
-        text: 'cards first',
-    });
-    await w.clock.advance(5_000);
-    const before = await boxValue(ui, 'lane:l9:steer');
-    await reload($, ui, state, 'lane:l9');
-    expect([before, await boxValue(ui, 'lane:l9:steer')]).toEqual(['', '']);
-});
-
-test("an assumption's steer box keeps what it mounted with across a reload", async ($, on) => {
-    const w = world(on);
-    const state = keptState(on);
-    await start($);
-    const ui = await board($);
-    await assume($, 'kept the port r3');
-    await ui.redraw();
-    const id = (state.orbit as { assumed: { id: string }[] }).assumed[0]?.id;
-    const key = `orbit:asteer:${id}`;
-    await ui.input({ key, kind: 'change', text: 'use 7374' });
-    await w.clock.advance(5_000);
-    const before = await boxValue(ui, key);
-    await reload($, ui, state, 'orbit');
-    expect([before, await boxValue(ui, key)]).toEqual(['', '']);
-});
-
-test('a steer typed but not saved yet is kept in $.state until its save lands', async ($, on) => {
-    const w = world(on);
-    const state = keptState(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    await ui.redraw();
-    const key = `orbit:steer:${(state.orbit as { asks: { id: string }[] }).asks[0]?.id}`;
-    await ui.input({ key, kind: 'change', text: 'a heron' });
-    const typed = JSON.stringify(state.fields ?? {});
-    await w.clock.advance(5_000);
-    expect([
-        typed.includes('a heron'),
-        JSON.stringify(state.fields ?? {}).includes('a heron'),
-    ]).toEqual([true, false]);
-});
-
-test('a steer whose save a reload dropped is saved at the next flush', async ($, on) => {
-    const w = world(on);
-    // the old module typed «a heron» and reloaded before its 1.5 s pause ran out: the save never fired
-    keptState(on, {
-        fields: { 'orbit:steer:o8': { pending: 'a heron' } },
-        orbit: {
-            asks: [{ id: 'o8', pick: 'pelican', text: 'name a bird' }],
-            next: 9,
-            turns: 1,
-        },
-    });
-    await start($);
-    await board($);
-    await say($, 'go');
-    expect(savedSteer(w.store)).toBe('a heron');
-});
-
-test('a send-back that joined a turn empties the steer box once the turn ends', async ($, on) => {
-    const w = world(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['push FRM-9', 'yes']);
-    const key = 'orbit:steer:o1';
-    await ui.input({ key, kind: 'change', text: 'wait for ci' });
-    await ui.press({ key: 'orbit:rejected:o1' });
-    await w.clock.advance(5_000);
-    await say($, 'go');
-    await endTurn($);
-    const box = (await ui.findAll({ type: 'Input' })).find((n) =>
-        n.key?.startsWith(key),
-    );
-    expect([box?.key === key, box?.props.value]).toEqual([false, '']);
-});
-
-test('a board opened again draws the steer it saved while closed', async ($, on) => {
-    const w = world(on);
-    // the box mounted empty and its typing saved a steer; the typing stamps run on the real clock, so a fold forgets them
-    // (and drops what the box mounted with), and the orbit is seeded again as it mounted
-    const seeded = {
-        asks: [
-            {
-                id: 'o1',
-                pick: 'pelican',
-                rev: 1,
-                shown: '',
-                steer: 'a heron',
-                text: 'name a bird',
-            },
-        ],
-        next: 2,
-        turns: 1,
-    };
-    const state = keptState(on, { orbit: seeded });
-    await start($);
-    const ui = await board($);
-    await ui.press({ key: 'fold:orbit' });
-    await ui.press({ key: 'fold:orbit' });
-    state.orbit = seeded;
-    await ui.redraw();
-    const key = 'orbit:steer:o1';
-    const before = await boxValue(ui, key);
-    w.panes.isClosed = true;
-    await w.clock.advance(4_100);
-    w.panes.isClosed = false;
-    await w.clock.advance(4_100);
-    await ui.redraw();
-    expect([before, await boxValue(ui, key)]).toEqual(['', 'a heron']);
-});
-
-/* FRM-492 round 4: a replayed save yields to a newer steer, a failed one keeps its text, a draw before start keeps the key */
-
-test('a save a reload dropped never writes over a newer steer from another board', async ($, on) => {
-    const w = world(on, glide());
-    // typed over no steer; a text kept with no base is a module before the base was kept, and lands as it did there
-    keptState(on, {
-        fields: { 'lane:l9:steer': { base: '', pending: 'old from A' } },
-    });
-    w.store.set('lane-steer:l9', { steer: 'newer from B' });
-    await start($);
-    await board($);
-    await say($, 'go');
-    expect(
-        (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
-    ).toBe('newer from B');
-});
-
-test('a save a reload dropped that fails is tried again at the next flush', async ($, on) => {
-    const w = world(on, glide());
-    keptState(on, { fields: { 'lane:l9:steer': { pending: 'from A' } } });
-    let isFailing = true;
-    w.taps.set = (key) =>
-        isFailing && key === 'lane-steer:l9' ? 'store down' : undefined;
-    await start($);
-    await board($);
-    await say($, 'go');
-    isFailing = false;
-    await say($, 'again');
-    expect(
-        (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
-    ).toBe('from A');
-});
-
-test('a board drawn before a reloaded start keeps each box under its kept key', async ($, on) => {
-    world(on);
-    keptState(on, {
-        fields: {
-            'lane:l8:steer': {
-                draft: { at: 0, drawn: '', isLanded: true, sent: ['typed'] },
-                gen: 2,
-            },
-        },
-        lanes: [
-            {
-                current: 0,
-                history: [],
-                id: 'l8',
-                items: [{ isDone: false, text: 'a' }],
-                members: {},
-                movedAt: 0,
-                // the box's landed save, as the old module last showed the lane
-                steer: 'typed',
-                title: 'drawn early',
-            },
-        ],
-    });
-    const ui = await board($);
-    expect(
-        (await ui.findAll({ type: 'Input' }))
-            .map((n) => n.key)
-            .filter((k) => k?.startsWith('lane:l8:steer')),
-    ).toEqual(['lane:l8:steer#2']);
-});
-
-test('a save a reload dropped lands over the steer it was typed over', async ($, on) => {
-    const w = world(on, glide());
-    keptState(on, {
-        fields: { 'lane:l9:steer': { base: 'cards', pending: 'cards first' } },
-    });
-    w.store.set('lane-steer:l9', { steer: 'cards' });
-    await start($);
-    await board($);
-    await say($, 'go');
-    expect(
-        (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
-    ).toBe('cards first');
-});
-
-test('a save a reload dropped yields to a steer other than the one it was typed over', async ($, on) => {
-    const w = world(on, glide());
-    keptState(on, {
-        fields: { 'lane:l9:steer': { base: 'cards', pending: 'cards first' } },
-    });
-    w.store.set('lane-steer:l9', { steer: 'guards' });
-    await start($);
-    await board($);
-    await say($, 'go');
-    expect(
-        (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
-    ).toBe('guards');
-});
-
-// dima's o123: a third refusal keeps the text and stops trying, never dropping what he typed
-test('a save a reload dropped that keeps failing is kept after three flushes and tried no more', async ($, on) => {
-    const w = world(on, glide());
-    const state = keptState(on, {
-        fields: { 'lane:l9:steer': { base: '', pending: 'from A' } },
-    });
-    let tries = 0;
-    w.taps.set = (key) => {
-        if (key !== 'lane-steer:l9') return undefined;
-        tries++;
-        return 'store down';
-    };
-    await start($);
-    const ui = await board($);
-    for (const text of ['one', 'two', 'three', 'four']) await say($, text);
-    // keptState's state.set hides the write from the kit, so the pane redraws by hand
-    await ui.redraw();
-    const offer = await ui.find({ key: 'kept:lane:l9:steer', type: 'Button' });
-    expect([
-        tries,
-        JSON.stringify(state.fields ?? {}).includes('from A'),
-        offer?.text,
-    ]).toEqual([3, true, expect.stringContaining('from A')]);
-});
-
-test('a kept steer the board offers back is saved by a press, and the offer leaves', async ($, on) => {
-    const w = world(on, glide());
-    keptState(on, {
-        fields: { 'lane:l9:steer': { base: '', pending: 'from A' } },
-    });
-    let isDown = true;
-    w.taps.set = (key) =>
-        key === 'lane-steer:l9' && isDown ? 'store down' : undefined;
-    await start($);
-    const ui = await board($);
-    for (const text of ['one', 'two', 'three']) await say($, text);
-    isDown = false;
-    await ui.redraw();
-    await ui.press({ key: 'kept:lane:l9:steer' });
-    await ui.redraw();
-    expect([
-        (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
-        await ui.find({ key: 'kept:lane:l9:steer', type: 'Button' }),
-    ]).toEqual(['from A', undefined]);
-});
-
-test("a kept steer offered beside an ask's box saves its steer, and the box draws it", async ($, on) => {
-    const w = world(on);
-    const state = keptState(on, {
-        fields: { 'orbit:steer:o1': { keptSteers: ['from A'] } },
-        orbit: {
-            asks: [
-                { id: 'o1', pick: 'pelican', shown: '', text: 'name a bird' },
-            ],
-            next: 2,
-            turns: 1,
-        },
-    });
-    await start($);
-    const ui = await board($);
-    // a poll publishes the board view the offer draws from; keptState hides that write from the kit
-    await w.clock.advance(5_000);
-    await ui.redraw();
-    await ui.press({ key: 'kept:orbit:steer:o1' });
-    await ui.redraw();
-    const box = (await ui.findAll({ type: 'Input' })).find((n) =>
-        n.key?.startsWith('orbit:steer:o1'),
-    );
-    expect([
-        (state.orbit as { asks: { steer?: string }[] }).asks[0]?.steer,
-        box?.props.value,
-        await ui.find({ key: 'kept:orbit:steer:o1', type: 'Button' }),
-    ]).toEqual(['from A', 'from A', undefined]);
-});
-
-test('a kept steer pressed after its ask locked stays offered, never dropped', async ($, on) => {
-    const w = world(on);
-    const state = keptState(on, {
-        fields: { 'orbit:steer:o1': { keptSteers: ['from A'] } },
-        orbit: {
-            asks: [
-                { id: 'o1', pick: 'pelican', shown: '', text: 'name a bird' },
-            ],
-            next: 2,
-            turns: 1,
-        },
-    });
-    await start($);
-    const ui = await board($);
-    await w.clock.advance(5_000);
-    await ui.redraw();
-    const o = state.orbit as { asks: Record<string, unknown>[] };
-    state.orbit = { ...o, asks: [{ ...o.asks[0], isLocked: true }] };
-    await ui.press({ key: 'kept:orbit:steer:o1' });
-    expect([
-        (state.orbit as { asks: { steer?: string }[] }).asks[0]?.steer,
-        JSON.stringify(state.fields ?? {}).includes('from A'),
-    ]).toEqual([undefined, true]);
-});
-
-test('a second give-up on one box stacks: the newest is offered first, then the one before', async ($, on) => {
-    const w = world(on, glide());
-    keptState(on, {
-        fields: {
-            'lane:l9:steer': {
-                base: '',
-                keptSteers: ['from A'],
-                pending: 'from B',
-            },
-        },
-    });
-    let isDown = true;
-    w.taps.set = (key) =>
-        key === 'lane-steer:l9' && isDown ? 'store down' : undefined;
-    await start($);
-    const ui = await board($);
-    for (const text of ['one', 'two', 'three']) await say($, text);
-    isDown = false;
-    await ui.redraw();
-    const offer = async () =>
-        (await ui.find({ key: 'kept:lane:l9:steer', type: 'Button' }))?.text;
-    const both = await offer();
-    await ui.press({ key: 'kept:lane:l9:steer' });
-    await ui.redraw();
-    expect([
-        both,
-        (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
-        await offer(),
-    ]).toEqual([
-        expect.stringMatching(/from B.*\+1/),
-        'from B',
-        expect.stringContaining('from A'),
-    ]);
-});
-
-test('a kept steer whose box is gone shows on its own line, and its ✕ drops it', async ($, on) => {
-    const w = world(on);
-    const state = keptState(on, {
-        fields: { 'orbit:steer:o9': { keptSteers: ['a gone ask'] } },
-    });
-    await start($);
-    const ui = await board($);
-    await w.clock.advance(5_000);
-    await ui.redraw();
-    const line = await ui.find({
-        text: /its box is not on the board/,
-        type: 'Text',
-    });
-    await ui.press({ key: 'kept-drop:orbit:steer:o9' });
-    await ui.redraw();
-    expect([
-        line?.text,
-        JSON.stringify(state.fields ?? {}).includes('a gone ask'),
-        await ui.find({ text: /its box is not on the board/, type: 'Text' }),
-    ]).toEqual([expect.stringContaining('a gone ask'), false, undefined]);
-});
-
-test('a save kept with no base, by a module before the base was kept, lands as it did there', async ($, on) => {
-    const w = world(on, glide());
-    keptState(on, { fields: { 'lane:l9:steer': { pending: 'cards first' } } });
-    w.store.set('lane-steer:l9', { steer: 'cards' });
-    await start($);
-    await board($);
-    await say($, 'go');
-    expect(
-        (w.store.get('lane-steer:l9') as { steer?: string } | undefined)?.steer,
-    ).toBe('cards first');
-});
-
-/* a pick that signs or merges is taken as written: the guard reads no ask's shape (FRM-581) */
-
 const denied = (r: unknown) => String((r as { deny?: string }).deny ?? '');
+
 const URL = 'https://github.com/o/n/pull/7';
 
 for (const [what, text, pick] of [
@@ -4129,51 +3343,6 @@ for (const [what, text, pick] of [
 
 /* FRM-510: his press is never lost. every get of one dispatch reads one moment (engine.md), so a hook running while he
    presses reads the orbit from before the press; `frozen` serves that old copy, and writes keeps what landed */
-function pressRace(on: On) {
-    const race = {
-        frozen: undefined as unknown,
-        frozenTicks: undefined as unknown,
-        last: undefined as unknown,
-        lastTicks: undefined as unknown,
-        onLock: undefined as (() => void) | undefined,
-        onWrite: undefined as (() => void) | undefined,
-        orbit: undefined as
-            | { asks: { id: string; isLocked?: boolean; mark?: string }[] }
-            | undefined,
-        ticks: [] as { id: string }[],
-    };
-    on('state.get', async (_$, e, next) => {
-        const isOrbit = e.key === 'orbit';
-        if (!isOrbit && e.key !== 'ticks') return next(e as never);
-        const held = isOrbit ? race.frozen : race.frozenTicks;
-        if (held) return { value: held } as never;
-        const r = (await next(e as never)) as { value?: unknown };
-        if (isOrbit) race.last = r.value;
-        else race.lastTicks = r.value;
-        return r as never;
-    });
-    on('state.set', async (_$, e, next) => {
-        if (e.key === 'orbit') {
-            const value = e.value as NonNullable<typeof race.orbit>;
-            const onLock = value.asks.some((a) => a.isLocked)
-                ? race.onLock
-                : undefined;
-            const onRace = onLock ?? race.onWrite;
-            if (onRace) {
-                race.onLock = undefined;
-                race.onWrite = undefined;
-                onRace();
-                for (let i = 0; i < 2000; i++) await Promise.resolve();
-            }
-            race.orbit = value;
-        }
-        if (e.key === 'ticks') race.ticks = e.value as typeof race.ticks;
-        return next(e);
-    });
-    return race;
-}
-const askOf = (race: ReturnType<typeof pressRace>, id: string) =>
-    race.orbit?.asks.find((a) => a.id === id);
 
 for (const [site, act] of [
     ["his prompt's lock", ($: Engine) => say($, 'next')],
@@ -4412,26 +3581,6 @@ test('a mark whose orbit write is denied leaves no record', async ($, on) => {
     expect(ticks).toEqual([]);
 });
 
-test('a steer typed during a tool call outlives a save reading from before it', async ($, on) => {
-    world(on);
-    const race = pressRace(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
-    await say($, 'run the long job');
-    await ui.press({ key: 'orbit:rejected:o2' });
-    await ui.find({ key: 'orbit:rejected:o2' });
-    const stale = race.last;
-    await ui.input({ key: 'orbit:steer:o2', text: 'wait for ci' });
-    await ui.press({ key: 'orbit:accepted:o1' });
-    race.frozen = stale;
-    await $.tool.call({ command: 'ls', tool: 'Bash' });
-    race.frozen = undefined;
-    expect((askOf(race, 'o2') as { steer?: string } | undefined)?.steer).toBe(
-        'wait for ci',
-    );
-});
-
 test('a press landing right after a follow on that ask keeps its mark and its record', async ($, on) => {
     world(on);
     const race = pressRace(on);
@@ -4576,8 +3725,11 @@ for (const [site, act] of [
 
 /* FRM-531: a thread switch on the desktop detaches the client and drops the board's view; the return attaches it, and
    the board draws fresh 2–20 ms later and again 76–131 ms after that (the desktop log, 2026-11-07: detach → attach → draw, a timer firing in between) */
+
 const CLIENT = { clientId: 'desktop-2', surface: 'desktop' } as const;
+
 const FIELD_SAVE = 1500;
+
 type Clocked = { clock: { advance: (ms: number) => Promise<unknown> } };
 
 async function switchThread($: Engine, w: Clocked, ui: Board, awayMs = 0) {
@@ -4590,6 +3742,7 @@ async function switchThread($: Engine, w: Clocked, ui: Board, awayMs = 0) {
 
 // each row its own ask or lane id: module memory survives between tests
 let switchRow = 2000;
+
 // a row's own ask ids: module memory outlives a test, so its ask takes an id no other row used, through the fleet counter
 // (FRM-649) when the row's store is passed
 const orbitSeed = (store?: Map<string, unknown>) => {
@@ -4642,6 +3795,7 @@ const SWITCH_TIMINGS = [
     ['past the save delay while away', 0, FIELD_SAVE + 3500],
     ['a landed save before he left', FIELD_SAVE + 3500, 0],
 ] as const;
+
 const SWITCH_TEXTS = [
     ['one line', 'a heron'],
     ['several lines', 'a heron\nand a stork'],
