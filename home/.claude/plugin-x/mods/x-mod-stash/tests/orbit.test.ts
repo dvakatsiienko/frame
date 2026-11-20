@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, test } from 'claude-code/testing';
 
-import { closedMark } from '../hooks/register.tsx';
+import { closedMark } from '../hooks/board.tsx';
 import {
     type Board,
     SID,
