@@ -26,9 +26,21 @@ is_dev() {
     (($? == 1)) || [[ -n $(git -C "${dir}" ls-files --others --exclude-standard -- x/go 2>/dev/null) ]]
 }
 
-# the pushed build: a call never waits on it. one call takes the lock (a mkdir, a lock older than 5 min is taken over) and
+# the pushed build: a call never waits on it. one call takes the lock (a lock older than 5 min is taken over) and
 # builds in the background, in a process group of its own so a hook's timeout never kills it; every call runs the last
 # x-pushed meanwhile, and the stamp (origin/main's x/go tree hash) is written after the rename
+
+# the lock is a file made by a noclobber redirect, an O_EXCL open the shell does itself: a mkdir is no lock where it is uutils'
+# (ubuntu 26.04), which answers yes to a directory a caller made a moment before (CI, 20 Nov: two builds of one tree)
+take_lock() {
+    local taken
+    set -C
+    { true >"${lock}"; } 2>/dev/null
+    taken=$?
+    set +C
+    return "${taken}"
+}
+
 build_pushed() {
     local tmp gobin
     set -o pipefail
@@ -42,9 +54,9 @@ build_pushed() {
     else
         printf '%s\n' "${want}" >"${pbin}.failed"
     fi
-    # the temp dir this function made above, and the lock dir it took
+    # the temp dir this function made above, and the lock it took
     rm -rf -- "${tmp}"
-    rmdir "${lock}"
+    rm -f -- "${lock}"
 }
 
 # the stale read, as it always was: a missing binary, a source newer than it, or a dev binary whose tree reads clean again
@@ -95,14 +107,14 @@ if ((dev_now)) && [[ -z ${X_DEV-} && ${dir} == "${main}" ]]; then
             mkdir -p "${go}/bin"
             # a lock older than 5 min is taken over by a rename, so two callers never both clear it
             if [[ -n $(find "${lock}" -maxdepth 0 -mmin +5 2>/dev/null) ]]; then
-                mv "${lock}" "${lock}.stale.$$" 2>/dev/null && rmdir "${lock}.stale.$$"
+                mv "${lock}" "${lock}.stale.$$" 2>/dev/null && rm -rf -- "${lock}.stale.$$"
             fi
-            if mkdir "${lock}" 2>/dev/null; then
+            if take_lock; then
                 # the stamp was read before the lock: a build that ended in between wrote its stamp (or its .failed marker)
                 # before it dropped the lock, so a read under the lock sees it and this tree is never built twice
                 if [[ -x ${pbin} && $(cat "${pbin}.stamp" 2>/dev/null) == "${want}" ||
                     $(cat "${pbin}.failed" 2>/dev/null) == "${want}" && -z $(find "${pbin}.failed" -mmin +10 2>/dev/null) ]]; then
-                    rmdir "${lock}"
+                    rm -f -- "${lock}"
                 else
                     (
                         set -m

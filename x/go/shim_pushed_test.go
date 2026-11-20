@@ -37,6 +37,12 @@ const fakeFind = `#!/bin/sh
 exec REALFIND "$@"
 `
 
+// a mkdir that says yes to a directory that exists, the race uutils' mkdir loses: it checks, then creates, and reads «it is there now» as done
+const fakeMkdir = `#!/bin/sh
+[ "$1" = -p ] && exec REALMKDIR "$@"
+exec REALMKDIR -p "$@"
+`
+
 func newPushedWorld(t *testing.T) pushedWorld {
 	t.Helper()
 	base, _ := filepath.EvalSymlinks(t.TempDir())
@@ -266,6 +272,33 @@ func TestShimFiveShellsAtOnceStartOneBuild(t *testing.T) {
 	}
 }
 
+// a mkdir that answers yes to a directory another caller made a moment before, as uutils' does on ubuntu 26.04 (CI, 20 Nov: the
+// five shells took one lock twice): the lock holds anyway, so the second shell starts no build of its own
+func TestShimLockHoldsWhenMkdirAnswersYesToAnExistingDir(t *testing.T) {
+	t.Parallel()
+	w := newPushedWorld(t)
+	realMkdir, err := exec.LookPath("mkdir")
+	if err != nil {
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(w.base, "bin/mkdir"), strings.Replace(fakeMkdir, "REALMKDIR", realMkdir, 2))
+	if err := os.Chmod(filepath.Join(w.base, "bin/mkdir"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	w.goDev(t)
+	w.run(t, w.tree)
+	waitFor(t, w.stamp(), w.pushedTree(t))
+	w.originMoves(t, "pushed-v3")
+
+	holder := w.run(t, w.base, "GO_SLEEP=1")
+	second := w.run(t, w.base)
+	waitFor(t, w.stamp(), w.pushedTree(t))
+
+	if holder.err != nil || second.err != nil || w.pushedBuilds(t) != 2 {
+		t.Errorf("holder %v, second %v after %d pushed builds, want the first one and one for the push", holder.err, second.err, w.pushedBuilds(t))
+	}
+}
+
 // a shell that read the stamp before another's build finished takes the lock after it was dropped: it re-reads the stamp, or
 // the failed marker, under the lock and builds nothing, so one push is one build whatever the timing (CI, 20 Nov: 4 builds
 // for the five shells)
@@ -378,9 +411,7 @@ func TestShimTakesOverAStaleLockOnly(t *testing.T) {
 			waitFor(t, w.stamp(), w.pushedTree(t))
 			w.originMoves(t, "pushed-v3")
 			lock := filepath.Join(w.tree, "x/go/bin/.x-pushed.lock")
-			if err := os.MkdirAll(lock, 0o755); err != nil {
-				t.Fatal(err)
-			}
+			write(t, lock, "")
 			old := time.Now().Add(-c.age)
 			_ = os.Chtimes(lock, old, old)
 			before := w.pushedBuilds(t)
