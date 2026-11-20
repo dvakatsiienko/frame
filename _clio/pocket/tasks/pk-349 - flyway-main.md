@@ -1233,7 +1233,7 @@ PK-349:W1253 (2026-11-20 13:24, dima): the FRM-576 memory lift ← we completed 
 PK-349:W1254 (2026-11-20 13:24, dima): the quiet-replies trial verdict, which ends today ← let's do it as your nearest steps, after these two tickets are solved.
 PK-349:W1255 (2026-11-20 13:24, dima): ⚠️ delete 2 empty fleet milestones: 🐋 the board reads true, 🐋 pm revamp tails landed ← delete, without asking for confirmation.
 PK-349:W1256 (2026-11-20 13:24, dima): ⚠️ delete 2 empty fleet milestones: 🐋 the board reads true, 🐋 pm revamp tails landed ← you should auto delete a milestone when its last item gets completed, as a habit, so milestones are never strayed.
-PK-349:W1257 (2026-11-20 13:24, dima): two items in wing 1's plan came due today, the FRM-516 🐦‍⬛ crow read and the FRM-586 stray verdict: you take them in wing 1, or I take them in main ← with you, after previous is solved, queued.
+PK-349:W1257 (2026-11-20 13:24, dima): two items in wing 1's plan came due today, the FRM-516 🐦⬛ crow read and the FRM-586 stray verdict: you take them in wing 1, or I take them in main ← with you, after previous is solved, queued.
 PK-349:W1258 (2026-11-20 13:24, dima): i think i won't summon wing 1 today.
 PK-349:W1259 (2026-11-20 13:24, dima): let's see, likely all stuff is to be solved with you instead.
 PK-349:W1260 (2026-11-20 13:24, dima): i did not understand your proposal yet (i am sleepy).
