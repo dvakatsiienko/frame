@@ -150,3 +150,13 @@ export async function handBackJoins(
     await forgetJoins($, sid);
     return true;
 }
+
+// a conversation that leaves hands its taken rows back; a hand-back that fails is owed, so a later start retries it
+export async function leaveJoins($: EngineInterface, sid: string) {
+    const home = await $.env.get('HOME').catch(() => undefined);
+    const isHandedBack = home
+        ? await handBackJoins($, home, sid).catch(() => false)
+        : true;
+    if (!isHandedBack)
+        await $.store.set(JOIN_OWED + sid, true).catch(() => undefined);
+}

@@ -76,3 +76,8 @@ export async function takeBandPresses($: EngineInterface, view: ViewDoors) {
     if (last !== read) await $.store.set(BAND_READ + sid, last);
     if (presses.length) await view.load();
 }
+
+export async function forgetBandReads($: EngineInterface, sid: string) {
+    await $.store.delete(BAND_READ + sid);
+    await $.store.delete(BAND_REFUSED + sid);
+}

@@ -276,3 +276,7 @@ export async function countWords(
     for (const old of await $.store.keys())
         if (old.startsWith(WORDS) && old < oldest) await $.store.delete(old);
 }
+
+export async function forgetContext($: EngineInterface, sid: string) {
+    await $.store.delete(CONTEXT + sid);
+}

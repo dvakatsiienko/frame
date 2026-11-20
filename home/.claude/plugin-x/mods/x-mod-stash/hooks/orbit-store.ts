@@ -18,7 +18,7 @@ import {
 import { currentId, identity, sessionName } from './session-identity.ts';
 import { HERDR_READ } from './store-keys.ts';
 import { markActive } from './turn.ts';
-import { errorText, serial } from './util.ts';
+import { KEPT_MS, errorText, serial } from './util.ts';
 
 // this session's orbit and dima's tick records: the one owner of `$.state` orbit and ticks, the store's `asks:` mirror
 // and the `kept:` copy a resumed process draws from; every change goes through these functions
@@ -373,4 +373,17 @@ export async function markAsksNow(
         a.isLocked || a.isResolved ? a : change(a),
     );
     return saveOrbit($, { ...o, asks }, onSaved, typedId);
+}
+
+export async function forgetAsks($: EngineInterface, sid: string) {
+    await $.store.delete(PREFIX + sid);
+}
+
+// a kept state goes a week after its last save
+export async function pruneKept($: EngineInterface, now: number) {
+    for (const key of await $.store.keys()) {
+        if (!key.startsWith(KEPT)) continue;
+        const v = (await $.store.get(key)) as { at?: number } | undefined;
+        if (now - (v?.at ?? 0) >= KEPT_MS) await $.store.delete(key);
+    }
 }

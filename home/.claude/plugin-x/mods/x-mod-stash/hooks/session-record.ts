@@ -195,3 +195,7 @@ export async function noteModel(
     modelSeen = `${sid}\u0000${said}`;
     await $.store.set(MODEL + sid, said).catch(() => undefined);
 }
+
+export async function forgetModel($: EngineInterface, sid: string) {
+    await $.store.delete(MODEL + sid);
+}

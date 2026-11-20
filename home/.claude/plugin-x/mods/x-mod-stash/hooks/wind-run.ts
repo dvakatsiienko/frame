@@ -625,3 +625,7 @@ export async function compactSession(
     }
     return r;
 }
+
+export async function forgetFill($: EngineInterface, sid: string) {
+    await $.store.delete(FILL + sid);
+}

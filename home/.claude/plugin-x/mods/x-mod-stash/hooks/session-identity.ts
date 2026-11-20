@@ -1,6 +1,6 @@
 import type { EngineInterface } from 'claude-code';
 
-import { basename } from './util.ts';
+import { KEPT_MS, basename } from './util.ts';
 
 // who this session is: its id across a /clear, its project and label, its claude process, and its thread record as x
 // wrote it; one owner, read through `identity`, changed only by the events below
@@ -200,4 +200,13 @@ export async function successorOf($: EngineInterface, sid: string) {
         id = next;
     }
     return id;
+}
+
+// a /clear's successor link goes a week after it was written
+export async function pruneSuccessors($: EngineInterface, now: number) {
+    for (const key of await $.store.keys()) {
+        if (!key.startsWith(SUCC)) continue;
+        const v = (await $.store.get(key)) as { at?: number } | undefined;
+        if (now - (v?.at ?? 0) >= KEPT_MS) await $.store.delete(key);
+    }
 }

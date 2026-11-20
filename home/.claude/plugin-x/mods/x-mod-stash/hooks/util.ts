@@ -12,6 +12,8 @@ export const basename = (path: string) =>
     path.split('/').filter(Boolean).pop() ?? path;
 
 export const STALE_MS = 24 * 60 * 60 * 1000;
+// a kept state and a successor link live a week past their last write
+export const KEPT_MS = 7 * 24 * 60 * 60 * 1000;
 export const short = (sid: string) => sid.slice(0, 8);
 
 export const text = (v: unknown) =>

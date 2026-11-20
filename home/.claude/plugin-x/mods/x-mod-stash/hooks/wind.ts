@@ -52,3 +52,7 @@ export const WIND_WORDS =
 // `compacting:<sid>`: the engine is compacting this session, from the compact's start to its end
 export const COMPACTING = 'compacting:';
 export const COMPACT_MAX_MS = 10 * 60_000;
+
+export async function forgetWind($: EngineInterface, sid: string) {
+    await $.store.delete(WIND + sid);
+}

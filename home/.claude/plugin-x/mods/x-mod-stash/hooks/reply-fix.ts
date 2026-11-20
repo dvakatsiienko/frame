@@ -23,7 +23,7 @@ import { SHOWN, partsShown, shownOf } from './settings-store.ts';
 import { REPLY, type Reply } from './store-keys.ts';
 import { clearWrap, endUserTurn, turn } from './turn.ts';
 import { countWords } from './usage.ts';
-import { errorText } from './util.ts';
+import { STALE_MS, errorText } from './util.ts';
 
 // the Stop's two reds, once a turn (FRM-427): a wrap_up ask while an orbit ask is open (PK-227, one home for the next
 // move), and an orbit add opening «Q<n>» whose round the reply never printed as «❓ **Q<n>**» (the 10-25 rider); a --bg
@@ -222,4 +222,29 @@ export async function settleReply(
     await endUserTurn($);
     await view.load();
     return red ? { ...r, block: red } : r;
+}
+
+// a /clear drops the conversation's last reply; an exit keeps it, marked ended, dropped a day later by pruneReplies
+export async function forgetReply(
+    $: EngineInterface,
+    sid: string,
+    isExit: boolean,
+) {
+    const reply = isExit
+        ? ((await $.store.get(REPLY + sid)) as Reply | undefined)
+        : undefined;
+    if (!reply) return void (await $.store.delete(REPLY + sid));
+    await $.store.set(REPLY + sid, {
+        ...reply,
+        ended: await $.clock.now(),
+    } satisfies Reply);
+}
+
+export async function pruneReplies($: EngineInterface, now: number) {
+    for (const key of await $.store.keys()) {
+        if (!key.startsWith(REPLY)) continue;
+        const v = (await $.store.get(key)) as Reply | undefined;
+        if (v?.ended !== undefined && now - v.ended >= STALE_MS)
+            await $.store.delete(key);
+    }
 }

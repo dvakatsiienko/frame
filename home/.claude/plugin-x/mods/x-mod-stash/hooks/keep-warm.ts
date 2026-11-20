@@ -623,3 +623,16 @@ export async function hotAtTurnEnd($: EngineInterface, view: ViewDoors) {
         });
     await armHot($, view);
 }
+
+// 🔥 and 🍃 of a conversation that leaves: a /clear drops both; an exit keeps the auto wind, and 🔥 only when dima
+// switched it off, so a resume of this id keeps his off (a seat's default fills only a key never written)
+export async function forgetWarm(
+    $: EngineInterface,
+    sid: string,
+    isExit: boolean,
+) {
+    const heat = isExit ? await $.store.get(HOT + sid) : undefined;
+    if (!(heat && !hotOf(heat))) await $.store.delete(HOT + sid);
+    if (!isExit || !(await $.store.get(AUTO_WIND + sid)))
+        await $.store.delete(AUTO_WIND + sid);
+}
