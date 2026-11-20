@@ -149,6 +149,18 @@ describe('wish-cover', () => {
         ]);
     });
 
+    test.each([
+        ['a → home note', 'W3 plain words → FRM-1', []],
+        ['a → home note with its line', 'W3 plain words → FRM-1:W9', []],
+        ['a → with no home', 'W3 plain words →', ['W3']],
+        ['a home with no →', 'W3 plain words, see FRM-1', ['W3']],
+        ['a → to a word, not a home', 'W3 plain words → later', ['W3']],
+    ])('--all passes a line settled elsewhere: %s', (_name, line, red) => {
+        expect(
+            uncovered(`- W1 a\n- W2 b\n- ${line}`, ['W1 W2']).map(([id]) => id),
+        ).toEqual(red);
+    });
+
     test('an FRM id finds the pocket items whose ticket line names it', () => {
         const items: [string, string][] = [
             ['pk-7 - a.md', 'ticket: FRM-40 (lane 1)'],

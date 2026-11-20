@@ -184,13 +184,18 @@ export function followMoved(
     return { rest, unchecked: [...unchecked] };
 }
 
+// a line he settled elsewhere says so: «→ FRM-585» (moved, answered, dropped on his word) is no loss for --all to red
+const settledElsewhere = /→\s*(?:PK|FRM|BYT)-\d+/;
+
 export function uncovered(
     item: string,
     drafts: string[],
     homes: string[] = [],
 ) {
     const cited = citedIds(drafts.join('\n'), homes);
-    return [...wishLines(item, homes)].filter(([id]) => !cited.has(id));
+    return [...wishLines(item, homes)].filter(
+        ([id, text]) => !cited.has(id) && !settledElsewhere.test(text),
+    );
 }
 
 function pocketItems(root: string) {
