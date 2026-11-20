@@ -19,7 +19,7 @@ export const threadName = (session) =>
 
 // Our naming rule: an agent in herdr is called by its Claude Code session name (`claude -n`, or /rename), read from
 // x's thread store (~/.claude/shelf/threads.json) by the pid herdr's core reports; a name changes on /rename, so it is read again every 30 s.
-/** @type {Map<string, { at: number, name: string | null, pid: number | null }>} */
+/** @type {Map<string, { at: number, isRead: boolean, name: string | null, pid: number | null }>} */
 export const NAMES = new Map();
 /** @param {string} address */
 export function sessionName(address) {
@@ -65,6 +65,7 @@ export async function readNames(list) {
         if (kept && Date.now() - kept.at < 30000) continue;
         NAMES.set(a.address, {
             at: Date.now(),
+            isRead: kept?.isRead ?? false,
             name: kept?.name ?? null,
             pid: kept?.pid ?? null,
         });
@@ -75,6 +76,7 @@ export async function readNames(list) {
         const session = term ? await sessionOf(term) : null;
         NAMES.set(a.address, {
             at: Date.now(),
+            isRead: true,
             name: threadName(session),
             pid: session?.pid ?? null,
         });
@@ -113,7 +115,10 @@ export const ORDER_KEY = 'x-herdr-agents.order';
 /** his order as pids once every listed thread has its pid, written only on a change
  * @param {string[]} order @param {string[]} listed */
 export function publishOrder(order, listed) {
-    const pids = orderPids(order, listed, (a) => NAMES.get(a)?.pid);
+    const pids = orderPids(order, listed, (a) => {
+        const kept = NAMES.get(a);
+        return kept?.isRead ? kept.pid : undefined;
+    });
     if (
         pids &&
         JSON.stringify(shared(ORDER_KEY) ?? []) !== JSON.stringify(pids)

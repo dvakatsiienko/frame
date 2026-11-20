@@ -89,11 +89,13 @@ export function movedInGroup(order, members, from, to) {
     return order.map((a) => (inGroup.has(a) ? next[i++] : a));
 }
 
-/** his order as pids, or null until every listed thread has its pid: after a restart the names arrive one by one, and
- * a partial order would move orbit's sections @param {string[]} order @param {string[]} listed
- * @param {(address: string) => number | null | undefined} pidOf @returns {number[] | null} */
-export function orderPids(order, listed, pidOf) {
-    if (listed.length === 0 || listed.some((a) => typeof pidOf(a) !== 'number'))
+/** his order as pids, or null until every listed thread was read once: after a restart the names arrive one by one,
+ * and a partial order would move orbit's sections; a thread read with no pid (a plain probe) is skipped, never waited on
+ * @param {string[]} order @param {string[]} listed
+ * @param {(address: string) => number | null | undefined} readOf undefined: not read yet; null: read, no pid
+ * @returns {number[] | null} */
+export function orderPids(order, listed, readOf) {
+    if (listed.length === 0 || listed.some((a) => readOf(a) === undefined))
         return null;
-    return order.map(pidOf).filter((pid) => typeof pid === 'number');
+    return order.map(readOf).filter((pid) => typeof pid === 'number');
 }

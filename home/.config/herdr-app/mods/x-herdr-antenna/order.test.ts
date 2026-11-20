@@ -136,28 +136,36 @@ describe('a drag within a space', () => {
     });
 });
 
-// FRM-618 slice A, round 1: after a restart the names come in one by one; a partial order would make orbit jump
+// FRM-618 slice A, rounds 1 and 2: after a restart the names come in one by one, so a partial order would make orbit
+// jump; a thread read with no pid (a plain probe, a non-claude agent) never holds the order back
 describe('the order antenna publishes', () => {
-    const pids = new Map([
+    /** undefined: not read yet; null: read, no pid */
+    const read = new Map<string, number | null>([
         ['t1', 11],
         ['t2', 12],
+        ['probe', null],
     ]);
+    const readOf = (a: string) => read.get(a);
 
-    test('his order as pids once every listed thread has its pid', () => {
-        expect(
-            orderPids(['t2', 'gone', 't1'], ['t1', 't2'], (a) => pids.get(a)),
-        ).toEqual([12, 11]);
+    test('his order as pids once every listed thread was read', () => {
+        expect(orderPids(['t2', 'gone', 't1'], ['t1', 't2'], readOf)).toEqual([
+            12, 11,
+        ]);
     });
 
-    test('nothing while a listed thread still has no pid', () => {
+    test('nothing while a listed thread was not read yet', () => {
+        expect(orderPids(['t1', 't2', 't3'], ['t1', 't2', 't3'], readOf)).toBe(
+            null,
+        );
+    });
+
+    test('a listed thread read with no pid is skipped, never a freeze', () => {
         expect(
-            orderPids(['t1', 't2', 't3'], ['t1', 't2', 't3'], (a) =>
-                pids.get(a),
-            ),
-        ).toBe(null);
+            orderPids(['t1', 'probe', 't2'], ['t1', 'probe', 't2'], readOf),
+        ).toEqual([11, 12]);
     });
 
     test('nothing before any thread is listed', () => {
-        expect(orderPids(['t1'], [], (a) => pids.get(a))).toBe(null);
+        expect(orderPids(['t1'], [], readOf)).toBe(null);
     });
 });
