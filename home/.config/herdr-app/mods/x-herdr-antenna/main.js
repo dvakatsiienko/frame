@@ -451,7 +451,7 @@ export default class Antenna extends View {
         const isCompact = knobs['antenna.rowHeight'] === 'compact';
         // with the wait line on every row is two lines tall, so a drag's slots match the rows
         const rowHeight =
-            (isCompact ? 26 : 30) + (knobs['antenna.details.wait'] ? 14 : 0);
+            (isCompact ? 26 : 30) + (knobs['antenna.details.wait'] ? 16 : 0);
         let n = 0;
         const drawn = rows.map((r) => {
             if (r.kind === 'space')
@@ -532,13 +532,22 @@ export default class Antenna extends View {
                                 // `selectable(false)` text view took the I-beam from the whole app (18:47)
                                 el.child(
                                     h_flex()
-                                        .h(14)
+                                        .h(16)
+                                        .items_center()
                                         .overflow_hidden()
                                         .whitespace_nowrap()
                                         // herdr's UI font ships one face, so bold drew flat in it
                                         .font_family('.AppleSystemUIFont')
                                         .text_size(11)
                                         .text_color(t.dim)
+                                        // 🔭 leads the wait as in the chat and the band, at the row's emoji size (4f)
+                                        .gap(3)
+                                        .child(
+                                            div()
+                                                .flex_none()
+                                                .text_size(13)
+                                                .child('🔭'),
+                                        )
                                         .children(
                                             waitRuns(more.wait ?? '').map(
                                                 (run) =>

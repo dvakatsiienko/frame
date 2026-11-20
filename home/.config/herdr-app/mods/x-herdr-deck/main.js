@@ -1244,11 +1244,9 @@ export default class Deck extends View {
      */
     phasesBlock(t, groups, header) {
         const planKey = groups.length === 1 ? `${groups[0]?.sid}:plan` : null;
-        // one thread's plan names it in the header, one line (dima, 19:18); several keep a name line each
+        // one thread's plan carries no name: antenna and the tabs already say which (dima, 19:26); several keep a name each
         const isOne = groups.length === 1;
-        const head = header(
-            isOne ? `🌔 phases: ${groups[0]?.name ?? ''}` : '🌔 phases',
-        );
+        const head = header('🌔 phases');
         return v_flex()
             .id('x-herdr-deck-phases')
             .flex_none()
