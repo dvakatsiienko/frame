@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { loopOf, nextStop } from './tab-loop.js';
+import { loopOf, nextStop, tabAsk } from './tab-loop.js';
 
 // FRM-620 slice 5c: Tab walks one loop of stops our mods register, never herdr's hidden ones; a mod joins by
 // publishing its stops (his 14:59: later the antenna's threads, the header's gear)
@@ -33,5 +33,15 @@ describe('the Tab loop', () => {
         };
         expect(loopOf((key) => stops[key])).toEqual(['quill', 'steer-a:o1']);
         expect(loopOf(() => 'garbage')).toEqual([]);
+    });
+});
+
+describe('a Tab ask', () => {
+    test('counts on from the last ask, never by the clock, so a clock set back loses no Tab', () => {
+        expect(tabAsk(() => ({ at: 41, to: 'quill' }), 'steer-a:o1')).toEqual({
+            at: 42,
+            to: 'steer-a:o1',
+        });
+        expect(tabAsk(() => null, 'quill')).toEqual({ at: 1, to: 'quill' });
     });
 });

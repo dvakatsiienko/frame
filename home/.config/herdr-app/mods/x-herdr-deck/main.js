@@ -72,7 +72,7 @@ import {
     sessions,
     states,
 } from './shelf.js';
-import { TAB_GO, loopOf, nextStop, tabStopsKey } from './tab-loop.js';
+import { TAB_GO, loopOf, nextStop, tabAsk, tabStopsKey } from './tab-loop.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('gpui-kit').AsyncContext} AsyncContext */
@@ -674,10 +674,20 @@ export default class Deck extends View {
         cx.notify();
     }
 
+    /** the deck's stops in the Tab loop, published when they change @param {Context} cx @param {string[]} stops */
+    publishStops(cx, stops) {
+        if (
+            JSON.stringify(shared(tabStopsKey('x-herdr-deck'))) ===
+            JSON.stringify(stops)
+        )
+            return;
+        cx.timer.after(0, () => setShared(tabStopsKey('x-herdr-deck'), stops));
+    }
+
     /** asks the Tab loop for the stop after `from`; its owner focuses it @param {string} from @param {boolean} isBack */
     tabTo(from, isBack) {
         const to = nextStop(loopOf(shared), from, isBack);
-        setShared(TAB_GO, { at: Date.now(), to });
+        setShared(TAB_GO, tabAsk(shared, to));
     }
 
     /** @param {string} key */
@@ -1136,17 +1146,15 @@ export default class Deck extends View {
             /** @type {number[] | null} */ (shared(ORDER_KEY)),
             this.pin,
         );
-        this.tabAt = new Map(
-            orbitTabOrder(sections).map((id, i) => [id, i + 1]),
+        // only a steer box drawn as a box is a stop: a delivered ask's steer is plain words
+        const stops = orbitTabOrder(
+            sections,
+            (s, ask) =>
+                this.steers.has(`${s.sid}:${ask.id}`) &&
+                this.pressStateOf(s, ask.id) !== 'locked',
         );
-        const stops = [...this.tabAt.keys()];
-        if (
-            JSON.stringify(shared(tabStopsKey('x-herdr-deck'))) !==
-            JSON.stringify(stops)
-        )
-            cx.timer.after(0, () =>
-                setShared(tabStopsKey('x-herdr-deck'), stops),
-            );
+        this.tabAt = new Map(stops.map((id, i) => [id, i + 1]));
+        this.publishStops(cx, stops);
         return sections.map((section) => {
             if (section.kind === 'pinned')
                 return v_flex()
@@ -1388,6 +1396,7 @@ export default class Deck extends View {
             (s) => STATE[s.status] === 'working',
         ).length;
         const asks = this.rows.reduce((n, s) => n + s.asks.length, 0);
+        if (asks === 0) this.publishStops(cx, []);
         // one head for every section: a hairline above, its emoji, its name and its count in words
         /** @param {string} text */
         const header = (text) =>

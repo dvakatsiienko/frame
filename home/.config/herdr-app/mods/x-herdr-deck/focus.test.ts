@@ -50,3 +50,15 @@ describe('orbit tab order', () => {
         expect(orbitTabOrder(sections)).toEqual(['steer-a:o2', 'steer-a:o1']);
     });
 });
+
+// wisphunter, slice 5c: a delivered ask draws its steer as words, so Tab must not stop on it
+test('an ask whose steer box is not drawn as a box is no stop', () => {
+    const sections = orbitSections(
+        [row('a', 1, ['push', 'merge'])],
+        [1],
+        'top',
+    );
+    expect(orbitTabOrder(sections, (_row, ask) => ask.id !== 'o1')).toEqual([
+        'steer-a:o2',
+    ]);
+});

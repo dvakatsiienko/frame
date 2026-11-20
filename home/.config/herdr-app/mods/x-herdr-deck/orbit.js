@@ -134,16 +134,18 @@ export function orbitSections(rows, pids, pin) {
 /**
  * the Tab order of orbit (FRM-620:W14, his 14:12 steer): each ask's steer box, in the order the sections draw; Enter
  * and ⌘Enter there tick and replay, so no button takes Tab. an id is `steer-<sid>:<ask id>`, the deck's own key
- * @param {OrbitSection<{ sid: string }>[]} sections
+ * @template {{ sid: string }} T
+ * @param {OrbitSection<T>[]} sections
+ * @param {(row: T, ask: Ask) => boolean} [isBox] whether the ask's steer box is drawn as a box
  */
-export function orbitTabOrder(sections) {
+export function orbitTabOrder(sections, isBox = () => true) {
     return sections
         .flatMap((s) =>
             s.kind === 'pinned'
                 ? s.cards
                 : s.asks.map((ask) => ({ ask, row: s.row })),
         )
-        .filter(({ ask }) => ask.id)
+        .filter(({ ask, row }) => ask.id && isBox(row, ask))
         .map(({ ask, row }) => `steer-${row.sid}:${ask.id}`);
 }
 

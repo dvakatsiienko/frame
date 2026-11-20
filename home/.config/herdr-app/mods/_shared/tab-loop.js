@@ -9,6 +9,22 @@ export const TAB_GO = 'tab.go';
 /** @param {string} mod */
 export const tabStopsKey = (mod) => `tab.stops.${mod}`;
 
+/**
+ * the ask for stop `to`: its `at` counts on from the last ask, so a clock set back loses no Tab
+ * @param {(key: string) => unknown} read @param {string} to
+ */
+export function tabAsk(read, to) {
+    const last = read(TAB_GO);
+    const at =
+        last &&
+        typeof last === 'object' &&
+        'at' in last &&
+        typeof last.at === 'number'
+            ? last.at
+            : 0;
+    return { at: at + 1, to };
+}
+
 /** the whole loop, read through herdr's `shared` @param {(key: string) => unknown} read @returns {string[]} */
 export const loopOf = (read) =>
     TAB_MODS.flatMap((mod) => {

@@ -23,7 +23,7 @@ import {
     saveShots,
 } from './shots.js';
 import { createSlashMenu, listedSkills, menuNames } from './slash.js';
-import { TAB_GO, loopOf, nextStop, tabStopsKey } from './tab-loop.js';
+import { TAB_GO, loopOf, nextStop, tabAsk } from './tab-loop.js';
 
 /** @typedef {import('./chat-types.js').Context} Context */
 /** @typedef {import('./chat-types.js').Theme} Theme */
@@ -165,10 +165,6 @@ export function createQuill({
             if (event) sendPath().holdStep(made, event, cx);
         });
         box = made;
-        // the quill is the chat's one stop in the Tab loop
-        cx.timer.after(0, () =>
-            setShared(tabStopsKey('x-herdr-chat'), ['quill']),
-        );
         // Enter in the quill is ours before the text box's own (context `Input`): no line break typed, so no scroll to
         // the caret (dima, 13:14). a binding herdr never reaches leaves Enter to the box's submit, as before
         cx.bind_keys([
@@ -207,7 +203,7 @@ export function createQuill({
     /** Tab and shift-Tab in the quill ask the Tab loop for the next stop @param {boolean} isBack */
     function tabFromQuill(isBack) {
         const to = nextStop(loopOf(shared), 'quill', isBack);
-        setShared(TAB_GO, { at: Date.now(), to });
+        setShared(TAB_GO, tabAsk(shared, to));
     }
 
     /**

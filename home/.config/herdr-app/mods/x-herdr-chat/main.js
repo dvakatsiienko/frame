@@ -41,7 +41,7 @@ import { readSettings, settingsDir } from './settings-io.js';
 import { createSettingsWindow } from './settings-window.js';
 import { saveSquareThumb } from './shots.js';
 import { asksActedOn, isShownIn, shownThread } from './shown.js';
-import { TAB_GO } from './tab-loop.js';
+import { TAB_GO, tabStopsKey } from './tab-loop.js';
 import { START_ROW, createThreadFeed } from './thread-feed.js';
 
 /** @typedef {import('./chat-types.js').Color} Color */
@@ -343,6 +343,15 @@ export default class Chat extends View {
             );
         if (acts.isFind && !this.pictures.isOpen())
             _cx.timer.after(0, (later) => this.findBar.open(later));
+        // the quill is the chat's one stop in the Tab loop while the chat shows; hidden, it leaves the loop to orbit
+        const stops = isShown ? ['quill'] : [];
+        if (
+            JSON.stringify(shared(tabStopsKey('x-herdr-chat'))) !==
+            JSON.stringify(stops)
+        )
+            _cx.timer.after(0, () =>
+                setShared(tabStopsKey('x-herdr-chat'), stops),
+            );
         // the Tab loop asks for the quill; an ask made before this load never fires (FRM-620 slice 5c)
         const go = /** @type {{ at?: number, to?: string } | null} */ (
             shared(TAB_GO)
