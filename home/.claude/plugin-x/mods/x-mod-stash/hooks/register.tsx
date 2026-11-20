@@ -96,6 +96,7 @@ import {
     METER_TINTS,
     PALETTE,
     RAMP,
+    cardBorder,
     contextFill,
     ctxBar,
     ctxBarSvg,
@@ -207,17 +208,16 @@ import {
     threadRecords,
 } from './session-identity.ts';
 import { dropState, keepShelf, pollShelf } from './session-record.ts';
+import { hoverTip, noteOnHover, settingsListJSX } from './settings-pane.tsx';
 import type { NumberName, SwitchName } from './settings-store.ts';
 import {
     NUMBERS,
-    PARTS,
     QUIET_KINDS,
     QUIET_ON,
     SHOWN,
     SPEED,
     SWITCHES,
     flipKnob,
-    flipPart,
     knobRefusals,
     partsShown,
     readNumber,
@@ -410,10 +410,6 @@ export const closedMark = (word: string) =>
         : /^(start|queued|running|in progress)/i.test(word)
           ? '▶️'
           : '✅';
-// the board's sections sit in cards, no colour (dima, 16:48 «colors are ugly»): the desktop a 30 % grey that reads the same on
-// light and dark, a touch softer than `subtle` (16:54 too faint, 17:00 «too hard», 17:08 «slightly less»); the terminal `subtle`
-const cardBorder = (surface: string) =>
-    surface === 'desktop' ? '#8080804d' : 'subtle';
 // a ticket id inside an ask or a phase; split keeps the id as every odd part
 const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
 
@@ -696,95 +692,6 @@ const COLUMNS = {
 
 async function openBoard($: EngineInterface) {
     await $.ui.open({ closeOnEscape: true, id: BOARD, title: '🚦 board' });
-}
-
-// every control names itself on hover; the card stays on the control's row, since a one-row site clips the rest
-// the 🎛️ pane's switch list: a column per group
-function settingsListJSX(
-    $: EngineInterface,
-    ui: ReturnType<EngineInterface['ui']['resolve']>,
-    shownNow: Record<string, boolean>,
-    air: boolean,
-) {
-    const { Box, Text, Button } = ui;
-    const groups = [...new Set(PARTS.map((p) => p.group))];
-    return groups.map((group) => (
-        <Box
-            borderColor={cardBorder(air ? 'desktop' : 'terminal')}
-            borderStyle='round'
-            flexDirection='column'
-            key={`settings:${group}`}
-            paddingX={1}
-            paddingY={air ? 0.5 : 0}
-            rowGap={air ? 0.3 : 0}>
-            <Text bold>{group}</Text>
-            <Box flexDirection='column' rowGap={air ? 0.3 : 0}>
-                {PARTS.filter((p) => p.group === group).map((p) => (
-                    <Box flexDirection='row' key={`settings:row:${p.key}`}>
-                        <Button
-                            key={`part:${p.key}`}
-                            onPress={() =>
-                                void flipPart($, p.key, () => publish($))
-                            }
-                            {...(shownNow[p.key] !== false
-                                ? { variant: 'primary' as const }
-                                : { dimColor: true })}>
-                            {p.label}
-                        </Button>
-                    </Box>
-                ))}
-            </Box>
-        </Box>
-    ));
-}
-
-// a pane's hover note: in the row's flow, between its label and its input; an absolute card wraps over its neighbours there
-function noteOnHover(
-    ui: ReturnType<EngineInterface['ui']['resolve']>,
-    words: string,
-) {
-    const { Box, Text } = ui;
-    return (
-        <Box display='none' flexShrink={0} hover={{ display: 'flex' }}>
-            <Text dimColor>{words}</Text>
-        </Box>
-    );
-}
-
-function hoverTip(
-    ui: ReturnType<EngineInterface['ui']['resolve']>,
-    key: string,
-    words: string,
-    control: RenderElement,
-    place: { left: number } | { right: number },
-    press?: { hotkey: string; onPress: () => void },
-) {
-    const { Box, Text, Button } = ui;
-    return (
-        <Box key={`tip:${key}`}>
-            {control}
-            <Box
-                display='none'
-                hover={{ display: 'flex' }}
-                position='absolute'
-                top={0}
-                {...place}>
-                {/* the key rides the card, not the icon: the surface draws its own key badge beside a Button with a hotkey */}
-                {press ? (
-                    <Button
-                        dimColor
-                        hotkey={press.hotkey}
-                        key={`key:${key}`}
-                        onPress={press.onPress}
-                        plain>
-                        {words}
-                    </Button>
-                ) : (
-                    <Text dimColor>{words}</Text>
-                )}
-            </Box>
-        </Box>
-    );
 }
 
 export const register: Register = (on) => {
@@ -2001,6 +1908,7 @@ export const register: Register = (on) => {
                                             (await $.state.get(VIEW)).value
                                                 ?.shown ?? {},
                                             e.surface === 'desktop',
+                                            viewDoors($),
                                         )}
                                     </Box>
                                     <Box

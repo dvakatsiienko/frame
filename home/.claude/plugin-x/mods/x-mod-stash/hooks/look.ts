@@ -362,3 +362,8 @@ export const span = (ms: number) => {
     const m = Math.max(0, Math.floor(ms / 60000));
     return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
 };
+
+// the board's sections sit in cards, no colour (dima, 16:48 «colors are ugly»): the desktop a 30 % grey that reads the same on
+// light and dark, a touch softer than `subtle` (16:54 too faint, 17:00 «too hard», 17:08 «slightly less»); the terminal `subtle`
+export const cardBorder = (surface: string) =>
+    surface === 'desktop' ? '#8080804d' : 'subtle';
