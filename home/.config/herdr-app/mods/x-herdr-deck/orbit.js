@@ -66,6 +66,55 @@ const pinRank = (text) => {
 export const isPinnedCard = (text) =>
     /^(look\b|try\b|test:)/i.test(text.trimStart());
 
+/** @typedef {'top' | 'bottom'} OrbitPin */
+/** @template T @typedef {{ kind: 'pinned', cards: { ask: Ask, row: T }[] } | { kind: 'thread', row: T, asks: Ask[] }} OrbitSection */
+
+/**
+ * orbit's sections (FRM-620:W16, W17): look and 🧪 cards from every thread in one group, first or last by his setting,
+ * then each thread's other asks in the agents list's order; a thread it does not show goes last by name, never by its
+ * status, so an arriving ask moves no other row
+ * @template {{ asks: Ask[], name: string, pid: number }} T
+ * @param {T[]} rows @param {number[] | null | undefined} pids @param {OrbitPin} pin
+ * @returns {OrbitSection<T>[]}
+ */
+export function orbitSections(rows, pids, pin) {
+    const ordered = inListOrder(
+        [...rows].sort((a, b) => byName(a.name, b.name)),
+        pids,
+    );
+    const cards = ordered.flatMap((row) =>
+        row.asks
+            .filter((a) => isPinnedCard(a.text))
+            .map((ask) => ({ ask, row })),
+    );
+    /** @type {OrbitSection<T>[]} */
+    const threads = ordered.flatMap((row) => {
+        const asks = row.asks.filter((a) => !isPinnedCard(a.text));
+        return asks.length > 0 ? [{ asks, kind: 'thread', row }] : [];
+    });
+    if (cards.length === 0) return threads;
+    /** @type {OrbitSection<T>} */
+    const pinned = { cards, kind: 'pinned' };
+    return pin === 'bottom' ? [...threads, pinned] : [pinned, ...threads];
+}
+
+// his «orbit › pinned cards» row in x-herdr-settings (x-herdr-chat settings-model.js)
+export const ORBIT_PIN_ROW = 'orbit.pin';
+
+/**
+ * his pin setting from the settings file's text: anything but a stored «bottom» pins on top, as before the setting
+ * @param {string | null} text @returns {OrbitPin}
+ */
+export function orbitPinIn(text) {
+    try {
+        return JSON.parse(text ?? '')?.rows?.[ORBIT_PIN_ROW] === 'bottom'
+            ? 'bottom'
+            : 'top';
+    } catch {
+        return 'top';
+    }
+}
+
 /**
  * an ask's link as the card draws it: a web page by its host, an app link by its app (its scheme), a file by its name;
  * words that

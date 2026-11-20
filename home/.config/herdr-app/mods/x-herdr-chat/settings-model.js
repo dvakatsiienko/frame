@@ -34,6 +34,24 @@ export const pages = [
                 ],
             },
             {
+                heading: 'orbit',
+                rows: [
+                    {
+                        control: {
+                            kind: 'choice',
+                            options: [
+                                { label: 'top', value: 'top' },
+                                { label: 'bottom', value: 'bottom' },
+                            ],
+                        },
+                        default: 'top',
+                        key: 'orbit.pin',
+                        title: 'pinned cards',
+                        why: 'where look and 🧪 test cards from every thread sit in the deck’s orbit: above the threads’ asks, or below',
+                    },
+                ],
+            },
+            {
                 heading: 'opening files',
                 rows: [
                     {

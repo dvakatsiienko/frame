@@ -1,7 +1,6 @@
 // x-herdr-deck: the live sessions from Claude Code's registry with what each waits on and its phases, the open
 // orbit asks x-mod-stash keeps on disk, ticked here into each session's ticks file, and each lane's glide card.
 
-import { readdir } from 'fs/promises';
 import { Button, Input, InputState, TextView, h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
 import {
@@ -16,7 +15,6 @@ import {
     writeTextFile,
 } from 'herdr';
 
-import { rejoin } from './joined.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
 import { lanesShown, stepMark } from './lanes.js';
 import {
@@ -27,7 +25,6 @@ import {
     THREADS_BEAT_MS,
     THREADS_KEY,
     askLabel,
-    asksOf,
     byName,
     createSerial,
     createTurns,
@@ -41,117 +38,43 @@ import {
     linkOf,
     literalAngles,
     nextThreads,
-    phasesOf,
+    orbitPinIn,
+    orbitSections,
     pressLabel,
     pressOf,
-    psStartArgs,
     roundsKept,
-    runningThreads,
     savePress,
-    stateOfPid,
     steerKeyAct,
     threadFacts,
     tickAll,
     tickAllTakes,
     tickAllThread,
     ticketUrl,
-    waitOf,
     withBandPress,
     withPending,
 } from './orbit.js';
 import { SENT_MS, next, pressState, untickDoor } from './press.js';
+import {
+    CLAUDE,
+    LANES,
+    SESSIONS,
+    SETTINGS,
+    STATES,
+    TICKS,
+    USAGE,
+    json,
+    sessions,
+    states,
+} from './shelf.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('gpui-kit').AsyncContext} AsyncContext */
 /** @typedef {import('gpui-kit').Color} Color */
 /** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'canvas' | 'dim' | 'foreground' | 'hover' | 'idle' | 'muted' | 'raised' | 'solid' | 'solid_foreground' | 'surface' | 'working', Color>} Theme */
 /** @typedef {import('./orbit.js').Ask} Ask */
-/** @typedef {{ asks: Ask[], context: number | null, hot: { since: number } | null, model: string | null, name: string, pending: Map<string, import('./orbit.js').Press['verdict']>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
+/** @typedef {import('./shelf.js').Row} Row */
 
 /** @typedef {import("./lanes.js").Lane} Lane */
-
-const CLAUDE = `${home()}/.claude`;
-const STATES = `${CLAUDE}/shelf/herdr-state`;
-const LANES = `${CLAUDE}/shelf/lanes.json`;
-const USAGE = `${CLAUDE}/shelf/cc-usage-window.json`;
-const SESSIONS = `${CLAUDE}/sessions`;
-const THREADS = `${CLAUDE}/shelf/threads.json`;
-const TICKS = `${CLAUDE}/shelf/orbit-ticks`;
-
-/**
- * @param {string} path
- * @returns {Promise<any>}
- */
-async function json(path) {
-    try {
-        return JSON.parse((await readTextFile(path)) ?? 'null');
-    } catch {
-        return null;
-    }
-}
-
-// each session's state file x-mod-stash writes (`fleet.json` beside them holds the fleet-wide states)
-async function states() {
-    const names = (
-        await readdir(STATES).catch(() => /** @type {string[]} */ ([]))
-    ).filter((f) => f.endsWith('.json') && f !== 'fleet.json');
-    return Promise.all(names.map((f) => json(`${STATES}/${f}`)));
-}
-
-/**
- * @param {any[]} shelf
- * @returns {Promise<Row[] | null>} null: no answer, the deck keeps its last rows
- */
-async function sessions(shelf) {
-    // one rule, one reader (FRM-570 rule 8): x's thread store names the live threads, a pid kept only while x finds it
-    // running on its own start time, so no press goes to a dead session; the status is still cc's, from its registry
-    // file. an unreadable store answers null, and the deck keeps its last rows marked stale
-    const store = await json(THREADS);
-    if (!Array.isArray(store?.threads)) return null;
-    const listed = store.threads.filter(
-        (/** @type {any} */ t) => t?.pid && t.sessionId && t.name,
-    );
-    // ps exits 1 when a pid is gone, its stdout still naming the live ones; any other end is no answer, and the deck
-    // keeps its last rows marked stale. its start times read in utc and the c locale, the store's own form
-    const ps = listed.length
-        ? await exec(
-              'env',
-              psStartArgs(listed.map((/** @type {any} */ t) => t.pid)),
-              { timeout: 2000 },
-          ).catch(() => null)
-        : { code: 0, stdout: '' };
-    const running = runningThreads(
-        listed,
-        ps && (ps.code === 0 || ps.code === 1) ? ps.stdout : null,
-    );
-    if (!running) return null;
-    const rows = await Promise.all(
-        running.map(async (/** @type {any} */ t) => ({
-            ...t,
-            status: (await json(`${SESSIONS}/${t.pid}.json`))?.status,
-        })),
-    );
-    return rows.map(
-        /** @returns {Row} */ (s) => {
-            const state = stateOfPid(shelf, s.pid);
-            const sid = state?.sid ?? s.sessionId;
-            return {
-                asks: asksOf(state),
-                context: state?.ctx ?? null,
-                hot: state?.hot ?? null,
-                model: state?.model ?? null,
-                name: rejoin(s.name),
-                pending: new Map(),
-                phases: phasesOf(state),
-                pid: s.pid,
-                sid,
-                status: s.status ?? 'unknown',
-                taken: state?.taken ?? 0,
-                wait: waitOf(s.status ?? 'unknown', state?.wait),
-            };
-        },
-    );
-}
 
 // how long a key that did nothing says why under its steer box
 const KEY_NOTE_MS = 3000;
@@ -302,6 +225,8 @@ export default class Deck extends View {
         this.pressNote = null;
         /** @type {number | null} */
         this.week = null;
+        /** @type {import('./orbit.js').OrbitPin} */
+        this.pin = 'top';
         cx.timer.every(THREADS_BEAT_MS, (cx) => this.reload(cx));
         this.reload(cx);
         // the press folder too: a 🔥 pressed on the band above a chat draws on its row at once
@@ -317,7 +242,11 @@ export default class Deck extends View {
                     if (
                         folder.endsWith('/shelf') &&
                         !changed.some(
-                            (p) => p === LANES || p === USAGE || p === folder,
+                            (p) =>
+                                p === LANES ||
+                                p === USAGE ||
+                                p === SETTINGS ||
+                                p === folder,
                         )
                     )
                         continue;
@@ -362,7 +291,9 @@ export default class Deck extends View {
                 () => /** @type {string | null} */ (null),
             ),
         );
+        const pin = orbitPinIn(await readTextFile(SETTINGS).catch(() => null));
         if (!isCurrent()) return;
+        this.pin = pin;
         this.filePresses = filePresses;
         this.week = week;
         this.isStale = listed === null;
@@ -1190,10 +1121,36 @@ export default class Deck extends View {
             );
     }
 
-    /** @param {Theme} t @param {Row[]} rows */
-    orbit(t, rows) {
-        const owners = rows.filter((s) => s.asks.length > 0);
-        return owners.map((s, i) => {
+    // look and 🧪 cards from every thread lead (or close, by his setting), then each thread in the agents list's order
+    /** @param {Theme} t */
+    orbit(t) {
+        const sections = orbitSections(
+            this.rows,
+            /** @type {number[] | null} */ (shared(ORDER_KEY)),
+            this.pin,
+        );
+        return sections.map((section, i) => {
+            if (section.kind === 'pinned')
+                return v_flex()
+                    .px(12)
+                    .py(4)
+                    .gap(8)
+                    .child(
+                        line(t.foreground, SIZE.main)
+                            .font_semibold()
+                            .child('📌 looks and tests'),
+                    )
+                    .children(
+                        section.cards.map(({ ask, row }, j) =>
+                            v_flex()
+                                .gap(4)
+                                .child(
+                                    line(t.muted, SIZE.small).child(row.name),
+                                )
+                                .child(this.ask(t, row, ask, i, j)),
+                        ),
+                    );
+            const s = section.row;
             const canTickAll =
                 tickAllTakes(s.asks, (id) => this.pressStateOf(s, id)).length >
                 0;
@@ -1253,7 +1210,9 @@ export default class Deck extends View {
                             ),
                         ),
                 )
-                .children(s.asks.map((ask, j) => this.ask(t, s, ask, i, j)));
+                .children(
+                    section.asks.map((ask, j) => this.ask(t, s, ask, i, j)),
+                );
         });
     }
 
@@ -1430,7 +1389,7 @@ export default class Deck extends View {
             .when(asks > 0, (el) =>
                 el
                     .child(header(`🪐 orbit: ${count(asks, 'ask', 'asks')}`))
-                    .children(this.orbit(t, rows))
+                    .children(this.orbit(t))
                     .when(Boolean(this.pressError), (el2) =>
                         el2.child(
                             div()
