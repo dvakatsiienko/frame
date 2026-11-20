@@ -22,14 +22,21 @@ describe('a phases line', () => {
     test('splits its lead word off for the bold', () => {
         expect(phaseParts('now: fix the band', 0)).toMatchObject({
             lead: 'now:',
-            rest: ' fix the band',
+            text: 'fix the band',
         });
+    });
+
+    // one line cut with «…» is plain text (rider 4e), so its markdown marks never show
+    test('its text reads plain, the bold and code marks dropped', () => {
+        expect(phaseParts('now: **🦉 clio** runs `x lane`', 0).text).toBe(
+            '🦉 clio runs x lane',
+        );
     });
 
     test('a line with no lead word keeps it whole', () => {
         expect(phaseParts('fix 1: a watch', 0)).toMatchObject({
             lead: '',
-            rest: 'fix 1: a watch',
+            text: 'fix 1: a watch',
         });
     });
 });

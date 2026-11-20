@@ -161,6 +161,8 @@ export default class Deck extends View {
         // layouts/itrout.json: renaming it means a layout edit, never done while a thread holds focus
         /** @type {Map<string, number>} each ask id label's drawn width */
         this.labelW = new Map();
+        /** @type {Map<string, { box: number, full: number }>} each phase line's box and its uncut text's width */
+        this.phaseW = new Map();
         /** the ask whose linked file shows under it, and that file's text, or why it could not be read @type {{ id: string, text: string | null, problem: string | null } | null} */
         this.linkShown = null;
         this.isThread = props()?.view === 'seat';
@@ -1207,10 +1209,30 @@ export default class Deck extends View {
                                 // stash board's look, dima's 66d)
                                 const p = phaseParts(phase, j);
                                 const color = j > 1 ? t.muted : t.foreground;
+                                const key = `${i}-${j}-${p.text}`;
+                                const w = this.phaseW.get(key);
+                                const isCut = Boolean(
+                                    w && w.full > w.box + 0.5,
+                                );
+                                /** @param {'box' | 'full'} side @param {number} px @param {Context} cx */
+                                const measured = (side, px, cx) => {
+                                    const was = this.phaseW.get(key) ?? {
+                                        box: 0,
+                                        full: 0,
+                                    };
+                                    if (Math.abs(was[side] - px) < 0.5) return;
+                                    this.phaseW.set(key, {
+                                        ...was,
+                                        [side]: px,
+                                    });
+                                    cx.notify();
+                                };
+                                // one line, cut with «…» at the card's edge so the card never grows; the full line
+                                // shows on hover only while it is cut, measured again on every resize (rider 4e)
                                 return h_flex()
                                     .pl(8)
                                     .gap(6)
-                                    .items_start()
+                                    .items_center()
                                     .text_size(SIZE.secondary)
                                     .child(div().flex_none().child(p.moon))
                                     .when(Boolean(p.lead), (el) =>
@@ -1226,15 +1248,41 @@ export default class Deck extends View {
                                     )
                                     .child(
                                         div()
+                                            .id(`phase-${i}-${j}`)
+                                            .relative()
                                             .flex_1()
                                             .min_w(0)
+                                            .on_size_change((size, cx) =>
+                                                measured('box', size.width, cx),
+                                            )
+                                            .when(isCut, (el) =>
+                                                el.tooltip(phase),
+                                            )
                                             .child(
-                                                prose(
-                                                    `phase-${i}-${j}`,
-                                                    p.rest.trim(),
-                                                    color,
-                                                    SIZE.secondary,
-                                                ),
+                                                div()
+                                                    .truncate()
+                                                    .text_color(color)
+                                                    .child(p.text),
+                                            )
+                                            .child(
+                                                div()
+                                                    .id(`phase-full-${i}-${j}`)
+                                                    .absolute()
+                                                    .top(0)
+                                                    .left(0)
+                                                    .h(0)
+                                                    .overflow_hidden()
+                                                    .whitespace_nowrap()
+                                                    .text_color('#00000000')
+                                                    .on_size_change(
+                                                        (size, cx) =>
+                                                            measured(
+                                                                'full',
+                                                                size.width,
+                                                                cx,
+                                                            ),
+                                                    )
+                                                    .child(p.text),
                                             ),
                                     );
                             }),

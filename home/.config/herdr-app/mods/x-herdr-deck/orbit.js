@@ -280,7 +280,10 @@ export function phaseParts(line, i) {
         moon: /^siesta:/i.test(line)
             ? '🌤️'
             : (PHASE_MOONS[Math.min(i, PHASE_MOONS.length - 1)] ?? '🌑'),
-        rest: line.slice(lead.length),
+        text: line
+            .slice(lead.length)
+            .replace(/\*\*|`/g, '')
+            .trim(),
     };
 }
 
