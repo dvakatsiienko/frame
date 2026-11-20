@@ -1,6 +1,13 @@
 import { describe, expect, test } from 'vitest';
 
-import { ORDER_CAP, heirs, inOrder, moved, nextOrder } from './order.js';
+import {
+    ORDER_CAP,
+    heirs,
+    inOrder,
+    moved,
+    movedInGroup,
+    nextOrder,
+} from './order.js';
 
 const live = (...a: string[]) => new Set(a);
 
@@ -108,5 +115,22 @@ describe('his drag sets the order', () => {
     test('a drop on itself or on an unknown row changes nothing', () => {
         expect(moved(['a', 'b'], 'a', 'a')).toEqual(['a', 'b']);
         expect(moved(['a', 'b'], 'a', 'z')).toEqual(['a', 'b']);
+    });
+});
+
+// FRM-618 slice A, review: a drag inside one space never moves another space's threads, so the headers keep their order
+describe('a drag within a space', () => {
+    test('a row dragged down its space keeps the other space where it was', () => {
+        expect(movedInGroup(['a', 'b', 'c'], ['a', 'c'], 'a', 'c')).toEqual([
+            'c',
+            'b',
+            'a',
+        ]);
+    });
+
+    test('a row dragged up its space lands on the row it was dropped on', () => {
+        expect(
+            movedInGroup(['a', 'x', 'b', 'c'], ['a', 'b', 'c'], 'c', 'a'),
+        ).toEqual(['c', 'x', 'a', 'b']);
     });
 });

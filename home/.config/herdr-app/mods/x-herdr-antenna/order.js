@@ -74,3 +74,17 @@ export function moved(order, from, to) {
     rest.splice(order.indexOf(to), 0, from);
     return rest;
 }
+
+/** his drag inside one group: the group's rows move as `moved` moves them, written back into the places they held, so
+ * no other group's row changes place @param {string[]} order @param {string[]} members @param {string} from
+ * @param {string} to */
+export function movedInGroup(order, members, from, to) {
+    const inGroup = new Set(members);
+    const next = moved(
+        order.filter((a) => inGroup.has(a)),
+        from,
+        to,
+    );
+    let i = 0;
+    return order.map((a) => (inGroup.has(a) ? next[i++] : a));
+}

@@ -22,14 +22,13 @@ import {
 
 import { rowDetails } from './details.js';
 import { createListDrag } from './drag-view.js';
-import { heirs, moved, nextOrder } from './order.js';
+import { heirs, movedInGroup, nextOrder } from './order.js';
 import { antennaRows } from './rows.js';
 import { antennaSettings, antennaSettingsText } from './settings.js';
 import { POPUP_HEIGHT, POPUP_WIDTH, settingsPopup } from './settings-view.js';
 import { createTabMember } from './tab-loop.js';
 import {
     NAMES,
-    ORDER_KEY,
     publishNames,
     publishOrder,
     readNames,
@@ -48,6 +47,8 @@ const ROW_OPEN = 'x_herdr_antenna_row_open';
 const ROW_KEYS = 64;
 const stopOf = (/** @type {string} */ address) => `thread-${address}`;
 
+// the old list's saved order, in herdr's store for its mod: read once, so his order comes over by address
+const OLD_STORE = `${home()}/.config/herdr-app/data/x-herdr-agents/store.json`;
 const SETTINGS = `${home()}/.claude/shelf/herdr-settings/settings.json`;
 // the knobs live: the popup writes them here as it saves, so antenna and the tab bar redraw at once
 export const SETTINGS_KEY = 'antenna.settings';
@@ -58,10 +59,22 @@ const settingsNow = () =>
         shared(SETTINGS_KEY) ?? antennaSettings(null)
     );
 
+/** @param {string} text */
+function isJson(text) {
+    try {
+        JSON.parse(text);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 /** a knob's change saved beside every other row: the write holds only against the text it read, so one retry @param {string} key @param {unknown} value */
 async function saveSetting(key, value) {
     for (const _ of [1, 2]) {
         const text = await readTextFile(SETTINGS);
+        // a file that does not parse holds his other rows: antenna never writes over it
+        if (text !== null && !isJson(text)) return;
         const next = antennaSettingsText(text, { [key]: value });
         try {
             await writeTextFile(SETTINGS, next, text);
@@ -161,7 +174,14 @@ export default class Antenna extends View {
             onMove: (/** @type {Dragged} */ item, _from, to) => {
                 const target = item.members[to];
                 if (target)
-                    this.setOrder(moved(this.order, item.address, target));
+                    this.setOrder(
+                        movedInGroup(
+                            this.order,
+                            item.members,
+                            item.address,
+                            target,
+                        ),
+                    );
             },
         });
         // each thread's last status and when it changed (ms), kept across restarts: the idle time
@@ -177,25 +197,31 @@ export default class Antenna extends View {
         this.order = stored('order', []);
         /** @type {Record<string, string>} each ordered address's thread name, kept after its terminal goes */
         this.orderNames = stored('orderNames', {});
+        /** his order came over from the old list; until then antenna publishes no order, so his never gets wiped */
+        this.isSeeded = stored('seeded', false) === true;
         const names = (/** @type {import('gpui-kit').Context} */ cx) =>
             cx.spawn(async (cx) => {
                 await readNames(agents());
                 publishNames();
-                if (this.order.length === 0) this.seed();
+                if (!this.isSeeded) await this.seed();
                 cx.notify();
             });
         names(cx);
         cx.timer.every(5000, names);
     }
 
-    // his order before antenna came: the old list's pids under ORDER_KEY, read once, a thread it never saw at the end
-    seed() {
-        const pids = shared(ORDER_KEY);
-        const byPid = new Map(
-            [...NAMES].map(([address, { pid }]) => [pid, address]),
+    // his order before antenna came: the old list's own saved addresses, read once, a thread it never saw at the end
+    async seed() {
+        const text = await readTextFile(OLD_STORE).catch(
+            () => /** @type {null} */ (null),
         );
-        const seeded = Array.isArray(pids)
-            ? pids.map((pid) => byPid.get(pid)).filter(Boolean)
+        /** @type {unknown} */
+        let old = null;
+        try {
+            old = JSON.parse(JSON.parse(text ?? 'null')?.order ?? 'null');
+        } catch {}
+        const seeded = Array.isArray(old)
+            ? old.filter((a) => typeof a === 'string')
             : [];
         this.setOrder([
             ...seeded,
@@ -203,6 +229,8 @@ export default class Antenna extends View {
                 .map((a) => a.address)
                 .filter((a) => !seeded.includes(a)),
         ]);
+        this.isSeeded = true;
+        localStorage.setItem('seeded', 'true');
     }
 
     /** stamps each thread whose status changed; done and idle count as one, a look turns done into idle
@@ -231,7 +259,7 @@ export default class Antenna extends View {
 
     /** @param {import('herdr').AgentInfo[]} list */
     keepOrder(list) {
-        if (this.order.length === 0) return list.map((a) => a.address);
+        if (!this.isSeeded) return list.map((a) => a.address);
         const live = new Set(
             terminals()
                 .filter((t) => t.state === 'live')
@@ -300,6 +328,16 @@ export default class Antenna extends View {
         return made;
     }
 
+    /** a handle of a row no longer drawn goes back to the pool @param {string[]} addresses */
+    freeRowKeys(addresses) {
+        const drawn = new Set(addresses);
+        for (const [a, key] of this.rowKeys)
+            if (!drawn.has(a)) {
+                this.rowKeys.delete(a);
+                this.spareKeys.push(key);
+            }
+    }
+
     /** the Tab loop's turn: publish this draw's stops, take the stop it names, and keep the hold in step with focus
      * @param {string[]} addresses the thread rows in drawn order @param {Context} cx */
     joinTabLoop(addresses, cx) {
@@ -330,7 +368,7 @@ export default class Antenna extends View {
         this.track(list, now);
         const order = this.keepOrder(list);
         setAgentOrder(order.filter((a) => list.some((x) => x.address === a)));
-        publishOrder(order);
+        if (this.isSeeded) publishOrder(order);
         const byAddress = new Map(list.map((a) => [a.address, a]));
         const names = Object.fromEntries(
             list.map((a) => [a.address, sessionName(a.address) ?? a.title]),
@@ -354,7 +392,11 @@ export default class Antenna extends View {
         const addresses = rows.flatMap((r) =>
             r.kind === 'thread' ? [r.address] : [],
         );
-        if (!isNarrow) this.joinTabLoop(addresses, cx);
+        this.freeRowKeys(addresses);
+        this.joinTabLoop(
+            isNarrow ? [] : addresses.filter((a) => this.rowKey(a)),
+            cx,
+        );
         const isCompact = knobs['antenna.rowHeight'] === 'compact';
         // with the wait line on every row is two lines tall, so a drag's slots match the rows
         const rowHeight =
