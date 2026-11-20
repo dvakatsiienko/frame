@@ -235,3 +235,36 @@ type QuietNote = {
     body: string;
     head: number;
 };
+
+// a log line of the desktop's own note: no member sent it, so the ledger and the sender's «held» read past it
+export const QUIET_NOTICE = 'notice';
+
+export const QUIET_DELIVERY_TEST =
+    /^\s*\[progress\]\s*quiet delivery test ([\w-]+)/i;
+
+// every way a member addresses clio in a SendMessage `to`: her name (any ref after it), the socket a reply copies from
+// her envelope's `from`, her session ids — as one grep -E alternation, read wherever `to` sits in the input
+export function clioAddress(ids: { pid?: number; sids: string[] }) {
+    const literal = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const alts = [
+        'clio',
+        ...(ids.pid ? [`cc-socks/${ids.pid}\\.sock`] : []),
+        ...ids.sids.filter(Boolean).map(literal),
+    ];
+    return `"to":"[^"]*(${alts.join('|')})`;
+}
+
+// a peer delivery's body and sender: a cli peer's envelope names it `from-name`, a desktop one `name` (probe, 14:49)
+export function peerPing(text: string) {
+    const open = text.match(/<cross-session-message[^>]*>/)?.[0] ?? '';
+    const from =
+        open.match(/\bfrom-name="([^"]*)"/)?.[1] ??
+        open.match(/\bname="([^"]*)"/)?.[1] ??
+        'a member';
+    const body = text
+        .replace(/^[\s\S]*?<cross-session-message[^>]*>\n?/, '')
+        .replace(/\n?<\/cross-session-message>\s*$/, '');
+    const tag = quietTag(body);
+    const deliveryTest = body.match(QUIET_DELIVERY_TEST)?.[1];
+    return { body, from, tag, ...(deliveryTest ? { deliveryTest } : {}) };
+}
