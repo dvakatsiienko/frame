@@ -54,4 +54,6 @@ PK-460:W1304 (2026-11-20 15:06, dima): does it apply to the herdr codie too? ❓
 
 15:14 ticket: FRM-672 (lane pace alarm, his o1 tick 15:13)
 close: the bottleneck want moved to FRM-672; W1294, W1298, W1299, W1302 and his o1 «remeasure after 1w» are in its wish block; the answered questions are noted above
+
+close: W1290–W1293 moved to FRM-672 (the ask it answers); W1294 moved FRM-672; W1295 done (o2 run); W1296 done (incident answered 15:04, corrected 15:12); W1297 done (~1 h 55 min); W1298 moved FRM-672; W1299 moved FRM-672; W1300 done; W1301 done (answered 15:06, inference); W1302 moved FRM-672 (crew-codie line); W1303 done (15:06 + pace read); W1304 done (pace read: herdr 🟢); W5 = W1294
 <!-- SECTION:NOTES:END -->
