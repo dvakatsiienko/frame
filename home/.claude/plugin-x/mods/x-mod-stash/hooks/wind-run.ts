@@ -397,7 +397,21 @@ export async function windAfterTurn($: EngineInterface, view: ViewDoors) {
         return;
     }
     const slug = was.slug;
-    $.clock.after(WIND_DELAY_MS, () => runWind($, sid, slug, view));
+    armWind($, sid, slug, view);
+}
+// the run waits a beat past the turn end; a hot reload in that beat ends the timer with the old copy, so a start runs
+// windAfterTurn again, and the run reads the store once more, so two timers never run one wind twice
+function armWind(
+    $: EngineInterface,
+    sid: string,
+    slug: string,
+    view: ViewDoors,
+) {
+    $.clock.after(WIND_DELAY_MS, async () => {
+        const now = await windOf($, sid);
+        if (now?.state === 'refreshing' && now.slug === slug)
+            await runWind($, sid, slug, view);
+    });
 }
 async function hasHandoff($: EngineInterface, slug: string) {
     const home = await $.env.get('HOME');

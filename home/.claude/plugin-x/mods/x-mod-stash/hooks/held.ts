@@ -228,14 +228,16 @@ export async function isCompactingNow(
     sid: string,
     isWindOn: boolean,
 ) {
-    // a 🌀 row is second wind's: switched off, a row left behind holds nothing, only a real compact does
-    const was = isWindOn ? (await windOf($, sid))?.state : undefined;
+    // a 🌀 row is second wind's: switched off, a row left behind holds nothing, only a real compact does; a row older than
+    // a compact's longest run was left by a run a hot reload lost, and holds nothing either (the herdr codie, 17:22–18:13)
+    const wind = isWindOn ? await windOf($, sid) : undefined;
+    const now = await $.clock.now();
+    const was = wind && now - wind.at < COMPACT_MAX_MS ? wind.state : undefined;
     const since = await $.store.get(COMPACTING + sid).catch(() => undefined);
     // a process that died mid-compact never cleared its key, so the key counts only inside a compact's longest run
     return (
         was === 'refreshing' ||
-        (typeof since === 'number' &&
-            (await $.clock.now()) - since < COMPACT_MAX_MS)
+        (typeof since === 'number' && now - since < COMPACT_MAX_MS)
     );
 }
 // every message into a compacting thread, from any sender, waits for its next turn: from its 🌀 or the compact's start

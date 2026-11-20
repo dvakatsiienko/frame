@@ -46,7 +46,12 @@ import { refreshSpeaking } from './speak.ts';
 import { HOT, hotOf } from './store-keys.ts';
 import { bookkeep, markActive, restoreTurn, turn } from './turn.ts';
 import { freshMeter } from './usage.ts';
-import { COMPACT_SETTLE_MS, seedTurnNo, syncWindStore } from './wind-run.ts';
+import {
+    COMPACT_SETTLE_MS,
+    seedTurnNo,
+    syncWindStore,
+    windAfterTurn,
+} from './wind-run.ts';
 
 // the running turn, so a mid-turn reload still knows it is busy
 const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
@@ -116,6 +121,8 @@ export async function startSession(
     await view.load();
     await armHot($, view);
     await armWake($, view);
+    // a wind its turn end named but never ran: a reload in the beat after that end took its timer (flyway f62)
+    if (!turn.isBusy) await windAfterTurn($, view).catch(() => undefined);
     await $.command
         .register({
             description:
