@@ -1138,16 +1138,10 @@ export async function drawBoard($: EngineInterface, e: RenderInput<'Pane'>) {
                 // old red line, so a full session never reads calm
                 const compactAt =
                     (await meterNow($))?.compactAt ?? CTX_FALLBACK_AT;
-                const PillSvg =
-                    e.surface === 'desktop' && 'Svg' in ui ? ui.Svg : undefined;
                 // the desktop's ctx meter as dima switched it: the ring takes 7 cells, the bar 5, the terminal's text bar 10
                 const isRing = board.isRing;
                 const ctxTake = isRing ? CTX_RING : CTX_BAR;
-                const contextColumns = PillSvg
-                    ? isRing
-                        ? 7
-                        : 5
-                    : COLUMNS.context;
+                const contextColumns = Svg ? (isRing ? 7 : 5) : COLUMNS.context;
                 const hues = huesOf(list.map((m) => m.name));
                 // the ticket column is drawn only when some row names a ticket: empty on every row, it was 9 cells of nothing (dima, 15:41)
                 const hasTickets = list.some((m) => ticketOf(m.name));
@@ -1374,8 +1368,8 @@ export async function drawBoard($: EngineInterface, e: RenderInput<'Pane'>) {
                                         width={contextColumns}>
                                         {/* every row's meter one width, its % merged in, stepping to red at the compaction point */}
                                         {m.context ===
-                                        undefined ? null : PillSvg ? (
-                                            <PillSvg
+                                        undefined ? null : Svg ? (
+                                            <Svg
                                                 alt={`ctx ${m.context}%`}
                                                 height={ctxTake.height}
                                                 key={`ctx:${m.sid}`}
