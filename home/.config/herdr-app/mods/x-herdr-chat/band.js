@@ -38,14 +38,18 @@ export function bandOf(value, pid, now) {
  * the bar's status for the chat's thread: working or idle from its state file as the deck publishes it, so a thread
  * that only waits shows no spinner; herdr's status for a block, and while no file names the thread
  * @param {unknown} value what `shared(THREADS_KEY)` holds @param {number | null | undefined} pid
- * @param {string} herdrStatus the thread's status in herdr's `agents()` @returns {string}
+ * @param {string} herdrStatus the thread's status in herdr's `agents()` @param {number} now
+ * @returns {string} a deck that stopped publishing leaves herdr's status, never a frozen spinner
  */
-export function bandStatus(value, pid, herdrStatus) {
+export function bandStatus(value, pid, herdrStatus, now) {
     if (herdrStatus === 'blocked') return herdrStatus;
-    const threads = /** @type {{ threads?: Record<string, any> } | null} */ (
-        value
-    )?.threads;
-    const state = pid == null ? undefined : threads?.[String(pid)]?.state;
+    const deck =
+        /** @type {{ at?: unknown, threads?: Record<string, any> } | null} */ (
+            value
+        );
+    if (typeof deck?.at !== 'number' || now - deck.at > STALE_MS)
+        return herdrStatus;
+    const state = pid == null ? undefined : deck.threads?.[String(pid)]?.state;
     if (state === 'working') return 'working';
     return state === 'waiting' || state === 'idle' ? 'idle' : herdrStatus;
 }

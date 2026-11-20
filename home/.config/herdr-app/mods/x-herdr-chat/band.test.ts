@@ -51,22 +51,27 @@ describe('the band reads its own thread from the deck', () => {
     // for a permission block, which no file sees
     test("a thread that only waits on a watch reads idle, whatever herdr's status says", () => {
         const waiting = { at: 1000, threads: { '7': { state: 'waiting' } } };
-        expect(bandStatus(waiting, 7, 'working')).toBe('idle');
+        expect(bandStatus(waiting, 7, 'working', 1000)).toBe('idle');
     });
 
     test('a running turn in the state file reads working', () => {
         const working = { at: 1000, threads: { '7': { state: 'working' } } };
-        expect(bandStatus(working, 7, 'idle')).toBe('working');
+        expect(bandStatus(working, 7, 'idle', 1000)).toBe('working');
     });
 
     test("a permission block reads blocked from herdr's status", () => {
         const working = { at: 1000, threads: { '7': { state: 'working' } } };
-        expect(bandStatus(working, 7, 'blocked')).toBe('blocked');
+        expect(bandStatus(working, 7, 'blocked', 1000)).toBe('blocked');
+    });
+
+    test("a deck that stopped publishing falls back to herdr's status", () => {
+        const working = { at: 1000, threads: { '7': { state: 'working' } } };
+        expect(bandStatus(working, 7, 'idle', 1001 + STALE_MS)).toBe('idle');
     });
 
     test("no state file for the thread falls back to herdr's status", () => {
-        expect(bandStatus(deck, 7, 'working')).toBe('working');
-        expect(bandStatus(undefined, 7, 'idle')).toBe('idle');
+        expect(bandStatus(deck, 7, 'working', 1000)).toBe('working');
+        expect(bandStatus(undefined, 7, 'idle', 1000)).toBe('idle');
     });
 
     test('facts the deck stopped publishing past two beats read stale', () => {

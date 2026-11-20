@@ -127,6 +127,7 @@ export function createBand({ shownAddress, pid, turnStart, column }) {
             pid(),
             agents().find((agent) => agent.address === shownAddress())
                 ?.status ?? 'idle',
+            now,
         );
         const isWorking = status === 'working';
         const turnAt = turnStart();
