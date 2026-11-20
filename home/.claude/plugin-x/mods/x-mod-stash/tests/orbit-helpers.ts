@@ -6,6 +6,7 @@ import {
     SID,
     add,
     board,
+    endTurn,
     orbit,
     say,
     start,
@@ -205,3 +206,11 @@ export const hrefs = async (ui: {
         type: string;
     }) => Promise<{ props: Record<string, unknown> }[]>;
 }) => (await ui.findAll({ type: 'Link' })).map((n) => n.props.href);
+
+export const orbitNote = (w: { contexts: string[][] }) =>
+    (w.contexts.at(-1) ?? []).filter((c) => c.startsWith('orbit holds'));
+
+export const nextPrompt = async ($: Engine) => {
+    await endTurn($);
+    await say($, 'more');
+};
