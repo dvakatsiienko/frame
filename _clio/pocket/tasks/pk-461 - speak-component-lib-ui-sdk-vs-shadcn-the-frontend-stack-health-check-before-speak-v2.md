@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-20T17:11:00Z'
-updated_date: '2026-11-20T17:20:00Z'
+updated_date: '2026-11-20T17:54:00Z'
 labels:
   - s
   - clio-wing-1
@@ -35,4 +35,9 @@ PK-461:W11 (2026-11-20 19:10, dima): research on any topic can bring anything, e
 PK-461:W12 (2026-11-20 19:15, dima): the research must actually search against shadcn itself overall: is it still a healthy, solid, top-tier pick for ui development, or what is, if not? ❓
 
 19:20 the source note was renamed by dima: «_hq/dima's stash.md» (was «wing plan (in progress).md»)
+
+PK-461:W13 (2026-11-20 19:54, dima, o7): q1 ok: we stay on shadcn through the bytes ui kit for now.
+PK-461:W14 (2026-11-20 19:54, dima): the rest about the ui kit: no probes for now, no time for experiments.
+PK-461:W15 (2026-11-20 19:54, dima): the grill itself narrows to this: we use shadcn and the bytes ui kit for now.
+19:54 settled: speak's base is shadcn through the bytes ui kit (W13); ui sdk: no probe, no test drive now (W14); research 2–3 ask open in orbit
 <!-- SECTION:NOTES:END -->
