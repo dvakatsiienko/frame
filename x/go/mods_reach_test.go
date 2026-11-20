@@ -28,7 +28,9 @@ var reachMod = map[string]string{
 	"tests/b.test.ts":      "import { world } from './world';\nimport('../hooks/rules/score.ts');\n",
 	"tests/c.test.ts":      "export {};\n",
 	"types/redact.d.ts":    "export {};\n",
-	"hooks/hooks.json":     "{}\n",
+	"tests/host.test.ts":   "import { test } from 'claude-code/testing';\ntest('a host test',\n  async ($, on) => {});\n",
+	"tests/pure.test.ts":   "import { expect, test } from 'claude-code/testing';\ntest('a pure test', () => {});\n",
+	"hooks/hooks.json":     "{ \"modules\": [\"./register.ts\"] }\n",
 	"FTR.md":               "x\n",
 }
 
@@ -44,8 +46,8 @@ func TestModsReachFindsTheTestsAChangeReaches(t *testing.T) {
 		reachesAll bool
 	}{
 		{"a test file is itself", []string{"tests/c.test.ts"}, "tests/c.test.ts", "", false},
-		{"a hooks file through a world", []string{"hooks/register.ts"}, "tests/a.test.ts,tests/b.test.ts", "", false},
-		{"a file two imports deep", []string{"hooks/rules/score.ts"}, "tests/a.test.ts,tests/b.test.ts", "", false},
+		{"a hooks file through a world", []string{"hooks/register.ts"}, "tests/a.test.ts,tests/b.test.ts,tests/host.test.ts", "", false},
+		{"a file two imports deep", []string{"hooks/rules/score.ts"}, "tests/a.test.ts,tests/b.test.ts,tests/host.test.ts", "", false},
 		{"a hooks file by the name of its test", []string{"hooks/guard.ts"}, "tests/guard.test.ts", "", false},
 		{"a hooks file nothing reaches", []string{"hooks/lonely.ts"}, "", "hooks/lonely.ts", false},
 		{"a doc and a type", []string{"FTR.md", "types/redact.d.ts"}, "", "", false},
