@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -28,7 +29,12 @@ func wishCoverLine(frame string, specs []string, id string, issue landedRead, is
 	defer cancel()
 	cmd := exec.CommandContext(ctx, node, append([]string{script, id, "--all"}, specs...)...)
 	cmd.Dir = frame
-	got, _ := runCmd(cmd)
+	got, runErr := runCmd(cmd)
+	// 3 is wish-cover's «every line covered, a moved stub's home unreadable»: named, never a loss
+	code := 0
+	if exit, isExit := errors.AsType[*exec.ExitError](runErr); isExit {
+		code = exit.ExitCode()
+	}
 	var named []string
 	for out := range strings.SplitSeq(got.log, "\n") {
 		if out = strings.TrimSpace(out); strings.HasPrefix(out, "✗") {
@@ -36,6 +42,9 @@ func wishCoverLine(frame string, specs []string, id string, issue landedRead, is
 		}
 	}
 	switch {
+	case code == 3:
+		said := strings.Split(got.out, "\n")
+		line.ok, line.detail = true, strings.TrimSpace(said[len(said)-1])
 	case got.ok:
 		line.ok, line.detail = true, "every W-line of "+id+" is cited in the spec or settled elsewhere"
 	case len(named) > 0:

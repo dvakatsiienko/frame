@@ -351,6 +351,43 @@ describe('lanePace', () => {
         );
     });
 
+    // a siesta 1.2 h ago must not shrink the lane's elapsed time: 3.5 h in with 3 of 4 steps done projects ~4.7 h, past an S budget
+    test("projects from the lane's own start, whatever the last siesta was", () => {
+        const { commits, transcript } = chainLane({
+            cycle: 330,
+            cycles: 38,
+            lines: 44,
+        });
+        const pace = lane({
+            commits,
+            plan: { done: 3, total: 4 },
+            since: T0 + 2.3 * 3600,
+            transcript,
+        });
+        expect(pace.flag).toBe('🔴');
+        expect(pace.line).toContain('projected ~5 h');
+        // under an hour into the window, an hour and a half into the lane's life: it still projects
+        const late = lane({
+            commits,
+            plan: { done: 3, total: 4 },
+            since: T0 + 3.2 * 3600,
+            transcript,
+        });
+        expect(late.flag).toBe('🔴');
+    });
+
+    test('a lane with no record since the window reads quiet, never negative hours', () => {
+        const { commits, transcript } = chainLane({
+            cycle: 330,
+            cycles: 4,
+            lines: 44,
+        });
+        const pace = lane({ commits, since: T0 + 5 * 3600, transcript });
+        expect(pace.flag).toBe('➖');
+        expect(pace.line).toContain('no activity since the last siesta');
+        expect(pace.line).not.toMatch(/-\d+(\.\d)? h/);
+    });
+
     test('counts only commits after since', () => {
         const { commits, transcript } = chainLane({
             cycle: 330,
@@ -493,6 +530,66 @@ describe('planOf', () => {
         expect(planOf(path.join(dir, 'a.md'))).toEqual({ done: 2, total: 3 });
         expect(planOf(path.join(dir, 'b.md'))).toBeNull();
         expect(planOf(path.join(dir, 'gone.md'))).toBeNull();
+    });
+});
+
+describe('lanePaceSection, per lane', () => {
+    const home = mkdtempSync(path.join(tmpdir(), 'lane-pace-lanes-'));
+    afterAll(() => rmSync(home, { force: true, recursive: true }));
+
+    test("finds a transcript under a cwd with an underscore or a space, reads commits from the lane's own cwd, and survives one unreadable lane", () => {
+        const { commits, transcript } = chainLane({
+            cycle: 330,
+            cycles: 13,
+            lines: 44,
+        });
+        mkdirSync(path.join(home, '.claude/shelf'), { recursive: true });
+        mkdirSync(path.join(home, '.claude/projects/-a-b-c-d'), {
+            recursive: true,
+        });
+        mkdirSync(path.join(home, '.claude/projects/-bad'), {
+            recursive: true,
+        });
+        writeFileSync(
+            path.join(home, '.claude/shelf/threads.json'),
+            JSON.stringify({
+                threads: [
+                    {
+                        area: 'odd',
+                        cwd: '/a_b c.d',
+                        role: 'codie',
+                        sessionId: 's1',
+                        ticket: 'FRM-1',
+                    },
+                    {
+                        area: 'bad',
+                        cwd: '/bad',
+                        role: 'codie',
+                        sessionId: 's2',
+                    },
+                ],
+            }),
+        );
+        writeFileSync(
+            path.join(home, '.claude/projects/-a-b-c-d/s1.jsonl'),
+            transcript,
+        );
+        // a directory where the transcript file should be: reading it throws
+        mkdirSync(path.join(home, '.claude/projects/-bad/s2.jsonl'));
+        const asked: string[] = [];
+
+        const section = lanePaceSection(home, T0, {
+            commits: (dir) => {
+                asked.push(dir);
+                return commits;
+            },
+            size: () => 'S',
+        });
+
+        expect(asked).toEqual(['/a_b c.d']);
+        expect(section.output).toContain('odd | FRM-1');
+        expect(section.output).toMatch(/bad .*unreadable/);
+        expect(section.exit).toBe(1);
     });
 });
 

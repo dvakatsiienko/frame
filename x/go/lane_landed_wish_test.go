@@ -124,3 +124,27 @@ func TestLandedReadsNoWishCoverOnceTheSpecIsArchived(t *testing.T) {
 		t.Errorf("the check ran with no open spec:\n%s", linesOf(envelope))
 	}
 }
+
+// wish-cover exits 3 when every line is covered but a moved stub's home could not be read: not a loss, so it never blocks a close
+func TestLandedClosesPastWishCoversMovedNotRecheckedExit(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+
+	envelope, _ := w.landedWith(t, wishCoverArgs+"echo 'FRM-1: moved, not re-checked: FRM-585'\nexit 3\n", "--apply")
+
+	if specStays(w) || strings.Contains(linesOf(envelope), "🔴 wish-cover") {
+		t.Errorf("the moved-not-rechecked exit blocked the close:\n%s", linesOf(envelope))
+	}
+}
+
+// the same exit reads green on the dry print, naming what it could not re-check
+func TestLandedPrintsMovedNotRecheckedAsMet(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+
+	envelope, _ := w.landedWith(t, wishCoverArgs+"echo 'FRM-1: moved, not re-checked: FRM-585'\nexit 3\n")
+
+	if !strings.Contains(linesOf(envelope), "✅ wish-cover — FRM-1: moved, not re-checked: FRM-585") {
+		t.Errorf("want the met line naming the home:\n%s", linesOf(envelope))
+	}
+}

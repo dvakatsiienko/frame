@@ -212,7 +212,7 @@ export function segments(
     const first = records[0]?.[0];
     const last = records.at(-1)?.[0];
     if (first === undefined || last === undefined)
-        return { segs: [], t0: 0, t1: 0 };
+        return { first: 0, segs: [], t0: 0, t1: 0 };
     const t0 = Math.max(first, since);
     const t1 = Math.min(last, until);
     const foreground: [number, number, string][] = [];
@@ -266,7 +266,7 @@ export function segments(
         }
         segs.push({ from, state, to });
     }
-    return { segs, t0, t1 };
+    return { first, segs, t0, t1 };
 }
 
 const isBlocked = (state: string) => FIXED.has(state) || state === 'wait_bg';
@@ -355,12 +355,26 @@ function typeErrorRuns(transcript: string, since: number, scratchpad: string) {
 const hoursOf = (s: number) => Math.round((s / HOUR_S) * 10) / 10;
 
 export function lanePace(lane: LaneInput): LanePace {
-    const { segs, t0, t1 } = segments(
+    const { first, segs, t0, t1 } = segments(
         lane.transcript,
         lane.since,
         lane.until,
         lane.scratchpad,
     );
+    if (t1 <= t0)
+        return {
+            budgetHours: null,
+            commits: 0,
+            fix: '',
+            flag: '➖',
+            hours: 0,
+            line: `➖ ${lane.name} — no activity since the last siesta`,
+            medianLines: 0,
+            name: lane.name,
+            projectedHours: null,
+            reasons: [],
+            waiting: 0,
+        };
     const commits = lane.commits
         .filter((c) => c.t >= t0 && c.t <= t1)
         .sort((a, b) => a.t - b.t);
@@ -371,7 +385,9 @@ export function lanePace(lane: LaneInput): LanePace {
     const share =
         lane.plan && lane.plan.total > 0 ? lane.plan.done / lane.plan.total : 0;
     const projectedHours =
-        share > 0 && elapsed >= MIN_PROJECT_S ? hoursOf(elapsed / share) : null;
+        share > 0 && t1 - first >= MIN_PROJECT_S
+            ? hoursOf((t1 - first) / share)
+            : null;
     const reasons: string[] = [];
     const empty = emptyHour(segs, commits, t0, t1);
     if (empty !== null) reasons.push('an hour with nothing landed');
@@ -446,17 +462,17 @@ export function planOf(file: string): Plan | null {
     return steps.length > 0 && done > 0 ? { done, total: steps.length } : null;
 }
 
-export function commitsSince(frame: string, since: number): Commit[] {
+export function commitsSince(dir: string, since: number): Commit[] {
     const out = spawnSync(
         'git',
         [
             '-C',
-            frame,
+            dir,
             'log',
             `--since=@${Math.floor(since)}`,
             '--format=C\t%H\t%ct\t%s',
             '--numstat',
-            'main',
+            'HEAD',
         ],
         { encoding: 'utf8' },
     );
@@ -510,7 +526,7 @@ export function ownCommits(commits: Commit[], transcript: string) {
 }
 
 export type Reads = {
-    commits: (frame: string, since: number) => Commit[];
+    commits: (dir: string, since: number) => Commit[];
     size: (ticket: string) => string | null;
 };
 
@@ -533,13 +549,12 @@ export function lanePaceSection(
             output: `thread records unreadable: ${String(error)}`,
         };
     }
-    const commits = reads.commits(frame, since);
     const lines: string[] = [];
     let red = false;
     for (const thread of threads.filter((t) => t.role === 'codie')) {
-        const project = (thread.cwd ?? frame)
-            .replaceAll('/', '-')
-            .replaceAll('.', '-');
+        const dir = thread.cwd ?? frame;
+        // claude names a project dir after the cwd with every non-alphanumeric character a dash
+        const project = dir.replace(/[^a-zA-Z0-9]/g, '-');
         const file = path.join(
             home,
             '.claude/projects',
@@ -547,27 +562,35 @@ export function lanePaceSection(
             `${thread.sessionId}.jsonl`,
         );
         if (!existsSync(file)) continue;
-        const transcript = readFileSync(file, 'utf8');
-        const pace = lanePace({
-            commits: ownCommits(commits, transcript),
-            name: `${thread.area ?? thread.lane ?? thread.sessionId.slice(0, 8)} | ${thread.ticket ?? ''}`.trim(),
-            plan: thread.lane
-                ? planOf(
-                      path.join(
-                          home,
-                          '.local/state/x/lanes',
-                          thread.lane,
-                          'lane-plan.md',
-                      ),
-                  )
-                : null,
-            scratchpad: `/private/tmp/claude-${process.getuid?.() ?? 501}/${project}/${thread.sessionId}/scratchpad`,
-            since,
-            size: thread.ticket ? reads.size(thread.ticket) : null,
-            transcript,
-        });
-        red ||= pace.flag === '🔴';
-        lines.push(pace.line);
+        const name =
+            `${thread.area ?? thread.lane ?? thread.sessionId.slice(0, 8)} | ${thread.ticket ?? ''}`.trim();
+        try {
+            const transcript = readFileSync(file, 'utf8');
+            const pace = lanePace({
+                commits: ownCommits(reads.commits(dir, since), transcript),
+                name,
+                plan: thread.lane
+                    ? planOf(
+                          path.join(
+                              home,
+                              '.local/state/x/lanes',
+                              thread.lane,
+                              'lane-plan.md',
+                          ),
+                      )
+                    : null,
+                scratchpad: `/private/tmp/claude-${process.getuid?.() ?? 501}/${project}/${thread.sessionId}/scratchpad`,
+                since,
+                size: thread.ticket ? reads.size(thread.ticket) : null,
+                transcript,
+            });
+            red ||= pace.flag === '🔴';
+            lines.push(pace.line);
+        } catch (error) {
+            // one lane's unreadable file never costs the siesta its other sections
+            lines.push(`🔴 ${name} — pace unreadable: ${String(error)}`);
+            red = true;
+        }
     }
     return {
         exit: red ? 1 : 0,
