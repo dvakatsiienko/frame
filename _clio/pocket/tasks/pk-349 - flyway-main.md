@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-20T12:25:00Z'
+updated_date: '2026-11-20T13:06:00Z'
 labels:
   - s
   - clio-main
@@ -1302,4 +1302,11 @@ PK-349:W1305 (2026-11-20 14:20, dima): propose how to fixup your memory on this 
 PK-349:W1306 (2026-11-20 14:20, dima): let's do quick shape idea - propose top7 for emojis.
 PK-349:W1307 (2026-11-20 14:20, dima): then print stray and crow measures again, with new shape
 PK-349:W1308 (2026-11-20 14:20, dima): i'm still overloaded, slow down pls. one at a time
+
+15:06 PK-349:W1309 (2026-11-20 14:31, dima): A lighter option, if the pairs feel clunky: lead with the colour only and sign the number, e.g. 🟢 rework +14 pts, 🔴 crow precision −13 pts.
+PK-349:W1310 (2026-11-20 14:31, dima): The colour says good or bad, the sign says which way.
+PK-349:W1311 (2026-11-20 14:31, dima): Try this.
+PK-349:W1312 (2026-11-20 14:35, dima): stray - we still have another measure planned, now testing another thing - sonnet on high vs medium? ❓
+PK-349:W1313 (2026-11-20 14:35, dima): Also — I asked codie to solve
+15:06 homes: W1309–W1311 landed as the gain-lines rule (rules/fleet-output-format.md § shapes, 14:43); W1312 answered: the stray's Sonnet 5.5 high vs medium trial reads 26 Nov, verdict 3 Dec (docs/test-drive/stray-lane.md); W1313 cut off mid-sentence in the raw, its object asked at the next siesta card
 <!-- SECTION:NOTES:END -->
