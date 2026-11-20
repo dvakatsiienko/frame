@@ -14,7 +14,6 @@ import {
     createSerial,
     createTurns,
     hotOf,
-    hotPressLine,
     hotPresses,
     inListOrder,
     linkOf,
@@ -37,7 +36,6 @@ import {
     ticketUrl,
     unbold,
     waitOf,
-    withBandPress,
     withPending,
     withPress,
     withoutPress,
@@ -463,29 +461,6 @@ describe('an ask id names its thread (crow, 15:03: o8 lived in main and in wing 
 describe('a keep-hot button on each deck row (dima, 23:16)', () => {
     const now = new Date(2026, 10, 10, 23, 0).getTime();
     const since = new Date(2026, 10, 10, 22, 20).getTime();
-
-    test('a press names its thread, the line the stash reads for that sid', () => {
-        expect(hotPressLine('abc', true, now)).toEqual({
-            at: now,
-            button: 'hot',
-            on: true,
-            sid: 'abc',
-        });
-    });
-
-    test('the press joins the band file after its lines, a day-old or broken line trimmed', () => {
-        const day = 24 * 60 * 60 * 1000;
-        const kept = JSON.stringify({ at: now - 5, button: 'afk', on: true });
-        const old = JSON.stringify({
-            at: now - day - 1,
-            button: 'afk',
-            on: true,
-        });
-        const line = hotPressLine('abc', false, now);
-        expect(withBandPress(`${old}\n{broken\n${kept}\n`, line, now)).toBe(
-            `${kept}\n${JSON.stringify(line)}\n`,
-        );
-    });
 
     test('a row reads hot from its state file, its tooltip the time it went on', () => {
         expect(hotOf({ since }, undefined, now)).toEqual({

@@ -1,6 +1,8 @@
 // the thread's band in the quill, as pure steps: the facts the deck's mod publishes to herdr's shared state, one thread's
 // share of them, and whether they are too old to show as live
 
+import { PENDING_MS } from './band-press.js';
+
 export const THREADS_KEY = 'x-herdr-deck.threads';
 // the deck publishes every 60 s at least: two beats missed, plus slack for a slow read, is a deck that stopped
 export const STALE_MS = 2 * 60 * 1000 + 15 * 1000;
@@ -104,50 +106,11 @@ export function overrideOf(store, now) {
 // `fleet.json` beside them; the band writes its presses to PRESS_FILE, which only it may write (the guard's
 // `press-write` rule) and the stash reads at its 4 s poll (FRM-568)
 export const STATE_DIR = '.claude/shelf/herdr-state';
-export const PRESS_DIR = '.claude/shelf/band-presses';
-export const PRESS_FILE = `${PRESS_DIR}/band.jsonl`;
-const DAY_MS = 24 * 60 * 60 * 1000;
-// a press the stash has not answered by then gives the button its state back: a hot press reaches the thread's state
-// file at the stash's third 4 s poll, about 16 s at worst
-export const PENDING_MS = 20 * 1000;
 
-/** @typedef {'wind' | 'hot' | 'waker' | 'afk' | 'override'} PressKey */
-/** @typedef {{ at: number, button: PressKey, on: boolean, sid?: string }} PressLine */
+/** @typedef {import('./band-press.js').PressKey} PressKey */
 /** @typedef {{ hot: { since: number } | null, wind: string | null }} ThreadState */
 /** @typedef {Partial<Record<PressKey, { at: number, on: boolean }>>} Pending */
 /** @typedef {{ afk: { at: number | null, on: boolean }, waker: { at: number | null, on: boolean } }} FleetState */
-
-/**
- * one press: wind and hot name the thread they act on, waker and AFK are fleet-wide; `on` is the state it sets, never
- * a flip
- * @param {PressKey} button
- * @param {boolean} on
- * @param {string | null} sid
- * @param {number} now
- * @returns {PressLine}
- */
-export function pressLine(button, on, sid, now) {
-    return button === 'wind' || button === 'hot'
-        ? { at: now, button, on, sid: /** @type {string} */ (sid) }
-        : { at: now, button, on };
-}
-
-/**
- * the press file after one more press: lines older than a day go (herdr alone trims it), a broken line too
- * @param {string | null} text
- * @param {PressLine} line
- * @param {number} now
- */
-export function withPress(text, line, now) {
-    const kept = (text ?? '').split('\n').filter((l) => {
-        try {
-            return JSON.parse(l).at > now - DAY_MS;
-        } catch {
-            return false;
-        }
-    });
-    return [...kept, JSON.stringify(line)].map((l) => `${l}\n`).join('');
-}
 
 /** @param {number | null | undefined} ms */
 const clock = (ms) =>

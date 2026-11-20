@@ -16,6 +16,12 @@ import {
     writeTextFile,
 } from 'herdr';
 
+import {
+    PRESS_DIR,
+    PRESS_FILE,
+    pressLine,
+    withBandPress,
+} from './band-press.js';
 import { deckParts } from './deck-parts.js';
 import { focusBorder } from './focus-ring.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
@@ -24,8 +30,6 @@ import { SANS, SIZE, bar, clockOf, leadingRoom, line, prose } from './look.js';
 import {
     HOT_ASK,
     ORDER_KEY,
-    PRESS_DIR,
-    PRESS_FILE,
     THREADS_BEAT_MS,
     THREADS_KEY,
     askLabel,
@@ -37,7 +41,6 @@ import {
     createTurns,
     dropPress,
     freshHotAsk,
-    hotPressLine,
     keep,
     kept,
     linkOf,
@@ -55,7 +58,6 @@ import {
     tickAllTakes,
     tickAllThread,
     ticketUrl,
-    withBandPress,
     withPending,
 } from './orbit.js';
 import { SENT_MS, next, pressState, untickDoor } from './press.js';
@@ -344,7 +346,7 @@ export default class Deck extends View {
     /** @param {Context} cx @param {string} sid @param {boolean} on */
     pressHot(cx, sid, on) {
         const at = Date.now();
-        const line = hotPressLine(sid, on, at);
+        const line = pressLine('hot', on, sid, at);
         cx.spawn(async (cx) => {
             try {
                 const made = await exec('mkdir', [

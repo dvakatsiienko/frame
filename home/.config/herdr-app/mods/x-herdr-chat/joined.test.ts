@@ -1,7 +1,3 @@
-/// <reference types="node" />
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, test } from 'vitest';
 
 import { rejoin } from './joined.js';
@@ -26,17 +22,5 @@ describe('a name cc stored with its joiner as a space draws whole (dima, 16:00: 
             type: 'user',
         };
         expect(relayIn(entry)?.from).toBe('🐦‍⬛ crow');
-    });
-});
-
-// herdr loads no module from outside a mod's own folder, so each mod that draws a name carries the same file
-describe('one joiner rule in every mod that draws a name', () => {
-    test('the copies are the same file', () => {
-        const here = dirname(fileURLToPath(import.meta.url));
-        const mine = readFileSync(join(here, 'joined.js'), 'utf8');
-        for (const mod of ['x-herdr-agents', 'x-herdr-antenna', 'x-herdr-deck'])
-            expect(
-                readFileSync(join(here, '..', mod, 'joined.js'), 'utf8'),
-            ).toBe(mine);
     });
 });

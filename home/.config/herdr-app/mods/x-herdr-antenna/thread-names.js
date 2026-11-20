@@ -1,6 +1,6 @@
 // a thread's name and his order, published for the tab bar and the deck: the Claude Code session name of the terminal's
 // pid, from x's thread store, kept per address under NAMES_KEY; the order as pids under ORDER_KEY. x-herdr-agents keeps
-// its own copy until it leaves the tree (FRM-618: a tested mod file cannot import a shared one)
+// its own older reader until it leaves the tree
 
 import { readdir } from 'fs/promises';
 import { hc, home, readTextFile, setShared, shared } from 'herdr';

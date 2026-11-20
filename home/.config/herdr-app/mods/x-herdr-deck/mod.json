@@ -1,5 +1,11 @@
 {
     "place": "none",
-    "shared": ["focus-ring.js", "keypress.js", "tab-loop.js"],
+    "shared": [
+        "band-press.js",
+        "focus-ring.js",
+        "joined.js",
+        "keypress.js",
+        "tab-loop.js"
+    ],
     "title": "x-herdr deck"
 }

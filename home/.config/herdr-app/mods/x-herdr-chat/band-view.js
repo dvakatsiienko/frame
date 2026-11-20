@@ -24,8 +24,6 @@ import {
     AUTO_WIND_DOOR,
     DECK_BLOCK,
     OVERRIDE_STORE,
-    PRESS_DIR,
-    PRESS_FILE,
     THREADS_KEY,
     autoWind,
     autoWindAfterRead,
@@ -36,13 +34,17 @@ import {
     meterTip,
     overrideOf,
     pendingOf,
-    pressLine,
     pressesWaiting,
     stateLine,
     stateParts,
     turnClock,
-    withPress,
 } from './band.js';
+import {
+    PRESS_DIR,
+    PRESS_FILE,
+    pressLine,
+    withBandPress,
+} from './band-press.js';
 import { settingsOverlay } from './chat-asks.js';
 
 /** @typedef {import('./chat-types.js').Color} Color */
@@ -532,7 +534,7 @@ export function createBand({ shownAddress, pid, turnStart, column }) {
             flipAutoWind(btn, cx);
             return;
         }
-        const key = /** @type {import('./band.js').PressKey} */ (btn.key);
+        const key = /** @type {import('./band-press.js').PressKey} */ (btn.key);
         if (!['wind', 'hot', 'waker', 'afk', 'override'].includes(key)) return;
         const sid = bandThread?.sid ?? null;
         if ((key === 'wind' || key === 'hot') && !sid) return;
@@ -602,7 +604,7 @@ export function createBand({ shownAddress, pid, turnStart, column }) {
 /**
  * one press appended to the band press file with herdr's compare-and-swap write: a file changed since the read is read
  * again, so no other press is lost
- * @param {import('./band.js').PressLine} line
+ * @param {import('./band-press.js').PressLine} line
  */
 async function appendPress(line) {
     const made = await exec('mkdir', ['-p', `${home()}/${PRESS_DIR}`]);
@@ -613,7 +615,7 @@ async function appendPress(line) {
         try {
             return await writeTextFile(
                 path,
-                withPress(text, line, line.at),
+                withBandPress(text, line, line.at),
                 text,
             );
         } catch (error) {
