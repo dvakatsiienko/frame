@@ -9,6 +9,7 @@ import {
     autoWindOf,
     bandButtons,
     bandOf,
+    bandStatus,
     meterCells,
     meterTip,
     overrideOf,
@@ -44,6 +45,28 @@ describe('the band reads its own thread from the deck', () => {
         const empty = { context: null, isStale: false, wait: null, week: null };
         expect(bandOf(undefined, 7, 1000)).toEqual(empty);
         expect(bandOf(deck, null, 1000)).toEqual(empty);
+    });
+
+    // FRM-618 slice D: working comes from the thread's state file, as antenna's dot does; herdr's own status only
+    // for a permission block, which no file sees
+    test("a thread that only waits on a watch reads idle, whatever herdr's status says", () => {
+        const waiting = { at: 1000, threads: { '7': { state: 'waiting' } } };
+        expect(bandStatus(waiting, 7, 'working')).toBe('idle');
+    });
+
+    test('a running turn in the state file reads working', () => {
+        const working = { at: 1000, threads: { '7': { state: 'working' } } };
+        expect(bandStatus(working, 7, 'idle')).toBe('working');
+    });
+
+    test("a permission block reads blocked from herdr's status", () => {
+        const working = { at: 1000, threads: { '7': { state: 'working' } } };
+        expect(bandStatus(working, 7, 'blocked')).toBe('blocked');
+    });
+
+    test("no state file for the thread falls back to herdr's status", () => {
+        expect(bandStatus(deck, 7, 'working')).toBe('working');
+        expect(bandStatus(undefined, 7, 'idle')).toBe('idle');
     });
 
     test('facts the deck stopped publishing past two beats read stale', () => {

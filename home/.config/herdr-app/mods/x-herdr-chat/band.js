@@ -34,6 +34,22 @@ export function bandOf(value, pid, now) {
     };
 }
 
+/**
+ * the bar's status for the chat's thread: working or idle from its state file as the deck publishes it, so a thread
+ * that only waits shows no spinner; herdr's status for a block, and while no file names the thread
+ * @param {unknown} value what `shared(THREADS_KEY)` holds @param {number | null | undefined} pid
+ * @param {string} herdrStatus the thread's status in herdr's `agents()` @returns {string}
+ */
+export function bandStatus(value, pid, herdrStatus) {
+    if (herdrStatus === 'blocked') return herdrStatus;
+    const threads = /** @type {{ threads?: Record<string, any> } | null} */ (
+        value
+    )?.threads;
+    const state = pid == null ? undefined : threads?.[String(pid)]?.state;
+    if (state === 'working') return 'working';
+    return state === 'waiting' || state === 'idle' ? 'idle' : herdrStatus;
+}
+
 // the state card's line over the quill (PK-384): what the turn does, or, idle, the wait row it replaced
 /** @param {{ isWorking: boolean, isBlocked?: boolean, isStuck?: boolean, msg?: string | null, wait?: string | null }} at @returns {string} */
 export function stateLine({ isWorking, isBlocked, isStuck, msg, wait }) {

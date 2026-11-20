@@ -30,6 +30,7 @@ import {
     autoWindFlipped,
     bandButtons,
     bandOf,
+    bandStatus,
     meterCells,
     meterTip,
     overrideOf,
@@ -121,9 +122,12 @@ export function createBand({ shownAddress, pid, turnStart, column }) {
      * @param {string | null} wait what the idle thread waits on, as the deck read it
      */
     function barNow(now, wait) {
-        const status =
+        const status = bandStatus(
+            shared(THREADS_KEY),
+            pid(),
             agents().find((agent) => agent.address === shownAddress())
-                ?.status ?? 'idle';
+                ?.status ?? 'idle',
+        );
         const isWorking = status === 'working';
         const turnAt = turnStart();
         const parts = stateParts({
