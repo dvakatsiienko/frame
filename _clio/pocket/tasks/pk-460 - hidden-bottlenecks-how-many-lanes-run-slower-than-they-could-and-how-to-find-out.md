@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-20T12:38:00Z'
-updated_date: '2026-11-20T12:38:00Z'
+updated_date: '2026-11-20T12:45:00Z'
 labels:
   - s
 dependencies: []
@@ -28,4 +28,6 @@ PK-349:W1290 (2026-11-20 14:20, dima): My question in general: how many tickets 
 PK-349:W1291 (2026-11-20 14:20, dima): The thing is I only picked, inside Moscow (?), the pace only with this big ticket because I really spotted that it is going for too long.
 PK-349:W1292 (2026-11-20 14:20, dima): I worry that a lot of other tickets could actually be done at a much slower pace than they could be done instead if a more optimal approach is chosen. I worry about hidden bottlenecks.
 PK-349:W1293 (2026-11-20 14:20, dima): How do I think about how severe this potential issue could be and what we can do to find out if my suspiciousness is true? ❓
+
+14:45 PK-460:W5 (2026-11-20 14:45, dima) yes, I want to know how to prevent invisible bottlenecks for lanes, because they are very bad and dangerous. a lane can do something basic for half a day and I would trust its pace and think it is normal, while really it does something useless, and the bottleneck could be solved in 20 minutes. the big register.tsx is proof of such a case; that's why I'm raising it now.
 <!-- SECTION:NOTES:END -->
