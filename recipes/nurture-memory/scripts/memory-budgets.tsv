@@ -35,6 +35,7 @@ _clio/plugin-clio/skills/checkpoint/SKILL.md	8400	seed 2026-10-16, today's size 
 _clio/plugin-clio/skills/dima-intervenes/SKILL.md	5200	2026-10-21: the fix mode joined (PK-173, dima's wish), 4.5 KB + 15 %
 _clio/plugin-clio/skills/evergreen/references/merge-round.md	3700	2026-11-18: +500, the sweep, the majors and the same-day red fix (dima 19:14); seed 2026-10-16, its size + 15 %
 _clio/plugin-clio/skills/evergreen/references/read.md	11800	2026-11-18: +800, the delta-first gather and the researcher areas (dima 19:33); seed 2026-10-19, its size + 15 %; raised 2026-10-28 twice for six new lanes (os, pnpm -g, outdated + dashboard age; go, uv, toolchain), regroomed the same day into one lane list
+_clio/plugin-clio/skills/evergreen/references/the-want.md	3500	2026-11-18: seed, its size + 15 %: dima's evergreen wishes, one home (19:26: «tired to repeat all of my wishes»)
 _clio/plugin-clio/skills/evergreen/references/weekly-lanes.md	1800	seed 2026-10-16, its size + 15 %
 _clio/plugin-clio/skills/evergreen/SKILL.md	5300	2026-11-18: +400, the upgrade-first day flow and the delta script (dima 19:33, 20:01); 2026-11-12: groomed back to its size + 15 % (11-10 halt); +150 2026-11-04: the signing check after brew; seed 2026-10-16, today's size + 15 %
 _clio/plugin-clio/skills/flawlog/SKILL.md	4400	seed 2026-10-16, today's size + 15 %
@@ -81,6 +82,7 @@ home/.claude/agents/scout.md	2300	2026-10-19: the scout shaping (dima's ticks o2
 home/.claude/agents/wisphunter.md	4400	seed 2026-10-29, its size + 15 %
 home/.claude/CLAUDE.md	16100	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/mods/AGENTS.md	12100	seed 2026-10-16, today's size + 15 %; 2026-11-05 +900 B: the proof doors (a live proof's own store, mods:probe rows, push by name, FRM-470); 2026-11-06 +500 B: the overlay's gates, the split job, the parked line (FRM-473); 2026-11-10 +100 B: dima's no-lockout rule for every guard (FRM-544:W10)
+home/.claude/plugin-x/mods/x-mod-stash/AGENTS.md	5500	seed 2026-11-20, its size + 15 %
 home/.claude/plugin-x/skills/app-author-ftr/SKILL.md	8500	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/app-setup-essentials/SKILL.md	4200	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/art-kit/SKILL.md	1800	seed 2026-10-16, today's size + 15 %
@@ -174,4 +176,3 @@ schedule/AGENTS.md	2700	seed 2026-10-16, today's size + 15 %
 speak/AGENTS.md	3100	seed 2026-10-16, today's size + 15 %
 x/AGENTS.md	10800	seed 2026-10-16, today's size + 15 %; 2026-10-23 +300 B: the cli lanes' verify-recipe line (halt flush o197); 2026-10-30 +200 B: the git archive adequacy line (FRM-467 sixth sense retro); 2026-11-05 +200 B: lane commit's timeout retry (FRM-470); 2026-11-06 +300 B: lane commit --dry (FRM-473); 2026-11-13 +200 B: the main checkout runs the pushed x, X_DEV=1 for one's own (FRM-624, the fleet-wired line)
 x/go/AGENTS.md	6300	2026-11-10: +300 the by-hand go run takes the vm doors, never a bare go test (dima o103, FRM-557's rider), on a file 106 B over already; 2026-11-07 raised: dima's PK-328:W30, the test cost gotchas; seed 2026-10-16
-_clio/plugin-clio/skills/evergreen/references/the-want.md	3500	2026-11-18: seed, its size + 15 %: dima's evergreen wishes, one home (19:26: «tired to repeat all of my wishes»)
