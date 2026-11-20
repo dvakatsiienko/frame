@@ -9,6 +9,7 @@ import type {
     StashLane,
     StashPlan,
 } from '../types/stash.d.ts';
+import { BAND_READ, BAND_REFUSED, takeBandPresses } from './band-presses.ts';
 import {
     askBox,
     carried,
@@ -113,8 +114,6 @@ import {
 import {
     CHANGED_MARK,
     ORBIT_TOOL,
-    PRESS_DIR,
-    bandPressLines,
     isAllAsksMarkable,
     isFresh,
     joinRowsText,
@@ -157,11 +156,7 @@ import {
     orbitCall,
     ticketNote,
 } from './orbit-tool.ts';
-import {
-    setOverrideOn,
-    takeOverridePress,
-    writeOverrideOff,
-} from './override.ts';
+import { setOverrideOn, writeOverrideOff } from './override.ts';
 import { PACE_KEYS, PACE_SETTINGS, paceOf } from './pace.ts';
 import { relayCrowWake, wakeForParkedLanes } from './parked-wake.ts';
 import {
@@ -301,14 +296,7 @@ import {
     viewDoors,
     viewOf,
 } from './view.ts';
-import {
-    COMPACTING,
-    WIND,
-    flipWind,
-    setWind,
-    windAfterPress,
-    windOf,
-} from './wind.ts';
+import { COMPACTING, WIND, flipWind, windAfterPress, windOf } from './wind.ts';
 import {
     COMPACT_SETTLE_MS,
     FILL,
@@ -637,65 +625,6 @@ async function countWords($: EngineInterface, hits: Record<string, number>) {
     const oldest = `${WORDS}${day(at - WORDS_DAYS * 86_400_000)}`;
     for (const old of await $.store.keys())
         if (old.startsWith(WORDS) && old < oldest) await $.store.delete(old);
-}
-
-// how far this thread read the band presses: the `at` of the newest line taken, from the thread's start on
-const BAND_READ = 'band-read:';
-// `band-refused:<sid>`: the times of lines this thread saw dated ahead of now
-const BAND_REFUSED = 'band-refused:';
-const BAND_REFUSED_MS = 24 * 60 * 60 * 1000;
-// herdr's band presses reach this thread as its own band's would: wind and hot only for their sid, ⏰ and 💨 only when
-// newer than the state they set, so the latest press wins whichever band it came from (FRM-568 slice 5)
-async function takeBandPresses($: EngineInterface) {
-    const sid = await currentId($);
-    const home = await $.env.get('HOME').catch(() => undefined);
-    if (!sid || !home) return;
-    const now = await $.clock.now();
-    const read = await $.store.get(BAND_READ + sid).catch(() => undefined);
-    const after =
-        typeof read === 'number'
-            ? read
-            : ((await registry($).catch(() => []))
-                  .filter((r) => r.base.sid === sid)
-                  .map((r) => r.startedAt)
-                  .find((at) => typeof at === 'number') ?? now);
-    const text = await $.fs
-        .read(`${home}/.claude/shelf/${PRESS_DIR}/band.jsonl`)
-        .catch(() => '');
-    // a line dated ahead of now is refused for good, never taken once its time passes: its time is kept a day
-    const refusedKey = BAND_REFUSED + sid;
-    const kept = ((await $.store.get(refusedKey).catch(() => undefined)) ??
-        []) as number[];
-    const ahead = bandPressLines(text, after, Number.POSITIVE_INFINITY)
-        .map((p) => p.at)
-        .filter((at) => at > now);
-    const refused = [...new Set([...kept, ...ahead])].filter(
-        (at) => at > now - BAND_REFUSED_MS,
-    );
-    if (refused.join() !== kept.join()) await $.store.set(refusedKey, refused);
-    const presses = bandPressLines(text, after, now).filter(
-        (p) => !refused.includes(p.at),
-    );
-    // his press from herdr is an event: the bookkeeping jobs tick at 4 s again
-    if (presses.length) await markActive($);
-    for (const p of presses) {
-        if (p.button === 'wind' && p.sid === sid) await setWind($, sid, p.on);
-        if (p.button === 'hot' && p.sid === sid) {
-            await setHot($, p.on);
-            await armHot($, viewDoors($));
-        }
-        if (p.button !== 'waker' && p.button !== 'afk') continue;
-        const key = p.button === 'waker' ? WAKER_KEY : AFK_KEY;
-        const stored = (await $.store.get(key)) as { at?: number } | undefined;
-        if (typeof stored?.at === 'number' && stored.at >= p.at) continue;
-        if (p.button === 'waker') await setWaker($, p.on, p.at);
-        else await setAfk($, p.on, p.at);
-    }
-    const override = presses.findLast((p) => p.button === 'override');
-    if (override) await takeOverridePress($, home, override);
-    const last = Math.max(after, ...presses.map((p) => p.at));
-    if (last !== read) await $.store.set(BAND_READ + sid, last);
-    if (presses.length) await load($);
 }
 
 async function pressWind($: EngineInterface, sid: string) {
@@ -1059,7 +988,9 @@ export const register: Register = (on) => {
                         () => undefined,
                     );
                     await wakeForMarks($, viewDoors($)).catch(() => undefined);
-                    await takeBandPresses($).catch(() => undefined);
+                    await takeBandPresses($, viewDoors($)).catch(
+                        () => undefined,
+                    );
                     // pollShelf paces itself every third tick; a gate here would slow it twice over
                     await pollShelf($);
                     await quietIdle($).catch(() => undefined);
