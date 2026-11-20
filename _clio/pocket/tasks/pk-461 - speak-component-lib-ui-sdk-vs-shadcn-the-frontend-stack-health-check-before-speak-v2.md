@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-20T17:11:00Z'
-updated_date: '2026-11-20T17:17:00Z'
+updated_date: '2026-11-20T17:20:00Z'
 labels:
   - s
   - clio-wing-1
@@ -33,4 +33,6 @@ PK-461:W9 (2026-11-20 19:10, dima): a health check of our frontend stack before 
 PK-461:W10 (2026-11-20 19:10, dima): do not parallelize: each item is approached carefully and granularly; each is part of my key tools. i use read-aloud the whole day: ~95 % of what i read from the display, your replies included, is read aloud to me.
 PK-461:W11 (2026-11-20 19:10, dima): research on any topic can bring anything, even unexpected stuff; grill with me thoughtfully and make sure the research data is processed thoroughly and carefully.
 PK-461:W12 (2026-11-20 19:15, dima): the research must actually search against shadcn itself overall: is it still a healthy, solid, top-tier pick for ui development, or what is, if not? ❓
+
+19:20 the source note was renamed by dima: «_hq/dima's stash.md» (was «wing plan (in progress).md»)
 <!-- SECTION:NOTES:END -->
