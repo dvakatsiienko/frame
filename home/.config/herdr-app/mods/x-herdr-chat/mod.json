@@ -5,6 +5,6 @@
         "width": 900
     },
     "place": "none",
-    "shared": ["chat-asks.js", "focus-probe.js", "keypress.js"],
+    "shared": ["chat-asks.js", "focus-ring.js", "keypress.js", "tab-loop.js"],
     "title": "Chat"
 }

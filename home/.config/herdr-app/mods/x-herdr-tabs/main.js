@@ -113,7 +113,6 @@ export default class Tabs extends View {
             axis: 'x',
             focus: () => this.tabKeys,
             gap: 3,
-            name: 'tabs',
             ...tabDrops,
         });
         // the first tab drawn, the bar's width, and the active tab seen last: one swipe moves `first` by one tab

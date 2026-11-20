@@ -15,7 +15,7 @@ import {
     writeTextFile,
 } from 'herdr';
 
-import { focusProbe } from './focus-probe.js';
+import { focusBorder } from './focus-ring.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
 import { lanesShown, stepMark } from './lanes.js';
 import { SANS, SIZE, bar, clockOf, leadingRoom, line, prose } from './look.js';
@@ -72,6 +72,7 @@ import {
     sessions,
     states,
 } from './shelf.js';
+import { TAB_GO, loopOf, nextStop, tabStopsKey } from './tab-loop.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('gpui-kit').AsyncContext} AsyncContext */
@@ -87,6 +88,9 @@ const KEY_NOTE_MS = 3000;
 // Enter and ⌘Enter in a steer box are the deck's own actions, ahead of the box's submit (FRM-648 step 111)
 const STEER_ENTER = 'x_herdr_deck_steer_enter';
 const STEER_CMD_ENTER = 'x_herdr_deck_steer_cmd_enter';
+// Tab and shift-Tab in a steer box loop the quill and orbit, never herdr's hidden stops (FRM-620 slice 5c)
+const STEER_TAB = 'x_herdr_deck_steer_tab';
+const STEER_BACK = 'x_herdr_deck_steer_back';
 // how long a press given up by time says so: long enough to be seen when he looks back at the board
 const GIVEN_UP_NOTE_MS = 30 * 1000;
 
@@ -121,6 +125,8 @@ export default class Deck extends View {
     /** each steer box's Tab place, and the one holding the keyboard @type {Map<string, number>} */
     tabAt = new Map();
     steerFocus = /** @type {string | null} */ (null);
+    /** the last Tab-loop ask acted on, by its time */
+    tabGo = 0;
     /** @param {unknown} _props @param {Context} cx */
     init(_props, cx) {
         cx.bind_keys([
@@ -134,7 +140,19 @@ export default class Deck extends View {
                 context: 'XDeckSteer > Input',
                 keystroke: 'cmd-enter',
             },
+            {
+                action: STEER_TAB,
+                context: 'XDeckSteer > Input',
+                keystroke: 'tab',
+            },
+            {
+                action: STEER_BACK,
+                context: 'XDeckSteer > Input',
+                keystroke: 'shift-tab',
+            },
         ]);
+        this.tabGo =
+            /** @type {{ at?: number } | null} */ (shared(TAB_GO))?.at ?? 0;
         // the thread strip is gone (dima, 20:12: «it eats UI»), its block hidden; a `view: seat` copy herdr still keeps
         // alive draws nothing and reads nothing, so it never runs a second deck. «seat» is the layout's own value in
         // layouts/itrout.json: renaming it means a layout edit, never done while a thread holds focus
@@ -656,6 +674,12 @@ export default class Deck extends View {
         cx.notify();
     }
 
+    /** asks the Tab loop for the stop after `from`; its owner focuses it @param {string} from @param {boolean} isBack */
+    tabTo(from, isBack) {
+        const to = nextStop(loopOf(shared), from, isBack);
+        setShared(TAB_GO, { at: Date.now(), to });
+    }
+
     /** @param {string} key */
     makeSteerBox(key) {
         try {
@@ -885,9 +909,11 @@ export default class Deck extends View {
                                         .rounded(6)
                                         .border_1()
                                         .border_color(
-                                            this.steerFocus === key
-                                                ? t.accent
-                                                : t.border,
+                                            focusBorder(
+                                                this.steerFocus === key,
+                                                t,
+                                                t.border,
+                                            ),
                                         )
                                         .bg(t.surface)
                                         .when(isLocked, (el) => el.opacity(0.6))
@@ -898,18 +924,17 @@ export default class Deck extends View {
                                             cx.stop_propagation(),
                                         )
                                         .key_context('XDeckSteer')
-                                        .when(true, (el) =>
-                                            focusProbe(
-                                                el,
-                                                `orbit · steer ${ask.id}`,
-                                                this.steerFocus === key,
-                                            ),
-                                        )
                                         .on_action(STEER_ENTER, (_e, cx) =>
                                             this.steerKeyAct(cx, key, false),
                                         )
                                         .on_action(STEER_CMD_ENTER, (_e, cx) =>
                                             this.steerKeyAct(cx, key, true),
+                                        )
+                                        .on_action(STEER_TAB, () =>
+                                            this.tabTo(`steer-${key}`, false),
+                                        )
+                                        .on_action(STEER_BACK, () =>
+                                            this.tabTo(`steer-${key}`, true),
                                         )
                                         // a let-go key ends a press, so the next Enter acts however soon; ⌘ let go
                                         // ends a cmd-enter, whose Enter key-up macOS never sends
@@ -1104,8 +1129,8 @@ export default class Deck extends View {
     }
 
     // look and 🧪 cards from every thread lead (or close, by his setting), then each thread in the agents list's order
-    /** @param {Theme} t */
-    orbit(t) {
+    /** @param {Theme} t @param {Context} cx */
+    orbit(t, cx) {
         const sections = orbitSections(
             this.rows,
             /** @type {number[] | null} */ (shared(ORDER_KEY)),
@@ -1114,6 +1139,14 @@ export default class Deck extends View {
         this.tabAt = new Map(
             orbitTabOrder(sections).map((id, i) => [id, i + 1]),
         );
+        const stops = [...this.tabAt.keys()];
+        if (
+            JSON.stringify(shared(tabStopsKey('x-herdr-deck'))) !==
+            JSON.stringify(stops)
+        )
+            cx.timer.after(0, () =>
+                setShared(tabStopsKey('x-herdr-deck'), stops),
+            );
         return sections.map((section) => {
             if (section.kind === 'pinned')
                 return v_flex()
@@ -1335,6 +1368,16 @@ export default class Deck extends View {
             if (asker && tickAsk && Date.now() - tickAsk < 2000)
                 cx.spawn((cx) => this.pressAll(cx, asker));
         }
+        // the Tab loop asks for one of the steer boxes; an ask made before this load never fires
+        const go = /** @type {{ at?: number, to?: string } | null} */ (
+            shared(TAB_GO)
+        );
+        if ((go?.at ?? 0) > this.tabGo) {
+            this.tabGo = go?.at ?? 0;
+            const box = this.steers.get(String(go?.to).slice('steer-'.length));
+            if (go?.to?.startsWith('steer-') && box)
+                cx.timer.after(0, () => box.focus());
+        }
         // his order from the agents list, read at every draw, so a drag there moves the deck at once; the read's own
         // order (blocked, working, then by name) stays for a thread the list does not show
         const rows = inListOrder(
@@ -1376,7 +1419,7 @@ export default class Deck extends View {
             .when(asks > 0, (el) =>
                 el
                     .child(header(`🪐 orbit: ${count(asks, 'ask', 'asks')}`))
-                    .children(this.orbit(t))
+                    .children(this.orbit(t, cx))
                     .when(Boolean(this.pressError), (el2) =>
                         el2.child(
                             div()

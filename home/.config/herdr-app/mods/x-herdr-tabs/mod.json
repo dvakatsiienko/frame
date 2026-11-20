@@ -4,6 +4,6 @@
         "version": "0.1.9"
     },
     "place": "none",
-    "shared": ["drag-view.js", "drag.js", "focus-probe.js", "tab-drops.js"],
+    "shared": ["drag-view.js", "drag.js", "tab-drops.js"],
     "title": "Tabs"
 }

@@ -41,6 +41,7 @@ import { readSettings, settingsDir } from './settings-io.js';
 import { createSettingsWindow } from './settings-window.js';
 import { saveSquareThumb } from './shots.js';
 import { asksActedOn, isShownIn, shownThread } from './shown.js';
+import { TAB_GO } from './tab-loop.js';
 import { START_ROW, createThreadFeed } from './thread-feed.js';
 
 /** @typedef {import('./chat-types.js').Color} Color */
@@ -86,6 +87,8 @@ export default class Chat extends View {
     heights = createHeights();
     /** ⌘K's last ask (the status bar takes the key and writes the time) @type {unknown} */
     quillAsk = null;
+    /** the last Tab-loop ask acted on, by its time; one before this load never fires */
+    tabGo = /** @type {{ at?: number } | null} */ (shared(TAB_GO))?.at ?? 0;
     /** ⌘F's last ask, pressed anywhere in the window (the status bar takes the key and writes the time) @type {unknown} */
     findAsk = null;
     /** Esc's last ask from outside the chat (the status bar takes the key and writes the time) @type {unknown} */
@@ -340,6 +343,15 @@ export default class Chat extends View {
             );
         if (acts.isFind && !this.pictures.isOpen())
             _cx.timer.after(0, (later) => this.findBar.open(later));
+        // the Tab loop asks for the quill; an ask made before this load never fires (FRM-620 slice 5c)
+        const go = /** @type {{ at?: number, to?: string } | null} */ (
+            shared(TAB_GO)
+        );
+        if ((go?.at ?? 0) > this.tabGo) {
+            this.tabGo = go?.at ?? 0;
+            if (go?.to === 'quill' && isShown)
+                _cx.timer.after(0, () => this.quill.focus());
+        }
         if (acts.isFocus && !this.pictures.isOpen())
             _cx.timer.after(50, () => {
                 if (!this.pickers.isOpen()) this.quill.focus();

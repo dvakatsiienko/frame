@@ -132,7 +132,6 @@ export default class TabPills extends View {
             axis: 'x',
             focus: () => this.tabKeys,
             gap: 3,
-            name: 'tab pills',
             ...tabDrops,
         });
         /** @type {string | null} the pill under the pointer: its × shows */

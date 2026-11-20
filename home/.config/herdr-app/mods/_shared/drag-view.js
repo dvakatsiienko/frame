@@ -6,7 +6,6 @@ import { div } from 'gpui-kit';
 import { focused, run } from 'herdr';
 
 import { createDrag, placeAt } from './drag.js';
-import { focusProbe } from './focus-probe.js';
 
 const SETTLE_MS = 180;
 const SLIDE_MS = 120;
@@ -25,16 +24,9 @@ const FALLBACK_SIZE = 30;
 /**
  * @template T
  * @param {{ axis: 'x' | 'y', gap?: number, onMove: (item: T, from: number, to: number) => void, onClick: (item: T) => void,
- *   focus: () => import('gpui-kit').FocusHandle, name?: string }} options
+ *   focus: () => import('gpui-kit').FocusHandle }} options
  */
-export function createListDrag({
-    axis,
-    focus,
-    gap = 0,
-    name = 'list',
-    onClick,
-    onMove,
-}) {
+export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
     /** @type {ReturnType<typeof createDrag<Held<T>>>} */
     const drag = createDrag({
         onClick: (/** @type {Held<T>} */ held) => onClick(held.item),
@@ -193,7 +185,7 @@ export function createListDrag({
          * @template {import('gpui-kit').Element} E @param {E} el @returns {E}
          */
         zone(el) {
-            return focusProbe(el, name, focus().is_focused())
+            return el
                 .track_focus(focus())
                 .on_key_down((e, cx) => {
                     if (e.key === 'escape') cancel(cx);

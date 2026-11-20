@@ -4,11 +4,11 @@
 
 import { Textarea, TextareaState, h_flex, v_flex } from 'gpui-base';
 import { div, image } from 'gpui-kit';
-import { appHome } from 'herdr';
+import { appHome, setShared, shared } from 'herdr';
 
 import { fileName, isImagePath, pickFiles } from './attach.js';
 import { createAttachments } from './attachments.js';
-import { focusProbe } from './focus-probe.js';
+import { focusBorder } from './focus-ring.js';
 import { ICONS } from './icons.js';
 import { enterHoldStep } from './joins.js';
 import { createKeyPress } from './keypress.js';
@@ -23,11 +23,15 @@ import {
     saveShots,
 } from './shots.js';
 import { createSlashMenu, listedSkills, menuNames } from './slash.js';
+import { TAB_GO, loopOf, nextStop, tabStopsKey } from './tab-loop.js';
 
 /** @typedef {import('./chat-types.js').Context} Context */
 /** @typedef {import('./chat-types.js').Theme} Theme */
 
 export const QUILL_ENTER = 'x_herdr_chat_quill_enter';
+// Tab and shift-Tab in the quill go to orbit's first and last steer box, never herdr's hidden stops (FRM-620 slice 5c)
+const QUILL_TAB = 'x_herdr_chat_quill_tab';
+const QUILL_BACK = 'x_herdr_chat_quill_back';
 const SEND_SIZE = 28;
 // a picture waiting over the quill, and how long a paste's «nothing there» note stays
 const THUMB_SIZE = 56;
@@ -74,7 +78,7 @@ export function createQuill({
 }) {
     /** the box: herdr draws its text itself, so a key typed in it draws nothing of ours; made at start @type {import('gpui-base').TextareaState | null} */
     let box = null;
-    // FRM-620 slice 5a probe: the quill's focus, for its numbered ring
+    // the quill's focus, for its ring (FRM-620 slice 5c)
     let isQuillFocused = false;
     /** the quill's text, and its text one change earlier: Enter types its line break before it submits */
     let typedNow = '';
@@ -161,6 +165,10 @@ export function createQuill({
             if (event) sendPath().holdStep(made, event, cx);
         });
         box = made;
+        // the quill is the chat's one stop in the Tab loop
+        cx.timer.after(0, () =>
+            setShared(tabStopsKey('x-herdr-chat'), ['quill']),
+        );
         // Enter in the quill is ours before the text box's own (context `Input`): no line break typed, so no scroll to
         // the caret (dima, 13:14). a binding herdr never reaches leaves Enter to the box's submit, as before
         cx.bind_keys([
@@ -168,6 +176,16 @@ export function createQuill({
                 action: QUILL_ENTER,
                 context: 'XChatQuill > Input',
                 keystroke: 'enter',
+            },
+            {
+                action: QUILL_TAB,
+                context: 'XChatQuill > Input',
+                keystroke: 'tab',
+            },
+            {
+                action: QUILL_BACK,
+                context: 'XChatQuill > Input',
+                keystroke: 'shift-tab',
             },
         ]);
         // the / menu's keys, only while it shows (its wrapper carries `ChatSlash` then)
@@ -184,6 +202,12 @@ export function createQuill({
                 keystroke: String(keystroke),
             })),
         );
+    }
+
+    /** Tab and shift-Tab in the quill ask the Tab loop for the next stop @param {boolean} isBack */
+    function tabFromQuill(isBack) {
+        const to = nextStop(loopOf(shared), 'quill', isBack);
+        setShared(TAB_GO, { at: Date.now(), to });
     }
 
     /**
@@ -213,14 +237,13 @@ export function createQuill({
                         .rounded(12)
                         .bg(t.background)
                         .border(1)
-                        .border_color(t.border)
+                        .border_color(focusBorder(isQuillFocused, t, t.border))
                         .key_context('XChatQuill')
-                        .when(true, (el) =>
-                            focusProbe(el, 'chat · quill', isQuillFocused),
-                        )
                         .on_drop((e, cx) => addFiles(e?.paths ?? [], cx))
                         // Enter runs the send button's hold (FRM-628 W12): a tap joins on its release, a hold fills
                         // the disc and pushes; its repeats keep the one hold going
+                        .on_action(QUILL_TAB, () => tabFromQuill(false))
+                        .on_action(QUILL_BACK, () => tabFromQuill(true))
                         .on_action(QUILL_ENTER, (_event, cx) => {
                             if (quillKeys.pressed() === 'act')
                                 sendPath().press(box, cx, 'enter');

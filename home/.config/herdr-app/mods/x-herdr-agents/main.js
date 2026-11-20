@@ -255,7 +255,6 @@ export default class Agents extends View {
         this.drag = createListDrag({
             axis: 'y',
             focus: () => this.listKeys,
-            name: 'agents list',
             onClick: () => {},
             onMove: (item, from, to) =>
                 drop(item, from, to, {
