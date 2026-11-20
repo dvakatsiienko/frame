@@ -34,7 +34,7 @@ func threadWorld(t *testing.T) (env []string, store string, live, dead int) {
 	write(t, filepath.Join(sessions, "sid-reused.json"), fmt.Sprintf(`{"sessionId":"sid-reused","pid":%d,"procStart":"Thu Jan  1 00:00:01 1970","cwd":"/w"}`, live))
 	now := time.Now().UnixMilli()
 	records, _ := json.Marshal(threadStore{V: 1, Threads: []thread{
-		{SessionID: "sid-codie", Role: "codie", Lane: "cli lane 8", LaneKind: "side", Ticket: "FRM-570", Area: "cli", At: now - 3_600_000},
+		{SessionID: "sid-codie", Role: "codie", Lane: "cli lane 8", LaneKind: "side", Ticket: "FRM-570", Area: "cli", At: now - 3_600_000, DispatchedAt: now - 7_200_000},
 		{SessionID: "sid-killed", Role: "sixth-sense", Lane: "cli lane 8", Ticket: "FRM-570", At: now - 3_600_000},
 		{SessionID: "sid-launching", Role: "sixth-sense", Lane: "mods 6", LaneKind: "quick", Ticket: "FRM-574", Area: "mods", At: now},
 		{SessionID: "sid-never-launched", Role: "codie", Lane: "mods 6", At: now - 3_600_000},
@@ -174,6 +174,33 @@ func TestThreadListRefreshesALiveRecordsTime(t *testing.T) {
 	}
 }
 
+// an ended glide card compares against the dispatch time, so a sync that moves `at` never brings it back (flyway f57)
+func TestThreadListLeavesTheDispatchTimeWhileItMovesAt(t *testing.T) {
+	t.Parallel()
+	env, store, _, _ := threadWorld(t)
+	was, _ := readThreadStore(store)
+	var dispatched int64
+	for _, th := range was.Threads {
+		if th.SessionID == "sid-codie" {
+			dispatched = th.DispatchedAt
+		}
+	}
+	if dispatched == 0 {
+		t.Fatal("the fixture's sid-codie holds no dispatch time")
+	}
+	for range 3 {
+		if got := xIn(t, t.TempDir(), env, "thread", "list"); got.code != 0 {
+			t.Fatalf("exit %d:\n%s", got.code, got.stdout)
+		}
+	}
+	written, _ := readThreadStore(store)
+	for _, th := range written.Threads {
+		if th.SessionID == "sid-codie" && (th.DispatchedAt != dispatched || th.At <= dispatched) {
+			t.Fatalf("sid-codie dispatchedAt %d at %d, want dispatchedAt kept at %d with at moved past it", th.DispatchedAt, th.At, dispatched)
+		}
+	}
+}
+
 func TestThreadListRefusesAStoreThatDoesNotParse(t *testing.T) {
 	t.Parallel()
 	env, store, _, _ := threadWorld(t)
@@ -203,6 +230,24 @@ func TestThreadRecordKeepsTheLiveFields(t *testing.T) {
 	got := written.Threads[0]
 	if got.Pid != 42 || got.ProcStart == "" || got.Name != "live name" || got.Cwd != "/w" || got.Lane != "cli lane 8" || got.LaneKind != "quick" || got.Ticket != "FRM-570" {
 		t.Fatalf("record %+v, want the live pid, start, name, cwd and the lane kept, and the kind the call named (FRM-600)", got)
+	}
+}
+
+func TestThreadRecordStampsItsDispatchTime(t *testing.T) {
+	// serial: X_THREADS is the store writeThreadRecord reads
+	store := filepath.Join(t.TempDir(), "threads.json")
+	t.Setenv("X_THREADS", store)
+	first := time.UnixMilli(1_000_000)
+	if err := writeThreadRecord(thread{SessionID: "sid-1", Role: "codie", Lane: "mods-lane-9"}, first, true); err != nil {
+		t.Fatal(err)
+	}
+	next := first.Add(time.Hour)
+	if err := writeThreadRecord(thread{SessionID: "sid-1", Role: "codie", Lane: "mods-lane-9", Ticket: "FRM-1"}, next, false); err != nil {
+		t.Fatal(err)
+	}
+	written, _ := readThreadStore(store)
+	if got := written.Threads[0]; got.DispatchedAt != next.UnixMilli() || got.At != next.UnixMilli() {
+		t.Fatalf("record %+v, want a dispatch to stamp dispatchedAt %d, the time the next dispatch moves", got, next.UnixMilli())
 	}
 }
 

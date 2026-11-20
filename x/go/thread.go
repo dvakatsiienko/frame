@@ -40,6 +40,9 @@ type thread struct {
 	Display  string `json:"display"`
 	RoleName string `json:"roleName,omitempty"`
 	At       int64  `json:"at,omitempty"`
+	// the time a summon or a dispatch last wrote this record: `at` is the heartbeat each sync moves, so a reader asking
+	// «did this lane's card end after its dispatch» compares against this one
+	DispatchedAt int64 `json:"dispatchedAt,omitempty"`
 }
 
 type threadStore struct {
@@ -461,7 +464,7 @@ func writeThreadRecord(record thread, now time.Time, isMinted bool) error {
 		}
 		store.Threads = slices.Delete(store.Threads, i, i+1)
 	}
-	record.At = now.UnixMilli()
+	record.At, record.DispatchedAt = now.UnixMilli(), now.UnixMilli()
 	drawNames(&record)
 	store.Threads = append(store.Threads, record)
 	return writeThreadStore(path, now, store.Threads)
