@@ -5,7 +5,11 @@ import { fileLinks } from './file-links.js';
 
 // the pictures Claude Code reads from a path, the ones a card previews
 const PICTURE = /\.(?:png|jpe?g|gif|webp)$/i;
-export const PREVIEW_MAX_H = 120;
+// a preview's height in points: every picture of a card one height, under the spec's 120
+const STRIP_H = 104;
+
+/** a file the card previews as a picture, by its name or path @param {string} name */
+export const isPictureName = (name) => PICTURE.test(name);
 
 /** @param {string} path */
 const nameOf = (path) => path.split('/').filter(Boolean).pop() ?? path;
@@ -26,7 +30,7 @@ export function attachmentsOf(ask, home) {
     ].filter((p, i, all) => all.indexOf(p) === i);
     return paths.map((path) => ({
         isLink: linked.includes(path),
-        isPicture: PICTURE.test(path),
+        isPicture: isPictureName(path),
         name: nameOf(path),
         path,
     }));
@@ -65,11 +69,12 @@ export function cardFiles(files, found) {
 }
 
 /**
- * a preview's size: the card's width at most, never taller than 120 px, never blown up past the picture
- * @param {number} w @param {number} h the picture's pixels @param {number} room the card's inner width
+ * a preview's size in a card's strip: the whole picture at one height, shrunk further only when it is wider than the
+ * card; never blown up past its own pixels
+ * @param {number} w @param {number} h the copy's pixels @param {number} room the card's inner width
  */
 export function previewSize(w, h, room) {
-    const scale = Math.min(1, room / w, PREVIEW_MAX_H / h);
+    const scale = Math.min(STRIP_H / h, room / w, 1);
     return { h: Math.round(h * scale), w: Math.round(w * scale) };
 }
 

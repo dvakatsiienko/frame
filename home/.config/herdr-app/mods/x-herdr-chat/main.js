@@ -91,8 +91,8 @@ export default class Chat extends View {
     findAsk = null;
     /** Esc's last ask from outside the chat (the status bar takes the key and writes the time) @type {unknown} */
     escapeAsk = null;
-    /** the time of the last viewer ask opened @type {number | null} */
-    viewAsk = null;
+    /** the time of the last viewer ask opened: one made before this load never opens again @type {number | null} */
+    viewAsk = chatViewOf(shared(CHAT_VIEW))?.time ?? null;
     /** ⌘⇧E's last ask @type {unknown} */
     effortAsk = null;
     /** what this chat last wrote in `chat.shown`, as json: its thread on screen and whether find is open @type {string} */

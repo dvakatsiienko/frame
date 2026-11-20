@@ -142,13 +142,17 @@ describe('what the card draws for each file', () => {
     });
 });
 
-describe('a preview fits the card and stands at most 120 px tall', () => {
-    test('a tall shot is held to 120 px', () => {
-        expect(previewSize(800, 1200, 300)).toEqual({ h: 120, w: 80 });
+describe('a preview shows the whole picture at one height, never taller than 120 px nor wider than the card', () => {
+    test('a tall shot and a wide one stand the same height, under the cap', () => {
+        const tall = previewSize(288, 480, 300);
+        const wide = previewSize(480, 240, 300);
+        expect(tall.h).toBe(wide.h);
+        expect(tall.h).toBeLessThanOrEqual(120);
+        expect(tall.w / tall.h).toBeCloseTo(288 / 480, 1);
     });
 
-    test('a wide shot fits the card width', () => {
-        expect(previewSize(2000, 200, 300)).toEqual({ h: 30, w: 300 });
+    test('a shot wider than the card shrinks to its width, keeping its shape', () => {
+        expect(previewSize(480, 120, 200)).toEqual({ h: 50, w: 200 });
     });
 
     test('a small picture is never blown up', () => {
