@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 // other module reads and writes it through the owner's functions; a move out of register.tsx moves its row here
 const HOOKS = join(import.meta.dirname, 'x-mod-stash/hooks');
 const OWNERS = {
-    'ask-counter': 'register.tsx',
+    'ask-counter': 'orbit-tool.ts',
     'cc-usage-window.json': 'usage.ts',
     'fleet.json': 'session-record.ts',
     'herdr-joins': 'joins.ts',
