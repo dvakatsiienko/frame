@@ -44,6 +44,10 @@ live in `x:notes`, copied by hand into the cloud chat leaf `/topics/obsidian.md`
 
 <!-- failure: obsidian delete --help deleted the active note (2026-10-07, restored) · 37 % of a week's fleet writes went through Bash and took no hold (dima, 2026-10-05, docs/test-drive/mods.md) -->
 
+## test cpu
+
+- **a cpu roast from tests is a critical failure, and its fix door is the outside first** (dima, 2026-11-20: «cc mods tests should never roast my cpu»): search for similar symptoms, known fixes and gh issues before any local patch; a whole test suite is a machine-wide resource, run only inside `gate-queue.sh --long`, once at a head, never per commit. guard: partial, `x mods edit test --range` runs the whole suite at the head only (49700466); the rest rides the mods test diet (`.scratch/mods-tests-cpu/plan.md`)
+
 ## green statuses
 
 - **a green status answers «did this fail», never «did this run»** — three systems in one day
