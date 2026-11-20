@@ -26,6 +26,7 @@ import {
 import { herdrRow, partsShown } from './settings-store.ts';
 import { idleTurn, isTurnBusy, selfSubmit } from './turn.ts';
 import { bare } from './util.ts';
+import { xRead } from './x-cli.ts';
 
 const PARKED_WAKE_MS = 10 * 60_000;
 const PARKED_WOKE = 'parked-woke:';
@@ -84,19 +85,12 @@ const signedReads = new Map<string, { at: number; isSigned?: boolean }>();
 async function isSigned($: EngineInterface, ticket: string, now: number) {
     const kept = signedReads.get(ticket);
     if (kept && now - kept.at < SIGNED_READ_MS) return kept.isSigned;
-    const run = await $.process
-        .run(['x', 'linear', 'read', ticket, '--json'], {
-            cwd: await $.env.get('HOME'),
-            timeoutMs: 8000,
-        })
-        .catch(() => undefined);
+    const read = await xRead($, ['linear', 'read', ticket], 8000);
     try {
         const labels = (
-            JSON.parse(run?.stdout ?? '') as {
-                data?: { tickets?: { labels?: unknown }[] };
-            }
-        ).data?.tickets?.[0]?.labels;
-        if (run?.exitCode !== 0 || !Array.isArray(labels)) throw new Error();
+            read?.data as { tickets?: { labels?: unknown }[] } | undefined
+        )?.tickets?.[0]?.labels;
+        if (!Array.isArray(labels)) throw new Error();
         const isSigned = labels.includes('signed');
         signedReads.set(ticket, { at: now, isSigned });
         return isSigned;

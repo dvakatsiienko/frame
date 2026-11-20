@@ -24,6 +24,7 @@ import {
 } from './session-identity.ts';
 import { partsShown } from './settings-store.ts';
 import { bare, errorText } from './util.ts';
+import { xRead } from './x-cli.ts';
 
 type Entry = StashEntry;
 
@@ -342,23 +343,11 @@ export async function readPlanSteps(
     const kept = planParses.get(path);
     if (kept?.mtimeMs === entry.mtimeMs && Array.isArray(kept.steps))
         return { steps: kept.steps };
-    const run = await $.process
-        .run(['x', 'lane', 'plan-steps', path, '--json'], {
-            cwd: await $.env.get('HOME'),
-            timeoutMs: 4000,
-        })
-        .catch(() => undefined);
-    try {
-        const steps = (
-            JSON.parse(run?.stdout ?? '') as { data?: { steps?: unknown } }
-        ).data?.steps;
-        if (run?.exitCode !== 0 || !Array.isArray(steps))
-            return { state: 'stale' };
-        planParses.set(path, { mtimeMs: entry.mtimeMs, steps });
-        return { steps };
-    } catch {
-        return { state: 'stale' };
-    }
+    const read = await xRead($, ['lane', 'plan-steps', path]);
+    const steps = (read?.data as { steps?: unknown } | undefined)?.steps;
+    if (!Array.isArray(steps)) return { state: 'stale' };
+    planParses.set(path, { mtimeMs: entry.mtimeMs, steps });
+    return { steps };
 }
 
 // FRM-649 (FRM-616:W36–W38): a lane card's title is x's lane record, «<scope> — <what>», read once per change of the lane's
@@ -378,38 +367,24 @@ async function laneShown(
         .join(',');
     const kept = laneShowns.get(codie.lane);
     if (kept?.key === key) return { sixth: kept.sixth, title: kept.title };
-    const run = await $.process
-        .run(['x', 'lane', 'show', codie.lane, '--json'], {
-            cwd: await $.env.get('HOME'),
-            timeoutMs: 4000,
-        })
-        .catch(() => undefined);
-    let title: string | undefined;
-    let sixth: string | undefined;
-    try {
-        const record = (
-            JSON.parse(run?.stdout ?? '') as {
-                data?: { scope?: unknown; what?: unknown; members?: unknown };
-            }
-        ).data;
-        if (
-            run?.exitCode === 0 &&
-            record?.members &&
-            typeof record.members === 'object'
-        )
-            sixth = Object.entries(record.members).find(
-                ([, role]) => role === 'sixth-sense',
-            )?.[0];
-        if (
-            run?.exitCode === 0 &&
-            typeof record?.scope === 'string' &&
-            typeof record.what === 'string' &&
-            record.scope &&
-            record.what
-        )
-            title = `${record.scope} — ${codie.ticket ? `${codie.ticket} ` : ''}${record.what}`;
-    } catch {}
-    if (run?.exitCode === 0) laneShowns.set(codie.lane, { key, sixth, title });
+    const read = await xRead($, ['lane', 'show', codie.lane]);
+    const record = read?.data as
+        | { scope?: unknown; what?: unknown; members?: unknown }
+        | undefined;
+    const sixth =
+        record?.members && typeof record.members === 'object'
+            ? Object.entries(record.members).find(
+                  ([, role]) => role === 'sixth-sense',
+              )?.[0]
+            : undefined;
+    const title =
+        typeof record?.scope === 'string' &&
+        typeof record.what === 'string' &&
+        record.scope &&
+        record.what
+            ? `${record.scope} — ${codie.ticket ? `${codie.ticket} ` : ''}${record.what}`
+            : undefined;
+    if (read) laneShowns.set(codie.lane, { key, sixth, title });
     return { isFresh: true, sixth, title };
 }
 
