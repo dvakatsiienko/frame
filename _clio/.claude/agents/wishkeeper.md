@@ -6,8 +6,6 @@ model: opus
 effort: medium
 tools: Read, Bash
 omitClaudeMd: true
-experimental:
-  cacheTtl: 1h
 skills:
   - x:author-memory
 ---
