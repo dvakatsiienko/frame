@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-20T11:55:00Z'
+updated_date: '2026-11-20T12:25:00Z'
 labels:
   - s
   - clio-main
@@ -1279,4 +1279,27 @@ PK-349:W1287 (2026-11-20 13:46, dima): with tabs hidden, the top bar shows the f
 13:47 groom fix: W1276 and W1277 carried clio's quoted line without his comment; corrected: PK-349:W1276 (2026-11-20 13:34, dima): Tab focus in orbit, FRM-620's focus-outline wish (W14), written up as slice 4 for the herdr codie today ← nice. ← nice. PK-349:W1277 (2026-11-20 13:34, dima): Tab focus in orbit as slice 4 ← and where was it before i asked about it? ❓ ← where it was before i asked about it? ❓
 
 13:55 the 13:47 groom-fix note above was wrong (a 200-char cut misread): W1276 and W1277 stand as first written in the 13:34 block, his comment included
+
+14:25 14:20 prompt wishes:
+PK-349:W1288 (2026-11-20 14:20, dima): 🔧 mods: register.tsx ← I was actually curious about this register, TS6 (?). It currently gets split very long, at least with the approach that Codie started with, and after your optimization it looks like it's faster now.
+PK-349:W1289 (2026-11-20 14:20, dima): I don't really like this effect that Codie chose such an optimal approach. If I hadn't interfered and hadn't asked you to analyze the bottleneck, he would have been stuck on this issue for 4 days, I think, roughly in his previous space.
+PK-349:W1290 (2026-11-20 14:20, dima): My question in general: how many tickets like this are executed in such an optimal way? ❓
+PK-349:W1291 (2026-11-20 14:20, dima): The thing is I only picked, inside Moscow (?), the pace only with this big ticket because I really spotted that it is going for too long.
+PK-349:W1292 (2026-11-20 14:20, dima): I worry that a lot of other tickets could actually be done at a much slower pace than they could be done instead if a more optimal approach is chosen. I worry about hidden bottlenecks.
+PK-349:W1293 (2026-11-20 14:20, dima): How do I think about how severe this potential issue could be and what we can do to find out if my suspiciousness is true? ❓
+PK-349:W1294 (2026-11-20 14:20, dima): stray lane verdict (FRM-586) ← few interesting numbers please. i like stray and i think it is very useful. adopted.
+PK-349:W1295 (2026-11-20 14:20, dima): where to update your memory best? ❓
+PK-349:W1296 (2026-11-20 14:20, dima): what i want: whenever you propose to close a trial, like with stray for example, or to close any other ticket or item that is based on some measures.
+PK-349:W1297 (2026-11-20 14:20, dima): Usually I always want to know the data and the measures' results. As with stray I just ask.
+PK-349:W1298 (2026-11-20 14:20, dima): For low tide you proposed to close this tray (?) but didn't show it numbers, although it is important to note: usually I don't want you to throw on me a wall of measures and numbers because it will overload me.
+PK-349:W1299 (2026-11-20 14:20, dima): I want only the important data that shows that something becomes better, faster, or smaller, the positive gains, and the most important part is your verdict on this (because plain measures sometimes, and actually often, don't tell me anything).
+PK-349:W1300 (2026-11-20 14:20, dima): I want to know whether the numbers are good or bad or do nothing (e.g., did not change too much).
+PK-349:W1301 (2026-11-20 14:20, dima): When you tell me the measure results, always tell me the gains, the positive or negative, so I know the measures made stuff better or worse and how much.
+PK-349:W1302 (2026-11-20 14:20, dima): This is what I'm interested in and I'd like for this to apply at least for you, always when you show me the measures, and maybe even for global fleet.
+PK-349:W1303 (2026-11-20 14:20, dima): If I ask to measure something, anyone replies to me in this report, adapted to me in terms of measures, with the wishes I've just described.
+PK-349:W1304 (2026-11-20 14:20, dima): The most important part is the positive or negative gain/benefit.
+PK-349:W1305 (2026-11-20 14:20, dima): propose how to fixup your memory on this - where, and how to show me positive negative gains? ❓
+PK-349:W1306 (2026-11-20 14:20, dima): let's do quick shape idea - propose top7 for emojis.
+PK-349:W1307 (2026-11-20 14:20, dima): then print stray and crow measures again, with new shape
+PK-349:W1308 (2026-11-20 14:20, dima): i'm still overloaded, slow down pls. one at a time
 <!-- SECTION:NOTES:END -->
