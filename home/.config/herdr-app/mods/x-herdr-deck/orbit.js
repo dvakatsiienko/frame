@@ -51,15 +51,20 @@ export function asksOf(state) {
 }
 
 /**
- * hazards first, then look cards, then the rest; a stable sort keeps the store's order inside each group (FRM-620:W12)
+ * look and 🧪 test cards first («look», «try», «test:»), then hazards, then the rest; a stable sort keeps the store's
+ * order inside each group (FRM-620:W12, W16, W18)
  * @param {string} text
  */
 const pinRank = (text) => {
     const head = text.trimStart();
+    if (isPinnedCard(head)) return 0;
     // the bare ⚠ prefix matches ⚠️ too, the stash itself writes it bare
-    if (head.startsWith('⚠')) return 0;
-    return /^look\b/i.test(head) ? 1 : 2;
+    return head.startsWith('⚠') ? 1 : 2;
 };
+
+/** a look card or a 🧪 test card: always pinned (FRM-620:W16) @param {string} text */
+export const isPinnedCard = (text) =>
+    /^(look\b|try\b|test:)/i.test(text.trimStart());
 
 /**
  * an ask's link as the card draws it: a web page by its host, an app link by its app (its scheme), a file by its name;
