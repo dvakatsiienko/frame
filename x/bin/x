@@ -98,10 +98,17 @@ if ((dev_now)) && [[ -z ${X_DEV-} && ${dir} == "${main}" ]]; then
                 mv "${lock}" "${lock}.stale.$$" 2>/dev/null && rmdir "${lock}.stale.$$"
             fi
             if mkdir "${lock}" 2>/dev/null; then
-                (
-                    set -m
-                    build_pushed >"${pbin}.log" 2>&1 </dev/null &
-                )
+                # the stamp was read before the lock: a build that ended in between wrote its stamp (or its .failed marker)
+                # before it dropped the lock, so a read under the lock sees it and this tree is never built twice
+                if [[ $(cat "${pbin}.stamp" 2>/dev/null) == "${want}" ||
+                    $(cat "${pbin}.failed" 2>/dev/null) == "${want}" && -z $(find "${pbin}.failed" -mmin +10 2>/dev/null) ]]; then
+                    rmdir "${lock}"
+                else
+                    (
+                        set -m
+                        build_pushed >"${pbin}.log" 2>&1 </dev/null &
+                    )
+                fi
             fi
         fi
         if [[ -x ${pbin} ]]; then

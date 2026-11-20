@@ -30,6 +30,13 @@ printf '#!/bin/sh\necho %s\n' "$(cat marker.txt)" > "$out"
 chmod +x "$out"
 `
 
+// a `find` that parks the shell calling it when FIND_SLEEP is set, after marking that it got there: the shim's lock-age check
+// sits between its stamp read and its lock, so a parked shell reads the stamp stale and takes the lock late
+const fakeFind = `#!/bin/sh
+[ -n "$FIND_SLEEP" ] && { : > "$FIND_MARK"; sleep "$FIND_SLEEP"; }
+exec REALFIND "$@"
+`
+
 func newPushedWorld(t *testing.T) pushedWorld {
 	t.Helper()
 	base, _ := filepath.EvalSymlinks(t.TempDir())
@@ -49,8 +56,13 @@ func newPushedWorld(t *testing.T) pushedWorld {
 		t.Fatal(err)
 	}
 	write(t, filepath.Join(base, "bin/go"), fakeGo)
+	realFind, err := exec.LookPath("find")
+	if err != nil {
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(base, "bin/find"), strings.Replace(fakeFind, "REALFIND", realFind, 1))
 	write(t, filepath.Join(base, "bin/git"), "#!/bin/sh\necho \"$@\" >> \"$GIT_CALLS\"\nexec "+realGit+" \"$@\"\n")
-	for _, file := range []string{filepath.Join(w.tree, "x/bin/x"), filepath.Join(base, "bin/go"), filepath.Join(base, "bin/git")} {
+	for _, file := range []string{filepath.Join(w.tree, "x/bin/x"), filepath.Join(base, "bin/go"), filepath.Join(base, "bin/git"), filepath.Join(base, "bin/find")} {
 		if err := os.Chmod(file, 0o755); err != nil {
 			t.Fatal(err)
 		}
@@ -65,7 +77,7 @@ func newPushedWorld(t *testing.T) pushedWorld {
 	if err := os.MkdirAll(filepath.Join(base, "tmp"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	w.env = []string{"PATH=" + filepath.Join(base, "bin") + ":" + os.Getenv("PATH"), "GO_CALLS=" + w.calls, "GIT_CALLS=" + w.gitCalls, "HOME=" + t.TempDir(), "TMPDIR=" + filepath.Join(base, "tmp")}
+	w.env = []string{"PATH=" + filepath.Join(base, "bin") + ":" + os.Getenv("PATH"), "GO_CALLS=" + w.calls, "GIT_CALLS=" + w.gitCalls, "HOME=" + t.TempDir(), "TMPDIR=" + filepath.Join(base, "tmp"), "FIND_MARK=" + filepath.Join(base, "find-mark")}
 	return w
 }
 
@@ -251,6 +263,46 @@ func TestShimFiveShellsAtOnceStartOneBuild(t *testing.T) {
 	}
 	if w.pushedBuilds(t) != 2 {
 		t.Errorf("%d pushed builds in all, want the first one and one for the push", w.pushedBuilds(t))
+	}
+}
+
+// a shell that read the stamp before another's build finished takes the lock after it was dropped: it re-reads the stamp, or
+// the failed marker, under the lock and builds nothing, so one push is one build whatever the timing (CI, 20 Nov: 4 builds
+// for the five shells)
+func TestShimALateShellNeverRebuildsATreeAlreadyBuilt(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, marker string
+		env          []string
+	}{
+		{"the build ended with a stamp", "x-pushed.stamp", nil},
+		{"the build failed", "x-pushed.failed", []string{"GO_FAIL_PUSHED=1"}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newPushedWorld(t)
+			w.goDev(t)
+			w.run(t, w.tree)
+			waitFor(t, w.stamp(), w.pushedTree(t))
+			w.originMoves(t, "pushed-v3")
+
+			late := make(chan shimRun)
+			go func() { late <- w.run(t, w.base, "FIND_SLEEP=2") }()
+			for deadline := time.Now().Add(time.Minute); !exists(filepath.Join(w.base, "find-mark")); time.Sleep(20 * time.Millisecond) {
+				if time.Now().After(deadline) {
+					t.Fatal("the late shell never reached its lock check")
+				}
+			}
+			prompt := w.run(t, w.base, c.env...)
+			marker := filepath.Join(w.tree, "x/go/bin", c.marker)
+			waitFor(t, marker, w.pushedTree(t))
+			got := <-late
+			waitFor(t, marker, w.pushedTree(t))
+
+			if got.err != nil || prompt.err != nil || w.pushedBuilds(t) != 2 {
+				t.Errorf("late %v, prompt %v after %d pushed builds, want the first one and one for the push", got.err, prompt.err, w.pushedBuilds(t))
+			}
+		})
 	}
 }
 
