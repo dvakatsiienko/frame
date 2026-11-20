@@ -50,6 +50,7 @@ function main(home: string, since: string) {
         gateBudget(home),
         retros(home),
         lanePaceSection(home, sinceDate(since).getTime() / 1000),
+        partGrowth(home),
     ];
     for (const s of sections)
         console.log(
@@ -75,6 +76,42 @@ function script(dir: string, name: string, file: string, args: string[]) {
         ...lines.slice(-OUTPUT_LINES),
     ].join('\n');
     return { exit: out.status ?? 1, name, output };
+}
+
+// a fleet part that doubled, or drew 3 fixes in 7 days or 3 of his turns in a day (FRM-590): x names each crossing
+// once, so a crossing reds the section until its ask is on his board
+function partGrowth(home: string) {
+    const name = 'part growth';
+    const out = spawnSync(
+        path.join(home, '.local/bin/x'),
+        ['fleet', 'growth', '--json'],
+        { encoding: 'utf8', timeout: RUN_TIMEOUT_MS },
+    );
+    try {
+        const { crossings, parts, seeded } = JSON.parse(out.stdout).data as {
+            crossings: { ask: string }[];
+            parts: number;
+            seeded: boolean;
+        };
+        if (!crossings.length)
+            return {
+                exit: 0,
+                name,
+                output: seeded
+                    ? `seeded ${parts} parts, nothing to name yet`
+                    : `${parts} parts, none crossed`,
+            };
+        return {
+            exit: 1,
+            name,
+            output: [
+                `🔴 ${crossings.length} crossing(s): each goes to orbit with its first W-line added`,
+                ...crossings.map((c) => c.ask),
+            ].join('\n\n'),
+        };
+    } catch {
+        return { exit: 0, name, output: '', status: 'not checked' };
+    }
 }
 
 // a codie that skipped its contract before an edit; a verb that cannot answer reads «not checked», never red
