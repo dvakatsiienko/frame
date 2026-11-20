@@ -1,7 +1,7 @@
 /* @jsx h */
 import type { EngineInterface, Register } from 'claude-code';
 
-import type { QuietLogLine, StashCap, StashLane } from '../types/stash.d.ts';
+import type { QuietLogLine, StashLane } from '../types/stash.d.ts';
 import { renderBand } from './band.tsx';
 import { BAND_READ, BAND_REFUSED, takeBandPresses } from './band-presses.ts';
 import { drawBoard } from './board.tsx';
@@ -35,9 +35,12 @@ import {
     AUTO_WIND,
     PING,
     POLL_MS,
-    WAKE_SLACK_MS,
     armHot,
+    armWake,
+    capAtMeasure,
+    capAtTurnEnd,
     followHot,
+    holdCap,
     holdHot,
     hotLate,
     pacePoll,
@@ -98,10 +101,8 @@ import {
 } from './orbit-tool.ts';
 import { relayCrowWake, wakeForParkedLanes } from './parked-wake.ts';
 import {
-    TRANSCRIPT_TAIL,
     boldFleetWords,
     bulletDots,
-    capOf,
     dropWaitAside,
     linkTickets,
     numberCircled,
@@ -150,14 +151,7 @@ import {
     takeHerdrRows,
 } from './settings-store.ts';
 import { refreshSpeaking } from './speak.ts';
-import {
-    HOT,
-    MODEL,
-    REPLY,
-    type Reply,
-    WAKER_KEY,
-    hotOf,
-} from './store-keys.ts';
+import { HOT, MODEL, REPLY, type Reply, hotOf } from './store-keys.ts';
 import {
     bookkeep,
     clearWrap,
@@ -171,7 +165,6 @@ import {
     markWork,
     markWrapAsked,
     restoreTurn,
-    selfSubmit,
     setPrimed,
     setTurnAfk,
     startTurn,
@@ -247,14 +240,6 @@ const ENDED = { key: 'ended', plugin: 'x-mod-stash' } as const;
 // a 📄 line's HH:MM — the same shape reply-check.py reads
 const STAMP = /(📄[^\n]*?\b)(\d{1,2}:\d{2})\b/g;
 const CAP = { key: 'cap', plugin: 'x-mod-stash' } as const;
-// the 5h cap ends the turn as an API error with this text; the weekly cap and spent credits read otherwise
-// (8 rows in the transcripts, 2026-10-08)
-const CAPPED = /hit your session limit/i;
-const RESUME =
-    'x-mod-stash waker: the 5h window reset. pick up where you stopped.';
-// the last few error-ended turns as the hook saw them, so the cap's real text is measured, never inferred (riders 11-02)
-const CAP_SEEN = 'cap-seen';
-const CAP_SEEN_MAX = 5;
 // 🪐 orbit: the session's asks to dima, ticked in the board instead of pasted back; the session writes them through
 // its own tool, never a reply block
 const ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
@@ -291,13 +276,6 @@ const WORK_BASH =
     /\b(claude\s+(--bg|-n\s+\S+.*--bg|stop|respawn)|git\s+commit|x\s+lane\s+(commit|push|pr-open|merge-main|seed)|x\s+mods\s+edit\s+push)\b/;
 export const isWork = (tool: string, command?: string) =>
     WORK_TOOLS.has(tool) || (tool === 'Bash' && WORK_BASH.test(command ?? ''));
-// the 5h reset as the last session.measure reported it, and this session's cap state
-let fiveHourResetsAt: number | undefined;
-// the 5h window's fill at the last measure: an error end this full is read as the cap when no entry names it (FRM-488)
-let fiveHourPercent: number | undefined;
-const CAP_FULL_PERCENT = 95;
-let cap: StashCap | undefined;
-let capGen = 0;
 // the model label last written for this session, so a step writes the store only when it changes
 let modelSeen: string | undefined;
 
@@ -396,63 +374,6 @@ async function pruneEnded($: EngineInterface) {
     }
 }
 
-async function keepCapSeen(
-    $: EngineInterface,
-    text: string,
-    isCapped: boolean,
-    isUnread = false,
-) {
-    const kept =
-        ((await $.store.get(CAP_SEEN).catch(() => undefined)) as
-            | { at: number; isCapped: boolean; isUnread?: true; text: string }[]
-            | undefined) ?? [];
-    const seen = {
-        at: await $.clock.now(),
-        isCapped,
-        ...(isUnread ? { isUnread: true as const } : {}),
-        text: text.slice(0, 300),
-    };
-    await $.store
-        .set(CAP_SEEN, [...kept, seen].slice(-CAP_SEEN_MAX))
-        .catch(() => undefined);
-}
-
-// the reset a cap waits on: the one its entry named, unless that is already past (a text reset read to the minute),
-// then the 5h reset the last measure named
-const resetOf = (named: number | undefined, now: number) =>
-    named !== undefined && named > now ? named : fiveHourResetsAt;
-
-async function capFromTranscript($: EngineInterface) {
-    const sid = await currentId($);
-    const home = await $.env.get('HOME').catch(() => undefined);
-    if (!sid || !home) return undefined;
-    const out = await $.process
-        .run(['sh', '-c', TRANSCRIPT_TAIL, 'sh', home, sid])
-        .catch(() => undefined);
-    return out ? capOf(out.stdout) : undefined;
-}
-
-// a capped session's resume, armed for the reset it waits on; a turn start or a new cap bumps capGen, so an old timer
-// never fires
-async function armWake($: EngineInterface) {
-    const mine = ++capGen;
-    const at = cap?.resetsAt;
-    if (at === undefined || cap?.sentFor === at) return;
-    const wait = at + WAKE_SLACK_MS - (await $.clock.now());
-    $.clock.after(Math.max(0, wait), async () => {
-        if (mine !== capGen || turn.isBusy || !cap) return;
-        // the reset is spent at its fire, switch on or off: ⏰ flipped on later never wakes a reset already past (o102)
-        cap = { ...cap, sentFor: at };
-        await $.state.set(CAP, cap).catch(() => undefined);
-        const waker = (await $.store.get(WAKER_KEY)) as
-            | { on?: boolean }
-            | undefined;
-        if (waker?.on !== true || !(await partsShown($))('stash.waker')) return;
-        $.ui.log('x-mod-stash waker: resumed the session after the 5h reset');
-        await selfSubmit($, RESUME, false, () => prepareTurn(viewDoors($)));
-    });
-}
-
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
     on('session.start', async ($, e, next) => {
@@ -507,7 +428,7 @@ export const register: Register = (on) => {
             .catch(() =>
                 $.ui.log('x-mod-stash: the orbit tool was not registered'),
             );
-        cap = kept.cap ?? undefined;
+        holdCap(kept.cap ?? undefined);
         // a mid-turn reload: the turn goes on, busy, and the band keeps what only it held
         restoreTurn(kept.ended ?? undefined, kept.turn ?? undefined);
         await pruneEnded($).catch(() => undefined);
@@ -518,7 +439,7 @@ export const register: Register = (on) => {
         armRelease($, viewDoors($), COMPACT_SETTLE_MS);
         await load($);
         await armHot($, viewDoors($));
-        await armWake($);
+        await armWake($, viewDoors($));
         await $.command
             .register({
                 description:
@@ -933,31 +854,7 @@ export const register: Register = (on) => {
         const endedAt = await $.clock.now();
         await endStop($, endedAt);
         await seatDefaults($, viewDoors($)).catch(() => undefined);
-        // a stop on the 5h cap waits for the reset; any other end clears it. the cap ends the turn with an empty answer,
-        // so an error end reads the transcript's last entry for the cap text and the reset it names (FRM-488)
-        const read =
-            e.reason === 'error' && !CAPPED.test(e.answer)
-                ? await capFromTranscript($)
-                : undefined;
-        // the signals rank: the entry's typed field or its words, the answer's words, then a 5h window this full
-        const isFull = (fiveHourPercent ?? 0) >= CAP_FULL_PERCENT;
-        cap =
-            e.reason === 'error' && (read || CAPPED.test(e.answer) || isFull)
-                ? { resetsAt: resetOf(read?.resetsAt, await $.clock.now()) }
-                : undefined;
-        await $.state.set(CAP, cap ?? null).catch(() => undefined);
-        // a cap only the full window named is a shape the hook could not read: never silent (dima, 2026-11-02)
-        const isUnread = cap !== undefined && !read && !CAPPED.test(e.answer);
-        if (e.reason === 'error' || /session limit/i.test(e.answer))
-            await keepCapSeen(
-                $,
-                read?.text ?? e.answer,
-                cap !== undefined,
-                isUnread,
-            );
-        if (isUnread)
-            $.ui.toast('⏰ waker: an unrecognised cap — check FRM-488');
-        await armWake($);
+        await capAtTurnEnd($, e.reason === 'error', e.answer, viewDoors($));
         // the store is 🔥's truth: crow writes its key after session.start, and a written off turns it off
         const sid = await currentId($);
         if (sid)
@@ -1017,16 +914,7 @@ export const register: Register = (on) => {
     on('session.measure', async ($, e, next) => {
         const w = e.rateLimits.find((r) => r.kind === 'five_hour');
         const resetsAt = w?.resetsAt ? Date.parse(w.resetsAt) : undefined;
-        if (w) fiveHourPercent = w.percentUsed;
-        if (resetsAt !== undefined) {
-            fiveHourResetsAt = resetsAt;
-            // capped before any measure named the reset: wait for this one
-            if (cap && cap.resetsAt === undefined) {
-                cap = { ...cap, resetsAt };
-                await $.state.set(CAP, cap).catch(() => undefined);
-                await armWake($);
-            }
-        }
+        await capAtMeasure($, w?.percentUsed, resetsAt, viewDoors($));
         await measureUsage($, e);
         return next(e);
     });

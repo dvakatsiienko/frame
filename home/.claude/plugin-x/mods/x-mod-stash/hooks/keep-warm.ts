@@ -1,5 +1,6 @@
 import type { EngineInterface } from 'claude-code';
 
+import type { StashCap } from '../types/stash.d.ts';
 import {
     PACE_KEYS,
     PACE_NEW_WINDOW,
@@ -11,6 +12,7 @@ import {
     paceLine,
     paceRung,
 } from './pace.ts';
+import { TRANSCRIPT_TAIL, capOf } from './parse.ts';
 import { isSeated, registry } from './roster.ts';
 import {
     MAIN_ROLE,
@@ -23,6 +25,8 @@ import { partsShown, readNumber } from './settings-store.ts';
 import { AFK_KEY, HOT, WAKER_KEY, hotOf } from './store-keys.ts';
 import { idleTurn, isTurnBusy, selfSubmit, turn } from './turn.ts';
 import { paceMeterOf } from './usage.ts';
+
+const CAP = { key: 'cap', plugin: 'x-mod-stash' } as const;
 
 // the band's three switches as this process holds them: 💨 afk, ⏰ the waker, 🔥 keep-hot; read through `warm`
 const state = {
@@ -491,4 +495,121 @@ export async function isAutoWind($: EngineInterface) {
     const since = starts.length ? Math.max(...starts) : undefined;
     if (since !== undefined && (!pressed || pressed.at < since)) return true;
     return pressed?.on ?? true;
+}
+
+// the 5h cap ends the turn as an API error with this text; the weekly cap and spent credits read otherwise
+// (8 rows in the transcripts, 2026-10-08)
+const CAPPED = /hit your session limit/i;
+const RESUME =
+    'x-mod-stash waker: the 5h window reset. pick up where you stopped.';
+// the last few error-ended turns as the hook saw them, so the cap's real text is measured, never inferred (riders 11-02)
+const CAP_SEEN = 'cap-seen';
+const CAP_SEEN_MAX = 5;
+// the 5h reset as the last session.measure reported it, and this session's cap state
+let fiveHourResetsAt: number | undefined;
+// the 5h window's fill at the last measure: an error end this full is read as the cap when no entry names it (FRM-488)
+let fiveHourPercent: number | undefined;
+const CAP_FULL_PERCENT = 95;
+let cap: StashCap | undefined;
+let capGen = 0;
+async function keepCapSeen(
+    $: EngineInterface,
+    text: string,
+    isCapped: boolean,
+    isUnread = false,
+) {
+    const kept =
+        ((await $.store.get(CAP_SEEN).catch(() => undefined)) as
+            | { at: number; isCapped: boolean; isUnread?: true; text: string }[]
+            | undefined) ?? [];
+    const seen = {
+        at: await $.clock.now(),
+        isCapped,
+        ...(isUnread ? { isUnread: true as const } : {}),
+        text: text.slice(0, 300),
+    };
+    await $.store
+        .set(CAP_SEEN, [...kept, seen].slice(-CAP_SEEN_MAX))
+        .catch(() => undefined);
+}
+// the reset a cap waits on: the one its entry named, unless that is already past (a text reset read to the minute),
+// then the 5h reset the last measure named
+const resetOf = (named: number | undefined, now: number) =>
+    named !== undefined && named > now ? named : fiveHourResetsAt;
+async function capFromTranscript($: EngineInterface) {
+    const sid = await currentId($);
+    const home = await $.env.get('HOME').catch(() => undefined);
+    if (!sid || !home) return undefined;
+    const out = await $.process
+        .run(['sh', '-c', TRANSCRIPT_TAIL, 'sh', home, sid])
+        .catch(() => undefined);
+    return out ? capOf(out.stdout) : undefined;
+}
+// a capped session's resume, armed for the reset it waits on; a turn start or a new cap bumps capGen, so an old timer
+// never fires
+export async function armWake($: EngineInterface, view: ViewDoors) {
+    const mine = ++capGen;
+    const at = cap?.resetsAt;
+    if (at === undefined || cap?.sentFor === at) return;
+    const wait = at + WAKE_SLACK_MS - (await $.clock.now());
+    $.clock.after(Math.max(0, wait), async () => {
+        if (mine !== capGen || turn.isBusy || !cap) return;
+        // the reset is spent at its fire, switch on or off: ⏰ flipped on later never wakes a reset already past (o102)
+        cap = { ...cap, sentFor: at };
+        await $.state.set(CAP, cap).catch(() => undefined);
+        const waker = (await $.store.get(WAKER_KEY)) as
+            | { on?: boolean }
+            | undefined;
+        if (waker?.on !== true || !(await partsShown($))('stash.waker')) return;
+        $.ui.log('x-mod-stash waker: resumed the session after the 5h reset');
+        await selfSubmit($, RESUME, false, () => prepareTurn(view));
+    });
+}
+// a reload hands back the cap `$.state` kept
+export function holdCap(kept: StashCap | undefined) {
+    cap = kept;
+}
+// a stop on the 5h cap waits for the reset; any other end clears it
+export async function capAtTurnEnd(
+    $: EngineInterface,
+    isError: boolean,
+    answer: string,
+    view: ViewDoors,
+) {
+    // a stop on the 5h cap waits for the reset; any other end clears it. the cap ends the turn with an empty answer,
+    // so an error end reads the transcript's last entry for the cap text and the reset it names (FRM-488)
+    const read =
+        isError && !CAPPED.test(answer)
+            ? await capFromTranscript($)
+            : undefined;
+    // the signals rank: the entry's typed field or its words, the answer's words, then a 5h window this full
+    const isFull = (fiveHourPercent ?? 0) >= CAP_FULL_PERCENT;
+    cap =
+        isError && (read || CAPPED.test(answer) || isFull)
+            ? { resetsAt: resetOf(read?.resetsAt, await $.clock.now()) }
+            : undefined;
+    await $.state.set(CAP, cap ?? null).catch(() => undefined);
+    // a cap only the full window named is a shape the hook could not read: never silent (dima, 2026-11-02)
+    const isUnread = cap !== undefined && !read && !CAPPED.test(answer);
+    if (isError || /session limit/i.test(answer))
+        await keepCapSeen($, read?.text ?? answer, cap !== undefined, isUnread);
+    if (isUnread) $.ui.toast('⏰ waker: an unrecognised cap — check FRM-488');
+    await armWake($, view);
+}
+// the 5h window's fill and reset, as each measure names them
+export async function capAtMeasure(
+    $: EngineInterface,
+    percentUsed: number | undefined,
+    resetsAt: number | undefined,
+    view: ViewDoors,
+) {
+    if (percentUsed !== undefined) fiveHourPercent = percentUsed;
+    if (resetsAt === undefined) return;
+    fiveHourResetsAt = resetsAt;
+    // capped before any measure named the reset: wait for this one
+    if (cap && cap.resetsAt === undefined) {
+        cap = { ...cap, resetsAt };
+        await $.state.set(CAP, cap).catch(() => undefined);
+        await armWake($, view);
+    }
 }
