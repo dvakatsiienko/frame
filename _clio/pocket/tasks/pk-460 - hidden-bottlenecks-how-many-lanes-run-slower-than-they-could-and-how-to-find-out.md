@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-20T12:38:00Z'
-updated_date: '2026-11-20T13:11:00Z'
+updated_date: '2026-11-20T13:14:00Z'
 labels:
   - s
 dependencies: []
@@ -39,4 +39,16 @@ PK-460:W1297 (2026-11-20 15:02, dima) how to solve this dangerous hazard?? when 
 PK-460:W1298 (2026-11-20 15:02, dima) I treat this case as very hazardous because it is expensive time-wise.
 PK-460:W1299 (2026-11-20 15:06, dima) does this optimization apply to the mods codie's other activities? is it worth taking as its default approach? will it improve the mods codie's shipping speed overall? does it apply to the herdr codie too? ❓
 id note: the 14:45 line stays written «W5» (notes are append-only); it is W1294
+
+15:14 canonical W-lines from helga's groom (they supersede my draft block above; wispr: «optimal» → unoptimal by context, «mods' code/COD» → mods codie, «harder COD» → herdr codie):
+PK-460:W1295 (2026-11-20 15:02, dima): good news. great time to get to o2, let's start.
+PK-460:W1296 (2026-11-20 15:02, dima): I want a precise answer about this incident where codie started with such an unoptimal approach that it would take days to solve this whole register. now, after the optimization, it was solved in about an hour or less.
+PK-460:W1297 (2026-11-20 15:02, dima): by the way, how much time did it take the mods codie to solve the register with the new approach? ❓ → ~1 h 55 min, 13:04–14:57 (siesta card 15:12)
+PK-460:W1298 (2026-11-20 15:02, dima): how to solve this dangerous hazard? when codie gets stuck with an unoptimal approach, stuff that could be solved in 10 or 20 minutes takes 4 hours instead. ❓ → the lane pace alarm, his o1 tick 15:13
+PK-460:W1299 (2026-11-20 15:02, dima): I treat this case as very hazardous because it is expensive time-wise.
+PK-460:W1300 (2026-11-20 15:06, dima): current bottleneck solution: I have another wide question.
+PK-460:W1301 (2026-11-20 15:06, dima): the optimization we applied to the mods codie for the register: does it apply to any other activity the mods codie has? ❓ → answered 15:06 (inference until measured)
+PK-460:W1302 (2026-11-20 15:06, dima): is it worth taking this approach as the default for the mods codie to solve mods? ❓ → the crew-codie line under o1
+PK-460:W1303 (2026-11-20 15:06, dima): will this tactic improve the mods codie's shipping speed overall? ❓ → answered 15:06 + the pace read
+PK-460:W1304 (2026-11-20 15:06, dima): does it apply to the herdr codie too? ❓ → the pace read: herdr 🟢, waiting 21 %
 <!-- SECTION:NOTES:END -->
