@@ -1,7 +1,6 @@
 // x-herdr-antenna (FRM-618): every thread once, in his order, grouped under its space or not, each row its name and a
 // still status dot; the look is herdr's own agents list, calmer: no spinner, no sort, no sound
 
-import { readdir } from 'fs/promises';
 import { h_flex, v_flex } from 'gpui-base';
 import { View, div, svg } from 'gpui-kit';
 import {
@@ -22,10 +21,12 @@ import {
 } from 'herdr';
 
 import { rowDetails } from './details.js';
-import { heirs, nextOrder } from './order.js';
+import { createListDrag } from './drag-view.js';
+import { heirs, moved, nextOrder } from './order.js';
 import { antennaRows } from './rows.js';
 import { antennaSettings, antennaSettingsText } from './settings.js';
 import { POPUP_HEIGHT, POPUP_WIDTH, settingsPopup } from './settings-view.js';
+import { createTabMember } from './tab-loop.js';
 import {
     NAMES,
     ORDER_KEY,
@@ -35,12 +36,20 @@ import {
     sessionName,
 } from './thread-names.js';
 
-/** @typedef {Record<string, import('gpui-kit').Color>} Theme */
+/** @typedef {Record<string, import('gpui-kit').Color> & import('./drag-view.js').DragTheme} Theme */
+/** @typedef {import('gpui-kit').Context} Context */
+/** a dragged row: its thread, and its group's addresses in drawn order, so a drop lands in that group
+ * @typedef {{ address: string, pane: string, group: string, members: string[] }} Dragged */
+
+// a thread row holds the keyboard: Tab and shift-Tab walk the one Tab loop, Enter opens the thread
+const ROW_TAB = 'x_herdr_antenna_row_tab';
+const ROW_BACK = 'x_herdr_antenna_row_back';
+const ROW_OPEN = 'x_herdr_antenna_row_open';
+const stopOf = (/** @type {string} */ address) => `thread-${address}`;
 
 const SETTINGS = `${home()}/.claude/shelf/herdr-settings/settings.json`;
 // the knobs live: the popup writes them here as it saves, so antenna and the tab bar redraw at once
 export const SETTINGS_KEY = 'antenna.settings';
-const STATES = `${home()}/.claude/shelf/herdr-state`;
 
 /** antenna's knobs as last saved, the defaults before the first read */
 const settingsNow = () =>
@@ -61,26 +70,21 @@ async function saveSetting(key, value) {
     }
 }
 
-/** each live thread's context fill and wait line by pid, from the state files cc's mods write for herdr */
-async function readStates() {
-    /** @type {Map<number, { context: number | null, wait: string | null }>} */
-    const byPid = new Map();
-    for (const f of await readdir(STATES).catch(
-        () => /** @type {string[]} */ ([]),
-    )) {
-        if (!f.endsWith('.json')) continue;
-        try {
-            const s = JSON.parse(
-                (await readTextFile(`${STATES}/${f}`)) ?? 'null',
-            );
-            if (typeof s?.pid !== 'number') continue;
-            byPid.set(s.pid, {
-                context: typeof s.ctx === 'number' ? s.ctx : null,
-                wait: typeof s.wait === 'string' ? s.wait : null,
-            });
-        } catch {}
-    }
-    return byPid;
+// the deck reads each thread's state file and publishes its context fill and wait line by pid; antenna reads them here
+const THREADS_KEY = 'x-herdr-deck.threads';
+
+/** @param {number | null | undefined} pid @returns {{ context: number | null, wait: string | null } | null} */
+function factsOf(pid) {
+    const deck = /** @type {{ threads?: Record<string, any> } | null} */ (
+        shared(THREADS_KEY)
+    );
+    const f = pid == null ? null : deck?.threads?.[String(pid)];
+    return f
+        ? {
+              context: typeof f.context === 'number' ? f.context : null,
+              wait: typeof f.wait === 'string' ? f.wait : null,
+          }
+        : null;
 }
 
 /** @param {any} node @param {string} id @returns {any} */
@@ -124,11 +128,40 @@ export default class Antenna extends View {
     init(_props, cx) {
         this.isPopup = Boolean(props()?.settings);
         if (this.isPopup) return;
+        cx.bind_keys([
+            { action: ROW_TAB, context: 'XAntennaRow', keystroke: 'tab' },
+            {
+                action: ROW_BACK,
+                context: 'XAntennaRow',
+                keystroke: 'shift-tab',
+            },
+            { action: ROW_OPEN, context: 'XAntennaRow', keystroke: 'enter' },
+        ]);
+        this.tab = createTabMember('x-herdr-antenna', {
+            layout,
+            setShared,
+            shared,
+        });
+        /** @type {Map<string, import('gpui-kit').FocusHandle>} each thread row's keyboard handle */
+        this.rowKeys = new Map();
+        /** @type {string | null} the stop that held the keyboard at the last draw */
+        this.heldStop = null;
+        // one drag; it lives on the view, so a status redraw mid-drag keeps it (FRM-664)
+        this.listKeys = cx.focus_handle();
+        this.drag = createListDrag({
+            axis: 'y',
+            focus: () => this.listKeys,
+            onClick: (/** @type {Dragged} */ item) =>
+                run('pane.focus', { pane: item.pane }),
+            onMove: (/** @type {Dragged} */ item, _from, to) => {
+                const target = item.members[to];
+                if (target)
+                    this.setOrder(moved(this.order, item.address, target));
+            },
+        });
         // each thread's last status and when it changed (ms), kept across restarts: the idle time
         /** @type {Record<string, { s: string, at: number }>} */
         this.changed = stored('changed', {});
-        /** @type {Map<number, { context: number | null, wait: string | null }>} */
-        this.states = new Map();
         cx.spawn(async (cx) => {
             const values = antennaSettings(await readTextFile(SETTINGS));
             if (JSON.stringify(shared(SETTINGS_KEY)) !== JSON.stringify(values))
@@ -144,12 +177,6 @@ export default class Antenna extends View {
                 await readNames(agents());
                 publishNames();
                 if (this.order.length === 0) this.seed();
-                const knobs = settingsNow();
-                if (
-                    knobs['antenna.details.context'] ||
-                    knobs['antenna.details.wait']
-                )
-                    this.states = await readStates();
                 cx.notify();
             });
         names(cx);
@@ -259,7 +286,36 @@ export default class Antenna extends View {
             .bg(t[status] ?? t.dim);
     }
 
-    render() {
+    /** @param {string} address @param {Context} cx */
+    rowKey(address, cx) {
+        const kept = this.rowKeys.get(address);
+        if (kept) return kept;
+        const made = cx.focus_handle();
+        this.rowKeys.set(address, made);
+        return made;
+    }
+
+    /** the Tab loop's turn: publish this draw's stops, take the stop it names, and keep the hold in step with focus
+     * @param {string[]} addresses the thread rows in drawn order @param {Context} cx */
+    joinTabLoop(addresses, cx) {
+        /** @param {() => void} run */
+        const later = (run) => cx.timer.after(0, run);
+        const to = this.tab.draw(addresses.map(stopOf), later);
+        const toAddress = to && addresses.find((a) => stopOf(a) === to);
+        if (toAddress) later(() => this.rowKey(toAddress, cx).focus());
+        const holding = addresses.find((a) =>
+            this.rowKeys.get(a)?.is_focused(),
+        );
+        const now = holding ? stopOf(holding) : null;
+        if (now === this.heldStop) return;
+        const was = this.heldStop;
+        this.heldStop = now;
+        if (was) this.tab.left(was, later);
+        if (now) later(() => this.tab.held(now));
+    }
+
+    /** @param {Context} cx */
+    render(cx) {
         const t = /** @type {Theme} */ (theme());
         const knobs = settingsNow();
         if (this.isPopup) return settingsPopup(t, knobs, saveSetting);
@@ -279,6 +335,25 @@ export default class Antenna extends View {
             names,
             order,
         });
+        // each thread row's group, in drawn order: a drag moves a row within its group, so a space header never sits
+        // between a row and its slot, and the slots stay one row tall
+        /** @type {Map<string, { group: string, members: string[] }>} */
+        const groupOf = new Map();
+        let group = { group: 'all', members: /** @type {string[]} */ ([]) };
+        for (const r of rows)
+            if (r.kind === 'space') group = { group: r.space, members: [] };
+            else {
+                group.members.push(r.address);
+                groupOf.set(r.address, group);
+            }
+        const addresses = rows.flatMap((r) =>
+            r.kind === 'thread' ? [r.address] : [],
+        );
+        if (!isNarrow) this.joinTabLoop(addresses, cx);
+        const isCompact = knobs['antenna.rowHeight'] === 'compact';
+        // with the wait line on every row is two lines tall, so a drag's slots match the rows
+        const rowHeight =
+            (isCompact ? 26 : 30) + (knobs['antenna.details.wait'] ? 14 : 0);
         let n = 0;
         const drawn = rows.map((r) => {
             if (r.kind === 'space')
@@ -295,15 +370,14 @@ export default class Antenna extends View {
                     .child(div().truncate().child(r.name));
             const a = byAddress.get(r.address);
             n += 1;
-            const base = h_flex()
-                .id(`an-${r.address}`)
-                .flex_none()
-                .items_center()
-                .cursor_pointer()
-                .hover((s) => s.bg(t.hover))
-                .on_click(() => run('pane.focus', { pane: a.pane }));
             if (isNarrow)
-                return base
+                return h_flex()
+                    .id(`an-${r.address}`)
+                    .flex_none()
+                    .items_center()
+                    .cursor_pointer()
+                    .hover((s) => s.bg(t.hover))
+                    .on_click(() => run('pane.focus', { pane: a.pane }))
                     .h(26)
                     .px(8)
                     .gap(4)
@@ -330,7 +404,7 @@ export default class Antenna extends View {
                     );
             const isQuiet = r.dot === 'idle' && !a.focused;
             const pid = NAMES.get(r.address)?.pid;
-            const state = pid ? this.states.get(pid) : null;
+            const state = factsOf(pid);
             const more = rowDetails(
                 knobs,
                 {
@@ -344,10 +418,46 @@ export default class Antenna extends View {
                 },
                 now,
             );
-            const isCompact = knobs['antenna.rowHeight'] === 'compact';
-            return base
-                .min_h(isCompact ? 26 : 30)
-                .py(more.wait ? 4 : 0)
+            const { group, members } = groupOf.get(r.address);
+            const at = members.indexOf(r.address);
+            const key = this.rowKey(r.address, cx);
+            const isHeld = key.is_focused();
+            return this.drag
+                .item(
+                    h_flex(),
+                    {
+                        from: at,
+                        item: {
+                            address: r.address,
+                            group,
+                            members,
+                            pane: a.pane,
+                        },
+                        key: r.address,
+                        label: r.name,
+                        places: members.length,
+                        targetFor: (/** @type {Dragged} */ held) =>
+                            held.group === group ? at : null,
+                    },
+                    t,
+                )
+                .id(`an-${r.address}`)
+                .flex_none()
+                .items_center()
+                .cursor_pointer()
+                .hover((s) => s.bg(t.hover))
+                .track_focus(key)
+                .key_context('XAntennaRow')
+                .on_action(ROW_TAB, () =>
+                    this.tab.ask(stopOf(r.address), false),
+                )
+                .on_action(ROW_BACK, () =>
+                    this.tab.ask(stopOf(r.address), true),
+                )
+                .on_action(ROW_OPEN, () => run('pane.focus', { pane: a.pane }))
+                .border_1()
+                .border_color(isHeld ? t.accent : '#00000000')
+                .h(rowHeight)
                 .px(8)
                 .gap(9)
                 .rounded(8)
@@ -457,13 +567,18 @@ export default class Antenna extends View {
                 ),
             )
             .child(
-                v_flex()
-                    .id('an-list')
-                    .flex_1()
-                    .min_h(0)
-                    .px(isNarrow ? 0 : 8)
-                    .overflow_y_scrollbar()
-                    .children(drawn),
+                this.drag
+                    .zone(v_flex().id('an-zone').relative().flex_1().min_h(0))
+                    .child(
+                        v_flex()
+                            .id('an-list')
+                            .flex_1()
+                            .min_h(0)
+                            .px(isNarrow ? 0 : 8)
+                            .overflow_y_scrollbar()
+                            .children(drawn),
+                    )
+                    .children([this.drag.ghost(t)].filter(Boolean)),
             )
             .when(isNarrow, (el) =>
                 el.child(
