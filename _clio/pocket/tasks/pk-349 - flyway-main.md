@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-20T11:47:00Z'
+updated_date: '2026-11-20T11:55:00Z'
 labels:
   - s
   - clio-main
@@ -1277,4 +1277,6 @@ PK-349:W1287 (2026-11-20 13:46, dima): with tabs hidden, the top bar shows the f
 - open answer owed: a decided line with no slice and no done-test line would have been lost at close (W1282-W1283)
 
 13:47 groom fix: W1276 and W1277 carried clio's quoted line without his comment; corrected: PK-349:W1276 (2026-11-20 13:34, dima): Tab focus in orbit, FRM-620's focus-outline wish (W14), written up as slice 4 for the herdr codie today ← nice. ← nice. PK-349:W1277 (2026-11-20 13:34, dima): Tab focus in orbit as slice 4 ← and where was it before i asked about it? ❓ ← where it was before i asked about it? ❓
+
+13:55 the 13:47 groom-fix note above was wrong (a 200-char cut misread): W1276 and W1277 stand as first written in the 13:34 block, his comment included
 <!-- SECTION:NOTES:END -->
