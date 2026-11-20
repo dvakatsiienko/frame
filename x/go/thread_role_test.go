@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -311,6 +313,31 @@ func TestThreadRenameRoleFromAThreadIsRefused(t *testing.T) {
 			}
 			if c.code == 1 && c.caller == "coordinator" && (strings.Contains(got.next, "--dima-ok") || !strings.Contains(got.next, "own terminal")) {
 				t.Errorf("next %q, want the way to dima's own terminal and no flag that unlocks it", got.next)
+			}
+		})
+	}
+}
+
+// a process table that cannot be read fails the seat gate closed, so a failing ps never opens it; a readable table with no session
+// above x leaves the gate open for dima's own terminal
+func TestSeatGateFailsClosedWhenPsFails(t *testing.T) {
+	t.Parallel()
+	sessions := t.TempDir()
+	write(t, filepath.Join(sessions, strconv.Itoa(os.Getppid())+".json"), `{"sessionId":"sid-caller"}`)
+	for _, c := range []struct {
+		name string
+		err  error
+		dir  string
+		want bool
+	}{
+		{"ps failed", errors.New("ps did not list the processes"), t.TempDir(), true},
+		{"ps read and no session above x", nil, t.TempDir(), false},
+		{"ps read and a session above x", nil, sessions, true},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			if got := threadFromTable(processTable{}, c.err, c.dir); got != c.want {
+				t.Errorf("threadFromTable = %v, want %v", got, c.want)
 			}
 		})
 	}

@@ -204,10 +204,15 @@ func threadRoleSwitch(r *Run, key, role string) (any, error) {
 	return data, nil
 }
 
-// whether x runs under a registered claude session, a thread, and not at dima's own terminal
+// whether x runs under a registered claude session, a thread, and not at dima's own terminal; a process table that cannot be
+// read stands as a thread, so the gate fails closed
 func callerIsThread() bool {
 	table, err := readProcessTable()
-	return err == nil && len(callerChain(table, powerSessionsDir())) > 0
+	return threadFromTable(table, err, powerSessionsDir())
+}
+
+func threadFromTable(table processTable, tableErr error, sessionsDir string) bool {
+	return tableErr != nil || len(callerChain(table, sessionsDir)) > 0
 }
 
 // from a thread the switch is refused: it runs only on dima's typed word, which x-mod-guard is to prove against his last prompt, and
