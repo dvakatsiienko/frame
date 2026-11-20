@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-20T17:11:00Z'
-updated_date: '2026-11-20T17:59:00Z'
+updated_date: '2026-11-20T18:00:00Z'
 labels:
   - s
   - clio-wing-1
@@ -42,4 +42,6 @@ PK-461:W15 (2026-11-20 19:54, dima): the grill itself narrows to this: we use sh
 19:54 settled: speak's base is shadcn through the bytes ui kit (W13); ui sdk: no probe, no test drive now (W14); research 2–3 ask open in orbit
 
 19:59 research 2–3 dropped on his o16 tick: research 1 found shadcn top-tier, his W15 narrowing settles speak's pick; closed, the pick lives in FRM-288 § decided
+
+close: PK-461:W1 answered; PK-461:W2 done (FRM-288 § decided); PK-461:W3 answered (research-1.md); PK-461:W4 answered (the kit stays on shadcn); PK-461:W5 dropped (W14: no probes); PK-461:W6 answered (herdr has no web view); PK-461:W7 done; PK-461:W8 dropped (o16); PK-461:W9 dropped (o16); PK-461:W10 done; PK-461:W11 done; PK-461:W12 answered (research-1.md § 3); PK-461:W13 done; PK-461:W14 done; PK-461:W15 done
 <!-- SECTION:NOTES:END -->
