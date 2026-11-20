@@ -1275,4 +1275,6 @@ PK-349:W1287 (2026-11-20 13:46, dima): with tabs hidden, the top bar shows the f
 - his orbit: o2 plain probe (keep till he says), o6 FRM-576 lift (9 lines into crew-lead surface files)
 - next mine: FRM-618 body gets the antenna lines (W1263-W1275, W1285, W1287: cog popup, sort+sound out, settings, tabs hide, top bar name+wait line); FRM-620 done test gets the Tab outline line; quiet-replies verdict; FRM-516, FRM-586 reads
 - open answer owed: a decided line with no slice and no done-test line would have been lost at close (W1282-W1283)
+
+13:47 groom fix: W1276 and W1277 carried clio's quoted line without his comment; corrected: PK-349:W1276 (2026-11-20 13:34, dima): Tab focus in orbit, FRM-620's focus-outline wish (W14), written up as slice 4 for the herdr codie today ← nice. ← nice. PK-349:W1277 (2026-11-20 13:34, dima): Tab focus in orbit as slice 4 ← and where was it before i asked about it? ❓ ← where it was before i asked about it? ❓
 <!-- SECTION:NOTES:END -->
