@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-20T14:13:00Z'
+updated_date: '2026-11-20T14:44:00Z'
 labels:
   - s
   - clio-main
@@ -16,10 +16,11 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-27
-- [ ] #2 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #3 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #4 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #1 f60 stray batch 9 rider: crow:plan-critique runs in one second mint the same note ids
+- [ ] #2 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-27
+- [ ] #3 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #4 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #5 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
