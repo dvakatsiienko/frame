@@ -7,7 +7,6 @@ import type {
     StashCap,
     StashEntry,
     StashLane,
-    StashOrbit,
     StashPlan,
 } from '../types/stash.d.ts';
 import {
@@ -116,21 +115,26 @@ import {
     ORBIT_TOOL,
     PRESS_DIR,
     bandPressLines,
-    hasPlanMark,
     isAllAsksMarkable,
     isFresh,
     joinRowsText,
     joinText,
     linkLabel,
-    lockJoined,
     moved,
     oneLine,
     orbitOp,
-    planTaken,
     planText,
     turnEnded,
     wrongText,
 } from './orbit.ts';
+import {
+    DIMA_AT,
+    pressAllAsks,
+    pressMark,
+    takeMarks,
+    takePlanMark,
+    wakeForMarks,
+} from './orbit-presses.ts';
 import {
     EMPTY_ORBIT,
     KEPT,
@@ -141,9 +145,7 @@ import {
     inMarking,
     keepState,
     markAsks,
-    markAsksNow,
     orbitNow,
-    recordTicks,
     saveOrbit,
     startOrbit,
 } from './orbit-store.ts';
@@ -342,8 +344,6 @@ type AskDoor = {
 };
 
 const KEPT_MS = 7 * 24 * 60 * 60 * 1000;
-// when dima last prompted anywhere: an idle session's herdr press waits for it before it wakes
-const DIMA_AT = 'dima-at';
 const AWAY_NOTE =
     'dima is afk: nothing waits on him. take reversible steps and log them, pick every pending ask and log its undo, raise one in orbit only when blocked, on his design call, or irreversible. send no ping.';
 const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';
@@ -462,141 +462,6 @@ export const COST_WORDS =
     /\b(?:tokens?|cach(?:e|ed|ing)|(?:ctx|context) costs?|pricing|mtok)\b/i;
 const COST_HINT =
     "💵 a cost question: read ~/frame/home/.claude/plugin-x/skills/crew-lead/references/model-cards.md before answering (each model's price line, and the «cache reads are where agents spend» bullet), never from recall.";
-
-// an idle session whose asks were marked from another board wakes once dima prompts anywhere after the marks: one turn
-// carrying all of them. the submitted prompt skips this plugin's own prompt.submit hook, so the marks ride its text
-async function wakeForMarks($: EngineInterface) {
-    if (
-        (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
-        turn.isBusy
-    )
-        return;
-    if (!(await partsShown($))('stash.orbit')) return;
-    const dimaAt = Number(await $.store.get(DIMA_AT).catch(() => 0)) || 0;
-    const due = await takeMarks($, (o) => {
-        const held = o.asks
-            .filter(isFresh)
-            .filter((a) => a.markedAt !== undefined);
-        return held.length &&
-            dimaAt > Math.min(...held.map((a) => a.markedAt ?? 0))
-            ? held
-            : [];
-    });
-    if (due.length)
-        void selfSubmit(
-            $,
-            joinText(due, tickSentence(await orbitTexts($), due.length)),
-            false,
-            () => prepareTurn(viewDoors($)),
-        ).catch(() => undefined);
-}
-
-// a turn takes his marks in the marking queue: a press lands wholly before or after the lock, never inside it
-function takeMarks($: EngineInterface, pick: (o: StashOrbit) => OrbitAsk[]) {
-    return inMarking(async () => {
-        const o = await currentOrbit($);
-        const asks = pick(o);
-        if (asks.length)
-            await saveOrbit($, lockJoined(o, asks), () => keepShelf($));
-        carried(
-            $,
-            asks.map((a) => `orbit:steer:${a.id}`),
-        );
-        return asks;
-    });
-}
-
-// a turn takes his phases mark the same way: a reorder lands wholly before or after, never put back
-function takePlanMark($: EngineInterface) {
-    return inMarking(async () => {
-        const o = await currentOrbit($);
-        if (!hasPlanMark(o.plan)) return undefined;
-        await saveOrbit($, { ...o, plan: planTaken(o.plan) }, () =>
-            keepShelf($),
-        );
-        carried($, ['plan:steer']);
-        return o.plan;
-    });
-}
-
-async function pressMarkNow(
-    $: EngineInterface,
-    id: string,
-    mark: 'accepted' | 'rejected',
-) {
-    await $.state.set(MOBILE, false).catch(() => undefined);
-    const ask = (await currentOrbit($)).asks.find((a) => a.id === id);
-    // a press on a frame drawn before his prompt locked the ask changes nothing, so it keeps the record (S1)
-    if (!ask || ask.isLocked || ask.isResolved) return;
-    const next = ask.mark === mark ? undefined : mark;
-    const isTicked = next === 'accepted';
-    if (isTicked) await recordTicks($, [ask], true);
-    const isKept = await markAsksNow(
-        $,
-        () => keepShelf($),
-        (a) =>
-            a.id === id
-                ? { ...a, isChanged: false, isHerdrMark: undefined, mark: next }
-                : a,
-        false,
-        undefined,
-    );
-    // a mark that never landed takes its record with it, so a guard never honours a tick the board does not show
-    if (!isTicked || !isKept) await recordTicks($, [ask], false);
-}
-// ✅ is a press on the frame he read: an ask added since waits for its own look
-async function pressAllAsksNow(
-    $: EngineInterface,
-    drawn: Pick<OrbitAsk, 'id' | 'text'>[],
-) {
-    await $.state.set(MOBILE, false).catch(() => undefined);
-    const open = (await currentOrbit($)).asks.filter(
-        (a) => !a.mark && !a.isLocked && !a.isResolved,
-    );
-    // the text too: a follow keeps the id and asks a new question he has not read
-    const asks = open.filter(
-        (a) =>
-            drawn.some((d) => d.id === a.id && d.text === a.text) &&
-            isAllAsksMarkable(a),
-    );
-    // a merge ask is ⚠️: a silent skip would read as a block at the guard
-    const skipped = open.filter((a) => !asks.includes(a));
-    if (skipped.length)
-        await $.ui.toast(
-            `✅ left unticked: ${skipped.map((a) => `${a.id} ${a.text}`).join('; ')}`,
-        );
-    if (!asks.length) return;
-    await recordTicks($, asks, true);
-    const isKept = await markAsksNow(
-        $,
-        () => keepShelf($),
-        (a) =>
-            asks.some((x) => x.id === a.id)
-                ? {
-                      ...a,
-                      isChanged: false,
-                      isHerdrMark: undefined,
-                      mark: 'accepted',
-                  }
-                : a,
-        false,
-        undefined,
-    );
-    if (!isKept) await recordTicks($, asks, false);
-}
-async function pressAllAsks(
-    $: EngineInterface,
-    drawn: Pick<OrbitAsk, 'id' | 'text'>[],
-) {
-    await inMarking(() => pressAllAsksNow($, drawn));
-}
-async function pressMark(
-    $: EngineInterface,
-    id: string,
-    mark: 'accepted' | 'rejected',
-) {
-    await inMarking(() => pressMarkNow($, id, mark));
-}
 
 // each live clio, main and wings, with its own orbit asks that wait on dima: unmarked, as it last published them; read at
 // the poll into $.state, since the board draws with no file read
@@ -1193,7 +1058,7 @@ export const register: Register = (on) => {
                     await absorbMarks($, () => keepShelf($), isTypedHere).catch(
                         () => undefined,
                     );
-                    await wakeForMarks($).catch(() => undefined);
+                    await wakeForMarks($, viewDoors($)).catch(() => undefined);
                     await takeBandPresses($).catch(() => undefined);
                     // pollShelf paces itself every third tick; a gate here would slow it twice over
                     await pollShelf($);
