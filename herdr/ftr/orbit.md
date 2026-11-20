@@ -99,9 +99,10 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: his word, 14:57: «remove this border entirely for all buttons»; 16:09: the steer boxes lose their tooltips
 - ⬜ a picture an ask names previews in its card, a click opens the chat's viewer (FRM-676 slice A)
   - given an ask whose link, or a path in its text, ends in png, jpg, jpeg, gif or webp
-  - then the card shows it as a preview the card's width at most and never taller than 120 px, the link first, then the text's paths
-  - and any other file path is a 📄 row that opens the file; a link to a text file keeps its 🔗 row that folds its text open
+  - then the card shows the pictures as a strip, each whole at one height under 120 px and never wider than the card, the link first, then the text's paths
+  - and the ask's text names each path by its file name alone; any other file, the link's too, is a 📄 button under the text that opens it in his app (a text file in MacVim)
   - and a file that does not exist reads «not found: <name>», the rest of the card as ever
   - when he clicks a preview
   - then the chat comes into view and its picture viewer opens on it, ← → through the ask's other pictures; with ⌘ held his desktop app opens it, CleanShot annotate when that setting is on
+  - decision: his «looks ugly» (20:54) and «ugly text» (20:59): a strip of whole pictures over stacked previews, a path in the text shrunk to its name, its button under the text (herdr's text view takes no button inside a sentence)
   - decision: the deck asks the chat's own viewer through the shared value `chat.view`, one viewer for both, nothing moved to `_shared/` but the path finder (clio's spec, 20 Nov)

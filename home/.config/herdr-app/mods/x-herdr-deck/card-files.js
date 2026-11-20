@@ -165,9 +165,8 @@ export function createCardFiles() {
     /**
      * the card's file lines, or none
      * @param {import('./main.js').Theme} t @param {{ text: string, link: string | null }} ask @param {string} key
-     * @param {(id: string) => any} linkRow the link's own row, which folds a text file open under the ask
      */
-    function view(t, ask, key, linkRow) {
+    function view(t, ask, key) {
         const shown = cardFiles(attachmentsOf(ask, home()), found);
         if (!shown.length) return [];
         const pictures = shown.filter(
@@ -212,7 +211,6 @@ export function createCardFiles() {
         /** @param {import('./pictures.js').CardFile} f @param {number} i */
         const chip = (f, i) => {
             const id = `chip-${key}-${i}`;
-            if (f.kind === 'file' && f.isLink) return linkRow(id);
             const base = h_flex()
                 .id(id)
                 .tab_stop(false)

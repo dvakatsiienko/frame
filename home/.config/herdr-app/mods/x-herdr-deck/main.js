@@ -65,6 +65,7 @@ import {
     tickAllTakes,
     withPending,
 } from './orbit.js';
+import { askText } from './pictures.js';
 import { SENT_MS, next, pressState, untickDoor } from './press.js';
 import {
     CLAUDE,
@@ -176,8 +177,6 @@ export default class Deck extends View {
         this.labelW = new Map();
         /** @type {Map<string, { box: number, full: number }>} each phase line's box and its uncut text's width */
         this.phaseW = new Map();
-        /** the ask whose linked file shows under it, and that file's text, or why it could not be read @type {{ id: string, text: string | null, problem: string | null } | null} */
-        this.linkShown = null;
         this.isThread = props()?.view === 'seat';
         if (this.isThread) return;
         if (props()?.view === 'glide') {
@@ -815,14 +814,7 @@ export default class Deck extends View {
                 .when(linkOf(ask.link)?.kind === 'web', (el) =>
                     el.child(this.linkLine(t, ask, `link-${key}`)),
                 )
-                .children(
-                    this.files.view(t, ask, key, (id) =>
-                        this.linkLine(t, ask, id),
-                    ),
-                )
-                .when(Boolean(ask.id) && this.linkShown?.id === ask.id, (el) =>
-                    el.child(this.linkPreview(t, `linked-${key}`)),
-                )
+                .children(this.files.view(t, ask, key))
                 .when(Boolean(ask.id), (el) =>
                     el.child(
                         h_flex()
@@ -909,13 +901,11 @@ export default class Deck extends View {
     }
 
     /**
-     * the ask's link, one line under its pick (FRM-645: a hands-ask carries a look card): a web or app link opens
-     * outside, a file shows its text under the ask, a second click folds it
+     * the ask's web or app link, one line under its pick: it opens outside; a file link is a button with the others
      * @param {Theme} t @param {Ask} ask @param {string} id
      */
     linkLine(t, ask, id) {
         const shown = linkOf(ask.link);
-        const isOpen = this.linkShown?.id === ask.id;
         return h_flex()
             .id(id)
             .tab_stop(false)
@@ -925,76 +915,22 @@ export default class Deck extends View {
             .text_color(t.accent)
             .cursor_pointer()
             .hover((st) => st.underline())
-            .tooltip(
-                shown?.kind === 'file'
-                    ? `${isOpen ? 'fold' : 'show'} ${ask.link}`
-                    : `open ${ask.link}`,
-            )
-            .on_click((_e, cx) => {
-                const link = ask.link ?? '';
-                if (shown?.kind !== 'file') {
-                    cx.spawn(async () => {
-                        await exec('open', [link]).catch(
-                            /** @returns {null} */ () => null,
-                        );
-                    });
-                    return;
-                }
-                if (isOpen) {
-                    this.linkShown = null;
-                    cx.notify();
-                    return;
-                }
-                const askId = ask.id ?? '';
-                this.linkShown = { id: askId, problem: null, text: null };
-                cx.notify();
-                cx.spawn(async (cx) => {
-                    const path = link.replace(/^~\//, `${home()}/`);
-                    const text = await readTextFile(path).catch(
-                        /** @returns {null} */ () => null,
-                    );
-                    if (this.linkShown?.id !== askId) return;
-                    this.linkShown = {
-                        id: askId,
-                        problem:
-                            typeof text === 'string'
-                                ? null
-                                : `cannot read ${shown.label}`,
-                        text: typeof text === 'string' ? text : null,
-                    };
-                    cx.notify();
-                });
+            .on_click(() => {
+                exec('open', [ask.link ?? '']).catch(() => {});
             })
             .child('🔗')
-            .child(shown?.label ?? '')
-            .child(
-                div()
-                    .text_color(t.dim)
-                    .child(isOpen ? '▾' : '▸'),
-            );
-    }
-
-    /** the linked file's text under its ask, read as markdown and selectable @param {Theme} t @param {string} id */
-    linkPreview(t, id) {
-        const shown = this.linkShown;
-        return v_flex()
-            .p(10)
-            .rounded(6)
-            .bg(t.background)
-            .child(
-                shown?.text != null
-                    ? prose(id, shown.text, t.foreground, SIZE.secondary)
-                    : div()
-                          .text_size(SIZE.small)
-                          .text_color(t.dim)
-                          .child(shown?.problem ?? 'reading…'),
-            );
+            .child(shown?.label ?? '');
     }
 
     /** @param {Theme} t @param {Row} s @param {Ask} ask @param {string} id */
     askLine(t, s, ask, id) {
         if (!ask.id)
-            return prose(id, cardText(ask.text), t.foreground, SIZE.main);
+            return prose(
+                id,
+                cardText(askText(ask.text, home())),
+                t.foreground,
+                SIZE.main,
+            );
         const isUpdated = this.updated?.has(`${s.sid}:${ask.id}`);
         const label = `${isUpdated ? '🆕 ' : ''}${askLabel(s.name, ask.id)}`;
         const width =
@@ -1005,7 +941,7 @@ export default class Deck extends View {
             .child(
                 prose(
                     id,
-                    `${leadingRoom(width, SIZE.main)}${cardText(ask.text)}`,
+                    `${leadingRoom(width, SIZE.main)}${cardText(askText(ask.text, home()))}`,
                     t.foreground,
                     SIZE.main,
                 ),

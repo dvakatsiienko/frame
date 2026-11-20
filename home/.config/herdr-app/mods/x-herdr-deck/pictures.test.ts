@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import {
+    askText,
     attachmentsOf,
     cardFiles,
     pressPicture,
@@ -225,5 +226,26 @@ describe("a preview's press brings the chat into view, then asks its viewer", ()
             selectChat: () => {},
         });
         expect(asked).toMatchObject({ at: 0, isDesktop: true });
+    });
+});
+
+describe("a path in an ask's text reads as its file name, its button under the text", () => {
+    test('a ~ path and a full path shrink to their names', () => {
+        expect(
+            askText(
+                'look: previews ~/.local/state/looks/a.png and /tmp/notes/b.md now',
+                HOME,
+            ),
+        ).toBe('look: previews a.png and b.md now');
+    });
+
+    test('a quoted path with spaces shrinks too', () => {
+        expect(askText('open "/tmp/Clean Shot.png" now', HOME)).toBe(
+            'open "Clean Shot.png" now',
+        );
+    });
+
+    test('text with no path stays as written', () => {
+        expect(askText('pick a) or b)?', HOME)).toBe('pick a) or b)?');
     });
 });

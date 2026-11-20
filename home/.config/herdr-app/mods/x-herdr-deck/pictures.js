@@ -37,6 +37,23 @@ export function attachmentsOf(ask, home) {
 }
 
 /**
+ * an ask's text with each path it names shrunk to the file's name: the file's own button sits under the text
+ * @param {string} text @param {string} home his home, for a `~` path
+ */
+export function askText(text, home) {
+    let out = text;
+    for (const { path } of fileLinks(text, home)) {
+        const name = nameOf(path);
+        const tilde = path.startsWith(`${home}/`)
+            ? `~${path.slice(home.length)}`
+            : null;
+        for (const raw of [path, tilde, path.replace(/ /g, '\\ ')])
+            if (raw) out = out.split(raw).join(name);
+    }
+    return out;
+}
+
+/**
  * what the card draws for each file, from what the view found on disk: a picture's preview copy, `true` for a file
  * that exists, `false` for one that does not; a file not looked at yet reads
  * @param {Attachment[]} files @param {Map<string, unknown>} found
