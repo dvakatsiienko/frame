@@ -4,7 +4,6 @@ import type { EngineInterface, Register, RenderElement } from 'claude-code';
 import type {
     FieldDraft,
     OrbitAsk,
-    OrbitAssumption,
     QuietLogLine,
     StashCap,
     StashEntry,
@@ -122,10 +121,8 @@ import {
     PRESS_DIR,
     bandPressLines,
     hasPlanMark,
-    herdrTicks,
     isAllAsksMarkable,
     isFresh,
-    isPressOn,
     joinRowsText,
     joinText,
     linkLabel,
@@ -142,10 +139,14 @@ import {
     EMPTY_ORBIT,
     KEPT,
     PREFIX,
+    absorbMarks,
+    changeAssumed,
     currentOrbit,
     dropTicks,
     inMarking,
     keepState,
+    markAsks,
+    markAsksNow,
     orbitNow,
     putOrbit,
     recordTicks,
@@ -257,7 +258,6 @@ import {
 import { isSpeakingNow, playPress, refreshSpeaking, speak } from './speak.ts';
 import {
     AFK_KEY,
-    HERDR_READ,
     HOT,
     MODEL,
     REPLY,
@@ -819,7 +819,7 @@ async function leaveBoxes($: EngineInterface) {
 // a steer another board wrote while he was away wins, and his text is offered
 async function returnToBoxes($: EngineInterface) {
     // a steer another board wrote may still wait as a mark the poll has not read
-    await absorbMarks($);
+    await absorbMarks($, () => keepShelf($), isTypedHere);
     let isOffered = false;
     const left = [...textsLeft];
     textsLeft.clear();
@@ -861,6 +861,7 @@ async function saveTyped(
             if (!ask || ask.isLocked || ask.isResolved) return false;
             await markAsks(
                 $,
+                () => keepShelf($),
                 (x) => (x.id === own[2] ? { ...x, steer } : x),
                 false,
                 isTyped ? own[2] : undefined,
@@ -868,7 +869,11 @@ async function saveTyped(
             return true;
         }
         if (!o.assumed?.some((y) => y.id === own[2])) return false;
-        await changeAssumed($, (y) => (y.id === own[2] ? { ...y, steer } : y));
+        await changeAssumed(
+            $,
+            () => keepShelf($),
+            (y) => (y.id === own[2] ? { ...y, steer } : y),
+        );
         return true;
     }
     if (key === 'plan:steer') {
@@ -1196,18 +1201,6 @@ async function quietBooks($: EngineInterface) {
         );
 }
 
-// herdr's presses for this session past what it read last; the file is herdr's board's alone, so this side only reads
-// and keeps its own watermark. x-mod-guard reads the same file as his tick, its ticks-write rule keeping seats out (FRM-544)
-async function herdrMarksOf($: EngineInterface, sid: string) {
-    const home = await $.env.get('HOME').catch(() => undefined);
-    const text = await $.fs
-        .read(`${home}/.claude/shelf/orbit-ticks/${sid}.jsonl`)
-        .catch(() => '');
-    const read = await $.store.get(HERDR_READ + sid).catch(() => undefined);
-    const after = typeof read === 'number' ? read : 0;
-    return { after, ...herdrTicks(text, after) };
-}
-
 // a steer typed into this session's own box a moment ago is newer than a card's edit that lands now
 const isTypedHere = (askId: string) =>
     isTypingAt(
@@ -1215,68 +1208,6 @@ const isTypedHere = (askId: string) =>
         // clock-ok: compared with the drafts' own Date.now() stamps, so both sides read one clock
         Date.now(),
     );
-
-// dima's presses on herdr's board join this session's own orbit, as if made here; a steer typed here stays in its box over
-// the press's (PK-149)
-async function absorbMarks($: EngineInterface) {
-    const sid = await currentId($);
-    if (!sid) return;
-    const herdr = await herdrMarksOf($, sid);
-    if (herdr.last <= herdr.after) return;
-    // his tick from herdr is an event: the bookkeeping jobs tick at 4 s again
-    await markActive($);
-    let isSaved = false;
-    // asks his newer ↩️ took back from an accepted mark: their tick record goes too, so the guard honours no tick the
-    // board no longer shows
-    const retracted: OrbitAsk[] = [];
-    const accepted: OrbitAsk[] = [];
-    await inMarking(async () => {
-        const o = await currentOrbit($);
-        isSaved = await saveOrbit(
-            $,
-            {
-                ...o,
-                asks: o.asks.map((a) => {
-                    // a new herdr press replaces the ask's mark, the newest press winning as at x-mod-guard: his ↩️ then 🛎
-                    // is a tick (it once kept the first, which locked him out, sixth sense round 1 on FRM-544); it marks only
-                    // the question he read, never the round a follow put under the same id
-                    const h = herdr.marks[a.id];
-                    const m = isPressOn(h, a) ? h : undefined;
-                    if (!m || a.isLocked || a.isResolved) return a;
-                    // a herdr ↩️ takes back a tick a turn already took, whose mark the turn end cleared: the deck's tick is a
-                    // toggle, and the record would still stand for its 2 h
-                    if (m.mark !== 'accepted') retracted.push(a);
-                    // his 🛎 from herdr gets the tick record a seat-board 🛎 gets: x-herdr-deck prunes the press once read
-                    // and the turn that takes the ask clears its mark, so the record is what x-mod-guard honours for 2 h
-                    // (clio's o49 at 19:30, wing 1's o13 at 19:08)
-                    if (m.mark === 'accepted' && a.mark !== 'accepted')
-                        accepted.push(a);
-                    return {
-                        ...a,
-                        isChanged: false,
-                        isHerdrMark: true,
-                        mark: m.mark,
-                        markedAt: m.mark ? m.at : undefined,
-                        steer: isTypedHere(a.id)
-                            ? a.steer
-                            : m.isSteerEdit
-                              ? m.steer
-                              : // his untick from herdr takes back the steer his tick brought
-                                !m.mark
-                                ? undefined
-                                : (a.steer ?? m.steer),
-                    };
-                }),
-            },
-            () => keepShelf($),
-        );
-    });
-    if (isSaved && retracted.length) await recordTicks($, retracted, false);
-    if (isSaved && accepted.length) await recordTicks($, accepted, true);
-    // a press the orbit did not keep is read again at the next take
-    if (isSaved && herdr.last > herdr.after)
-        await $.store.set(HERDR_READ + sid, herdr.last).catch(() => undefined);
-}
 
 // an idle session whose asks were marked from another board wakes once dima prompts anywhere after the marks: one turn
 // carrying all of them. the submitted prompt skips this plugin's own prompt.submit hook, so the marks ride its text
@@ -1455,55 +1386,6 @@ async function ticketNote($: EngineInterface, text: string) {
     }
 }
 
-// dima marks or steers asks; a locked ask is the running turn's and stays as it is. a mark made while a turn runs
-// rides that turn's next tool result (the tool.call hook); one the turn never reaches rides his next prompt — a
-// hidden message appended instead started a turn of its own when it landed after the last read (dima, 20:31)
-// 🛎️ clears an assumption, ↩️ and its steer mark it wrong; a 🛎️ or ↩️ press means dima is at the mac (dima, 11:16)
-async function changeAssumed(
-    $: EngineInterface,
-    change: (x: OrbitAssumption) => OrbitAssumption | undefined,
-    isMark = false,
-) {
-    if (isMark) await $.state.set(MOBILE, false).catch(() => undefined);
-    await inMarking(async () => {
-        const o = await currentOrbit($);
-        await saveOrbit(
-            $,
-            {
-                ...o,
-                assumed: (o.assumed ?? []).flatMap((x) => {
-                    const changed = change(x);
-                    return changed ? [changed] : [];
-                }),
-            },
-            () => keepShelf($),
-        );
-    });
-}
-
-async function markAsks(
-    $: EngineInterface,
-    change: (a: OrbitAsk) => OrbitAsk,
-    isMark = false,
-    typedId?: string,
-) {
-    await inMarking(() => markAsksNow($, change, isMark, typedId));
-}
-async function markAsksNow(
-    $: EngineInterface,
-    change: (a: OrbitAsk) => OrbitAsk,
-    isMark: boolean,
-    typedId: string | undefined,
-) {
-    // only a 🛎️ or ↩️ press means dima is at the mac: a steer or a speak press never ends mobile mode (dima, 11:16)
-    if (isMark) await $.state.set(MOBILE, false).catch(() => undefined);
-    const o = await currentOrbit($);
-    const asks = o.asks.map((a) =>
-        a.isLocked || a.isResolved ? a : change(a),
-    );
-    return saveOrbit($, { ...o, asks }, () => keepShelf($), typedId);
-}
-
 // a turn takes his marks in the marking queue: a press lands wholly before or after the lock, never inside it
 function takeMarks($: EngineInterface, pick: (o: StashOrbit) => OrbitAsk[]) {
     return inMarking(async () => {
@@ -1560,6 +1442,7 @@ async function pressMarkNow(
     if (isTicked) await recordTicks($, [ask], true);
     const isKept = await markAsksNow(
         $,
+        () => keepShelf($),
         (a) =>
             a.id === id
                 ? { ...a, isChanged: false, isHerdrMark: undefined, mark: next }
@@ -1595,6 +1478,7 @@ async function pressAllAsksNow(
     await recordTicks($, asks, true);
     const isKept = await markAsksNow(
         $,
+        () => keepShelf($),
         (a) =>
             asks.some((x) => x.id === a.id)
                 ? {
@@ -3103,7 +2987,9 @@ export const register: Register = (on) => {
                     await load($);
                     await followHot($, viewDoors($)).catch(() => undefined);
                     if (isBookkept) await freshMeter($).catch(() => undefined);
-                    await absorbMarks($).catch(() => undefined);
+                    await absorbMarks($, () => keepShelf($), isTypedHere).catch(
+                        () => undefined,
+                    );
                     await wakeForMarks($).catch(() => undefined);
                     await takeBandPresses($).catch(() => undefined);
                     // pollShelf paces itself every third tick; a gate here would slow it twice over
@@ -3195,7 +3081,7 @@ export const register: Register = (on) => {
             await $.store
                 .set(DIMA_AT, await $.clock.now())
                 .catch(() => undefined);
-        await absorbMarks($);
+        await absorbMarks($, () => keepShelf($), isTypedHere);
         await currentOrbit($);
         const isOn = await partsShown($);
         const marked =
@@ -4292,13 +4178,19 @@ export const register: Register = (on) => {
                         </Button>
                     );
                     const handleAssumedSteer = (id: string, value: string) =>
-                        changeAssumed($, (y) =>
-                            y.id === id ? { ...y, steer: steerOf(value) } : y,
+                        changeAssumed(
+                            $,
+                            () => keepShelf($),
+                            (y) =>
+                                y.id === id
+                                    ? { ...y, steer: steerOf(value) }
+                                    : y,
                         );
                     // the steer keeps every keystroke, no Enter needed
                     const handleSteer = (id: string, value: string) =>
                         markAsks(
                             $,
+                            () => keepShelf($),
                             (x) =>
                                 x.id === id
                                     ? { ...x, steer: steerOf(value) }
@@ -4620,6 +4512,10 @@ export const register: Register = (on) => {
                                                         onPress={() =>
                                                             void changeAssumed(
                                                                 $,
+                                                                () =>
+                                                                    keepShelf(
+                                                                        $,
+                                                                    ),
                                                                 (y) =>
                                                                     y.id ===
                                                                     x.id
@@ -4636,6 +4532,10 @@ export const register: Register = (on) => {
                                                         onPress={() =>
                                                             void changeAssumed(
                                                                 $,
+                                                                () =>
+                                                                    keepShelf(
+                                                                        $,
+                                                                    ),
                                                                 (y) =>
                                                                     y.id ===
                                                                     x.id
@@ -5907,7 +5807,7 @@ export const register: Register = (on) => {
         // a mark dima made while any turn of this session runs joins it here, model-only, and locks — a peer's or a task's
         // turn too, only the keep-hot ping never takes one (dima's o10, 2026-10-11); the turn is read from $.state, which a
         // mid-turn reload keeps
-        await absorbMarks($);
+        await absorbMarks($, () => keepShelf($), isTypedHere);
         const isPing = (await $.state.get(TURN)).value?.isPinged ?? turn.pinged;
         const fresh =
             isPing || !isOn('stash.orbit')

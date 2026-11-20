@@ -2,12 +2,22 @@ import type { EngineInterface } from 'claude-code';
 
 import type {
     OrbitAsk,
+    OrbitAssumption,
     StashEntry,
     StashOrbit,
     StashTick,
 } from '../types/stash.d.ts';
-import { allAsksTicks, isGuardGated, mounted, steeredOrbit } from './orbit.ts';
+import {
+    allAsksTicks,
+    herdrTicks,
+    isGuardGated,
+    isPressOn,
+    mounted,
+    steeredOrbit,
+} from './orbit.ts';
 import { currentId, identity, sessionName } from './session-identity.ts';
+import { HERDR_READ } from './store-keys.ts';
+import { markActive } from './turn.ts';
 import { errorText } from './util.ts';
 
 // this session's orbit and dima's tick records: the one owner of `$.state` orbit and ticks, the store's `asks:` mirror
@@ -241,4 +251,131 @@ export async function startOrbit(
         ? steeredOrbit(kept)
         : await resumeState($).catch(() => EMPTY_ORBIT);
     isOrbitLoaded = true;
+}
+
+// herdr's presses for this session past what it read last; the file is herdr's board's alone, so this side only reads
+// and keeps its own watermark. x-mod-guard reads the same file as his tick, its ticks-write rule keeping seats out (FRM-544)
+async function herdrMarksOf($: EngineInterface, sid: string) {
+    const home = await $.env.get('HOME').catch(() => undefined);
+    const text = await $.fs
+        .read(`${home}/.claude/shelf/orbit-ticks/${sid}.jsonl`)
+        .catch(() => '');
+    const read = await $.store.get(HERDR_READ + sid).catch(() => undefined);
+    const after = typeof read === 'number' ? read : 0;
+    return { after, ...herdrTicks(text, after) };
+}
+// dima's presses on herdr's board join this session's own orbit, as if made here; a steer typed here stays in its box over
+// the press's (PK-149)
+export async function absorbMarks(
+    $: EngineInterface,
+    onSaved: () => Promise<void>,
+    isTyped: (askId: string) => boolean,
+) {
+    const sid = await currentId($);
+    if (!sid) return;
+    const herdr = await herdrMarksOf($, sid);
+    if (herdr.last <= herdr.after) return;
+    // his tick from herdr is an event: the bookkeeping jobs tick at 4 s again
+    await markActive($);
+    let isSaved = false;
+    // asks his newer ↩️ took back from an accepted mark: their tick record goes too, so the guard honours no tick the
+    // board no longer shows
+    const retracted: OrbitAsk[] = [];
+    const accepted: OrbitAsk[] = [];
+    await inMarking(async () => {
+        const o = await currentOrbit($);
+        isSaved = await saveOrbit(
+            $,
+            {
+                ...o,
+                asks: o.asks.map((a) => {
+                    // a new herdr press replaces the ask's mark, the newest press winning as at x-mod-guard: his ↩️ then 🛎
+                    // is a tick (it once kept the first, which locked him out, sixth sense round 1 on FRM-544); it marks only
+                    // the question he read, never the round a follow put under the same id
+                    const h = herdr.marks[a.id];
+                    const m = isPressOn(h, a) ? h : undefined;
+                    if (!m || a.isLocked || a.isResolved) return a;
+                    // a herdr ↩️ takes back a tick a turn already took, whose mark the turn end cleared: the deck's tick is a
+                    // toggle, and the record would still stand for its 2 h
+                    if (m.mark !== 'accepted') retracted.push(a);
+                    // his 🛎 from herdr gets the tick record a seat-board 🛎 gets: x-herdr-deck prunes the press once read
+                    // and the turn that takes the ask clears its mark, so the record is what x-mod-guard honours for 2 h
+                    // (clio's o49 at 19:30, wing 1's o13 at 19:08)
+                    if (m.mark === 'accepted' && a.mark !== 'accepted')
+                        accepted.push(a);
+                    return {
+                        ...a,
+                        isChanged: false,
+                        isHerdrMark: true,
+                        mark: m.mark,
+                        markedAt: m.mark ? m.at : undefined,
+                        steer: isTyped(a.id)
+                            ? a.steer
+                            : m.isSteerEdit
+                              ? m.steer
+                              : // his untick from herdr takes back the steer his tick brought
+                                !m.mark
+                                ? undefined
+                                : (a.steer ?? m.steer),
+                    };
+                }),
+            },
+            onSaved,
+        );
+    });
+    if (isSaved && retracted.length) await recordTicks($, retracted, false);
+    if (isSaved && accepted.length) await recordTicks($, accepted, true);
+    // a press the orbit did not keep is read again at the next take
+    if (isSaved && herdr.last > herdr.after)
+        await $.store.set(HERDR_READ + sid, herdr.last).catch(() => undefined);
+}
+// dima marks or steers asks; a locked ask is the running turn's and stays as it is. a mark made while a turn runs
+// rides that turn's next tool result (the tool.call hook); one the turn never reaches rides his next prompt — a
+// hidden message appended instead started a turn of its own when it landed after the last read (dima, 20:31)
+// 🛎️ clears an assumption, ↩️ and its steer mark it wrong; a 🛎️ or ↩️ press means dima is at the mac (dima, 11:16)
+export async function changeAssumed(
+    $: EngineInterface,
+    onSaved: () => Promise<void>,
+    change: (x: OrbitAssumption) => OrbitAssumption | undefined,
+    isMark = false,
+) {
+    if (isMark) await $.state.set(MOBILE, false).catch(() => undefined);
+    await inMarking(async () => {
+        const o = await currentOrbit($);
+        await saveOrbit(
+            $,
+            {
+                ...o,
+                assumed: (o.assumed ?? []).flatMap((x) => {
+                    const changed = change(x);
+                    return changed ? [changed] : [];
+                }),
+            },
+            onSaved,
+        );
+    });
+}
+export async function markAsks(
+    $: EngineInterface,
+    onSaved: () => Promise<void>,
+    change: (a: OrbitAsk) => OrbitAsk,
+    isMark = false,
+    typedId?: string,
+) {
+    await inMarking(() => markAsksNow($, onSaved, change, isMark, typedId));
+}
+export async function markAsksNow(
+    $: EngineInterface,
+    onSaved: () => Promise<void>,
+    change: (a: OrbitAsk) => OrbitAsk,
+    isMark: boolean,
+    typedId: string | undefined,
+) {
+    // only a 🛎️ or ↩️ press means dima is at the mac: a steer or a speak press never ends mobile mode (dima, 11:16)
+    if (isMark) await $.state.set(MOBILE, false).catch(() => undefined);
+    const o = await currentOrbit($);
+    const asks = o.asks.map((a) =>
+        a.isLocked || a.isResolved ? a : change(a),
+    );
+    return saveOrbit($, { ...o, asks }, onSaved, typedId);
 }
