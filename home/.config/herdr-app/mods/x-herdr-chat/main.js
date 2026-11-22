@@ -130,9 +130,12 @@ export default class Chat extends View {
     /** the send path: the magic send's marks, the hold, a send that did not go coming back */
     sendPath = createSendPath({
         attachments: this.quill.attachments,
+        editorMode: () => this.claudeSettings?.editorMode,
+        popped: () => this.model.popped(),
         pushed: (text, at) => this.model.pushed(text, at),
         quillBox: () => this.quill.box(),
         quills: this.quill.quills,
+        resetPopped: () => this.model.resetPopped(),
         say: (note, cx) => this.say(note, cx),
         shownAddress: () => this.feed.address(),
         shownFile: () => this.feed.file(),
@@ -208,6 +211,7 @@ export default class Chat extends View {
         pictures: this.pictures,
         reader: () => this.feed.reader(),
         rows: this.rows,
+        unsend: (queued, cx) => this.sendPath.unsend(queued, cx),
     });
     /** the thread shown: its Claude, its transcript read and watched, its earlier pages */
     feed = createThreadFeed({

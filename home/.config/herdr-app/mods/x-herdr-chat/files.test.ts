@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
     fileAt,
     isSentRow,
+    isUnsendRow,
     openArgs,
     replyIdOf,
     unlinkFiles,
@@ -191,5 +192,30 @@ describe('a tool call row names its fold for a saved place (wisphunter, slice 6)
     test('#call-N goes back to its tool row', () => {
         expect(replyIdOf('u-1#call-2')).toBe('u-1');
         expect(replyIdOf('u-1#file-0')).toBe('u-1');
+    });
+});
+
+describe("a message still in Claude Code's queue carries a × row under it (FRM-563 b+c)", () => {
+    test('a waiting message gets its × row, a delivered one none', () => {
+        const waiting: Row = {
+            at: null,
+            delivery: null,
+            files: [],
+            id: 'w1',
+            isTurnStart: false,
+            isWaiting: true,
+            kind: 'mine',
+            pictures: [],
+            replyId: null,
+            text: 'plain words',
+            tools: [],
+            version: 1,
+        };
+        const delivered = { ...waiting, id: 'm1', isWaiting: false };
+        const ids = withFileRows([waiting, delivered], HOME, new Map()).map(
+            (r) => r.id,
+        );
+        expect(ids).toEqual(['w1', 'w1#unsend', 'm1']);
+        expect(isUnsendRow('w1#unsend')).toBe(true);
     });
 });

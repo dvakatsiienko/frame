@@ -7,6 +7,7 @@ import {
     commandKeys,
     isHisQueued,
     isVimNormal,
+    pulledBack,
     queuedAfterIdle,
     queuedAfterRow,
     sendArgs,
@@ -321,5 +322,35 @@ describe('a pushed message with a picture or a quote leaves the waiting list at 
                 { at, isRecorded: false, said: 'hi', text: 'hi\n/p.jpg' },
             ]).map((r) => r.item.text),
         ).toEqual(['hi']);
+    });
+});
+
+describe('× on a waiting message: ↑ pulls the whole queue, his one goes back to the quill (FRM-563 b+c)', () => {
+    test('the crossed message comes back, the others go again in order', () => {
+        expect(pulledBack(['first', 'second', 'third'], 'second')).toEqual({
+            rest: ['first', 'third'],
+            words: 'second',
+        });
+    });
+
+    test('a message the turn took first comes back as nothing, the pulled ones go again', () => {
+        expect(pulledBack(['first'], 'gone')).toEqual({
+            rest: ['first'],
+            words: null,
+        });
+    });
+
+    test('a paste comes back as he typed it, out of its wrapper', () => {
+        expect(pulledBack([JOINED.text], JOINED.text)).toEqual({
+            rest: [],
+            words: HIS.text,
+        });
+    });
+
+    test('two same words: only one comes back, the other goes again', () => {
+        expect(pulledBack(['ok', 'ok'], 'ok')).toEqual({
+            rest: ['ok'],
+            words: 'ok',
+        });
     });
 });

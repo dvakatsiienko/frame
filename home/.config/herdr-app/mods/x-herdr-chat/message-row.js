@@ -7,7 +7,13 @@ import { home } from 'herdr';
 import { fileName } from './attach.js';
 import { splitBlocks } from './blocks.js';
 import { messageDetails } from './details.js';
-import { fileAt, isSentRow, unlinkFiles, withFileRows } from './files.js';
+import {
+    fileAt,
+    isSentRow,
+    isUnsendRow,
+    unlinkFiles,
+    withFileRows,
+} from './files.js';
 import { findSpans } from './find.js';
 import { replyFold } from './fold.js';
 import { ICONS } from './icons.js';
@@ -325,6 +331,26 @@ export function createMessageRows(deps) {
      * @param {Row} row @param {Theme} t
      */
     function fileRow(row, t) {
+        // a message still in Claude Code's queue: its × takes it back to the quill (FRM-563 b+c)
+        if (isUnsendRow(row.id))
+            return h_flex()
+                .w_full()
+                .justify_end()
+                .child(
+                    h_flex()
+                        .gap(4)
+                        .items_center()
+                        .px(8)
+                        .py(2)
+                        .rounded(6)
+                        .border(1)
+                        .border_color(t.border)
+                        .text_size(12)
+                        .text_color(t.muted)
+                        .cursor_pointer()
+                        .child('×')
+                        .child('take back'),
+                );
         if (isSentRow(row.id))
             return v_flex()
                 .w_full()
@@ -478,11 +504,15 @@ export function createMessageRows(deps) {
          * a click on a row: a tool call opens or closes, a folded reply opens whole, pictures open in the viewer,
          * a file in its app
          * @param {readonly Row[]} rows @param {string} key
-         * @returns {{ kind: 'redraw' } | { kind: 'pictures', files: string[], at: number } | { kind: 'file', path: string } | null}
+         * @returns {{ kind: 'redraw' } | { kind: 'pictures', files: string[], at: number } | { kind: 'file', path: string } | { kind: 'unsend', queued: string } | null}
          */
         press(rows, key) {
             const id = key.replace(/#(?:above|below)$/, '');
             const pressed = rows.find((r) => r.id === id);
+            if (pressed && isUnsendRow(id))
+                return pressed.queued
+                    ? { kind: 'unsend', queued: pressed.queued }
+                    : null;
             // a click in a tool call's card moves no fold and asks no redraw, so his selection there stays
             if (pressed?.kind === 'tool')
                 return toolFolds.toggle(id) ? { kind: 'redraw' } : null;

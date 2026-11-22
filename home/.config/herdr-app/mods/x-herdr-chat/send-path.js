@@ -14,7 +14,7 @@ import {
     holdSend,
 } from './joins.js';
 import { createMagic, retextWait } from './magic.js';
-import { sendArgs } from './queued.js';
+import { clearKeys, isVimNormal, pulledBack, sendArgs } from './queued.js';
 import { sendBlocked } from './send.js';
 import { sidOf } from './thread.js';
 
@@ -70,6 +70,9 @@ function isWindowActive() {
  *   pushed: (text: string, at: number) => void,
  *   say: (note: string | null, cx: Context) => void,
  *   typingInto: Set<string>,
+ *   popped: () => string[],
+ *   resetPopped: () => void,
+ *   editorMode: () => unknown,
  * }} deps the shown thread's transcript and terminal, the quill's box, every thread's quill and its waiting files,
  *   the row model told of a slash command it will see queued, the note under the quill, and the threads a send or a
  *   pick types into now (one owner: the chat), and whether the shown thread is in a turn
@@ -83,6 +86,9 @@ export function createSendPath({
     pushed,
     say,
     typingInto,
+    popped,
+    resetPopped,
+    editorMode,
 }) {
     /** the marks of the magic send: words waiting in the quill to join a turn */
     const magic = createMagic({
@@ -219,6 +225,55 @@ export function createSendPath({
         });
     }
 
+    /**
+     * the × on a waiting message (FRM-563 b+c, the old chatter's pull, 507b178f): ↑ in Claude Code's empty prompt
+     * pulls every queued message of his into its input; the chat empties that input, puts the crossed one back in his
+     * quill and sends the others again in their order. offered only while its screen says ↑ edits the queue
+     * @param {string} queued the crossed message as Claude Code queued it @param {Context} cx
+     */
+    function unsend(queued, cx) {
+        const address = shownAddress();
+        const file = shownFile();
+        if (!address || !file || typingInto.has(address)) return;
+        typingInto.add(address);
+        say('Taking it back…', cx);
+        cx.spawn(async (cx) => {
+            try {
+                const screen = (await hc(['read', address, '--lines', '40']))
+                    .stdout;
+                if (!/up to edit queued messages/i.test(screen))
+                    return say('It joined the turn first', cx);
+                resetPopped();
+                await hc(['keys', address, 'up']);
+                // ↑ pulls every message of his: the records are in once they stop coming, 2.5 s at most
+                let seen = 0;
+                for (let i = 0, still = 0; i < 25 && still < 3; i++) {
+                    await cx.sleep(100);
+                    const n = popped().length;
+                    still = n && n === seen ? still + 1 : 0;
+                    seen = n;
+                }
+                const pulled = [...popped()];
+                if (!pulled.length) return say('It joined the turn first', cx);
+                const isNormal = isVimNormal(
+                    (await hc(['read', address])).stdout,
+                    editorMode(),
+                );
+                await hc(['keys', address, ...clearKeys(pulled, isNormal)]);
+                const { rest, words } = pulledBack(pulled, queued);
+                if (words)
+                    quills.apply(file, { said: words, type: 'returned' });
+                for (const text of rest) await hc(sendArgs(address, text));
+                say(words ? null : 'It joined the turn first', cx);
+            } catch (error) {
+                say(`Not taken back: ${String(error)}`, cx);
+            } finally {
+                typingInto.delete(address);
+                cx.notify();
+            }
+        });
+    }
+
     /** @param {string} file @returns {string[]} */
     function waitingPaths(file) {
         return attachments.of(file).map((w) => w.path);
@@ -351,6 +406,7 @@ export function createSendPath({
             joins = next;
         },
         typedUnderMark,
+        unsend,
         waitingPaths,
     };
 }

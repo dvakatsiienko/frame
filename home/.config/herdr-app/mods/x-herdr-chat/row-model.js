@@ -28,6 +28,7 @@ import {
  * @property {boolean} isWaiting his message in Claude Code's queue, no turn has taken it yet
  * @property {boolean} isTurnStart his prompt that started a turn, never words a running turn took in
  * @property {string} [command] a prompt a tool round took: the queued command its `remove` record names
+ * @property {string} [queued] a waiting row's text as Claude Code queued it, which its × pulls back
  * @property {Delivery | null} delivery his message's one state and that state's time (FRM-594); null on any other row
  * @property {Picture[]} pictures the pictures his message sent, drawn under his words (FRM-638 slice 5)
  * @property {string[]} files the other files his message sent, by path
@@ -337,6 +338,8 @@ export function createRowModel() {
     let queue = [];
     /** the row of each message of his in the queue: the last rows, in queue order @type {Map<import('./queued.js').Queued, Row>} */
     let waiting = new Map();
+    /** what ↑ in Claude Code's prompt pulled out of its queue, its `popAll` records in order @type {string[]} */
+    let popped = [];
     let waitingSerial = 0;
     /** when each queued command was taken, by the `commandUuid` its `remove` record names @type {Map<string, string>} */
     const takenAt = new Map();
@@ -434,6 +437,11 @@ export function createRowModel() {
                     )
                         op.content = takePushed(Date.parse(op.timestamp));
                     queue = claudeQueueAfter(queue, op);
+                    if (
+                        op.operation === 'popAll' &&
+                        typeof op.content === 'string'
+                    )
+                        popped.push(op.content);
                     const read = readBy(op);
                     if (read) changed.add(read.id);
                 } catch {
@@ -468,6 +476,7 @@ export function createRowModel() {
                         isWaiting: true,
                         kind: 'mine',
                         pictures: said.pictures,
+                        queued: queued.text,
                         replyId: null,
                         text: said.text,
                         tools: [],
@@ -532,12 +541,17 @@ export function createRowModel() {
             const row = rowOfLine.get(id);
             return row ? rows.indexOf(row) : -1;
         },
+        /** the popAll records since the last reset, for a pull under way */
+        popped: () => popped,
         /** a slash command typed into the thread, matched to the textless enqueue that follows it @param {string} text @param {number} at */
         pushed(text, at) {
             pushes = [
                 ...pushes.filter((p) => at - p.at <= PUSH_TAKE_MS),
                 { at, text },
             ];
+        },
+        resetPopped() {
+            popped = [];
         },
         /** the thread's rows, oldest first; the same array and the same row objects across updates */
         rows: /** @type {readonly Row[]} */ (rows),

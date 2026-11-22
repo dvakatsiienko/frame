@@ -190,6 +190,20 @@ export function boxText(screen) {
     return box.join(' ').replace(/\s+/g, ' ').trim();
 }
 
+/**
+ * what ↑ pulled out of Claude Code's queue, split: the crossed message back to his quill as he typed it, the others to
+ * be sent again in their order; null words when the turn took it first (507b178f's pull, ported, FRM-563 b+c)
+ * @param {string[]} pulled the popAll records' texts, in order @param {string} text the crossed message's queued text
+ * @returns {{ words: string | null, rest: string[] }}
+ */
+export function pulledBack(pulled, text) {
+    const at = pulled.indexOf(text);
+    return {
+        rest: pulled.filter((_, i) => i !== at).map(unwrapPastes),
+        words: at < 0 ? null : unwrapPastes(text),
+    };
+}
+
 // his sends waiting for the turn, drawn at the log's end as his own rows in their «sent» state; the transcript's row
 // takes over once Claude Code reads one
 // keyed by its words and how many waiting before it share them: its stamp moves when Claude Code records it, its place

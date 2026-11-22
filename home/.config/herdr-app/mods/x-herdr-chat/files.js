@@ -29,6 +29,10 @@ export const unlinkFiles = (text) =>
 export const isSentRow = (id) => id.endsWith(SENT_ROW);
 const SENT_ROW = '#sent';
 
+/** the × under a message still in Claude Code's queue, its own row so the list's item click takes it back @param {string} id */
+export const isUnsendRow = (id) => id.endsWith(UNSEND_ROW);
+const UNSEND_ROW = '#unsend';
+
 /**
  * his message's pictures and files as their own row, so a click on them opens the viewer and a click on his words
  * selects them; it carries his delivery line, drawn under the squares
@@ -51,6 +55,26 @@ function sentRow(row, cache) {
     return made;
 }
 
+/** a waiting message's × row, kept while its row's version holds @param {Row} row @param {Map<string, { version: number, files: Row[] }>} cache @returns {Row} */
+function unsendRow(row, cache) {
+    const id = `${row.id}${UNSEND_ROW}`;
+    const had = cache.get(id);
+    const [kept] = had?.version === row.version ? had.files : [];
+    if (kept) return kept;
+    /** @type {Row} */
+    const made = {
+        ...row,
+        files: [],
+        id,
+        kind: 'file',
+        pictures: [],
+        text: '',
+        tools: [],
+    };
+    cache.set(id, { files: [made], version: row.version });
+    return made;
+}
+
 /**
  * the rows with each reply's files after it, one row a file: a click inside a list row blanks the list
  * (herdr-app#894), so a file is its own item and the list's item click opens it. a file row keeps its object while
@@ -65,8 +89,10 @@ export function withFileRows(rows, home, cache) {
     const out = [];
     for (const row of rows) {
         out.push(row);
-        if (row.kind === 'mine' && (row.pictures.length || row.files.length)) {
-            out.push(sentRow(row, cache));
+        if (row.kind === 'mine') {
+            if (row.pictures.length || row.files.length)
+                out.push(sentRow(row, cache));
+            if (row.isWaiting) out.push(unsendRow(row, cache));
             continue;
         }
         if (row.kind !== 'reply') continue;

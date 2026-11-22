@@ -43,6 +43,7 @@ export const placeKey = (file) => `place:${file}`;
  * @property {ReturnType<typeof import('./picture-viewer.js').createPictureViewer>} pictures
  * @property {() => unknown} reader the shown thread's reader: a save for an earlier opening is dropped
  * @property {ReturnType<typeof import('./message-row.js').createMessageRows>} rows
+ * @property {(queued: string, cx: Context) => void} unsend a waiting message's ×: back out of Claude Code's queue
  */
 
 /** @param {MessageListDeps} deps */
@@ -160,6 +161,8 @@ export function createMessageList(deps) {
                 if (press?.kind === 'redraw') cx.notify();
                 else if (press?.kind === 'pictures')
                     deps.pictures.show(press.files, press.at, cx);
+                else if (press?.kind === 'unsend')
+                    deps.unsend(press.queued, cx);
                 else if (press?.kind === 'file')
                     exec('open', openArgs(press.path, deps.audioApp())).catch(
                         () => {},
