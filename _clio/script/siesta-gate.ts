@@ -471,7 +471,11 @@ function stoppedSidecarsWithoutCst(transcriptPath?: string) {
     return (
         stopAt >= 0 &&
         !after.some(
-            (c) => runs('start').test(c) || /\bx handoff write\b/.test(c),
+            (c) =>
+                runs('start').test(c) ||
+                /\bx handoff write\b/.test(c) ||
+                // halt mini extends the pending main CST instead of writing one (halt mini.md)
+                />>\s*\S*\.claude\/shelf\/handoffs\/\S+\.md/.test(c),
         )
     );
 }
