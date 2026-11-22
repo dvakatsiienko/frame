@@ -245,9 +245,9 @@ export function createSendPath({
                     return say('It joined the turn first', cx);
                 resetPopped();
                 await hc(['keys', address, 'up']);
-                // ↑ pulls every message of his: the records are in once they stop coming, 2.5 s at most
+                // ↑ pulls every message of his: the records are in once two reads 100 ms apart agree, 2.5 s at most
                 let seen = 0;
-                for (let i = 0, still = 0; i < 25 && still < 3; i++) {
+                for (let i = 0, still = 0; i < 25 && still < 2; i++) {
                     await cx.sleep(100);
                     const n = popped().length;
                     still = n && n === seen ? still + 1 : 0;
@@ -255,10 +255,7 @@ export function createSendPath({
                 }
                 const pulled = [...popped()];
                 if (!pulled.length) return say('It joined the turn first', cx);
-                const isNormal = isVimNormal(
-                    (await hc(['read', address])).stdout,
-                    editorMode(),
-                );
+                const isNormal = isVimNormal(screen, editorMode());
                 await hc(['keys', address, ...clearKeys(pulled, isNormal)]);
                 const { rest, words } = pulledBack(pulled, queued);
                 if (words)

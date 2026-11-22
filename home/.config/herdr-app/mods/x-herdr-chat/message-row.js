@@ -54,6 +54,8 @@ export function createMessageRows(deps) {
     // a reply's file rows, made once per reply version (files.js)
     /** @type {Map<string, { version: number, files: Row[] }>} */
     const fileRows = new Map();
+    /** the waiting messages his × took back, gone from the list at the press (each id a one-off serial) @type {Set<string>} */
+    const takenBack = new Set();
     // which tool-call folds and calls are open (PK-432)
     const toolFolds = createToolFolds();
     /** the long replies he opened with Show more, by row id @type {Set<string>} */
@@ -146,8 +148,12 @@ export function createMessageRows(deps) {
                                 ),
                         ),
                     )
-                    .when(!row.pictures.length && !row.files.length, (el) =>
-                        el.child(detailsLine(row, t)),
+                    // a waiting message's time line is drawn by its × row, the × beside the time (his 20:24 steer)
+                    .when(
+                        !row.isWaiting &&
+                            !row.pictures.length &&
+                            !row.files.length,
+                        (el) => el.child(detailsLine(row, t)),
                     ),
             );
         return column(
@@ -336,28 +342,30 @@ export function createMessageRows(deps) {
             return h_flex()
                 .w_full()
                 .justify_end()
+                .items_center()
+                .gap(2)
                 .child(
-                    h_flex()
-                        .gap(4)
+                    div()
+                        .size(16)
+                        .flex()
                         .items_center()
-                        .px(8)
-                        .py(2)
-                        .rounded(6)
+                        .justify_center()
+                        .rounded_full()
                         .border(1)
                         .border_color(t.border)
-                        .text_size(12)
+                        .text_size(11)
                         .text_color(t.muted)
                         .cursor_pointer()
-                        .child('×')
-                        .child('take back'),
-                );
+                        .child('×'),
+                )
+                .child(detailsLine(row, t));
         if (isSentRow(row.id))
             return v_flex()
                 .w_full()
                 .items_end()
                 .gap(2)
                 .child(sentFiles(row, t).cursor_pointer())
-                .child(detailsLine(row, t));
+                .when(!row.isWaiting, (el) => el.child(detailsLine(row, t)));
         if (row.pictures.length) return sentFiles(row, t).cursor_pointer();
         return h_flex()
             .gap(6)
@@ -509,10 +517,12 @@ export function createMessageRows(deps) {
         press(rows, key) {
             const id = key.replace(/#(?:above|below)$/, '');
             const pressed = rows.find((r) => r.id === id);
-            if (pressed && isUnsendRow(id))
-                return pressed.queued
-                    ? { kind: 'unsend', queued: pressed.queued }
-                    : null;
+            if (pressed && isUnsendRow(id)) {
+                if (!pressed.queued) return null;
+                // the bubble leaves at the press, before the pull: his words are on their way back (his 20:24 «clunky»)
+                takenBack.add(id.slice(0, -'#unsend'.length));
+                return { kind: 'unsend', queued: pressed.queued };
+            }
             // a click in a tool call's card moves no fold and asks no redraw, so his selection there stays
             if (pressed?.kind === 'tool')
                 return toolFolds.toggle(id) ? { kind: 'redraw' } : null;
@@ -533,9 +543,11 @@ export function createMessageRows(deps) {
         shown: (rows, look) =>
             withCallRows(
                 withFileRows(
-                    look.tools === 'hide'
-                        ? rows.filter((row) => row.kind !== 'tool')
-                        : rows,
+                    rows.filter(
+                        (row) =>
+                            !takenBack.has(row.id) &&
+                            (look.tools !== 'hide' || row.kind !== 'tool'),
+                    ),
                     home(),
                     fileRows,
                 ),
