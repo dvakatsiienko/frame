@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-22T13:03:00Z'
+updated_date: '2026-11-22T13:40:00Z'
 labels:
   - s
   - clio-main
@@ -1433,4 +1433,27 @@ PK-349:W1401 (2026-11-22 14:58, dima): rex beta - how to update it? ❓
 PK-349:W1402 (2026-11-22 14:58, dima): what's current rex latest v? ❓
 PK-349:W1403 (2026-11-22 14:58, dima): my version says: Rex 0.1.0 (2061) · Preview; Rex Server 0.1.0-preview.21
 PK-349:W1404 (2026-11-22 14:58, dima): what is the official latest? ❓
+
+15:40 — the 15:09–15:28 grooms (helga): the siesta counter, whiteboards and blueprint v2, the probe; code mode lines live in FRM-682
+PK-349:W1405 (2026-11-22 15:09, dima): yes merge jev.
+PK-349:W1406 (2026-11-22 15:28, dima): triggered just yet? ❓
+PK-349:W1407 (2026-11-22 15:28, dima): whiteboards probe.
+PK-349:W1408 (2026-11-22 15:28, dima): remind we have a stashed ticket for this probe? ❓
+PK-349:W1409 (2026-11-22 15:28, dima): maybe in snoozed, somewhere? ❓
+PK-349:W1410 (2026-11-22 15:28, dima): What I want out of it: somewhere in linear we have at least «blueprint v2» ticket, where i told what i want about wireframing/whiteboarding app. (i am not satisfied with excalidraw).
+PK-349:W1411 (2026-11-22 15:28, dima): so i want to see if whiteboards (your feature) covers that.
+PK-349:W1412 (2026-11-22 15:28, dima): what i want:
+PK-349:W1413 (2026-11-22 15:28, dima): everyone has an open door to it from terminal (you right now), any codie, anyone. plus a door for the desktop app itself.
+PK-349:W1414 (2026-11-22 15:28, dima): artifacts are durable, flexible, anyone can read and edit
+PK-349:W1415 (2026-11-22 15:28, dima): ideally cheap to both read and edit
+PK-349:W1416 (2026-11-22 15:28, dima): powerful, beautiful and flexible - supports comments both ways - i can draw, and comment, you can reply to my comments. you can also post comments at specific points (i think this is not working, to be checked; it would actually be very good if it would work. not a show stopper, but if it does not work, i think my blueprint v2 ticket does not close even if all other points are covered with native whiteboards)
+PK-349:W1417 (2026-11-22 15:28, dima): how to test? ❓
+PK-349:W1418 (2026-11-22 15:28, dima): and i want a number on costs.
+PK-349:W1419 (2026-11-22 15:28, dima): for example our current pm blueprint - what are the costs to recreate it from scratch in both excali and whiteboards? ❓
+PK-349:W1420 (2026-11-22 15:28, dima): same costs - reads, edits? ❓
+PK-349:W1421 (2026-11-22 15:28, dima): how convenient for yourself? ❓
+PK-349:W1422 (2026-11-22 15:28, dima): agentic friendliness level? ❓
+PK-349:W1423 (2026-11-22 15:28, dima): and of course, i'd like to try it out myself.
+PK-349:W1424 (2026-11-22 15:28, dima): propose.
+PK-349:W1425 (2026-11-22 15:28, dima): does it need research, or are you OK with knowing your own tools? ❓
 <!-- SECTION:NOTES:END -->
