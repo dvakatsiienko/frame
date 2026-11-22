@@ -127,6 +127,13 @@ the board, one message, short lines, **no queries here — pure assembly**:
 
 the light boot: no cst ingest, no lanes. same silence, one opening message; the inbox is parsed only on his ask (item 2).
 
+**an eject from the main flow** (dima, 2026-11-22; often a weekly-near-cap day): solve what he raises; global plans hold.
+- the handoffs are the next day's plan, never followed; grooming them is allowed (tweak, sort, plan, grill)
+- his side question gets a plain cc answer (a game, anything off the fleet)
+- **🎀 helga** starts on the first groom; **🐦‍⬛ crow** on his word or a real decision
+- no lane unless really needed; a **🐕 stray** only on a prepped batch, offered once enough chores pile up
+- a no-work day pauses the clocks on his word: dated waits move by the lost days (`until:`, flyway `on:`, `⏰ due:`, dated trials); calendar-bound lines stay
+
 1. healthcheck (step 1, unchanged)
 2. inbox: optional. untouched by default: read only, his named items ordered, a done one ✅ in place, nothing copied or folded. his prompt asks to process it → step 3 runs whole (helga's prep, every item a pocket item) and step 8's wishkeeper reads the parse before the board (dima, 2026-11-15: «if asked to process inbox, full proper process, including wishkeeper»)
 3. merge monitor — only when codie with an open `codie/*` or `coder/*` pr is alive (step 4's monitor line)
