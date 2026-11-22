@@ -2,6 +2,7 @@
 // orbit asks x-mod-stash keeps on disk, ticked here into each session's ticks file; a `view: 'glide'` copy draws each
 // lane's glide card under antenna (glide-view.js).
 
+import { unlink } from 'fs/promises';
 import { Button, InputState, h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
 import {
@@ -104,6 +105,13 @@ import { createTabMember } from './tab-loop.js';
 const KEY_NOTE_MS = 3000;
 // a picture pasted into a steer box is saved here, under the app dir, and sent by its path
 const PASTED_DIR = 'data/x-herdr-deck/pasted';
+
+/** a picture he pasted is our copy: it goes when its steer lets it go; a file from elsewhere is his @param {string[]} paths */
+function forgetPasted(paths) {
+    const ours = `${appHome()}/${PASTED_DIR}/`;
+    for (const path of paths)
+        if (path.startsWith(ours)) unlink(path).catch(() => {});
+}
 // how long a press given up by time says so: long enough to be seen when he looks back at the board
 const GIVEN_UP_NOTE_MS = 30 * 1000;
 
@@ -151,7 +159,7 @@ export default class Deck extends View {
     /** the files each ask names, previewed or listed in its card (FRM-676) */
     files = createCardFiles();
     // the files each steer box carries, sent as their paths with its steer (FRM-676 slice B)
-    steerFiles = createSteerFiles(localStorage);
+    steerFiles = createSteerFiles(localStorage, forgetPasted);
     /** the deck's seat in the Tab loop: its drawn steer boxes */
     tab = createTabMember('x-herdr-deck', { layout, setShared, shared });
     /** @param {unknown} _props @param {Context} cx */
@@ -278,14 +286,27 @@ export default class Deck extends View {
         return [...this.steers.keys()].flatMap((k) => this.steerFiles.of(k));
     }
 
-    /** dropped or pasted files join a steer box, a picture's thumb drawn once made @param {Context} cx @param {string} key @param {string[]} paths */
+    /** dropped or pasted files join a steer box, a picture's thumb drawn once made: whether they joined @param {Context} cx @param {string} key @param {string[]} paths */
     addSteerFiles(cx, key, paths) {
-        if (!this.steerFiles.add(key, paths)) return;
+        // a ticked ask's press is written: a file added now would draw and never ride it, so it is refused and said
+        const [sid, id] = key.split(':');
+        const s = this.rows.find((r) => r.sid === sid);
+        if (s && this.pressStateOf(s, id ?? '') !== 'open') {
+            this.keyNotes.set(key, {
+                text: 'already sent: take the tick back to add a file',
+                until: Date.now() + KEY_NOTE_MS,
+            });
+            cx.notify();
+            cx.timer.after(KEY_NOTE_MS + 1, (later) => later.notify());
+            return false;
+        }
+        if (!this.steerFiles.add(key, paths)) return false;
         cx.notify();
         cx.spawn(async (cx) => {
             if (await this.files.look(this.rows ?? [], this.steeredPaths()))
                 cx.notify();
         });
+        return true;
     }
 
     /** a paste with no text: the clipboard's image saved as a png, or files copied in Finder @param {Context} cx @param {string} key */
@@ -300,13 +321,17 @@ export default class Deck extends View {
             // the ask may have left or been delivered while the clipboard was read
             const [sid, id] = key.split(':');
             const s = this.rows.find((r) => r.sid === sid);
+            const pasted = read && 'rel' in read ? paths : [];
             if (
                 !this.steers.has(key) ||
                 !s ||
                 this.pressStateOf(s, id ?? '') === 'locked'
             )
+                return forgetPasted(pasted);
+            if (paths.length) {
+                if (!this.addSteerFiles(cx, key, paths)) forgetPasted(pasted);
                 return;
-            if (paths.length) return this.addSteerFiles(cx, key, paths);
+            }
             this.keyNotes.set(key, {
                 text: 'no picture or file on the clipboard',
                 until: Date.now() + KEY_NOTE_MS,
@@ -447,6 +472,12 @@ export default class Deck extends View {
                     this.makeSteerBox(key);
             }
         }
+        this.steerFiles.sweep(
+            new Set(
+                this.rows.flatMap((r) => r.asks.map((a) => `${r.sid}:${a.id}`)),
+            ),
+            new Set(this.rows.map((r) => r.sid)),
+        );
     }
 
     /** the footer, from the reload chain's one state: only a read that stalled says so; a fresh one says nothing (his

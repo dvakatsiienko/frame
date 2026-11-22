@@ -5,10 +5,15 @@
 import { withFiles } from './attach-files.js';
 import { keep, kept } from './orbit.js';
 
-/** @param {import('./orbit.js').KeptStore} store */
-export function createSteerFiles(store) {
+const PREFIX = 'steer-files:';
+
+/**
+ * @param {import('./orbit.js').KeptStore & { length?: number, key?: (index: number) => string | null }} store
+ * @param {(paths: string[]) => void} [forget] the files a steer let go, × or cleared: a pasted copy dies with them
+ */
+export function createSteerFiles(store, forget = () => {}) {
     /** @param {string} key */
-    const storeKey = (key) => `steer-files:${key}`;
+    const storeKey = (key) => `${PREFIX}${key}`;
 
     // the store is the one owner, read each time: herdr fills a copy's store after its first render, so a copy kept
     // here read empty for good (his 19:15 shot)
@@ -40,7 +45,10 @@ export function createSteerFiles(store) {
         },
         /** a sent or cleared steer takes its files with it @param {string} key */
         clear(key) {
-            if (of(key).length) set(key, []);
+            const gone = of(key);
+            if (!gone.length) return;
+            set(key, []);
+            forget(gone);
         },
         /** the steer as it leaves: the words, then each file's path on its own line @param {string} key @param {string} text */
         joined(key, text) {
@@ -53,6 +61,29 @@ export function createSteerFiles(store) {
                 key,
                 of(key).filter((p) => p !== path),
             );
+            forget([path]);
+        },
+        /**
+         * the files of a live thread's ask that left while no deck ran, cleared; a thread this read did not find keeps
+         * its own, since a read can miss a live one
+         * @param {Set<string>} liveAsks `<sid>:<id>` @param {Set<string>} liveThreads sids
+         */
+        sweep(liveAsks, liveThreads) {
+            /** @type {string[]} */
+            const keys = [];
+            for (let i = 0; i < (store.length ?? 0); i++) {
+                const k = store.key?.(i);
+                if (k?.startsWith(PREFIX)) keys.push(k.slice(PREFIX.length));
+            }
+            for (const key of keys) {
+                const sid = key.split(':')[0] ?? '';
+                if (
+                    !key.endsWith(':plan') &&
+                    liveThreads.has(sid) &&
+                    !liveAsks.has(key)
+                )
+                    this.clear(key);
+            }
         },
     };
 }

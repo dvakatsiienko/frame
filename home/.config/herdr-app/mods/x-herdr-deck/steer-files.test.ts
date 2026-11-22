@@ -7,6 +7,10 @@ const storeOf = () => {
     const kept = new Map<string, string>();
     return {
         getItem: (key: string) => kept.get(key) ?? null,
+        key: (index: number) => [...kept.keys()][index] ?? null,
+        get length() {
+            return kept.size;
+        },
         removeItem: (key: string) => void kept.delete(key),
         setItem: (key: string, value: string) => void kept.set(key, value),
     };
@@ -99,5 +103,45 @@ describe('a sent steer names each file by its absolute path, one a line', () => 
         expect(createSteerFiles(storeOf()).joined(KEY, ' ship it ')).toBe(
             'ship it',
         );
+    });
+});
+
+describe('files leave with their steer, a pasted copy with them (the sixth sense round 1)', () => {
+    test('× on a pasted picture hands its path to be forgotten', () => {
+        const forget = vi.fn();
+        const files = createSteerFiles(storeOf(), forget);
+        files.add(KEY, [
+            '/app/data/x-herdr-deck/pasted/shot-1.png',
+            '/d/a.pdf',
+        ]);
+        files.remove(KEY, '/app/data/x-herdr-deck/pasted/shot-1.png');
+        expect(forget).toHaveBeenCalledWith([
+            '/app/data/x-herdr-deck/pasted/shot-1.png',
+        ]);
+    });
+
+    test('a cleared steer forgets every file it held', () => {
+        const forget = vi.fn();
+        const files = createSteerFiles(storeOf(), forget);
+        files.add(KEY, ['/d/a.png', '/d/b.pdf']);
+        files.clear(KEY);
+        expect(forget).toHaveBeenCalledWith(['/d/a.png', '/d/b.pdf']);
+    });
+
+    test("a live thread's ask that left while herdr was closed loses its files", () => {
+        const store = storeOf();
+        const files = createSteerFiles(store);
+        files.add('s1:o3', ['/d/a.png']);
+        files.add('s1:o9', ['/d/b.png']);
+        files.sweep(new Set(['s1:o9']), new Set(['s1']));
+        expect(files.of('s1:o3')).toEqual([]);
+        expect(files.of('s1:o9')).toEqual(['/d/b.png']);
+    });
+
+    test('a thread missing from this read keeps its files: a read can miss a live one', () => {
+        const files = createSteerFiles(storeOf());
+        files.add('s2:o1', ['/d/a.png']);
+        files.sweep(new Set(), new Set(['s1']));
+        expect(files.of('s2:o1')).toEqual(['/d/a.png']);
     });
 });
