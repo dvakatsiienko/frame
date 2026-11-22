@@ -130,6 +130,7 @@ the light boot: no cst ingest, no lanes. same silence, one opening message; the 
 **an eject from the main flow, and the economy boot** (dima, 2026-11-22; a weekly-near-cap day, or a few questions and a stop): solve what he raises; global plans hold.
 - the handoffs are the next day's plan, never followed; grooming them is allowed (tweak, sort, plan, grill)
 - a side question gets a plain cc answer
+- it always ends in halt mini, even on a bare «halt»: the handoff is extended, never replaced
 - **🎀 helga** starts on the first groom; **🐦‍⬛ crow** only on his ask (a full boot starts her as usual)
 - no lane unless really needed; a **🐕 stray** only on a prepped batch, offered once enough chores pile up
 - a no-work day pauses the clocks on his word: dated waits move by the lost days (`until:`, flyway `on:`, `⏰ due:`, dated trials); calendar-bound lines stay

@@ -11,6 +11,7 @@ read your thread's file whole, then run it. a wing knows itself by its banner an
 
 - 🦉 **main**: [main.md](main.md), the full close, every live wing included
 - 🪽 **a wing**: [wing.md](wing.md), that wing's own close
+- 🌙 **a mini-boot session**, whatever word he uses: [mini.md](mini.md)
 
 ## both threads
 
