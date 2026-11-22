@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-24
+until: 2026-11-26
 dies-when: the verdict line below is written
 fits: clio codie
 ---

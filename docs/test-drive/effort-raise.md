@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-12-03
+until: 2026-12-05
 dies-when: the verdict line below is written
 ---
 

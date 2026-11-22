@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-12-19
+until: 2026-12-21
 dies-when: the verdict line below is written
 fits: codie sixth-sense
 ---
