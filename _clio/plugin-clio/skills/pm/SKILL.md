@@ -68,6 +68,15 @@ traps:
 - labels are steering, dima writes instructions into their descriptions; a canceled ticket counts
   as resolved in milestone math; a milestone has no close: linear computes `status` done from its tickets, and the only removal is `projectMilestoneDelete`, run unasked the turn its last ticket closes (dima's standing word, `craft-pm` § milestones first); an empty one the boot flags is asked
 
+## a mods ticket i propose — the self-check, before it reaches him
+
+dima, 2026-11-22 (o2): «you must learn how to evaluate your proposals more carefully yourself». any ticket of mine that adds or changes a cc or herdr mod answers four lines in its `## ⚖️ worth it`, and a «no» on 1 or 3 drops the mod:
+
+1. **whose slip?** a habit of mine or a member's → one line where the slip happens (the tool's own text, a skill step), never a mod; a refusal never fences our own slips (`habit-cto`)
+2. **the cheapest door** → a line, then a script or `x` verb, a mod last; name the one turned down
+3. **real** → a bug that breaks a thing, or a feature he uses; neither → dropped
+4. **without his complaint** → still worth it? a «no» marks it a reaction: one line to him, never a ticket
+
 ## write and close — read the reference first, every time
 
 - 📖 **a create, a body rewrite or a comment → read [references/body.md](references/body.md) first**: the body order (lane, wish, dima notes … closing word), writing, run markers. no body is written from memory of this section
