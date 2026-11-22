@@ -37,3 +37,68 @@ first look 2026-11-10, steamac 1.9.13, Proton 11.0-100 ARM64. raw: `game-stats.j
 - the Metal HUD has no live toggle: Highball sets `MTL_HUD_ENABLED` at the environment's launch from `bottle.json` → `metalHUD`. codie set it false 11-10 03:16, backup `bottle.json.bak-20261110-codie`; it applies on the next environment launch. Highball holds its settings in memory and showed the toggle still on: a `bottle.json` edit goes in with Highball quit, and the door for dima is Environment settings → Games → Graphics → Metal performance HUD
 
 the prefs live in `pfx/user.reg` → `ClientPrefs_h3664234030` (hex json); the game rewrites them on exit.
+
+## open: 4K sharp + 60 fps + fast cmd+tab, 2026-11-21 (play thread ✦ 4)
+
+### what he wants, his order
+
+1. 60+ fps
+2. sharp 4K picture, text included
+3. High graphics (he compared Medium and High closely and wants High)
+4. fast cmd+tab, no Option+Return dance
+
+his report: earlier on Highball he had «4k sharp, max graphics and 90–120 fps», on Scarlet Orchard too, at the cost of Exclusive Full Screen; leaving it took Option+Return, and coming back left the text soft until he set Full Screen Window → Exclusive again by hand
+
+### changes made today, all in the `Games` bottle
+
+- `user.reg` `[Software\\Wine\\Mac Driver]`: `RetinaMode=y` (sharp text, the game sees real 4K pixels), `WindowsFloatWhenInactive=none`; set with Highball quit, or through `wine reg add` with `WINEMSYNC=1` while its Steam runs
+- backups beside the bottle: `user.reg.bak-retina-20261121`, `-retina-20261121-postquit`, `-float-20261121`, `-retinaoff-20261121`
+- cmd+tab fixed: game windowed + macOS native full screen (its own Space)
+
+### what he measured, 4K, Scarlet Orchard, fresh settlement
+
+- windowed + native full screen, RetinaMode on: High 40–45, Medium ~70, Low 80–90
+- 1440p High: ~70 fps, visibly softer, rejected
+- Exclusive Full Screen, RetinaMode on: ~40–45, crisp, Option+Return round trip stays crisp now
+- Exclusive Full Screen, RetinaMode off: ~45, crisp, ui huge, fast tabbing gone; RetinaMode put back to `y` right after
+- settlement size ruled out: he had just started the map
+- the mac on AC power, `powermode 0`
+- the game's prefs (`ClientPrefs` in `user.reg`, read 21 Nov): 3840x2160 at 120, `screenMode` 1, `vSync` 0, `maxFPS` 120
+
+### what is known
+
+- 📌 the 11-10 Highball 120 fps above was measured at **1920x1080**, maxed, GPU avg 57–75 %: a quarter of 4K's pixels. the 4K 90–120 he remembers has no measurement in this file (inference: it was the 1080p setup, which RetinaMode-off scales up to the panel)
+- every window and Retina combination gives the same ~45 at 4K High: the frame rate follows render resolution, not the window mode (inference from his A/Bs, GPU % not sampled today)
+- frame gen in Highball = Lossless Scaling lsfg-vk, needs his Lossless Scaling purchase, untested
+
+### leads, untested
+
+- sample mac GPU % (`ioreg` Device Utilization) at 4K High: ≥95 % confirms GPU-bound, which closes the window-mode question
+- `WindowsFloatWhenInactive=none` is the one change not A/B'd; backup `user.reg.bak-float-20261121`
+- 4K with the game's own upscaler, if ATS has one (FSR or a render scale slider): not checked
+- per-setting cost at 4K: shadows, fog, complex effects off one at a time on High
+- Lossless Scaling frame gen to 60+ from 40–45 base, his call on the purchase
+- 21 Nov, his test: shadows off at 4K High doesn't change fps
+- 21 Nov, his trace of the old 120 fps mode: game at 1920x1080, Exclusive Full Screen; Option+Return out, Option+Return back → soft text; set Full Screen Window, then Exclusive again → sharp and 120. lead (inference): the dance makes Wine switch the panel to a real 1080p mode, which the monitor scales up by exactly 2x (sharp), and that mode switch is what blocks cmd+tab. check: read `system_profiler SPDisplaysDataType` while in that state (normal is 3840x2160, «looks like» 1920x1080 @ 120). if it holds, a `betterdisplaycli` (installed) mode toggle plus windowed 1080p could give 120 + sharp + cmd+tab
+- 21 Nov correction, his word: the old 120 fps mode had the game's resolution set to 4K, not 1920x1080 (the 11-10 1080p measurement was his first probe only)
+- 21 Nov 22:42, his old mode rebuilt (RetinaMode off, game 4K, Exclusive Full Screen, the dance): 40 fps; the panel read «looks like 3840 x 2160 @ 120» (the exclusive mode drops HiDPI and drives native 4K at 1x); mac GPU at 100 % over 5 s: GPU-bound
+- the math: 11-10 at 1080p maxed the GPU took 5.75 ms a frame; 4K is 4x the pixels, ~23 ms, ~43 fps, which matches the 40 measured. so 4K High on this M4 Pro tops out near 40 in ATS, and the remembered 4K 120 rendered about 1080p's pixels whatever the menu said (inference, strong)
+- `bottle.json` holds `"frameGen": 1`; meaning of the value not checked
+- verdict: no window or Retina setting gets 60+ at 4K High; the doors left are fewer pixels (4K Medium ~70, 1440p ~70 soft) or frame gen
+- 21 Nov 22:46: RetinaMode back to y on his ask; he plays crisp ~45 with fast cmd+tab
+
+### status, 21 Nov 22:47 — pick up here
+
+- 📌 his position: Highball was fast from the very first launch (up to 120, less GPU than steamac), with the game set to 4K; «something changed and it is not fast anymore». his report wins over my inference above; the open question is what changed
+- my position: the logged 11-10 runs were all 1920x1080; 4K at 1x measured 40 fps at GPU 100 %, which the 1080p frame time predicts
+- to settle it next time: check the game's own fps at 1920x1080 High now. ~120 means nothing changed and resolution explains it; well below 120 means something in the bottle or engine did change (then diff `bottle.json`, the engine version, `frameGen`, and Highball's version against 11-10)
+- current setup he plays: RetinaMode=y, WindowsFloatWhenInactive=none, game 4K High windowed + macOS native full screen, ~40–45 fps, crisp, fast cmd+tab
+- his want, unchanged: 60+ fps, sharp 4K, High, fast cmd+tab
+
+### his report, 22 Nov 19:58 (his words, folded)
+
+- «right from the first launch it was working very fast, about 120 fps», but in a strange window mode: Exclusive Full Screen, beside a windowed and a borderless mode
+- in that mode cmd+tab did nothing; to look up a wiki or ask cc mid-game he had to Option+Return out, look, Option+Return back; after coming back the ui went blurry, and crisp 4K came back only by switching Exclusive to another window mode and back: many clicks each time he tabs out
+- crisp 4K only in Exclusive Full Screen; any other window mode looked blurry, «like 180p»
+- yesterday's cc fix made cmd+tab work, and after it the fps dropped to 40
+- his want, unchanged: at least 60 fps, ideally 120; a crisp, high-resolution picture; a quick cmd+tab out of the game
