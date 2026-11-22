@@ -1,10 +1,10 @@
 ---
 id: PK-464
 title: 'siesta: an intelligent check at strategic points, never a mechanical counter'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-22T12:01:00Z'
-updated_date: '2026-11-22T12:31:00Z'
+updated_date: '2026-11-22T12:44:00Z'
 labels:
   - s
 dependencies: []
@@ -44,4 +44,7 @@ PK-464:W19 (2026-11-22 14:00, dima): wish: current mechanical siesta is dumb, an
 PK-464:W20 (2026-11-22 14:00, dima): problem is that siesta is an intelligent check, and it should happen at certain best points, where you want to verify a certain scope strategically.
 PK-464:W21 (2026-11-22 14:00, dima): so that's why i think WK does not really apply to mechanical mode.
 PK-464:W22 (2026-11-22 14:00, dima): so, sup with helga and crow? ❓
+
+14:44 — ticket: FRM-680
+close: moved to linear FRM-680, snoozed on his 14:43 word; W15–W21 are its W1–W6
 <!-- SECTION:NOTES:END -->
