@@ -1,5 +1,5 @@
-// a row's details (FRM-594) on his clock: his message prints its one state and that state's time, which the row
-// model owns (`Delivery`); a reply prints its time alone
+// a row's details (FRM-594) on his clock: his message prints its one state's time and its mark, ✓ sent, ✓✓ read
+// (FRM-563:W13), the state the row model owns (`Delivery`); a reply prints its time alone
 
 import { clockOf } from './relay.js';
 
@@ -16,14 +16,14 @@ const whenOf = (at, now) => {
 };
 
 /**
+ * his message's state as the common chat mark, never a word: ✓ sent, ✓✓ read (FRM-563:W13)
  * @param {{ at: string | null, delivery: import('./row-model.js').Delivery | null }} row
  * @param {number} now
- * @returns {string | null} «read 15:04», «sent 15:10», a reply's «15:04»; null with no stamp
+ * @returns {{ when: string, mark: '✓' | '✓✓' | null } | null} «15:10» with ✓ or ✓✓, a reply's «15:04» bare; null with no stamp
  */
 export function messageDetails({ at, delivery }, now) {
-    if (delivery) {
-        const when = whenOf(delivery.at, now);
-        return when && `${delivery.state} ${when}`;
-    }
-    return at ? whenOf(at, now) : null;
+    const when = whenOf(delivery?.at ?? at ?? '', now);
+    if (!when) return null;
+    if (!delivery) return { mark: null, when };
+    return { mark: delivery.state === 'read' ? '✓✓' : '✓', when };
 }

@@ -80,7 +80,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - missing in the new chat: the one tinted folding line with a click to open, which the zoo chat drew
 - ✅ a message tells when it was sent and when Claude read it
   - given a message in the chat
-  - then a small dim line under it holds one state and its own time, on his clock: his own message reads «sent 14:45» while Claude Code holds it, «read 14:46» once it took it off its queue; a reply reads its time alone (his shot, 2026-11-18 20:40: «read 20:38»)
+  - then a small dim line under it holds one state and its own time, on his clock: his own message reads «14:45 ✓» while Claude Code holds it, «14:46 ✓✓» once it took it off its queue, the double check in the accent (FRM-563:W13); a reply reads its time alone
   - decision: one state, one time (his 17:16 shot: «only one state — sent or read. sent turns to read once reached an agent»)
   - decision: always shown, not on hover: a row's renderer takes no handlers ([herdr-app#598](https://github.com/herdrdev/herdr-app/issues/598))
 - ⬜ a code block copies its command

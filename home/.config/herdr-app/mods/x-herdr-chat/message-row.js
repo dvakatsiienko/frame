@@ -298,11 +298,25 @@ export function createMessageRows(deps) {
      */
     function detailsLine(row, t) {
         const details = messageDetails(row, Date.now());
-        return div()
+        // ✓✓ draws as one double check, its second tick tucked under the first, read in the accent
+        const mark = details?.mark;
+        return h_flex()
             .px(4)
+            .gap(4)
+            .items_center()
             .text_size(12)
             .text_color(t.muted)
-            .when(details !== null, (el) => el.child(details ?? ''));
+            .when(details !== null, (el) => el.child(details?.when ?? ''))
+            .when(Boolean(mark), (el) =>
+                el.child(
+                    h_flex()
+                        .text_color(mark === '✓✓' ? t.accent : t.muted)
+                        .child('✓')
+                        .when(mark === '✓✓', (m) =>
+                            m.child(div().ml(-6).child('✓')),
+                        ),
+                ),
+            );
     }
 
     /**
