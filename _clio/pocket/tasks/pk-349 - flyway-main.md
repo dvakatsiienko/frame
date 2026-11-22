@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-20T17:56:00Z'
+updated_date: '2026-11-22T12:31:00Z'
 labels:
   - s
   - clio-main
@@ -1333,4 +1333,40 @@ done 2026-11-20 19:25: f65 FRM-618: cite its pocket-folded W-lines in the spec b
 19:25 f65 done: wish-cover FRM-618 --all exits 0 on herdr-lane-3's spec (16 joined lines cited, W1264 quoted)
 
 done 2026-11-20 19:56: f62 second wind stalls: herdr codie wrote herdr-lane-3-13 at 17:20, no compact or ingest followed, idle 18 min
+
+14:31 — the 13:40 and 14:08 grooms (helga): the no-lane day, boot mini, the weekend pause, the measures-as-gains lever; answered or landed in the thread (clio:boot § mini, the +2 shift, the trial verdicts, o2/o3)
+PK-349:W1314 (2026-11-22 13:40, dima): we are in non-lane mode today.
+PK-349:W1315 (2026-11-22 13:40, dima): i've been testing a new fleet running pace for the last 2 weeks.
+PK-349:W1316 (2026-11-22 13:40, dima): previously i sliced the weekly usage like this: 100%/7 = ~14.28, which i rounded to 15% a day. with that pace i'd fill my weekly at about the end of the week.
+PK-349:W1317 (2026-11-22 13:40, dima): i used this approach for a few months, 2-3-4 roughly. it works straightforwardly, but i want to spend more time on other stuff, and have at least 1-2 days per week without coding.
+PK-349:W1318 (2026-11-22 13:40, dima): so now i do this: burn at least ~20% a day with fleet, starting monday, so that by friday the usage is ~90%+. like now, it is ~93%, which leaves a few percent for chore stuff, questions and light planning.
+PK-349:W1319 (2026-11-22 13:40, dima): our fleet skills and flows assume running 7 days a week, and test drives never pause, only when i tell them to push.
+PK-349:W1320 (2026-11-22 13:40, dima): so today is a day like this. at friday we halted at ~93%, and now we do «intermediarey session»: the handoffs are still valid and relevant for monday, but we do not run any lane today (possible but not planned).
+PK-349:W1321 (2026-11-22 13:40, dima): i think this is a new type of activity, and i tell you about it because i think you should be aware of such a mode.
+PK-349:W1322 (2026-11-22 13:40, dima): in «intermediarey session» we can do anything, even run a lane, but focused more on solving my questions, doing chores, closing tails, planning, researching and maybe grilling wherever needed.
+PK-349:W1323 (2026-11-22 13:40, dima): do we have support for such a mode currently? like boot mini for example, does that cover it? ❓
+PK-349:W1324 (2026-11-22 13:40, dima): meaning that you boot, but do not touch the handoff (that's the main-lane-day plan), but are still able to do any kind of stuff? ❓
+PK-349:W1325 (2026-11-22 13:40, dima): i want you to be aware of such a mode, to know why you should not touch your handoff, and at least briefly know why i boot you in this mode.
+PK-349:W1326 (2026-11-22 13:40, dima): my explanation is quite wordy.
+PK-349:W1327 (2026-11-22 13:40, dima): how do we fold it into one skill/mode? ❓
+PK-349:W1328 (2026-11-22 13:40, dima): «intermediarey session» is long. top7 is shorter, clean and pretty: name it that, pls.
+PK-349:W1329 (2026-11-22 13:40, dima): plus: you can summon helga and crow on such days.
+PK-349:W1330 (2026-11-22 13:40, dima): no lane is summoned unless really needed.
+PK-349:W1331 (2026-11-22 13:40, dima): a stray lane is possible, but only with prepped batched work: whenever you see enough chores applicable for a stray piled up, suggest a stray lane to solve them.
+PK-349:W1332 (2026-11-22 13:40, dima): usually my plan is to spend the rest of the weekly usage on planning and on solving the stuff i described above.
+PK-349:W1333 (2026-11-22 13:40, dima): as first actions, to this: postpone all dated waits and test drives, no activity for 2 days.
+PK-349:W1334 (2026-11-22 13:40, dima): cc cloud created me an alias «fl-ats-peek-save» (~/frame/home/.claude/plugin-x/skills/firelink/scripts/firelink-against-the-storm-peek-save.sh).
+PK-349:W1335 (2026-11-22 13:40, dima): what is the point of having a stringified python script inside of an sh script? ❓
+PK-349:W1336 (2026-11-22 13:40, dima): is it better than plain sh syntax? if yes, why? ❓
+PK-349:W1337 (2026-11-22 13:40, dima): how is this trick called, using a python program via a string inside of an sh file? ❓
+PK-349:W1338 (2026-11-22 13:40, dima): also: the inbox is empty now, and your handoff should wait for monday.
+PK-349:W1339 (2026-11-22 13:40, dima): should i boot you in mini mode? ❓
+PK-349:W1340 (2026-11-22 13:40, dima): since we booted still, tell me the healthcheck, and whether any reminders or dated stuff is doable today.
+PK-349:W1341 (2026-11-22 14:08, dima): okay, i like this shape.
+PK-349:W1342 (2026-11-22 14:08, dima): boot mini is also an economic mode, so i sometimes can summon you in minimode just to solve a few questions and stop.
+PK-349:W1343 (2026-11-22 14:08, dima): so starting two opuses at once for a few questions is not mandatory (can be useful, though), so summon crow when i ask in minimode.
+PK-349:W1344 (2026-11-22 14:08, dima): in full boot, crow opens at boot as usual.
+PK-349:W1345 (2026-11-22 14:08, dima): re pre-merge-siesta: 157 rounds is nice, but were they useful? ❓
+PK-349:W1346 (2026-11-22 14:08, dima): re crow-receipts: i see, but why only 2 rounds logged? looks like a small number. ❓
+PK-349:W1347 (2026-11-22 14:08, dima): how much time is it being measured? ❓
 <!-- SECTION:NOTES:END -->
