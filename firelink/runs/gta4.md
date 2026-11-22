@@ -56,3 +56,5 @@ last run 2026-11-05, steamac 1.9.12. raw: `~/.local/share/steamac/traces-keep/`,
 ## tried and ruled out by research, no need to repeat
 
 `TSOEnabled=0` (hardware TSO works in the guest), `X87ReducedPrecision` (already 1), `d3d9.numBackBuffers` (gone), `DXVK_FRAME_RATE` (gone, use `d3d9.maxFrameRate`), DXMT (no D3D9), more vCPUs (the guest is mostly idle).
+
+- 📌 open try (22 Nov, FRM-665:W9): the perf test on the reclaimed disk, «that is for later», his word starts it
