@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-22T13:40:00Z'
+updated_date: '2026-11-22T13:41:00Z'
 labels:
   - s
   - clio-main
@@ -1456,4 +1456,13 @@ PK-349:W1422 (2026-11-22 15:28, dima): agentic friendliness level? ❓
 PK-349:W1423 (2026-11-22 15:28, dima): and of course, i'd like to try it out myself.
 PK-349:W1424 (2026-11-22 15:28, dima): propose.
 PK-349:W1425 (2026-11-22 15:28, dima): does it need research, or are you OK with knowing your own tools? ❓
+
+15:41 — the 15:37 groom (helga): the probe asks; whiteboard comments in FRM-614, the guard question in FRM-682
+PK-349:W1426 (2026-11-22 15:37, dima): I am not insisting on drawing specifically our PM board. I've just provided an example. If it is too fat then skip it. Instead invent a shape that would allow us to measure properly without spending so much effort.
+PK-349:W1427 (2026-11-22 15:37, dima): What I want to know is the numbers.
+PK-349:W1428 (2026-11-22 15:37, dima): How much effort does it take to draw in Excalidraw and on the whiteboard: the same stuff, create stuff, read stuff, and edit stuff? ❓
+PK-349:W1429 (2026-11-22 15:37, dima): Let's measure the comments: how comments work.
+PK-349:W1430 (2026-11-22 15:37, dima): Measure the approachability of each tool.
+PK-349:W1431 (2026-11-22 15:37, dima): What is more convenient to draw with, Excalidraw or the whiteboard? ❓
+PK-349:W1432 (2026-11-22 15:37, dima): I want to see the precise measurements and numbers.
 <!-- SECTION:NOTES:END -->
