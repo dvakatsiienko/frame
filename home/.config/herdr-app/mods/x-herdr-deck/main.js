@@ -297,12 +297,22 @@ export default class Deck extends View {
                 : 'paths' in read
                   ? read.paths
                   : [`${appHome()}/${read.rel}`];
+            // the ask may have left or been delivered while the clipboard was read
+            const [sid, id] = key.split(':');
+            const s = this.rows.find((r) => r.sid === sid);
+            if (
+                !this.steers.has(key) ||
+                !s ||
+                this.pressStateOf(s, id ?? '') === 'locked'
+            )
+                return;
             if (paths.length) return this.addSteerFiles(cx, key, paths);
             this.keyNotes.set(key, {
                 text: 'no picture or file on the clipboard',
                 until: Date.now() + KEY_NOTE_MS,
             });
             cx.notify();
+            cx.timer.after(KEY_NOTE_MS + 1, (later) => later.notify());
         });
     }
 
