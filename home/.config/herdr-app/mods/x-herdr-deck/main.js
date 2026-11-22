@@ -21,6 +21,7 @@ import {
 } from 'herdr';
 
 import { readClipboard } from './attach-files.js';
+import { attachRow } from './attach-row.js';
 import {
     PRESS_DIR,
     PRESS_FILE,
@@ -67,7 +68,7 @@ import {
     tickAllTakes,
     withPending,
 } from './orbit.js';
-import { askText } from './pictures.js';
+import { askText, isPictureName } from './pictures.js';
 import { SENT_MS, next, pressState, untickDoor } from './press.js';
 import {
     CLAUDE,
@@ -89,7 +90,6 @@ import {
     STEER_TAB,
     pressButton,
     steerBox,
-    steerChips,
 } from './steer-kit.js';
 import { createTabMember } from './tab-loop.js';
 
@@ -306,18 +306,21 @@ export default class Deck extends View {
         });
     }
 
-    /** the chips under a steer box, none while it carries none @param {Theme} t @param {string} key @param {boolean} isLocked */
+    /** the files a steer box carries, drawn as the quill's are (attach-row.js); none while it carries none @param {Theme} t @param {string} key @param {boolean} isLocked */
     chipsOf(t, key, isLocked) {
         const files = this.steerFiles.of(key);
         if (!files.length) return [];
+        const pictures = files.filter(isPictureName);
         return [
-            steerChips(t, {
+            attachRow(t, {
                 files: files.map((path) => ({
+                    isPicture: isPictureName(path),
                     path,
                     preview: this.files.previewOf(path),
                 })),
                 id: `chips-${key}`,
                 isLocked,
+                onOpen: (path) => this.files.openPicture(pictures, path),
                 onRemove: (path, cx) => {
                     this.steerFiles.remove(key, path);
                     cx.notify();
@@ -889,6 +892,7 @@ export default class Deck extends View {
                     el.child(this.linkLine(t, ask, `link-${key}`)),
                 )
                 .children(this.files.view(t, ask, key))
+                .children(this.chipsOf(t, key, isLocked))
                 .when(Boolean(ask.id), (el) =>
                     el.child(
                         h_flex()
@@ -944,7 +948,6 @@ export default class Deck extends View {
                             ),
                     ),
                 )
-                .children(this.chipsOf(t, key, isLocked))
                 .when((this.keyNotes.get(key)?.until ?? 0) > Date.now(), (el) =>
                     el.child(
                         div()

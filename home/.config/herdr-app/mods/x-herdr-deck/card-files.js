@@ -286,7 +286,18 @@ export function createCardFiles() {
         return typeof got?.rel === 'string' ? got.rel : null;
     }
 
-    return { look, previewOf, view };
+    /** a steer box's picture opens in the chat's viewer, the box's other pictures a step away @param {string[]} pictures @param {string} path */
+    function openPicture(pictures, path) {
+        chatDoors.selectChat();
+        chatDoors.askView({
+            at: Math.max(0, pictures.indexOf(path)),
+            files: pictures,
+            isDesktop: false,
+            time: Date.now(),
+        });
+    }
+
+    return { look, openPicture, previewOf, view };
 }
 
 /* Types */

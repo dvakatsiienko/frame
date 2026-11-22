@@ -2,6 +2,7 @@
     "place": "none",
     "shared": [
         "attach-files.js",
+        "attach-row.js",
         "band-press.js",
         "chat-asks.js",
         "file-links.js",

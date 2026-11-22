@@ -3,11 +3,12 @@
 // quill.js
 
 import { Textarea, TextareaState, h_flex, v_flex } from 'gpui-base';
-import { div, image } from 'gpui-kit';
+import { div } from 'gpui-kit';
 import { appHome } from 'herdr';
 
-import { fileName, isImagePath, pickFiles } from './attach.js';
+import { isImagePath, pickFiles } from './attach.js';
 import { readClipboard } from './attach-files.js';
+import { attachRow } from './attach-row.js';
 import { createAttachments } from './attachments.js';
 import { focusBorder } from './focus-ring.js';
 import { ICONS } from './icons.js';
@@ -35,8 +36,7 @@ const QUILL_BACK = 'x_herdr_chat_quill_back';
 // Esc in the quill hands the keyboard back to the chat, as a press outside it does
 const QUILL_ESCAPE = 'x_herdr_chat_quill_escape';
 const SEND_SIZE = 28;
-// a picture waiting over the quill, and how long a paste's «nothing there» note stays
-const THUMB_SIZE = 56;
+// how long a paste's «nothing there» note stays
 const PASTE_NOTE_MS = 6000;
 const NO_IMAGE = 'No image on the clipboard';
 
@@ -371,92 +371,28 @@ export function createQuill({
             .child('+');
     }
 
-    /**
-     * what waits over the quill: a 56 px preview per picture, a «📎 name» chip per other file, each with its ×
-     * (FRM-609: no caption, no Remove, each × takes its own)
-     * @param {Theme} t
-     */
+    /** what waits over the quill, drawn as every attach row is (attach-row.js) @param {Theme} t */
     function attachmentsRow(t) {
         const file = shownFile();
         const waiting = file ? attachments.of(file) : [];
-        /** @param {string} id @param {string} path */
-        const remove = (id, path) =>
-            div()
-                .id(id)
-                .absolute()
-                .top(3)
-                .right(3)
-                .size(18)
-                .flex()
-                .items_center()
-                .justify_center()
-                .rounded_full()
-                .bg(t.background)
-                .text_size(11)
-                .text_color(t.foreground)
-                .cursor_pointer()
-                .tooltip('Remove')
-                .on_click((_e, cx) => {
-                    cx.stop_propagation();
-                    if (file) {
-                        attachments.remove(file, path);
-                        sendPath().filesUnderMark(file, cx);
-                    }
-                    cx.notify();
-                })
-                .child('×');
-        return h_flex()
-            .gap(8)
-            .flex_wrap()
-            .items_center()
-            .when(waiting.length > 0, (el) => el.pb(8))
-            .children(
-                waiting.map(({ path, preview }, i) =>
-                    isImagePath(path)
-                        ? div()
-                              .id(`chat-thumb-${i}`)
-                              .size(THUMB_SIZE)
-                              .flex_none()
-                              .relative()
-                              .rounded(8)
-                              .overflow_hidden()
-                              .bg(t.raised)
-                              .border(1)
-                              .border_color(t.border)
-                              .cursor_pointer()
-                              .tooltip('Open')
-                              .on_click((_e, cx) => {
-                                  const pictures = waiting
-                                      .map((w) => w.path)
-                                      .filter(isImagePath);
-                                  showPictures(
-                                      pictures,
-                                      pictures.indexOf(path),
-                                      cx,
-                                  );
-                              })
-                              .when(Boolean(preview), (el) =>
-                                  el.child(image(preview ?? '').size_full()),
-                              )
-                              .child(remove(`chat-thumb-x-${i}`, path))
-                        : h_flex()
-                              .id(`chat-file-${i}`)
-                              .relative()
-                              .gap(6)
-                              .items_center()
-                              .pl(8)
-                              .pr(26)
-                              .py(4)
-                              .rounded(8)
-                              .border(1)
-                              .border_color(t.border)
-                              .text_size(12)
-                              .text_color(t.muted)
-                              .tooltip(path)
-                              .child(`📎 ${fileName(path)}`)
-                              .child(remove(`chat-file-x-${i}`, path)),
-                ),
-            );
+        const pictures = waiting.map((w) => w.path).filter(isImagePath);
+        return attachRow(t, {
+            files: waiting.map(({ path, preview }) => ({
+                isPicture: isImagePath(path),
+                path,
+                preview,
+            })),
+            id: 'chat-attach-row',
+            onOpen: (path, cx) =>
+                showPictures(pictures, pictures.indexOf(path), cx),
+            onRemove: (path, cx) => {
+                if (file) {
+                    attachments.remove(file, path);
+                    sendPath().filesUnderMark(file, cx);
+                }
+                cx.notify();
+            },
+        }).when(waiting.length > 0, (el) => el.pb(8));
     }
 
     /**
