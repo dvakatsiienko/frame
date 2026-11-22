@@ -127,10 +127,10 @@ the board, one message, short lines, **no queries here — pure assembly**:
 
 the light boot: no cst ingest, no lanes. same silence, one opening message; the inbox is parsed only on his ask (item 2).
 
-**an eject from the main flow** (dima, 2026-11-22; often a weekly-near-cap day): solve what he raises; global plans hold.
+**an eject from the main flow, and the economy boot** (dima, 2026-11-22; a weekly-near-cap day, or a few questions and a stop): solve what he raises; global plans hold.
 - the handoffs are the next day's plan, never followed; grooming them is allowed (tweak, sort, plan, grill)
-- his side question gets a plain cc answer (a game, anything off the fleet)
-- **🎀 helga** starts on the first groom; **🐦‍⬛ crow** on his word or a real decision
+- a side question gets a plain cc answer
+- **🎀 helga** starts on the first groom; **🐦‍⬛ crow** only on his ask (a full boot starts her as usual)
 - no lane unless really needed; a **🐕 stray** only on a prepped batch, offered once enough chores pile up
 - a no-work day pauses the clocks on his word: dated waits move by the lost days (`until:`, flyway `on:`, `⏰ due:`, dated trials); calendar-bound lines stay
 
