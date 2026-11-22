@@ -43,6 +43,8 @@ home/.claude/shelf/herdr-settings/
 home/.claude/shelf/threads.json
 home/.claude/shelf/threads.json.lock
 home/.claude/shelf/lane-rounds.json
+# the bypass-allow hook's count of what it let through (FRM-684), one line an allow
+home/.claude/shelf/permission-request-allows.jsonl
 # a stray `go build` output; the x shim builds and runs x/go/bin/x
 x/go/x
 
