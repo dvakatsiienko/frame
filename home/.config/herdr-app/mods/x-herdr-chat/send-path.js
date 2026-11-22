@@ -236,7 +236,6 @@ export function createSendPath({
         const file = shownFile();
         if (!address || !file || typingInto.has(address)) return;
         typingInto.add(address);
-        say('Taking it back…', cx);
         cx.spawn(async (cx) => {
             try {
                 const screen = (await hc(['read', address, '--lines', '40']))
@@ -258,8 +257,11 @@ export function createSendPath({
                 const isNormal = isVimNormal(screen, editorMode());
                 await hc(['keys', address, ...clearKeys(pulled, isNormal)]);
                 const { rest, words } = pulledBack(pulled, queued);
-                if (words)
+                if (words) {
                     quills.apply(file, { said: words, type: 'returned' });
+                    // his words are back: the caret waits in the quill (his 20:35 ask)
+                    if (shownFile() === file) quillBox()?.focus();
+                }
                 for (const text of rest) await hc(sendArgs(address, text));
                 say(words ? null : 'It joined the turn first', cx);
             } catch (error) {

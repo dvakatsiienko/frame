@@ -128,17 +128,19 @@ export function createMessageRows(deps) {
                                 .px(12)
                                 .py(8)
                                 .rounded(12)
-                                // a waiting message is an outline of his bubble, its words dim, until a turn takes it
+                                // a waiting message is a dashed outline of his bubble until a turn takes it (FRM-563:W9, W10;
+                                // his pick, 20:41)
                                 .bg(
                                     row.isWaiting
                                         ? t.background
                                         : tint(t.accent, '33'),
                                 )
                                 .border(1)
+                                .when(row.isWaiting, (el) => el.border_dashed())
                                 .border_color(
                                     tint(t.accent, row.isWaiting ? '99' : '4d'),
                                 )
-                                .when(row.isWaiting, (el) => el.opacity(0.6))
+                                .when(row.isWaiting, (el) => el.opacity(0.75))
                                 .child(
                                     markedText(row, t, isShown) ??
                                         TextView.markdown(
@@ -345,18 +347,19 @@ export function createMessageRows(deps) {
                 .items_center()
                 .gap(2)
                 .child(
+                    // ↩️, his pick (20:40): a hover cannot recolour a glyph in herdr, so the emoji keeps its own colours and the hover
+                    // shows as a soft disc behind it
                     div()
-                        .size(16)
+                        .size(18)
                         .flex()
                         .items_center()
                         .justify_center()
                         .rounded_full()
-                        .border(1)
-                        .border_color(t.border)
-                        .text_size(11)
+                        .text_size(13)
                         .text_color(t.muted)
                         .cursor_pointer()
-                        .child('×'),
+                        .hover((st) => st.bg(t.border))
+                        .child('↩️'),
                 )
                 .child(detailsLine(row, t));
         if (isSentRow(row.id))
