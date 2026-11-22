@@ -596,6 +596,19 @@ def plain_verdicts(prose: str) -> list[str]:
     return found[:1]
 
 
+MEASURE_TOPIC = re.compile(r"\b(?:trials?|test drives?|measures?|measured|rounds?|verdicts?|baseline|kill rule)\b", re.I)
+MEASURE_NUMBER = re.compile(r"\b\d+(?:\.\d+)?\s?(?:%|of \d+|/\d+)|\b\d+(?:\.\d+)?\s?(?:k|%)?\s?→\s?\d")
+GAIN_LEAD = re.compile(r"^\s*(?:[-*]\s+)?(?:🟢|🟡|🔴)", re.M)
+
+
+def bare_measures(prose: str) -> list[str]:
+    # a measure reaches dima as its gain, never as bare numbers (fleet-output-format § shapes; dima, 2026-11-22 14:17)
+    if GAIN_LEAD.search(prose) or not MEASURE_TOPIC.search(prose):
+        return []
+    hit = MEASURE_NUMBER.search(prose)
+    return [hit.group(0).strip()] if hit else []
+
+
 def findings(reply: str) -> list[tuple[str, str]]:
     prose = FENCE.sub("", reply)
     found: list[tuple[str, str]] = []
@@ -615,6 +628,7 @@ def findings(reply: str) -> list[tuple[str, str]]:
     found += [("door-claim", claim) for claim in door_claims(prose)]
     found += [("dead-end", claim) for claim in dead_ends(prose)]
     found += [("plain-verdict", word) for word in plain_verdicts(prose)]
+    found += [("bare-measure", number) for number in bare_measures(INLINE_CODE.sub("", prose))]
     # a reply that is only the 📄 stamp and the 🔭 line hid its answer in a mid-turn block dima never sees (crow, 2026-10-12: three in one evening)
     body = [l for l in reply.splitlines() if l.strip()]
     if body and all(l.lstrip().startswith(("📄", "🔭")) for l in body) and any(l.lstrip().startswith("📄") for l in body):
@@ -703,6 +717,8 @@ def main() -> None:
         reminds.append("a wake that only reports a commit or push prints nothing; it rides the next reply")
     if by_rule("plain-verdict"):
         reminds.append(f"a verdict word printed plain («{by_rule('plain-verdict')[0]}») — bold with its badge: **🌼 clean**, **🩹 fix**, **🪜 escalate**")
+    if by_rule("bare-measure"):
+        reminds.append(f"a measure printed bare («{by_rule('bare-measure')[0]}») — each deciding number a 🟢🟡🔴 gain line, signed change, before → after, then your verdict (keep or drop) and the action")
     if by_rule("dead-end"):
         reminds.append(f"«{by_rule('dead-end')[0]}» with no check in its sentence — name the try or the command beside it, or mark it (inference)")
     if by_rule("table"):

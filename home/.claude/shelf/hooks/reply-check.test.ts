@@ -66,6 +66,16 @@ describe('the · rule', () => {
         expect(stop('done.\n\n🔭 waiting on ci for the pushed head')).toBe('');
     });
 
+    it('reminds of a trial measure printed with no gain line', () => {
+        expect(stop('the trial: 61 of 68 rounds found a high.')).toBe('');
+        expect(nextPrompt()).toContain('a measure printed bare');
+    });
+
+    it('passes a trial measure led by a gain line', () => {
+        expect(stop('the trial:\n- 🟢 rounds with a high: 61 of 68')).toBe('');
+        expect(nextPrompt()).toBe('');
+    });
+
     it('never blocks a markdown table, and reminds at the next prompt', () => {
         expect(stop('| a | b |\n| --- | --- |\n| 1 | 2 |')).toBe('');
         expect(nextPrompt()).toContain('a markdown table');
