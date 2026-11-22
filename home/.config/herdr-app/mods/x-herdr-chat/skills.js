@@ -1,6 +1,7 @@
 // every skill a thread can load, for the / menu: the transcript's own listing misses plugin skills (clio's own never showed),
 // so the chat also reads the plugins enabled for the thread's folder, through the settings layers Claude Code reads:
-// the user's settings, then the project's settings and its local settings, a later layer winning for a plugin
+// the user's settings, then the project's settings and its local settings, a later layer winning for a plugin; and his own
+// skills, the user's and the folder's, since one kept from the model never shows in that listing
 
 /**
  * @typedef {{ read: (path: string) => Promise<string | null>, list: (dir: string) => Promise<string[]> }} SkillFs
@@ -92,7 +93,7 @@ async function skillDirs(fs, root) {
 }
 
 /**
- * every skill of the plugins enabled for the thread's folder, as `plugin:skill` → what it does
+ * every skill of the plugins enabled for the thread's folder, as `plugin:skill` → what it does, then his own skills by name
  * @param {SkillFs} fs
  * @param {{ home: string, cwd: string }} thread
  * @returns {Promise<Map<string, string>>}
@@ -119,5 +120,14 @@ export async function loadableSkills(fs, { home, cwd }) {
             skills.set(`${plugin}:${head.name ?? folder}`, head.description);
         }
     }
+    // his own skills, the user's and the thread folder's: one he keeps from the model (`disable-model-invocation`)
+    // never shows in the transcript's listing, so it is read here too
+    for (const root of [`${home}/.claude/skills`, `${cwd}/.claude/skills`])
+        for (const folder of await fs.list(root)) {
+            const text = await fs.read(`${root}/${folder}/SKILL.md`);
+            if (!text) continue;
+            const head = skillHead(text);
+            skills.set(head.name ?? folder, head.description);
+        }
     return skills;
 }

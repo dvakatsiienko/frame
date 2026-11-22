@@ -114,6 +114,15 @@ beforeAll(async () => {
         JSON.stringify({ skills: ['./skills/a/one'] }),
     );
     await put(join(cache, 'shut/skills/a/one/SKILL.md'), skill('one', 'off'));
+    // his own skill, typed only by him: no name line, kept from the model, so the transcript's listing never names it
+    await put(
+        join(home, '.claude/skills/dima-reminds-measures/SKILL.md'),
+        "---\ndescription: dima's lever, reprint the last measures\ndisable-model-invocation: true\n---\n\nbody\n",
+    );
+    await put(
+        join(cwd, '.claude/skills/drift-check/SKILL.md'),
+        skill('drift-check', 'does x still fit'),
+    );
 });
 
 describe('every skill the thread can load autocompletes', () => {
@@ -132,6 +141,26 @@ describe('every skill the thread can load autocompletes', () => {
     test('a project plugin installed for another folder lists none', async () => {
         const skills = await loadableSkills(fs, { cwd: join(cwd, 'x'), home });
         expect(skills.has('alpha:boot')).toBe(false);
+    });
+});
+
+describe("his own skills autocomplete, the user's and the project's (the slash rider)", () => {
+    test('a user skill kept from the model lists by its folder name', async () => {
+        expect(
+            (await loadableSkills(fs, { cwd, home })).get(
+                'dima-reminds-measures',
+            ),
+        ).toBe("dima's lever, reprint the last measures");
+    });
+    test("the thread folder's own skill lists by its name", async () => {
+        expect(
+            (await loadableSkills(fs, { cwd, home })).get('drift-check'),
+        ).toBe('does x still fit');
+    });
+    test("another folder's thread never lists the project's skill", async () => {
+        expect(
+            (await loadableSkills(fs, { cwd: home, home })).has('drift-check'),
+        ).toBe(false);
     });
 });
 

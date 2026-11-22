@@ -97,7 +97,7 @@ export function createQuill({
     /** the thread's skills, from its transcript's listing @type {Map<string, string>} */
     let skills = new Map();
     /** the skills of the plugins its folder enables @type {Map<string, string>} */
-    let pluginSkills = new Map();
+    let diskSkills = new Map();
     /** every thread's quill and its mark, the one owner of what the box shows */
     const quills = createQuills(localStorage, (text) => {
         // a write of ours (a send, a taken mark, a fill) is an edit the / menu reads too: a sent «/co» closes it
@@ -464,7 +464,7 @@ export function createQuill({
     /** what the / menu shows now: the caret is read off the box, so a caret moved off the word closes it */
     function slashShown() {
         if (box) slashMenu.at(box.value(), box.selected_range().end);
-        return slashMenu.shown(menuNames(skills, pluginSkills));
+        return slashMenu.shown(menuNames(skills, diskSkills));
     }
 
     /** a / menu key: ↑ ↓ move, Tab or Enter fills the pick, Esc closes @param {'up' | 'down' | 'fill' | 'close'} key @param {Context} cx */
@@ -541,14 +541,14 @@ export function createQuill({
         clearThread() {
             slashMenu.clear();
             skills = new Map();
-            pluginSkills = new Map();
+            diskSkills = new Map();
         },
         focus: () => box?.focus(),
         learnSkills,
         quills,
         /** the skills of the plugins the shown thread's folder enables @param {Map<string, string>} found */
-        setPluginSkills(found) {
-            pluginSkills = found;
+        setDiskSkills(found) {
+            diskSkills = found;
         },
         showDraft,
         start,

@@ -207,7 +207,7 @@ export function createThreadFeed(deps) {
                 loadableSkills(SKILL_FS, { cwd, home: home() })
                     .then((found) => {
                         if (feed.file !== file) return;
-                        deps.quill.setPluginSkills(found);
+                        deps.quill.setDiskSkills(found);
                     })
                     .catch(() => {});
             // only a send needs the address: a ps that fails leaves the thread readable
