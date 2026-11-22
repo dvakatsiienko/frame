@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-23
 dies-when: the verdict line below is written
 ---
@@ -64,6 +64,7 @@ once a week clio draws 5 notes from `notes.jsonl` for dima to grade, and logs a 
 - 2026-11-18 · main · 5 of the week's 161 sent notes (every 32nd): 11-11 the cancelled ticket in mods lane 6's handoff, 11-12 FRM-566's grill fix, 11-13 the deck question three times on his board, 11-15 the action-buttons round, 11-18 FRM-621's stale-scratch tail · dima, 12:04: all five useful («i treat all of these are useful»); his want: each graded note shows whether its catch was fixed, with proof · fixed? (a helper card, 12:06): 1 unknown (FRM-578 Canceled, the handoff line itself unreadable now), 2 fixed (FRM-566 Done, 87aa1c58…), 3 fixed (FRM-611, cdddd3b5), 4 partly (FRM-615 Done, its a/b choice never decided), 5 fixed (the scratch trashed 11:56) · since 11-11: 347 notes vetted, 338 ok / 9 miss, 269 changed something (78 %) (`jq` over verdicts.jsonl)
 
 ## verdict
+**2026-11-22 · adopted** (dima 14:17: «crow works well … we can sharpen it slightly later»): the replay went 0 of 6 → 6 of 6 slips carrying a receipt or a risk wake; the live halt reads lapsed after 7 Nov, so her catch share stays unmeasured; the FRM-502 wakes stay, the weekly grade and FRM-516's 29 Nov read keep watching
 
 ### round, 2026-11-04 halt
 6 `#dima-caught` lines in the day's flawlog; the first-flagged share was not counted against `notes.jsonl`: the halt ran out of window. crow's notes 12:42 and 14:47 were real catches, vetted ok. no verdict from this round.

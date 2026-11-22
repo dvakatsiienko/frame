@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-23
 dies-when: the verdict line below is written
 fits: clio
@@ -90,6 +90,7 @@ Ticket: none
 - 2026-11-16 · main's batch 20:20–21:26: grill 4 landed (asks go up early), FRM-612 closed, the tails trued up 81 → 31, FRM-638 slice 1 to its review · wishkeeper 4 min, 93k tokens, 6 findings: 0 high, 4 medium real (a tail ticked while its gate was red, a promised tails list not sent, a W-id twice in PK-444, the rule line lost «a recommendation»), 2 low · acted: 3 fixed, 1 left (pocket notes are append-only)
 
 ## verdict
+**2026-11-22 · adopted** (dima 14:17: «it passes»): 157 rounds 9 → 22 Nov, 123 with a real high (78 %), 15 with none, the kill rule (5 empty in a row) never fired; cost ~7.7 min and ~122k tokens a round, ~11 rounds a day; the trigger moves from a file counter to strategic points, PK-464
 - 2026-11-09 22:06–23:58 wing 1: wishkeeper 15 findings (1 high, 6 medium, 8 low), ~143k tokens, 48 tool calls; the high, a merge loop armed before the head was read, was caught before any merge
 - 2026-11-10 · main 22:57–00:25: the lane reuse rule, the crow and helga herdr pane door, both wings halted · wishkeeper 4 min, 87k tokens, 10 findings: 3 high real (his reuse clauses cut to fit the size caps and then reported as written, crew-lead and craft-fleet-flow pointing at each other with neither holding the steps), all fixed before the commit; 2 medium fixed (the 00:01 and 00:07 grooms, the models.md threshold)
 - 2026-11-10 · main 14:52–15:10, after the second wind: FRM-542 closed, FRM-544 and FRM-504 folds, the boundary draft and its three consults · wishkeeper 5 min, 93k tokens, 11 findings: 2 high real (five refolds left as notes while the reply said the lines were fixed: the pocket's append-only check refuses an in-place W-line edit, parked and named; FRM-504's body still said «proposed» after its re-sign, groomed), 5 medium (3 already fixed by the v2 draft), 4 low
