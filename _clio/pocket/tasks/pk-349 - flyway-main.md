@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-22T12:34:00Z'
+updated_date: '2026-11-22T12:35:00Z'
 labels:
   - s
   - clio-main
@@ -16,12 +16,11 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f61 herdr drawing: at FRM-618 end, ask the herdr codie how far its drawing goes (his 17:03)
-- [ ] #2 f66 lane-pace counts 1 commit for the mods lane against 29 since 17:00; its commit match misses (stray, after batch 11)
-- [ ] #3 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #4 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #5 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #6 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #1 f66 lane-pace counts 1 commit for the mods lane against 29 since 17:00; its commit match misses (stray, after batch 11)
+- [ ] #2 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #3 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #4 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #5 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1399,4 +1398,6 @@ PK-349:W1370 (2026-11-22 14:17, dima): crow - so measure is failed then? ❓
 PK-349:W1371 (2026-11-22 14:17, dima): i think we can just adopt it. crow works well from what i saw. we can sharpen it slightly later.
 PK-349:W1372 (2026-11-22 14:17, dima): helga in trouble. how to solve? ❓
 PK-349:W1373 (2026-11-22 14:17, dima): helga thread: «⏺ Autocompact is thrashing: the context refilled to the limit within 3 turns of the previous compact, 3 times in a row. A file being read or a tool output is likely too large for the context window. Try reading in smaller chunks, or use /clear to start fresh. 🔭 not waiting»
+
+done 2026-11-22 14:35: f61 herdr drawing: at FRM-618 end, ask the herdr codie how far its drawing goes (his 17:03) (FRM-618 Done)
 <!-- SECTION:NOTES:END -->
