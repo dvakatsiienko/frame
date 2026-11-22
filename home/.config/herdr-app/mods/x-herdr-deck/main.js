@@ -614,9 +614,6 @@ export default class Deck extends View {
             isFocused: this.steerFocus === key,
             isLocked,
             onCmdUp: () => this.steerKeys.modifiersReleased(),
-            onDrop: key.endsWith(':plan')
-                ? null
-                : (paths, cx) => this.addSteerFiles(cx, key, paths),
             onEnter: (cx, isCmd) => this.steerKeyAct(cx, key, isCmd),
             onEnterUp: () => this.steerKeys.released(),
             onTab: (isBack) => this.tab.ask(`steer-${key}`, isBack),
@@ -745,7 +742,9 @@ export default class Deck extends View {
     makeSteerBox(key) {
         try {
             const box = InputState.new({
-                placeholder: 'steer…',
+                placeholder: key.endsWith(':plan')
+                    ? 'steer…'
+                    : 'steer, or drop a file…',
                 value: kept(localStorage, `steer:${key}`) ?? '',
             });
             const save = () => keep(localStorage, `steer:${key}`, box.value());
@@ -871,6 +870,12 @@ export default class Deck extends View {
                 .gap(8)
                 .rounded(8)
                 .bg(t.raised)
+                // a file dropped anywhere on the card joins its steer: the box's own text field swallows a drop (his 19:33 test)
+                .when(Boolean(steer) && !isLocked, (el) =>
+                    el.on_drop((e, cx) =>
+                        this.addSteerFiles(cx, key, e?.paths ?? []),
+                    ),
+                )
                 .when(Boolean(cardKind(ask.text)), (el) =>
                     cardPaint(
                         el,
