@@ -195,3 +195,4 @@ Ticket: none
 - 2026-11-22 15:10 · siesta, medium, main, scoped: the jev merge, the reminder fold, the PK-464 close · wishkeeper 0.9 min, 30k tokens · 0 high, 2 medium, 0 low · both real (three of his quotes lost in the reminder fold, a note pointing at a deleted milestone), acted: quotes restored in FRM-681, the note repointed · hit: a scoped brief cost a quarter of the 13:52 run and still caught a quote loss
 - 2026-11-22 18:01 · 76k tokens · 1 high, 3 medium, 1 low · highs real: y (FRM-683 repo) · acted: all 4 fixed same turn
 - 2026-11-22 18:30 · 60k tokens · 1 high, 2 medium, 2 low · highs real: y (FRM-678 done test missed W18–W19) · acted: all 3 fixed same turn
+- 2026-11-22 18:56 · 78k tokens · 0 high, 7 medium, 4 low · highs real: n/a · acted: 6 fixed, o3 re-asked
