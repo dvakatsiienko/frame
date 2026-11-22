@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-22T13:41:00Z'
+updated_date: '2026-11-22T15:46:00Z'
 labels:
   - s
   - clio-main
@@ -17,10 +17,12 @@ ordinal: 1000
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 f66 lane-pace counts 1 commit for the mods lane against 29 since 17:00; its commit match misses (stray, after batch 11)
-- [ ] #2 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #3 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #4 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #5 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #2 f67 herdr slash list misses his own skill: the scan prints it, the miss sits in chat's commands(); rider in the herdr handoff
+- [ ] #3 f68 launchd: one store until the merge; a BYT-124 line «split app jobs at the merge», pm2.dima moves into schedule/
+- [ ] #4 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #6 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #7 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
