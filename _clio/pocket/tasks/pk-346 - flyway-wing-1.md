@@ -18,10 +18,10 @@ ordinal: 1001
 <!-- AC:BEGIN -->
 - [ ] #1 f49 speak v2 prep with dima: his two remaining parts; every speak v2 ticket signed and chained (18:10)
 - [ ] #2 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
-- [ ] #3 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
-- [ ] #4 f48 📅 wishkeeper card verdict: highs real ≥ 4 in 5 on the 5 min cache, then close the trial — on: 2026-11-26
-- [ ] #5 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #6 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-07
+- [ ] #3 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-27
+- [ ] #4 f48 📅 wishkeeper card verdict: highs real ≥ 4 in 5 on the 5 min cache, then close the trial — on: 2026-11-28
+- [ ] #5 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-29
+- [ ] #6 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
 - [ ] #7 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
 - [ ] #8 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
 - [ ] #9 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2

@@ -18,7 +18,7 @@ ordinal: 1000
 <!-- AC:BEGIN -->
 - [ ] #1 f61 herdr drawing: at FRM-618 end, ask the herdr codie how far its drawing goes (his 17:03)
 - [ ] #2 f66 lane-pace counts 1 commit for the mods lane against 29 since 17:00; its commit match misses (stray, after batch 11)
-- [ ] #3 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-27
+- [ ] #3 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
 - [ ] #4 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
 - [ ] #5 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
 - [ ] #6 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
