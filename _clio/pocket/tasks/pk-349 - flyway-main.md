@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-22T12:31:00Z'
+updated_date: '2026-11-22T12:33:00Z'
 labels:
   - s
   - clio-main
@@ -1369,4 +1369,19 @@ PK-349:W1344 (2026-11-22 14:08, dima): in full boot, crow opens at boot as usual
 PK-349:W1345 (2026-11-22 14:08, dima): re pre-merge-siesta: 157 rounds is nice, but were they useful? ❓
 PK-349:W1346 (2026-11-22 14:08, dima): re crow-receipts: i see, but why only 2 rounds logged? looks like a small number. ❓
 PK-349:W1347 (2026-11-22 14:08, dima): how much time is it being measured? ❓
+
+14:33 — the 14:26 groom (helga): reply-check, the measures-as-gains command and its name, crow summoned; o2 and o3 carry the open picks
+PK-349:W1348 (2026-11-22 14:26, dima): o2: can you tell in short how reply check work? ❓
+PK-349:W1349 (2026-11-22 14:26, dima): it is a hook? you can tweak it right now or cc mods lane needed? ❓
+PK-349:W1350 (2026-11-22 14:26, dima): i think - shape-test-drive is wrong place.
+PK-349:W1351 (2026-11-22 14:26, dima): because in Shape Test Drive we start the test drive and you print me measures/results.
+PK-349:W1352 (2026-11-22 14:26, dima): usually when we end test drive or review some dated numbers, and when we do that, you usually don't call Shape Test Drive.
+PK-349:W1353 (2026-11-22 14:26, dima): the habit is in the wrong place.
+PK-349:W1354 (2026-11-22 14:26, dima): do you still think that reply check would be a better place for that? ❓
+PK-349:W1355 (2026-11-22 14:26, dima): can i have a quick command that is not a skill but a command that is callable only by me? ❓
+PK-349:W1356 (2026-11-22 14:26, dima): very short, it only asks to print measure in a way i just asked (remind you), but it is my lever to remind you? ❓
+PK-349:W1357 (2026-11-22 14:26, dima): (i am just tired to repeat everything all the time), because you keep forgetting? ❓
+PK-349:W1358 (2026-11-22 14:26, dima): top7 names for that new command pls.
+PK-349:W1359 (2026-11-22 14:26, dima): something like dima-reminds-mesures-shape. ❓
+PK-349:W1360 (2026-11-22 14:26, dima): and summon crow
 <!-- SECTION:NOTES:END -->
