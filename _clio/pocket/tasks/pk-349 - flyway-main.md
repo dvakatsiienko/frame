@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-22T15:46:00Z'
+updated_date: '2026-11-22T17:21:00Z'
 labels:
   - s
   - clio-main
@@ -17,12 +17,13 @@ ordinal: 1000
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 f66 lane-pace counts 1 commit for the mods lane against 29 since 17:00; its commit match misses (stray, after batch 11)
-- [ ] #2 f67 herdr slash list misses his own skill: the scan prints it, the miss sits in chat's commands(); rider in the herdr handoff
+- [ ] #2 f67 herdr slash list misses his skill: the scan prints it, the miss is in chat's commands(); rider in herdr handoff
 - [ ] #3 f68 launchd: one store until the merge; a BYT-124 line «split app jobs at the merge», pm2.dima moves into schedule/
-- [ ] #4 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #6 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #7 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #4 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
+- [ ] #5 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #6 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #7 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #8 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1467,4 +1468,6 @@ PK-349:W1429 (2026-11-22 15:37, dima): Let's measure the comments: how comments 
 PK-349:W1430 (2026-11-22 15:37, dima): Measure the approachability of each tool.
 PK-349:W1431 (2026-11-22 15:37, dima): What is more convenient to draw with, Excalidraw or the whiteboard? ❓
 PK-349:W1432 (2026-11-22 15:37, dima): I want to see the precise measurements and numbers.
+
+19:21 pm2.dima move parked (stray slice 4 findings): install.ts takes only com.dima.* files, so a rename to com.dima.x-pm2; com.PM2 is not loaded now (n8n runs from a daemon started earlier); loading it runs pm2 resurrect against a live daemon (check pm2 jlist before/after); link and bootstrap this one job by hand, never schedule:install (re-bootstraps every job)
 <!-- SECTION:NOTES:END -->
