@@ -1343,7 +1343,7 @@ var (
 	ansiColor    = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 	hookRedGate  = regexp.MustCompile(`(?m)^\s*🥊 (\S+) \(`)
 	hookRedRow   = regexp.MustCompile(`(?m)^\s*(\(fail\) |FAIL )`)
-	hookTimedOut = regexp.MustCompile(`(?m)^\s*Error: (timed out after \d+ ms|Test timed out in \d+ms)`)
+	hookTimedOut = regexp.MustCompile(`(?m)^\s*(?:Error|TestTimeoutError): (timed out after \d+ ms|Test timed out in \d+ms)`)
 )
 
 // a load flake, never a real red: only the test gates failed, and every row they failed carries the runner's timeout
