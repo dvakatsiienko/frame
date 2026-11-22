@@ -43,7 +43,7 @@
                 "af_nova",
                 "af_alloy"
             ],
-            "gain": 1.5,
+            "gain": 2,
             "speed": 1,
             "voice": {
                 "*": "af_heart",
