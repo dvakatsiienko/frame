@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-22T12:35:00Z'
+updated_date: '2026-11-22T13:03:00Z'
 labels:
   - s
   - clio-main
@@ -1400,4 +1400,37 @@ PK-349:W1372 (2026-11-22 14:17, dima): helga in trouble. how to solve? ❓
 PK-349:W1373 (2026-11-22 14:17, dima): helga thread: «⏺ Autocompact is thrashing: the context refilled to the limit within 3 turns of the previous compact, 3 times in a row. A file being read or a tool output is likely too large for the context window. Try reading in smaller chunks, or use /clear to start fresh. 🔭 not waiting»
 
 done 2026-11-22 14:35: f61 herdr drawing: at FRM-618 end, ask the herdr codie how far its drawing goes (his 17:03) (FRM-618 Done)
+
+15:03 — the 14:33–14:58 grooms (helga): dima-reminds family, status, jev snooze and colocation, FRM-680 to pm, rex version; answered or landed in the thread (o1 boot pause, jev milestone deleted, o2 jev resume asked)
+PK-349:W1374 (2026-11-22 14:33, dima): o3: let's try.
+PK-349:W1375 (2026-11-22 14:33, dima): create your reply-check and my dima-reminds-measures.
+PK-349:W1376 (2026-11-22 14:33, dima): i have quite a long list of stuff i keep repeating, so let's start growing my shortcut set of commands - short commands that fold often repeatable stuff.
+PK-349:W1377 (2026-11-22 14:33, dima): this will be my own family of commands-reminds types.
+PK-349:W1378 (2026-11-22 14:33, dima): dima-reminds-measures ← is the first one. tell when done.
+PK-349:W1379 (2026-11-22 14:35, dima): and for other stuff - how your overall stuff is doing? ❓
+PK-349:W1380 (2026-11-22 14:35, dima): do you have any pending doable pocket items? (except siesta - that's later)? ❓
+PK-349:W1381 (2026-11-22 14:35, dima): any solvable entries in flyway? ❓
+PK-349:W1382 (2026-11-22 14:35, dima): cc cloud created me alias «fl-ats-peek-save» (~/frame/home/.claude/plugin-x/skills/firelink/scripts/firelink-against-the-storm-peek-save.sh).
+PK-349:W1383 (2026-11-22 14:35, dima): question: what is the point of having a stringified python script inside of an sh script? ❓
+PK-349:W1384 (2026-11-22 14:35, dima): is it better than plain sh syntax? ❓
+PK-349:W1385 (2026-11-22 14:35, dima): if yes - why? ❓
+PK-349:W1386 (2026-11-22 14:35, dima): and how is this trick called, to use a python program via a string inside of an sh file? ❓
+PK-349:W1387 (2026-11-22 14:43, dima): mark siesta ticket as snoozed.
+PK-349:W1388 (2026-11-22 14:43, dima): i unsnooze when i have time.
+PK-349:W1389 (2026-11-22 14:43, dima): where all jev-related reminders are? ❓
+PK-349:W1390 (2026-11-22 14:43, dima): i want to fold jev-related stuff into «snoozed» linear ticket (or multiple tickets).
+PK-349:W1391 (2026-11-22 14:45, dima): and tickets.
+PK-349:W1392 (2026-11-22 14:45, dima): i want to snooze everything related to jev and colocate it.
+PK-349:W1393 (2026-11-22 14:58, dima): FRM-680 ← move to pm proj.
+PK-349:W1394 (2026-11-22 14:58, dima): jev judged - remove mil, no need for that for now.
+PK-349:W1395 (2026-11-22 14:58, dima): how do you think - is it worth it to fold everything related to jev into one ticket: «jev resume»? ❓
+PK-349:W1396 (2026-11-22 14:58, dima): and does it have all the stuff we planned for jev? ❓
+PK-349:W1397 (2026-11-22 14:58, dima): i think it's better shape until it's parked.
+PK-349:W1398 (2026-11-22 14:58, dima): i do not see a time spot in the observable future to resume jev, so it either gets resumed fully or gets deleted completely at some point.
+PK-349:W1399 (2026-11-22 14:58, dima): i have rex install (my main terminal).
+PK-349:W1400 (2026-11-22 14:58, dima): it is installed via invite link (it is beta) and i saw it gets updated on youtube (new videos, etc), but did not see a rex (my install) update notice.
+PK-349:W1401 (2026-11-22 14:58, dima): rex beta - how to update it? ❓
+PK-349:W1402 (2026-11-22 14:58, dima): what's current rex latest v? ❓
+PK-349:W1403 (2026-11-22 14:58, dima): my version says: Rex 0.1.0 (2061) · Preview; Rex Server 0.1.0-preview.21
+PK-349:W1404 (2026-11-22 14:58, dima): what is the official latest? ❓
 <!-- SECTION:NOTES:END -->
