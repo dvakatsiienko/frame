@@ -69,9 +69,10 @@ fi
 "$HOME/frame/_clio/.claude/hooks/roadmap-prefetch.sh" --outline > /dev/null
 
 if [ -z "${COMPACT:-}" ]; then
-echo "-- jev vet (pnpm jev:vet ok|miss <flow> <note> records a verdict; a miss restarts the window) --"
-node "$HOME/frame/script/jev-vet.ts" 2>/dev/null || fail "jev vet registry unreadable"
-health=$(timeout 15 "$HOME/frame/script/op-run.sh" node "$HOME/frame/script/jev-report.ts" --health 2>&1) && echo "jev health: $health" || fail "jev: ${health:-probe did not run}"
+# jev is snoozed: its vet and health read return with it (until: FRM-681)
+# echo "-- jev vet (pnpm jev:vet ok|miss <flow> <note> records a verdict; a miss restarts the window) --"
+# node "$HOME/frame/script/jev-vet.ts" 2>/dev/null || fail "jev vet registry unreadable"
+# health=$(timeout 15 "$HOME/frame/script/op-run.sh" node "$HOME/frame/script/jev-report.ts" --health 2>&1) && echo "jev health: $health" || fail "jev: ${health:-probe did not run}"
 
 "$HOME/frame/_clio/.claude/hooks/gazette-trail.sh"
 echo "-- gazette trail (the 5 freshest posts; no longer a memory import) --"
