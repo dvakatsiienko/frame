@@ -16,8 +16,8 @@
 
 ## how it runs
 
-- start: `prompt-groom.ts` boots her when none runs (`startHelga`), in a herdr pane with `CLIO_SIDECAR_PANE=1` set on that groom: cwd `~/.local/state/helga/`, the skill as the boot prompt with its frontmatter cut and this passport after it, settings `autoCompactWindow: 130000`, `worktree.bgIsolation: none`
-- the 130k window compacts near ~97k, under haiku's price line; 100k thrashed: a ~75k boot refilled it within 3 turns, 3 times in a row (dima's want, 2026-10-15)
+- start: `prompt-groom.ts` boots her when none runs (`startHelga`), in a herdr pane with `CLIO_SIDECAR_PANE=1` set on that groom: cwd `~/.local/state/helga/`, the skill as the boot prompt with its frontmatter cut and this passport after it, settings `autoCompactWindow: 160000`, `worktree.bgIsolation: none`
+- the 160k window compacts near ~127k, under haiku's price line; 100k (2026-10-15) and 130k (2026-11-22) both thrashed: her boot, ~75k then ~73k after a compact, refilled the window within 3 turns, 3 times in a row (dima's o1 tick, 2026-11-22)
 - stop: `pnpm -C ~/frame helga:stop` kills her herdr pane (the halt runs it); a groom after that stop boots a new one
 <!-- the env goes through --settings: a shell var never reaches a --bg session. without bgIsolation none, a --bg session's edits in the shared checkout are refused until it isolates (crow, 2026-10-14) -->
 

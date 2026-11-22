@@ -619,7 +619,7 @@ async function startHelga() {
     const cwd = path.join(home, '.local/state/helga');
     mkdirSync(cwd, { recursive: true });
     const settings = JSON.stringify({
-        autoCompactWindow: 130000,
+        autoCompactWindow: 160000,
         env: { CLAUDE_CODE_DISABLE_CLAUDE_MDS: '1' },
         promptSuggestionEnabled: false,
         worktree: { bgIsolation: 'none' },
