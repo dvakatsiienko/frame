@@ -7,29 +7,25 @@ import { keep, kept } from './orbit.js';
 
 /** @param {import('./orbit.js').KeptStore} store */
 export function createSteerFiles(store) {
-    /** @type {Map<string, string[]>} */
-    const boxes = new Map();
     /** @param {string} key */
     const storeKey = (key) => `steer-files:${key}`;
 
+    // the store is the one owner, read each time: herdr fills a copy's store after its first render, so a copy kept
+    // here read empty for good (his 19:15 shot)
     /** @param {string} key @returns {string[]} */
     function of(key) {
-        const had = boxes.get(key);
-        if (had) return had;
-        /** @type {string[]} */
-        let loaded = [];
         try {
             const parsed = JSON.parse(kept(store, storeKey(key)) ?? '[]');
-            if (Array.isArray(parsed))
-                loaded = parsed.filter((p) => typeof p === 'string');
-        } catch {}
-        boxes.set(key, loaded);
-        return loaded;
+            return Array.isArray(parsed)
+                ? parsed.filter((p) => typeof p === 'string')
+                : [];
+        } catch {
+            return [];
+        }
     }
 
     /** @param {string} key @param {string[]} next */
     function set(key, next) {
-        boxes.set(key, next);
         keep(store, storeKey(key), next.length ? JSON.stringify(next) : '');
     }
 

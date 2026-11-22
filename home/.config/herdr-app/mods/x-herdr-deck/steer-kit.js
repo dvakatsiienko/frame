@@ -60,7 +60,7 @@ export const pressButton = (
  * @param {Theme} t
  * @param {{ id: string, box: import('gpui-base').InputState, isFocused: boolean, isLocked?: boolean, tabIndex: number,
  *   onEnter: (cx: Context, isCmd: boolean) => void, onTab: (isBack: boolean) => void, onEnterUp: () => void,
- *   onCmdUp: () => void, onDrop: (paths: string[], cx: Context) => void }} it
+ *   onCmdUp: () => void, onDrop: ((paths: string[], cx: Context) => void) | null }} it
  */
 export const steerBox = (
     t,
@@ -91,8 +91,10 @@ export const steerBox = (
         .bg(t.surface)
         .font_weight(400)
         .when(isLocked, (el) => el.opacity(0.6))
-        .when(!isLocked, (el) =>
-            el.cursor_text().on_drop((e, cx) => onDrop(e?.paths ?? [], cx)),
+        .when(!isLocked, (el) => el.cursor_text())
+        // an ask's box takes dropped files; the phases' takes none
+        .when(!isLocked && Boolean(onDrop), (el) =>
+            el.on_drop((e, cx) => onDrop?.(e?.paths ?? [], cx)),
         )
         .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
         .key_context('XDeckSteer')

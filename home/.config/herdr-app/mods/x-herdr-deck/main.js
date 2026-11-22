@@ -424,7 +424,6 @@ export default class Deck extends View {
             this.planSent.delete(sid);
             this.planTicked.delete(sid);
             this.steers.get(`${sid}:plan`)?.set_value('');
-            this.steerFiles.clear(`${sid}:plan`);
             keep(localStorage, `steer:${sid}:plan`, '');
         }
         for (const s of this.rows) {
@@ -615,7 +614,9 @@ export default class Deck extends View {
             isFocused: this.steerFocus === key,
             isLocked,
             onCmdUp: () => this.steerKeys.modifiersReleased(),
-            onDrop: (paths, cx) => this.addSteerFiles(cx, key, paths),
+            onDrop: key.endsWith(':plan')
+                ? null
+                : (paths, cx) => this.addSteerFiles(cx, key, paths),
             onEnter: (cx, isCmd) => this.steerKeyAct(cx, key, isCmd),
             onEnterUp: () => this.steerKeys.released(),
             onTab: (isBack) => this.tab.ask(`steer-${key}`, isBack),
@@ -749,7 +750,9 @@ export default class Deck extends View {
             });
             const save = () => keep(localStorage, `steer:${key}`, box.value());
             box.on('change', save);
-            box.on('paste_other', (_e, cx) => this.pasteSteer(cx, key));
+            // files ride an ask's steer, never the phases' (dima, 19:17: FRM-676:W2 and W4 name orbit asks)
+            if (!key.endsWith(':plan'))
+                box.on('paste_other', (_e, cx) => this.pasteSteer(cx, key));
             // Enter and ⌘Enter are the box's own actions (STEER_ENTER), never its submit; focus leaving ends a press
             box.on('blur', (_e, cx) => {
                 this.steerKeys.blurred();
@@ -1280,13 +1283,6 @@ export default class Deck extends View {
                 planKey && this.steers.has(planKey)
                     ? this.planHead(t, head, planKey)
                     : head,
-            )
-            .children(
-                planKey
-                    ? this.chipsOf(t, planKey, false).map((c) =>
-                          div().px(12).pb(4).child(c),
-                      )
-                    : [],
             )
             .children(
                 groups.map((g, i) =>

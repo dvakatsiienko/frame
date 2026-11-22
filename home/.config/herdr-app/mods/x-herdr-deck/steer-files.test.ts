@@ -51,6 +51,14 @@ describe("a steer box's files ride its steer (FRM-676 slice B)", () => {
         expect(createSteerFiles(store).of(KEY)).toEqual(['/Users/d/shot.png']);
     });
 
+    test('a store that fills after the first read shows its files (herdr loads it late after a reload)', () => {
+        const store = storeOf();
+        const files = createSteerFiles(store);
+        expect(files.of(KEY)).toEqual([]);
+        store.setItem(`steer-files:${KEY}`, '["/Users/d/shot.png"]');
+        expect(files.of(KEY)).toEqual(['/Users/d/shot.png']);
+    });
+
     test('a store that refuses its read leaves the box empty, never broken', () => {
         const files = createSteerFiles({
             getItem: () => '{not json',
