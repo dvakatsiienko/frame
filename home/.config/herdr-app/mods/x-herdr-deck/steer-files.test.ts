@@ -144,4 +144,23 @@ describe('files leave with their steer, a pasted copy with them (the sixth sense
         files.sweep(new Set(), new Set(['s1']));
         expect(files.of('s2:o1')).toEqual(['/d/a.png']);
     });
+
+    test('a steer that was sent keeps its pasted copy when it clears: the thread may read it later', () => {
+        const forget = vi.fn();
+        const files = createSteerFiles(storeOf(), forget);
+        files.add(KEY, ['/app/data/x-herdr-deck/pasted/shot-1.png']);
+        files.joined(KEY, 'look');
+        files.clear(KEY);
+        expect(forget).not.toHaveBeenCalled();
+    });
+
+    test('a sent file × removed after the send stays on disk', () => {
+        const forget = vi.fn();
+        const store = storeOf();
+        createSteerFiles(store).add(KEY, ['/app/p/a.png']);
+        createSteerFiles(store).joined(KEY, '');
+        const files = createSteerFiles(store, forget);
+        files.remove(KEY, '/app/p/a.png');
+        expect(forget).not.toHaveBeenCalled();
+    });
 });

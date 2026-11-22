@@ -9,11 +9,25 @@ const PREFIX = 'steer-files:';
 
 /**
  * @param {import('./orbit.js').KeptStore & { length?: number, key?: (index: number) => string | null }} store
- * @param {(paths: string[]) => void} [forget] the files a steer let go, × or cleared: a pasted copy dies with them
+ * @param {(paths: string[]) => void} [forget] the files a steer let go before any send, × or cleared: a pasted copy dies with them
  */
 export function createSteerFiles(store, forget = () => {}) {
     /** @param {string} key */
     const storeKey = (key) => `${PREFIX}${key}`;
+    /** @param {string} key */
+    const sentKey = (key) => `steer-sent:${key}`;
+    // a file that rode a send stays on disk: the thread may read its path later (his «nothing lost», FRM-645 W43)
+    /** @param {string} key @param {string[]} paths */
+    const forgetUnsent = (key, paths) => {
+        /** @type {unknown} */
+        let sent = [];
+        try {
+            sent = JSON.parse(kept(store, sentKey(key)) ?? '[]');
+        } catch {}
+        const sentPaths = Array.isArray(sent) ? sent : [];
+        const unsent = paths.filter((p) => !sentPaths.includes(p));
+        if (unsent.length) forget(unsent);
+    };
 
     // the store is the one owner, read each time: herdr fills a copy's store after its first render, so a copy kept
     // here read empty for good (his 19:15 shot)
@@ -48,11 +62,14 @@ export function createSteerFiles(store, forget = () => {}) {
             const gone = of(key);
             if (!gone.length) return;
             set(key, []);
-            forget(gone);
+            forgetUnsent(key, gone);
+            keep(store, sentKey(key), '');
         },
         /** the steer as it leaves: the words, then each file's path on its own line @param {string} key @param {string} text */
         joined(key, text) {
-            return [text.trim(), ...of(key)].filter(Boolean).join('\n');
+            const files = of(key);
+            if (files.length) keep(store, sentKey(key), JSON.stringify(files));
+            return [text.trim(), ...files].filter(Boolean).join('\n');
         },
         of,
         /** × on one file @param {string} key @param {string} path */
@@ -61,7 +78,7 @@ export function createSteerFiles(store, forget = () => {}) {
                 key,
                 of(key).filter((p) => p !== path),
             );
-            forget([path]);
+            forgetUnsent(key, [path]);
         },
         /**
          * the files of a live thread's ask that left while no deck ran, cleared; a thread this read did not find keeps
