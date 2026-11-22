@@ -169,11 +169,12 @@ export const clearKeys = (texts, isNormal) =>
               ) * 2,
           ).fill('ctrl+u');
 
-// What Claude Code's own prompt box holds, read off its screen: the last `❯` line right under a rule, down to the next
-// rule; null when no box is on screen. Its dim suggestion text reads the same, so a caller trusts it only when it
-// matches a prompt already sent.
-/** @param {string} screen @returns {string | null} */
-export function boxText(screen) {
+/**
+ * what Claude Code's own prompt still holds after a clear, read off its screen: the last `❯` line right under a rule,
+ * down to the next rule; '' when empty or showing its dim «Try "…"» suggestion, null when no prompt is on screen
+ * @param {string} screen @returns {string | null}
+ */
+export function promptLeft(screen) {
     const lines = screen.replace(/\r/g, '').split('\n');
     let open = lines.length - 1;
     while (
@@ -187,7 +188,8 @@ export function boxText(screen) {
         if (l.startsWith('─')) break;
         box.push(l);
     }
-    return box.join(' ').replace(/\s+/g, ' ').trim();
+    const left = box.join(' ').replace(/\s+/g, ' ').trim();
+    return /^Try "/.test(left) ? '' : left;
 }
 
 /**

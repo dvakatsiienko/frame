@@ -7,6 +7,7 @@ import {
     commandKeys,
     isHisQueued,
     isVimNormal,
+    promptLeft,
     pulledBack,
     queuedAfterIdle,
     queuedAfterRow,
@@ -248,6 +249,27 @@ describe("emptying Claude Code's prompt", () => {
             'shift+g',
             'i',
         ]);
+    });
+});
+
+describe("what Claude Code's prompt still holds after a clear", () => {
+    const screenWith = (prompt: string) =>
+        `⏺ done\n${'─'.repeat(20)} 🧪 probe ─\n${prompt}\n${'─'.repeat(40)}\n  -- INSERT --`;
+
+    test('an emptied prompt holds nothing', () => {
+        expect(promptLeft(screenWith('❯ '))).toBe('');
+    });
+
+    test('its dim suggestion counts as empty', () => {
+        expect(promptLeft(screenWith('❯ Try "fix lint errors"'))).toBe('');
+    });
+
+    test('a clear that left a character shows it, so nothing is sent glued onto it', () => {
+        expect(promptLeft(screenWith('❯ plumm'))).toBe('plumm');
+    });
+
+    test('a screen with no prompt cannot be read', () => {
+        expect(promptLeft('⏺ working…')).toBeNull();
     });
 });
 

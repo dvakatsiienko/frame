@@ -14,7 +14,14 @@ import {
     holdSend,
 } from './joins.js';
 import { createMagic, retextWait } from './magic.js';
-import { clearKeys, isVimNormal, pulledBack, sendArgs } from './queued.js';
+import {
+    clearKeys,
+    isVimNormal,
+    promptLeft,
+    pulledBack,
+    sendArgs,
+    unwrapPastes,
+} from './queued.js';
 import { sendBlocked } from './send.js';
 import { sidOf } from './thread.js';
 
@@ -253,16 +260,56 @@ export function createSendPath({
                     seen = n;
                 }
                 const pulled = [...popped()];
-                if (!pulled.length) return say('It joined the turn first', cx);
                 const isNormal = isVimNormal(screen, editorMode());
-                await hc(['keys', address, ...clearKeys(pulled, isNormal)]);
-                const { rest, words } = pulledBack(pulled, queued);
-                if (words) {
-                    quills.apply(file, { said: words, type: 'returned' });
-                    // his words are back: the caret waits in the quill (his 20:35 ask)
-                    if (shownFile() === file) quillBox()?.focus();
+                if (!pulled.length) {
+                    // the turn ended before ↑: it recalled his last prompt into the empty input, which goes again
+                    const now = await hc(['read', address, '--lines', '40']);
+                    const recalled =
+                        now.code === 0 ? promptLeft(now.stdout) : '';
+                    if (recalled)
+                        await hc([
+                            'keys',
+                            address,
+                            ...clearKeys([recalled], isNormal),
+                        ]);
+                    return say('It joined the turn first', cx);
                 }
-                for (const text of rest) await hc(sendArgs(address, text));
+                await hc(['keys', address, ...clearKeys(pulled, isNormal)]);
+                /** his words back in the quill, the caret waiting there (his 20:35 ask) @param {string[]} texts */
+                const toQuill = (texts) => {
+                    quills.apply(file, {
+                        said: texts.join('\n\n'),
+                        type: 'returned',
+                    });
+                    if (shownFile() === file) quillBox()?.focus();
+                };
+                // a send into a prompt that still holds text glues onto it (94bd977c's «plumm»): then all come back
+                await cx.sleep(400);
+                const after = await hc(['read', address, '--lines', '40']);
+                const left = after.code === 0 ? promptLeft(after.stdout) : null;
+                if (left !== '') {
+                    toQuill(pulled.map(unwrapPastes));
+                    return say(
+                        left
+                            ? `Claude's box kept «${left.slice(0, 40)}»: all ${pulled.length} are in your quill`
+                            : `Couldn't read Claude's box: all ${pulled.length} are in your quill`,
+                        cx,
+                    );
+                }
+                const { rest, words } = pulledBack(pulled, queued);
+                if (words) toQuill([words]);
+                for (const [n, text] of rest.entries()) {
+                    const sent = await hc(sendArgs(address, text)).catch(
+                        () => ({ code: 1 }),
+                    );
+                    if (sent.code === 0) continue;
+                    // a re-send that failed is never lost: it and the ones after it come to the quill
+                    toQuill(rest.slice(n));
+                    return say(
+                        `Not sent again: ${rest.length - n} back in your quill`,
+                        cx,
+                    );
+                }
                 say(words ? null : 'It joined the turn first', cx);
             } catch (error) {
                 say(`Not taken back: ${String(error)}`, cx);
