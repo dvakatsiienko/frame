@@ -7,6 +7,7 @@ import { div, image } from 'gpui-kit';
 import { appHome } from 'herdr';
 
 import { fileName, isImagePath, pickFiles } from './attach.js';
+import { readClipboard } from './attach-files.js';
 import { createAttachments } from './attachments.js';
 import { focusBorder } from './focus-ring.js';
 import { ICONS } from './icons.js';
@@ -16,9 +17,9 @@ import { pastedText } from './lists.js';
 import { createQuills } from './quill.js';
 import { submitted } from './send.js';
 import {
+    SHOTS_DIR,
     deletePreviewCopies,
     loadShots,
-    readClipboard,
     saveFileShot,
     saveShots,
 } from './shots.js';
@@ -325,7 +326,7 @@ export function createQuill({
         const file = shownFile();
         if (!file) return;
         cx.spawn(async (cx) => {
-            const read = await readClipboard();
+            const read = await readClipboard(SHOTS_DIR);
             if (shownFile() !== file) return;
             if (read && 'paths' in read) return addFiles(read.paths, cx);
             if (read) {

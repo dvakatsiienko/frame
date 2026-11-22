@@ -2,14 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 const exec = vi.hoisted(() => vi.fn(async () => ({ code: 0 })));
 vi.mock('herdr', () => ({ exec }));
-const {
-    fileName,
-    isImagePath,
-    pictureOpenArgs,
-    pickedPaths,
-    promptPath,
-    withFiles,
-} = await import('./attach.js');
+const { fileName, isImagePath, pictureOpenArgs, pickedPaths, promptPath } =
+    await import('./attach.js');
 
 describe('pickedPaths', () => {
     it('reads one path a line', () => {
@@ -23,15 +17,6 @@ describe('pickedPaths', () => {
     });
     it('drops a carriage return', () => {
         expect(pickedPaths('/a/one.png\r\n')).toEqual(['/a/one.png']);
-    });
-});
-
-describe('withFiles', () => {
-    it('adds new paths after the waiting ones', () => {
-        expect(withFiles(['/a'], ['/b', '/c'])).toEqual(['/a', '/b', '/c']);
-    });
-    it('keeps a path once when it comes again', () => {
-        expect(withFiles(['/a'], ['/a', '/b', '/b'])).toEqual(['/a', '/b']);
     });
 });
 

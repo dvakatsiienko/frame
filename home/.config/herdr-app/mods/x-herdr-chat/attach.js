@@ -36,12 +36,6 @@ export async function pickFiles() {
     return r?.code === 0 ? pickedPaths(r.stdout) : [];
 }
 
-/** a list with new paths added once each, in the order he gave them @param {string[]} list @param {string[]} added */
-export const withFiles = (list, added) => [
-    ...list,
-    ...added.filter((p, i) => !list.includes(p) && added.indexOf(p) === i),
-];
-
 // the picture types Claude Code reads from a path in a prompt: a dropped one shows its preview, like a paste
 /** @param {string} path */
 export const isImagePath = (path) => /[^/]\.(png|jpe?g|gif|webp)$/i.test(path);

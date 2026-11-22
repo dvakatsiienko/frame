@@ -2,7 +2,8 @@
 // file, sent as their paths with the next message (FRM-613). a pasted picture is a png in our shots dir, its own
 // preview and his shot, kept for a reload; a dropped picture gets a scaled copy as its preview, removed with it
 
-import { isImagePath, withFiles } from './attach.js';
+import { isImagePath } from './attach.js';
+import { withFiles } from './attach-files.js';
 import { previewCopies, waitingFiles, withWaitingFiles } from './shots.js';
 
 /**

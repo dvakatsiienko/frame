@@ -1,6 +1,7 @@
 {
     "place": "none",
     "shared": [
+        "attach-files.js",
         "band-press.js",
         "chat-asks.js",
         "file-links.js",

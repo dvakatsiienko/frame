@@ -107,18 +107,27 @@ export function createCardFiles() {
     let room = ROOM_GUESS;
     /** a look runs alone: one asked meanwhile runs after it, with the newest rows */
     let isLooking = false;
-    /** @type {Rows | null} */
+    /** @type {[Rows, string[]] | null} */
     let queued = null;
 
-    /** @param {Rows} rows */
-    async function lookOnce(rows) {
+    /** @param {Rows} rows @param {string[]} steered the files waiting in steer boxes, a picture's thumb drawn from its copy */
+    async function lookOnce(rows, steered) {
         /** @type {Map<string, boolean>} each path, and whether it is a picture */
-        const named = new Map(
-            rows
+        const named = new Map([
+            ...rows
                 .flatMap((r) => r.asks)
                 .flatMap((a) => attachmentsOf(a, home()))
-                .map((f) => [f.path, f.isPicture]),
-        );
+                .map(
+                    (f) =>
+                        /** @type {[string, boolean]} */ ([
+                            f.path,
+                            f.isPicture,
+                        ]),
+                ),
+            ...steered.map(
+                (p) => /** @type {[string, boolean]} */ ([p, isPictureName(p)]),
+            ),
+        ]);
         if (!named.size) return false;
         const times = await changeTimes([...named.keys()]);
         let isChanged = false;
@@ -140,21 +149,22 @@ export function createCardFiles() {
     }
 
     /**
-     * looks again at the files the asks name, a copy redone when its file changed: whether any changed
-     * @param {Rows} rows
+     * looks again at the files the asks name and the steer boxes hold, a copy redone when its file changed: whether
+     * any changed
+     * @param {Rows} rows @param {string[]} [steered]
      */
-    async function look(rows) {
+    async function look(rows, steered = []) {
         if (isLooking) {
-            queued = rows;
+            queued = [rows, steered];
             return false;
         }
         isLooking = true;
         try {
-            let isChanged = await lookOnce(rows);
+            let isChanged = await lookOnce(rows, steered);
             while (queued) {
                 const next = queued;
                 queued = null;
-                isChanged = (await lookOnce(next)) || isChanged;
+                isChanged = (await lookOnce(...next)) || isChanged;
             }
             return isChanged;
         } finally {
@@ -268,7 +278,15 @@ export function createCardFiles() {
         ];
     }
 
-    return { look, view };
+    /** a picture's preview copy under the app dir, once looked at @param {string} path @returns {string | null} */
+    function previewOf(path) {
+        const got = /** @type {{ rel?: unknown } | undefined} */ (
+            found.get(path)
+        );
+        return typeof got?.rel === 'string' ? got.rel : null;
+    }
+
+    return { look, previewOf, view };
 }
 
 /* Types */

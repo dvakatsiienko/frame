@@ -6,6 +6,7 @@ import { Button, InputState, h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
 import {
     agents,
+    appHome,
     exec,
     home,
     layout,
@@ -19,6 +20,7 @@ import {
     writeTextFile,
 } from 'herdr';
 
+import { readClipboard } from './attach-files.js';
 import {
     PRESS_DIR,
     PRESS_FILE,
@@ -79,6 +81,7 @@ import {
     sessions,
     states,
 } from './shelf.js';
+import { createSteerFiles } from './steer-files.js';
 import {
     STEER_BACK,
     STEER_CMD_ENTER,
@@ -86,6 +89,7 @@ import {
     STEER_TAB,
     pressButton,
     steerBox,
+    steerChips,
 } from './steer-kit.js';
 import { createTabMember } from './tab-loop.js';
 
@@ -98,6 +102,8 @@ import { createTabMember } from './tab-loop.js';
 
 // how long a key that did nothing says why under its steer box
 const KEY_NOTE_MS = 3000;
+// a picture pasted into a steer box is saved here, under the app dir, and sent by its path
+const PASTED_DIR = 'data/x-herdr-deck/pasted';
 // how long a press given up by time says so: long enough to be seen when he looks back at the board
 const GIVEN_UP_NOTE_MS = 30 * 1000;
 
@@ -144,6 +150,8 @@ export default class Deck extends View {
     steerFocus = /** @type {string | null} */ (null);
     /** the files each ask names, previewed or listed in its card (FRM-676) */
     files = createCardFiles();
+    // the files each steer box carries, sent as their paths with its steer (FRM-676 slice B)
+    steerFiles = createSteerFiles(localStorage);
     /** the deck's seat in the Tab loop: its drawn steer boxes */
     tab = createTabMember('x-herdr-deck', { layout, setShared, shared });
     /** @param {unknown} _props @param {Context} cx */
@@ -255,8 +263,67 @@ export default class Deck extends View {
             );
             // drawn once the chain holds the read's end: settled, failed or let go as stalled
             cx.notify();
-            if (await this.files.look(this.rows ?? [])) cx.notify();
+            if (await this.files.look(this.rows ?? [], this.steeredPaths()))
+                cx.notify();
         });
+    }
+
+    /** the steer as it leaves: his words, then each file's path on its own line @param {string} key */
+    steerSent(key) {
+        return this.steerFiles.joined(key, this.steers.get(key)?.value() ?? '');
+    }
+
+    /** every file the steer boxes carry, so a picture's thumb is made @returns {string[]} */
+    steeredPaths() {
+        return [...this.steers.keys()].flatMap((k) => this.steerFiles.of(k));
+    }
+
+    /** dropped or pasted files join a steer box, a picture's thumb drawn once made @param {Context} cx @param {string} key @param {string[]} paths */
+    addSteerFiles(cx, key, paths) {
+        if (!this.steerFiles.add(key, paths)) return;
+        cx.notify();
+        cx.spawn(async (cx) => {
+            if (await this.files.look(this.rows ?? [], this.steeredPaths()))
+                cx.notify();
+        });
+    }
+
+    /** a paste with no text: the clipboard's image saved as a png, or files copied in Finder @param {Context} cx @param {string} key */
+    pasteSteer(cx, key) {
+        cx.spawn(async (cx) => {
+            const read = await readClipboard(PASTED_DIR);
+            const paths = !read
+                ? []
+                : 'paths' in read
+                  ? read.paths
+                  : [`${appHome()}/${read.rel}`];
+            if (paths.length) return this.addSteerFiles(cx, key, paths);
+            this.keyNotes.set(key, {
+                text: 'no picture or file on the clipboard',
+                until: Date.now() + KEY_NOTE_MS,
+            });
+            cx.notify();
+        });
+    }
+
+    /** the chips under a steer box, none while it carries none @param {Theme} t @param {string} key @param {boolean} isLocked */
+    chipsOf(t, key, isLocked) {
+        const files = this.steerFiles.of(key);
+        if (!files.length) return [];
+        return [
+            steerChips(t, {
+                files: files.map((path) => ({
+                    path,
+                    preview: this.files.previewOf(path),
+                })),
+                id: `chips-${key}`,
+                isLocked,
+                onRemove: (path, cx) => {
+                    this.steerFiles.remove(key, path);
+                    cx.notify();
+                },
+            }),
+        ];
     }
 
     /**
@@ -333,6 +400,7 @@ export default class Deck extends View {
             // his steer stays, stored and shown, until the ask leaves (dima, 21:03)
             if (!s || !isKept) {
                 this.steers.delete(key);
+                this.steerFiles.clear(key);
                 keep(localStorage, `steer:${key}`, '');
             }
         }
@@ -342,7 +410,10 @@ export default class Deck extends View {
             this.rows,
         );
         this.updated = rounds.updated;
-        for (const key of rounds.cleared) this.steers.get(key)?.set_value('');
+        for (const key of rounds.cleared) {
+            this.steers.get(key)?.set_value('');
+            this.steerFiles.clear(key);
+        }
         // a plan press the thread has read reached it: the box empties and «tick» comes back, as an ask's does (19:19)
         for (const [sid, at] of this.planSent) {
             const s = this.rows.find((r) => r.sid === sid);
@@ -350,6 +421,7 @@ export default class Deck extends View {
             this.planSent.delete(sid);
             this.planTicked.delete(sid);
             this.steers.get(`${sid}:plan`)?.set_value('');
+            this.steerFiles.clear(`${sid}:plan`);
             keep(localStorage, `steer:${sid}:plan`, '');
         }
         for (const s of this.rows) {
@@ -461,7 +533,7 @@ export default class Deck extends View {
         // an ask with no id has no line in the ticks file to name it
         if (!id) return;
         const key = `${s.sid}:${id}`;
-        const steer = this.steers.get(key)?.value().trim();
+        const steer = this.steerSent(key);
         const at = Date.now();
         this.updated?.delete(key);
         this.pressMade(cx, key, verdict, at);
@@ -540,6 +612,7 @@ export default class Deck extends View {
             isFocused: this.steerFocus === key,
             isLocked,
             onCmdUp: () => this.steerKeys.modifiersReleased(),
+            onDrop: (paths, cx) => this.addSteerFiles(cx, key, paths),
             onEnter: (cx, isCmd) => this.steerKeyAct(cx, key, isCmd),
             onEnterUp: () => this.steerKeys.released(),
             onTab: (isBack) => this.tab.ask(`steer-${key}`, isBack),
@@ -576,7 +649,7 @@ export default class Deck extends View {
                         s.phases,
                         isTick ? 'tick' : 'untick',
                         at,
-                        this.steers.get(key)?.value().trim(),
+                        this.steerSent(key),
                     ),
                     s.taken,
                 ),
@@ -647,7 +720,7 @@ export default class Deck extends View {
                     [s],
                     s.sid,
                     stateOf,
-                    (id) => this.steers.get(`${s.sid}:${id}`)?.value(),
+                    (id) => this.steerSent(`${s.sid}:${id}`),
                     at,
                 ),
             );
@@ -673,6 +746,7 @@ export default class Deck extends View {
             });
             const save = () => keep(localStorage, `steer:${key}`, box.value());
             box.on('change', save);
+            box.on('paste_other', (_e, cx) => this.pasteSteer(cx, key));
             // Enter and ⌘Enter are the box's own actions (STEER_ENTER), never its submit; focus leaving ends a press
             box.on('blur', (_e, cx) => {
                 this.steerKeys.blurred();
@@ -870,6 +944,7 @@ export default class Deck extends View {
                             ),
                     ),
                 )
+                .children(this.chipsOf(t, key, isLocked))
                 .when((this.keyNotes.get(key)?.until ?? 0) > Date.now(), (el) =>
                     el.child(
                         div()
@@ -1202,6 +1277,13 @@ export default class Deck extends View {
                 planKey && this.steers.has(planKey)
                     ? this.planHead(t, head, planKey)
                     : head,
+            )
+            .children(
+                planKey
+                    ? this.chipsOf(t, planKey, false).map((c) =>
+                          div().px(12).pb(4).child(c),
+                      )
+                    : [],
             )
             .children(
                 groups.map((g, i) =>

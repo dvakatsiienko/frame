@@ -1,11 +1,12 @@
 // the press button and the steer box every deck card draws, an orbit ask's and the phases' alike, so both look and act
 // the same (dima, 19:08: «it is essentially same button, you can reuse component»)
 
-import { Button, Input } from 'gpui-base';
-import { div } from 'gpui-kit';
+import { Button, Input, h_flex } from 'gpui-base';
+import { div, image } from 'gpui-kit';
 
 import { focusBorder } from './focus-ring.js';
 import { SIZE } from './look.js';
+import { isPictureName } from './pictures.js';
 
 /** @typedef {import('./main.js').Theme} Theme */
 /** @typedef {import('./main.js').Context} Context */
@@ -60,7 +61,7 @@ export const pressButton = (
  * @param {Theme} t
  * @param {{ id: string, box: import('gpui-base').InputState, isFocused: boolean, isLocked?: boolean, tabIndex: number,
  *   onEnter: (cx: Context, isCmd: boolean) => void, onTab: (isBack: boolean) => void, onEnterUp: () => void,
- *   onCmdUp: () => void }} it
+ *   onCmdUp: () => void, onDrop: (paths: string[], cx: Context) => void }} it
  */
 export const steerBox = (
     t,
@@ -70,6 +71,7 @@ export const steerBox = (
         isFocused,
         isLocked = false,
         onCmdUp,
+        onDrop,
         onEnter,
         onEnterUp,
         onTab,
@@ -90,7 +92,9 @@ export const steerBox = (
         .bg(t.surface)
         .font_weight(400)
         .when(isLocked, (el) => el.opacity(0.6))
-        .when(!isLocked, (el) => el.cursor_text())
+        .when(!isLocked, (el) =>
+            el.cursor_text().on_drop((e, cx) => onDrop(e?.paths ?? [], cx)),
+        )
         .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
         .key_context('XDeckSteer')
         .on_action(STEER_ENTER, (_e, cx) => onEnter(cx, false))
@@ -118,4 +122,81 @@ export const steerBox = (
                       .w_full()
                       .text_size(SIZE.secondary)
                       .text_color(t.foreground),
+        );
+
+/** a chip's look while he picks one (FRM-676 step 83): a kind icon, or the picture's own 20 px thumb */
+export const CHIP_LOOK = /** @type {'icon' | 'thumb'} */ ('thumb');
+
+/**
+ * the files a steer box carries, one chip each under it: the name cut to fit, the path on hover, × takes that one;
+ * delivered, they stay as the steer's words do, still
+ * @param {Theme} t
+ * @param {{ id: string, files: { path: string, preview: string | null }[], isLocked?: boolean,
+ *   onRemove: (path: string, cx: Context) => void }} it
+ */
+export const steerChips = (t, { files, id, isLocked = false, onRemove }) =>
+    h_flex()
+        .id(id)
+        .w_full()
+        .flex_wrap()
+        .gap(6)
+        .when(isLocked, (el) => el.opacity(0.6))
+        .children(
+            files.map(({ path, preview }, i) => {
+                const name = path.split('/').filter(Boolean).pop() ?? path;
+                const isThumb = CHIP_LOOK === 'thumb' && Boolean(preview);
+                return h_flex()
+                    .id(`${id}-${i}`)
+                    .tab_stop(false)
+                    .h(28)
+                    .max_w(160)
+                    .min_w(0)
+                    .gap(6)
+                    .items_center()
+                    .pl(isThumb ? 4 : 8)
+                    .pr(isLocked ? 8 : 4)
+                    .rounded(6)
+                    .border_1()
+                    .border_color(t.border)
+                    .bg(t.surface)
+                    .text_size(SIZE.small)
+                    .text_color(t.foreground)
+                    .tooltip(path)
+                    .child(
+                        isThumb
+                            ? div()
+                                  .size(20)
+                                  .flex_none()
+                                  .rounded(4)
+                                  .overflow_hidden()
+                                  .child(image(preview ?? '').size_full())
+                            : div()
+                                  .flex_none()
+                                  .child(isPictureName(path) ? '🖼️' : '📄'),
+                    )
+                    .child(div().min_w(0).truncate().child(name))
+                    .when(!isLocked, (el) =>
+                        el.child(
+                            div()
+                                .id(`${id}-x-${i}`)
+                                .size(20)
+                                .flex_none()
+                                .flex()
+                                .items_center()
+                                .justify_center()
+                                .rounded(4)
+                                .text_color(t.muted)
+                                .cursor_pointer()
+                                .hover((st) =>
+                                    st.bg(t.hover).text_color(t.foreground),
+                                )
+                                .tooltip(`remove ${name}`)
+                                .on_click((_e, cx) => {
+                                    cx.stop_propagation();
+                                    onRemove(path, cx);
+                                })
+                                .child('×'),
+                        ),
+                    );
+            }),
         );
