@@ -6,7 +6,7 @@ read from `firelink/SKILL.md` § 3 before any vm work: what the vm holds, what c
 
 the render chain: game dx9–11 → DXVK (Proton, x86 via FEX) → Venus → KosmicKrisp → Metal.
 
-- SteamOS 0.4.5, aarch64, 8 vCPU, 12288 MiB ram; `/home` 127 GB, 47 used; grow it in the mac app, Settings → Advanced → Grow Disk… (grow only, keeps games)
+- SteamOS 0.4.5, aarch64, 8 vCPU, 12288 MiB ram; `/home` 127 GB, 47 used; grow it in the mac app, Settings → Advanced → Grow Disk… (grow only, keeps games); the disk size is a ceiling, the image on the mac holds only what is used: uninstall games in SteamOS's Steam, then Settings → Advanced → Reclaim Disk Space… gives that space back to macOS (2026-11-22: 251.5 → 47.6 GiB, no wipe)
 - proton: `Proton 11.0 (ARM64)` is the default (11.0-100, on Steam Linux Runtime 4 arm64), `Proton 10.0` is the x86 one through FEX; no per-game override is set yet (`config/config.vdf` → `CompatToolMapping` empty)
 - tools in the vm: `mangohud`, `vulkaninfo`, `gamescope`, `flatpak`, `steamos-session-select`; no `protontricks`, `winetricks` or `xdotool`
 - paths: library `~/.local/share/Steam/steamapps/common/`, manifests `appmanifest_<appid>.acf` (`grep -l <name>` finds an appid), one proton prefix per game `steamapps/compatdata/<appid>/pfx` — nothing is shared between games, a launcher or a sign-in included; launch options `userdata/<id>/config/localconfig.vdf`; steam's own logs `~/.local/share/Steam/logs/` (`compat_log.txt` names the proton each launch used)
