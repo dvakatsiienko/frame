@@ -47,4 +47,6 @@ PK-464:W22 (2026-11-22 14:00, dima): so, sup with helga and crow? ❓
 
 14:44 — ticket: FRM-680
 close: moved to linear FRM-680, snoozed on his 14:43 word; W15–W21 are its W1–W6
+
+close: W1–W3 moved to FRM-680 (clio's fold, superseded by the groom); W4–W14 done (answered in the thread, landed in clio:boot § mini); W15 moved FRM-680:W1, W16 FRM-680:W2, W17 FRM-680:W3, W18 done (this ticket), W19 FRM-680:W4, W20 FRM-680:W5, W21 FRM-680:W6; W22 done (answered: helga and crow up)
 <!-- SECTION:NOTES:END -->
