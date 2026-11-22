@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-22T12:33:00Z'
+updated_date: '2026-11-22T12:34:00Z'
 labels:
   - s
   - clio-main
@@ -1384,4 +1384,19 @@ PK-349:W1357 (2026-11-22 14:26, dima): (i am just tired to repeat everything all
 PK-349:W1358 (2026-11-22 14:26, dima): top7 names for that new command pls.
 PK-349:W1359 (2026-11-22 14:26, dima): something like dima-reminds-mesures-shape. ❓
 PK-349:W1360 (2026-11-22 14:26, dima): and summon crow
+
+14:34 — the 14:17 groom (helga): the measures-as-gains habit, the two trial verdicts, helga's thrash; answered and landed (reply-check bare-measure, dima-reminds-measures, both trials adopted, helga 160k)
+PK-349:W1361 (2026-11-22 14:17, dima): remind - recently i asked you, when you tell measure verdicts, aside from just printing numbers - to tell me the positive/negative gains and your own opinion - your suggested verdict - what actions on that measure you propose and why.
+PK-349:W1362 (2026-11-22 14:17, dima): where is that habit? ❓
+PK-349:W1363 (2026-11-22 14:17, dima): you just printed two measures as plain numbers again.
+PK-349:W1364 (2026-11-22 14:17, dima): propose how to fix habit, so it fares in cases like today just yet.
+PK-349:W1365 (2026-11-22 14:17, dima): and how to remind you to print themed measures (with positive/negative gains) in one word? or skill? ❓
+PK-349:W1366 (2026-11-22 14:17, dima): wishkeeper - in my mind number aren't bad, looks more like good.
+PK-349:W1367 (2026-11-22 14:17, dima): so i think it passes but still, number are bland for me.
+PK-349:W1368 (2026-11-22 14:17, dima): i'd like to see if they are positive/negative.
+PK-349:W1369 (2026-11-22 14:17, dima): plus your own evaluation of number - are the good (keep) or not (discard)? ❓
+PK-349:W1370 (2026-11-22 14:17, dima): crow - so measure is failed then? ❓
+PK-349:W1371 (2026-11-22 14:17, dima): i think we can just adopt it. crow works well from what i saw. we can sharpen it slightly later.
+PK-349:W1372 (2026-11-22 14:17, dima): helga in trouble. how to solve? ❓
+PK-349:W1373 (2026-11-22 14:17, dima): helga thread: «⏺ Autocompact is thrashing: the context refilled to the limit within 3 turns of the previous compact, 3 times in a row. A file being read or a tool output is likely too large for the context window. Try reading in smaller chunks, or use /clear to start fresh. 🔭 not waiting»
 <!-- SECTION:NOTES:END -->
