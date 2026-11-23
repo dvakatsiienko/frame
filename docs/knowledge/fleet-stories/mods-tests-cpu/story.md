@@ -66,6 +66,26 @@ dima, 2026-11-20 20:48: the biggest problem in this whole incident is the silenc
 - not read yet: a day of lane work under the new shape (FRM-678's exit 7, 24 Nov)
 - not covered: the caps hold the four mods and x's go suite; frame's and bytes' vitest suites have no cpu row
 
+## the gains (23 Nov)
+
+- 🟢 −277.8 cpu-s a whole stash run, 447.7 → 169.9, and its wall 59.9 → 30.1 s
+- 🟢 a commit runs no mods suite; before, a commit could run all four mods whole (2,805 rows, seen 23 Nov 11:08)
+- 🟢 the cost can no longer grow unseen: a run past its cpu row is red, a test file past its host starts is refused at commit
+- 🟡 the mac under a mods lane: load 4.6 with five members alive at 23 Nov 15:01 against 34–44 on 20 Nov; one moment, the day read is FRM-678's exit 7
+
+## why it appeared, in one breath
+
+a tool default nobody questioned (one fresh host per test), a rule of ours that sent even pure logic through that tool, whole suites at every door, and no number anywhere that would turn red. each new test was cheap alone and the sum was never read.
+
+## lessons
+
+1. **a cost with no red number grows until dima feels it.** every whole suite that can fill the mac carries a fixed cpu row that reds on its own; a raise is his tick
+2. **when a load is seen, ask first whether the work is shaped wrong**, before any queue, stagger or later run. moving a cost is not a fix; clio proposed moving it for two weeks
+3. **a cpu roast's fix door is the outside first**: the per-test reload and the missing cap were both open upstream issues, found in one evening once looked for
+4. **a log line that repeats is a signal.** «timed-out files ran again» stood in the log on six days and was read by nobody
+5. **a new verb that runs a suite carries its cost line at the sign.** the range walk was signed with none and ran 22 whole suites
+6. **the shape is counted without a run**: host starts per test file are read from the files, so a wrongly shaped test is refused at its first commit, before it costs anything
+
 ## the line that keeps it away
 
 a cost that grows without anyone saying so is the failure, more than the cost itself: a whole test suite has a fixed cpu cap that reds on its own, so the next creep is named the day it starts, never found by dima two weeks later.
