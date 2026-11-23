@@ -43,6 +43,9 @@ type thread struct {
 	// the time a summon or a dispatch last wrote this record: `at` is the heartbeat each sync moves, so a reader asking
 	// «did this lane's card end after its dispatch» compares against this one
 	DispatchedAt int64 `json:"dispatchedAt,omitempty"`
+	// the main whose seat this coordinator took and when, in ms: x-mod-holds gives it that session's older holds
+	SeatTakenFrom string `json:"seatTakenFrom,omitempty"`
+	SeatTakenAt   int64  `json:"seatTakenAt,omitempty"`
 }
 
 type threadStore struct {
@@ -460,6 +463,9 @@ func writeThreadRecord(record thread, now time.Time, isMinted bool) error {
 		live := store.Threads[i]
 		record.Pid, record.ProcStart, record.Name, record.Cwd = live.Pid, live.ProcStart, live.Name, live.Cwd
 		record.DispatchedAt = live.DispatchedAt
+		if record.Role == live.Role {
+			record.SeatTakenFrom, record.SeatTakenAt = live.SeatTakenFrom, live.SeatTakenAt
+		}
 		if record.Lane == "" {
 			record.Lane, record.Coordinator = live.Lane, cmp.Or(record.Coordinator, live.Coordinator)
 		}

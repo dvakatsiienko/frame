@@ -228,6 +228,55 @@ func TestThreadRenameRoleMovesTheMainSeatBetweenTwoLiveThreads(t *testing.T) {
 	}
 }
 
+// FRM-596 exits 5, 5b: the new main's record names whose seat it took and when, the one before it names nobody any more
+func TestThreadRenameRoleRecordsWhoseSeatWasTaken(t *testing.T) {
+	t.Parallel()
+	w := newSeatWorld(t)
+	took := func() map[string]thread {
+		store, err := readThreadStore(w.store)
+		if err != nil {
+			t.Fatal(err)
+		}
+		by := map[string]thread{}
+		for _, th := range store.Threads {
+			by[th.SessionID] = th
+		}
+		return by
+	}
+	start := time.Now().UnixMilli()
+
+	scriptX(t, w.env, "thread", "rename", "wing1", "--role", "main")
+	first := took()
+	if b := first["sid-b"]; b.SeatTakenFrom != "sid-a" || b.SeatTakenAt < start || b.SeatTakenAt > time.Now().UnixMilli() {
+		t.Errorf("b's record %+v, want the seat taken from sid-a at the switch, in ms", b)
+	}
+	scriptX(t, w.env, "thread", "rename", "wing2", "--role", "main")
+	second := took()
+	if c := second["sid-c"]; c.SeatTakenFrom != "sid-b" || c.SeatTakenAt < first["sid-b"].SeatTakenAt {
+		t.Errorf("c's record %+v, want the seat taken from sid-b", c)
+	}
+	if b := second["sid-b"]; b.SeatTakenFrom != "" || b.SeatTakenAt != 0 {
+		t.Errorf("b's record %+v, want no seat on a wing's record", b)
+	}
+}
+
+// a record written again for the same role keeps whose seat it took; another role drops it
+func TestThreadRecordKeepsWhoseSeatWasTakenWithItsRole(t *testing.T) {
+	// serial: X_THREADS is what writeThreadRecord reads
+	store := filepath.Join(t.TempDir(), "threads.json")
+	t.Setenv("X_THREADS", store)
+	for _, c := range []struct{ role, want string }{{"coordinator", "sid-a"}, {"wing", ""}} {
+		write(t, store, `{"v":1,"threads":[{"sessionId":"sid-b","role":"coordinator","seatTakenFrom":"sid-a","seatTakenAt":5}]}`)
+		if err := writeThreadRecord(thread{SessionID: "sid-b", Role: c.role, Wing: 1}, time.UnixMilli(1_000_000), true); err != nil {
+			t.Fatal(err)
+		}
+		written, _ := readThreadStore(store)
+		if got := written.Threads[0]; got.SeatTakenFrom != c.want || (got.SeatTakenAt == 5) != (c.want != "") {
+			t.Errorf("written as %s: %+v, want the seat taken from %q", c.role, got, c.want)
+		}
+	}
+}
+
 // the same switch read from the main's side, and the refusals that keep one main: the main again, a thread that is no wing, a wing
 // that is not there, a word that is no role
 func TestThreadRenameRoleKeepsExactlyOneMain(t *testing.T) {

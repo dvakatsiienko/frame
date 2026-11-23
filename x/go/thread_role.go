@@ -170,7 +170,12 @@ func threadRoleSwitch(r *Run, key, role string, grant *seatGrant) (any, error) {
 			return nil, err
 		}
 	}
-	wing := next.Wing
+	wing, now := next.Wing, time.Now()
+	store.Threads[promote].SeatTakenFrom, store.Threads[promote].SeatTakenAt = "", 0
+	if demote >= 0 {
+		store.Threads[promote].SeatTakenFrom, store.Threads[promote].SeatTakenAt = store.Threads[demote].SessionID, now.UnixMilli()
+		store.Threads[demote].SeatTakenFrom, store.Threads[demote].SeatTakenAt = "", 0
+	}
 	store.Threads[promote].Role, store.Threads[promote].Wing, store.Threads[promote].Title = "coordinator", 0, ""
 	drawNames(&store.Threads[promote])
 	moved := []string{next.SessionID}
@@ -179,7 +184,7 @@ func threadRoleSwitch(r *Run, key, role string, grant *seatGrant) (any, error) {
 		drawNames(&store.Threads[demote])
 		moved = append(moved, store.Threads[demote].SessionID)
 	}
-	err = writeThreadStore(path, time.Now(), store.Threads)
+	err = writeThreadStore(path, now, store.Threads)
 	if err == nil {
 		err = writeMainSession(mainSessionPath(), sessionPid(next.SessionID), next.SessionID)
 	}
