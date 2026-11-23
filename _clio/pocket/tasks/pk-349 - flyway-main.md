@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T15:24:00Z'
+updated_date: '2026-11-23T15:33:00Z'
 labels:
   - s
   - clio-main
@@ -28,7 +28,7 @@ ordinal: 1000
 - [ ] #10 f88 speak art-kit run: the speechify card takes the Speechify API own mark and colour (designer placeholders now)
 - [ ] #11 f89 idle member alarm: a line at my turn end when a lane member idles 10 min, no wait named (his o13)
 - [ ] #12 f90 cuts pass over the board mod (x-mod-stash): what in it has no user, his ticks (his o17, this week)
-- [ ] #13 f91 designer craft: research how to search design references and query them right (FRM-642:W25)
+- [ ] #13 f91 designer craft: research how to search design references and query them right (his 19 Nov wish)
 - [ ] #14 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
 - [ ] #15 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
 - [ ] #16 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
@@ -2164,4 +2164,21 @@ PK-349:W1982 (2026-11-23 17:22, dima): can you create one? ❓ → FRM-695
 PK-349:W1983 (2026-11-23 17:22, dima): can you draw one for me to see? ❓ → FRM-695
 PK-349:W1984 (2026-11-23 17:22, dima): not sure i ever saw it. → FRM-695
 PK-349:W1985 (2026-11-23 17:22, dima): second wind: my own context reset — too, create one i see what it is about. → FRM-695
+
+PK-349:W1986 (2026-11-23 17:29, dima): Let mod Codie do only the CC mods side and everything on the harder side will be done by the harder lane.
+PK-349:W1987 (2026-11-23 17:29, dima): I don't want to summon it now because it will distract me too much because the pick lane will soon distract me with look requests.
+PK-349:W1988 (2026-11-23 17:29, dima): Probably Herdr Lane starts tomorrow not today.
+PK-349:W1989 (2026-11-23 17:29, dima): not a bug, just not implemented. → FRM-695
+PK-349:W1990 (2026-11-23 17:29, dima): so orbit have a tool via which you set phases? ❓
+PK-349:W1991 (2026-11-23 17:29, dima): i expected you have «plan» outside of orbit because phases is a different mod, and not really related to orbit? ❓
+PK-349:W1992 (2026-11-23 17:29, dima): isn't it? ❓
+PK-349:W1993 (2026-11-23 17:29, dima): same, as you see on SS - all three are in separate parts of UI and not really related to orbit? ❓
+PK-349:W1994 (2026-11-23 17:29, dima): they could use some shared code but that is codie job to optimize.
+PK-349:W1995 (2026-11-23 17:29, dima): as at system design level, i think these are all separate mods? ❓
+PK-349:W1996 (2026-11-23 17:29, dima): and should not be folded into orbit mod? ❓
+PK-349:W1997 (2026-11-23 17:29, dima): how do you think? ❓
+PK-349:W1998 (2026-11-23 17:29, dima): consult with cc mods codie.
+PK-349:W1999 (2026-11-23 17:29, dima): so it is a button in my band? ❓
+
+17:33 W1985 correction: its opening «second wind: my own context reset» is clio's reply quoted; his words are «too, create one i see what it is about», and its home is not FRM-695 (answered 17:23: it is the 🐦‍🔥 button, no demo burned)
 <!-- SECTION:NOTES:END -->
