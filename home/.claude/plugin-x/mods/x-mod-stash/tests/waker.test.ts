@@ -30,7 +30,7 @@ async function session(
     // a slow poll over the hours of mock time: the waker answers at the reset, never on a tick, and 600 ticks a row timed
     // out at load (FRM-649)
     on('env.get', (_$, e) => ({
-        value: e.name === 'X_STASH_POLL_MS' ? String(60_000) : '/home/test',
+        value: e.name === 'X_STASH_POLL_MS' ? String(5 * MIN) : '/home/test',
     }));
     const toasts: string[] = [];
     on('ui.toast', (_$, e) => {

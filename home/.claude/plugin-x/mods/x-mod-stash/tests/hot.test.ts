@@ -88,15 +88,8 @@ test('a busy session is never pinged', async ($, on) => {
     expect(s.pings).toEqual([]);
 });
 
-// the mod polls every 4 s, about 900 runs in a 60-minute advance: this clock stretches that one wait, so a poll still
-// follows the store inside a minute, in 120 runs
-const POLL_MS = 4000;
-const SLOW_POLL_MS = MIN / 2;
-function slowPoll(on: On) {
-    on('clock.after', { ms: POLL_MS }, (_$, e, next) =>
-        next({ ...e, ms: SLOW_POLL_MS }),
-    );
-}
+// a ping keeps its own timer, so a row crosses 10 ticks of a 50 min wait and none is what it reads
+const POLL = 5 * MIN;
 
 // mock.store copies its entries; this one is the record itself, so a test writes a key as another process would
 function liveStore(on: On, entries: Record<string, unknown>) {
@@ -118,8 +111,8 @@ async function started(
     on: On,
     store: Record<string, unknown> = {},
     state?: Record<string, unknown>,
+    poll = POLL,
 ) {
-    slowPoll(on);
     const clock = mock.clock(on, { now: NOW });
     liveStore(on, store);
     if (state)
@@ -128,9 +121,8 @@ async function started(
         }));
     const pings: string[] = [];
     on('session.id', () => ({ value: SID }));
-    // a slow poll over 50 min of mock time: the ping keeps its own timer, and 750 ticks a row timed out at load (FRM-649)
     on('env.get', (_$, e) => ({
-        value: e.name === 'X_STASH_POLL_MS' ? String(60_000) : '/home',
+        value: e.name === 'X_STASH_POLL_MS' ? String(poll) : '/home',
     }));
     on('ui.log', () => ({ value: undefined }));
     on('session.repo', () => ({
@@ -244,7 +236,7 @@ test('🔥 switched off on the band stays off when the next turn ends', async ($
 // FRM-499: a 🌌 sessions row's 🔥 chip writes the key from another session; an idle member takes no turn to see it
 test('a 🔥 key another session writes while this one idles arms the ping within a minute, no turn taken', async ($, on) => {
     const store: Record<string, unknown> = {};
-    const s = await started($, on, store);
+    const s = await started($, on, store, undefined, MIN);
     await endTurn($);
     await s.clock.advance(10 * MIN);
     store[`hot:${SID}`] = { since: NOW + 10 * MIN };
@@ -347,9 +339,8 @@ test("a keep-hot ping's one-character reply keeps the 🔭 wait the last real re
         return { value: undefined };
     });
     on('session.id', () => ({ value: SID }));
-    // a slow poll over 50 min of mock time: the ping keeps its own timer, and 750 ticks a row timed out at load (FRM-649)
     on('env.get', (_$, e) => ({
-        value: e.name === 'X_STASH_POLL_MS' ? String(60_000) : '/home',
+        value: e.name === 'X_STASH_POLL_MS' ? String(POLL) : '/home',
     }));
     on('ui.log', () => ({ value: undefined }));
     on('classic.Stop', () => ({}));

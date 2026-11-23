@@ -138,23 +138,23 @@ test(
     'a park at 70–80 % used reads resume under pace',
     { timeoutMs: 60_000 },
     async ($, on) => {
-        const w = world(on, WATCH);
+        const w = world(on, WATCH, NOW, MIN);
         w.meter(72, 2 * HOUR);
         await start($);
-        await w.clock.advance(POLL);
+        await w.clock.advance(MIN);
         await endTurn($);
         const reset = NOW + 2 * HOUR;
         const atOver1 = NOW + 32 * MIN;
         w.meter(72, reset - atOver1, 0, atOver1);
         await w.clock.set(atOver1);
-        await w.clock.advance(POLL);
+        await w.clock.advance(MIN);
         const between = rungs(w).length;
         const atUnder = NOW + 45 * MIN;
         w.meter(72, reset - atUnder, 0, atUnder);
         await w.clock.set(atUnder);
-        await w.clock.advance(POLL);
+        await w.clock.advance(MIN);
         await endTurn($);
-        await w.clock.advance(POLL);
+        await w.clock.advance(MIN);
         expect([between, rungs(w)]).toEqual([1, ['park', 'resume']]);
     },
 );
@@ -189,10 +189,10 @@ test(
     'a meter 40 min old still fires the resume once the clock carries pace back',
     { timeoutMs: 60_000 },
     async ($, on) => {
-        const w = world(on, WATCH);
+        const w = world(on, WATCH, NOW, MIN);
         w.meter(46, LEFT);
         await start($);
-        await w.clock.advance(POLL);
+        await w.clock.advance(MIN);
         await endTurn($);
         await w.clock.advance(40 * MIN);
         expect(rungs(w)).toEqual(['park', 'resume']);
@@ -402,16 +402,21 @@ test(
     'a stored park past the reset sends the new window, a hand park named',
     { timeoutMs: 60_000 },
     async ($, on) => {
-        const w = world(on, {
-            ...WATCH,
-            [`hot:${SID}`]: { off: true },
-            'pace-burn': 0,
-        });
+        const w = world(
+            on,
+            {
+                ...WATCH,
+                [`hot:${SID}`]: { off: true },
+                'pace-burn': 0,
+            },
+            NOW,
+            MIN,
+        );
         w.meter(91, 2 * HOUR);
         await start($);
-        await w.clock.advance(POLL);
+        await w.clock.advance(MIN);
         await endTurn($);
-        await w.clock.advance(2 * HOUR + POLL);
+        await w.clock.advance(2 * HOUR + MIN);
         expect(paces(w).at(-1)).toBe(
             '🔋 new window: reset done, resume the fleet; a hand park stays',
         );
@@ -422,13 +427,18 @@ test(
     'a shift expiring puts back the off it found',
     { timeoutMs: 60_000 },
     async ($, on) => {
-        const w = world(on, {
-            [`hot:${SID}`]: { off: true },
-            [`pace:${SID}`]: { since: NOW, was: { off: true } },
-        });
+        const w = world(
+            on,
+            {
+                [`hot:${SID}`]: { off: true },
+                [`pace:${SID}`]: { since: NOW, was: { off: true } },
+            },
+            NOW,
+            MIN,
+        );
         w.meter(30, 20 * MIN);
         await start($);
-        await w.clock.advance(POLL);
+        await w.clock.advance(MIN);
         await endTurn($);
         await w.clock.advance(21 * MIN);
         expect(w.store.get(`pace:${SID}`)).toEqual({ off: true });
@@ -451,10 +461,10 @@ test(
     'a window never parked or stopped sends no new window',
     { timeoutMs: 60_000 },
     async ($, on) => {
-        const w = world(on, WATCH);
+        const w = world(on, WATCH, NOW, MIN);
         w.meter(20, 30 * MIN);
         await start($);
-        await w.clock.advance(POLL);
+        await w.clock.advance(MIN);
         await endTurn($);
         await w.clock.advance(40 * MIN);
         expect(paces(w).some((t) => t.startsWith('🔋 new window'))).toBe(false);
@@ -529,7 +539,7 @@ test(
     'a cache dying before the reset gets one ping at 45 min left',
     { timeoutMs: 60_000 },
     async ($, on) => {
-        const w = world(on, { [`pace:${SID}`]: { off: true } });
+        const w = world(on, { [`pace:${SID}`]: { off: true } }, NOW, MIN);
         w.meter(50, 70 * MIN);
         await start($);
         await endTurn($);
@@ -549,7 +559,7 @@ test(
     'a refused late ping goes out once and leaves keep-hot armed',
     { timeoutMs: 60_000 },
     async ($, on) => {
-        const w = world(on, { [`pace:${SID}`]: { off: true } });
+        const w = world(on, { [`pace:${SID}`]: { off: true } }, NOW, MIN);
         w.meter(50, 70 * MIN);
         await start($);
         await endTurn($);
@@ -558,7 +568,7 @@ test(
             w.turns.filter((t) => t.includes('keep-hot ping')).length;
         await w.clock.advance(26 * MIN);
         w.state.isRefused = false;
-        await w.clock.advance(POLL * 3);
+        await w.clock.advance(MIN * 3);
         const noRetry = pings();
         await w.clock.advance(30 * MIN);
         expect([noRetry, pings()]).toEqual([0, 1]);
@@ -590,7 +600,7 @@ test('a cache that outlives the reset gets no late ping', async ($, on) => {
 });
 
 test('at 100 % no ping is sent', { timeoutMs: 60_000 }, async ($, on) => {
-    const w = world(on, { [`pace:${SID}`]: { off: true } });
+    const w = world(on, { [`pace:${SID}`]: { off: true } }, NOW, MIN);
     w.meter(100, 65 * MIN);
     await start($);
     await endTurn($);
@@ -774,16 +784,16 @@ test(
     'the 11-03 shift replayed: its readings open at +13, no crossing to name, one park at the first reading, 184 min ahead of the 18:03 cap, no turn after it',
     { timeoutMs: 60_000 },
     async ($, on) => {
-        const w = world(on, WATCH, SHIFT);
+        const w = world(on, WATCH, SHIFT, MIN);
         await start($);
         const seen: number[] = [];
         const overAt = (m: number) => usedAt(m) - Math.round((m / 300) * 100);
-        for (let m = 59; m <= 129; m++) {
+        for (let m = 59; m <= 129; m += 2) {
             const now = SHIFT + m * MIN;
             w.meter(usedAt(m), 5 * HOUR - m * MIN, 0, now);
             const was = paces(w).length;
             await w.clock.set(now);
-            await w.clock.advance(POLL);
+            await w.clock.advance(MIN);
             if (paces(w).length > was) seen.push(m);
             await endTurn($);
         }

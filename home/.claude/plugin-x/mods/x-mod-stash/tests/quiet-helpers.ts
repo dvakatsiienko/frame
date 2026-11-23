@@ -66,6 +66,8 @@ export function world(
         listed = {} as Record<string, { mtimeMs: number; name: string }[]>,
         // files that are there but refuse a read
         unreadable = [] as string[],
+        // a row over hours of mock time asks for a slower poll
+        poll = POLL,
     } = {},
 ) {
     for (const p of peers)
@@ -161,7 +163,7 @@ export function world(
     on('env.get', (_$, e) => ({
         value:
             e.name === 'X_STASH_POLL_MS'
-                ? String(POLL)
+                ? String(poll)
                 : isTestChild && e.name === 'X_MODS_TEST_CHILD'
                   ? '1'
                   : e.name === 'CLAUDE_CODE_PLUGIN_CACHE_DIR'

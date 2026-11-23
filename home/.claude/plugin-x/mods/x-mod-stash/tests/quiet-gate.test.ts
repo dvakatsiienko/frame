@@ -836,7 +836,7 @@ test(
     '8 idle hours with one held line every 30 min: 16 appends, 0 turns',
     { timeoutMs: 120_000 },
     async ($, on) => {
-        const w = world(on);
+        const w = world(on, { poll: 5 * MIN });
         w.store.set(`hot:${SID}`, { off: true });
         await start($);
         for (let i = 0; i < 16; i++) {
@@ -852,7 +852,7 @@ test(
     'a shift with nobody prompting: 2 h of untagged lines take no turn, the [done] takes one',
     { timeoutMs: 120_000 },
     async ($, on) => {
-        const w = world(on);
+        const w = world(on, { poll: 5 * MIN });
         w.store.set(`hot:${SID}`, { off: true });
         await start($);
         for (let i = 0; i < 4; i++) {
