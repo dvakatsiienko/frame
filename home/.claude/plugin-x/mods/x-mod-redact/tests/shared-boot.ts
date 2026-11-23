@@ -276,20 +276,19 @@ function engineOf($: Engine, row: Row) {
                 return [k, v && typeof v === 'object' ? guarded(v) : v];
             }),
         );
+    const unmountAll = async () => {
+        for (const drawing of mounted.splice(0))
+            await drawing.unmount().catch(() => undefined);
+    };
     const mount = async (what: never) => {
         const drawing = await $.ui.mount(what);
         mounted.push(drawing as never);
+        if (row.isOver) await unmountAll();
         return drawing;
     };
     const engine = guarded($);
     engine.ui = { ...(engine.ui as Input), mount: whileOn(mount as Call) };
-    return {
-        engine: engine as never as Engine,
-        unmountAll: async () => {
-            for (const drawing of mounted)
-                await drawing.unmount().catch(() => undefined);
-        },
-    };
+    return { engine: engine as never as Engine, unmountAll };
 }
 
 function bounded(work: Promise<unknown>, ms: number) {

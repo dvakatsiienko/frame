@@ -264,3 +264,24 @@ func xStderr(t *testing.T, dir string, env []string, args ...string) (string, st
 	code := exitOf(c.Run())
 	return stdout.String(), stderr.String(), code
 }
+
+// a queue whose deadline passed ran nothing, which is neither a pass nor a red
+func TestModsEditSaysWhenTheQueueRanNothing(t *testing.T) {
+	t.Parallel()
+	for _, args := range [][]string{{"--against", "HEAD"}, {"--whole"}} {
+		t.Run(args[0], func(t *testing.T) {
+			t.Parallel()
+			dir, env := modsFixture(t)
+			write(t, filepath.Join(dir, "script/gate-queue.sh"), "#!/bin/sh\necho 'gate-queue: waited 5s, deadline passed, nothing ran. the 1-minute load is 35' >&2\nexit 75\n")
+			env = append(env, "X_FRAME_ROOT="+dir, "X_STATE="+t.TempDir())
+			write(t, pullCopy(t, dir, env, modTestA), "green, pulled\n")
+			write(t, pullCopy(t, dir, env, modTestB), "green, pulled\n")
+
+			out, errs, code := xStderr(t, dir, env, append([]string{"mods", "edit", "test"}, args...)...)
+
+			if code != 1 || !strings.Contains(out, "no test ran for m: gate-queue: waited 5s") {
+				t.Errorf("exit %d:\n%s\n%s", code, out, errs)
+			}
+		})
+	}
+}

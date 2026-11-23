@@ -188,6 +188,15 @@ describe('untested', () => {
     it('these bytes pass, however old their green', () => {
         expect(untested(greens, 'm', 'aaa', [], () => ['a.ts'])).toEqual([]);
     });
+    it('these bytes pass, ten greens of others past them', () => {
+        const others = Array.from({ length: 12 }, (_, i) => row('m', `o${i}`));
+        const record = [row('m', 'aaa'), ...others].join('\n');
+        expect(untested(record, 'm', 'aaa', [], () => ['a.ts'])).toEqual([]);
+        const isMdOfTheLast = (sha: string) => [
+            sha === 'o11' ? 'a.md' : 'a.ts',
+        ];
+        expect(untested(record, 'm', 'ccc', [], isMdOfTheLast)).toEqual([]);
+    });
     it.each([
         ['an .md alone', ['FTR.md', 'docs/a.md'], 0],
         ['an .md and a hook', ['FTR.md', 'hooks/a.ts'], 1],

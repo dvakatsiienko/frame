@@ -343,13 +343,13 @@ export function untested(
         .map((line) => line.split('\t'))
         .filter(([, subject]) => subject === `mod ${mod}`)
         .map(([, , sha = '']) => sha);
-    const isGreen = [...new Set(greens)]
-        .slice(-GREENS_READ)
-        .some(
-            (sha) =>
-                sha === tree ||
+    const isGreen =
+        greens.includes(tree) ||
+        [...new Set(greens.toReversed())]
+            .slice(0, GREENS_READ)
+            .some((sha) =>
                 differ(sha, tree).every((path) => path.endsWith('.md')),
-        );
+            );
     if (isGreen) return [];
     return [
         `${mod}: no tested stamp on these bytes (${greens.length ? 'a green read others' : 'no green yet'}), so the commit is refused: run x mods edit test, or, for a change made outside it, pnpm mods:test --commit ${paths.join(' ')}`,

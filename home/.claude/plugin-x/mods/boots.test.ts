@@ -31,11 +31,6 @@ describe('the host starts of one test file', () => {
             1,
         ],
         ['a body written elsewhere', `${KIT}test('a', body);`, 1],
-        [
-            'a function body, which may read arguments',
-            `${KIT}test('a', function () { arguments[0]; });`,
-            1,
-        ],
         ['no row with a $', `${KIT}test('a', () => {});`, 0],
         [
             'the shared boot',
@@ -113,6 +108,21 @@ describe('the host starts of one test file', () => {
             'a helper by another suffix',
             "import { test } from './shared-boot.js';",
         ],
+        [
+            'a function that may read arguments',
+            `${KIT}test('a', function () { arguments[0]; });`,
+        ],
+        ['a rest parameter', `${KIT}test('a', (...args) => {});`],
+        ['a default parameter', `${KIT}test('a', ($ = 1) => {});`],
+        [
+            'the helper’s row by a rest parameter',
+            `${SHARED}test('a', (...args) => {});`,
+        ],
+        [
+            'the helper’s row by arguments',
+            `${SHARED}test('a', function () {});`,
+        ],
+        ['the helper’s row written elsewhere', `${SHARED}test('a', body);`],
         ['the helper handed on', "export { test } from './shared-boot.ts';"],
     ])('%s is refused, uncounted', (_, source) => {
         expect(countBoots(source).why).toBeDefined();

@@ -42,6 +42,8 @@ export function countBoots(source: string, file = 'tests/a.test.ts'): Count {
         if (parent?.type !== 'CallExpression' || parent.callee !== node)
             odd ??= `${node.name} is passed on, not called`;
         else if (!takesEngine(parent)) return;
+        else if (!isCounted(parent, isKit))
+            odd ??= `${node.name} takes its \`$\` where it cannot be counted`;
         else if (!isKit) isShared = true;
         else {
             if (
@@ -169,6 +171,15 @@ const isName = (n: Node, parent: Node | undefined) =>
 function takesEngine(call: Node) {
     const body = call.arguments.at(-1);
     return body?.type !== 'ArrowFunctionExpression' || body.params.length > 0;
+}
+
+// the helper boots once for the rows whose body shows its `$` as a first parameter; any other body it hands to the kit, which
+// boots for each. a body written elsewhere is one start of the kit's own
+function isCounted(call: Node, isKit: boolean) {
+    const body = call.arguments.at(-1);
+    if (!/^(?:ArrowFunction|Function)Expression$/.test(body?.type))
+        return isKit;
+    return /^(?:Identifier|ObjectPattern)$/.test(body.params[0]?.type);
 }
 
 // every test file's count, and each file that could start a host the table never sees; the kit runs a test file anywhere in a mod
@@ -329,17 +340,24 @@ function tableAt(root: string, ref: string) {
     return readTable(git('show', `${ref}:./${TABLE}`));
 }
 
+// the table a push replaces; a new branch, or a remote commit this clone never fetched, reads against origin/main
+function baseTable(root: string, remote: string) {
+    try {
+        return tableAt(root, /[1-9a-f]/.test(remote) ? remote : 'origin/main');
+    } catch {
+        return tableAt(root, 'origin/main');
+    }
+}
+
 if (import.meta.main) {
     const root = import.meta.dirname;
     if (process.argv.includes('--raises')) {
         // git's pre-push lines: a worktree's push runs from the main checkout, so HEAD there is the wrong commit
-        for (const line of readFileSync(0, 'utf8').split('\n')) {
+        const pushed = process.stdin.isTTY ? '' : readFileSync(0, 'utf8');
+        for (const line of pushed.split('\n')) {
             const [, head = '', , remote = ''] = line.split(' ');
             if (!/[1-9a-f]/.test(head)) continue;
-            const base = tableAt(
-                root,
-                /[1-9a-f]/.test(remote) ? remote : 'origin/main',
-            );
+            const base = baseTable(root, remote);
             for (const r of base ? raised(tableAt(root, head) ?? [], base) : [])
                 console.log(
                     `⚠️ boots raised: ${nameOf(r)} ${r.from} → ${r.boots}, on tick ${r.tick}`,

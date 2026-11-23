@@ -665,14 +665,17 @@ func testModOverlay(mod, overlay string, scope suiteScope) (modReport, error) {
 		return report, nil
 	}
 	got, _ := runSuite(overlay, scope.isLong())
-	if strings.Contains(got.log, "gate-queue: waited ") {
-		return report, &Fail{Msg: "no test ran for " + mod + ": " + firstNonBlank(got.log), Next: "x mods edit test"}
+	if err := queueRefused(mod, got); err != nil {
+		return report, err
 	}
 	log := got.log
 	report.Passed, report.Failed, report.Errored = testOutcome(log)
 	if !got.ok && timeoutOnly(log) && testTally.MatchString(log) {
 		again, kept, retried, err := runTimedOutFiles(overlay, log, scope.isLong())
 		if err != nil {
+			return report, err
+		}
+		if err := queueRefused(mod, again); err != nil {
 			return report, err
 		}
 		report.Retried = retried
@@ -690,6 +693,14 @@ func testModOverlay(mod, overlay string, scope suiteScope) (modReport, error) {
 	}
 	report.log = log
 	return report, nil
+}
+
+// the queue's deadline passed, for the turn or for the load: nothing ran, which reads as no red and no pass
+func queueRefused(mod string, got result) error {
+	if !strings.Contains(got.log, "gate-queue: waited ") {
+		return nil
+	}
+	return &Fail{Msg: "no test ran for " + mod + ": " + firstNonBlank(got.log), Next: "x mods edit test"}
 }
 
 // the overlay's tsc, with the flags `mods/typecheck.ts` passes: a dropped import is red here in seconds, before the suite spends minutes on it;
@@ -797,6 +808,9 @@ func againstRef(r *Run, repo, scratch string, changed []string, ref string) (any
 				}
 			}
 			got, _ := runSuite(overlay, scope.isLong())
+			if err := queueRefused(mod, got); err != nil {
+				return "", err
+			}
 			report := modReport{Mod: mod, Validate: "skipped"}
 			report.Passed, report.Failed, report.Errored = testOutcome(got.log)
 			reports = append(reports, report)
