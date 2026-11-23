@@ -48,7 +48,7 @@ test('a family head that is a verb passes: part of speech never decides', () => 
 test('a grid name passes: its own head has a family too', () => {
     expect(
         breaches(
-            list(['speak:test', 'speak:build', 'test:watch', 'test:unit'], ':'),
+            list(['sline:test', 'sline:build', 'test:watch', 'test:unit'], ':'),
         ),
     ).toEqual([]);
 });

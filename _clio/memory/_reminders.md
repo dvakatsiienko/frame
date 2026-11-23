@@ -1,7 +1,7 @@
 # reminders — dima's standing hooks
 
 Store contract: the `clio:remind` skill. Both tiers die only when Dima drops them; a 🦉 one of mine dies once its day passed and its check ran.
-⏰ 🦉 `weekly-empty-wakes`, from the Monday boot beside `weekly-wish-loss-audit` (`clio:boot` § 4, dima 2026-11-16); born from his o78 and his o58 «ok but do not forget!»; first round 11-16: 49 machine wakes, 7 did nothing — due: 2026-11-23
+⏰ 🦉 `nurture-crew-comms` (the recipe that replaced `weekly-empty-wakes` on his 2026-11-23 tick: the week's messages and wakes graded by content), from the Monday boot beside `weekly-wish-loss-audit` (`clio:boot` § 4, dima 2026-11-16); born from his o78 and his o58 «ok but do not forget!»; first round 11-16: 49 machine wakes, 7 did nothing; run 1 of the recipe 11-23 — due: 2026-11-30
 
 ## legend
 

@@ -14,7 +14,7 @@ the words past the head tell a newcomer what the thing does (root `CLAUDE.md`). 
 
 ## what the head can be
 
-- an area: `crew-codie`, `mods:test`, `speak:build`, `fleet-vibe`
+- an area: `crew-codie`, `mods:test`, `sline:build`, `fleet-vibe`
 - a thing: `handoff-create`, `x lane commit`, `x linear read`, `usageSave`, `FormSubmit`
 - an action: `audit-codie`, `shape-lane`, `author-memory`
 - a kind: `guide-react`, `habit-cto`, `refresh-speak`

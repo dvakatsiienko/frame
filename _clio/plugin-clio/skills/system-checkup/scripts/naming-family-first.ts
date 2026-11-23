@@ -1,6 +1,6 @@
 // checkup naming-family-first: a family's shared word gone last (root CLAUDE.md § naming): a name whose last word heads a
 // family while its own head has none, or 3+ `-` names sharing a last word over lone heads. prints `<kind> · <name>`, exit 1 on any
-// a `:` list is exempt from the second: its tail is a member, `speak:build`, and two names are no family yet
+// a `:` list is exempt from the second: its tail is a member, `sline:build`, and two names are no family yet
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename, extname, join } from 'node:path';
