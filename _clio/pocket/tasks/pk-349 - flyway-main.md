@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T16:37:00Z'
+updated_date: '2026-11-23T16:54:00Z'
 labels:
   - s
   - clio-main
@@ -2251,4 +2251,24 @@ PK-349:W2058 (2026-11-23 18:32, dima): on clio's line "The spike passed: your id
 PK-349:W2059 (2026-11-23 18:32, dima): i do not see.
 PK-349:W2060 (2026-11-23 18:32, dima): can i try what stray built? ❓
 PK-349:W2061 (2026-11-23 18:32, dima): start server.
+
+PK-349:W2062 (2026-11-23 18:43, dima): on clio's line "Yes, stuck, and not for a good reason…": incident into fleet-stories.
+PK-349:W2063 (2026-11-23 18:43, dima): remind how much story types we have
+PK-349:W2064 (2026-11-23 18:43, dima): i feel we need a proper structure for them now.
+PK-349:W2065 (2026-11-23 18:43, dima): another case of hanged crew member!
+PK-349:W2066 (2026-11-23 18:43, dima): it starts to appear too often now.
+PK-349:W2067 (2026-11-23 18:43, dima): how to solve this? ❓
+PK-349:W2068 (2026-11-23 18:53, dima): on clio's line "cpu: cpu-overload, mods-tests-cpu": (cpu-overload → cpu-roast-go-tests), (mods-tests-cpu → cpu-roast-go-tests)
+PK-349:W2069 (2026-11-23 18:53, dima): on clio's line "A structure is a real design choice of yours…": create pocket item for wing 1: reorg fleet stories, create good structure and framework for growing fleet stories.
+PK-349:W2070 (2026-11-23 18:53, dima): this area should not grow ideally.
+PK-349:W2071 (2026-11-23 18:53, dima): but it does grow.
+PK-349:W2072 (2026-11-23 18:53, dima): so it should have proper structure.
+PK-349:W2073 (2026-11-23 18:53, dima): on clio's line "My take: FRM-692 goes first tomorrow in the…": ok, and probe if it works.
+PK-349:W2074 (2026-11-23 18:53, dima): it should cover all four failed parked times from today.
+PK-349:W2075 (2026-11-23 18:53, dima): wind-down steer: before stopping we actually need to solve all pending stuff i asked for:
+PK-349:W2076 (2026-11-23 18:53, dima): 1. blueprint app essential probes (do probes to confirm wishes are possible and move on)
+PK-349:W2077 (2026-11-23 18:53, dima): 2. my prev query about wind-down and peek-lanes reshape / tweak
+PK-349:W2078 (2026-11-23 18:53, dima): 3. all your tails are solved
+PK-349:W2079 (2026-11-23 18:53, dima): 4. easy streamlined mechanism to prep lanes for tomorrow + lanes are planned and prepped via new mechanism
+PK-349:W2080 (2026-11-23 18:53, dima): 5. then we stop everyone and halt
 <!-- SECTION:NOTES:END -->
