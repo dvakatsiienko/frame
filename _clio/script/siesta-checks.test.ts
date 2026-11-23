@@ -125,6 +125,7 @@ describe('siesta-checks', () => {
             '## wish-cover',
             '## orbit drift',
             '## dispatch queue',
+            '## sealed ahead',
             '## nested tickets',
             '## close net',
             '## tails',
@@ -383,6 +384,32 @@ describe('siesta-checks', () => {
         queueVerb(home, { FRM: [] });
         const out = section(run(home).stdout, 'dispatch queue');
         expect(out).toMatch(/· exit 0\n🟡 /);
+    });
+
+    // an x stub whose `linear list` answers a tracker with no In Progress ticket, or fails
+    const emptyBoard = (home: string, exit: number) => {
+        const bin = join(home, '.local/bin');
+        mkdirSync(bin, { recursive: true });
+        writeFileSync(
+            join(bin, 'x'),
+            `#!/bin/sh\necho '{"ok":true,"data":{"tickets":[]}}'\nexit ${exit}\n`,
+        );
+        chmodSync(join(bin, 'x'), 0o755);
+    };
+
+    test('sealed ahead reads no running lane when nothing is In Progress', () => {
+        const home = fixtureHome();
+        emptyBoard(home, 0);
+        expect(section(run(home).stdout, 'sealed ahead')).toMatch(
+            /· exit 0\n🟢 no running lane\n/,
+        );
+    });
+
+    test('a failing linear list leaves sealed ahead a yellow line, never red', () => {
+        const home = fixtureHome();
+        expect(section(run(home).stdout, 'sealed ahead')).toMatch(
+            /· exit 0\n🟡 /,
+        );
     });
 
     const auditVerb = (home: string, exit: number, misses: unknown[]) => {
