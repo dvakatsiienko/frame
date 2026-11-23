@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T09:23:00Z'
+updated_date: '2026-11-23T10:08:00Z'
 labels:
   - s
   - clio-main
@@ -21,10 +21,12 @@ ordinal: 1000
 - [ ] #3 f68 launchd: one store until the merge; a BYT-124 line «split app jobs at the merge», pm2.dima moves into schedule/
 - [ ] #4 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
 - [ ] #5 f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes
-- [ ] #6 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #7 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #8 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #9 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #6 f74 speak tails: tell dima when the old x-speak row and launchd leftovers can go — waits for: his first login
+- [ ] #7 f75 herdr wisp: the glide block stays 1 px tall, no card drawn though two lanes are open; next herdr lane
+- [ ] #8 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #9 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #10 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #11 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1597,4 +1599,62 @@ PK-349:W1520 (2026-11-23 10:54, dima): do all except crew-pm. (context, not dima
 PK-349:W1521 (2026-11-23 10:54, dima): skip for now. (context, not dima's words: the line it points at, "the crew-pm board redraw, after today's model changes settle", is clio's board text; "skip for now" is his, on crew-pm)
 
 11:23 PK-349:W1520 (2026-11-23 10:54, dima): do all except crew-pm. — done at the boot board: the two keep-open comments, the empty-wakes recount, the orbit-asks re-measure, the cc 2.1.330 read; the weekly crow grade deleted on his later word; crew-pm skipped (W1521)
+
+PK-349:W1522 (2026-11-23 11:13, dima): previously you told that x-herdr-deck mod is fat.
+PK-349:W1523 (2026-11-23 11:13, dima): is its split is ticketed? ❓
+PK-349:W1524 (2026-11-23 11:13, dima): i though we split all fat parts of all cc native mods and all herdr mods.
+PK-349:W1525 (2026-11-23 11:13, dima): when it is planned? ❓
+PK-349:W1526 (2026-11-23 11:13, dima): do SW and i drop my ask on you.
+
+PK-349:W1527 (2026-11-23 11:17, dima, o2 steer): do split as a prio on all surfaces - split everything and nearest good point in each lane path.
+PK-349:W1528 (2026-11-23 11:17, dima, o2 steer): we should have no fat modules nowhere.
+PK-349:W1529 (2026-11-23 11:17, dima, o2 steer): reset then ask.
+
+PK-349:W1530 (2026-11-23 11:23, dima): to goal is to revisit how much useless messages your receive from team members, both:
+PK-349:W1531 (2026-11-23 11:23, dima): 1. push ones (more important, so less wakes)
+PK-349:W1532 (2026-11-23 11:23, dima): 2. slipstreams (too)
+PK-349:W1533 (2026-11-23 11:23, dima): 3. let's first gather data, and see what we can improve without spending 4hours on this
+PK-349:W1534 (2026-11-23 11:23, dima): when done - propose how to fold this into reusable operation.
+PK-349:W1535 (2026-11-23 11:23, dima): at least check/measure, and maybe even optimization (action items to groom redundant messaging).
+PK-349:W1536 (2026-11-23 11:23, dima): your existing weekly empty-wakes is related? ❓
+PK-349:W1537 (2026-11-23 11:23, dima): start data gathering process for analysis.
+PK-349:W1538 (2026-11-23 11:23, dima): look how often coders and verifiers message you (not count, content, kind).
+PK-349:W1539 (2026-11-23 11:23, dima): and evaluate: how useful they were, would my wish, without them, still ship in a solid shape? ❓
+PK-349:W1540 (2026-11-23 11:23, dima): rank and count them.
+PK-349:W1541 (2026-11-23 11:23, dima): how many useful vs not? ❓
+PK-349:W1542 (2026-11-23 11:23, dima): invent a steer for everyone across some good memory level that defines clear messaging contract (sharpen, refine, harden).
+PK-349:W1543 (2026-11-23 11:23, dima): previously i asked you to "watch crew for issues", to help them kinda.
+PK-349:W1544 (2026-11-23 11:23, dima): i suspect i missed with that shape, you do not heed to help them.
+PK-349:W1545 (2026-11-23 11:23, dima): you need to be sure they have everything necessary.
+PK-349:W1546 (2026-11-23 11:23, dima): a crew member kit.
+PK-349:W1547 (2026-11-23 11:23, dima): but your criticallly important job is to ensure landon: hangs, stops due perms, stucks in some loop, parks without any vote.
+PK-349:W1548 (2026-11-23 11:23, dima): stops unexpectedly: you must ensure good lanes crews health's so everyone is doing something useful and are parked only due to it was our plan.
+PK-349:W1549 (2026-11-23 11:23, dima): but: important, since you receive fewer messages, you will be parked a lot.
+PK-349:W1550 (2026-11-23 11:23, dima): so when someone truly wants to send you something, it should definitely reach you.
+PK-349:W1551 (2026-11-23 11:23, dima): and yiu should have very robust and highly reliable self hang heal system.
+PK-349:W1552 (2026-11-23 11:23, dima): or even hang-heal fleet engine.
+PK-349:W1553 (2026-11-23 11:23, dima): would that be possible?! ❓
+PK-349:W1554 (2026-11-23 11:23, dima): i prefer simplest possible solution that carries it through my wish.
+PK-349:W1555 (2026-11-23 11:23, dima): 1. measure and tell numbers on how much dead weight messages you receive from everyone
+PK-349:W1556 (2026-11-23 11:23, dima): 2. change fleet messaging contract so you only receive what is needed to ship solid stuff for - and reduce spam in your thread.
+PK-349:W1557 (2026-11-23 11:23, dima): 3. answer: is a thing like "crew kit" is possible in our system, crew-dna solves it? ❓
+PK-349:W1558 (2026-11-23 11:23, dima): if he's, let's do a crew-dna health check.
+PK-349:W1559 (2026-11-23 11:23, dima): does it contained all necessary information, and nothing redundant? ❓
+PK-349:W1560 (2026-11-23 11:23, dima): any cleanups, or additions needed? ❓
+PK-349:W1561 (2026-11-23 11:23, dima): use author-memory and peek into memory nurture recipe to see what i mean.
+
+PK-349:W1562 (2026-11-23 11:29, dima): empty-wakes, related? ❓
+PK-349:W1563 (2026-11-23 11:29, dima): empty-wakes only by count is half-useful, we need to eval actual content - what's inside.
+PK-349:W1564 (2026-11-23 11:29, dima): i believe we can cut a lot when content is considered and evaluated.
+PK-349:W1565 (2026-11-23 11:29, dima): I agree with your read on «watch the crew»: my job is their kit before the start and their health during the run, not help in the middle.
+PK-349:W1566 (2026-11-23 11:29, dima): This was just my explanation of why cross-session messages are off now.
+PK-349:W1567 (2026-11-23 11:29, dima): This is because initially when I was setting up USA coordinator, I asked you to do unnecessary stuff like babysitting crew members too much.
+PK-349:W1568 (2026-11-23 11:29, dima): The thing is that you still must babysit everyone because it's your job but not in as compulsive way i initially instructed.
+PK-349:W1569 (2026-11-23 11:29, dima): so what we do now - is revisitng this part and loosening the comms glue.
+
+done 2026-11-23 11:56: f72 speak tails: tell dima the moment the old x-speak Accessibility row and old launchd leftovers can go — waits for: his first login after the switch
+
+done 2026-11-23 11:56: f73 herdr wisp: the glide block draws no card though lanes.json holds l105 and l106 open (shot 11:50); next herdr lane, with f69
+
+12:08 ticket: FRM-686 carries the comms contract wish lines (PK-349:W1530–W1564 subset, his 11:48, 11:56, 11:59, 12:06 lines), renumbered FRM-686:W1–W10; the hang-heal lines W1547–W1554 and the kit lines W1543–W1546, W1557–W1561 stay here until their own home
 <!-- SECTION:NOTES:END -->
