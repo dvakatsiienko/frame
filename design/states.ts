@@ -52,7 +52,7 @@ const keyOf = (state: string) =>
 const labels = readFileSync(values.ftr, 'utf8')
     .split('\n')
     .filter((line) => line.startsWith('> states:'))
-    .flatMap((line) => line.slice('> states:'.length).split('·'))
+    .flatMap((line) => line.slice('> states:'.length).split(/·|,(?![^()]*\))/))
     .map((state) => state.trim())
     .filter(Boolean);
 if (labels.length === 0) fail(`no \`> states:\` line in ${values.ftr}`);
