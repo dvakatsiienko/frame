@@ -124,7 +124,6 @@ describe('siesta-checks', () => {
             '## flyway homes',
             '## wish-cover',
             '## orbit drift',
-            '## dispatch queue',
             '## sealed ahead',
             '## nested tickets',
             '## close net',
@@ -327,65 +326,6 @@ describe('siesta-checks', () => {
         expect(section(run(home).stdout, 'orbit drift')).toMatch(/· exit 0\n/);
     });
 
-    // an x stub that answers `linear list --team <key>` from a per-team ticket list; a team left out fails
-    const queueVerb = (
-        home: string,
-        teams: Record<
-            string,
-            { id: string; sign: string; stateType: string }[]
-        >,
-    ) => {
-        const bin = join(home, '.local/bin');
-        mkdirSync(bin, { recursive: true });
-        const cases = Object.entries(teams).map(
-            ([team, tickets]) =>
-                `${team}) echo '${JSON.stringify({ data: { tickets } })}';;`,
-        );
-        writeFileSync(
-            join(bin, 'x'),
-            `#!/bin/sh\ncase "$4" in\n${cases.join('\n')}\n*) exit 1;;\nesac\n`,
-        );
-        chmodSync(join(bin, 'x'), 0o755);
-    };
-
-    test('dispatch queue reds an unstarted chunk whose sign is not match, in either team', () => {
-        const home = fixtureHome();
-        queueVerb(home, {
-            BYT: [{ id: 'BYT-3', sign: 'drift', stateType: 'unstarted' }],
-            FRM: [
-                { id: 'FRM-1', sign: 'match', stateType: 'unstarted' },
-                { id: 'FRM-2', sign: 'stale', stateType: 'unstarted' },
-                { id: 'FRM-4', sign: 'stale', stateType: 'started' },
-            ],
-        });
-        const out = section(run(home).stdout, 'dispatch queue');
-        expect(out).toMatch(/· exit 1\n/);
-        expect(out).toContain(
-            'FRM-2 (stale) — re-sign or a ✏️ changed line before dispatch',
-        );
-        expect(out).toContain('BYT-3 (drift)');
-        expect(out).not.toContain('FRM-1');
-        expect(out).not.toContain('FRM-4');
-    });
-
-    test('dispatch queue counts signed chunks when every sign matches', () => {
-        const home = fixtureHome();
-        queueVerb(home, {
-            BYT: [],
-            FRM: [{ id: 'FRM-1', sign: 'match', stateType: 'unstarted' }],
-        });
-        expect(section(run(home).stdout, 'dispatch queue')).toMatch(
-            /· exit 0\n1 signed chunks, all match\n/,
-        );
-    });
-
-    test('a failing linear read leaves dispatch queue a yellow line, never red', () => {
-        const home = fixtureHome();
-        queueVerb(home, { FRM: [] });
-        const out = section(run(home).stdout, 'dispatch queue');
-        expect(out).toMatch(/· exit 0\n🟡 /);
-    });
-
     // an x stub whose `linear list` answers a tracker with no In Progress ticket, or fails
     const emptyBoard = (home: string, exit: number) => {
         const bin = join(home, '.local/bin');
@@ -397,11 +337,11 @@ describe('siesta-checks', () => {
         chmodSync(join(bin, 'x'), 0o755);
     };
 
-    test('sealed ahead reads no running lane when nothing is In Progress', () => {
+    test('sealed ahead reads no lane when nothing is signed and no lane has a member', () => {
         const home = fixtureHome();
         emptyBoard(home, 0);
         expect(section(run(home).stdout, 'sealed ahead')).toMatch(
-            /· exit 0\n🟢 no running lane\n/,
+            /· exit 0\n🟢 no lane\n/,
         );
     });
 

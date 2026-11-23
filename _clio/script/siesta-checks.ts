@@ -6,23 +6,12 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 import { lanePaceSection } from './lane-pace.ts';
-import {
-    type Relation,
-    type RunningChunk,
-    blockedIds,
-    pickNext,
-    sealedAhead,
-} from './sealed-ahead.ts';
+import { readLaneAhead, sealedAhead } from './sealed-ahead.ts';
 
 const OUTPUT_LINES = 40;
 const RUN_TIMEOUT_MS = 60_000;
 // wish-cover's own exit when the tracker read fails: an outage, never a missed wish
 const NOT_CHECKED = 2;
-// a ticket's `repo:` line names where its brief preflight runs, under home; no line means frame
-const AHEAD_REPOS: Record<string, string | undefined> = {
-    bytes: 'projects/bytes',
-    frame: 'frame',
-};
 // the same drafts and wish line wish-cover-on-write.sh checks at write time
 const DRAFT_NAME = /^(spec\.md|.*proposal.*\.md|.*review.*\.md)$/;
 const WISH_LINE = /^wish: *\[?(?:PK|FRM|BYT)-\d+.*$/gim;
@@ -46,7 +35,6 @@ function main(home: string, since: string) {
         script(scripts, 'flyway homes', 'flyway-done', ['PK-349', '--check']),
         wishCover(home, scripts, since),
         orbitDrift(home),
-        dispatchQueue(home),
         sealedAheadSection(home),
         nestedTickets(home),
         script(scripts, 'close net', 'close-net', []),
@@ -438,123 +426,12 @@ function orbitDrift(home: string) {
     };
 }
 
-// a signed chunk whose sign drifted and that no lane runs yet: it needs its re-sign before the next dispatch; a linear
-// failure reads «not checked» in a 🟡 line, never red
-function dispatchQueue(home: string) {
-    const name = 'dispatch queue';
-    const tickets: SignedTicket[] = [];
-    for (const team of ['FRM', 'BYT']) {
-        const out = spawnSync(
-            path.join(home, '.local/bin/x'),
-            ['linear', 'list', '--team', team, '--label', 'signed'],
-            { encoding: 'utf8', timeout: RUN_TIMEOUT_MS },
-        );
-        const found = (parsed(out.stdout ?? '').data as { tickets?: unknown })
-            ?.tickets;
-        if (out.status !== 0 || !Array.isArray(found))
-            return {
-                exit: 0,
-                name,
-                output: `🟡 x linear list --team ${team} failed, the queue is not checked`,
-            };
-        tickets.push(...(found as SignedTicket[]));
-    }
-    const drifted = tickets.filter(
-        (t) => t.sign !== 'match' && t.stateType !== 'started',
-    );
-    return {
-        exit: drifted.length ? 1 : 0,
-        name,
-        output: drifted.length
-            ? drifted
-                  .map(
-                      (t) =>
-                          `${t.id} (${t.sign}) — re-sign or a ✏️ changed line before dispatch`,
-                  )
-                  .join('\n')
-            : `${tickets.length} signed chunks, all match`,
-    };
-}
-
-// the next two chunks behind each running lane, sealed or not (FRM-693): a lane parks into a chunk nobody sealed. a
-// command that fails or times out reads «not checked» in one 🟡 line, never red
+// every lane's next two chunks, sealed or not, and its member (FRM-693, PK-349:W2046): a lane parks into a chunk nobody sealed,
+// and a drifted sign is a state of its slot. a command that fails or times out reads «not checked» in one 🟡 line, never red
 function sealedAheadSection(home: string) {
     const name = 'sealed ahead';
-    const x = (args: string[], mayFail = false) => {
-        const out = spawnSync(path.join(home, '.local/bin/x'), args, {
-            encoding: 'utf8',
-            timeout: RUN_TIMEOUT_MS,
-        });
-        const envelope = parsed(out.stdout ?? '') as XEnvelope;
-        if (typeof envelope.ok !== 'boolean' || (!envelope.ok && !mayFail))
-            throw new Error(`x ${args.join(' ')}`);
-        return envelope;
-    };
-    const read = (id: string) => {
-        const ticket = (
-            x(['linear', 'read', id, '--relations']).data as {
-                tickets?: AheadTicket[];
-            }
-        ).tickets?.[0];
-        if (!ticket) throw new Error(`x linear read ${id}`);
-        return ticket;
-    };
-    const seal = (id: string) => {
-        const t = read(id);
-        const repo =
-            AHEAD_REPOS[/^repo: *(\S+)/m.exec(t.description)?.[1] ?? 'frame'];
-        if (!repo)
-            throw new Error(
-                `x brief preflight ${id}: its repo line names no repo`,
-            );
-        const { error, ok } = x(
-            ['brief', 'preflight', '--repo', path.join(home, repo), id],
-            true,
-        );
-        return {
-            id,
-            preflightError: error ?? '',
-            preflightOk: ok === true,
-            signed: t.labels.includes('signed'),
-            ticket: t,
-        };
-    };
-    // the chunk a ticket queues next: its open blocked tickets, one picked
-    const nextOf = (t: AheadTicket) =>
-        pickNext(blockedIds(t.relations).map(seal));
     try {
-        const running: RunningChunk[] = ['FRM', 'BYT']
-            .flatMap(
-                (team) =>
-                    (
-                        x([
-                            'linear',
-                            'list',
-                            '--team',
-                            team,
-                            '--state',
-                            'In Progress',
-                        ]).data as {
-                            tickets: { id: string }[];
-                        }
-                    ).tickets,
-            )
-            .map((t) => read(t.id))
-            .filter(
-                (t) =>
-                    t.state === 'In Progress' &&
-                    /^🚀 dispatched/m.test(t.description) &&
-                    t.description.split('\n')[0]?.trim() !== 'lane: main',
-            )
-            .map((t) => {
-                const next = nextOf(t);
-                return {
-                    after: next && nextOf(next.ticket),
-                    id: t.id,
-                    next,
-                };
-            });
-        const { exit, lines } = sealedAhead(running);
+        const { exit, lines } = sealedAhead(readLaneAhead(home));
         return { exit, name, output: lines.join('\n') };
     } catch (e) {
         return {
@@ -743,18 +620,6 @@ if (import.meta.main) {
 }
 
 /* Types */
-
-type SignedTicket = { id: string; sign: string; stateType: string };
-
-type XEnvelope = { data?: unknown; error?: string; ok?: boolean };
-
-type AheadTicket = {
-    description: string;
-    id: string;
-    labels: string[];
-    relations?: Relation[];
-    state: string;
-};
 
 export type NestedTicket = {
     id: string;
