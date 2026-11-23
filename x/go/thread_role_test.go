@@ -62,7 +62,8 @@ esac
 			t.Fatal(err)
 		}
 	}
-	w.env = []string{"X_SESSIONS=" + sessions, "X_THREADS=" + w.store, "X_MAIN_SESSION=" + w.mainFile, "X_HC=" + filepath.Join(bin, "hc"), "X_HERDR_APP=" + filepath.Join(bin, "herdr-app"), "X_RENAME_WAIT=0", "X_RENAME_NUDGE=0", "X_SEAT_LOG=" + w.log}
+	// a frame root that is no repo: without it x waits on the real checkout's index.lock, which a peer's commit holds
+	w.env = []string{"X_FRAME_ROOT=" + t.TempDir(), "X_SESSIONS=" + sessions, "X_THREADS=" + w.store, "X_MAIN_SESSION=" + w.mainFile, "X_HC=" + filepath.Join(bin, "hc"), "X_HERDR_APP=" + filepath.Join(bin, "herdr-app"), "X_RENAME_WAIT=0", "X_RENAME_NUDGE=0", "X_SEAT_LOG=" + w.log}
 	return w
 }
 
@@ -510,14 +511,14 @@ func TestThreadRenameRoleReadsItsPassAgainUnderTheLock(t *testing.T) {
 	t.Parallel()
 	band := `{"prs":{"by":"band","at":"` + overrideAt + `"}}`
 	for _, c := range []struct {
-		name, store, grant string
-		meanwhile          func(t *testing.T, store, grant string)
+		name, store string
+		meanwhile   func(t *testing.T, store, grant string)
 	}{
-		{"the grant is gone", "", seatGrantOf("wing1", "main", "tick o7", 0), func(_ *testing.T, _, grant string) { _ = os.Remove(grant) }},
-		{"the grant is past its 60 s", "", seatGrantOf("wing1", "main", "tick o7", 0), func(t *testing.T, _, grant string) {
+		{"the grant is gone", "", func(_ *testing.T, _, grant string) { _ = os.Remove(grant) }},
+		{"the grant is past its 60 s", "", func(t *testing.T, _, grant string) {
 			write(t, grant, seatGrantOf("wing1", "main", "tick o7", 61*time.Second))
 		}},
-		{"he pressed the override off", band, "", func(t *testing.T, store, _ string) { write(t, store, `{}`) }},
+		{"he pressed the override off", band, func(t *testing.T, store, _ string) { write(t, store, `{}`) }},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
@@ -526,9 +527,9 @@ func TestThreadRenameRoleReadsItsPassAgainUnderTheLock(t *testing.T) {
 			grant := seatGrantPath(store, "sid-caller")
 			if c.store != "" {
 				write(t, store, c.store)
-			}
-			if c.grant != "" {
-				write(t, grant, c.grant)
+			} else {
+				// its 60 s start here: a parallel row can queue past them after the table is built
+				write(t, grant, seatGrantOf("wing1", "main", "tick o7", 0))
 			}
 			env := asCaller(t, append(w.env, "X_OVERRIDE_STORE="+store), "coordinator")
 			unlock, err := lockThreadStore(w.store)
