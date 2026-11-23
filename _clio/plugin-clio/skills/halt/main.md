@@ -51,6 +51,8 @@ every 🛼 glide card gets orbit op `glide` act `end`, a parked lane's too; a la
 
 `node script/tails-check.ts` exits 0 before phase 5 writes the CST (PK-349:W1018, his o96): every open line in `~/.local/state/clio/tails/` is solved now and ticked (`--done '<its start>'`), or goes to dima as one orbit ask each; his «keep» is written onto the line as `— kept: dima <date>`. a tail is added the turn it is found (`--add '<text>'`), in any thread. the CST then names each running lane's next signed chunk, read from its lane plan.
 
+`node script/unsigned-tickets.ts` runs beside it: each red is signed before the halt or carries dima's word that its grill waits (FRM-693).
+
 ## phase 2 — missed sweep
 re-read the pocket and this thread for dropped asks and unanswered
 questions. a pocket item marked «before the halt» FIRES now. mid-turn messages from dima are the usual casualty — check
