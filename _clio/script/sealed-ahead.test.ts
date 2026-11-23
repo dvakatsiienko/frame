@@ -594,6 +594,87 @@ describe('readLaneAhead, a running chunk that blocks two chunks of one chain', (
     });
 });
 
+describe('readLaneAhead, which chunk a lane is running', () => {
+    // FRM-683's real `## signed` block: the dispatch line sits between ✏️ changed lines, not last
+    const block = [
+        'lane: side',
+        'repo: bytes',
+        '',
+        '## signed',
+        '',
+        '✍️ signed 2026-11-22',
+        '✏️ changed 2026-11-22 — repo: frame → bytes, no re-sign: tiny · body facc9001',
+        '🚀 dispatched 2026-11-23 — speak-hunt, codie e412b9a7-9ff8-430c-a867-7090164bb8fb',
+        '✏️ changed 2026-11-23 — the scope grows to seven slices, no re-sign grill · body 235e327b',
+        '✏️ changed 2026-11-23 — the lane moves from prs to main after slice 3 · body 69b98b52',
+    ].join('\n');
+
+    test('a dispatch line followed by ✏️ changed lines still makes the chunk the lane is running', () => {
+        const home = homeWith();
+        const out = sealedAhead(
+            readLaneAhead(
+                home,
+                ['speak'],
+                world(home, {
+                    running: [{ id: 'FRM-10', project: 'speak' }],
+                    signed: [
+                        { id: 'FRM-20', project: 'speak' },
+                        { id: 'FRM-30', project: 'speak' },
+                    ],
+                    tickets: {
+                        'FRM-10': {
+                            description: block,
+                            project: 'speak',
+                            relations: [rel('blocks', 'FRM-30')],
+                            state: 'In Progress',
+                        },
+                        'FRM-20': { project: 'speak' },
+                        'FRM-30': {
+                            project: 'speak',
+                            relations: [
+                                rel('blocked by', 'FRM-10', 'In Progress'),
+                            ],
+                        },
+                    },
+                }),
+            ),
+        );
+        expect(out.lanes[0]).toMatchObject({
+            slots: [{ id: 'FRM-30' }, { id: 'FRM-20' }],
+        });
+    });
+
+    test("a chunk with no dispatch line is not the lane's running chunk: its area queue starts at the lowest id", () => {
+        const home = homeWith();
+        const out = sealedAhead(
+            readLaneAhead(
+                home,
+                ['speak'],
+                world(home, {
+                    running: [{ id: 'FRM-10', project: 'speak' }],
+                    signed: [
+                        { id: 'FRM-20', project: 'speak' },
+                        { id: 'FRM-30', project: 'speak' },
+                    ],
+                    tickets: {
+                        'FRM-10': {
+                            description: 'lane: side\n\n## signed\n\n✍️ signed',
+                            project: 'speak',
+                            relations: [rel('blocks', 'FRM-30')],
+                            state: 'In Progress',
+                        },
+                        'FRM-20': { project: 'speak' },
+                        'FRM-30': { project: 'speak' },
+                    },
+                }),
+            ),
+        );
+        expect(out.lanes[0]).toMatchObject({
+            slots: [{ id: 'FRM-20' }, { id: 'FRM-30' }],
+        });
+    });
+});
+
 describe('readLaneAhead, chunks that wait on each other', () => {
     test('still take one rather than none, so a cycle in the tracker shows as a blocked slot', () => {
         const home = homeWith();
