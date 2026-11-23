@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T16:54:00Z'
+updated_date: '2026-11-23T18:01:00Z'
 labels:
   - s
   - clio-main
@@ -16,24 +16,21 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f66 lane-pace counts 1 commit for the mods lane against 29 since 17:00; its commit match misses (stray, after batch 11)
-- [ ] #2 f67 herdr slash list misses his skill: the scan prints it, the miss is in chat's commands(); rider in herdr handoff
-- [ ] #3 f68 launchd: one store until the merge; a BYT-124 line «split app jobs at the merge», pm2.dima moves into schedule/
-- [ ] #4 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
-- [ ] #5 f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes
-- [ ] #6 f77 hang-heal: a ticket for the silent-member alarm outside a shift, a watch on clio, the keychain lost at login
-- [ ] #7 f85 frame package.json: five root deps with no user after the chords cut: check, then drop
-- [ ] #8 f86 mods rider: the guard treats a branch with no `+` line in git cherry as merged, so its delete needs no tick (his o4)
-- [ ] #9 f87 speak FTR: the pill states line gains «no word timings», a rider for the speak lane (the designer, 15:29)
-- [ ] #10 f88 speak art-kit run: the speechify card takes the Speechify API own mark and colour (designer placeholders now)
-- [ ] #11 f89 idle member alarm: a line at my turn end when a lane member idles 10 min, no wait named (his o13)
-- [ ] #12 f90 cuts pass over the board mod (x-mod-stash): what in it has no user, his ticks (his o17, this week)
-- [ ] #13 f91 designer craft: research how to search design references and query them right (his 19 Nov wish)
-- [ ] #14 f92 speak design artifacts: which to delete, which to keep, as one clear list for him (his 16 Nov ask)
-- [ ] #15 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #16 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #17 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #18 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #1 f67 herdr slash list misses his skill: the scan prints it, the miss is in chat's commands(); rider in herdr handoff
+- [ ] #2 f68 launchd: one store until the merge; a BYT-124 line «split app jobs at the merge», pm2.dima moves into schedule/
+- [ ] #3 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
+- [ ] #4 f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes
+- [ ] #5 f77 hang-heal: a ticket for the silent-member alarm outside a shift, a watch on clio, the keychain lost at login
+- [ ] #6 f85 frame package.json: five root deps with no user after the chords cut: check, then drop
+- [ ] #7 f86 mods rider: the guard treats a branch with no `+` line in git cherry as merged, so its delete needs no tick (his o4)
+- [ ] #8 f88 speak art-kit run: the speechify card takes the Speechify API own mark and colour (designer placeholders now)
+- [ ] #9 f90 cuts pass over the board mod (x-mod-stash): what in it has no user, his ticks (his o17, this week)
+- [ ] #10 f91 designer craft: research how to search design references and query them right (his 19 Nov wish)
+- [ ] #11 f92 speak design artifacts: which to delete, which to keep, as one clear list for him (his 16 Nov ask)
+- [ ] #12 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #13 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #14 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #15 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2271,4 +2268,74 @@ PK-349:W2077 (2026-11-23 18:53, dima): 2. my prev query about wind-down and peek
 PK-349:W2078 (2026-11-23 18:53, dima): 3. all your tails are solved
 PK-349:W2079 (2026-11-23 18:53, dima): 4. easy streamlined mechanism to prep lanes for tomorrow + lanes are planned and prepped via new mechanism
 PK-349:W2080 (2026-11-23 18:53, dima): 5. then we stop everyone and halt
+
+PK-349:W2081 (2026-11-23 19:16, dima): on clio's line "Saw it: you posted on the voice picker «voice: Jessica» in the elevenlabs card, on the speechify admin board": resolved ✓.
+PK-349:W2082 (2026-11-23 19:16, dima): on clio's line "dima-one-at-a-time": OK.
+PK-349:W2083 (2026-11-23 19:16, dima): on clio's line "A slice: a part of the chunk you could look at alone…": So at a more granular stop point for a winding down, a lane can stop and write a handoff roughly at this point on "slice finished?"
+PK-349:W2084 (2026-11-23 19:16, dima): on clio's line "A plan step: one line of the 🔧 codie's lane plan, a small ticket of its own…": or even here? ❓
+PK-349:W2085 (2026-11-23 19:16, dima): would be good to have support for such granularity.
+PK-349:W2086 (2026-11-23 19:16, dima): then i could ask you to stop almost anytime? ❓
+PK-349:W2087 (2026-11-23 19:16, dima): and winding down planning is much simpler rather than taking a full chunk merge as a possible stop anchor point? ❓
+PK-349:W2088 (2026-11-23 19:16, dima): on clio's line "Where a lane can stop safely: after any commit of a finished step…": wow so my wind-down spec was broken since inception with an ask to wind down via chunk fully merged only.
+PK-349:W2089 (2026-11-23 19:16, dima): make it more granular.
+PK-349:W2090 (2026-11-23 19:16, dima): wind-down should mean that lanes should pick the best possible stop point that time allows them: either step, commit and handoff, or slice, commit and handoff, or chunk, full chunk if time allows.
+PK-349:W2091 (2026-11-23 19:16, dima): As granular as possible.
+PK-349:W2092 (2026-11-23 19:16, dima): If I wanted a halt I would ask you and you could do a halt quickly via wind-down.
+PK-349:W2093 (2026-11-23 19:16, dima): The health check — so how to have unified way to healthcheck-prep lanes for tomorrow, while keeping your memories wired and healthy, and remove scattering so your memory and skills well organized? ❓
+PK-349:W2094 (2026-11-23 19:16, dima): peek-lanes-healthcheck new skill? or propose better idea? ❓
+PK-349:W2095 (2026-11-23 19:16, dima): so peek-lanes only shows, while healthcheck ensures that selected lanes are fully ready to be dispatched in one word (?) with no hiccups anytime after healthcheck is completed? ❓
+PK-349:W2096 (2026-11-23 19:16, dima): or - keep current peek-lanes and extend it with argument «healthcheck»? so it does its part via argument way? ❓
+PK-349:W2097 (2026-11-23 19:16, dima): on clio's line "Your speak daemon was relaunched at 19:00:48, and the new build stayed. No rollback. I…": np.
+PK-349:W2098 (2026-11-23 19:16, dima): on clio's line "Every lane has the shared stop: 20:10.": make stop not mandatory.
+PK-349:W2099 (2026-11-23 19:16, dima): only 55m left and we still have plenty to solve.
+PK-349:W2100 (2026-11-23 19:16, dima): we should solve all operational stuff with you and solve all tails only then everyone stops.
+PK-349:W2101 (2026-11-23 19:16, dima): on clio's line "so let everyone aware that we are winding down…": i think this is the right shape for wind-down mode.
+
+PK-349:W2102 (2026-11-23 19:27, dima): /clio:dima-one-at-a-time too many stuff at once.
+PK-349:W2103 (2026-11-23 19:27, dima): so lanes healthcheck via peek-lanes ready ? ❓
+PK-349:W2104 (2026-11-23 19:27, dima): on clio's line "The 🐕 stray is building the script's per-lane verdict now…": who verifies stray? since we have mods verifier parked? maybe he reviews stray? ❓
+PK-349:W2105 (2026-11-23 19:27, dima): on clio's line "dima-one-at-a-time": location on the fs pls ❓
+
+PK-349:W2106 (2026-11-23 19:32, dima): on clio's line "🙋 yours, the only one now: speak's chunk order, on your board…": i do not see any orbit asks.
+PK-349:W2107 (2026-11-23 19:32, dima): on clio's line "🙋 later, one by one: two held questions on the ask-origin chunk…": let's do as next steps, once thread is unloaded cuz now it is a little chaotic.
+PK-349:W2108 (2026-11-23 19:32, dima): plus you want a SW (?).
+
+PK-349:W2109 (2026-11-23 19:36, dima): on clio's line "The ask you did not see: it was there and you ticked it at 19:28, so it left the board. The order is set as you ticked: kokoro upgrades, then part 1…": i forgot because of a lot of stuff at once.
+
+PK-349:W2110 (2026-11-23 19:49, dima): on clio's line "🧩 next item: the pill's volume row, which sits at the screen's bottom edge when the pill is low.": Why are you proposing this? ❓
+PK-349:W2111 (2026-11-23 19:49, dima): I don't understand.
+PK-349:W2112 (2026-11-23 19:49, dima): Why do you actually use Low Tide over the apps? ❓
+PK-349:W2113 (2026-11-23 19:49, dima): Low Tide is not intended for apps.
+PK-349:W2114 (2026-11-23 19:49, dima): It is intended for solving every single tail that you have outside of the lane scope, like postponed chore items or postponed stuff that was not done before (like mechanical stuff, some grills, some skill- or memory-related stuff, or something like this).
+
+done 2026-11-23 19:58: f89 idle member alarm: a line at my turn end when a lane member idles 10 min, no wait named (his o13)
+
+done 2026-11-23 19:58: f87 speak FTR: the pill states line gains «no word timings», a rider for the speak lane (the designer, 15:29)
+
+PK-349:W2115 (2026-11-23 19:40, dima): ok, let's continue solving
+PK-349:W2116 (2026-11-23 19:40, dima): /clio:lowtide in /clio:dima-one-at-a-time mode
+
+PK-349:W2117 (2026-11-23 19:44, dima): on clio's line "crow, wishkeeper, 🔧 codie…": wishkeeper misses emoji but it does not posts asks? ❓
+PK-349:W2118 (2026-11-23 19:44, dima): and your wings are often posts an ask.
+PK-349:W2119 (2026-11-23 19:44, dima): i think wings should be included and considered to be unique - wing 1 wing 2 etc? ❓
+PK-349:W2120 (2026-11-23 19:44, dima): on clio's line "lighter-board chunk is clean": I do not understand why you propose it.
+PK-349:W2121 (2026-11-23 19:44, dima): It's the last item in the current mods chunk and you propose to fold out that percentage fix into some other chunk or what? ❓
+PK-349:W2122 (2026-11-23 19:44, dima): What's wrong with fixing it now? ❓
+PK-349:W2123 (2026-11-23 19:44, dima): I don't mind moving it out.
+PK-349:W2124 (2026-11-23 19:44, dima): I just want to know why you think it is more optimal and how it helps.
+PK-349:W2125 (2026-11-23 19:44, dima): If it helps to solve everything sooner and faster overall with the seeing far strategy, then I approve
+
+PK-349:W2126 (2026-11-23 19:53, dima): fix lowtide skill so you only hunt non-lane tails via lowtide.
+PK-349:W2127 (2026-11-23 19:53, dima): when everything is done (100% of tails is solved) — you tell that lowtide hunt is finished.
+PK-349:W2128 (2026-11-23 19:53, dima): on clio's line "The pill ask is withdrawn: my pick was wrong…": Didn't we solve this question with Designer today? ❓
+PK-349:W2129 (2026-11-23 19:53, dima): Check the logs.
+PK-349:W2130 (2026-11-23 19:53, dima): Designer should have been transferred all your decisions we made today or we didn't solve some questions with Designer ? ❓
+PK-349:W2131 (2026-11-23 19:53, dima): what's missing lets close the question.
+
+PK-349:W2132 (2026-11-23 19:56, dima): The problem with current low tide is that you drifted to lanes' scope first and then started to dig into tickets that are not appropriate to solve now.
+PK-349:W2133 (2026-11-23 19:56, dima): I suppose you need a stop rule for low tide, right? ❓
+PK-349:W2134 (2026-11-23 19:56, dima): When to stop? ❓
+PK-349:W2135 (2026-11-23 19:56, dima): From the description above and before, is it enough info for you to sharpen the low tide skill in a way so you know where and when to stop? ❓
+
+done 2026-11-23 20:01: f66 lane-pace counts 1 commit for the mods lane against 29 since 17:00; its commit match misses (stray, after batch 11)
 <!-- SECTION:NOTES:END -->
