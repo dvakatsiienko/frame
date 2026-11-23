@@ -115,6 +115,7 @@
   - and the tick covers the pick as it stood at his press: a `follow` that swaps it later moves nothing onto the new command; a press row with no pick, an older deck's, opens what the text quotes (FRM-661: a text caps at 90 chars, so a 130-char cleanup could never be ticked)
   - then the command runs, the escape kept with the ask's id; a second run is refused, a tick quoting another command opens nothing, and plain rm never opens
   - and a run that fails hands the tick back for the retry
+  - and a herdr press and the record x-mod-stash made of it are one tick, so one press runs the command once (FRM-596)
   - and his tick on one command of a longer line passes that one when the rest of the line meets no floor rule (`hc kill t9 2>&1 | tail -1`, `hc ls && hc kill t9`); a pipe it feeds runs with `set -o pipefail` first, so a failed run reads as failed (FRM-574 decided 2 and 7)
   - makes: the spent ticks in x-mod-guard's `$.state`, `<ask id>@<tick time>:<what it authorized>`
   - decision: no typed word, no `# dima-ok` marker, no bare yes: his tick is the one door, and a sign or a merge needs none (FRM-581: FRM-580 and FRM-566 took two ticks or a raw api call for one sign)
@@ -125,7 +126,7 @@
   - given another command, thread or role than the tick quotes, a longer line, a spent tick, or a grant that cannot be written, then no grant and no tick spent
   - given the run fails or another hook refuses it with the grant still there, then the grant goes and the tick is back at once; a background run that never used it, at its 60 s, past a hot reload too
   - given the override on, then no tick is spent
-  - makes: `~/.local/state/x/seat-grants/<session>.<tick>.json`, `.taken` once x took it, swept past the tick's 2 h; one line a grant in `operator-override.log`, scope `seat`; x writes one a move
+  - makes: `~/.local/state/x/seat-grants/<session>.<tick>.<time>-<thread>-<role>.json`, `.taken` once x took it, swept past the tick's 2 h; one line a grant in `operator-override.log`, scope `seat`; x writes one a move
   - decision: never in the override store: x-mod-stash drops a 🔓 press older than that file's last write, so a grant there could swallow his press (three reviews, 2026-11-23)
   - decision: «why i have to type anything? … i vote for either orbit tick or even better: if my operator override is ON - it just works» (dima, 2026-11-23 14:59)
   - 📌 the grant is a plain file, so a thread could write one itself: named, not checked (dima, 15:12: no forge fix)

@@ -101,7 +101,14 @@ export async function tickFor(
     const { value: seatTicks = [] } = await $.state
         .get(TICKS)
         .catch(() => ({ value: [] }));
-    const ticks = [...seatTicks, ...(await herdrTicks($))];
+    // x-mod-stash records a herdr press it absorbed as a tick of its own: one press, so the record stands for both
+    const herdr = (await herdrTicks($)).filter(
+        (t) =>
+            !seatTicks.some(
+                (s) => `herdr:${s.id}` === t.id && s.at >= t.at && covers(s),
+            ),
+    );
+    const ticks = [...seatTicks, ...herdr];
     const { value: spent = [] } = await $.state.get(SPENT);
     const now = await $.clock.now();
     const keys = (t: Tick) =>

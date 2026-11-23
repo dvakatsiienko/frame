@@ -186,9 +186,6 @@ func threadRoleSwitch(r *Run, key, role string, pass *seatPass) (any, error) {
 	if err == nil {
 		err = writeMainSession(mainSessionPath(), sessionPid(next.SessionID), next.SessionID)
 	}
-	if err != nil {
-		pass.putBack()
-	}
 	if err != nil && before != nil {
 		// the second write failed after the first took: the store goes back as it was, so no half-moved seat is left
 		if restoreErr := os.WriteFile(path, before, 0o644); restoreErr != nil {
@@ -196,6 +193,7 @@ func threadRoleSwitch(r *Run, key, role string, pass *seatPass) (any, error) {
 			return nil, &Fail{Msg: "the seat file was not written (" + err.Error() + ") and the store could not be put back (" + restoreErr.Error() + "): " + path + " holds the new seat, main-session the old", Next: "x thread list"}
 		}
 		err = fmt.Errorf("%w; the store is as it was", err)
+		pass.putBack()
 	}
 	unlock()
 	if err != nil {
@@ -264,7 +262,7 @@ func seatCaller() string {
 	return ""
 }
 
-// x-mod-guard's grant (hooks/operator-override.ts, writeSeatGrant): a file `seat-grants/<session>.<tick>.json` beside the
+// x-mod-guard's grant (hooks/operator-override.ts, writeSeatGrant): a file `seat-grants/<session>.….json` beside the
 // override store, one switch, 60 s. any Bash of this mac user can write one, so it is named, not proven
 func seatGrantFor(store, session, key, role string) (seatPass, bool) {
 	if store == "" || session == "" {

@@ -185,3 +185,26 @@ test("a seat board tick whose record quotes the pick's command runs it once", as
         [CLEANUP],
     ]);
 });
+
+// x-mod-stash records the herdr press it absorbed: the record and the press are one tick, so the command runs once
+test('a herdr press and the record x-mod-stash made of it run the command once', async ($, on) => {
+    const { ran } = world(on, {
+        ticks: [{ ...tickOn(CLEANUP, 'o2'), at: NOW + 5 }],
+    });
+    await bash($, CLEANUP);
+    expect([(await bash($, CLEANUP)).deny, ran]).toEqual([
+        expect.stringContaining('nothing in this command ran'),
+        [CLEANUP],
+    ]);
+});
+
+test('a herdr press after the record x-mod-stash made of an older one runs the command again', async ($, on) => {
+    const { ran } = world(on, {
+        ticks: [{ ...tickOn(CLEANUP, 'o2'), at: NOW - 5 }],
+    });
+    await bash($, CLEANUP);
+    expect([(await bash($, CLEANUP)).deny, ran]).toEqual([
+        undefined,
+        [CLEANUP, CLEANUP],
+    ]);
+});

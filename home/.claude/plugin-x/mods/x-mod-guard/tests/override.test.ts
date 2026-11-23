@@ -29,6 +29,10 @@ type World = {
     during?: () => void;
     // no write lands
     isFull?: boolean;
+    // the folder does not list
+    isUnlisted?: boolean;
+    // what happens to the files just before a read, and just after
+    onRead?: (path: string, isRead: boolean) => void;
 };
 
 function world(on: On, opts: World = {}) {
@@ -94,19 +98,24 @@ function world(on: On, opts: World = {}) {
     on('fs.exists', (_$, e) => ({
         value: Object.keys(files).some((f) => f.startsWith(e.path)),
     }));
-    on('fs.list', (_$, e) => ({
-        value: Object.keys(files)
-            .filter((f) => f.startsWith(`${e.path}/`))
-            .map((f) => ({
-                isLink: false,
-                kind: 'file' as const,
-                mtimeMs: 0,
-                name: f.slice(e.path.length + 1),
-                size: 1,
-            })),
-    }));
+    on('fs.list', (_$, e) => {
+        if (opts.isUnlisted) return { deny: 'no listing' };
+        return {
+            value: Object.keys(files)
+                .filter((f) => f.startsWith(`${e.path}/`))
+                .map((f) => ({
+                    isLink: false,
+                    kind: 'file' as const,
+                    mtimeMs: 0,
+                    name: f.slice(e.path.length + 1),
+                    size: 1,
+                })),
+        };
+    });
     on('fs.read', (_$, e) => {
+        opts.onRead?.(e.path, false);
         const body = files[e.path];
+        opts.onRead?.(e.path, true);
         return body === undefined ? { deny: 'no such file' } : { value: body };
     });
     const writes: string[] = [];
@@ -447,7 +456,9 @@ const seatTick = (command = SEAT, id = 'o7') => [
     { at: NOW, id, targets: [command], text: `move: \`${command}\`` },
 ];
 const GRANTS = '/real-home/.local/state/x/seat-grants/';
-const GRANT = `${GRANTS}${SID}.o7-${NOW}.json`;
+const grantAt = (at: number, tick = 'o7') =>
+    `${GRANTS}${SID}.${tick}-${NOW}.${at}-wing1-main.json`;
+const GRANT = grantAt(NOW);
 const grantsIn = (files: Record<string, string> | undefined) =>
     Object.keys(files ?? {}).filter(
         (f) => f.startsWith(GRANTS) && !f.endsWith('.taken'),
@@ -617,14 +628,19 @@ test('a grant never used is gone after 60 s, and the tick is back', async ($, on
     await w.clock.advance(2000);
     const left = grantsIn(w.files);
     await bash($, SEAT);
-    expect([held, left, grantsIn(w.atRun[1])]).toEqual([[GRANT], [], [GRANT]]);
+    expect([held, left, grantsIn(w.atRun[1])]).toEqual([
+        [GRANT],
+        [],
+        [grantAt(NOW + 61_000)],
+    ]);
 });
 
 // a hot reload or a killed session drops the timer: the file's own age says it all
 test('a grant left past 60 s by a dead timer is swept, and its tick is back', async ($, on) => {
+    const dead = grantAt(NOW - 61_000);
     const { atRun } = world(on, {
         files: {
-            [GRANT]: JSON.stringify({
+            [dead]: JSON.stringify({
                 at: '2026-11-07T13:58:59.000Z',
                 spends: [`o7@${NOW}:${SEAT}`],
             }),
@@ -632,9 +648,56 @@ test('a grant left past 60 s by a dead timer is swept, and its tick is back', as
         ticks: seatTick(),
     });
     await bash($, SEAT);
-    expect(JSON.parse(atRun[0]?.[GRANT] ?? '{}')).toMatchObject({
-        at: '2026-11-07T14:00:00.000Z',
+    expect(grantsIn(atRun[0])).toEqual([GRANT]);
+});
+
+// x takes a grant between the guard's list and its read, or its read and its unlink: the spend must not read as free
+for (const [why, at, isAfter] of [
+    ['before its read', '2026-11-07T14:00:00.000Z', false],
+    ['before its unlink', '2026-11-07T13:58:00.000Z', true],
+] as const)
+    test(`a grant x takes mid-sweep gives no second one: ${why}`, async ($, on) => {
+        const w = world(on, {
+            files: {
+                [GRANT]: JSON.stringify({ at, spends: [`o7@${NOW}:${SEAT}`] }),
+            },
+            ticks: seatTick(),
+        });
+        w.opts.onRead = (path, isRead) => {
+            if (path === GRANT && isRead === isAfter) xTakes(w.files);
+        };
+        await bash($, SEAT);
+        expect(grantsIn(w.atRun[0])).toEqual([]);
     });
+
+test('a grants folder that does not list gives no grant', async ($, on) => {
+    const w = world(on, { isUnlisted: true, ticks: seatTick() });
+    w.files[`${GRANTS}keep`] = '';
+    await bash($, SEAT);
+    expect(grantsIn(w.atRun[0])).toEqual([`${GRANTS}keep`]);
+});
+
+// one tick may quote two seat lines: each passes once, however they alternate
+test('one tick quoting two seat lines opens each once', async ($, on) => {
+    const other = 'x thread rename main --role wing:1';
+    const w = world(on, {
+        ticks: [{ at: NOW, id: 'o7', targets: [SEAT, other], text: SEAT }],
+    });
+    for (const line of [SEAT, other, SEAT, other]) {
+        await bash($, line);
+        xTakes(w.files);
+    }
+    expect(w.atRun.map((f) => grantsIn(f).length)).toEqual([1, 1, 0, 0]);
+});
+
+test('the timer of a refused run leaves its retry’s grant alone', async ($, on) => {
+    const w = world(on, { call: 'failed', ticks: seatTick() });
+    await bash($, SEAT);
+    await w.clock.advance(35_000);
+    delete w.opts.call;
+    await bash($, SEAT);
+    await w.clock.advance(26_000);
+    expect(grantsIn(w.files)).toEqual([grantAt(NOW + 35_000)]);
 });
 
 test('a taken grant is kept for its tick’s 2 h, then swept', async ($, on) => {
@@ -660,5 +723,5 @@ test('the end of one grant leaves another tick’s grant alone', async ($, on) =
     await w.clock.advance(30_000);
     await bash($, SEAT);
     await w.clock.advance(31_000);
-    expect(grantsIn(w.files)).toEqual([GRANT]);
+    expect(grantsIn(w.files)).toEqual([grantAt(NOW + 30_000)]);
 });

@@ -199,8 +199,8 @@ export async function brakeOf($: EngineInterface) {
     }
 }
 
-// his tick on a seat switch, carried to x: one file a grant, `seat-grants/<session>.<tick>.json` beside the override store,
-// for this session and this one command, alive SEAT_GRANT_MS. x refuses the switch; the guard only says a tick stood behind it
+// his tick on a seat switch, carried to x: one file a grant, `seat-grants/<session>.<tick>.<time>.json` beside the override
+// store, for this session and this one command, alive SEAT_GRANT_MS. x refuses the switch; the guard only says a tick stood behind it
 // (dima's 15:12, 2026-11-23). x takes a grant by renaming it `.taken`, the guard drops one by unlinking it, so one of the two
 // wins; the tick counts as spent while its grant is alive or taken, and comes back when neither holds. never the override
 // store itself: a write there swallows a 🔓 press of his (x-mod-stash reads the file's mtime). a plain file, named, not proven
@@ -222,6 +222,17 @@ async function seatDir($: EngineInterface) {
     return store.replace(/[^/]*$/, 'seat-grants');
 }
 
+function parsedGrant(body: string) {
+    try {
+        const grant = JSON.parse(body) as Partial<SeatGrant> | null;
+        return typeof grant?.at === 'string' && Array.isArray(grant.spends)
+            ? { at: grant.at, spends: grant.spends }
+            : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
 // true when this call removed it
 async function unlinked($: EngineInterface, path: string) {
     const gone = await $.process
@@ -230,21 +241,28 @@ async function unlinked($: EngineInterface, path: string) {
     return gone.exitCode === 0;
 }
 
-// the spent keys this session's grants hold; a grant no tick can stand behind any more is swept on the way
+// the spent keys this session's grants hold; a grant no tick can stand behind any more is swept on the way. one x takes
+// mid-read throws, and no grant is written: a spend must never read as free
 export async function seatSpends($: EngineInterface, sid: string) {
     const dir = await seatDir($);
     const now = await $.clock.now();
     const keys: string[] = [];
-    for (const f of await $.fs.list(dir).catch(() => [])) {
-        try {
-            const path = `${dir}/${f.name}`;
-            const grant = JSON.parse(await $.fs.read(path)) as SeatGrant;
-            const age = now - Date.parse(grant.at);
-            const isTaken = f.name.endsWith(TAKEN);
-            if (age > (isTaken ? SEAT_KEEP_MS : SEAT_GRANT_MS))
-                await unlinked($, path);
-            else if (f.name.startsWith(`${sid}.`)) keys.push(...grant.spends);
-        } catch {}
+    if (!(await $.fs.exists(dir))) return keys;
+    for (const f of await $.fs.list(dir)) {
+        const path = `${dir}/${f.name}`;
+        const isMine = f.name.startsWith(`${sid}.`);
+        const body = await $.fs.read(path).catch((err: unknown) => {
+            if (isMine) throw err;
+            return '';
+        });
+        const grant = parsedGrant(body);
+        if (!grant) continue;
+        const age = now - Date.parse(grant.at);
+        const isTaken = f.name.endsWith(TAKEN);
+        const isOver = age > (isTaken ? SEAT_KEEP_MS : SEAT_GRANT_MS);
+        if (isOver && (await unlinked($, path))) continue;
+        if (isOver && isMine) throw new Error(`${f.name} moved mid-read`);
+        if (isMine) keys.push(...grant.spends);
     }
     return keys;
 }
@@ -261,10 +279,13 @@ export async function writeSeatGrant(
         tick: { at: number; id: string };
     },
 ) {
-    const name = `${seat.sid}.${seat.tick.id.replace(/\W/g, '-')}-${seat.tick.at}`;
-    const path = `${await seatDir($)}/${name}.json`;
+    const now = await $.clock.now();
+    const tick = `${seat.tick.id}-${seat.tick.at}`.replace(/\W/g, '-');
+    // the time and the move keep every grant its own file, so an old timer never drops a retry's
+    const move = `${now}-${seat.thread}-${seat.role}`.replace(/\W/g, '-');
+    const path = `${await seatDir($)}/${seat.sid}.${tick}.${move}.json`;
     const grant: SeatGrant = {
-        at: new Date(await $.clock.now()).toISOString(),
+        at: new Date(now).toISOString(),
         by: `tick ${seat.tick.id}`,
         role: seat.role,
         spends: seat.spends,
