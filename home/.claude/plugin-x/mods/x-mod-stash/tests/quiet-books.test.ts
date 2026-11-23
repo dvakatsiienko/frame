@@ -145,6 +145,129 @@ test("a delivery keeps the lines another session wrote to the day's log", async 
     ]);
 });
 
+// FRM-658:W2, dima's ages: the log's files 30 days, a gone session's keys 7
+const DAY_MS = 24 * 60 * MIN;
+const dayOf = (ago: number) =>
+    new Date(EVEN - ago * DAY_MS).toISOString().slice(0, 10);
+// the log's dir holds these files, and what the mod removed
+const logDir = (names: string[]) => {
+    const removed: string[] = [];
+    return {
+        removed,
+        world: {
+            listed: {
+                '/home/.claude/shelf/quiet-log': names.map((name) => ({
+                    mtimeMs: 0,
+                    name,
+                })),
+            },
+            run: (argv: readonly string[]) => {
+                if (argv[0] === 'rm') removed.push(...argv.slice(2));
+                return undefined;
+            },
+        },
+    };
+};
+
+test("a day's first log line drops the log's files past 30 days", async ($, on) => {
+    const dir = logDir([
+        ...Array.from({ length: 40 }, (_, i) => `${dayOf(i + 1)}.jsonl`),
+        '2020-notes.md',
+    ]);
+    world(on, dir.world);
+    await start($);
+    await ping($, '[progress] step 2 landed');
+    expect(dir.removed.sort()).toEqual(
+        Array.from(
+            { length: 10 },
+            (_, i) => `/home/.claude/shelf/quiet-log/${dayOf(i + 31)}.jsonl`,
+        ).sort(),
+    );
+});
+
+test("a later log line of the day looks at no file's age", async ($, on) => {
+    const dir = logDir([`${dayOf(40)}.jsonl`]);
+    const w = world(on, dir.world);
+    await start($);
+    w.seedLog(DAY, [heldLine('🔎 sixth sense', EVEN)]);
+    await ping($, '[progress] step 2 landed');
+    expect(dir.removed).toEqual([]);
+});
+
+const GONE_SID = '11111111-1111-4111-8111-111111111111';
+const RECENT_SID = '22222222-2222-4222-8222-222222222222';
+const LIVE_SID = '33333333-3333-4333-8333-333333333333';
+const FAMILIES = [
+    'reply:',
+    'band-read:',
+    'model:',
+    'hot:',
+    'context:',
+    'quiet-held:',
+];
+const KEPT_FAMILIES = ['herdr-read:', 'words:2026-10-01:', 'lane-step:'];
+// a start over a store holding each family's key of a gone, a recent and a live session; `find` lists recent transcripts
+const pruneStart = async (
+    $: Parameters<typeof start>[0],
+    on: Parameters<typeof world>[0],
+    find: string | { exitCode: number; stdout: string },
+    listed = {},
+) => {
+    const w = world(on, {
+        listed,
+        peers: [{ name: 'peer', pid: 77, sessionId: LIVE_SID }],
+        run: (argv) => (argv[0] === 'find' ? find : undefined),
+    });
+    for (const sid of [GONE_SID, RECENT_SID, LIVE_SID])
+        for (const family of [...FAMILIES, ...KEPT_FAMILIES])
+            w.store.set(family + sid, { at: 1 });
+    w.store.set('model:a name, no session id', 'x');
+    await start($);
+    return w;
+};
+const goneKeys = (w: { store: Map<string, unknown> }) =>
+    [...w.store.keys()].filter((k) => k.endsWith(GONE_SID));
+const RECENT = `/home/.claude/projects/-p/${RECENT_SID}.jsonl\n`;
+
+test('a start drops a gone session’s keys, and no key of a recent or a live one', async ($, on) => {
+    const w = await pruneStart($, on, RECENT);
+    expect([
+        goneKeys(w),
+        [...w.store.keys()].filter(
+            (k) => k.endsWith(RECENT_SID) || k.endsWith(LIVE_SID),
+        ).length,
+        w.store.has('model:a name, no session id'),
+    ]).toEqual([
+        KEPT_FAMILIES.map((f) => f + GONE_SID),
+        2 * (FAMILIES.length + KEPT_FAMILIES.length),
+        true,
+    ]);
+});
+
+for (const [why, find] of [
+    ['fails halfway', { exitCode: 1, stdout: RECENT }],
+    ['finds none', ''],
+] as const)
+    test(`a transcript lookup that ${why} drops no key`, async ($, on) => {
+        const w = await pruneStart($, on, find);
+        expect(goneKeys(w).length).toBe(FAMILIES.length + KEPT_FAMILIES.length);
+    });
+
+test('a registry that lists no session drops no key', async ($, on) => {
+    const w = await pruneStart($, on, RECENT, { '/home/.claude/sessions': [] });
+    expect(goneKeys(w).length).toBe(FAMILIES.length + KEPT_FAMILIES.length);
+});
+
+test('a second start of the day looks for nothing to drop', async ($, on) => {
+    const w = await pruneStart($, on, RECENT);
+    w.store.set(`reply:${GONE_SID}`, { at: 1 });
+    await start($);
+    const same = w.store.has(`reply:${GONE_SID}`);
+    w.store.set('pruned-at', EVEN - DAY_MS);
+    await start($);
+    expect([same, w.store.has(`reply:${GONE_SID}`)]).toEqual([true, false]);
+});
+
 test('a held ping that rides the next prompt logs flushed', async ($, on) => {
     const w = world(on);
     await start($);

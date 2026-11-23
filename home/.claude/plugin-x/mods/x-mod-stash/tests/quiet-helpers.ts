@@ -41,7 +41,9 @@ export function world(
         files = {} as Record<string, string>,
         peers = [] as Record<string, unknown>[],
         // a test's own answer to a process run, before the default one
-        run = (_argv: readonly string[]): string | number | undefined =>
+        run = (
+            _argv: readonly string[],
+        ): string | number | { exitCode: number; stdout: string } | undefined =>
             undefined,
         // a store write the test makes fail
         refuseSet = (_key: string): boolean => false,
@@ -109,11 +111,17 @@ export function world(
                 },
             };
         appendLog(files, e.argv);
-        const own = run(e.argv);
+        const answered = run(e.argv);
+        const own = typeof answered === 'object' ? answered.stdout : answered;
         if (own !== undefined)
             return {
                 value: {
-                    exitCode: typeof own === 'number' ? own : 0,
+                    exitCode:
+                        typeof answered === 'object'
+                            ? answered.exitCode
+                            : typeof own === 'number'
+                              ? own
+                              : 0,
                     isStderrTruncated: false,
                     isStdoutTruncated: false,
                     stderr: '',
@@ -137,6 +145,9 @@ export function world(
         files[e.path] = e.text;
         return { value: undefined };
     });
+    on('fs.exists', (_$, e, next) =>
+        e.path.includes('/quiet-log/') ? { value: e.path in files } : next(e),
+    );
     on('fs.read', (_$, e) =>
         unreadable.includes(e.path)
             ? { deny: 'EACCES' }
@@ -165,7 +176,7 @@ export function world(
     }));
     on('fs.list', (_$, e) => ({
         value:
-            e.path === '/home/.claude/sessions'
+            e.path === '/home/.claude/sessions' && !listed[e.path]
                 ? [PID, ...peers.map((p) => p.pid)].map((pid) => ({
                       isLink: false,
                       kind: 'file' as const,

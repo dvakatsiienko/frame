@@ -47,6 +47,8 @@ const QUIET_ALARM_TITLE = '🚨 quiet comms';
 // osascript's own argv, so no text is ever spliced into the script
 const NOTIFY_SCRIPT =
     'on run argv\ndisplay notification (item 1 of argv) with title (item 2 of argv)\nend run';
+// the age the log's day files are kept to; an older one goes at a day's first line, so no tick pays for it
+const QUIET_LOG_DAYS = 30;
 const quietLogFile = (home: string | undefined, at: number) =>
     `${home}/${QUIET_LOG_DIR}/${new Date(at).toISOString().slice(0, 10)}.jsonl`;
 // the lines of the UTC day `at` falls in; one that does not read whole is skipped
@@ -63,16 +65,30 @@ export async function quietLogDay($: EngineInterface, at: number) {
         }
     });
 }
+async function pruneQuietLog($: EngineInterface, home: string, at: number) {
+    const oldest = quietLogFile(home, at - QUIET_LOG_DAYS * 86_400_000);
+    const dir = `${home}/${QUIET_LOG_DIR}`;
+    const old = (await $.fs.list(dir))
+        .filter((f) => /^\d{4}-\d\d-\d\d\.jsonl$/.test(f.name))
+        .map((f) => `${dir}/${f.name}`)
+        .filter((path) => path < oldest);
+    if (old.length) await $.process.run(['rm', '-f', ...old]);
+}
 // true once the lines, all of one moment, are in the day's log
 export async function quietLogAll($: EngineInterface, lines: QuietLogLine[]) {
     await quietKeepTagged($, lines).catch(() => undefined);
+    const at = lines[0]?.at ?? 0;
+    const home = await $.env.get('HOME');
+    const file = quietLogFile(home, at);
+    if (home && !(await $.fs.exists(file).catch(() => true)))
+        await pruneQuietLog($, home, at).catch(() => undefined);
     const r = await $.process
         .run([
             'sh',
             '-c',
             QUIET_LOG_APPEND,
             'sh',
-            quietLogFile(await $.env.get('HOME'), lines[0]?.at ?? 0),
+            file,
             lines.map((l) => `${JSON.stringify(l)}\n`).join(''),
         ])
         .catch(() => undefined);
