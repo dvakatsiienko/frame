@@ -33,10 +33,6 @@ const caps = {
         cap: 1_540,
         why: 'the siesta gate, one file of cases; +9 the queue-run case (dima o7, 2026-11-20)',
     },
-    'home/.claude/plugin-x/mods/x-mod-guard/hooks/register.ts': {
-        cap: 1_368,
-        why: 'the guard mod, every hook in one register',
-    },
     'home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/command.ts': {
         cap: 1_236,
         why: 'the command rules the guard refuses or hints',
