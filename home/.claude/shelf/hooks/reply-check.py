@@ -609,6 +609,21 @@ def bare_measures(prose: str) -> list[str]:
     return [hit.group(0).strip()] if hit else []
 
 
+# a step pushed to a later time with no why on its line: run it now or name the blocker or his word (craft-pm § the freebie rule)
+POSTPONE = re.compile(r"\b(?:at (?:the )?boot|tomorrow(?!['’]s)|next (?:session|boot))\b", re.I)
+# the why: a blocker word, dima's word, or a «quote» of him
+POSTPONE_WHY = re.compile(
+    r"\b(?:waits for|waits on|waiting on|blocked by|needs|after|until|once|when|dima|his word|his tick|your word|your tick|you said|as you said|on your)\b|«[^»\n]*»",
+    re.I,
+)
+
+
+def postponed_unblocked(prose: str) -> list[str]:
+    # the 🔭 line and a `>` quote are judged elsewhere; a fence is gone before this
+    lines = [l for l in prose.split("\n") if not l.lstrip().startswith(("🔭", ">"))]
+    return [m.group(0) for l in lines if not POSTPONE_WHY.search(l) for m in [POSTPONE.search(l)] if m]
+
+
 def findings(reply: str) -> list[tuple[str, str]]:
     prose = FENCE.sub("", reply)
     found: list[tuple[str, str]] = []
@@ -629,6 +644,7 @@ def findings(reply: str) -> list[tuple[str, str]]:
     found += [("dead-end", claim) for claim in dead_ends(prose)]
     found += [("plain-verdict", word) for word in plain_verdicts(prose)]
     found += [("bare-measure", number) for number in bare_measures(INLINE_CODE.sub("", prose))]
+    found += [("postponed-no-blocker", words) for words in postponed_unblocked(prose)]
     # a reply that is only the 📄 stamp and the 🔭 line hid its answer in a mid-turn block dima never sees (crow, 2026-10-12: three in one evening)
     body = [l for l in reply.splitlines() if l.strip()]
     if body and all(l.lstrip().startswith(("📄", "🔭")) for l in body) and any(l.lstrip().startswith("📄") for l in body):
@@ -719,6 +735,8 @@ def main() -> None:
         reminds.append(f"a verdict word printed plain («{by_rule('plain-verdict')[0]}») — bold with its badge: **🌼 clean**, **🩹 fix**, **🪜 escalate**")
     if by_rule("bare-measure"):
         reminds.append(f"a measure printed bare («{by_rule('bare-measure')[0]}») — each deciding number a 🟢🟡🔴 gain line, signed change, before → after, then your verdict (keep or drop) and the action")
+    if by_rule("postponed-no-blocker"):
+        reminds.append(f"a step postponed with no blocker named («{by_rule('postponed-no-blocker')[0]}») — run it now, or name the blocker or his word on that line (craft-pm § the freebie rule)")
     if by_rule("dead-end"):
         reminds.append(f"«{by_rule('dead-end')[0]}» with no check in its sentence — name the try or the command beside it, or mark it (inference)")
     if by_rule("table"):

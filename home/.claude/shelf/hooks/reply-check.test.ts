@@ -136,6 +136,32 @@ describe('the composed clock', () => {
     });
 });
 
+describe('a step postponed with no blocker named', () => {
+    it.each([
+        'the two seals run at boot',
+        "speak's seals: tomorrow",
+    ])('reminds at the next prompt on «%s»', (reply) => {
+        expect(stop(reply)).toBe('');
+        expect(nextPrompt()).toContain('a step postponed with no blocker named');
+    });
+
+    it('known false positive: «At Boot the digest prints», a statement of fact with no «when », still reminds', () => {
+        expect(stop('At Boot the digest prints')).toBe('');
+        expect(nextPrompt()).toContain('a step postponed with no blocker named («At Boot»)');
+    });
+
+    it.each([
+        'the seal waits for his three answers, tomorrow',
+        'emoji reactions: tomorrow, as you said',
+        "tomorrow's lanes are ready",
+        'done.\n\n🔭 waiting on ci, the rest tomorrow',
+        'run:\n\n```\nthe seals run at boot\n```',
+    ])('passes «%s»', (reply) => {
+        expect(stop(reply)).toBe('');
+        expect(nextPrompt()).not.toContain('postponed with no blocker');
+    });
+});
+
 describe('the grill answer fence', () => {
     it('reminds of a fence pre-filled with grill answers', () => {
         expect(stop('round 1.\n\n```\nQ1 b\nQ2 a\nQ3 a\n```')).toBe('');
