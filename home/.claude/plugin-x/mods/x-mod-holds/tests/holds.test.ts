@@ -637,6 +637,62 @@ test('a hold in a worktree stays the old main’s after the switch', async ($, o
     );
 });
 
+// the sixth sense's round 1: the old main's hold goes only as the new main's edit lands
+for (const [why, plant] of [
+    ['errors', 'fails'],
+    ['a hook beneath refuses', 'refuses'],
+] as const)
+    test(`a new main's edit that ${why} leaves the old main's hold to every other session`, async ($, on) => {
+        mock.store(on);
+        const w = world(on);
+        seats(on, [newMain(B, A)]);
+        await w.as($, A);
+        await edit($, w, '/repo/x.ts');
+        await w.clock.advance(6 * MIN);
+        await w.as($, B);
+        w[plant].next = true;
+        await edit($, w, '/repo/x.ts');
+        await w.as($, C);
+        const third = (await edit($, w, '/repo/x.ts')).deny;
+        await w.as($, B);
+        expect([third, (await edit($, w, '/repo/x.ts')).deny]).toEqual([
+            expect.stringContaining(`held by session ${A.slice(0, 8)}`),
+            undefined,
+        ]);
+    });
+
+test("a new main's edit still running refuses every other session", async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    seats(on, [newMain(B, A)]);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    await w.clock.advance(6 * MIN);
+    await w.as($, B);
+    let third: string | undefined;
+    w.during.tool = async () => {
+        w.be(C);
+        third = (await edit($, w, '/repo/x.ts')).deny;
+        w.be(B);
+    };
+    await edit($, w, '/repo/x.ts');
+    expect(third).toContain('held by session');
+});
+
+test('a file the old main edited again after the switch stays its own', async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    seats(on, [newMain(B, A)]);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    await w.clock.advance(6 * MIN);
+    await edit($, w, '/repo/x.ts');
+    await w.as($, B);
+    expect((await edit($, w, '/repo/x.ts')).deny).toContain(
+        `held by session ${A.slice(0, 8)}`,
+    );
+});
+
 // the seat moved A to B to C: C's record names B alone, so A's older holds stay closed to C until they age out (exit 5b)
 test('a seat moved twice opens only the last main’s holds', async ($, on) => {
     mock.store(on);

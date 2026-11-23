@@ -420,10 +420,24 @@ const JUDGE_MS = 2000;
 // his tick on a seat switch reaches x as a grant; what drops it, undefined when no tick covers the line. the grant's file is the
 // whole record of the spend, never `$.state`: a background run says nothing of how it ended, and a timer's `$` may read the
 // state as it was at the call, so writing it back would revive a tick another call spent meanwhile
+// one at a time, so two overlapping runs never both read the tick as unspent before either writes its grant
+let seatTurn: Promise<unknown> = Promise.resolve();
 async function openSeat($: EngineInterface, command: string, cwd: string) {
     const move = seatMove(command, cwd);
-    const sid = move && (await $.session.id().catch(() => undefined));
-    if (!move || !sid) return undefined;
+    if (!move) return undefined;
+    const turn = seatTurn
+        .then(() => grantSeat($, command, move))
+        .catch(() => undefined);
+    seatTurn = turn;
+    return turn;
+}
+async function grantSeat(
+    $: EngineInterface,
+    command: string,
+    move: { role: string; thread: string },
+) {
+    const sid = await $.session.id().catch(() => undefined);
+    if (!sid) return undefined;
     const held = await seatSpends($, sid).catch(() => undefined);
     if (!held) return undefined;
     const before = held.length;

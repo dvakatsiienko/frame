@@ -504,29 +504,48 @@ func TestThreadRenameRoleThatFailsLeavesTheGrant(t *testing.T) {
 	}
 }
 
-// the grant is taken under the store's lock, so one that went while a switch waited moves nothing
-func TestThreadRenameRoleRefusesAGrantGoneByTheLock(t *testing.T) {
+// what let the switch start is read again under the store's lock: a grant gone or past its 60 s, or an override he pressed off,
+// while the switch waited moves nothing
+func TestThreadRenameRoleReadsItsPassAgainUnderTheLock(t *testing.T) {
 	t.Parallel()
-	w := newSeatWorld(t)
-	store := filepath.Join(t.TempDir(), "operator-override.json")
-	grant := seatGrantPath(store, "sid-caller")
-	write(t, grant, seatGrantOf("wing1", "main", "tick o7", 0))
-	env := asCaller(t, append(w.env, "X_OVERRIDE_STORE="+store), "coordinator")
-	unlock, err := lockThreadStore(w.store)
-	if err != nil {
-		t.Fatal(err)
-	}
-	done := make(chan int)
-	go func() { done <- xIn(t, t.TempDir(), env, "thread", "rename", "wing1", "--role", "main").code }()
-	waitForLine(t, w.log, "waiting on the thread store lock")
-	if err := os.Remove(grant); err != nil {
-		t.Fatal(err)
-	}
-	unlock()
+	band := `{"prs":{"by":"band","at":"` + overrideAt + `"}}`
+	for _, c := range []struct {
+		name, store, grant string
+		meanwhile          func(t *testing.T, store, grant string)
+	}{
+		{"the grant is gone", "", seatGrantOf("wing1", "main", "tick o7", 0), func(_ *testing.T, _, grant string) { _ = os.Remove(grant) }},
+		{"the grant is past its 60 s", "", seatGrantOf("wing1", "main", "tick o7", 0), func(t *testing.T, _, grant string) {
+			write(t, grant, seatGrantOf("wing1", "main", "tick o7", 61*time.Second))
+		}},
+		{"he pressed the override off", band, "", func(t *testing.T, store, _ string) { write(t, store, `{}`) }},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newSeatWorld(t)
+			store := filepath.Join(t.TempDir(), "operator-override.json")
+			grant := seatGrantPath(store, "sid-caller")
+			if c.store != "" {
+				write(t, store, c.store)
+			}
+			if c.grant != "" {
+				write(t, grant, c.grant)
+			}
+			env := asCaller(t, append(w.env, "X_OVERRIDE_STORE="+store), "coordinator")
+			unlock, err := lockThreadStore(w.store)
+			if err != nil {
+				t.Fatal(err)
+			}
+			done := make(chan int)
+			go func() { done <- xIn(t, t.TempDir(), env, "thread", "rename", "wing1", "--role", "main").code }()
+			waitForLine(t, w.log, "waiting on the thread store lock")
+			c.meanwhile(t, store, grant)
+			unlock()
 
-	code := <-done
-	if _, _, main := w.seats(t); code != 1 || main != "sid-a" {
-		t.Errorf("exit %d, main-session %q, want a refusal and sid-a still main", code, main)
+			code := <-done
+			if _, _, main := w.seats(t); code != 1 || main != "sid-a" {
+				t.Errorf("exit %d, main-session %q, want a refusal and sid-a still main", code, main)
+			}
+		})
 	}
 }
 

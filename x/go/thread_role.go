@@ -130,7 +130,7 @@ func writeMainSession(path string, pid int, sid string) error {
 
 // the switch: both records and the main-session file under one lock, then every live place of both threads takes its new
 // name; a place that does not take it at once follows in the background, so a busy thread never holds the call
-func threadRoleSwitch(r *Run, key, role string, pass *seatPass) (any, error) {
+func threadRoleSwitch(r *Run, key, role string) (any, error) {
 	path := threadStorePath()
 	if path == "" {
 		return nil, &Fail{Msg: "no thread store to write", Next: "x thread list"}
@@ -164,7 +164,12 @@ func threadRoleSwitch(r *Run, key, role string, pass *seatPass) (any, error) {
 		unlock()
 		return nil, &Fail{Refused: true, Msg: next.SessionID + " is not a live session, so it cannot take the main seat", Next: "x thread list"}
 	}
-	if err := pass.take(key, role); err != nil {
+	// read again under the lock: his off press or the grant's end while the switch waited stops it
+	pass, err := seatLeave(key, role)
+	if err == nil {
+		err = pass.take(key, role)
+	}
+	if err != nil {
 		unlock()
 		return nil, err
 	}

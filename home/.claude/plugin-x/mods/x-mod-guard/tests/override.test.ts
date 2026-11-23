@@ -690,6 +690,12 @@ test('one tick quoting two seat lines opens each once', async ($, on) => {
     expect(w.atRun.map((f) => grantsIn(f).length)).toEqual([1, 1, 0, 0]);
 });
 
+test('two overlapping runs of one ticked line get one grant', async ($, on) => {
+    const w = world(on, { ticks: seatTick() });
+    await Promise.all([bash($, SEAT), bash($, SEAT)]);
+    expect([w.atRun.length, w.writes]).toEqual([2, [GRANT]]);
+});
+
 test('the timer of a refused run leaves its retry’s grant alone', async ($, on) => {
     const w = world(on, { call: 'failed', ticks: seatTick() });
     await bash($, SEAT);

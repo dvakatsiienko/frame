@@ -14,8 +14,16 @@ let proc: Proc | undefined;
 // $.store has no compare-and-set, so each session writes only its own keys and the earliest claim wins.
 
 // file is the real path in its own case, for git; landed once the edit went through
-type Hold = { at: number; file: string; top: string; landed?: boolean };
-type Claim = { deny?: string; key?: string };
+// editedAt: the holder's last edit past its first
+type Hold = {
+    at: number;
+    editedAt?: number;
+    file: string;
+    top: string;
+    landed?: boolean;
+};
+// follows: the old main's holds this edit takes over as it lands
+type Claim = { deny?: string; key?: string; follows?: string[] };
 type Holder = { pid?: number; start?: string; idleSince: number | null };
 type Proc = { pid: number; start: string };
 
@@ -169,8 +177,8 @@ function refusal(file: string, sid: string, hold: Hold, now: number) {
     return `x-mod-holds: ${file} is held by session ${short(sid)}, which took it ${mins} min ago. wait, or ask it to commit the file.`;
 }
 
-// the main seat moved to this session from the holder, after it took the hold: the old main edits no main checkout any more,
-// so its hold there follows the seat, never one in a worktree, where a wing goes on editing (FRM-596). x writes both fields
+// the main seat moved to this session from the holder, after its last edit of the file: the hold follows the seat, never one
+// in a worktree, where a wing goes on editing (FRM-596). x writes both fields
 // on the record it makes coordinator; a store that does not read keeps every hold
 async function followsSeat(
     $: EngineInterface,
@@ -196,7 +204,7 @@ async function followsSeat(
             own?.role === 'coordinator' &&
             own.seatTakenFrom === holder &&
             typeof own.seatTakenAt === 'number' &&
-            hold.at < own.seatTakenAt &&
+            (hold.editedAt ?? hold.at) < own.seatTakenAt &&
             !hold.top.includes('/.claude/worktrees/')
         );
     } catch {
@@ -204,7 +212,8 @@ async function followsSeat(
     }
 }
 
-// the refusal when another live session holds the path; a released hold is cleared on the way
+// the refusal when another live session holds the path; a released hold is cleared on the way, one that follows the seat only
+// as this session's edit lands: until then it still keeps every other session out
 async function heldBy(
     $: EngineInterface,
     sid: string,
@@ -212,19 +221,25 @@ async function heldBy(
     path: string,
     now: number,
 ) {
+    const follows: string[] = [];
     for (const c of await claimsOn($, path)) {
         if (c.sid === sid) continue;
-        if (
-            (await isReleased($, c.sid, c.hold, now)) ||
-            (await followsSeat($, sid, c.sid, c.hold))
-        ) {
+        if (await isReleased($, c.sid, c.hold, now)) {
             await $.store.delete(c.key);
             continue;
         }
+        if (await followsSeat($, sid, c.sid, c.hold)) {
+            follows.push(c.key);
+            continue;
+        }
         await $.store.set(REFUSED + c.sid, { at: now, by: sid, path });
-        return { deny: refusal(file, c.sid, c.hold, now), holder: c.sid };
+        return {
+            deny: refusal(file, c.sid, c.hold, now),
+            follows,
+            holder: c.sid,
+        };
     }
-    return undefined;
+    return { follows };
 }
 
 // dima's tick on an ask quoting this file in one backtick span, live 2 h and not yet spent here, opens a pass: this
@@ -299,14 +314,15 @@ async function claim(
     const now = await $.clock.now();
     const held = await heldBy($, sid, file, path, now);
     // a pass takes no hold of its own: the file stays the holder's for every other session
-    if (held)
+    if (held.holder !== undefined)
         return (await passOn($, sid, path, held.holder, now))
             ? {}
             : { deny: held.deny };
+    const { follows } = held;
     const mine = holdKey(sid, path);
     const own = (await $.store.get(mine)) as Hold | undefined;
-    // a first edit that failed left the hold unlanded; the next one that goes through lands it
-    if (own) return own.landed ? {} : { key: mine };
+    // the edit that goes through lands a hold a failed one left unlanded, and stamps a landed one
+    if (own) return { follows, key: mine };
     // the holder first: a rival reading the hold without it would take it for released
     if (!(await $.store.get(HOLDER + sid)))
         await $.store.set(HOLDER + sid, { ...proc, idleSince: null });
@@ -316,15 +332,29 @@ async function claim(
         top: await topOf($, dirname(real)),
     });
     // no compare-and-set: a rival that wrote meanwhile refuses this claim; a true tie refuses both, the next try settles it
-    const rival = (await claimsOn($, path)).find((c) => c.sid !== sid);
-    if (!rival) return { key: mine };
+    const rival = (await claimsOn($, path)).find(
+        (c) => c.sid !== sid && !follows.includes(c.key),
+    );
+    if (!rival) return { follows, key: mine };
     await $.store.delete(mine);
     return { deny: refusal(file, rival.sid, rival.hold, now) };
 }
 
-async function land($: EngineInterface, key: string) {
+async function dropUnlanded($: EngineInterface, key: string) {
     const hold = (await $.store.get(key)) as Hold | undefined;
-    if (hold) await $.store.set(key, { ...hold, landed: true });
+    if (hold && !hold.landed) await $.store.delete(key);
+}
+
+async function land($: EngineInterface, key: string, follows: string[]) {
+    const hold = (await $.store.get(key)) as Hold | undefined;
+    if (!hold) return;
+    await $.store.set(
+        key,
+        hold.landed
+            ? { ...hold, editedAt: await $.clock.now() }
+            : { ...hold, landed: true },
+    );
+    for (const old of follows) await $.store.delete(old);
 }
 
 async function markBusy($: EngineInterface) {
@@ -457,8 +487,9 @@ export const register: Register = (on) => {
             // a hook beneath refused the edit or the tool errored: no write came, so the hold this call took would only
             // block a rival, unlanded and never released, until its holder idles 30 min
             if (g.key && (r.deny !== undefined || r.isError))
-                await $.store.delete(g.key).catch(() => undefined);
-            else if (g.key) await land($, g.key).catch(() => undefined);
+                await dropUnlanded($, g.key).catch(() => undefined);
+            else if (g.key)
+                await land($, g.key, g.follows ?? []).catch(() => undefined);
             return r;
         },
     );

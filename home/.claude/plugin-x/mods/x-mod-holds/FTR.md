@@ -61,13 +61,13 @@ two sessions, A and B, in one checkout.
   - decision: before, a hold dropped only at A's turn end or on B's next try — a coordinator in one long turn kept its holds ~30 min past the commit and blocked FRM-336's codie
   - proof: tests/holds.test.ts::a commit through Bash releases the clean holds before the turn ends; tests/holds.test.ts::a commit behind git's own options releases the clean holds too (H5); tests/holds.test.ts::a Bash command that commits nothing keeps the holds until the turn ends
 - ✅ the old main's holds follow the main seat (FRM-596)
-  - given A was main and edited `x.ts`, and `x thread rename --role` then made B main, when B edits `x.ts`, then the edit goes through and B holds it; a third session is still refused, naming the holder
-  - given A took the hold after the switch, or in a worktree, where a wing goes on editing, or B's record in `threads.json` is missing, torn, no coordinator's or with no time, then A's hold stands
+  - given A was main and edited `x.ts`, and `x thread rename --role` then made B main, when B edits `x.ts`, then the edit goes through and B holds it; a third session is still refused, naming the holder; an edit of B's that errors or is refused beneath leaves A's hold as it was
+  - given A took the hold or edited the file again after the switch, or holds it in a worktree, where a wing goes on editing, or B's record in `threads.json` is missing, torn, no coordinator's or with no time, then A's hold stands
   - given the seat moved A to B to C, then C's record names B alone, so A's holds stay closed to C until they age out
   - 📌 an Edit or Write alone follows the seat: a whole-tree `git stash` over A's file (x-mod-guard) and `x lane commit` of it (x's own reader) are refused until B has edited it once
   - 📌 an x older than the two fields drops them at its refresh, which keeps A's holds
   - decision: x writes `seatTakenFrom` and `seatTakenAt` on the new main's record and holds reads them, never x writing this store (the store boundary)
-  - proof: tests/holds.test.ts::the new main takes the old main's hold / a third session is still refused the old main's file after the switch / a hold the old main took after the switch stays its own / a hold in a worktree stays the old main’s after the switch / a seat moved twice opens only the last main’s holds / a new main whose record is … takes no hold over
+  - proof: tests/holds.test.ts::the new main takes the old main's hold / a third session is still refused the old main's file after the switch / a hold the old main took after the switch stays its own / a hold in a worktree stays the old main’s after the switch / a file the old main edited again after the switch stays its own / a new main's edit that … leaves the old main's hold to every other session / a seat moved twice opens only the last main’s holds / a new main whose record is … takes no hold over
 - ✅ a new file stays held until committed
   - given A created a new file and left it uncommitted
   - when B edits it
