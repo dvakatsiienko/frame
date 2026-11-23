@@ -467,6 +467,127 @@ retro (14:43 on):
 - 2026-11-19 · groom · first pass · 0 · groomed 18:19 raw into FRM-618 W20-W25
 - 2026-11-19 · groom · first pass · 0 · groomed 18:35 o2, o3, and 18:35 raw into FRM-618 W26-W45
 - 2026-11-19 · groom · first pass · 0 · groomed 19:30 FRM-662 W5-W10
+- 2026-11-20 · prompt-groom · 1 · 0 · PK-349:W1243..W1247 from 2026-11-20-1258.raw.md, 5 points, 0 questions; skipped the /clio:boot line per brief. s1 start mods and herdr lanes = W1243; s2 mods bottleneck observe and propose = W1244; s3 fat register solved today = W1245; s4 tails and proposed actions, take side requests = W1246; s5 one thing at a time = W1247. written to grooms/2026-11-20-1258.groomed.md
+- 2026-11-20 · prompt-groom · 1 · 0 · PK-349:W1248..W1262 from 2026-11-20-1324.raw.md, 15 lines, 5 questions marked ❓ (W1248, W1249, W1252, W1253, W1261). map: FRM-638 what's left → W1248 · orbit focus-tab question → W1249 · pocket archive during halt → W1250 · check still archives forgotten closed items → W1251 · FRM-514 what's there → W1252 · FRM-576 completed yesterday → W1253 · quiet-replies verdict nearest steps → W1254 · delete 2 empty milestones, no confirm → W1255 · auto-delete milestone habit → W1256 · wing 1 items 'with you, queued' → W1257 · won't summon wing 1 today → W1258 · let's see, all with you → W1259 · did not understand proposal → W1260 · why it helps → W1261 · let's try, proof wanted → W1262. ambiguity: 'with you' (W1257) read as clio in main, his call. groomed.md written
+- 2026-11-20 · prompt-groom · 1 · 0 · 13:34 groom written as W1263-W1281; screenshots [Image #3][Image #4] were not on disk and not viewed, groomed from the text; nad marked (?)
+- 2026-11-20 · prompt-groom · 1 · 0 · 13:38 sixth-sense steer groomed as FRM-620:W21-W28, stamped on the FRM-620 slice 3 look; one comment line, 4 questions marked (?)
+- 2026-11-20 · prompt-groom · 1 · 0 · 13:46 groom written as W1282-W1287 under PK-349; two ❓ lines (W1282, W1283) from one comment that carried two questions; 'stash' and afk lines groomed as said, no action taken
+- 2026-11-20 · prompt-groom · 1 · 0 · 2026-11-20-1412-herdr: PK-459:W1-W6, 6 sentences, 6 lines (s1 W1 ❓, s2 W2, s3 W3, s4 W4, s5 W5, s6 W6 ❓), stamp in the herdr codie's chat; unvisible fixed to invisible; W-lines appended to PK-459 notes
+- 2026-11-20 · prompt-groom · 1 · 0 · PK-349:W1288-W1308, 21 W-lines, 1 pass 0 rework; 4 ❓ (W1290, W1293, W1295, W1305); (?) on TS6, Moscow, tray
+- 2026-11-20 · prompt-groom · 1 · 0 · FRM-620:W29-W30, 2 W-lines, 0 ❓, subject as clio labelled it (14:07 stamp)
+- 2026-11-20 · prompt-groom · 1 · 0 · PK-459:W7-W11, 5 W-lines, 0 ❓, ids from --next
+- 2026-11-20 · prompt-groom · 1 · 0 · PK-349:W1309-W1311, 3 W-lines, 0 ❓, 14:31 prompt, ids from --next
+- 2026-11-20 · prompt-groom · 1 · 0 · PK-349:W1312-W1313, 2 W-lines, 1 ❓, 14:35 prompt, continues 14:31 numbering
+- 2026-11-20 · prompt-groom · 1 · 0 · PK-460:W1295-W1299 (15:02), 2 ❓
+- 2026-11-20 · prompt-groom · 1 · 0 · PK-460:W1300-W1304 (15:06), 4 ❓
+- 2026-11-22 · prompt-groom · 1 · 0 · map s1-2→1314 · s3→1315 · s4-5→1316 · s6-8→1317 · s9-10→1318 · s11→1319 · s12-13→1320 · s14→1321 · s15→1322 · s16-17→1323 · s18→1324 · s19-20→1325 · s21→1326 · s22→1327 · s23-24→1328 · s25-26→1329 · s27→1330 · s28→1331 · s29→1332 · s30-31→1333 · s32→1334 · s33→1335 · s34-35→1336 · s36→1337 · s37-39→1338 · s40→1339 · s41→1340 · 27 lines, 7 ❓ lines
+- 2026-11-22 · prompt-groom · 1 · 0 · map t1-2→W4 · t3-6→W5 · t7-8→W6 · t9→W7 · t10→W8 · t11→W9 · t12→W10 · t13→W11 · t14→W12 · t15→W13 · t16→W14 · t17→W15 · t18→W16 · t19→W17 · t20→W18 · t21-22→W19 · t23→W20 · t24→W21 · t25→W22 · 19 lines, 6 ❓ lines
+- 2026-11-22 · prompt-groom · 1 · 0 · map s1→1341 · s2→1342 · s3→1343 · s4→1344 · s5-6→1345 · s7-8→1346 · s9→1347 · 7 lines, 3 ❓ lines
+- 2026-11-22 · prompt-groom · 0 · 0 · consult 3: clio answered, no home, skipped; no wish, no file
+- 2026-11-22 · prompt-groom · 1 · 0 · map u1-5→FRM-591:W14 · [Image #5] no text, not mapped · 1 line, 0 ❓ lines · groomed from the 14:19 raw, ticket body not read (linear is outside helga)
+- 2026-11-22 · prompt-groom · 1 · 0 · map t1→1348 · t2-3→1349 · t4→1350 · t5→1351 · t6→1352 · t7→1353 · t8→1354 · t9→1355 · t10→1356 · t11→1357 · t12→1358 · t13→1359 · t14→1360 · 13 lines, 7 ❓ lines
+- 2026-11-22 · prompt-groom · 1 · 0 · map t1→1361 · t2→1362 · t3→1363 · t4→1364 · t5-6→1365 · t7→1366 · t8→1367 · t9→1368 · t10→1369 · t11→1370 · t12-14→1371 · t15-16→1372 · t17-21→1373 · -- separator not mapped · sound fixes: fairs→fares (t4), seggested→suggested (t1) · 13 lines, 5 ❓ lines
+- 2026-11-22 · prompt-groom · 1 · 0 · map s1→1374 · s2→1375 · s3→1376 · s4→1377 · s5-6→1378 · (herdr-typed) tag and --- not mapped · 5 lines, 0 ❓ lines
+- 2026-11-22 · prompt-groom · 1 · 0 · «no wish» (pure question) · map s1→1379 · s2→1380 · s3→1381 · s4→1382 · s5→1383 · s6→1384 · s7→1385 · s8→1386 · (herdr-typed) and --- not mapped · 8 lines, 7 ❓ lines · alias block repeats 1340 W1334-W1337, groomed again as his
+- 2026-11-22 · prompt-groom · 1 · 0 · map s1→1387 · s2→1388 · s3→1389 · s4→1390 · 4 lines, 1 ❓ line
+- 2026-11-22 · prompt-groom · 1 · 0 · map s1→1391 · s2→1392 · 2 lines, 0 ❓ lines · s1 «and tickets.» is a fragment, kept whole as its own line
+- 2026-11-22 · prompt-groom · 1 · 0 · map s1→1393 · s2→1394 · s3→1395 · s4→1396 · s5→1397 · s6→1398 · s7 «next question.» dropped as opener · s8→1399 · s9→1400 · s10→1401 · s11→1402 · s12-14→1403 (version lines joined with ;) · s15→1404 · 12 lines, 5 ❓ lines · grammar fix on W1397 (its → it is, form kept)
+- 2026-11-22 · prompt-groom · 1 · 0 · 1509 map: PK-349 W1405 = 1 line; FRM-682 W1 W2 W3 W8-W18 = 14 lines; 0 unmapped; 8 questions each with its own line
+- 2026-11-22 · prompt-groom · 1 · 0 · 1510 map: FRM-682 W19 = 1 line; 0 unmapped; no question; the herdr-typed tag has no line
+- 2026-11-22 · prompt-groom · 1 · 0 · o1 map: FRM-682 W20 = 1 line, stamped (2026-11-22 15:18, dima, o1 steer) per clio consult 3; 0 unmapped; no question
+- 2026-11-22 · prompt-groom · 1 · 0 · 1518 map: FRM-682 W4 W5 W6 W21-W31 = 14 lines; 0 unmapped; 5 questions each with its own line; pasted clio pin lines have no line
+- 2026-11-22 · prompt-groom · 1 · 0 · 1528 map: FRM-682 W7 W32 W33 = 3 lines; PK-349 W1406-W1425 = 20 lines; 0 unmapped; 10 questions each with its own line; PK-349 W1406 marked no wish; the dash dash another question separator has no line
+- 2026-11-22 · prompt-groom · 1 · 0 · 1537 map: FRM-614 W29-W32 = 4 lines; FRM-682 W34-W38 = 5 lines; PK-349 W1426-W1432 = 7 lines; 0 unmapped; 6 questions each with its own line; clio reply lines (port the guard, size and token lines) have no line; the repeated why-guard-as-mod point lands once as W35; approachness read as approachability
+- 2026-11-22 · prompt-groom · 1 · 0 · 1635 map: FRM-614 W33-W46 = 14 lines; 0 unmapped; 0 questions; list numbers 1-3 dropped and the order kept; the filler so dropped; the harness view block has no line; send to cloud and send to claude both kept as written
+- 2026-11-22 · prompt-groom · 1 · 0 · 1640 map: FRM-582 W65-W73 = 9 lines; 0 unmapped; 0 question marks, the rhetorical why-line is a bullet; com marked (?) as a possible slip for comments; the stutter that that read as one that
+- 2026-11-22 · prompt-groom · 1 · 0 · groom 20:46: 8 prompts, all no-wish; reasons per consult 1 from clio
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 W1433-W1454, 22 lines, 3 ❓ (W1445 W1451 W1454). map: raw 1 → W1433 (hey. dropped as opener); raw 2 → W1434; raw 3-4 → W1435; raw 6 → W1436; raw 7 → W1437; raw 8 → W1438; raw 9 → W1439; raw 10 → W1440; raw 12 → W1441; raw 13 → W1442-W1444; raw 15 → W1445❓ W1446 W1447; raw 17 → W1448; raw 19 → W1449; raw 20 → W1450; raw 21 → W1451❓ W1452; slipstream → W1453, W1454❓
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 W1455-W1456 (o4 steer, 2 lines) + W1457-W1467 (10:11 prompt, 11 lines, 7 ❓); both appended to PK-349 notes via backlog task edit --append-notes; 1011 pairs kept together, each ← comment gets a W-line, the line above as context only
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 W1457-W1467 (10:11 prompt, 11 lines) appended to PK-349 notes via backlog task edit --append-notes
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 W1468 (o6 steer, 1 line) written + appended to PK-349 notes
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 W1469 (o1 steer, 1 line) written + appended to PK-349 notes
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 W1470-W1472 (10:19, 3 lines) written + appended to PK-349 notes; (herdr-typed) marker is source tag, no W-line
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 W1473-W1477 (10:23, 5 lines, 2 ❓) written + appended to PK-349 notes; pasted board lines above each ← are context only
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 W1478-W1479 (10:14, 2 ❓) written + appended to PK-349 notes
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 W1480 (10:16, 1 ❓) written + appended to PK-349 notes
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 W1481-W1496 (10:25, 16 lines, 7 ❓) written + appended to PK-349 notes; pasted board lines above each ← are context; line 4 (the second ask) and the 🟢 stand-in line are context; line 17 has no ← and is kept as his words, flagged
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 W1497-W1499 (10:33, 3 lines, 1 ❓; W1499 is the 10:34 slipstream line under the 10:33 stamp) written + appended to PK-349 notes
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 W1500-W1501 (10:33 o7 steer, 2 ❓) written + appended to PK-349 notes; (herdr-typed) marker is a source tag, no W-line
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 stamp fix: W1481-W1496 to 10:33, W1497 o7 steer, W1498-W1499 to 10:34, W1500-W1501 to 10:25 herdr-typed; groomed files edited, one correction line per range appended to PK-349 notes; words untouched
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 W1502-W1507 (10:43, 1 ?) written + appended to PK-349 notes; the 10:43 raw had two screenshot tags, kept as context
+- 2026-11-23 · prompt-groom · yes · 0 · PK-349 W1508 (10:43 o4 steer) written + appended to PK-349 notes
+- 2026-11-23 · prompt-groom · yes · 0 · 1033 groomed rewrite, W1481-W1496 at 10:33 from 1033.raw.md
+- 2026-11-23 · prompt-groom · no · 1 · 1025 groomed rewrite, W1500-W1501 at 10:25; W1500 text differs from notes, flagged
+- 2026-11-23 · prompt-groom · yes · 0 · o7 steer groom, W1509-W1510 at 10:47, appended to PK-349 notes
+- 2026-11-23 · prompt-groom · yes · 0 · o6 steer groom, W1511-W1512 at 10:47, appended to PK-349 notes
+- 2026-11-23 · prompt-groom · no · 1 · 1047 groom, W1513-W1515, appended; W1515 added per ask, not in raw
+- 2026-11-23 · prompt-groom · yes · 0 · 1037 W1498-W1499 written to 2026-11-23-1037.groomed.md
+- 2026-11-23 · pocket-write · yes · 0 · PK-349 stamp correction: W1498-W1499 are the 10:37 line
+- 2026-11-23 · pocket-write · yes · 0 · PK-349 words correction: W1500 reads what's the findings
+- 2026-11-23 · prompt-groom · no · 0 · o1 groom failed: no steer o1 in the transcript, exit 1; consult sent
+- 2026-11-23 · prompt-groom · yes · 0 · 10:52 W1516-W1517 written to 2026-11-23-1052.groomed.md
+- 2026-11-23 · prompt-groom · yes · 0 · 10:58 W1518 written to 2026-11-23-1058.groomed.md
+- 2026-11-23 · pocket-write · yes · 0 · PK-349 W1500 combined id and text line appended
+- 2026-11-23 · pocket-write · yes · 0 · PK-349 W1516-W1518 appended to notes
+- 2026-11-23 · prompt-groom · no · 0 · o1 still blocked: no orbit-ticks row carries fable per crew
+- 2026-11-23 · prompt-groom · yes · 0 · 10:48 W1515 written to 2026-11-23-1048.groomed.md
+- 2026-11-23 · prompt-groom · yes · 0 · o1 steer 10:55 W1519 written to 2026-11-23-o1-1055.groomed.md, named file held W1469
+- 2026-11-23 · pocket-write · yes · 0 · PK-349 W1519 o1 line appended to notes
+- 2026-11-23 · prompt-groom · yes · 0 · o1 raw: 10:55 raw moved to o1-1055.raw.md, o1.raw.md restored from notes W1469
+- 2026-11-23 · prompt-groom · yes · 0 · 10:54 groomed to W1520-W1521 (clio's board lines as context), appended to PK-349, day green 11:07
+- 2026-11-23 · prompt-groom · no · 0 · consult: pocket-check exit 1, PK-349 W1520 crow badge (joined emoji) not swapped, no line-edit path for notes
+- 2026-11-23 · prompt-groom · yes · 0 · 11:13 (W1522-W1526), 11:17 o2 steer (W1527-W1529), 11:23 paste (W1530-W1561) groomed and appended to PK-349; W1520 groomed file matched to the badge swap; --day exit 0 11:26
+- 2026-11-23 · prompt-groom · no · 1 · batch M: 11:17 re-stamped to the plain stamp for the day check (notes W1527-W1529 keep the o2 steer stamp, append-only); 11:29 groomed W1562-W1569 and appended to PK-349; prompt-groom.ts o2 exit 1 (no steer o2), nothing created; --day exit 0 at 11:32
+- 2026-11-23 · prompt-groom · yes · 0 · groomed 11:48, 11:56, 11:59, 12:02, 12:06, 12:08 into PK-349 W1570-W1643; 11:50 status question to no-wish; o2 stamp matched for pocket; day exit 0, pocket green
+- 2026-11-23 · prompt-groom · no · 0 · PK-349: renumber map note appended (10:33 o7 pair to W1644/W1645, 10:25 W1500 kept); 12:11 no-wish ×2; grooms 12:12, 12:17, 12:20, 12:22, 12:25 as W1646–W1666; day exit 0, pocket green; wish-cover still reds W1500 numbered twice (reads the W-lines, not the note)
+- 2026-11-23 · prompt-groom · yes · 1 · PK-349 W1667 (12:25 o5 steer, text from clio's quote) and W1668-W1681 appended in order; 1231 rewritten before append; day check exit 0; pocket-check exit 1: o5 groom red (prompt-groom o5: no steer o5 in the transcript) and 2 note lines gone since HEAD (the 10:33 pair renumbered 12:27, W1500 to W1644, W1501 to W1645); nothing reverted, asked clio
+- 2026-11-23 · prompt-groom · yes · 0 · 19:16 raw groomed: PK-349:W2081-W2101 (21, appended, pocket-check green), FRM-614:W146-W150 (5), FRM-282:W7-W9 (3)
+- 2026-11-23 · prompt-groom · yes · 0 · 19:27 raw groomed: FRM-616:W1332-W1334 (3), FRM-527:W139-W142 (4), FRM-282:W10-W16 (7), PK-349:W2102-W2105 (4, appended, pocket-check green)
+- 2026-11-23 · prompt-groom · no · 0 · consult 19:32: --next FRM-407 and FRM-527 fail (no linear token); nothing written
+- 2026-11-23 · prompt-groom · yes · 0 · FRM-407:W3-W4, FRM-527:W143-W144, PK-349:W2106-W2108 appended, pocket-check green. changed words: chatoic→chaotic (spelling); (?) added after SW (helga's mark); (herdr-typed) header dropped; clio's lead-in lines cut with …
+- 2026-11-23 · prompt-groom · yes · 0 · 19:36: PK-349:W2109 appended, pocket-check green. changed words: none. dropped marker (herdr-typed); lead-in cut with …
+- 2026-11-23 · prompt-groom · yes · 0 · 19:34: FRM-407:W5-W6 groomed. changed words: peel→pill (wispr slip, read through the sound, listed). ? on none. lead-in cut none; (herdr-typed) dropped
+- 2026-11-23 · prompt-groom · yes · 0 · 19:35: FRM-407:W7-W13 groomed. changed words: none. (herdr-typed) dropped
+- 2026-11-23 · prompt-groom · yes · 0 · 19:38: fresh-eyes line FRM-407:W14-W15 groomed in this file; no-wish line written; nothing appended. changed words: none. refusal question not copied: no-wish line only
+- 2026-11-23 · prompt-groom · yes · 0 · 19:49: FRM-695:W9-W15, FRM-670:W11-W12, FRM-658:W3, PK-349:W2110-W2114 groomed; PK-349 appended, pocket-check green. changed words: none. bullet dashes dropped on the FRM-695 list; [Image #49] and pasted_content marker dropped
+- 2026-11-23 · prompt-groom · yes · 0 · 19:40: PK-349:W2115-W2116 appended. changed words: none. pocket-check red came from the 19:44 batch line, see 19:44
+- 2026-11-23 · prompt-groom · no · 0 · 19:44: PK-349:W2117-W2125 appended; pocket-check RED: joined emoji in clio's crow lead-in (quoted before the cut) breaks board view, Backlog.md #949. changed words: sohuld→should (spelling). lead-in cut with …; pasted_content markers dropped
+- 2026-11-23 · prompt-groom · yes · 0 · 19:53: PK-349:W2126-W2131 appended. changed words: none. (herdr-typed) dropped; lead-in cut with …; pocket-check red came from 19:44 line
+- 2026-11-23 · prompt-groom · yes · 0 · 19:54: FRM-685:W1-W5, FRM-668:W8-W11 groomed; nothing appended. changed words: none. (herdr-typed) and --- dropped
+- 2026-11-23 · prompt-groom · yes · 0 · 19:56: PK-349:W2132-W2135 appended. changed words: none. pocket-check red came from 19:44 line; no pure question in this batch, 19:56 groomed as PK lines
+- 2026-11-23 · prompt-groom · yes · 0 · 19:55: PK-349:W2136-W2137 appended. changed words: none. (herdr-typed) and --- dropped
+- 2026-11-23 · prompt-groom · yes · 0 · 19:59: PK-349:W2138-W2143 appended. changed words: desrves→deserves (spelling). (herdr-typed) and --- dropped
+- 2026-11-23 · prompt-groom · no · 0 · 20:05 o3 steer: PK-349:W2144 appended, text and stamp as clio sent them. pocket-check RED: folded with no groom; check asks prompt-groom o3 then refold. not run, consult sent
+- 2026-11-23 · prompt-groom · no · 1 · 20:05 o3 steer rework: o3 groomed file kept W1864-W1865, appended W2144; pocket green after rework. raw fade-out question unmapped: not added, asked clio
+- 2026-11-23 · prompt-groom · yes · 0 · 20:06: PK-349:W2145-W2160 appended, pocket green. changed: lead-in cut to … in W2160; pasted wrapper and marker dropped; kept verbatim: pared, red rest, Most, stray ?
+- 2026-11-23 · prompt-groom · yes · 0 · 20:07: FRM-614:W151 groomed file only, not appended. changed: lead-in cut to …; ← dropped
+- 2026-11-23 · prompt-groom · no · 2 · o3 fade-out question (15:29 stamp): missed in first groom; W2161 added after clio's yes to o3 groomed and PK-349, pocket green. changed: none
+- 2026-11-23 · prompt-groom · yes · 0 · 20:08: PK-349:W2162-W2163 appended, pocket green. changed: (herdr-typed) marker dropped. kept as typed
+- 2026-11-23 · prompt-groom · yes · 0 · 20:11: FRM-696:W9-W10 groomed file only (W9 first sentence, W10 second; clio's W9 may hold both, asked). PK-349:W2164-W2168 appended, pocket green. changed: lead-ins cut to …; clio's 🧩 and 💡 lead-in lines dropped (not dima's), only 'do' kept
+- 2026-11-23 · prompt-groom · yes · 0 · 20:13: PK-349:W2169 appended, pocket green. changed: lead-in cut to …. kept as typed
+- 2026-11-23 · prompt-groom · no · 0 · 20:19: FRM-645:W45-W46, FRM-687:W4 groomed file only; PK-349:W2170-W2171 appended, pocket green. HELD: 'Remind what Herdr lane should resume out of its handoff with 60/20?' (home not in brief, asked). changed: lead-in cut to …; bare 'herdr' label dropped. kept 'fed' (brief says 'fat'), asked
+- 2026-11-23 · prompt-groom · no · 1 · 20:19 rework per clio: PK-349:W2172 appended (the held 'Remind what Herdr lane…' sentence, ❓ kept), pocket green. changed: wispr 'with 60/20' → 'with FRM-620'. FRM-687:W4 'fed' → 'fat' (wispr). FRM-645:W45-W46 and FRM-687:W4 are groomed file only
+- 2026-11-23 · prompt-groom · yes · 0 · 2012 raw to PK-349 W2173-W2176: W2173 why you stopped to use orbit ❓, W2174 something broke ❓, W2175 i did not saw aasks for a while, W2176 tell when you are tail free so i can peek lanes... ask you to stop; the repeated sentence in the second block maps to W2173-W2175 once; the stray thell fragment has no line (a discarded start of tell); no word changed
+- 2026-11-23 · prompt-groom · yes · 0 · batch six, 2014 raw to PK-349 W2177: and mods verifier watis for you (something about linear comment); watis kept as typed; pocket green
+- 2026-11-23 · prompt-groom · yes · 0 · batch six, 2030 raw to FRM-614 W152-W160, groomed file only: 9 lines, one per sentence; comehow -> somehow (sound); stop marked (?) unknown; W158 kept the ❓ for the (maybe with id?) question; list numbers and the header colon dropped as markup, no word else changed
+- 2026-11-23 · prompt-groom · yes · 0 · 20:27 block: FRM-582:W74-W81 groomed file only; PK-349:W2178-W2189 appended, check clean. Dropped left of arrow: FRM-582: home, Herdr's tail / from its handoff label, FRM-695 label the ask's fields, S, speak and herdr status rows; arrows dropped x5; FRM-695: kept as prefix on W2180; grills marked (?) on W78; tell: kept
+- 2026-11-23 · prompt-groom · yes · 0 · 20:31 line: now: lead-in dropped, 1. list number dropped; two sentences kept verbatim as PK-349:W2190-W2191; check clean
+- 2026-11-23 · prompt-groom · yes · 0 · o1 steer currently precice ✓: precice -> precise; ✓ kept; FRM-658:W4 groomed file only
+- 2026-11-23 · prompt-groom · no · 0 · o1 lines 3-8 as PK-349:W2192-W2208 (17 sentences). Design Loop -> design loupe x2 (wispr map, W2205 W2207); wink -> wink (?) (W2197). Stamp (23 Nov, o1 steer, earlier ask) refused by groom check (FRM-418): PK-349 red, W2192-W2208 sit in its notes; consult sent
+- 2026-11-23 · prompt-groom · yes · 0 · FRM-645:W47-W52, 6 sentences, 6 lines, 0 questions, raw prompts 2026-11-23 20:40 (lines 1459, 1461), file grooms/2026-11-23-2040.groomed.md
+- 2026-11-23 · pocket-write · no · 0 · PK-349 W2192-W2208 re-stamped in place, 17 lines; pocket-check red: checker refuses head (2026-11-23, dima) with no HH:MM; escalated
+- 2026-11-23 · pocket-write · no · 1 · PK-349 W2192-W2208 re-stamped in place per clio's second ruling: 16 at 12:00 placeholder, W2208 at 18:12; pocket-check green
+- 2026-11-23 · prompt-groom · yes · 0 · 20:35 → FRM-582:W82; PK-349:W2209; the PK-465 question to FRM-582, the steer to PK-349
+- 2026-11-23 · prompt-groom · yes · 0 · 20:37 → PK-349:W2210–W2215; the clio list rows and «do all:» cut as context
+- 2026-11-23 · prompt-groom · yes · 0 · 20:38 → FRM-582:W83–W85 (emoji reactions seal, tomorrow); PK-349:W2216–W2218; W2218 cut in raw at «(excep»
+- 2026-11-23 · prompt-groom · yes · 0 · 20:39 → PK-349:W2219–W2220; «excpet» read as except
+- 2026-11-23 · prompt-groom · yes · 0 · 20:42 → PK-349:W2221–W2223 (nearest chunk steer; health-green line)
+- 2026-11-23 · prompt-groom · yes · 0 · 20:49 → FRM-616:W1335–W1337 (antenna wish, from clio's first id); PK-349:W2224–W2225 (health and stop questions)
+- 2026-11-23 · pocket-write · yes · 0 · PK-349:W2209–W2225 appended to the pocket notes; pocket-check green (6 tasks)
+- 2026-11-23 · prompt-groom · yes · 0 · 2026-11-22-1403 -> PK-349:W2226, groomed twin, halt
+- 2026-11-23 · prompt-groom · yes · 0 · 2026-11-22-1950 -> PK-349:W2227-W2235, 9 sentences, [Image #44] marker no line
+- 2026-11-23 · prompt-groom · yes · 0 · 2026-11-23-1150 -> PK-349:W2236-W2237, halt
+- 2026-11-23 · pocket-write · yes · 0 · PK-349 +12 lines W2226-W2237, pocket-check green
 
 ## rounds
 
