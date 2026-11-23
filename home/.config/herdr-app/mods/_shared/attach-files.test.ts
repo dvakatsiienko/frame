@@ -26,11 +26,14 @@ describe('what a paste with no text found on the clipboard', () => {
     });
 });
 
+// macOS's own: the block runs only on a mac, the linux ci skips it, so no ci job installs it
+const osascript = 'osascript';
+
 // a thread older than dima's login reaches no pasteboard at all, private or his: the block is skipped, and says so
 function hasPasteboard() {
     if (platform() !== 'darwin') return false;
     const said = execFileSync(
-        '/usr/bin/osascript',
+        osascript,
         [
             '-l',
             'JavaScript',
@@ -52,8 +55,6 @@ describe.runIf(hasPasteboard())(
     'a text paste never reads as a file or an image',
     () => {
         const board = `x-chatter-test-${process.pid}`;
-        // macOS's own: the block runs only on a mac, the linux ci skips it, so no ci job installs it
-        const osascript = 'osascript';
         const put = (text: string) =>
             execFileSync(
                 osascript,
