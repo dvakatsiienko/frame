@@ -83,6 +83,9 @@ x-mod-stash	tests/tick-pick.test.ts	1
 x-mod-stash	tests/tree.test.ts	0	
 x-mod-stash	tests/turn-notes.test.ts	1	
 x-mod-stash	tests/waker.test.ts	1	
+x-mod-stash	tests/wind-compact.test.ts	1	
+x-mod-stash	tests/wind-held.test.ts	1	
+x-mod-stash	tests/wind-knobs.test.ts	1	
 x-mod-stash	tests/wind-reload.test.ts	1	
 x-mod-stash	tests/wind.test.ts	1	
 x-mod-stash	tests/words.test.ts	1	
