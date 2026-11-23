@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T15:33:00Z'
+updated_date: '2026-11-23T15:37:00Z'
 labels:
   - s
   - clio-main
@@ -29,10 +29,11 @@ ordinal: 1000
 - [ ] #11 f89 idle member alarm: a line at my turn end when a lane member idles 10 min, no wait named (his o13)
 - [ ] #12 f90 cuts pass over the board mod (x-mod-stash): what in it has no user, his ticks (his o17, this week)
 - [ ] #13 f91 designer craft: research how to search design references and query them right (his 19 Nov wish)
-- [ ] #14 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #15 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #16 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #17 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #14 f92 speak design artifacts: which to delete, which to keep, as one clear list for him (FRM-642:W21, W22)
+- [ ] #15 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #16 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #17 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #18 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2180,5 +2181,5 @@ PK-349:W1997 (2026-11-23 17:29, dima): how do you think? ❓
 PK-349:W1998 (2026-11-23 17:29, dima): consult with cc mods codie.
 PK-349:W1999 (2026-11-23 17:29, dima): so it is a button in my band? ❓
 
-17:33 W1985 correction: its opening «second wind: my own context reset» is clio's reply quoted; his words are «too, create one i see what it is about», and its home is not FRM-695 (answered 17:23: it is the 🐦‍🔥 button, no demo burned)
+17:33 W1985 correction: its opening «second wind: my own context reset» is clio's reply quoted; his words are «too, create one i see what it is about», and its home is not FRM-695 (answered 17:23: it is the second wind button, no demo burned)
 <!-- SECTION:NOTES:END -->
