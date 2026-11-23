@@ -6,7 +6,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 import { lanePaceSection } from './lane-pace.ts';
-import { readLaneAhead, sealedAhead } from './sealed-ahead.ts';
+import { readLaneAhead, readSignIssues, sealedAhead } from './sealed-ahead.ts';
 
 const OUTPUT_LINES = 40;
 const RUN_TIMEOUT_MS = 60_000;
@@ -431,7 +431,10 @@ function orbitDrift(home: string) {
 function sealedAheadSection(home: string) {
     const name = 'sealed ahead';
     try {
-        const { exit, lines } = sealedAhead(readLaneAhead(home));
+        const { exit, lines } = sealedAhead(
+            readLaneAhead(home),
+            readSignIssues(home),
+        );
         // a lane the reads could not check is yellow here; the halt's own call of the entry takes exit 2 as not ready
         return exit === NOT_CHECKED
             ? { exit: 0, name, output: lines.join('\n'), status: 'not checked' }

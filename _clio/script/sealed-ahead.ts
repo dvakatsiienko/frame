@@ -13,6 +13,7 @@ const CLOSED_STATES = ['Canceled', 'Done', 'Duplicate'];
 const RUN_TIMEOUT_MS = 60_000;
 // siesta-checks' NOT_CHECKED: a read that failed, never «ready»
 const NOT_CHECKED = 2;
+const MOVE_RESIGN = 're-sign (dima)';
 // a ticket's `repo:` line names where its brief preflight runs, under home; no line means frame
 const AHEAD_REPOS: Record<string, string | undefined> = {
     bytes: 'projects/bytes',
@@ -24,15 +25,34 @@ const LANE_PROJECTS: Record<string, string | undefined> = {
     mods: 'mods: cc',
 };
 
-// exit 0 every lane ready, 1 a move is owed, 2 a read failed so a lane is not checked: only 0 is «ready»
-export function sealedAhead(lanes: LaneAhead[]) {
-    if (!lanes.length) return { exit: 0, lanes: [], lines: ['🟢 no lane'] };
+// exit 0 every lane ready, 1 a move is owed, 2 a read failed so a lane is not checked: only 0 is «ready». `signs` are the
+// signed chunks anywhere in the area whose sign trails their body, under the lanes; one already a lane's slot is left out, its
+// lane holds the move
+export function sealedAhead(lanes: LaneAhead[], signs: SignIssue[] = []) {
     const rows = lanes.map(laneRow);
+    const inSlots = new Set(
+        lanes.flatMap((l) => ('slots' in l ? l.slots : [])).map((a) => a?.id),
+    );
+    const owed = signs
+        .filter((t) => !inSlots.has(t.id))
+        .map((t) => ({
+            id: t.id,
+            line: `🔴 ${t.id} (${t.sign}) — ${MOVE_RESIGN}, or a ✏️ changed line before dispatch`,
+            move: MOVE_RESIGN,
+            sign: t.sign,
+        }));
     const unchecked = rows.some((r) => r.unchecked);
     return {
-        exit: unchecked ? NOT_CHECKED : rows.some((r) => r.red) ? 1 : 0,
+        exit: unchecked
+            ? NOT_CHECKED
+            : rows.some((r) => r.red) || owed.length
+              ? 1
+              : 0,
         lanes: rows,
-        lines: rows.map((r) => r.line),
+        lines: lanes.length
+            ? [...rows.map((r) => r.line), ...owed.map((o) => o.line)]
+            : ['🟢 no lane', ...owed.map((o) => o.line)],
+        signs: owed.map(({ id, move, sign }) => ({ id, move, sign })),
     };
 }
 
@@ -112,7 +132,7 @@ function moveOf(state: string) {
     if (state.startsWith('blocked by ')) return 'unblock (clio)';
     return (
         {
-            drifted: 're-sign (dima)',
+            drifted: MOVE_RESIGN,
             'none queued': 'queue one (clio)',
             reseal: 'seal (clio)',
             'signed, not sealed': 'seal (clio)',
@@ -181,7 +201,7 @@ export function readLaneAhead(
         );
         return {
             blockedBy: openBlockers(t.relations, bar)[0] ?? null,
-            drifted: signOf.get(id) === 'drifted',
+            drifted: (signOf.get(id) ?? 'match') !== 'match',
             id,
             preflightError: error ?? '',
             preflightOk: ok === true,
@@ -285,6 +305,31 @@ function queuedChunks(
     ];
 }
 
+// the signed chunks not started whose sign is not `match` (drifted, none, stale): they need their re-sign before a dispatch,
+// whatever slot or milestone they sit in; with lane names, only those lanes' areas
+export function readSignIssues(
+    home: string,
+    names: string[] = [],
+    x: XRun = xRunner(home),
+): SignIssue[] {
+    const projects = names.map((n) => LANE_PROJECTS[n] ?? n);
+    return ['FRM', 'BYT']
+        .flatMap(
+            (team) =>
+                (
+                    x(['linear', 'list', '--team', team, '--label', 'signed'])
+                        .data as { tickets: ListedTicket[] }
+                ).tickets,
+        )
+        .filter(
+            (t) =>
+                t.stateType === 'unstarted' &&
+                t.sign !== 'match' &&
+                (!projects.length || projects.includes(t.project)),
+        )
+        .map((t) => ({ id: t.id, sign: t.sign }));
+}
+
 function laneOfProject(project: string) {
     return (
         Object.entries(LANE_PROJECTS).find(([, p]) => p === project)?.[0] ??
@@ -363,7 +408,11 @@ export function lanesArg(args: string[]) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const args = process.argv.slice(2);
     try {
-        const out = sealedAhead(readLaneAhead(homedir(), lanesArg(args)));
+        const names = lanesArg(args);
+        const out = sealedAhead(
+            readLaneAhead(homedir(), names),
+            readSignIssues(homedir(), names),
+        );
         console.log(
             args.includes('--json')
                 ? JSON.stringify(out)
@@ -400,6 +449,8 @@ export type Member =
 export type LaneAhead =
     | { failed: string; name: string }
     | { member: Member; name: string; slots: (Ahead | null)[] };
+
+export type SignIssue = { id: string; sign: string };
 
 export type XRun = (args: string[], mayFail?: boolean) => XEnvelope;
 

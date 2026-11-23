@@ -15,6 +15,7 @@ import {
     openBlockers,
     pickNext,
     readLaneAhead,
+    readSignIssues,
     sealedAhead,
 } from './sealed-ahead.ts';
 
@@ -239,6 +240,7 @@ describe('sealedAhead, the whole answer', () => {
             exit: 0,
             lanes: [],
             lines: ['🟢 no lane'],
+            signs: [],
         });
     });
 });
@@ -263,6 +265,44 @@ describe('sealedAhead, a lane that could not be read', () => {
                 { failed: 'x brief preflight FRM-9', name: 'mods' },
             ]).exit,
         ).toBe(2);
+    });
+});
+
+describe('sealedAhead, signs that trail their body', () => {
+    test('read under the lanes, red, asking dima to re-sign or write a changed line', () => {
+        const out = sealedAhead(
+            [lane('speak', [sealed('FRM-1'), sealed('FRM-2')])],
+            [
+                { id: 'FRM-645', sign: 'drifted' },
+                { id: 'FRM-9', sign: 'none' },
+            ],
+        );
+        expect(out.exit).toBe(1);
+        expect(out.lines).toEqual([
+            '🟢 speak — 1 FRM-1 sealed · 2 FRM-2 sealed · member live speak-hunt',
+            '🔴 FRM-645 (drifted) — re-sign (dima), or a ✏️ changed line before dispatch',
+            '🔴 FRM-9 (none) — re-sign (dima), or a ✏️ changed line before dispatch',
+        ]);
+        expect(out.signs).toEqual([
+            { id: 'FRM-645', move: 're-sign (dima)', sign: 'drifted' },
+            { id: 'FRM-9', move: 're-sign (dima)', sign: 'none' },
+        ]);
+    });
+
+    test('one already a lane slot is left to its lane, so it is not said twice', () => {
+        const out = sealedAhead(
+            [lane('speak', [drifted('FRM-694'), sealed('FRM-2')])],
+            [{ id: 'FRM-694', sign: 'drifted' }],
+        );
+        expect(out.lines).toHaveLength(1);
+        expect(out.signs).toEqual([]);
+    });
+
+    test('with no lane at all they still read', () => {
+        expect(sealedAhead([], [{ id: 'FRM-9', sign: 'none' }])).toMatchObject({
+            exit: 1,
+            lines: ['🟢 no lane', expect.stringContaining('FRM-9 (none)')],
+        });
     });
 });
 
@@ -589,6 +629,78 @@ describe('readLaneAhead, a lane with no running chunk', () => {
             ),
         );
         expect(out.lines[0]).toContain('1 FRM-10 blocked by FRM-99');
+    });
+});
+
+describe('readSignIssues', () => {
+    const signed = [
+        { id: 'FRM-1', project: 'mods: cc', sign: 'match' },
+        { id: 'FRM-2', project: 'mods: cc', sign: 'drifted' },
+        { id: 'FRM-3', project: 'mods: herdr', sign: 'none' },
+        {
+            id: 'FRM-4',
+            project: 'mods: cc',
+            sign: 'drifted',
+            stateType: 'started',
+        },
+        { id: 'FRM-5', project: 'speak', sign: 'stale' },
+    ];
+
+    test('keeps the unstarted chunks whose sign is not match, any sign word, any milestone', () => {
+        const home = homeWith();
+        expect(
+            readSignIssues(home, [], world(home, { signed, tickets: {} })).map(
+                (t) => t.id,
+            ),
+        ).toEqual(['FRM-2', 'FRM-3', 'FRM-5']);
+    });
+
+    test("with lane names, only those lanes' areas", () => {
+        const home = homeWith();
+        expect(
+            readSignIssues(
+                home,
+                ['mods', 'speak'],
+                world(home, { signed, tickets: {} }),
+            ).map((t) => t.id),
+        ).toEqual(['FRM-2', 'FRM-5']);
+    });
+
+    test('a tracker read that fails throws, so the entry exits 2', () => {
+        const home = homeWith();
+        expect(() =>
+            readSignIssues(home, [], () => {
+                throw new Error('x linear list --team FRM --label signed');
+            }),
+        ).toThrow('x linear list');
+    });
+});
+
+describe('readLaneAhead, the sign of a slot', () => {
+    test('a signed chunk whose sign is not match, none included, reads drifted', () => {
+        const home = homeWith();
+        const out = sealedAhead(
+            readLaneAhead(
+                home,
+                ['mods'],
+                world(home, {
+                    signed: [
+                        { id: 'FRM-10', project: 'mods: cc', sign: 'none' },
+                        { id: 'FRM-20', project: 'mods: cc' },
+                    ],
+                    tickets: {
+                        'FRM-10': { relations: [rel('blocks', 'FRM-20')] },
+                        'FRM-20': { relations: [rel('blocked by', 'FRM-10')] },
+                    },
+                }),
+            ),
+        );
+        expect(out.lanes[0]).toMatchObject({
+            slots: [
+                { id: 'FRM-10', state: 'drifted' },
+                { id: 'FRM-20', state: 'sealed' },
+            ],
+        });
     });
 });
 
