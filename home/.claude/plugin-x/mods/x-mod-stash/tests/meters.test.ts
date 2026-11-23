@@ -452,6 +452,7 @@ test('the ctx fill turns amber 10 points before the compaction point', async ($,
 
 test('a measure writes the 5h window to the usage file in seconds', async ($, on) => {
     const { files } = meters(on);
+    await respond($, on);
     await measure($, 39, 35);
     expect(JSON.parse(files[USAGE] ?? '{}').rate_limits.five_hour).toEqual({
         read_at: Math.round(NOW / 1000),
@@ -481,6 +482,7 @@ const bothLimits = (
 
 test('a seven-day window and the write time ride the usage file', async ($, on) => {
     const { files } = meters(on);
+    await respond($, on);
     await $.session.measure(bothLimits('rateLimits'));
     const written = JSON.parse(files[USAGE] ?? '{}');
     expect([written.rate_limits.seven_day, written.written_at]).toEqual([
@@ -522,24 +524,31 @@ const usage = (files: Record<string, string>) => {
     };
 };
 // the model answers one request of this session; `null` is a request that got no response
+const steps = new WeakMap<
+    On,
+    { answering: () => Promise<void>; stopReason: 'end_turn' | null }
+>();
 const respond = async (
     $: Engine,
     on: On,
     stopReason: 'end_turn' | null = 'end_turn',
     answering = async () => {},
 ) => {
-    // biome-ignore lint/correctness/useYield: the model's empty answer streams no chunk, only its result
-    on('turn.step', async function* (_$, e) {
-        await answering();
-        return {
-            answer: '',
-            index: e.index,
-            stopReason,
-            toolUses: [],
-            turnId: e.turnId,
-            usage: null,
-        };
-    });
+    if (!steps.has(on))
+        // biome-ignore lint/correctness/useYield: the model's empty answer streams no chunk, only its result
+        on('turn.step', async function* (_$, e) {
+            const step = steps.get(on);
+            await step?.answering();
+            return {
+                answer: '',
+                index: e.index,
+                stopReason: step?.stopReason ?? null,
+                toolUses: [],
+                turnId: e.turnId,
+                usage: null,
+            };
+        });
+    steps.set(on, { answering, stopReason });
     for await (const _ of $.turn.step({
         index: 0,
         messageCount: 1,
@@ -569,6 +578,7 @@ const peerWrote = (
 
 test('a newer figure is written to the decimal, though the engine says no window moved', async ($, on) => {
     const { clock, files } = meters(on);
+    await respond($, on);
     await $.session.measure(weekly('rateLimits', 92));
     await clock.advance(10_000);
     await respond($, on);
@@ -578,6 +588,7 @@ test('a newer figure is written to the decimal, though the engine says no window
 
 test('equal figures move only the time they were last confirmed', async ($, on) => {
     const { clock, files } = meters(on);
+    await respond($, on);
     await $.session.measure(weekly('rateLimits', 92));
     await clock.advance(10_000);
     await respond($, on);
@@ -597,6 +608,7 @@ test('a measure after no response of its own leaves the figure a newer response 
 
 test('a request that got no response dates no figure', async ($, on) => {
     const { clock, files } = meters(on);
+    await respond($, on);
     await $.session.measure(weekly('rateLimits', 92));
     peerWrote(files, 93, 5);
     await clock.advance(10_000);
@@ -607,6 +619,7 @@ test('a request that got no response dates no figure', async ($, on) => {
 
 test('a measure the engine flags late is dated by its response too', async ($, on) => {
     const { clock, files } = meters(on);
+    await respond($, on);
     await $.session.measure(weekly('rateLimits', 91));
     await respond($, on);
     peerWrote(files, 93, 5);
@@ -617,6 +630,7 @@ test('a measure the engine flags late is dated by its response too', async ($, o
 
 test('a long answer is dated by its ask, never past a newer one of a peer', async ($, on) => {
     const { clock, files } = meters(on);
+    await respond($, on);
     await $.session.measure(weekly('rateLimits', 91));
     await respond($, on, 'end_turn', () => clock.advance(60_000));
     peerWrote(files, 93, 30);
@@ -626,6 +640,7 @@ test('a long answer is dated by its ask, never past a newer one of a peer', asyn
 
 test('each window is newer on its own', async ($, on) => {
     const { clock, files } = meters(on);
+    await respond($, on);
     await $.session.measure(weekly('rateLimits', 91));
     await clock.advance(3000);
     await respond($, on);
@@ -643,6 +658,7 @@ test('each window is newer on its own', async ($, on) => {
 
 test('a time ahead of the clock holds no figure back', async ($, on) => {
     const { files } = meters(on);
+    await respond($, on);
     await $.session.measure(weekly('rateLimits', 91));
     peerWrote(files, 93, 86_400);
     await $.session.measure(weekly('rateLimits', 92));
@@ -674,6 +690,7 @@ test('a reading older than the file writes nothing', async ($, on) => {
 
 test("a step that asked before another's answer moves no time back", async ($, on) => {
     const { clock, files } = meters(on);
+    await respond($, on);
     await $.session.measure(weekly('rateLimits', 91));
     let steps = 0;
     await respond($, on, 'end_turn', async () => {
@@ -686,18 +703,9 @@ test("a step that asked before another's answer moves no time back", async ($, o
     expect(usage(files).week).toBe(92);
 });
 
-test('a spent window beats a newer reading that is not', async ($, on) => {
-    const { clock, files } = meters(on);
-    await respond($, on);
-    await $.session.measure(weekly('rateLimits', 99));
-    peerWrote(files, 99, 5);
-    await clock.advance(10_000);
-    await $.session.measure(weekly('rateLimits', 100));
-    expect(usage(files).week).toBe(100);
-});
-
 test('a figure a newer response lowered is written too', async ($, on) => {
     const { clock, files } = meters(on);
+    await respond($, on);
     await $.session.measure(weekly('rateLimits', 92));
     await clock.advance(10_000);
     await respond($, on);
@@ -705,20 +713,41 @@ test('a figure a newer response lowered is written too', async ($, on) => {
     expect(usage(files).week).toBe(3);
 });
 
-test('a reload with no response yet writes only a window the engine says moved', async ($, on) => {
-    const { clock, files } = meters(on);
+test('a reload with no response yet writes nothing, whatever the engine says moved', async ($, on) => {
+    const { files } = meters(on, { [USAGE]: '{"written_at":1}' });
     await $.session.measure(weekly('rateLimits', 92));
+    expect(files[USAGE]).toBe('{"written_at":1}');
+});
+
+test('a 100 % read before a newer reading gives way to it', async ($, on) => {
+    const { clock, files } = meters(on);
+    await respond($, on);
+    await $.session.measure(weekly('rateLimits', 100));
+    peerWrote(files, 5, 5);
     await clock.advance(10_000);
-    await $.session.measure(weekly('context', 93));
-    const kept = usage(files).week;
-    await $.session.measure(weekly('rateLimits', 93));
-    expect([kept, usage(files).week]).toEqual([92, 93]);
+    await $.session.measure(weekly('context', 100));
+    expect(usage(files).week).toBe(5);
+});
+
+test('a newer window with no reset of its own stands against an older reading', async ($, on) => {
+    const { clock, files } = meters(on);
+    await respond($, on);
+    await $.session.measure(weekly('rateLimits', 91));
+    peerWrote(files, 93, 5);
+    const f = JSON.parse(files[USAGE] ?? '{}');
+    f.rate_limits.seven_day.resets_at = null;
+    files[USAGE] = JSON.stringify(f);
+    await clock.advance(10_000);
+    await $.session.measure(weekly('context', 92));
+    expect(usage(files).week).toBe(93);
 });
 
 test('a window a response left out keeps its value until its reset passes', async ($, on) => {
     const { clock, files } = meters(on);
+    await respond($, on);
     await $.session.measure(weekly('rateLimits', 92));
     await clock.advance(10_000);
+    await respond($, on);
     await $.session.measure(weekly('rateLimits', 93, ['seven_day']));
     const kept = usage(files);
     await clock.advance(3 * HOUR);
@@ -731,8 +760,10 @@ test('a window a response left out keeps its value until its reset passes', asyn
 
 test('a window a response left out keeps the time it was read', async ($, on) => {
     const { clock, files } = meters(on);
+    await respond($, on);
     await $.session.measure(weekly('rateLimits', 92));
     await clock.advance(10_000);
+    await respond($, on);
     await $.session.measure(weekly('rateLimits', 93, ['seven_day']));
     const { five_hour, seven_day } = JSON.parse(
         files[USAGE] ?? '{}',
@@ -742,6 +773,7 @@ test('a window a response left out keeps the time it was read', async ($, on) =>
 
 test('a torn usage file is written over', async ($, on) => {
     const { files } = meters(on, { [USAGE]: '{"rate_' });
+    await respond($, on);
     await $.session.measure(weekly('rateLimits', 92));
     expect(usage(files)).toEqual({ at: 0, five: 39, week: 92 });
 });

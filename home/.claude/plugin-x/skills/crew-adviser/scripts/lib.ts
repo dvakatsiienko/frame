@@ -525,10 +525,16 @@ export function spawnHarvester(args: string[]) {
 // the cadence's park line, `clio:shift` § the 5h ladder: with 55 min or less left the fleet burns, so nothing parks, and 97 % keeps its reserve
 export function isParked(now: Date, usagePath = USAGE_PATH) {
     try {
-        const fiveHour = (
-            JSON.parse(readFileSync(usagePath, 'utf8')) as UsageFile
-        ).rate_limits?.five_hour;
-        if (!fiveHour) return false;
+        const { rate_limits: limits, written_at: writtenAt } = JSON.parse(
+            readFileSync(usagePath, 'utf8'),
+        ) as UsageFile;
+        const fiveHour = limits?.five_hour;
+        // a figure the newest response left out is an old one
+        if (
+            !fiveHour ||
+            (fiveHour.read_at ?? writtenAt ?? 0) < (writtenAt ?? 0)
+        )
+            return false;
         const msLeft = fiveHour.resets_at * 1000 - now.getTime();
         if (msLeft <= 0) return false;
         if (fiveHour.used_percentage >= 97) return true;
@@ -643,7 +649,11 @@ export function meterLine(now: Date, usagePath = USAGE_PATH) {
         if (!fiveHour || !week) return '';
         const hoursLeft = (at: number) =>
             Math.max(0, Math.round((at * 1000 - now.getTime()) / 36e5));
-        const age = Math.round((now.getTime() - (writtenAt ?? 0) * 1000) / 6e4);
+        const readAt = Math.min(
+            fiveHour.read_at ?? writtenAt ?? 0,
+            week.read_at ?? writtenAt ?? 0,
+        );
+        const age = Math.round((now.getTime() - readAt * 1000) / 6e4);
         return `⏱️ 5h ${fiveHour.used_percentage} %, resets in ${hoursLeft(fiveHour.resets_at)} h | weekly ${week.used_percentage} %, resets in ${hoursLeft(week.resets_at)} h | read ${age} min ago`;
     } catch {
         return '';
@@ -759,7 +769,8 @@ export interface Usage {
 interface UsageFile {
     rate_limits?: Record<
         'five_hour' | 'seven_day',
-        { used_percentage: number; resets_at: number } | undefined
+        | { read_at?: number; used_percentage: number; resets_at: number }
+        | undefined
     >;
     written_at?: number;
 }

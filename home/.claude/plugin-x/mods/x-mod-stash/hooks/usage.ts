@@ -86,18 +86,20 @@ export async function saveUsage(
         const resets = w?.resetsAt
             ? Math.round(Date.parse(w.resetsAt) / 1000)
             : null;
-        // a spent window stays spent until its reset, and the request refused for it got no response to date it by
-        const isSpent = w !== undefined && w.percentUsed >= 100;
         const isOver = resets !== null && resets <= now;
-        if (w && !isOver && (isSpent || !(was && readOf(was) > at)))
+        const isOlder = Boolean(was) && readOf(was) > at;
+        if (w && !isOver && !isOlder)
             return {
-                read_at: isSpent ? now : at,
+                read_at: at,
                 resets_at: resets,
                 used_percentage: w.percentUsed,
             };
-        return typeof was?.resets_at === 'number' && was.resets_at > now
-            ? { ...was, read_at: readOf(was) }
-            : null;
+        // a window with no reset of its own ends only when a response leaves it out
+        const isKept =
+            typeof was?.resets_at === 'number'
+                ? was.resets_at > now
+                : w && isOlder;
+        return isKept ? { ...was, read_at: readOf(was) } : null;
     };
     const next = JSON.stringify({
         rate_limits: {
@@ -250,13 +252,10 @@ export async function measureUsage(
         await $.store
             .set(CONTEXT + sid, e.context.percent)
             .catch(() => undefined);
-    // the engine names a window only past a whole point; a smaller move rides the next response (FRM-679). the clock stands
-    // in only before this module saw a response, at a load or a reload
-    const readAt =
-        respondedAt ??
-        (e.changed.includes('rateLimits') ? await $.clock.now() : undefined);
-    if (readAt !== undefined && e.rateLimits.length)
-        await saveUsage($, e.rateLimits, readAt).catch((err) =>
+    // whatever the engine says moved: it names a window only past a whole point (FRM-679). after a reload the figures have
+    // no time until the next response
+    if (respondedAt !== undefined && e.rateLimits.length)
+        await saveUsage($, e.rateLimits, respondedAt).catch((err) =>
             $.ui.log(`x-mod-stash: usage file not written: ${errorText(err)}`),
         );
     const was = (await $.state.get(METER)).value;

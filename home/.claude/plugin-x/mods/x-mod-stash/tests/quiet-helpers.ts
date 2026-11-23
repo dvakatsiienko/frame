@@ -25,9 +25,10 @@ export function appendLog(
     files: Record<string, string>,
     argv: readonly string[],
 ) {
-    const [, , script, , path, text] = argv;
+    const [, , script, , path, ...lines] = argv;
     if (script === QUIET_LOG_APPEND && path)
-        files[path] = `${files[path] ?? ''}\n${text}\n`;
+        files[path] =
+            (files[path] ?? '') + lines.map((l) => `\n${l}\n`).join('');
 }
 
 // clio by default, as the registry names her; `cwd` is where a Bash `cd` left her

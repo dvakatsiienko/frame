@@ -94,7 +94,7 @@ export async function quietLogAll($: EngineInterface, lines: QuietLogLine[]) {
             QUIET_LOG_APPEND,
             'sh',
             file,
-            lines.map((l) => JSON.stringify(l)).join('\n'),
+            ...lines.map((l) => JSON.stringify(l)),
         ])
         .catch(() => undefined);
     return r?.exitCode === 0;

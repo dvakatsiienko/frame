@@ -57,7 +57,7 @@ describe('isParked', () => {
     const now = new Date('2026-11-04T12:00:00Z');
     const reset = (hoursLeft: number) =>
         now.getTime() / 1000 + hoursLeft * 3600;
-    const meter = (usedPercentage: number, hoursLeft: number) => {
+    const meter = (usedPercentage: number, hoursLeft: number, at = {}) => {
         const path = join(mkdtempSync(join(tmpdir(), 'crow-')), 'u.json');
         writeFileSync(
             path,
@@ -66,8 +66,10 @@ describe('isParked', () => {
                     five_hour: {
                         resets_at: reset(hoursLeft),
                         used_percentage: usedPercentage,
+                        ...at,
                     },
                 },
+                written_at: reset(0),
             }),
         );
         return path;
@@ -87,6 +89,14 @@ describe('isParked', () => {
         ['a window past its reset', 99, -1, false],
     ] as const)('%s', (_label, used, left, expected) => {
         expect(isParked(now, meter(used, left))).toBe(expected);
+    });
+
+    test.each([
+        ['a figure the newest response left out', -1, false],
+        ['the newest response’s own figure', 0, true],
+    ] as const)('%s', (_label, readHours, expected) => {
+        const path = meter(98, 2.5, { read_at: reset(readHours) });
+        expect(isParked(now, path)).toBe(expected);
     });
 
     test('no meter file is no park', () => {
@@ -200,6 +210,22 @@ describe('meterLine', () => {
         expect(meterLine(NOW, path)).toBe(
             '⏱️ 5h 6 %, resets in 3 h | weekly 1 %, resets in 160 h | read 4 min ago',
         );
+    });
+    test('the reading age is the older window’s', () => {
+        const path = join(mkdtempSync(join(tmpdir(), 'crow-meter-')), 'u.json');
+        const window = (minutesAgo: number) => ({
+            read_at: sec(NOW.getTime() - minutesAgo * 6e4),
+            resets_at: sec(NOW.getTime() + 36e5),
+            used_percentage: 6,
+        });
+        writeFileSync(
+            path,
+            JSON.stringify({
+                rate_limits: { five_hour: window(90), seven_day: window(4) },
+                written_at: sec(NOW.getTime() - 4 * 6e4),
+            }),
+        );
+        expect(meterLine(NOW, path)).toContain('read 90 min ago');
     });
     test('a missing usage file prints nothing', () => {
         expect(meterLine(NOW, '/nonexistent/u.json')).toBe('');

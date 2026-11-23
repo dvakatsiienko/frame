@@ -74,8 +74,8 @@ test("the log's append makes its dir and keeps every byte of the lines before", 
         '{"at":2,"torn',
         '{"at":3}',
     ];
-    for (const text of texts)
-        spawnSync('sh', ['-c', QUIET_LOG_APPEND, 'sh', file, text], {
+    for (const lines of [texts.slice(0, 1), texts.slice(1)])
+        spawnSync('sh', ['-c', QUIET_LOG_APPEND, 'sh', file, ...lines], {
             timeout: 10_000,
         });
     const kept = readFileSync(file, 'utf8');
