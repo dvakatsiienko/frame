@@ -6,7 +6,6 @@ import {
     type Refusal,
     STASH,
     TRASH,
-    commandsDeep,
     gitDir,
     gitParts,
     hasFlag,
@@ -14,6 +13,7 @@ import {
     or,
     peel,
 } from './command.ts';
+import { commandsDeep } from './nested.ts';
 
 // a whole-tree stash sets aside every uncommitted file in the tree, a peer session's too (the FRM-427 sixth sense, the
 // 10-25 flawlog); the git dirs where one runs, for the caller to check against x-mod-holds

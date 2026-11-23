@@ -1,6 +1,5 @@
 import type { EngineInterface } from 'claude-code';
 
-import { commandsDeep } from './rules/command.ts';
 import {
     type HerdrClose,
     herdrCloseKey,
@@ -8,6 +7,7 @@ import {
     isClioSeat,
     isHerdrTabNew,
 } from './rules/herdr-close.ts';
+import { commandsDeep } from './rules/nested.ts';
 
 // the herdr closes on the line that end no live seat: herdr names every terminal each one ends, and none carries a
 // `seat=` label or runs a claude agent this seat did not start; a terminal that finished ends nothing. a close herdr

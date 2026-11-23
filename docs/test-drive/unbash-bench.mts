@@ -6,10 +6,8 @@ import { homedir } from 'node:os';
 import path from 'node:path';
 
 import { bashCalls } from '../../home/.claude/plugin-x/mods/replay.ts';
-import {
-    commands,
-    commandsDeep,
-} from '../../home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/command.ts';
+import { commands } from '../../home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/command.ts';
+import { commandsDeep } from '../../home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/nested.ts';
 import { parse } from '../../home/.claude/plugin-x/mods/x-mod-guard/hooks/shell.ts';
 import { ESCAPES } from '../../home/.claude/plugin-x/mods/x-mod-guard/tests/escapes.ts';
 

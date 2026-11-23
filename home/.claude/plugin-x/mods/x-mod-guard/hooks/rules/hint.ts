@@ -5,7 +5,6 @@ import {
     PIPE_READ,
     asMember,
     commands,
-    commandsDeep,
     gitDir,
     gitParts,
     hasFlag,
@@ -13,6 +12,7 @@ import {
     resolve,
 } from './command.ts';
 import { isOwnRepo } from './hazard.ts';
+import { commandsDeep } from './nested.ts';
 import { commandWrites, pythonWrites } from './writes.ts';
 
 export const PR_HINT =

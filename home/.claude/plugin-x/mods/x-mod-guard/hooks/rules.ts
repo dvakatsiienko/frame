@@ -3,28 +3,30 @@ import {
     type Command,
     type Context,
     type Refusal,
-    SHELLS,
     TICK_DOOR,
     actsIn,
-    aliasRun,
     basename,
     commands,
-    commandsDeep,
     gitDir,
     gitParts,
     hasFlag,
     isFlag,
     isJobTmp,
     isThrowaway,
-    nestedScripts,
     operands,
     peel,
-    persistedAlias,
     resolve,
 } from './rules/command.ts';
 import { floor, hooksBypass } from './rules/floor.ts';
 import { hazard } from './rules/hazard.ts';
 import { herdrClose } from './rules/herdr-close.ts';
+import {
+    SHELLS,
+    aliasRun,
+    commandsDeep,
+    nestedScripts,
+    persistedAlias,
+} from './rules/nested.ts';
 import { type Parsed, parse } from './shell.ts';
 
 // the os temp roots: a throwaway repo from `mktemp -d` lands under /var/folders, a hand-made fixture under /tmp

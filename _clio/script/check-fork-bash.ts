@@ -6,12 +6,12 @@ import { dirname, join } from 'node:path';
 
 import {
     type Command,
-    commandsDeep,
     gitDir,
     gitParts,
     operands,
     resolve,
 } from '../../home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/command.ts';
+import { commandsDeep } from '../../home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/nested.ts';
 import {
     commandWrites,
     pythonWrites,

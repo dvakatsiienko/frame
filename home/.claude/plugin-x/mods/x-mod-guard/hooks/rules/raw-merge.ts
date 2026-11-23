@@ -1,9 +1,5 @@
-import {
-    type Command,
-    type Refusal,
-    TICK_DOOR,
-    commandsDeep,
-} from './command.ts';
+import { type Command, type Refusal, TICK_DOOR } from './command.ts';
+import { commandsDeep } from './nested.ts';
 
 // gh's own flags that take the next word, on `pr merge`, `stack merge`, `api` and the root
 const VALUE_FLAGS = new Set([
