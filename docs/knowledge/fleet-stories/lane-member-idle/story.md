@@ -1,12 +1,12 @@
 ---
 status: open
 dates: 2026-11-23 → 2026-11-23
-tickets: [FRM-683, FRM-288]
-tags: [idle, lane, coordinator, park, wrong-call, hang-heal]
+tickets: [FRM-683, FRM-288, FRM-692, FRM-693]
+tags: [idle, lane, coordinator, park, wrong-call, hang-heal, second-wind, keep-hot]
 fed-by: incidents
 ---
 
-# a lane member sat idle while its coordinator worked — 2026-11-23
+# lane members sat idle and nobody was told — 2026-11-23, four cases in one day
 
 ## what happened
 
@@ -38,10 +38,28 @@ dima, 2026-11-23 16:45: i find myself always pushing on you to sign tickets, esp
 
 the habit behind both cases: clio treats the seal as the step before a dispatch, done when a member is already free. so every chunk boundary and every boot opens with a member waiting on her paperwork.
 
+## the third case, the same evening: a reviewer parked two hours with no wait named
+
+- 16:17 the mods sixth sense's last real act (FRM-596 clean, round 2). parked from then
+- 17:07 and 17:57 its only turns: the board mod's keep-hot ping, each answered with one character, 50 min apart
+- 18:34 dima reads the two «.» in its thread and asks why it has been parked for two hours
+- the wait had a reason: a reviewer works on a builder's «final», and the mods codie sent none all afternoon, its chunk (FRM-658) being measurement. the reason was named nowhere dima could see: no 🔭 line, no glide note, no line from clio
+- the wrong call is clio's: a member parked past an hour got no named wait and no read-ahead work (the two commits already on main were readable from 18:17)
+
+## the fourth case, minutes later: a second wind that never fired
+
+- 18:32:33 the speak codie ends its turn on «i take the second wind now», its handoff `speak-hunt-2` saved
+- no compact follows. 18:39:35 its transcript logs «x-mod-stash: reloaded»: the mods lane had pushed (the prune, the weekly fix), and every session's board mod reloaded
+- 18:41 dima asks «speak codie stuck with SW for 10min?». 18:42 clio finds the handoff untaken in the store and tells the codie to call the reset once more, else carry on
+- the cause, from the codie's own retry (18:45): it called the `second-wind` op with `pending: none` while a background Monitor on its pr was still running, and the compact never fired; with the Monitor stopped, the same call compacted and ingested. the op answered the same words both times, so the member could not tell. clio's first guess, the mod reload at 18:39, was wrong
+- nobody's wrong call; a hole: the op accepts a reset that a live background task will hold forever and says nothing, and no alarm reads «a member said second wind N minutes ago and its handoff is still in the store»
+
+dima, 2026-11-23 18:43: another case of a hung crew member. it starts to appear too often now. how to solve this?
+
 ## why nobody saw it
 
 1. **the plan put the member behind the coordinator.** hunt, merge, his ticks, spec, seal, dispatch ran in a row, every step clio's or dima's. an idle codie was the plan working as written
-2. **the board said «waiting for your ticks».** the lane's card showed step 3 of 5, his. nothing on any surface says «a member of this lane has had nothing to do for N minutes»
+2. **the alarm existed, and its condition missed every case.** the stash mod wakes the clio running a lane parked 10 min, built 7 Nov for this slip. FRM-602 narrowed it to «the next chunk is unsigned»: a chunk signed but unsealed (cases 1, 2), a reviewer waiting on a builder's final (case 3) and a member whose own reset never fired (case 4) all sat outside it. the lane's card showed step 3 of 5, his; nothing on any surface says «a member of this lane has had nothing to do for N minutes»
 3. **the rule that existed was not enough.** «a member that parks gets the next signed chunk the same turn» covers a chunk that is ready. this one was not: the gap between «parked» and «sealed» had no rule and no owner but clio's attention, and attention is what runs out (`method-silent-failures`)
 4. **the reset went first.** at 16:12 the choice was the seal or the second wind, and the reset won because the context mark said so. a member waiting is not on that scale
 
@@ -57,6 +75,9 @@ an idle member is a cost someone must be told about. the coordinator's own work 
 
 ## still open
 
-- the wake's condition change is not built yet
+- the wake's condition, widened to all four cases, is FRM-692, sealed and next in the mods lane: a member of a running lane idle 10 min with no named wait wakes its coordinator, whatever the reason
+- the `second-wind` op refuses, or names what holds it, while a background task of the session is live: a wisp for the mods lane (the repro: the op with a Monitor running)
+- a reviewer waiting on a final reads what is already on main after 30 min
+
 - a hunt run by `x:review-messhunt` has no step for the lane's codie; whether the codie should read along from the start is a line for that skill
 - a context reset at 55 % has no check for «is a member waiting on me»
