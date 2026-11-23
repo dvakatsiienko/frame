@@ -26,8 +26,29 @@ describe('what a paste with no text found on the clipboard', () => {
     });
 });
 
+// a thread older than dima's login reaches no pasteboard at all, private or his: the block is skipped, and says so
+function hasPasteboard() {
+    if (platform() !== 'darwin') return false;
+    const said = execFileSync(
+        '/usr/bin/osascript',
+        [
+            '-l',
+            'JavaScript',
+            '-e',
+            'ObjC.import("AppKit"); function run(a) { return $.NSPasteboard.pasteboardWithName(a[0]).isNil() ? "none" : "some"; }',
+            `x-chatter-test-${process.pid}`,
+        ],
+        { encoding: 'utf8', timeout: 10_000 },
+    );
+    if (said.trim() !== 'none') return true;
+    process.stderr.write(
+        'no pasteboard in this login session, skipped: «a text paste never reads as a file or an image»\n',
+    );
+    return false;
+}
+
 // the real clipboard script on a private pasteboard, never his clipboard: a text paste stays text
-describe.runIf(platform() === 'darwin')(
+describe.runIf(hasPasteboard())(
     'a text paste never reads as a file or an image',
     () => {
         const board = `x-chatter-test-${process.pid}`;
