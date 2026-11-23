@@ -17,6 +17,7 @@ dima, 2026-11-12 17:35 (PK-380:W42): «i often ask stuff like this, e.g. «check
 2. each lane's chunks: its area's milestones in linear, in their `blocks` order, through the filter of `shapes.md`
 3. per chunk: state, size, the `## signed` lines (`x linear read <ids…>`); the running one's lane plan, `~/.local/state/x/lanes/<lane>/lane-plan.md`, for its ticks
 4. a read that cannot run prints `not read: <why>` on its line
+5. a parked lane's tail is its lane plan's unticked lines, never its handoff: a handoff is as old as its park
 
 ## «ready» — the health check, the lanes made dispatchable (dima, 2026-11-23)
 
