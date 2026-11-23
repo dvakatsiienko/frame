@@ -41,13 +41,21 @@ async function session($: Engine, on: On) {
         state.set(e.key, e.value);
         return { value: { isSet: true, version: 2 } };
     });
-    on('store.get', (_$, e) => ({ value: store.get(e.key) }));
+    // each key the mod read, in order
+    const reads: string[] = [];
+    on('store.get', (_$, e) => {
+        reads.push(e.key);
+        return { value: store.get(e.key) };
+    });
     on('store.set', (_$, e) => {
         store.set(e.key, e.value);
         return { value: undefined };
     });
     on('store.keys', () => ({ value: [...store.keys()] }));
+    // a full or read-only store refuses a delete
+    const refused = { isDelete: false };
     on('store.delete', (_$, e) => {
+        if (refused.isDelete) return { deny: 'the store is read-only' };
         store.delete(e.key);
         return { value: undefined };
     });
@@ -182,6 +190,8 @@ async function session($: Engine, on: On) {
             const text = files.get(`${DIR}/${id}.json`);
             return text === undefined ? undefined : JSON.parse(text);
         },
+        reads,
+        refused,
         setSid: (next: string) => {
             sid = next;
         },
@@ -1001,10 +1011,12 @@ test("a subagent's start after the turn ended leaves the thread's file idle", as
 async function promptAfterEnd(
     $: Engine,
     s: Awaited<ReturnType<typeof session>>,
-    reason: 'other' | 'clear',
+    reason: 'other' | 'clear' | 'resume',
 ) {
     await say($);
-    await $.session.end({ reason, sessionId: A } as never);
+    await $.session
+        .end({ reason, sessionId: A } as never)
+        .catch(() => undefined);
     s.files.set(JOINS, row('j1', 'first'));
     await say($, 'B');
     return said(s).length;
@@ -1014,9 +1026,38 @@ test('a quit leaves no running turn: the next prompt carries the joins', async (
     expect(await promptAfterEnd($, s, 'other')).toBe(1);
 });
 
-test('a /clear mid-turn keeps the running turn: the next prompt carries no joins', async ($, on) => {
+test('a quit whose own work throws leaves no running turn either', async ($, on) => {
     const s = await session($, on);
-    expect(await promptAfterEnd($, s, 'clear')).toBe(0);
+    s.refused.isDelete = true;
+    expect(await promptAfterEnd($, s, 'other')).toBe(1);
+});
+
+for (const reason of ['clear', 'resume'] as const)
+    test(`a ${reason} mid-turn keeps the running turn: the next prompt carries no joins`, async ($, on) => {
+        const s = await session($, on);
+        expect(await promptAfterEnd($, s, reason)).toBe(0);
+    });
+
+// each poll reads `herdr-seen` once; a second start on the same copy takes the poll over, a quit ends it
+async function pollsIn(s: Awaited<ReturnType<typeof session>>) {
+    s.reads.length = 0;
+    await s.clock.advance(120_000);
+    return s.reads.filter((key) => key === 'herdr-seen').length;
+}
+test('a second start polls once, as one start does', async ($, on) => {
+    const s = await session($, on);
+    await $.session.start({
+        cwd: '/tmp',
+        isInteractive: true,
+        surface: 'terminal',
+    });
+    expect(await pollsIn(s)).toBe(30);
+});
+
+test('a quit ends the poll', async ($, on) => {
+    const s = await session($, on);
+    await $.session.end({ reason: 'other', sessionId: A } as never);
+    expect(await pollsIn(s)).toBe(0);
 });
 
 // FRM-618 slice D exit 4: the file carries every field herdr's contract requires, so a rename here reds this test; the

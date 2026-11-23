@@ -28,6 +28,7 @@ Ticket: FRM-530. A ⛩️ gate is a check that refuses: it stops a commit, a pus
 - **fleet-hazards**: a new hazard note names what guards it
 - **memory-lint**: memory files stay within their size, 2 s
 - **code-size**: no code file grows past 1,200 lines without a `size:` line, or past its giant's cap; on a month's trial (`docs/test-drive/size-cap.md`)
+- **stash-resets**: no x-mod-stash hooks file holds a module variable a quit does not give back (`script/lib/stash-resets.test.ts`)
 - **git-crypt-rename**: a moved secret file stays encrypted, 2 s
 - **chords-essentials**, **speak-essentials**: those two apps keep their required parts
 

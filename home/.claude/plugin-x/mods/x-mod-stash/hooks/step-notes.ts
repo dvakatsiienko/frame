@@ -43,7 +43,7 @@ const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
 const NUDGE_AT = 3;
 // a plan set in either of the last 2 turns still holds: a turn that did not move it gets no nudge (clio's brief 8)
 const PLAN_QUIET_TURNS = 2;
-const WORK_TOOLS = new Set([
+const WORK_TOOLS: ReadonlySet<string> = new Set([
     'Edit',
     'Write',
     'NotebookEdit',

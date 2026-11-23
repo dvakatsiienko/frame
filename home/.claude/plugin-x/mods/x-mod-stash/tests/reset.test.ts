@@ -1,6 +1,8 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { resetObject, serial } from '../hooks/util.ts';
+
 const PEER = 'c3c3c3c3-0000';
 const TOOL = 'mcp__x-mod-stash__orbit';
 
@@ -116,4 +118,17 @@ test('after a session.end of reason clear, the next write keys on the new conver
         s.store.has('asks:b2b2b2b2-0000'),
         s.store.has('asks:a1a1a1a1-0000'),
     ]).toEqual([true, false]);
+});
+
+test('an object back to what it loaded with loses the keys it gained', () => {
+    const kept: Record<string, unknown> = { gained: 1, n: 2 };
+    resetObject(kept, { n: 0 });
+    expect(kept).toEqual({ n: 0 });
+});
+
+test('a lock given back runs the next job past one that never ends', async () => {
+    const locked = serial();
+    void locked(() => new Promise(() => {}));
+    locked.reset();
+    expect(await locked(async () => 'ran')).toBe('ran');
 });

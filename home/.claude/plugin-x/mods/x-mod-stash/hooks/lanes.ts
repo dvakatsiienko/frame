@@ -43,7 +43,7 @@ const LANE_ORDER = 'lane-order:';
 export const LANE_STEER_OLD = 'lane-note:';
 export const LANE_ROLES = ['codie', 'sixth-sense'] as const;
 // read-both: lanes linked before the 10-29 rename keep the old role keys; both words resolve
-const LANE_ROLE_OLD: Record<string, (typeof LANE_ROLES)[number]> = {
+const LANE_ROLE_OLD: Readonly<Record<string, (typeof LANE_ROLES)[number]>> = {
     coder: 'codie', // read-both
     verifier: 'sixth-sense', // read-both
 };
@@ -832,4 +832,10 @@ export async function showLanes($: EngineInterface, lanes: StashLane[]) {
 export async function reshowLanes($: EngineInterface) {
     lanesShown = '';
     await showLanes($, await readLanes($));
+}
+
+export function resetLanes() {
+    planParses.clear();
+    laneShowns.clear();
+    lanesShown = '';
 }

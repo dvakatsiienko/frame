@@ -39,11 +39,21 @@ export async function writeWhole(
 // the queue
 export function serial() {
     let tail: Promise<unknown> = Promise.resolve();
-    return <T>(job: () => Promise<T>) => {
+    const locked = <T>(job: () => Promise<T>) => {
         const run = tail.then(job);
         tail = run.catch(() => undefined);
         return run;
     };
+    const reset = () => {
+        tail = Promise.resolve();
+    };
+    return Object.assign(locked, { reset });
+}
+
+// an object back to what it loaded with: a key it gained goes too
+export function resetObject<T extends object>(target: T, loaded: T) {
+    for (const key of Object.keys(target)) Reflect.deleteProperty(target, key);
+    Object.assign(target, loaded);
 }
 
 // a path's leading `~/` as the home dir; any other path, or none, as it is

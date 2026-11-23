@@ -119,3 +119,8 @@ export function noBoardReminder(o: StashOrbit, isOn: IsPartOn) {
         : '';
     return `no board reaches dima: end the reply with the asks fence, «⏳ waiting on your word:», every open orbit ask${ids} with its id and pick, and each new ask as one ➡️ line${moves}. his answers come back in his prompt; resolve the ones he answered by id through ${ORBIT_TOOL} while 🪐 orbit is switched on.${stale}`;
 }
+
+export function resetTurnNotes() {
+    toldOrbit = undefined;
+    toldStaleLanes.clear();
+}

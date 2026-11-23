@@ -203,3 +203,9 @@ export async function wakeForParkedLanes($: EngineInterface, view: ViewDoors) {
         await $.store.set(key, at);
     }
 }
+
+export function resetParkedWake() {
+    parkedReadAt = 0;
+    parkedUnreadLogged.clear();
+    signedReads.clear();
+}

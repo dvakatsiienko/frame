@@ -566,3 +566,21 @@ async function unmountSteers($: EngineInterface) {
         });
     });
 }
+
+export function resetFields() {
+    pendingSaves.clear();
+    drafts.clear();
+    remounts.clear();
+    unsaved.clear();
+    remountTexts.clear();
+    textsLeft.clear();
+    bases.clear();
+    before.clear();
+    keptSteers.clear();
+    failures.clear();
+    saving.clear();
+    askTypedAt.clear();
+    fieldsWrite = Promise.resolve();
+    fieldsKept = '';
+    fieldsTaken = undefined;
+}

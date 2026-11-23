@@ -71,7 +71,8 @@ const CAP = { key: 'cap', plugin: 'x-mod-stash' } as const;
 // 🪐 orbit: the session's asks to dima, ticked in the board instead of pasted back; the session writes them through
 // its own tool, never a reply block
 const ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
-let isPolling = false;
+// the running poll: a start takes over from the one before, whose next tick ends it
+let poll: object | undefined;
 // a start or a reload: who this session is, what `$.state` kept, the tool and commands, the poll
 export async function startSession(
     $: EngineInterface,
@@ -152,10 +153,10 @@ export async function startSession(
             );
     await startPoll($, view);
 }
-// one poll per process: a reload's start finds it running
+// one poll per process: a start takes over from the one before
 async function startPoll($: EngineInterface, view: ViewDoors) {
-    if (isPolling) return;
-    isPolling = true;
+    const own = {};
+    poll = own;
     // a test's seam: a slower poll, read once, so a test over hours of mock time crosses fewer ticks; never a faster one
     const asked = Number(
         await $.env.get('X_STASH_POLL_MS').catch(() => undefined),
@@ -164,6 +165,7 @@ async function startPoll($: EngineInterface, view: ViewDoors) {
     await markActive($).catch(() => undefined);
     const tick = () =>
         $.clock.after(pollMs, async () => {
+            if (own !== poll) return;
             const now = await $.clock.now();
             const isBookkept =
                 turn.isBusy ||
@@ -205,4 +207,8 @@ async function startPoll($: EngineInterface, view: ViewDoors) {
             tick();
         });
     tick();
+}
+
+export function resetSessionStart() {
+    poll = undefined;
 }

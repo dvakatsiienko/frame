@@ -20,20 +20,23 @@ import { partsShown, readNumber } from './settings-store.ts';
 import { AFK_KEY, HOT, WAKER_KEY, hotOf } from './store-keys.ts';
 import { idleTurn, isTurnBusy, selfSubmit, turn } from './turn.ts';
 import { paceMeterOf } from './usage.ts';
+import { resetObject } from './util.ts';
 
 const CAP = { key: 'cap', plugin: 'x-mod-stash' } as const;
 
 // the band's three switches as this process holds them: 💨 afk, ⏰ the waker, 🔥 keep-hot; read through `warm`
-const state = {
+const loaded = () => ({
     afk: false,
     // since: the turn end the next ping counts from; only dima's click turns it off, a 5h reset never does
     hot: undefined as { since: number } | undefined,
     // a turn start or a flip bumps it, so a ping armed before either never fires
-    hotGen: 0,
+    // the armed 🔥 timer's token: a newer one, or a quit, leaves an older timer with nothing to do
+    hotRun: {},
     isWaker: false,
     // a poll during a press would read the store before its write lands and undo it, so load and followHot sit it out
     pressing: 0,
-};
+});
+const state = loaded();
 export const warm: Readonly<typeof state> = state;
 // the module copy alone, no store write: a load's read, a press's flip before its write, and the flip's rollback
 export const holdAfk = (on: boolean) => {
@@ -45,7 +48,6 @@ export const holdWaker = (on: boolean) => {
 export const holdHot = (hot: { since: number } | undefined) => {
     state.hot = hot;
 };
-export const bumpHotGen = () => ++state.hotGen;
 export const pressBegin = () => {
     state.pressing++;
 };
@@ -380,13 +382,14 @@ export async function seatDefaults($: EngineInterface, view: ViewDoors) {
 // the wiring's share of every turn start: a ping armed before it never fires, the poll's state is read fresh, and the
 // turn keeps whether dima is afk
 export async function prepareTurn(view: ViewDoors) {
-    ++state.hotGen;
+    state.hotRun = {};
     await view.load();
     return state.afk;
 }
 
 export async function armHot($: EngineInterface, view: ViewDoors) {
-    const mine = ++state.hotGen;
+    const mine = {};
+    state.hotRun = mine;
     if (turn.isBusy) return;
     const now = await $.clock.now();
     const since =
@@ -397,7 +400,7 @@ export async function armHot($: EngineInterface, view: ViewDoors) {
     $.clock.after(Math.max(0, since + everyMs - now), async () => {
         // a chip may have deleted the key since the last poll: a change re-arms, so this timer goes stale
         await followHot($, view).catch(() => undefined);
-        if (turn.isBusy || mine !== state.hotGen) return;
+        if (turn.isBusy || mine !== state.hotRun) return;
         if (!state.hot && !(await isAfkWarm($))) return;
         if (!(await partsShown($))('stash.hot')) return;
         if (await isWindowSpent($)) return;
@@ -506,7 +509,7 @@ let fiveHourResetsAt: number | undefined;
 let fiveHourPercent: number | undefined;
 const CAP_FULL_PERCENT = 95;
 let cap: StashCap | undefined;
-let capGen = 0;
+let capRun: object = {};
 async function keepCapSeen(
     $: EngineInterface,
     text: string,
@@ -540,15 +543,16 @@ async function capFromTranscript($: EngineInterface) {
         .catch(() => undefined);
     return out ? capOf(out.stdout) : undefined;
 }
-// a capped session's resume, armed for the reset it waits on; a turn start or a new cap bumps capGen, so an old timer
+// a capped session's resume, armed for the reset it waits on; a turn start or a new cap takes capRun over, so an old timer
 // never fires
 export async function armWake($: EngineInterface, view: ViewDoors) {
-    const mine = ++capGen;
+    const mine = {};
+    capRun = mine;
     const at = cap?.resetsAt;
     if (at === undefined || cap?.sentFor === at) return;
     const wait = at + WAKE_SLACK_MS - (await $.clock.now());
     $.clock.after(Math.max(0, wait), async () => {
-        if (mine !== capGen || turn.isBusy || !cap) return;
+        if (mine !== capRun || turn.isBusy || !cap) return;
         // the reset is spent at its fire, switch on or off: ⏰ flipped on later never wakes a reset already past (o102)
         cap = { ...cap, sentFor: at };
         await $.state.set(CAP, cap).catch(() => undefined);
@@ -635,4 +639,16 @@ export async function forgetWarm(
     if (!(heat && !hotOf(heat))) await $.store.delete(HOT + sid);
     if (!isExit || !(await $.store.get(AUTO_WIND + sid)))
         await $.store.delete(AUTO_WIND + sid);
+}
+
+export function resetKeepWarm() {
+    resetObject(state, loaded());
+    lateWindow = undefined;
+    isPaceSending = false;
+    paceUnsaved = undefined;
+    isPaceSeatHeld = false;
+    fiveHourResetsAt = undefined;
+    fiveHourPercent = undefined;
+    cap = undefined;
+    capRun = {};
 }

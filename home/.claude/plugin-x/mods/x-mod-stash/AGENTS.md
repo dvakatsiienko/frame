@@ -7,7 +7,7 @@ dima's board, band and orbit in one cc mod: `hooks/register.tsx` is the hook wir
 - **the wiring** — `register.tsx`: each `on(...)` calls the modules in order, builds `viewDoors($)` and the callbacks the owners take; a hook body longer than a few calls is a function in its feature's module
 - **the draws** — `board.tsx` (the fleet board pane, `/board`; its cards in `board-orbit.tsx`, `board-glide.tsx`, `board-phases.tsx`, each over `board-kit.tsx`'s shared kit), `band.tsx` (the row above the prompt), `settings-pane.tsx` (🎛️): each is one draw over the view, called by its `ui.render` hook
 - **the view** — `view.ts`: `load` re-reads the store, `publish` writes `$.state` view when it changed, `viewOf`, `pressSwitch`, `pressPace`, the `band` reads between loads
-- **the hook features** — `session-start.ts` (a start or a reload, the poll), `prompt-notes.ts` (what a prompt carries), `step-notes.ts` (what a tool step carries back), `session-end.ts` (what a conversation leaves behind)
+- **the hook features** — `session-start.ts` (a start or a reload, the poll), `prompt-notes.ts` (what a prompt carries), `step-notes.ts` (what a tool step carries back), `session-end.ts` (what a conversation leaves behind), `session-reset.ts` (a quit gives every module variable its load value)
 - **the features over the owners** — `fields.ts`, `orbit-presses.ts`, `orbit-tool.ts`, `turn-notes.ts`, `wind-run.ts`, `quiet-gate.ts`, `parked-wake.ts`, `band-presses.ts`, `reply-fix.ts`, `rows.ts`
 - **the owners** — each holds one store or shelf file and the only code that writes it
 - **the pure rules** — no `$`: `orbit.ts`, `parse.ts`, `pace.ts`, `quiet.ts`, `rounds.ts`' math, `look.ts`, `tree.ts`, `util.ts` (`serial()` for a read-change-write across awaits, `expandHome`)
@@ -21,6 +21,7 @@ dima's board, band and orbit in one cc mod: `hooks/register.tsx` is the hook wir
 - a `$.state` key is a literal or a const of the file that calls `$.state`, so a key read in two files has a const in each, the same string
 - a `$`-using helper past an import is a `function` declaration: `claude plugin validate` refuses an arrow (`const f = ($) => …`)
 - a module-level `let` changes only inside its own module; another module calls its setter (`reshowLanes`, `retakeFields`, `toldOrbitAs`, `nextTurnNo`, `patchBand`)
+- a module variable is given back at a quit, in its module's `reset…`, which `session-reset.ts` calls: a `let` by its own init, an empty Map or Set by `.clear()`, a lock by `.reset()`, an object as `const state = loaded()` by `resetObject(state, loaded())`; any other top-level value is `as const` or Readonly (`~/frame/script/lib/stash-resets.test.ts`)
 - a sibling module reruns with the entry on a hot reload, so its lets reset as register.tsx's did (`../engine.md` § engine facts by area, probed 19 Nov)
 - `store-keys.ts` holds the keys more than one layer writes; a key there names why it stays
 

@@ -40,7 +40,7 @@ import {
 } from './session-identity.ts';
 import { readSwitch, refreshShown, settings } from './settings-store.ts';
 import { AFK_KEY, REPLY, type Reply, WAKER_KEY } from './store-keys.ts';
-import { errorText } from './util.ts';
+import { errorText, resetObject } from './util.ts';
 import { windOf } from './wind.ts';
 
 // a reload keeps `$.state` and resets the module: what must outlive a mod save lives there (FRM-320)
@@ -51,12 +51,13 @@ const BOARD_VIEW = { key: 'board', plugin: 'x-mod-stash' } as const;
 
 // the band's own reads between two loads: load refreshes them, a press shows its change at once; this session's own
 // second wind as the store holds it, 🍃 auto wind, 🔋 pace, and what its last reply waits on, its 🔭 line
-const shown = {
+const loaded = () => ({
     isAutoWindOn: true,
     isPaced: false,
     selfWind: undefined as StashWind['state'] | undefined,
     wait: undefined as string | undefined,
-};
+});
+const shown = loaded();
 export const band: Readonly<typeof shown> = shown;
 export function patchBand(patch: Partial<typeof shown>) {
     Object.assign(shown, patch);
@@ -244,4 +245,10 @@ export async function pressPace($: EngineInterface) {
     await load($);
     await publish($);
     $.ui.invalidate('ui.render');
+}
+
+export function resetView() {
+    resetObject(shown, loaded());
+    published = '';
+    boardPublished = '';
 }

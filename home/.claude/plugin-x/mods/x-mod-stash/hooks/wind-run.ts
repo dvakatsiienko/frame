@@ -93,7 +93,7 @@ const WIND_NOTE_AUTO = `🐦‍🔥 second wind: the mod asks you for it, your c
 const WIND_NOTE_AUTO_OWNER = `🐦‍🔥 second wind: the mod asks you to checkpoint, your context is past {wind} %: a must, never a rush. finish the topic you are on whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run clio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
 // the five notes dima may rewrite, each a row of the second-wind store; an empty row is the default here (FRM-634).
 // `{fill}` and `{wind}` take the thread's fill and the wind line
-const WIND_DEFAULTS: Record<WindRow, string> = {
+const WIND_DEFAULTS: Readonly<Record<WindRow, string>> = {
     'stash.wind.text.at': WIND_NOTE_AUTO,
     'stash.wind.text.at.coordinator': WIND_NOTE_AUTO_OWNER,
     'stash.wind.text.notice': FILL_NOTICE,
@@ -642,4 +642,10 @@ export async function compactSession(
 
 export async function forgetFill($: EngineInterface, sid: string) {
     await $.store.delete(FILL + sid);
+}
+
+export function resetWindRun() {
+    overCapLogged.clear();
+    turnNo = 0;
+    windPolls = 0;
 }

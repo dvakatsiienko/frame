@@ -3,6 +3,7 @@ import type { EngineInterface } from 'claude-code';
 import { PLAN_MAX } from './orbit.ts';
 import { PACE_SETTINGS, windPairRefusal } from './pace.ts';
 import { markActive } from './turn.ts';
+import { resetObject } from './util.ts';
 import { WIND_ROWS, WIND_TEXT_EDITS } from './wind-store.ts';
 
 // the 🎛️ settings: every switch, knob and part in one table each, their store keys, and the one reader and writer of each;
@@ -174,10 +175,11 @@ export type PartKey = (typeof PARTS)[number]['key'];
 export type IsPartOn = (key: PartKey) => boolean;
 // the 🎛️ part switches as this session last read them, and whether its 🎛️ pane is open; one owner, read through
 // `settings`, changed through the functions below
-const state: { isSettingsOpen: boolean; shown: Record<string, boolean> } = {
-    isSettingsOpen: false,
-    shown: {},
-};
+const loaded = (): {
+    isSettingsOpen: boolean;
+    shown: Record<string, boolean>;
+} => ({ isSettingsOpen: false, shown: {} });
+const state = loaded();
 export const settings: Readonly<typeof state> = state;
 
 export async function refreshShown($: EngineInterface) {
@@ -223,7 +225,7 @@ export async function partsShown($: EngineInterface): Promise<IsPartOn> {
 }
 
 // the orbit ops a settings switch owns: hidden, the op is refused, so no session writes what nobody sees
-const OP_PART: Partial<Record<string, PartKey>> = {
+const OP_PART: Readonly<Partial<Record<string, PartKey>>> = {
     add: 'stash.orbit',
     assume: 'stash.assumed',
     follow: 'stash.orbit',
@@ -394,4 +396,9 @@ export async function setKnobNumber(
     else knobRefusals.delete(name);
     if (!refusal) await $.store.set(NUMBERS[name].key, n);
     $.ui.invalidate('ui.render');
+}
+
+export function resetSettings() {
+    resetObject(state, loaded());
+    knobRefusals.clear();
 }

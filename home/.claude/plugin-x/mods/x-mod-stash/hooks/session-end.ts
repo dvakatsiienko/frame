@@ -14,7 +14,7 @@ import {
     refreshThreads,
 } from './session-identity.ts';
 import { dropState, forgetModel } from './session-record.ts';
-import { resetTurn, setPrimed } from './turn.ts';
+import { setPrimed } from './turn.ts';
 import { forgetTold } from './turn-notes.ts';
 import { forgetContext } from './usage.ts';
 import { forgetWind } from './wind.ts';
@@ -62,10 +62,4 @@ export async function endSession(
         await keepState($).catch(() => undefined);
         await forget($, sid, true);
     }
-}
-
-// a quit: each module variable goes back to its load value through its owner, so nothing of one session outlives it in
-// the process; a /clear or a resume keeps them
-export function resetModules() {
-    resetTurn();
 }

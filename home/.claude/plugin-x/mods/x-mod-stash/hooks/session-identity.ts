@@ -1,6 +1,6 @@
 import type { EngineInterface } from 'claude-code';
 
-import { KEPT_MS, basename } from './util.ts';
+import { KEPT_MS, basename, resetObject } from './util.ts';
 
 // who this session is: its id across a /clear, its project and label, its claude process, and its thread record as x
 // wrote it; one owner, read through `identity`, changed only by the events below
@@ -16,7 +16,15 @@ type Identity = {
     projectDir?: string;
     selfId?: string;
 };
-const state: Identity = { label: 'session' };
+const loaded = (): Identity => ({
+    clearedFrom: undefined,
+    continuedFrom: undefined,
+    label: 'session',
+    proc: undefined,
+    projectDir: undefined,
+    selfId: undefined,
+});
+const state = loaded();
 export const identity: Readonly<Identity> = state;
 
 // the repo root, not the cwd: a cd in the shell must not rename the thread; a hot reload's start carries the shell's
@@ -209,4 +217,8 @@ export async function pruneSuccessors($: EngineInterface, now: number) {
         const v = (await $.store.get(key)) as { at?: number } | undefined;
         if (now - (v?.at ?? 0) >= KEPT_MS) await $.store.delete(key);
     }
+}
+
+export function resetIdentity() {
+    resetObject(state, loaded());
 }

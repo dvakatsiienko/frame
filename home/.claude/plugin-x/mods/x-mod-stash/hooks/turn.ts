@@ -1,5 +1,7 @@
 import type { EngineInterface } from 'claude-code';
 
+import { resetObject } from './util.ts';
+
 // the turn as this session runs it: busy or not, whose turn, what it did, when it ended; one owner, read through
 // `turn`, changed through the functions below; `$.state` turn mirrors the band's part so a reload keeps it
 const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
@@ -40,7 +42,7 @@ const loaded = (): TurnState => ({
 const state = loaded();
 export const turn: Readonly<TurnState> = state;
 export function resetTurn() {
-    Object.assign(state, loaded());
+    resetObject(state, loaded());
 }
 
 // when the last main turn ended: 🔥 switched on while idle counts its 50 min from here, so the ping lands inside the cache's hour

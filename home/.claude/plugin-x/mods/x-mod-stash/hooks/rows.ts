@@ -141,3 +141,7 @@ async function cliosWaiting($: EngineInterface) {
     }
     return waiting;
 }
+
+export function resetRows() {
+    clioAsksShown = '';
+}

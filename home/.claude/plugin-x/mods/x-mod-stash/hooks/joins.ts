@@ -160,3 +160,7 @@ export async function leaveJoins($: EngineInterface, sid: string) {
     if (!isHandedBack)
         await $.store.set(JOIN_OWED + sid, true).catch(() => undefined);
 }
+
+export function resetJoins() {
+    joinsLocked.reset();
+}

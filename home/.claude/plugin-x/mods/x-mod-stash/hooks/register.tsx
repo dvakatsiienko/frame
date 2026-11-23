@@ -27,9 +27,10 @@ import {
     receiveMessage,
 } from './quiet-gate.ts';
 import { fixDrawnReply, fixStoredReply, settleReply } from './reply-fix.ts';
-import { endSession, forget, resetModules } from './session-end.ts';
+import { endSession, forget } from './session-end.ts';
 import { currentId, refreshThreads } from './session-identity.ts';
 import { keepShelf, noteModel } from './session-record.ts';
+import { resetModules } from './session-reset.ts';
 import { startSession } from './session-start.ts';
 import { drawSettingsPane } from './settings-pane.tsx';
 import { setSettingsOpen } from './settings-store.ts';

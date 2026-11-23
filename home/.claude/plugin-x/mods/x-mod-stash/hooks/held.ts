@@ -611,3 +611,7 @@ export async function steersOnCompact($: EngineInterface) {
             await saveHeld($, keys, { ...kept, isCompacted: true });
     });
 }
+
+export function resetHeld() {
+    quietLocked.reset();
+}

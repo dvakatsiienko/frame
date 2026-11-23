@@ -12,7 +12,7 @@ import { keepShelf } from './session-record.ts';
 import { drawn } from './tree.ts';
 import { STALE_TURNS } from './turn-notes.ts';
 
-const PHASE_MOONS = ['🌕', '🌔', '🌓', '🌒', '🌑'];
+const PHASE_MOONS = ['🌕', '🌔', '🌓', '🌒', '🌑'] as const;
 // a plan line's lead word, one short word before its colon
 const PLAN_LEAD = /^[a-z]{2,10}:/i;
 

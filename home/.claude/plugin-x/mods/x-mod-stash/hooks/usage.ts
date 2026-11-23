@@ -280,3 +280,7 @@ export async function countWords(
 export async function forgetContext($: EngineInterface, sid: string) {
     await $.store.delete(CONTEXT + sid);
 }
+
+export function resetUsage() {
+    compactTrail = [];
+}

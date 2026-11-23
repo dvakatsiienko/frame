@@ -248,3 +248,12 @@ export async function noteModel(
 export async function forgetModel($: EngineInterface, sid: string) {
     await $.store.delete(MODEL + sid);
 }
+
+export function resetSessionRecord() {
+    stateWritten = undefined;
+    fleetWritten = undefined;
+    statePolls = 0;
+    isShelfTold = false;
+    shelfPolls = 0;
+    modelSeen = undefined;
+}

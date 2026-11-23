@@ -1,8 +1,11 @@
 import type { EngineInterface } from 'claude-code';
 
+import { resetObject } from './util.ts';
+
 // the operator override: dima's 🔓 grant in the fleet's store, which x, the guard and this mod all read; this module is
 // the mod's one reader and writer of it, the path read once a process
-const state: { isOn: boolean; store?: string } = { isOn: false };
+const loaded = (): { isOn: boolean; store?: string } => ({ isOn: false });
+const state = loaded();
 
 export const isOverrideOn = () => state.isOn;
 
@@ -120,4 +123,8 @@ export async function writeOverrideOff($: EngineInterface) {
     state.store ??= await overrideStorePath($);
     if (!state.store) throw new Error('no user record to read');
     await $.fs.write(state.store, '{}');
+}
+
+export function resetOverride() {
+    resetObject(state, loaded());
 }

@@ -72,6 +72,10 @@ pre-commit:
       # test run never picks it; on a month's test drive, docs/test-drive/size-cap.md. no glob: lefthook's staged list
       # drops a deleted file, and a deleted giant must meet its dead row in the commit that deletes it
       run: git diff --cached --name-only --no-renames | grep -qE '\.(ts|tsx|js|go|sh)$' || exit 0; script/index-run.sh pnpm exec vitest run script/lib/code-size.test.ts
+    stash-resets:
+      # a stash module variable no quit gives back (FRM-678); the test reads the hooks by path, so the related test run
+      # never picks it. no glob: lefthook's staged list drops a deleted file
+      run: git diff --cached --name-only --no-renames | grep -qE '^(home/\.claude/plugin-x/mods/x-mod-stash/hooks/|script/lib/stash-resets\.test\.ts)' || exit 0; script/index-run.sh pnpm exec vitest run script/lib/stash-resets.test.ts
     surface-mirror:
       # the herdr and desktop leaves keep one heading list in one order. no glob: lefthook's staged list drops a deleted
       # file, so the script reads the index itself and passes at once when neither leaf nor it is staged

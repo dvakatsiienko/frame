@@ -693,3 +693,7 @@ export async function quietCommand($: EngineInterface, args: string) {
         text: `quiet comms ${isOn ? 'on' : 'off'}, ${(await quietOf($)).held.length} held${kindsOff.length ? `; ${kindsOff.join(', ')} switched off, held like an untagged line` : ''}; /quiet on | off${arg ? ` («${arg}» is neither)` : ''}`,
     };
 }
+
+export function resetQuietGate() {
+    ledgerAt = 0;
+}

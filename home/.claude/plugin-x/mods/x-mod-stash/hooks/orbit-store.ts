@@ -389,3 +389,13 @@ export async function pruneKept($: EngineInterface, now: number) {
         if (now - (v?.at ?? 0) >= KEPT_MS) await $.store.delete(key);
     }
 }
+
+export function resetOrbitStore() {
+    orbit = EMPTY_ORBIT;
+    isOrbitLoaded = false;
+    orbitVersion = 0;
+    orbitWrites = 0;
+    ticksKept = { value: [], version: 0 };
+    keptJson = '';
+    inMarking.reset();
+}
