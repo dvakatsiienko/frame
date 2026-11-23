@@ -75,8 +75,9 @@ an idle member is a cost someone must be told about. the coordinator's own work 
 
 ## still open
 
-- the wake's condition, widened to all four cases, is FRM-692, sealed and next in the mods lane: a member of a running lane idle 10 min with no named wait wakes its coordinator, whatever the reason
-- the `second-wind` op refuses, or names what holds it, while a background task of the session is live: a wisp for the mods lane (the repro: the op with a Monitor running)
+- the wake's condition, widened to all four cases, is FRM-692, re-signed 23 Nov 19:00 and re-sealed that night, first in the mods lane on 24 Nov: a member of a running lane idle 10 min with no named wait wakes its coordinator, whatever the reason
+- the `second-wind` op says what holds it: `wind-run.ts:387` finds a live Monitor and stores the wind as blocked while the member was told «the refresh runs on its own». the fix rides FRM-692. crow's catch (19:07): the morning's cc read already named this («a watch holding a second wind»), clio called it «nothing to change» at 11:00, and `crew-codie` orders one persistent Monitor per open pr, so every codie with a pr open could not wind at all
+- until that lands: a member stops its pr Monitor before a second wind and re-arms it after the pickup (`clio:wind-down` step 5)
 - a reviewer waiting on a final reads what is already on main after 30 min
 
 - a hunt run by `x:review-messhunt` has no step for the lane's codie; whether the codie should read along from the start is a line for that skill
