@@ -263,7 +263,7 @@ export const manualHotkeys = [
         key: '0',
         mods: 'cmd+shift',
     },
-    // read aloud: x-speak registers its own hotkeys (schedule/jobs/x-speak), no app pane to read them from.
+    // read aloud: x-speak registers its own hotkeys (bytes' apps/speak/daemon), no app pane to read them from.
     // its presses from earlier homes (opt+esc, the system voice's F4, x-speak's F5) carry the feature in the log
     {
         action: 'Speak selection, neural (no selection: pause / resume)',

@@ -47,7 +47,7 @@ for line in open(sys.argv[1]):
     if sec == '8':
         ns, name = p.split(':', 1)
         path = f'{home}/frame/home/.claude/plugin-x/skills/{name}/SKILL.md' if ns == 'x' else f'{home}/frame/_clio/plugin-clio/skills/{name}/SKILL.md'
-    elif p.startswith(('home/', 'docs/', '_clio/', 'recipes/', 'x/', 'hotkeys/', 'import/', 'schedule/', 'gmail/', 'gifs/', 'speak/', '_crow/', '.claude/')):
+    elif p.startswith(('home/', 'docs/', '_clio/', 'recipes/', 'x/', 'hotkeys/', 'import/', 'schedule/', 'gmail/', 'gifs/', '_crow/', '.claude/')):
         path = f'{home}/frame/{p}'
     elif sec == '2' and p.startswith('rules-lazy/'):
         path = f'{home}/frame/home/.claude/{p}'
