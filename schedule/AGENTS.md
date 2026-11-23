@@ -12,7 +12,7 @@ one home for every scheduled daemon (`schedule/jobs/<name>/`: plist, source, `bi
   work, the trash call is brokered and refused; log a `folder writable` line in the error path and the scanned count, since a bare «trashed 0 / exit 0» on a folder with nothing old enough reads identical to a deny
 - `plutil -convert json` drops xml comments — prose in a plist is read from the raw file; `launchctl
   print` repeats `state =` in nested blocks — anchor the parse on the top-level line
-- **a changed program in a job's plist costs one killed start at the next login** — macOS judges the first start against the background-item record of the old program («Launch Constraint Violation», a crash report), replaces the record seconds later, and the 30 s retry passes; the login after is clean (speak's move, 2026-11-23, proven by a second login)
+- **a changed program in a job's plist costs one killed start at the next login** — macOS judges the first start against the background-item record of the old program («Launch Constraint Violation», a crash report), and the 30 s retry passes; the login after is clean (speak's move, 2026-11-23: one killed start, one clean second login; inference: the record is replaced between the two, nobody saw it happen)
 - **an AppKit daemon's `main` is synchronous** — `NSApplication.run()` inside `static func main() async` starves the main actor, so no hotkey or timer Task ever runs; a one-shot test never runs the app loop, so only a real key press shows it
 
 <!-- an AppKit daemon's sync main: speak, 40 min, 2026-09-29. -->
