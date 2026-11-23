@@ -249,25 +249,40 @@ export function readLaneAhead(
     }
 }
 
-// an area's signed chunks in the queue's order (a blocker first, then the lowest id): the first two of the first one's milestone
+// an area's signed chunks in the queue's order: the lowest-id one waiting on nothing in the area, then the chain's next link
+// (a chunk it blocks), else the lowest-id one that waits only on it; the second stays in the first's milestone
 function queuedChunks(
     signed: ListedTicket[],
     read: (id: string) => AheadTicket,
     seal: (id: string, bar: string[]) => Ahead,
 ): Ahead[] {
     const tickets = signed.map((t) => read(t.id));
-    const ids = new Set(tickets.map((t) => t.id));
-    const ordered = tickets.toSorted(
-        (a, b) =>
-            Number(openBlockers(a.relations).some((id) => ids.has(id))) -
-                Number(openBlockers(b.relations).some((id) => ids.has(id))) ||
-            a.id.localeCompare(b.id, undefined, { numeric: true }),
-    );
-    const milestone = ordered[0]?.milestone;
-    const first = ordered.filter((t) => t.milestone === milestone).slice(0, 2);
-    return first.map((t, i) =>
-        seal(t.id, i === 1 && first[0] ? [first[0].id] : []),
-    );
+    const inArea = new Set(tickets.map((t) => t.id));
+    const waits = (t: AheadTicket) =>
+        openBlockers(t.relations).filter((id) => inArea.has(id));
+    const byId = (a: AheadTicket, b: AheadTicket) =>
+        a.id.localeCompare(b.id, undefined, { numeric: true });
+    const first = tickets
+        .filter((t) => waits(t).length === 0)
+        .toSorted(byId)[0];
+    if (!first) return [];
+    const links = blockedIds(first.relations);
+    const second = tickets
+        .filter(
+            (t) =>
+                t.id !== first.id &&
+                t.milestone === first.milestone &&
+                waits(t).every((id) => id === first.id),
+        )
+        .toSorted(
+            (a, b) =>
+                Number(!links.includes(a.id)) - Number(!links.includes(b.id)) ||
+                byId(a, b),
+        )[0];
+    return [
+        seal(first.id, []),
+        ...(second ? [seal(second.id, [first.id])] : []),
+    ];
 }
 
 function laneOfProject(project: string) {

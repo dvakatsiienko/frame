@@ -430,6 +430,168 @@ describe('readLaneAhead, the chain', () => {
     });
 });
 
+describe('readLaneAhead, a lane with no running chunk', () => {
+    // the chain FRM-10 → FRM-30 → FRM-20: the ids run against the chain
+    const chain = (home: string, more: Partial<World> = {}) =>
+        world(home, {
+            signed: [
+                { id: 'FRM-10', project: 'mods: cc' },
+                { id: 'FRM-20', project: 'mods: cc' },
+                { id: 'FRM-30', project: 'mods: cc' },
+            ],
+            tickets: {
+                'FRM-10': { relations: [rel('blocks', 'FRM-30')] },
+                'FRM-20': { relations: [rel('blocked by', 'FRM-30')] },
+                'FRM-30': {
+                    relations: [
+                        rel('blocked by', 'FRM-10'),
+                        rel('blocks', 'FRM-20'),
+                    ],
+                },
+            },
+            ...more,
+        });
+
+    test('queues the first unblocked chunk, then the one it blocks, never a chunk behind the second', () => {
+        const home = homeWith();
+        const out = sealedAhead(readLaneAhead(home, ['mods'], chain(home)));
+        expect(out.lanes[0]).toMatchObject({
+            slots: [
+                { id: 'FRM-10', state: 'sealed' },
+                { id: 'FRM-30', state: 'sealed' },
+            ],
+        });
+    });
+
+    test("the second slot is not «blocked by» the first: the chain's own earlier link is barred", () => {
+        const home = homeWith();
+        const out = sealedAhead(readLaneAhead(home, ['mods'], chain(home)));
+        expect(out.lines[0]).not.toContain('blocked by');
+    });
+
+    test('prefers the chunk the first blocks over a lower-id one that has no tie to it', () => {
+        const home = homeWith();
+        const out = sealedAhead(
+            readLaneAhead(
+                home,
+                ['mods'],
+                world(home, {
+                    signed: [
+                        { id: 'FRM-10', project: 'mods: cc' },
+                        { id: 'FRM-20', project: 'mods: cc' },
+                        { id: 'FRM-40', project: 'mods: cc' },
+                    ],
+                    tickets: {
+                        'FRM-10': { relations: [rel('blocks', 'FRM-40')] },
+                        'FRM-20': {},
+                        'FRM-40': { relations: [rel('blocked by', 'FRM-10')] },
+                    },
+                }),
+            ),
+        );
+        expect(out.lanes[0]).toMatchObject({
+            slots: [{ id: 'FRM-10' }, { id: 'FRM-40' }],
+        });
+    });
+
+    test('starts at a chunk that waits on nothing in the area, though a lower id waits', () => {
+        const home = homeWith();
+        const out = sealedAhead(
+            readLaneAhead(
+                home,
+                ['mods'],
+                world(home, {
+                    signed: [
+                        { id: 'FRM-5', project: 'mods: cc' },
+                        { id: 'FRM-30', project: 'mods: cc' },
+                    ],
+                    tickets: {
+                        'FRM-30': { relations: [rel('blocks', 'FRM-5')] },
+                        'FRM-5': { relations: [rel('blocked by', 'FRM-30')] },
+                    },
+                }),
+            ),
+        );
+        expect(out.lanes[0]).toMatchObject({
+            slots: [{ id: 'FRM-30' }, { id: 'FRM-5' }],
+        });
+    });
+
+    test('skips a chunk that waits on one behind the first', () => {
+        const home = homeWith();
+        const out = sealedAhead(
+            readLaneAhead(
+                home,
+                ['mods'],
+                world(home, {
+                    signed: [
+                        { id: 'FRM-10', project: 'mods: cc' },
+                        { id: 'FRM-20', project: 'mods: cc' },
+                        { id: 'FRM-30', project: 'mods: cc' },
+                        { id: 'FRM-40', project: 'mods: cc' },
+                    ],
+                    tickets: {
+                        'FRM-10': {},
+                        'FRM-20': { relations: [rel('blocked by', 'FRM-30')] },
+                        'FRM-30': { relations: [rel('blocked by', 'FRM-40')] },
+                        'FRM-40': {},
+                    },
+                }),
+            ),
+        );
+        expect(out.lanes[0]).toMatchObject({
+            slots: [{ id: 'FRM-10' }, { id: 'FRM-40' }],
+        });
+    });
+
+    test("keeps the second chunk in the first one's milestone", () => {
+        const home = homeWith();
+        const out = sealedAhead(
+            readLaneAhead(
+                home,
+                ['mods'],
+                world(home, {
+                    signed: [
+                        { id: 'FRM-10', project: 'mods: cc' },
+                        { id: 'FRM-20', project: 'mods: cc' },
+                    ],
+                    tickets: {
+                        'FRM-10': { milestone: 'm1' },
+                        'FRM-20': { milestone: 'm2' },
+                    },
+                }),
+            ),
+        );
+        expect(out.lanes[0]).toMatchObject({
+            slots: [
+                { id: 'FRM-10', state: 'sealed' },
+                { id: null, state: 'none queued' },
+            ],
+        });
+    });
+
+    test('a chunk with an open blocker outside the area reads blocked by it', () => {
+        const home = homeWith();
+        const out = sealedAhead(
+            readLaneAhead(
+                home,
+                ['mods'],
+                world(home, {
+                    signed: [{ id: 'FRM-10', project: 'mods: cc' }],
+                    tickets: {
+                        'FRM-10': {
+                            relations: [
+                                rel('blocked by', 'FRM-99', 'In Progress'),
+                            ],
+                        },
+                    },
+                }),
+            ),
+        );
+        expect(out.lines[0]).toContain('1 FRM-10 blocked by FRM-99');
+    });
+});
+
 describe('readLaneAhead, a read that fails', () => {
     test('names the lane and exits 2, and the lanes that read stay on the page', () => {
         const home = homeWith();
