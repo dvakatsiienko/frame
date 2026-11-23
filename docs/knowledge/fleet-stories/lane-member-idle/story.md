@@ -49,7 +49,7 @@ the habit behind both cases: clio treats the seal as the step before a dispatch,
 
 - a rule, 23 Nov: a member never idles on the coordinator's spec work. its next chunk not sealed means a read-only prep steer the turn it parks (the code read, the open probes, the test harness), and the seal is the coordinator's next act (`clio:shape-lane-dispatch` § 6)
 - the prep paid at once: the speak codie's probes settled three open questions of the hunt and its read found 14 contradictions in the spec before any code moved
-- an alarm, on his tick (o13): at each of clio's turn ends, one line when a member of a live lane has been idle 10 minutes with no wait named. the first case of the hang-heal work (clio's flyway f77)
+- the alarm already existed and stayed quiet (crow's catch, 16:50): the stash mod wakes the clio running a lane parked 10 min, built 7 Nov for this same slip. FRM-602 narrowed it to «the next chunk is unsigned», so a chunk signed but not sealed woke nobody, and neither did the gap between one lane card ending and the next starting. the fix is that one condition (wake when the next chunk is not dispatched, and when a card is finished while its members live), not a second alarm
 
 ## the line that keeps it away
 
@@ -57,6 +57,6 @@ an idle member is a cost someone must be told about. the coordinator's own work 
 
 ## still open
 
-- the alarm is not built yet
+- the wake's condition change is not built yet
 - a hunt run by `x:review-messhunt` has no step for the lane's codie; whether the codie should read along from the start is a line for that skill
 - a context reset at 55 % has no check for «is a member waiting on me»
