@@ -1,4 +1,4 @@
-import { expect, mock, test } from 'claude-code/testing';
+import { expect, mock, test } from './shared-boot.ts';
 
 const props = {
     bodyColumns: 100,

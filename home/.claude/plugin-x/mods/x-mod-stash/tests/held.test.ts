@@ -1,5 +1,3 @@
-import { expect, test } from 'claude-code/testing';
-
 import {
     held,
     logOf,
@@ -9,6 +7,7 @@ import {
     stored,
     world,
 } from './quiet-helpers.ts';
+import { expect, test } from './shared-boot.ts';
 
 test("clio cd'd out of ~/frame/_clio still holds a [progress] ping", async ($, on) => {
     const w = world(on, { cwd: '/home/frame/home/.claude/plugin-x/mods' });

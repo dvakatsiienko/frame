@@ -1,5 +1,3 @@
-import { type Engine, expect, test } from 'claude-code/testing';
-
 import { partOff } from './orbit-helpers.ts';
 import {
     add,
@@ -12,6 +10,7 @@ import {
     start,
     world,
 } from './orbit-world.ts';
+import { type Engine, expect, test } from './shared-boot.ts';
 
 test("a peer's prompt carries no mark, but its turn takes the tick at its next tool call", async ($, on) => {
     const w = world(on);

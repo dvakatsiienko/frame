@@ -1,5 +1,6 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
+
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 const props = {
     bodyColumns: 100,
@@ -189,6 +190,15 @@ test(
         ]);
     },
 );
+
+test('a later turn end takes the ping over: the one armed before it never fires', async ($, on) => {
+    const s = await started($, on, { [`hot:${SID}`]: { since: NOW } });
+    await endTurn($);
+    await s.clock.advance(20 * MIN);
+    await endTurn($);
+    await s.clock.advance(30 * MIN);
+    expect(s.pings).toEqual([]);
+});
 
 test('🔥 survives a reload', async ($, on) => {
     const s = await started($, on, { [`hot:${SID}`]: { since: NOW } });

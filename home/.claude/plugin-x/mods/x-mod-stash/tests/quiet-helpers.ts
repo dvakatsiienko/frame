@@ -10,8 +10,8 @@ export const EVEN = new Date(2026, 9, 12, 15, 0).getTime();
 
 export const MIN = 60_000;
 
-// the poll this file asks for through X_STASH_POLL_MS: 5× fewer ticks than the live 4 s over its hours of mock time
-export const POLL = 20_000;
+// the poll this file asks for through X_STASH_POLL_MS: 15× fewer ticks than the live 4 s over its hours of mock time
+export const POLL = 60_000;
 
 export const PID = 4242;
 

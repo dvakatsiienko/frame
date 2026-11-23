@@ -1,5 +1,3 @@
-import { expect, test } from 'claude-code/testing';
-
 import {
     CLIO,
     CODIE,
@@ -34,6 +32,7 @@ import {
     stored,
     world,
 } from './quiet-helpers.ts';
+import { expect, test } from './shared-boot.ts';
 
 const ODD = new Date(2026, 9, 13, 15, 0).getTime();
 

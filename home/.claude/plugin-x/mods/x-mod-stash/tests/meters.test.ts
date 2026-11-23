@@ -1,5 +1,6 @@
 import type { On, SessionContextBreakdown } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
+
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 const NOW = 10_000_000;
 const HOUR = 60 * 60 * 1000;

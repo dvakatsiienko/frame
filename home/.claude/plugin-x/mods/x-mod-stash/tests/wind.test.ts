@@ -1,9 +1,9 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { MESSAGE_KINDS, messageKind } from '../hooks/quiet.ts';
 import { overCap } from './fixtures/second-wind-over-cap.ts';
 import { unknownRow } from './fixtures/second-wind-unknown-row.ts';
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 // 🐦‍🔥 second wind, the asked session's side (todo 16): the note rides its next turn, a cancel takes it back, and the
@@ -90,7 +90,7 @@ function world(
         return { value: undefined };
     });
     on('session.id', () => ({ value: sidNow }));
-    on('env.get', () => ({ value: '/home' }));
+    on('env.get', (_$, e) => ({ value: ENV[e.name] ?? '/home' }));
     on('process.run', (_$, e) => {
         const isPeek = e.argv[1] === 'handoff' && e.argv[2] === 'peek';
         // writeWhole's rename
@@ -463,10 +463,10 @@ async function turnAt($: Engine, w: ReturnType<typeof world>, fill: number) {
     await say($);
 }
 
-// FRM-634: the second-wind store, `~/.claude/shelf/second-wind.json`: dima's own text for each of the five notes and the
-// applied values; an empty row is the mod's default. an edit waits in the mod's store for the next poll
+// FRM-634: dima's own text for the five notes and the applied values; an empty row is the default, an edit waits a poll
 const WIND_STORE = '/home/.claude/shelf/second-wind.json';
-const POLL_MS = 4000;
+const POLL_MS = 60_000;
+const ENV: Record<string, string> = { X_STASH_POLL_MS: `${POLL_MS}` };
 type World = ReturnType<typeof world>;
 // what `pnpm mods:set second-wind-text <row> <text>` leaves in the mod's store
 const edit = (w: World, row: string, text: string) =>

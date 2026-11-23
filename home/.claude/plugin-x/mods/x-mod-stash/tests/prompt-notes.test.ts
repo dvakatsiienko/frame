@@ -1,5 +1,4 @@
 import type { On } from 'claude-code';
-import { expect, test } from 'claude-code/testing';
 
 import {
     assume,
@@ -20,6 +19,7 @@ import {
     start,
     world,
 } from './orbit-world.ts';
+import { expect, test } from './shared-boot.ts';
 
 test('a ticked ask joins the next prompt as model-only context', async ($, on) => {
     const w = world(on);

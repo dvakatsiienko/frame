@@ -1,5 +1,3 @@
-import { expect, test } from 'claude-code/testing';
-
 import {
     CLIO,
     CODIE,
@@ -19,6 +17,7 @@ import {
     start,
     world,
 } from './lane-world.ts';
+import { expect, test } from './shared-boot.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 /* FRM-602: a dispatch opens its lane's card — x's thread record names the lane, the stash draws the card */

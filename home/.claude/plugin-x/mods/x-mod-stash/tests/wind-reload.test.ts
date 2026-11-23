@@ -1,6 +1,6 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 import { THREADS_FILE, threadsFile } from './threads.ts';
 
 // 🐦‍🔥 a wind its turn end named survives a hot reload: an `after` ends with the old copy, so the store is the wind's

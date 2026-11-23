@@ -1,5 +1,4 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, test } from 'claude-code/testing';
 
 import { capLine, roundChunkOf, roundLine, roundOf } from '../hooks/parse.ts';
 import { roundKeyOf, roundTaken } from '../hooks/rounds.ts';
@@ -17,6 +16,7 @@ import {
     thread,
     world,
 } from './quiet-helpers.ts';
+import { type Engine, expect, test } from './shared-boot.ts';
 import { THREADS_FILE, recordOf } from './threads.ts';
 
 // 18 Nov's herdr lane: a lettered slice is a chunk of its own (FRM-656)

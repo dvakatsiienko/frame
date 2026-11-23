@@ -1,5 +1,3 @@
-import { expect, test } from 'claude-code/testing';
-
 import {
     CODIE,
     CODIE_SID,
@@ -27,6 +25,7 @@ import {
     start,
     world,
 } from './quiet-helpers.ts';
+import { expect, test } from './shared-boot.ts';
 
 test('the log names the arm from the switch', async ($, on) => {
     const w = world(on);
@@ -502,7 +501,7 @@ test('a held ping stuck past the idle wait + 2 min raises one alarm', async ($, 
     const w = alarmWorld(on, { refuseAppend: true });
     w.store.set(`quiet-held:${SID}`, [
         {
-            at: EVEN - 13 * MIN,
+            at: EVEN - 12.2 * MIN,
             from: '☕️ 🔧 codie: mods',
             text: '[progress] a',
         },

@@ -1,5 +1,3 @@
-import { expect, test } from 'claude-code/testing';
-
 import { clioAddress, peerPing } from '../hooks/quiet.ts';
 import {
     EVENT,
@@ -15,6 +13,7 @@ import {
     start,
     world,
 } from './quiet-helpers.ts';
+import { expect, test } from './shared-boot.ts';
 
 test('a desktop envelope names its sender with name=', () => {
     expect(

@@ -1,5 +1,6 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
+
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 // the harness keeps no rows: this hook sees what would be stored, and the missing store's error is ignored
 function world(on: On, store: Record<string, unknown> = {}) {

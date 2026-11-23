@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { completedAgent, failedCommand, killedAgent } from './notices.ts';
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 const SID = 'b1b1b1b1-band';
 const TOOL = 'mcp__x-mod-stash__orbit';
@@ -572,8 +572,13 @@ for (const [press, key, field] of [
     test(`a poll during the draw leaves the ${press} press standing`, async ($, on) => {
         const { clock, hooks, store, views } = pressWorld(on);
         const ui = await band($);
-        hooks.onDraw = () => clock.advance(10_000);
+        let drawn: Promise<unknown> | undefined;
+        hooks.onDraw = () => {
+            drawn = clock.advance(10_000);
+            return drawn;
+        };
         await ui.press({ key: press });
+        await drawn;
         await clock.advance(10_000);
         expect([
             views.at(-1)?.[field],

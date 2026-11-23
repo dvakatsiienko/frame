@@ -1,5 +1,4 @@
 import type { On } from 'claude-code';
-import { expect, test } from 'claude-code/testing';
 
 import {
     SID,
@@ -10,6 +9,7 @@ import {
     start,
     world,
 } from './orbit-world.ts';
+import { expect, test } from './shared-boot.ts';
 
 // FRM-661: an ask's text caps at 90 chars, so its pick quotes the command whole, any length, and his tick runs that
 const CLEANUP =

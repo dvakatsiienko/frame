@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { LANES_SHELF } from './lanes-shelf.ts';
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 // the writer's half of the lanes.json contract (FRM-659): the stash writes exactly the fields the shared fixture holds,

@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { resetObject, serial } from '../hooks/util.ts';
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 const PEER = 'c3c3c3c3-0000';
 const TOOL = 'mcp__x-mod-stash__orbit';

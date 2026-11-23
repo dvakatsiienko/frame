@@ -1,5 +1,4 @@
 import type { On } from 'claude-code';
-import { expect, test } from 'claude-code/testing';
 
 import { assume, lastContext, mobile } from './orbit-helpers.ts';
 import {
@@ -11,6 +10,7 @@ import {
     start,
     world,
 } from './orbit-world.ts';
+import { expect, test } from './shared-boot.ts';
 
 test('⏸️ on an assumption pauses speak', async ($, on) => {
     const w = world(on);

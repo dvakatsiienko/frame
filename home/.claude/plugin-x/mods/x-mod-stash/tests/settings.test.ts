@@ -1,5 +1,6 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
+
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 // the 🎛️ settings view (FRM-391 slice 05): a show/hide switch per part, saved to the store every session reads
 const SID = 's1s1s1s1-set';

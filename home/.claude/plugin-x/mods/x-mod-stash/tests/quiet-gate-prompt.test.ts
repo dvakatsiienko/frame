@@ -1,5 +1,3 @@
-import { type Engine, expect, test } from 'claude-code/testing';
-
 import {
     CLIO,
     CODIE,
@@ -42,6 +40,7 @@ import {
     stored,
     world,
 } from './quiet-helpers.ts';
+import { type Engine, expect, test } from './shared-boot.ts';
 
 const KIND_HELD = (kind: string) =>
     `slipstreamed: joins clio's next turn. [${kind}] is switched off, so resending changes nothing`;

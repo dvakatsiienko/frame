@@ -1,5 +1,4 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, test } from 'claude-code/testing';
 
 import {
     assume,
@@ -21,6 +20,7 @@ import {
     start,
     world,
 } from './orbit-world.ts';
+import { type Engine, expect, test } from './shared-boot.ts';
 
 const CLIENT = { clientId: 'desktop-2', surface: 'desktop' } as const;
 

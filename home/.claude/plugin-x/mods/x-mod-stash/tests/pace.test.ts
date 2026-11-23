@@ -1,6 +1,6 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 // the pace watch (FRM-500): a line to the session that keeps `pace:<id>`, only when the 5h window changes its rung

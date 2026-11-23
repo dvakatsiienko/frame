@@ -1,5 +1,4 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, test } from 'claude-code/testing';
 
 import { parkedWakeMs } from '../hooks/parked-wake.ts';
 import { laneMemberRow } from '../hooks/roster.ts';
@@ -17,6 +16,7 @@ import {
     steps,
     world,
 } from './quiet-helpers.ts';
+import { type Engine, expect, test } from './shared-boot.ts';
 
 const RELAY = '/home/.local/state/crow/relay.json';
 

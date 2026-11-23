@@ -29,8 +29,7 @@ const loaded = () => ({
     afk: false,
     // since: the turn end the next ping counts from; only dima's click turns it off, a 5h reset never does
     hot: undefined as { since: number } | undefined,
-    // a turn start or a flip bumps it, so a ping armed before either never fires
-    // the armed 🔥 timer's token: a newer one, or a quit, leaves an older timer with nothing to do
+    // the armed 🔥 timer's token: a turn start, a newer ping or a quit takes it over, so an older timer never fires
     hotRun: {},
     isWaker: false,
     // a poll during a press would read the store before its write lands and undo it, so load and followHot sit it out

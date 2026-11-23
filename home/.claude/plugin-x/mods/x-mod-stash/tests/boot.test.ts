@@ -1,6 +1,6 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 // FRM-426 exit 9: while a clio boot is open, start_session's result carries «the boot continues; the board ends the

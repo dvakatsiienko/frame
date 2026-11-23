@@ -1,5 +1,4 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, test } from 'claude-code/testing';
 
 import {
     CODIE,
@@ -23,6 +22,7 @@ import {
     start,
     world,
 } from './lane-world.ts';
+import { type Engine, expect, test } from './shared-boot.ts';
 
 const say = ($: Engine, text: string) =>
     $.prompt.submit({ origin: { kind: 'composer' }, text, wait: false });

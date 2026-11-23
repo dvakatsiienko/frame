@@ -1,5 +1,4 @@
 import type { On } from 'claude-code';
-import { expect, test } from 'claude-code/testing';
 
 import { addLinked, assume, hrefs } from './orbit-helpers.ts';
 import {
@@ -12,6 +11,7 @@ import {
     start,
     world,
 } from './orbit-world.ts';
+import { expect, test } from './shared-boot.ts';
 
 test('asks the tool adds list in orbit oldest first, each by its id', async ($, on) => {
     world(on);

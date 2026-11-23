@@ -1,7 +1,6 @@
-import { expect, test } from 'claude-code/testing';
-
 import { hrefs } from './orbit-helpers.ts';
 import { type Board, board, orbit, start, world } from './orbit-world.ts';
+import { expect, test } from './shared-boot.ts';
 
 test('the phases show in the board, a moon each, at most seven', async ($, on) => {
     world(on);

@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { activityOf } from '../hooks/session-record.ts';
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 // FRM-568: what herdr draws for each session, written to the shelf, since herdr reads no private store
 const TOOL = 'mcp__x-mod-stash__orbit';

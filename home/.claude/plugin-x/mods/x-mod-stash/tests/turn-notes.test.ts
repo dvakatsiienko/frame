@@ -1,5 +1,3 @@
-import { type Engine, expect, test } from 'claude-code/testing';
-
 import {
     SETTINGS,
     lastContext,
@@ -21,6 +19,7 @@ import {
     start,
     world,
 } from './orbit-world.ts';
+import { type Engine, expect, test } from './shared-boot.ts';
 
 test("a prompt of any origin names the session's open asks once, with no fixed sentence", async ($, on) => {
     const w = world(on);

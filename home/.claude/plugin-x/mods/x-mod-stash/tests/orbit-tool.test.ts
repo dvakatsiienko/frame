@@ -1,5 +1,4 @@
 import type { On } from 'claude-code';
-import { expect, test } from 'claude-code/testing';
 
 import {
     addLinked,
@@ -20,6 +19,7 @@ import {
     start,
     world,
 } from './orbit-world.ts';
+import { expect, test } from './shared-boot.ts';
 
 test("a follow-up clears dima's steer on the old question", async ($, on) => {
     world(on);

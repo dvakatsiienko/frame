@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { boldFleetWords } from '../hooks/parse.ts';
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 test('a bare fleet word prints bold with its badge', () => {
     expect(boldFleetWords('that becomes a wisp.').text).toBe(

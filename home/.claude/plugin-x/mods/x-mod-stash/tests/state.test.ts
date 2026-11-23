@@ -1,5 +1,6 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
+
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 const MIN = 60 * 1000;
 const NOW = 10_000_000;

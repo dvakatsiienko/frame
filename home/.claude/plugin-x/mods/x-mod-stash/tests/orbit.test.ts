@@ -1,5 +1,3 @@
-import { type Engine, expect, test } from 'claude-code/testing';
-
 import { closedMark } from '../hooks/board-kit.tsx';
 import {
     HERDR_FILE,
@@ -26,6 +24,7 @@ import {
     start,
     world,
 } from './orbit-world.ts';
+import { type Engine, expect, test } from './shared-boot.ts';
 
 test('an ask the turn left unanswered gets its controls back when the turn ends', async ($, on) => {
     world(on);

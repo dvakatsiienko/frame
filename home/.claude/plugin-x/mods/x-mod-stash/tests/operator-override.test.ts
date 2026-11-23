@@ -1,5 +1,6 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
+
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 const REAL = '/real-home/.local/state/x/operator-override.json';
 const PLANTED = '/planted-home/.local/state/x/operator-override.json';

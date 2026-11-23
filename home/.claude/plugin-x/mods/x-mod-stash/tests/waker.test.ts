@@ -1,5 +1,6 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
+
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 const props = {
     bodyColumns: 100,
@@ -121,6 +122,28 @@ test('with the waker on, a session stopped on the cap gets one resume at the res
     await endTurn($, CAPPED, 'error');
     await s.clock.advance(40 * MIN);
     expect(s.resumes).toHaveLength(1);
+});
+
+test('a newer cap takes the wake over: the reset the old one waited on sends nothing', async ($, on) => {
+    const s = await session($, on, { waker: { on: true } });
+    await endTurn($, CAPPED, 'error');
+    await s.clock.advance(10 * MIN);
+    await $.session.measure({
+        changed: ['rateLimits'],
+        context: { window: 200_000 },
+        rateLimits: [
+            {
+                kind: 'five_hour',
+                percentUsed: 100,
+                resetsAt: new Date(NOW + 90 * MIN).toISOString(),
+            },
+        ],
+    });
+    await endTurn($, CAPPED, 'error');
+    await s.clock.advance(30 * MIN);
+    const early = s.resumes.length;
+    await s.clock.advance(60 * MIN);
+    expect([early, s.resumes.length]).toEqual([0, 1]);
 });
 
 test('with the waker on, a session that stopped for another reason gets nothing', async ($, on) => {

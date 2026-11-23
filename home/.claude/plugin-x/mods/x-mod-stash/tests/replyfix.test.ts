@@ -1,7 +1,6 @@
-import { type Engine, expect, test } from 'claude-code/testing';
-
 import { dropWaitAside, linkTickets, numberCircled } from '../hooks/parse.ts';
 import { SID, add, orbit, say, start, world } from './orbit-world.ts';
+import { type Engine, expect, test } from './shared-boot.ts';
 
 const L = (id: string) => `[${id}](https://linear.app/x-com/issue/${id})`;
 

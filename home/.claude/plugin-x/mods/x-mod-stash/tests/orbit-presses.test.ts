@@ -1,5 +1,3 @@
-import { type Engine, expect, test } from 'claude-code/testing';
-
 import {
     askOf,
     assume,
@@ -19,6 +17,7 @@ import {
     start,
     world,
 } from './orbit-world.ts';
+import { type Engine, expect, test } from './shared-boot.ts';
 
 test('check all accepts every open ask', async ($, on) => {
     const w = world(on);
