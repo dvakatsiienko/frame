@@ -43,6 +43,7 @@ Ticket: FRM-530. A ⛩️ gate is a check that refuses: it stops a commit, a pus
 
 ## frame — when you push
 
+- **mods-boots-raises**: every raised row of the mods' host-start table prints at the push, so a raise is read; it prints, it never refuses (FRM-678)
 - **runner-twin**: the tests pass on a clean machine, not only on this mac, 43 s
 - **mirror**: the dotfile links still work
 
