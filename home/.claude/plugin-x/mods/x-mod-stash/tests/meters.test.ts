@@ -729,6 +729,83 @@ test('a 100 % read before a newer reading gives way to it', async ($, on) => {
     expect(usage(files).week).toBe(5);
 });
 
+// cc was refused at the cap while a peer's answer, asked earlier or later, still reads 99
+test('a request refused at 100 % stands over a later answer at 99 until the window resets', async ($, on) => {
+    const { clock, files } = meters(on);
+    await respond($, on, null);
+    await measure($, 100, 35);
+    await clock.advance(10_000);
+    await respond($, on);
+    await measure($, 99, 35);
+    const spent = usage(files).five;
+    await clock.advance(3 * HOUR);
+    await respond($, on);
+    await measure($, 3, 35, 8 * HOUR);
+    expect([spent, usage(files).five]).toEqual([100, 3]);
+});
+
+test('the band reads a refused window 100 %, a later answer at 99 or not', async ($, on) => {
+    const { clock } = meters(on);
+    await respond($, on, null);
+    await measure($, 100, 35);
+    await clock.advance(10_000);
+    await respond($, on);
+    await measure($, 99, 35);
+    const ui = await band($);
+    const boxes = await ui.findAll({ type: 'Box' });
+    expect(boxes.find((n) => n.key === 'meter:5h')?.text).toMatch(/100%$/);
+});
+
+test('a refusal stands over a 99 a peer asked for after it and wrote first', async ($, on) => {
+    const { clock, files } = meters(on);
+    await respond($, on);
+    await $.session.measure(weekly('rateLimits', 91));
+    await clock.advance(3000);
+    await respond($, on, null);
+    await clock.advance(10_000);
+    peerWrote(files, 99, 5);
+    await $.session.measure(weekly('rateLimits', 100));
+    expect(usage(files).week).toBe(100);
+});
+
+test('a failed request under 100 % marks no window spent', async ($, on) => {
+    const { clock, files } = meters(on);
+    await respond($, on, null);
+    await $.session.measure(weekly('rateLimits', 99.6));
+    const none = files[USAGE];
+    await clock.advance(10_000);
+    await respond($, on);
+    await $.session.measure(weekly('rateLimits', 42));
+    expect([none, usage(files).week]).toEqual([undefined, 42]);
+});
+
+test('a 100 % with no refused request behind it gives way to a newer answer', async ($, on) => {
+    const { clock, files } = meters(on);
+    await respond($, on, null);
+    await respond($, on);
+    await $.session.measure(weekly('rateLimits', 100));
+    await clock.advance(10_000);
+    await respond($, on);
+    await $.session.measure(weekly('rateLimits', 98));
+    expect(usage(files).week).toBe(98);
+});
+
+test('a refusal of an ended window marks no newer one spent', async ($, on) => {
+    const { clock, files } = meters(on);
+    await respond($, on, null);
+    await measure($, 100, 35);
+    await clock.advance(3 * HOUR);
+    const f = JSON.parse(files[USAGE] ?? '{}');
+    f.rate_limits.five_hour = {
+        read_at: Math.round(NOW / 1000) + 3 * 3600,
+        resets_at: Math.round(NOW / 1000) + 8 * 3600,
+        used_percentage: 4,
+    };
+    files[USAGE] = JSON.stringify(f);
+    await measure($, 100, 35);
+    expect(usage(files).five).toBe(4);
+});
+
 test('a newer window with no reset of its own stands against an older reading', async ($, on) => {
     const { clock, files } = meters(on);
     await respond($, on);

@@ -61,21 +61,30 @@ export async function paceMeterOf($: EngineInterface) {
 // when this session last asked and was answered: the figures every measure carries are that response's. the ask, never the
 // answer's end, so a long answer is not dated past a peer's newer one
 let respondedAt: number | undefined;
-export function noteResponse(at: number) {
+// when this session last asked and got no response: at a full window that is the cap's refusal
+let refusedAt: number | undefined;
+export function noteStep(at: number, isAnswered: boolean) {
     // a subagent's steps overlap the main loop's: the latest ask stands
-    respondedAt = Math.max(respondedAt ?? 0, at);
+    if (isAnswered) respondedAt = Math.max(respondedAt ?? 0, at);
+    else refusedAt = Math.max(refusedAt ?? 0, at);
 }
+// two readings of one window name its reset within this
+const RESET_SLACK_S = 60;
 // the rate-limit mirror every fleet reader takes (clio's boot, the designer), in sline's old shape: seconds; this mod is
 // its one writer. each window carries `read_at`, and an older reading never replaces a newer one, whichever session measures
 // last; `written_at` is the newest of them; a window a response left out keeps its value until its reset passes, then reads
-// `null`. a time ahead of now is a broken clock's, so it holds nothing back
+// `null`. a time ahead of now is a broken clock's, so it holds nothing back. a window a request was refused in at 100 %
+// carries `refused_at` and reads spent, whatever a peer is answered later, until its reset. returns the 5h window
 export async function saveUsage(
     $: EngineInterface,
     limits: { kind: string; percentUsed: number; resetsAt?: string }[],
-    readAt: number,
+    asked: { answered?: number; refused?: number },
 ) {
     const file = await usageFile($).catch(() => undefined);
-    const at = Math.round(readAt / 1000);
+    const secondsOf = (ms: number | undefined) =>
+        ms === undefined ? undefined : Math.round(ms / 1000);
+    const at = secondsOf(asked.answered);
+    const refused = secondsOf(asked.refused);
     const now = Math.round((await $.clock.now()) / 1000);
     const past = (t: unknown) => (typeof t === 'number' && t <= now ? t : 0);
     const readOf = (was: UsageWindow | undefined) =>
@@ -87,12 +96,38 @@ export async function saveUsage(
             ? Math.round(Date.parse(w.resetsAt) / 1000)
             : null;
         const isOver = resets !== null && resets <= now;
-        const isOlder = Boolean(was) && readOf(was) > at;
+        // a later reset is a newer window's
+        const isSame =
+            typeof was?.resets_at === 'number' &&
+            was.resets_at > now &&
+            (resets === null || resets <= was.resets_at + RESET_SLACK_S);
+        if (
+            w &&
+            refused !== undefined &&
+            w.percentUsed >= 100 &&
+            resets !== null &&
+            !isOver &&
+            !(isSame && resets < Number(was?.resets_at) - RESET_SLACK_S)
+        )
+            return {
+                read_at: Math.max(refused, readOf(was)),
+                refused_at: refused,
+                resets_at: resets,
+                used_percentage: w.percentUsed,
+            };
+        const isOlder = at === undefined || (Boolean(was) && readOf(was) > at);
         if (w && !isOver && !isOlder)
             return {
                 read_at: at,
                 resets_at: resets,
                 used_percentage: w.percentUsed,
+                ...(isSame && was?.refused_at !== undefined
+                    ? {
+                          refused_at: was.refused_at,
+                          resets_at: was.resets_at,
+                          used_percentage: was.used_percentage,
+                      }
+                    : {}),
             };
         // a window with no reset of its own ends only when a response leaves it out
         const isKept =
@@ -101,19 +136,25 @@ export async function saveUsage(
                 : w && isOlder;
         return isKept ? { ...was, read_at: readOf(was) } : null;
     };
+    const five_hour = window('five_hour');
+    const seven_day = window('seven_day');
+    // a failed request at no full window says nothing
+    if (
+        at === undefined &&
+        ![five_hour, seven_day].some((w) => w?.refused_at === refused)
+    )
+        return file?.rate_limits?.five_hour;
     const next = JSON.stringify({
-        rate_limits: {
-            five_hour: window('five_hour'),
-            seven_day: window('seven_day'),
-        },
-        written_at: Math.max(at, past(file?.written_at)),
+        rate_limits: { five_hour, seven_day },
+        written_at: Math.max(at ?? refused ?? 0, past(file?.written_at)),
     });
     // an older reading writes nothing, so it never puts back what a peer replaced meanwhile
-    if (next === JSON.stringify(file)) return;
+    if (next === JSON.stringify(file)) return five_hour;
     await $.fs.write(
         `${await $.env.get('HOME')}/.claude/shelf/cc-usage-window.json`,
         next,
     );
+    return five_hour;
 }
 
 // an idle band stays live: every session shares one 5h window, so the usage file any busy session writes carries its
@@ -254,17 +295,34 @@ export async function measureUsage(
             .catch(() => undefined);
     // whatever the engine says moved: it names a window only past a whole point (FRM-679). after a reload the figures have
     // no time until the next response
-    if (respondedAt !== undefined && e.rateLimits.length)
-        await saveUsage($, e.rateLimits, respondedAt).catch((err) =>
-            $.ui.log(`x-mod-stash: usage file not written: ${errorText(err)}`),
-        );
+    const refused =
+        refusedAt !== undefined && refusedAt > (respondedAt ?? 0)
+            ? refusedAt
+            : undefined;
+    const saved =
+        e.rateLimits.length && (respondedAt ?? refused) !== undefined
+            ? await saveUsage($, e.rateLimits, {
+                  answered: respondedAt,
+                  refused,
+              }).catch((err) =>
+                  $.ui.log(
+                      `x-mod-stash: usage file not written: ${errorText(err)}`,
+                  ),
+              )
+            : undefined;
+    const spent = saved?.refused_at === undefined ? undefined : saved;
     const was = (await $.state.get(METER)).value;
     const meter: StashMeter = {
         compactAt: e.changed.includes('context')
             ? ((await compactAtOf($, e.context.window)) ?? was?.compactAt)
             : was?.compactAt,
         context: e.context.percent,
-        fiveHour: w ? { resetsAt, used: w.percentUsed } : was?.fiveHour,
+        fiveHour: w
+            ? {
+                  resetsAt,
+                  used: Number(spent?.used_percentage ?? w.percentUsed),
+              }
+            : was?.fiveHour,
         minute: was?.minute,
         note: was?.note,
     };
@@ -304,11 +362,13 @@ export async function forgetContext($: EngineInterface, sid: string) {
 
 export function resetUsage() {
     respondedAt = undefined;
+    refusedAt = undefined;
     compactTrail = [];
 }
 
 type UsageWindow = {
     read_at?: number;
+    refused_at?: number;
     resets_at?: unknown;
     used_percentage?: unknown;
 } | null;

@@ -36,7 +36,7 @@ import { drawSettingsPane } from './settings-pane.tsx';
 import { setSettingsOpen } from './settings-store.ts';
 import { onToolCall } from './step-notes.ts';
 import { beginQueuedTurn, endBusy, endStop, markActive } from './turn.ts';
-import { measureUsage, noteResponse } from './usage.ts';
+import { measureUsage, noteStep } from './usage.ts';
 import { errorText } from './util.ts';
 import { load, publish, viewDoors } from './view.ts';
 import { compactSession, windAfterTurn } from './wind-run.ts';
@@ -147,7 +147,7 @@ export const register: Register = (on) => {
         const askedAt = await $.clock.now();
         const answer = yield* next(e);
         // a step that got no response stops for no reason
-        if (answer.stopReason !== null) noteResponse(askedAt);
+        noteStep(askedAt, answer.stopReason !== null);
         return answer;
     });
 
