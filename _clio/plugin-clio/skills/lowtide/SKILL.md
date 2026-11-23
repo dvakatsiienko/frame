@@ -13,6 +13,9 @@ dima, 2026-10-20, folded: «before we move to something bigger, like the speak v
 
 only tails outside every lane's scope (dima, 2026-11-23: «Low Tide is not intended for apps … every single tail that you have outside of the lane scope»). an app's or a lane's question goes to its lane.
 
+- **a line is opened before it is listed** (his yes, 20:11): one read of its object (the tree list, the ticket, the spec); a line the read settles is solved or closed, never printed
+- **the stop**: every non-lane tail is solved, waits on his word, or waits on a date; that list prints once, no next item after it
+
 ## the start
 
 read the flyways' notes for today's `hoist MM-DD` line:
