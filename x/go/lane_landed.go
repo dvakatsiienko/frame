@@ -1010,7 +1010,7 @@ func processCwd(pid int) string {
 
 // the ignored paths an install, a build or a seed makes again, from frame's and bytes' .gitignore build lines;
 // any other ignored path keeps the tree, since worktree remove deletes it (nothing of dima's is destroyed)
-var disposable = regexp.MustCompile(`(^|/)(node_modules|\.next|\.vite|\.turbo|\.vercel|\.generated|dist|build|out|coverage|\.vitest|\.stryker|__pycache__|\.pnpm-store)/` +
+var disposable = regexp.MustCompile(`(^|/)(node_modules|\.next|\.vite|\.turbo|\.vercel|\.generated|dist|build|out|coverage|\.vitest|__pycache__|\.pnpm-store)/` +
 	`|(^|/)\.claude-plugin/types/` +
 	`|(^|/)(\.DS_Store|\.worktree-offset|[^/]*\.tsbuildinfo|(npm|yarn|\.pnpm)-[^/]*\.log[^/]*)$` +
 	`|^(x/go/bin/|x/go/x$|home/\.claude/sline/(bin/|sline$)|schedule/jobs/[^/]+/bin/|home/\.claude/plugin-x/mods/[^/]+/tsconfig\.json$)`)
