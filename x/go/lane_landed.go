@@ -208,7 +208,7 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 
 	trees := landedLine{name: "trees", ok: true, detail: "no lane tree under .claude/worktrees/"}
 	plan.clean, plan.unlocks = nil, nil
-	var notes []string
+	var notes, infos []string
 	found, terr := laneTrees(main, repo, id, laneRefs{pr, headRef, headSha, mergedHead, commits, underReview})
 	for _, tree := range found {
 		switch {
@@ -219,6 +219,10 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		case tree.reason == "":
 			plan.clean = append(plan.clean, tree.path)
 			notes = append(notes, home(tree.path)+" is clean, decamped on --apply")
+			continue
+		}
+		if tree.other {
+			infos = append(infos, home(tree.path)+" stays: "+tree.reason)
 			continue
 		}
 		notes = append(notes, home(tree.path)+" stays: "+tree.reason)
@@ -233,6 +237,13 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		trees.ok, trees.detail, trees.fix = false, strings.Join(notes, "; "), "x lane landed "+id+" --apply"
 	case len(notes) > 0:
 		trees.ok, trees.detail = false, strings.Join(notes, "; ")
+	}
+	if len(infos) > 0 {
+		if trees.ok {
+			trees.detail = strings.Join(infos, "; ")
+		} else {
+			trees.detail += "; " + strings.Join(infos, "; ")
+		}
 	}
 	lines = append(lines, trees)
 	lines = append(lines, mergedBranchesLine(main, id, headRef, plan))
@@ -715,6 +726,8 @@ func landedIssue(flags Flags, id string) (landedRead, error) {
 // a tree of this lane's only: another lane's verify tree may still be under its review, its sha on main or not (FRM-649)
 type laneTree struct {
 	path, reason string
+	// another lane's spent verify tree: it never holds this ticket's landing, only named when it stays
+	other bool
 	// why the tree's lock is stale, when that lock alone held it: unlocked on --apply
 	staleLock string
 }
@@ -790,7 +803,7 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 			return short != "" && strings.HasPrefix(sha, short)
 		})
 		verify := detached && (name == "verify-"+id || (refs.pr != "" && name == "verify-pr-"+refs.pr) || (refs.headSha != "" && sha == refs.headSha) || atCommit)
-		if !strings.HasPrefix(resolved(path), under) || !(ours || verify) {
+		if !strings.HasPrefix(resolved(path), under) || !(ours || verify || spentVerifyTree(main, name, sha, detached)) {
 			continue
 		}
 		// a lock whose pid is gone keeps no tree: landed unlocks it, named, on --apply; a reused pid only names the unlock
@@ -809,7 +822,7 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 		if verify && refs.underReview {
 			reason = strings.TrimSuffix("its lane is still under review, "+reason, ", ")
 		}
-		trees = append(trees, laneTree{path, reason, stale})
+		trees = append(trees, laneTree{path: path, reason: reason, staleLock: stale, other: !ours && !verify})
 	}
 	return trees, nil
 }
