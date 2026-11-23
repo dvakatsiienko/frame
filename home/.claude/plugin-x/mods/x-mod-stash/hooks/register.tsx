@@ -144,8 +144,10 @@ export const register: Register = (on) => {
     // the board shows each session's model and effort as its main loop's last request named them; a subagent's step never counts
     on('turn.step', async function* ($, e, next) {
         if (!e.agentId) await noteModel($, e.model, e.effort);
+        const askedAt = await $.clock.now();
         const answer = yield* next(e);
-        noteResponse(await $.clock.now());
+        // a step that got no response stops for no reason
+        if (answer.stopReason !== null) noteResponse(askedAt);
         return answer;
     });
 

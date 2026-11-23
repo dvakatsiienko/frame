@@ -69,14 +69,14 @@ test('a bare deadline follows the idle wait dima set, falling back to 10 outside
 test("the log's append makes its dir and keeps every byte of the lines before", () => {
     const home = mkdtempSync(join(tmpdir(), 'quiet-log-'));
     const file = join(home, 'a dir/2026-10-12.jsonl');
-    const texts = [`${line('it\'s 5 % "x" $HOME \\n 🦉')}\n`, '{"at":2}\n'];
+    const texts = [line('it\'s 5 % "x" $HOME \\n 🦉'), '{"at":2}'];
     for (const text of texts)
         spawnSync('sh', ['-c', QUIET_LOG_APPEND, 'sh', file, text], {
             timeout: 10_000,
         });
     const kept = readFileSync(file, 'utf8');
     rmSync(home, { force: true, recursive: true });
-    expect(kept).toBe(texts.join(''));
+    expect(kept).toBe(texts.map((t) => `\n${t}`).join(''));
 });
 
 // the ledger counts a member's sends to clio from its own transcript; a send whose result said success:false never

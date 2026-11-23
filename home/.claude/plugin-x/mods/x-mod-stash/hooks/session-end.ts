@@ -49,14 +49,15 @@ const GONE_FAMILIES = [
     CONTEXT,
     QUIET_HELD,
 ] as const;
+const isHotOff = (v: unknown) =>
+    (v as { off?: boolean } | undefined)?.off === true;
 const PRUNED_AT = 'pruned-at';
 const SESSION_ID = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/;
 async function pruneGone($: EngineInterface, now: number) {
     const last = await $.store.get(PRUNED_AT);
     if (typeof last === 'number' && now - last < 86_400_000) return;
-    // the keys first: a session that starts meanwhile has none listed
+    // the keys first, the registry last: a session that starts or resumes meanwhile is live by then
     const keys = await $.store.keys();
-    const rows = await registry($);
     const home = await $.env.get('HOME');
     const found = await $.process.run([
         'find',
@@ -66,20 +67,33 @@ async function pruneGone($: EngineInterface, now: number) {
         '-name',
         '*.jsonl',
         '-mtime',
-        `-${GONE_DAYS}`,
+        // `d`: a bare number rounds the age up to whole days
+        `-${GONE_DAYS}d`,
     ]);
     const recent = found.stdout
         .split('\n')
         .map((path) => path.slice(path.lastIndexOf('/') + 1, -'.jsonl'.length))
         .filter((sid) => SESSION_ID.test(sid));
-    // a lookup that failed or found nobody says nothing about who is gone
-    if (found.exitCode !== 0 || !recent.length || !rows.length) return;
-    const kept = new Set([...recent, ...rows.map((r) => r.base.sid)]);
+    const entries = (await $.fs.list(`${home}/.claude/sessions`)).filter((f) =>
+        f.name.endsWith('.json'),
+    );
+    const rows = await registry($);
+    // a lookup that failed, found nobody or missed a torn registry file says nothing about who is gone
+    if (found.exitCode !== 0 || !recent.length) return;
+    if (!rows.length || rows.length < entries.length) return;
+    const kept = new Set([
+        await $.session.id(),
+        ...recent,
+        ...rows.map((r) => r.base.sid),
+    ]);
     for (const key of keys) {
         const family = GONE_FAMILIES.find((f) => key.startsWith(f));
         if (!family) continue;
         const sid = key.slice(family.length);
-        if (SESSION_ID.test(sid) && !kept.has(sid)) await $.store.delete(key);
+        if (!SESSION_ID.test(sid) || kept.has(sid)) continue;
+        // dima's 🔥 off outlives its session, so a seat's default never lights it on a resume
+        if (family === HOT && isHotOff(await $.store.get(key))) continue;
+        await $.store.delete(key);
     }
     await $.store.set(PRUNED_AT, now);
 }

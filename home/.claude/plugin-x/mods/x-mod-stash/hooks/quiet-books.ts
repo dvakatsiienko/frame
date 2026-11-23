@@ -49,12 +49,18 @@ const NOTIFY_SCRIPT =
     'on run argv\ndisplay notification (item 1 of argv) with title (item 2 of argv)\nend run';
 // the age the log's day files are kept to; an older one goes at a day's first line, so no tick pays for it
 const QUIET_LOG_DAYS = 30;
-const quietLogFile = (home: string | undefined, at: number) =>
-    `${home}/${QUIET_LOG_DIR}/${new Date(at).toISOString().slice(0, 10)}.jsonl`;
+const quietLogName = (at: number) =>
+    `${new Date(at).toISOString().slice(0, 10)}.jsonl`;
+// a test child's log sits beside its own store, never in the fleet's
+async function quietLogDir($: EngineInterface) {
+    if ((await $.env.get('X_MODS_TEST_CHILD')) === '1')
+        return `${await $.env.get('CLAUDE_CODE_PLUGIN_CACHE_DIR')}/quiet-log`;
+    return `${await $.env.get('HOME')}/${QUIET_LOG_DIR}`;
+}
 // the lines of the UTC day `at` falls in; one that does not read whole is skipped
 export async function quietLogDay($: EngineInterface, at: number) {
     const raw = await $.fs
-        .read(quietLogFile(await $.env.get('HOME'), at))
+        .read(`${await quietLogDir($)}/${quietLogName(at)}`)
         .catch(() => '');
     return raw.split('\n').flatMap((line) => {
         try {
@@ -65,23 +71,22 @@ export async function quietLogDay($: EngineInterface, at: number) {
         }
     });
 }
-async function pruneQuietLog($: EngineInterface, home: string, at: number) {
-    const oldest = quietLogFile(home, at - QUIET_LOG_DAYS * 86_400_000);
-    const dir = `${home}/${QUIET_LOG_DIR}`;
+async function pruneQuietLog($: EngineInterface, dir: string, at: number) {
+    const oldest = quietLogName(at - QUIET_LOG_DAYS * 86_400_000);
     const old = (await $.fs.list(dir))
         .filter((f) => /^\d{4}-\d\d-\d\d\.jsonl$/.test(f.name))
-        .map((f) => `${dir}/${f.name}`)
-        .filter((path) => path < oldest);
-    if (old.length) await $.process.run(['rm', '-f', ...old]);
+        .filter((f) => f.name < oldest)
+        .map((f) => `${dir}/${f.name}`);
+    if (old.length) await $.process.run(['trash', ...old]);
 }
 // true once the lines, all of one moment, are in the day's log
 export async function quietLogAll($: EngineInterface, lines: QuietLogLine[]) {
     await quietKeepTagged($, lines).catch(() => undefined);
     const at = lines[0]?.at ?? 0;
-    const home = await $.env.get('HOME');
-    const file = quietLogFile(home, at);
-    if (home && !(await $.fs.exists(file).catch(() => true)))
-        await pruneQuietLog($, home, at).catch(() => undefined);
+    const dir = await quietLogDir($);
+    const file = `${dir}/${quietLogName(at)}`;
+    if (!(await $.fs.exists(file).catch(() => true)))
+        await pruneQuietLog($, dir, at).catch(() => undefined);
     const r = await $.process
         .run([
             'sh',
@@ -89,7 +94,7 @@ export async function quietLogAll($: EngineInterface, lines: QuietLogLine[]) {
             QUIET_LOG_APPEND,
             'sh',
             file,
-            lines.map((l) => `${JSON.stringify(l)}\n`).join(''),
+            lines.map((l) => JSON.stringify(l)).join('\n'),
         ])
         .catch(() => undefined);
     return r?.exitCode === 0;

@@ -27,7 +27,7 @@ export function appendLog(
 ) {
     const [, , script, , path, text] = argv;
     if (script === QUIET_LOG_APPEND && path)
-        files[path] = (files[path] ?? '') + text;
+        files[path] = `${files[path] ?? ''}\n${text}`;
 }
 
 // clio by default, as the registry names her; `cwd` is where a Bash `cd` left her

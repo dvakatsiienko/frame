@@ -55,17 +55,19 @@ export async function paceMeterOf($: EngineInterface) {
         now: await $.clock.now(),
         resetsAt: five.resets_at * 1000,
         used: five.used_percentage,
-        writtenAt: file.written_at * 1000,
+        writtenAt: (five.read_at ?? file.written_at) * 1000,
     };
 }
-// when this session's last response came in: the figures every measure carries are that response's
+// when this session last asked and was answered: the figures every measure carries are that response's. the ask, never the
+// answer's end, so a long answer is not dated past a peer's newer one
 let respondedAt: number | undefined;
 export function noteResponse(at: number) {
     respondedAt = at;
 }
 // the rate-limit mirror every fleet reader takes (clio's boot, the designer), in sline's old shape: seconds; this mod is
-// its one writer. `written_at` is when the figures were read, and an older reading never replaces a newer one, whichever
-// session measures last; a window a response left out keeps its value until its reset passes, then reads `null`
+// its one writer. each window carries `read_at`, and an older reading never replaces a newer one, whichever session measures
+// last; `written_at` is the newest of them; a window a response left out keeps its value until its reset passes, then reads
+// `null`. a time ahead of now is a broken clock's, so it holds nothing back
 export async function saveUsage(
     $: EngineInterface,
     limits: { kind: string; percentUsed: number; resetsAt?: string }[],
@@ -73,19 +75,23 @@ export async function saveUsage(
 ) {
     const file = await usageFile($).catch(() => undefined);
     const at = Math.round(readAt / 1000);
-    if (typeof file?.written_at === 'number' && file.written_at > at) return;
+    const now = Math.round((await $.clock.now()) / 1000);
+    const past = (t: unknown) => (typeof t === 'number' && t <= now ? t : 0);
+    const readOf = (was: UsageWindow | undefined) =>
+        past(was?.read_at ?? file?.written_at);
     const window = (kind: 'five_hour' | 'seven_day') => {
         const w = limits.find((l) => l.kind === kind);
-        if (w)
+        const was = file?.rate_limits?.[kind];
+        if (w && !(was && readOf(was) > at))
             return {
+                read_at: at,
                 resets_at: w.resetsAt
                     ? Math.round(Date.parse(w.resetsAt) / 1000)
                     : null,
                 used_percentage: w.percentUsed,
             };
-        const was = file?.rate_limits?.[kind];
-        return typeof was?.resets_at === 'number' && was.resets_at > at
-            ? was
+        return typeof was?.resets_at === 'number' && was.resets_at > now
+            ? { ...was, read_at: readOf(was) }
             : null;
     };
     await $.fs.write(
@@ -95,7 +101,7 @@ export async function saveUsage(
                 five_hour: window('five_hour'),
                 seven_day: window('seven_day'),
             },
-            written_at: at,
+            written_at: Math.max(at, past(file?.written_at)),
         }),
     );
 }
@@ -236,10 +242,11 @@ export async function measureUsage(
         await $.store
             .set(CONTEXT + sid, e.context.percent)
             .catch(() => undefined);
-    // the engine names a window only past a whole point; a smaller move rides the next response (FRM-679)
-    const readAt = e.changed.includes('rateLimits')
-        ? await $.clock.now()
-        : respondedAt;
+    // the engine names a window only past a whole point; a smaller move rides the next response (FRM-679). the clock stands
+    // in only before this module saw a response, at a load or a reload
+    const readAt =
+        respondedAt ??
+        (e.changed.includes('rateLimits') ? await $.clock.now() : undefined);
     if (readAt !== undefined && e.rateLimits.length)
         await saveUsage($, e.rateLimits, readAt).catch((err) =>
             $.ui.log(`x-mod-stash: usage file not written: ${errorText(err)}`),
@@ -293,7 +300,11 @@ export function resetUsage() {
     compactTrail = [];
 }
 
-type UsageWindow = { used_percentage?: unknown; resets_at?: unknown } | null;
+type UsageWindow = {
+    read_at?: number;
+    resets_at?: unknown;
+    used_percentage?: unknown;
+} | null;
 type UsageFile = {
     rate_limits?: { five_hour?: UsageWindow; seven_day?: UsageWindow };
     written_at?: unknown;

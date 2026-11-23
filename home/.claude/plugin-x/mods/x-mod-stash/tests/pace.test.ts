@@ -296,6 +296,25 @@ for (const [used, left, line] of WORDS)
         expect(paces(w)).toEqual([line]);
     });
 
+test('a decimal reading prints a whole gap', async ($, on) => {
+    const w = world(on, WATCH);
+    w.meter(91.4, 2 * HOUR);
+    await start($);
+    await w.clock.advance(POLL);
+    expect(paces(w)[0]).toContain('91.4 % used, 31 % over pace');
+});
+
+test('a kept 5h figure parks nobody on the file’s newer time', async ($, on) => {
+    const w = world(on, WATCH);
+    w.meter(78, 3 * HOUR);
+    const file = JSON.parse(w.files[METER] ?? '{}');
+    file.rate_limits.five_hour.read_at = file.written_at - 11 * 60;
+    w.files[METER] = JSON.stringify(file);
+    await start($);
+    await w.clock.advance(POLL);
+    expect(w.turns).toEqual([]);
+});
+
 test('a resume reads under pace, no signed number', async ($, on) => {
     const w = world(on, WATCH);
     w.meter(46, LEFT);

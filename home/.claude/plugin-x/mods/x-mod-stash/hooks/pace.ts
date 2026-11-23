@@ -112,7 +112,7 @@ export function paceLine(
     m: PaceMeter,
     n: PaceNumbers = defaults,
 ) {
-    const over = m.used - paceOf(m.resetsAt, m.now);
+    const over = Math.round(m.used - paceOf(m.resetsAt, m.now));
     const left = Math.max(0, Math.round((m.resetsAt - m.now) / MIN));
     const gap = over
         ? `${Math.abs(over)} % ${over > 0 ? 'over' : 'under'} pace`

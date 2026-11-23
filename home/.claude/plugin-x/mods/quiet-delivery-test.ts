@@ -54,7 +54,16 @@ function readLog() {
     try {
         files = readdirSync(dir);
     } catch {}
-    return files.map((f) => readFileSync(join(dir, f), 'utf8')).join('\n');
+    // a day's first line may send an old file to the Trash between the list and its read
+    return files
+        .map((f) => {
+            try {
+                return readFileSync(join(dir, f), 'utf8');
+            } catch {
+                return '';
+            }
+        })
+        .join('\n');
 }
 
 // the idle wait dima set in 🎛️, from the first store that holds one

@@ -162,7 +162,7 @@ const logDir = (names: string[]) => {
                 })),
             },
             run: (argv: readonly string[]) => {
-                if (argv[0] === 'rm') removed.push(...argv.slice(2));
+                if (argv[0] === 'trash') removed.push(...argv.slice(1));
                 return undefined;
             },
         },
@@ -194,6 +194,28 @@ test("a later log line of the day looks at no file's age", async ($, on) => {
     expect(dir.removed).toEqual([]);
 });
 
+test('a line torn with no newline after it loses no later line', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files[`/home/.claude/shelf/quiet-log/${DAY}.jsonl`] = '{"at":1,"fr';
+    await ping($, '[progress] step 2 landed');
+    expect(
+        w.files[`/home/.claude/shelf/quiet-log/${DAY}.jsonl`]
+            ?.split('\n')
+            .slice(1)
+            .map((l) => (JSON.parse(l) as { from: string }).from),
+    ).toEqual(['☕️ 🔧 codie: mods']);
+});
+
+test("a test child's log sits beside its store, the fleet's untouched", async ($, on) => {
+    const w = world(on, { isTestChild: true });
+    await start($);
+    await ping($, '[progress] step 2 landed');
+    expect(Object.keys(w.files).filter((f) => f.includes('quiet-log'))).toEqual(
+        [`/home/quiet-log/${DAY}.jsonl`],
+    );
+});
+
 const GONE_SID = '11111111-1111-4111-8111-111111111111';
 const RECENT_SID = '22222222-2222-4222-8222-222222222222';
 const LIVE_SID = '33333333-3333-4333-8333-333333333333';
@@ -212,16 +234,20 @@ const pruneStart = async (
     on: Parameters<typeof world>[0],
     find: string | { exitCode: number; stdout: string },
     listed = {},
+    tear = (_files: Record<string, string>) => {},
 ) => {
     const w = world(on, {
         listed,
         peers: [{ name: 'peer', pid: 77, sessionId: LIVE_SID }],
-        run: (argv) => (argv[0] === 'find' ? find : undefined),
+        // a whole `7d`: a bare number rounds each age up to full days
+        run: (argv) =>
+            argv[0] === 'find' && argv.includes('-7d') ? find : undefined,
     });
     for (const sid of [GONE_SID, RECENT_SID, LIVE_SID])
         for (const family of [...FAMILIES, ...KEPT_FAMILIES])
             w.store.set(family + sid, { at: 1 });
     w.store.set('model:a name, no session id', 'x');
+    tear(w.files);
     await start($);
     return w;
 };
@@ -256,6 +282,31 @@ for (const [why, find] of [
 test('a registry that lists no session drops no key', async ($, on) => {
     const w = await pruneStart($, on, RECENT, { '/home/.claude/sessions': [] });
     expect(goneKeys(w).length).toBe(FAMILIES.length + KEPT_FAMILIES.length);
+});
+
+test("a gone session's 🔥 off outlives it", async ($, on) => {
+    const w = world(on, {
+        run: (argv) => (argv[0] === 'find' ? RECENT : undefined),
+    });
+    w.store.set(`hot:${GONE_SID}`, { off: true });
+    await start($);
+    expect([w.store.has(`hot:${GONE_SID}`), w.store.has('pruned-at')]).toEqual([
+        true,
+        true,
+    ]);
+});
+
+test('a torn registry file drops no key', async ($, on) => {
+    const w = await pruneStart($, on, RECENT, {}, (files) => {
+        files['/home/.claude/sessions/77.json'] = '{"pid":7';
+    });
+    expect(goneKeys(w).length).toBe(FAMILIES.length + KEPT_FAMILIES.length);
+});
+
+test('a resumed session keeps its own keys, its transcript old', async ($, on) => {
+    on('session.id', () => ({ value: GONE_SID }));
+    const w = await pruneStart($, on, RECENT);
+    expect(goneKeys(w)).toContain(`reply:${GONE_SID}`);
 });
 
 test('a second start of the day looks for nothing to drop', async ($, on) => {
