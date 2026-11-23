@@ -1,6 +1,5 @@
 ---
-status: parked
-parked-on: stryker #6210 ships (the vitest 5 runner) and the first bytes lane runs, speak v2 the nearest candidate (dima, 2026-11-03)
+status: dropped
 until: 2026-11-02
 dies-when: the verdict line below is written
 ---
@@ -37,3 +36,5 @@ on a touched file
   sandbox to `script/` (a socket under `.claude/worktrees` broke the copy) · frozen until #6210 ships
 
 ## verdict
+
+- 2026-11-23 · **dropped** 2026-11-23, dima: no time for stryker now («Uninstall and remove the test drive. I don't have time for Striker right now»). `@stryker-mutator/core` and `@stryker-mutator/vitest-runner` uninstalled from the root package.json, `stryker.config.json` trashed; the only round (day 0) never scored, the vitest 5 runner was still broken upstream ([stryker-js#6210](https://github.com/stryker-mutator/stryker-js/issues/6210)). this file stays as the record
