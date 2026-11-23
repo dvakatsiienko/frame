@@ -28,7 +28,7 @@ so · **[community]** a practitioner pattern · **[measured]** we ran it · **[?
 
 ## fable-5.2 — `claude-fable-5-2` · the escalation
 
-- **fable weeks** (dima, 2026-11-15, three promo resets): codies and the designer run fable 5.2, sixth sense stays opus 5.5 for model mixing; the live rule is `_clio/memory/_reminders.md`.
+- **fable weeks** (dima, 2026-11-15, three promo resets): since 2026-11-23 fable 5.2 runs clio, wings, the designer; the live rule is `_clio/memory/_reminders.md`.
 - 5.1 stays on the API to 2027-09-01; cc maps saved 5.1 picks to `fable` **[vendor]**.
 - **price**: $8 / $40, cache reads $0.20 (0.025×), writes $10 (5m) / $16 (1h); fast mode $16/$80. 1M / 128K. 2× opus per token, 20 % under 5.1 on every line. **[vendor]**
 - **effort**: `medium` is the cc default and our baseline (`high` on the API); `high` for long unattended runs, hard coding and deliverables; `xhigh` only after a measured gain; never `max` — below xhigh on FrontierCode at 3.2× the cost, below high on ARC-AGI-3 **[vendor]**. at medium on agentic work, add the vendor's «finish the whole task» line **[vendor]**. design: `high`, never `xhigh` **[dima, 11-19]**.

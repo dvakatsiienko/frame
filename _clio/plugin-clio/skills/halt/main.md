@@ -42,7 +42,7 @@ inbox clears — before the CST is written.
 n8n's «📭 gh notifications sweep» (`_clio/blueprints/gh-notifications-sweep.n8n.json`) sends them to Done every night at 03:00 — every thread already read, plus an unread merged or closed pr and a ci run of a branch with no open pr; what stays is an unread open pr or issue. the halt only reads its newest execution: failed or older than two days → `halt-sweep.ts --only notifications` (dry run, then `--apply`) does it by hand and the failure is one line in the board.
 
 ## phase 1.8 — glides, cleared unasked 🛼
-every 🛼 glide card of a finished lane gets orbit op `glide` act `end`; a parked lane's card stays, its plan file still ticking.
+every 🛼 glide card gets orbit op `glide` act `end`, a parked lane's too; a lane's summon draws a fresh card that turn (dima, 2026-11-23: «stop glides at halt, always start a glide on summon»).
 
 ## phase 1.9 — the mapped boards 🗺️
 `node ~/frame/_clio/script/blueprint-drift.ts`: each board it names gets its changed tiles redrawn, or one board line «stale: <tile>» (`_clio/blueprints/AGENTS.md` § the mapped areas).

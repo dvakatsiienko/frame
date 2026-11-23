@@ -196,3 +196,4 @@ Ticket: none
 - 2026-11-22 18:01 · 76k tokens · 1 high, 3 medium, 1 low · highs real: y (FRM-683 repo) · acted: all 4 fixed same turn
 - 2026-11-22 18:30 · 60k tokens · 1 high, 2 medium, 2 low · highs real: y (FRM-678 done test missed W18–W19) · acted: all 3 fixed same turn
 - 2026-11-22 18:56 · 78k tokens · 0 high, 7 medium, 4 low · highs real: n/a · acted: 6 fixed, o3 re-asked
+- 2026-11-23 10:43 · siesta, medium, main · ~89k tokens · 1 high, 4 medium, 3 low · high real (a raised cap number passed with a typed tick id), acted: exit line 3 and the done test check his tick log, W20–W22 in the wish block

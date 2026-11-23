@@ -67,7 +67,8 @@ if (import.meta.main) {
     );
     if (missing.length === 0) process.exit(0);
     const lines = missing.map(
-        (link) => `pnpm -C ~/frame x-changedetector:watch-add ${link}`,
+        (link) =>
+            `pnpm -C ~/frame x-changedetector:watch-add ${link} --why '<why we watch it>'`,
     );
     console.log(
         JSON.stringify({

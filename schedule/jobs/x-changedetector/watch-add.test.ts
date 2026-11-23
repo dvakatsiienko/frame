@@ -1,6 +1,83 @@
 import { describe, expect, it } from 'vitest';
 
-import { watchFor } from './watch-add.ts';
+import {
+    parseCommand,
+    watchFor,
+    whatFor,
+    whatOf,
+    whyTitle,
+} from './watch-add.ts';
+
+describe('parseCommand', () => {
+    it('refuses a missing --why', () => {
+        expect(parseCommand(['https://example.com/a'])).toBeUndefined();
+        expect(
+            parseCommand(['https://example.com/a', 'because']),
+        ).toBeUndefined();
+    });
+
+    it('refuses an empty or blank reason', () => {
+        expect(
+            parseCommand(['https://example.com/a', '--why', '']),
+        ).toBeUndefined();
+        expect(
+            parseCommand(['https://example.com/a', '--why', '   ']),
+        ).toBeUndefined();
+        expect(
+            parseCommand(['--why-set', 'https://example.com/a', ' ']),
+        ).toBeUndefined();
+    });
+
+    it('trims the reason in both modes', () => {
+        expect(
+            parseCommand(['https://example.com/a', '--why', '  r  ']),
+        ).toEqual({
+            mode: 'add',
+            reason: 'r',
+            url: 'https://example.com/a',
+        });
+        expect(
+            parseCommand(['--why-set', 'https://example.com/a', ' r ']),
+        ).toEqual({
+            mode: 'set',
+            reason: 'r',
+            url: 'https://example.com/a',
+        });
+    });
+});
+
+describe('the watch title', () => {
+    it('is the issue what plus the why for a github issue', () => {
+        const what = whatFor(
+            'https://github.com/anthropics/claude-code/issues/85225',
+            'Crash on start',
+        );
+        expect(whyTitle(what, 'blocks our hook')).toBe(
+            'anthropics/claude-code#85225 Crash on start — why: blocks our hook',
+        );
+    });
+
+    it('is the host plus path plus the why for a page', () => {
+        expect(
+            whyTitle(whatFor('https://example.com/pricing/plans'), 'new plan'),
+        ).toBe('example.com/pricing/plans — why: new plan');
+    });
+
+    it('keeps the what and swaps the old why tail for --why-set', () => {
+        expect(
+            whyTitle(
+                whatOf('example.com/pricing — why: old reason'),
+                'new reason',
+            ),
+        ).toBe('example.com/pricing — why: new reason');
+    });
+
+    it('keeps a title without a tail whole', () => {
+        expect(whatOf('anthropics/claude-code#1 Crash')).toBe(
+            'anthropics/claude-code#1 Crash',
+        );
+    });
+});
 
 describe('watchFor', () => {
     it('turns a github issue into an api watch that opens the issue page', () => {
