@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T18:01:00Z'
+updated_date: '2026-11-23T18:10:00Z'
 labels:
   - s
   - clio-main
@@ -17,20 +17,14 @@ ordinal: 1000
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 f67 herdr slash list misses his skill: the scan prints it, the miss is in chat's commands(); rider in herdr handoff
-- [ ] #2 f68 launchd: one store until the merge; a BYT-124 line «split app jobs at the merge», pm2.dima moves into schedule/
-- [ ] #3 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
-- [ ] #4 f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes
-- [ ] #5 f77 hang-heal: a ticket for the silent-member alarm outside a shift, a watch on clio, the keychain lost at login
-- [ ] #6 f85 frame package.json: five root deps with no user after the chords cut: check, then drop
-- [ ] #7 f86 mods rider: the guard treats a branch with no `+` line in git cherry as merged, so its delete needs no tick (his o4)
-- [ ] #8 f88 speak art-kit run: the speechify card takes the Speechify API own mark and colour (designer placeholders now)
-- [ ] #9 f90 cuts pass over the board mod (x-mod-stash): what in it has no user, his ticks (his o17, this week)
-- [ ] #10 f91 designer craft: research how to search design references and query them right (his 19 Nov wish)
-- [ ] #11 f92 speak design artifacts: which to delete, which to keep, as one clear list for him (his 16 Nov ask)
-- [ ] #12 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #13 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #14 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #15 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #2 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
+- [ ] #3 f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes
+- [ ] #4 f77 hang-heal beyond FRM-692: who watches clio herself, the keychain lost at login — waits for: dima, a shape
+- [ ] #5 f86 mods rider: the guard treats a branch with no `+` line in git cherry as merged, so its delete needs no tick (his o4)
+- [ ] #6 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #7 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #8 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #9 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2338,4 +2332,47 @@ PK-349:W2134 (2026-11-23 19:56, dima): When to stop? ❓
 PK-349:W2135 (2026-11-23 19:56, dima): From the description above and before, is it enough info for you to sharpen the low tide skill in a way so you know where and when to stop? ❓
 
 done 2026-11-23 20:01: f66 lane-pace counts 1 commit for the mods lane against 29 since 17:00; its commit match misses (stray, after batch 11)
+
+PK-349:W2136 (2026-11-23 19:55, dima): Can you pause a little? ❓
+PK-349:W2137 (2026-11-23 19:55, dima): Solve everything that is planned to be solved and instead of proposing more stuff to solve, print a list of stuff that is not solved yet: all tails in your pocket, linear/non-linear related, and everything that you can still solve and what is still pending for you as a tail
+
+PK-349:W2138 (2026-11-23 19:59, dima): what about your flyway: is it actualized? ❓
+PK-349:W2139 (2026-11-23 19:59, dima): all items deserves its place? ❓
+PK-349:W2140 (2026-11-23 19:59, dima): or some of them are done? ❓
+PK-349:W2141 (2026-11-23 19:59, dima): what we can close there? ❓
+PK-349:W2142 (2026-11-23 19:59, dima): close everything done.
+PK-349:W2143 (2026-11-23 19:59, dima): stray solved all its tails? ❓
+
+PK-349:W2144 (2026-11-23 20:05, dima, o3 steer): Uninstall and remove the test drive. I don't have time for Striker right now
+
+done 2026-11-23 20:07: f85 frame package.json: five root deps with no user after the chords cut: check, then drop
+
+done 2026-11-23 20:07: f88 speak art-kit run: the speechify card takes the Speechify API own mark and colour (designer placeholders now)
+
+done 2026-11-23 20:07: f91 designer craft: research how to search design references and query them right (his 19 Nov wish)
+
+done 2026-11-23 20:07: f92 speak design artifacts: which to delete, which to keep, as one clear list for him (his 16 Nov ask)
+
+done 2026-11-23 20:07: f90 cuts pass over the board mod (x-mod-stash): what in it has no user, his ticks (his o17, this week)
+
+done 2026-11-23 20:08: f68 launchd: one store until the merge; a BYT-124 line «split app jobs at the merge», pm2.dima moves into schedule/ (BYT-124 Todo)
+
+PK-349:W2145 (2026-11-23 20:06, dima): f91 what is it? ❓
+PK-349:W2146 (2026-11-23 20:06, dima): i can't recall why i asked that.
+PK-349:W2147 (2026-11-23 20:06, dima): and it is Most likely not relevant anymore because we already refreshed the designer and even completed the design for Speakafitoo so it is not completed step by step in time and not relevant anymore most likely.
+PK-349:W2148 (2026-11-23 20:06, dima): f92 same - artifacts cleared.
+PK-349:W2149 (2026-11-23 20:06, dima): why not done? ❓
+PK-349:W2150 (2026-11-23 20:06, dima): f90 - is what mods big picture is about? ❓
+PK-349:W2151 (2026-11-23 20:06, dima): f88 — about drawing speechify in speak v2 design? ❓
+PK-349:W2152 (2026-11-23 20:06, dima): designer drawn from what i saw.
+PK-349:W2153 (2026-11-23 20:06, dima): or no? ❓
+PK-349:W2154 (2026-11-23 20:06, dima): f86 why pared? ❓
+PK-349:W2155 (2026-11-23 20:06, dima): looks like a freebie.
+PK-349:W2156 (2026-11-23 20:06, dima): f85 if done why still in flyway? ❓
+PK-349:W2157 (2026-11-23 20:06, dima): as you see i can clean your flyway items even more than you.
+PK-349:W2158 (2026-11-23 20:06, dima): i did not red rest - do yourself.
+PK-349:W2159 (2026-11-23 20:06, dima): your turn now.
+PK-349:W2160 (2026-11-23 20:06, dima): … ? solve now.
+
+PK-349:W2161 (2026-11-23 15:29, dima, o3 steer): But I thought we have a subtle fade-out effect for text or you mean something else? ❓
 <!-- SECTION:NOTES:END -->
