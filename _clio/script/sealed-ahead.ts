@@ -217,9 +217,17 @@ export function readLaneAhead(
             signed: t.labels.includes('signed'),
         };
     };
-    // the chunk a ticket queues next: its open blocked tickets, one picked
-    const nextOf = (relations: Relation[] | undefined, bar: string[]) =>
-        pickNext(blockedIds(relations).map((id) => seal(id, bar)));
+    // the chunk a ticket queues next: its open blocked tickets, one picked; one that waits on a sibling is behind it, so the
+    // sibling comes first
+    const nextOf = (relations: Relation[] | undefined, bar: string[]) => {
+        const ids = blockedIds(relations);
+        const chunks = ids.map((id) => seal(id, bar));
+        const first = chunks.filter(
+            (c) =>
+                !openBlockers(c.relations, bar).some((id) => ids.includes(id)),
+        );
+        return pickNext(first.length ? first : chunks);
+    };
 
     const running = ['FRM', 'BYT']
         .flatMap((team) => list(team, ['--state', 'In Progress']))

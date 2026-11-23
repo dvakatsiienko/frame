@@ -556,6 +556,71 @@ describe('readLaneAhead, the chain', () => {
     });
 });
 
+describe('readLaneAhead, a running chunk that blocks two chunks of one chain', () => {
+    // FRM-1 runs and blocks FRM-3 and FRM-2; FRM-3 waits on FRM-2 and is the sealed one
+    const chain = (home: string) =>
+        world(home, {
+            preflight: { 'FRM-2': noExits },
+            running: modsRunning,
+            tickets: {
+                'FRM-1': {
+                    ...running,
+                    relations: [rel('blocks', 'FRM-3'), rel('blocks', 'FRM-2')],
+                },
+                'FRM-2': {
+                    relations: [
+                        rel('blocked by', 'FRM-1', 'In Progress'),
+                        rel('blocks', 'FRM-3'),
+                    ],
+                },
+                'FRM-3': {
+                    relations: [
+                        rel('blocked by', 'FRM-1', 'In Progress'),
+                        rel('blocked by', 'FRM-2'),
+                    ],
+                },
+            },
+        });
+
+    test('takes the chunk nothing else in the chain waits on, though a later one is sealed', () => {
+        const home = homeWith();
+        const out = sealedAhead(readLaneAhead(home, ['mods'], chain(home)));
+        expect(out.lanes[0]).toMatchObject({
+            slots: [
+                { id: 'FRM-2', state: 'signed, not sealed' },
+                { id: 'FRM-3', state: 'sealed' },
+            ],
+        });
+    });
+});
+
+describe('readLaneAhead, chunks that wait on each other', () => {
+    test('still take one rather than none, so a cycle in the tracker shows as a blocked slot', () => {
+        const home = homeWith();
+        const out = sealedAhead(
+            readLaneAhead(
+                home,
+                ['mods'],
+                world(home, {
+                    running: modsRunning,
+                    tickets: {
+                        'FRM-1': {
+                            ...running,
+                            relations: [
+                                rel('blocks', 'FRM-2'),
+                                rel('blocks', 'FRM-3'),
+                            ],
+                        },
+                        'FRM-2': { relations: [rel('blocked by', 'FRM-3')] },
+                        'FRM-3': { relations: [rel('blocked by', 'FRM-2')] },
+                    },
+                }),
+            ),
+        );
+        expect(out.lines[0]).toContain('1 FRM-2 blocked by FRM-3');
+    });
+});
+
 describe('readLaneAhead, a lane with no running chunk', () => {
     // the chain FRM-10 → FRM-30 → FRM-20: the ids run against the chain
     const chain = (home: string, more: Partial<World> = {}) =>
