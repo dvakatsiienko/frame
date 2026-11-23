@@ -59,6 +59,7 @@ pick minutes · rounds
 - 2026-09-29 · atelier · brief-vague (A/B vague) · full, blind · 4 takes · 5 artboards (4 takes + 1 shared art piece) · ~59.6k out (session transcript usage), in 137k cache-write + 2.5M cache-read · 9 wall min · 5h 23 → 33 %, 7d 30 → 31 % (window shared with parallel sessions) · pick min pending · round 1
 - 2026-09-30 · atelier · brief v1 · full, blind · round 3 on glass-experimental (all settings on the ring, film strip, small-art stage) · 3 artboards · ~35k out (estimate: session footer not visible in-session) · ~7 wall min · 5h 27 → 30 %, 7d 37 → 38 % · round 3 (last allowed)
 - 2026-09-30 · atelier · brief v1 · critique (ux, pm, engineer; rendered locally with the canvas runtime in agent-browser) + fix pass + decision.md + contract.md · 3 artboards re-rendered twice · output tokens not visible in-session · ~12 wall min · 5h 30 → 32 % · closed, the pick = glass-experimental
+- 2026-11-23 · speak · brief v2.2 · refine, phased through design-loupe · 1 take · 25 → 29 artboards · out 192k tokens (in not read) · 135 wall min · week 20 → 33 % · pick ~32 min · 6 rounds, 12 asks, 0 failed rounds
 
 ## verdict — 2026-09-29: adopted (dima: «looks very good, and as a first take, almost works for me»)
 
