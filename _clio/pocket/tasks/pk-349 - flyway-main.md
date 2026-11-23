@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T08:25:00Z'
+updated_date: '2026-11-23T08:51:00Z'
 labels:
   - s
   - clio-main
@@ -20,7 +20,7 @@ ordinal: 1000
 - [ ] #2 f67 herdr slash list misses his skill: the scan prints it, the miss is in chat's commands(); rider in herdr handoff
 - [ ] #3 f68 launchd: one store until the merge; a BYT-124 line «split app jobs at the merge», pm2.dima moves into schedule/
 - [ ] #4 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
-- [ ] #5 f70 FRM-676 land tails: archive herdr-lane-3 (name clash), review-rounds line, decamp verify-04f76a5 and verify-829d87e
+- [ ] #5 f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes
 - [ ] #6 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
 - [ ] #7 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
 - [ ] #8 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
@@ -1523,4 +1523,51 @@ PK-349:W1474 (2026-11-23 10:23, dima): that's quite a lot. (context, not dima's 
 PK-349:W1475 (2026-11-23 10:23, dima): can you triage them? ❓
 PK-349:W1476 (2026-11-23 10:23, dima): i'd like to drop truly stale and not needed ones but keep ones we need.
 PK-349:W1477 (2026-11-23 10:23, dima): ✓ (context, not dima's words: answers the line above, ➡️ my take: wait for the probe before choosing; b) cheapest real cut; c) the strongest; only numbers settle it)
+
+PK-349:W1478 (2026-11-23 10:14, dima): wisp! why mods codie is parked? ❓
+PK-349:W1479 (2026-11-23 10:14, dima): did you not spot any parked state? ❓
+
+PK-349:W1480 (2026-11-23 10:16, dima): mods codie still parked? ❓ (context, not dima's words: answers the line above, "still parked, all three points settled by 🦉 clio")
+
+PK-349:W1481 (2026-11-23 10:25, dima): «our own small stand-in for cc:» - what is it? ❓ (context, not dima's words: answers the line above, the 🟢 tests run on the stand-in: −93 % cpu, 13.26 → 0.91 cpu-seconds per 100 tests)
+PK-349:W1482 (2026-11-23 10:25, dima): interesting, but what is an alert criteria? ❓ (context, not dima's words: answers the line above, the proposal: a table in the repo that counts restarts per test file, no run needed)
+PK-349:W1483 (2026-11-23 10:25, dima): when it flags, that count went off the rails? ❓
+PK-349:W1484 (2026-11-23 10:25, dima): remove them, we discarded. (context, not dima's words: answers the line above, herdr-zoo, ovis)
+PK-349:W1485 (2026-11-23 10:25, dima): also remove. (context, not dima's words: answers the line above, vibe-kanban)
+PK-349:W1486 (2026-11-23 10:25, dima): remove. (context, not dima's words: answers the line above, archify and its gallery)
+PK-349:W1487 (2026-11-23 10:25, dima): remove. (context, not dima's words: answers the line above, ovis.sh, colliepwa)
+PK-349:W1488 (2026-11-23 10:25, dima): wtf is it? ❓ (context, not dima's words: answers the line above, desertant (3 pages))
+PK-349:W1489 (2026-11-23 10:25, dima): useful? ❓ (context, not dima's words: answers the line above, theregister, devclass)
+PK-349:W1490 (2026-11-23 10:25, dima): i don't know why we track it, i suppose you tracked for something.
+PK-349:W1491 (2026-11-23 10:25, dima): why we watch it? ❓ (context, not dima's words: answers the line above, Lossless Scaling)
+PK-349:W1492 (2026-11-23 10:25, dima): drop it, i still did not receive an invite. (context, not dima's words: answers the line above, Claude duet article)
+PK-349:W1493 (2026-11-23 10:25, dima): i receive it then re-add maybe or no.
+PK-349:W1494 (2026-11-23 10:25, dima): I suppose this list shows the problem with watches: when we have a lot of watches we now don't know why we watch stuff.
+PK-349:W1495 (2026-11-23 10:25, dima): Each watch somehow needs to be connected to the reason why we watch it or at least have a watch note.
+PK-349:W1496 (2026-11-23 10:25, dima): Does Change Detector have support for watch nodes (e.g. to tell why we watch it)? ❓
+
+PK-349:W1497 (2026-11-23 10:33, dima): let's tell as you predict - a, shared restart.
+PK-349:W1498 (2026-11-23 10:33, dima): so currently, shared weekly runs-faster-than-fable? 2 vs 3 percent? ❓
+PK-349:W1499 (2026-11-23 10:33, dima): then looks like speak codie should go fable 5.2.
+
+PK-349:W1500 (2026-11-23 10:33, dima, o7 steer): o7 and o8 - explain them a little, no tech language - what are the findings? ❓
+PK-349:W1501 (2026-11-23 10:33, dima, o7 steer): what's the proposal? ❓
+
+correction (stamps only, words untouched): W1481–W1496 are his 10:33 paste, stamp «(2026-11-23 10:33, dima)», not 10:25.
+correction (stamps only, words untouched): W1497 is the o7 steer, stamp «(2026-11-23 10:33, dima, o7 steer)», not 10:33 without the steer tag.
+correction (stamps only, words untouched): W1498–W1499 came at 10:34, stamp «(2026-11-23 10:34, dima)», not 10:33.
+correction (stamps only, words untouched): W1500–W1501 are his 10:25 herdr-typed line, stamp «(2026-11-23 10:25, dima)», not 10:33 with the o7 steer tag.
+
+PK-349:W1502 (2026-11-23 10:43, dima): antenna wisp: mods codie is active but the antenna does not show its active state. (context, not dima's words: two screenshots attached to the raw message)
+PK-349:W1503 (2026-11-23 10:43, dima): not really. (context, not dima's words: answers the line above, the 🟢 fable 3 %, shared 2 % line)
+PK-349:W1504 (2026-11-23 10:43, dima): fable weekly 2% = shared weekly 1%.
+PK-349:W1505 (2026-11-23 10:43, dima): so 2% shared should already mean fable weekly at least at ~5% for it to be ahead.
+PK-349:W1506 (2026-11-23 10:43, dima): or am i missing something? ❓
+PK-349:W1507 (2026-11-23 10:43, dima): oh, then keep it for now. (context, not dima's words: answers the line above, desertant)
+
+PK-349:W1508 (2026-11-23 10:43, dima, o4 steer): let's try, but we need a proper way of doing this, i think; let's try this way first.
+
+done 2026-11-23 10:50: f70 FRM-676 land tails: archive herdr-lane-3 (name clash), review-rounds line, decamp verify-04f76a5 and verify-829d87e (FRM-676 Done)
+
+10:51 f69 herdr wisps, four open nits carried from the herdr sixth sense's 20 Nov handoff (named, no fix asked then): loadPins' non-string filter mutant survives; `waitShown` cuts «pnpm test ~/frame» to «… ~»; an unquoted path with a space is not found in orbit cards; the chat reload guard (1310c24c) waits to land on his empty quill. they ride the next herdr lane's first brief.
 <!-- SECTION:NOTES:END -->
