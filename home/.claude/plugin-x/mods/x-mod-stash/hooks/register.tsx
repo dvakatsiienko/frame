@@ -36,7 +36,7 @@ import { drawSettingsPane } from './settings-pane.tsx';
 import { setSettingsOpen } from './settings-store.ts';
 import { onToolCall } from './step-notes.ts';
 import { beginQueuedTurn, endBusy, endStop, markActive } from './turn.ts';
-import { measureUsage } from './usage.ts';
+import { measureUsage, noteResponse } from './usage.ts';
 import { errorText } from './util.ts';
 import { load, publish, viewDoors } from './view.ts';
 import { compactSession, windAfterTurn } from './wind-run.ts';
@@ -144,7 +144,9 @@ export const register: Register = (on) => {
     // the board shows each session's model and effort as its main loop's last request named them; a subagent's step never counts
     on('turn.step', async function* ($, e, next) {
         if (!e.agentId) await noteModel($, e.model, e.effort);
-        return yield* next(e);
+        const answer = yield* next(e);
+        noteResponse(await $.clock.now());
+        return answer;
     });
 
     on('session.receive', ($, e, next) =>
