@@ -1,5 +1,5 @@
-// The one port pair for chords, imported by both sides so they cannot drift: the daemon's
-// server (dist plus the api) and vite's dev server, which proxies /api back to it.
+// The one port pair for chords: the daemon's server (dist plus the api) and the page's dev server in
+// bytes, which proxies /api back to it. bytes' run script (`apps/chords/script/dev.ts`) imports this file.
 //
 // The env overrides are for standing a second daemon up beside the running one — sixth sense or
 // a bisect needs its own pair, and editing this file to get one dirties the tree it is judging.

@@ -18,9 +18,11 @@
 // this mac still has full access by design; that is the boundary.
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
+import { homedir } from 'node:os';
 import { extname, join, relative, resolve } from 'node:path';
 
 import { warmAppNames } from './app-name.ts';
+import { chordOf, modOrder } from './chord.ts';
 import { readLog } from './log.ts';
 import type { Hotkey } from './manual.ts';
 import {
@@ -34,7 +36,10 @@ import { buildReport, isWindowName, windowDays } from './report.ts';
 import { liveHotkeys } from './stats.ts';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
-const DIST = join(import.meta.dirname, 'chords/dist');
+// the page's source lives in bytes; a worktree's second daemon serves its own build through the env
+const DIST =
+    process.env.CHORDS_DIST ??
+    join(homedir(), 'projects/bytes/apps/chords/dist');
 const MANUAL = join(import.meta.dirname, 'manual.ts');
 const SCAN_SNAPSHOT = join(import.meta.dirname, 'hotkeys.json');
 const MAX_BODY = 64 * 1024;
@@ -99,6 +104,24 @@ export const startChordsServer = (options: ChordsServerOptions) => {
 };
 
 /* Helpers */
+
+// The board draws what is bound now. A row a move ended stays in the snapshot, because /api/stats
+// still needs it to explain the presses it earned — but drawn on the keyboard it would read as a
+// second live binding on a chord nobody holds.
+//
+// The page lives in another repo and holds no chord rule of its own: each row travels with its
+// chord spelled, and the modifier order beside them.
+export const bindingsAnswer = (snapshot: {
+    hotkeys: Hotkey[];
+    scannedAt: string;
+}) => ({
+    ...snapshot,
+    hotkeys: liveHotkeys(snapshot.hotkeys).map((hotkey) => ({
+        ...hotkey,
+        chord: chordOf(hotkey),
+    })),
+    modifierOrder: modOrder,
+});
 
 const send = (response: ServerResponse, status: number, body: unknown) => {
     const text = JSON.stringify(body);
@@ -237,13 +260,7 @@ const api = async (
 
         const snapshot = JSON.parse(readFileSync(SCAN_SNAPSHOT, 'utf8'));
 
-        // The board draws what is bound now. A row a move ended stays in the snapshot,
-        // because /api/stats still needs it to explain the presses it earned — but drawn on
-        // the keyboard it would read as a second live binding on a chord nobody holds.
-        return send(response, 200, {
-            ...snapshot,
-            hotkeys: liveHotkeys(snapshot.hotkeys as Hotkey[]),
-        });
+        return send(response, 200, bindingsAnswer(snapshot));
     }
 
     if (url.pathname === '/api/notes') {
@@ -366,7 +383,7 @@ const serveStatic = (response: ServerResponse, pathname: string) => {
         response.writeHead(503, { 'content-type': MIME['.html'] as string });
 
         return response.end(
-            '<h1>chords is not built</h1><p>run <code>pnpm chords:build</code></p>',
+            '<h1>chords is not built</h1><p>run <code>pnpm --filter chords chords:build</code> in bytes</p>',
         );
     }
 
