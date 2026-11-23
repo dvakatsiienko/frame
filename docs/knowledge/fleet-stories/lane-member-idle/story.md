@@ -26,6 +26,18 @@ dima, 2026-11-23 16:26: this is bad. 40 min lost is a lot. they could already ha
 - 16:19 the reset; 16:20 his next ask; 16:22 he asks why speak is parked, and the codie gets read-only prep within the minute
 - 16:35 the spec is sealed and the first seven steps greenlit, after the blind critic (5 findings), a wisphunter read (12) and the codie's own 14 contradictions were folded
 
+## the second case, the same hour: the mods lane
+
+- ~15:00 the mods codie reads its next chunk (FRM-658) and leaves six open points for clio in its lane plan; 15:55 dima re-signs the chunk. the sign is there from then on. the sealed spec is not: clio writes no section, no exit lines, answers none of the six points
+- 16:18 the codie's last act on the chunk before it; idle from then
+- 16:34 dima asks «what blocks mods lane?». no ask of his blocked it. 16:35 the codie gets work only because main's CI went red on its last fix
+- 16:47 the section is written, six exit lines, the preflight passes, the dispatch applied, step 1 (measure first) greenlit: twelve minutes of work that had waited an hour and fifty minutes
+- what was missing was never his sign. it was clio's seal, which needs nobody but clio
+
+dima, 2026-11-23 16:45: i find myself always pushing on you to sign tickets, especially when we finish the day and do the halt. you always want to postpone signing tickets and sealing your specs until tomorrow, which leads to this picture: we boot and spend 1 or 2 hours on prepping the plan for a day and only then start, instead of starting right on the boot.
+
+the habit behind both cases: clio treats the seal as the step before a dispatch, done when a member is already free. so every chunk boundary and every boot opens with a member waiting on her paperwork.
+
 ## why nobody saw it
 
 1. **the plan put the member behind the coordinator.** hunt, merge, his ticks, spec, seal, dispatch ran in a row, every step clio's or dima's. an idle codie was the plan working as written
