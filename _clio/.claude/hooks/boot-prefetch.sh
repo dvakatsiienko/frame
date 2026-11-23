@@ -252,7 +252,6 @@ echo "-- app essentials (bytes/script/apps-essentials.ts, BYT-111; 🔴 = a gap 
 ESS="$HOME/projects/bytes/script/apps-essentials.ts"
 if [ -f "$ESS" ]; then
   (cd "$HOME/projects/bytes" && node "$ESS" 2>&1 | tail -20)
-  node "$ESS" --app "$HOME/frame/hotkeys/chords" 2>&1 | grep -v '^✅'
 else
   echo "bytes checker not found — skipped"
 fi
