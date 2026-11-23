@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T14:55:00Z'
+updated_date: '2026-11-23T15:24:00Z'
 labels:
   - s
   - clio-main
@@ -27,10 +27,12 @@ ordinal: 1000
 - [ ] #9 f87 speak FTR: the pill states line gains «no word timings», a rider for the speak lane (the designer, 15:29)
 - [ ] #10 f88 speak art-kit run: the speechify card takes the Speechify API own mark and colour (designer placeholders now)
 - [ ] #11 f89 idle member alarm: a line at my turn end when a lane member idles 10 min, no wait named (his o13)
-- [ ] #12 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #13 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #14 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #15 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #12 f90 cuts pass over the board mod (x-mod-stash): what in it has no user, his ticks (his o17, this week)
+- [ ] #13 f91 designer craft: research how to search design references and query them right (FRM-642:W25)
+- [ ] #14 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #15 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #16 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #17 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2102,4 +2104,64 @@ PK-349:W1928 (2026-11-23 16:53, dima): if scope changes = reseal.
 PK-349:W1929 (2026-11-23 16:53, dima): i think we just should not have unsigned tickets at all.
 PK-349:W1930 (2026-11-23 16:53, dima): if we have - we sign them before halt.
 PK-349:W1931 (2026-11-23 16:53, dima): if a grill is needed, and i don't want or don't have capacity - i can allow to skip/postpone it and grill/sign later.
+
+PK-349:W1932 (2026-11-23 16:56, dima): FRM-691 this is stray friendly ticket? ❓
+PK-349:W1933 (2026-11-23 16:56, dima): if yes why no label? ❓
+PK-349:W1934 (2026-11-23 16:56, dima): who builds and when? ❓
+
+PK-349:W1935 (2026-11-23 16:57, dima): Why don't I see your proposal and action items on this? ❓
+PK-349:W1936 (2026-11-23 16:57, dima): I would expect an orbit mask proposal at least.
+
+PK-349:W1937 (2026-11-23 17:01, dima): why postpone to a halt and not now? ❓
+PK-349:W1938 (2026-11-23 17:01, dima): at halt we will have enough to do - plan/groom three lanes for tomorrow — herdr mods and speak (speak will not make it today).
+PK-349:W1939 (2026-11-23 17:01, dima): I would also like you to review my Orbit asks. → FRM-695
+PK-349:W1940 (2026-11-23 17:01, dima): They currently look not good to me. → FRM-695
+PK-349:W1941 (2026-11-23 17:01, dima): I think they are not utilized properly given the possibilities. → FRM-695
+PK-349:W1942 (2026-11-23 17:01, dima): Currently you just repeat your A/B options in Orbit (e.g., kind of move what you would print me in your reply into an Orbit ask) and it looks off, kind of bare and not very appropriate. → FRM-695
+PK-349:W1943 (2026-11-23 17:01, dima): A/B as one line in a header also looks off given the other possibilities and Orbit ask possibilities. → FRM-695
+PK-349:W1944 (2026-11-23 17:01, dima): How would you propose to improve the shape of asks for them to be more clear and easy to read but be more informative and bring more positive data load on me? ❓ → FRM-695
+PK-349:W1945 (2026-11-23 17:01, dima): They would take roughly the same space, maybe slightly more space, but its content would be shaped in a way so the data is less useless and more approachable by me? ❓ → FRM-695
+
+PK-349:W1946 (2026-11-23 17:14, dima): As you see, currently it looks better but I think it could be even better because currently titles get too long and sometimes go to two lines. → FRM-695
+PK-349:W1947 (2026-11-23 17:14, dima): I would like to have titles short and one line at most and titles should say only the topic, short. → FRM-695
+PK-349:W1948 (2026-11-23 17:14, dima): I think it's hard to tell but maybe 5, maybe 7 words top. → FRM-695
+PK-349:W1949 (2026-11-23 17:14, dima): The actual description goes in the ask body like this: → FRM-695
+PK-349:W1950 (2026-11-23 17:14, dima): idea: use emojis more proactively (pick emojis relevant to area) → FRM-695
+PK-349:W1951 (2026-11-23 17:14, dima): then goes the body - short text describing the ask. → FRM-695
+PK-349:W1952 (2026-11-23 17:14, dima): the ➡️ line. → FRM-695
+PK-349:W1953 (2026-11-23 17:14, dima): remind - how much text orbit allows you to put in currently? ❓ → FRM-695
+PK-349:W1954 (2026-11-23 17:14, dima): plus, i do not like how orbit ask id takes space now. → FRM-695
+PK-349:W1955 (2026-11-23 17:14, dima): also it is not copy-pastable. → FRM-695
+PK-349:W1956 (2026-11-23 17:14, dima): i'd like it to be at the top right corner, looking as a kind of pill that tells ask id. → FRM-695
+PK-349:W1957 (2026-11-23 17:14, dima): on click on that pill - it copies ask id. → FRM-695
+PK-349:W1958 (2026-11-23 17:14, dima): similarly to how glide cards have the ticket id at the top right part of a card. → FRM-695
+PK-349:W1959 (2026-11-23 17:14, dima): (for some reason it is not present currently, btw - why?) ❓ → FRM-695
+PK-349:W1960 (2026-11-23 17:14, dima): can you bring orbit ticket ids to glide? ❓ → FRM-695
+PK-349:W1961 (2026-11-23 17:14, dima): so i show you how i want similar representation in orbit asks? ❓ → FRM-695
+PK-349:W1962 (2026-11-23 17:14, dima): And also remind me how, actually, I can steer Orbit asks. → FRM-695
+PK-349:W1963 (2026-11-23 17:14, dima): I can just ask you and you update that Orbit tool nudge description and you will write a better Orbit question, such, in a simple way. → FRM-695
+PK-349:W1964 (2026-11-23 17:14, dima): It is incredible because I was not liking the Orbit shape for a long time and was not asking about a change just because I was thinking that it is hard to change (because we have all this pending work for mods lane). → FRM-695
+PK-349:W1965 (2026-11-23 17:14, dima): So Orbit is easy to steer for you? ❓ → FRM-695
+PK-349:W1966 (2026-11-23 17:14, dima): Can you tell me the API you have for Orbit? ❓ → FRM-695
+PK-349:W1967 (2026-11-23 17:14, dima): What tools can you have for Orbit currently? ❓ → FRM-695
+PK-349:W1968 (2026-11-23 17:14, dima): Tell brief capabilities of Orbit along with that memory nudge for Orbit but don't use a lot of technical language. → FRM-695
+PK-349:W1969 (2026-11-23 17:14, dima): Describe in a simple way. → FRM-695
+
+PK-349:W1970 (2026-11-23 17:06, dima): can you post more probe asks? with proposed shapes? ❓
+
+PK-349:W1971 (2026-11-23 17:22, dima): are you sure in mods not in herdr? ❓ → FRM-695
+PK-349:W1972 (2026-11-23 17:22, dima): i'm interested only in herdr orbit ask representation, cc native orbit ask layout is not required currently i use 99.9% cc via herdr desktop app now. → FRM-695
+PK-349:W1973 (2026-11-23 17:22, dima): as you see now title is much better. → FRM-695
+PK-349:W1974 (2026-11-23 17:22, dima): but gray part is overloaded (unbalanced). → FRM-695
+PK-349:W1975 (2026-11-23 17:22, dima): can we use orbit ask body with: ❓ → FRM-695
+PK-349:W1976 (2026-11-23 17:22, dima): title - bold. → FRM-695
+PK-349:W1977 (2026-11-23 17:22, dima): non-gray text — black body, smaller font than title, nonbold. → FRM-695
+PK-349:W1978 (2026-11-23 17:22, dima): gray text - cta. → FRM-695
+PK-349:W1979 (2026-11-23 17:22, dima): the one with 🆕? ❓ → FRM-695
+PK-349:W1980 (2026-11-23 17:22, dima): one is missing in herdr currently. → FRM-695
+PK-349:W1981 (2026-11-23 17:22, dima): i did not see this one. → FRM-695
+PK-349:W1982 (2026-11-23 17:22, dima): can you create one? ❓ → FRM-695
+PK-349:W1983 (2026-11-23 17:22, dima): can you draw one for me to see? ❓ → FRM-695
+PK-349:W1984 (2026-11-23 17:22, dima): not sure i ever saw it. → FRM-695
+PK-349:W1985 (2026-11-23 17:22, dima): second wind: my own context reset — too, create one i see what it is about. → FRM-695
 <!-- SECTION:NOTES:END -->
