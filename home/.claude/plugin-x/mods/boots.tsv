@@ -1,4 +1,5 @@
-# mod	test file in it, or * for the mod whole (its files plus room for 10)	host starts	the `at` of the dima tick a raise stands on
+# mod	test file in it, or * for the mod whole (its files plus room for 10)	host starts	the `at` of the dima tick a raise stands on; the * row is the helper's pin, boots.ts
+*	tests/shared-boot.ts	8c55ebe4d62b	
 x-mod-guard	*	33	
 x-mod-guard	tests/cleanup.test.ts	1	
 x-mod-guard	tests/clipboard.test.ts	1	

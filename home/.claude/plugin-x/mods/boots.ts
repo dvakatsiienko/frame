@@ -15,9 +15,9 @@ const SHARED = 'tests/shared-boot.ts';
 const WHOLE = '*';
 // what a file may take of the kit or the helper; `test` only a test file may, since it starts the host
 const HARMLESS = ['Engine', 'expect', 'mock'];
-// the helper's imports, exports and `test`: the one place a host starts for a whole file. a change to them is a change of cost,
-// so it lands with this line
-const SHARED_PIN = '8c55ebe4d62b';
+// the mod of the pin's row: the hash of the helper's imports, exports and `test`, the one place a host starts for a whole file.
+// a change to them is a change of cost, so the pin moves as a row rises, on dima's tick
+const EVERY = '*';
 
 // a test file's host starts, or why they cannot be counted; what is not on the list is refused, never counted as none
 export function countBoots(source: string, file = 'tests/a.test.ts'): Count {
@@ -59,14 +59,18 @@ export function countBoots(source: string, file = 'tests/a.test.ts'): Count {
 }
 
 // why a file beside the test files could start a host the table never sees
-export function refusedHelper(source: string, file = 'tests/a.ts') {
+export function refusedHelper(
+    source: string,
+    file = 'tests/a.ts',
+    pin: string | undefined = undefined,
+) {
     const read = readSource(source, file);
     if (read.why) return read.why;
-    if (file === SHARED)
-        return pinOf(read.body, source) === SHARED_PIN
-            ? undefined
-            : `its imports, exports or test changed: ${pinOf(read.body, source)}, the pin in boots.ts says ${SHARED_PIN}`;
-    return refusedImport(read.body, file, HARMLESS);
+    if (file !== SHARED) return refusedImport(read.body, file, HARMLESS);
+    const now = pinOf(read.body, source);
+    return now === pin
+        ? undefined
+        : `its imports, exports or test read ${now}, the pin in ${TABLE} says ${pin ?? 'none'}; ${raiseDoor(pinPick(now))}`;
 }
 
 function readSource(
@@ -183,7 +187,7 @@ function isCounted(call: Node, isKit: boolean) {
 }
 
 // every test file's count, and each file that could start a host the table never sees; the kit runs a test file anywhere in a mod
-export function countMods(root: string) {
+export function countMods(root: string, pin?: string) {
     const counts: Row[] = [];
     const red: string[] = [];
     const mods = readdirSync(root).filter((n) =>
@@ -209,7 +213,7 @@ export function countMods(root: string) {
                 else counts.push({ boots, file, mod });
                 continue;
             }
-            const why = refusedHelper(source, file);
+            const why = refusedHelper(source, file, pin);
             if (why) red.push(`${mod}/${file}: ${why}`);
         }
     }
@@ -219,7 +223,7 @@ export function countMods(root: string) {
 export function readTable(text: string): Row[] {
     return text
         .split('\n')
-        .filter((l) => l && !l.startsWith('#'))
+        .filter((l) => l && !l.startsWith('#') && !isPin(l))
         .map((l) => {
             const [mod = '', file = '', boots = '', tick] = l.split('\t');
             return {
@@ -229,6 +233,15 @@ export function readTable(text: string): Row[] {
                 tick,
             };
         });
+}
+
+const isPin = (line: string) => line.startsWith(`${EVERY}\t`);
+
+// the helper's pin; two of them are none
+export function readPin(text: string): Pin {
+    const [line, ...more] = text.split('\n').filter(isPin);
+    const [, file, hash, tick] = line?.split('\t') ?? [];
+    return file === SHARED && !more.length ? { hash, tick } : {};
 }
 
 const nameOf = (r: Row) => (r.file === WHOLE ? r.mod : `${r.mod}/${r.file}`);
@@ -282,25 +295,38 @@ export function raised(table: Row[], base: Row[]) {
     });
 }
 
-// the one pick a tick raises a row by; he accepts it as it stands, with no steer beside it
+// the one pick a tick raises a row or moves the pin by; he accepts it as it stands, with no steer beside it
 const raisePick = (r: Row) => `raise ${nameOf(r)} to ${r.boots}`;
+const pinPick = (hash: string) => `change the mods shared boot to ${hash}`;
+const isTicked = (pick: string, at: string | undefined, ticks: Tick[]) =>
+    ticks.some(
+        (t) =>
+            t.verdict === 'tick' &&
+            String(t.at) === at &&
+            t.pick?.trim() === pick &&
+            !t.steer,
+    );
+const raiseDoor = (pick: string) =>
+    `it is an orbit ask whose pick is «${pick}», ticked in herdr's orbit, and committed with that line's \`at\` from ~/.claude/shelf/orbit-ticks in its row before his next press in that thread, which drops the line`;
 
 export function unticked(raises: (Row & { from: number })[], ticks: Tick[]) {
     return raises
-        .filter(
-            (r) =>
-                !ticks.some(
-                    (t) =>
-                        t.verdict === 'tick' &&
-                        String(t.at) === r.tick &&
-                        t.pick?.trim() === raisePick(r) &&
-                        !t.steer,
-                ),
-        )
+        .filter((r) => !isTicked(raisePick(r), r.tick, ticks))
         .map(
             (r) =>
-                `${nameOf(r)}: raised ${r.from} → ${r.boots} with no tick of dima's (its row says ${r.tick || 'none'}). a raise is an orbit ask whose pick is «${raisePick(r)}», ticked in herdr's orbit, and committed with that line's \`at\` from ~/.claude/shelf/orbit-ticks before his next press in that thread, which drops the line`,
+                `${nameOf(r)}: raised ${r.from} → ${r.boots} with no tick of dima's (its row says ${r.tick || 'none'}). ${raiseDoor(raisePick(r))}`,
         );
+}
+
+// a pin moved with no tick; a table with none yet takes its first
+export function unpinned(pin: Pin, base: Pin, ticks: Tick[]) {
+    if (!base.hash || pin.hash === base.hash) return [];
+    const pick = pinPick(pin.hash ?? 'none');
+    return isTicked(pick, pin.tick, ticks)
+        ? []
+        : [
+              `${SHARED}: its pin moved ${base.hash} → ${pin.hash ?? 'none'} with no tick of dima's. ${raiseDoor(pick)}`,
+          ];
 }
 
 // each session logs to a file of its own, where an ask's id is its own
@@ -337,7 +363,7 @@ function tableAt(root: string, ref: string) {
         execFileSync('git', args, { cwd: root, encoding: 'utf8' });
     if (!git('log', '-1', '--format=%h', ref, '--', TABLE).trim())
         return undefined;
-    return readTable(git('show', `${ref}:./${TABLE}`));
+    return git('show', `${ref}:./${TABLE}`);
 }
 
 // the table a push replaces; a new branch, or a remote commit this clone never fetched, reads against origin/main
@@ -358,21 +384,35 @@ if (import.meta.main) {
             const [, head = '', , remote = ''] = line.split(' ');
             if (!/[1-9a-f]/.test(head)) continue;
             const base = baseTable(root, remote);
-            for (const r of base ? raised(tableAt(root, head) ?? [], base) : [])
+            const now = tableAt(root, head);
+            if (!base || !now) continue;
+            for (const r of raised(readTable(now), readTable(base)))
                 console.log(
                     `⚠️ boots raised: ${nameOf(r)} ${r.from} → ${r.boots}, on tick ${r.tick}`,
+                );
+            const [pin, was] = [readPin(now), readPin(base)];
+            if (was.hash && pin.hash !== was.hash)
+                console.log(
+                    `⚠️ the mods shared boot changed: ${was.hash} → ${pin.hash}, on tick ${pin.tick}`,
                 );
         }
         process.exit(0);
     }
-    const table = readTable(readFileSync(join(root, TABLE), 'utf8'));
-    const { counts, red } = countMods(root);
+    const text = readFileSync(join(root, TABLE), 'utf8');
+    const table = readTable(text);
+    const pin = readPin(text);
+    const { counts, red } = countMods(root, pin.hash);
     const base = tableAt(root, 'HEAD');
     const ticks = readTicks(join(homedir(), '.claude/shelf/orbit-ticks'));
     const found = [
         ...red,
         ...pastTheTable(counts, table),
-        ...(base ? unticked(raised(table, base), ticks) : []),
+        ...(base
+            ? [
+                  ...unticked(raised(table, readTable(base)), ticks),
+                  ...unpinned(pin, readPin(base), ticks),
+              ]
+            : []),
     ];
     for (const line of found) console.error(`boots: ${line}`);
     process.exit(found.length ? 1 : 0);
@@ -384,6 +424,7 @@ type Node = any;
 type Count =
     | { boots: number; why?: undefined }
     | { boots?: undefined; why: string };
+type Pin = { hash?: string; tick?: string };
 type Row = { boots: number; file: string; mod: string; tick?: string };
 type Tick = {
     at: number;

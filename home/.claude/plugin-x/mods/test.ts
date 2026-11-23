@@ -566,7 +566,7 @@ if (import.meta.main) {
         const isPast = isWhole && cap !== undefined && !(cpu <= cap);
         if (isPast)
             past.push(
-                `${mod}: ${cpu.toFixed(1)} cpu-s, its cap in script/test-cpu-budget.tsv is ${cap}`,
+                `${mod}: ${cpu.toFixed(1)} cpu-s, its cap in script/test-cpu-budget.tsv is ${cap}; a loaded mac costs up to a third more, so one calm rerun decides`,
             );
         // a throwing hook exits 0 and reads failed; a file that cannot load exits red
         const { failed: red, passed } = outcome(output);

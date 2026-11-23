@@ -8,9 +8,11 @@ import {
     countMods,
     pastTheTable,
     raised,
+    readPin,
     readTable,
     readTicks,
     refusedHelper,
+    unpinned,
     unticked,
 } from './boots.ts';
 
@@ -294,14 +296,19 @@ describe('a file beside the test files', () => {
 
 describe('the shared helper', () => {
     const FILE = 'x-mod-stash/tests/shared-boot.ts';
+    const PIN = readPin(
+        readFileSync(join(import.meta.dirname, 'boots.tsv'), 'utf8'),
+    ).hash;
     const source = readFileSync(join(import.meta.dirname, FILE), 'utf8');
     const read = (edit: (s: string) => string) => {
         const edited = edit(source);
         expect(edited === source).toBe(false);
-        return refusedHelper(edited, 'tests/shared-boot.ts');
+        return refusedHelper(edited, 'tests/shared-boot.ts', PIN);
     };
     it('stands on its pin, a new door and all', () => {
-        expect(refusedHelper(source, 'tests/shared-boot.ts')).toBeUndefined();
+        expect(
+            refusedHelper(source, 'tests/shared-boot.ts', PIN),
+        ).toBeUndefined();
         expect(
             read((s) =>
                 s.replace(
@@ -373,4 +380,44 @@ it('a test file counts wherever in a mod it sits', () => {
         'tests/node_modules_b/z.test.ts',
         'tests/sub/a.test.ts',
     ]);
+});
+
+describe('the helper’s pin', () => {
+    const line = (hash: string, tick = '') =>
+        `*\ttests/shared-boot.ts\t${hash}\t${tick}\n`;
+    const pick = 'change the mods shared boot to bbb';
+    const tick = { at: 7, pick, verdict: 'tick' };
+    const base = readPin(line('aaa'));
+    it('is its own row, no file’s', () => {
+        expect([base, readTable(line('aaa'))]).toEqual([
+            { hash: 'aaa', tick: '' },
+            [],
+        ]);
+    });
+    it.each([
+        ['two pins', line('aaa') + line('bbb')],
+        ['no pin', ''],
+        ['a pin of another file', '*\ttests/a.ts\taaa\t\n'],
+    ])('%s read as none, and none is a move', (_, text) => {
+        expect(readPin(text)).toEqual({});
+        expect(unpinned(readPin(text), base, [])).toHaveLength(1);
+    });
+    it('unmoved, moved on its tick, or the first ever, it passes', () => {
+        expect(unpinned(base, base, [])).toEqual([]);
+        expect(unpinned(readPin(line('bbb', '7')), base, [tick])).toEqual([]);
+        expect(unpinned(base, {}, [])).toEqual([]);
+    });
+    it.each([
+        ['no tick', '', [tick]],
+        ['a typed-in tick', '8', [tick]],
+        ['a tick on another hash', '7', [{ ...tick, pick: `${pick}b` }]],
+        ['a tick with a steer', '7', [{ ...tick, steer: 'wait' }]],
+    ])('moved on %s it is named', (_, at, ticks) => {
+        expect(unpinned(readPin(line('bbb', at)), base, ticks)).toHaveLength(1);
+    });
+    it('a raise of no row reads no pin', () => {
+        expect(raised(readTable(line('bbb')), readTable(line('aaa')))).toEqual(
+            [],
+        );
+    });
 });
