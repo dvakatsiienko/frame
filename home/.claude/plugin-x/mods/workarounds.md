@@ -18,7 +18,7 @@ the workaround in place, the undo. checked against the changelog through 2.1.314
 - issue: [claude-code#101090](https://github.com/anthropics/claude-code/issues/101090) — text a mod draws can't be
   selected on the desktop; `$.ui.selection()` reads only transcript rows
 - workaround: each ask carries 🔊 ⏯ ⏹, which send `read` / `pause` / `stop` to x-speak's control socket
-  (`x-mod-stash/hooks/register.tsx`, `speak`; the `read` op in `schedule/jobs/x-speak/control.swift`)
+  (`x-mod-stash/hooks/register.tsx`, `speak`; the `read` op in bytes' `apps/speak/daemon/control.swift`)
 - undo when fixed: drop the three buttons and the `speak` call; keep the socket's `read` op only if another reader
   uses it
 
