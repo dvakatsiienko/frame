@@ -29,7 +29,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **🐦‍🔥 second wind** — a session's context reset onto its own handoff: dima presses a session's 🐦‍🔥 on the board (or says the word), the session finishes its step, writes a CST, and the mod compacts and ingests it at the turn's end (`clio:checkpoint` for clio, x-mod-stash). <!-- cc -->
 - **🌠 wish** — what dima wants, in his words (dima, 2026-10-08: the word replaces «todo»). he prints
   wishes in the inbox and mid-prompt; the inbox's wishes section is the drop point; the pocket, then linear, is where a wish lives; a spec points at its wish, never copies it.
-- **🌤️ siesta** — the pause between batches (dima, 2026-10-08; was «pit stop»): he reads and steers, the fleet checks what just landed (clio: `wishkeeper` 🐬, `clio:siesta`), and the reply ends with one light line — a fact with a twist, a dry joke, or «meanwhile i did <freebie>». never inside a ticket's build.
+- **🌤️ siesta** — the pause between batches (dima, 2026-10-08; was «pit stop»): he reads and steers, the fleet checks what just landed (clio: `wishkeeper` 🐬, `clio:siesta`). never inside a ticket's build.
 - **lane** — any flow of work; four kinds, and a `lane:` line holds
   only the kind word: the **main lane** is ours, this thread, where the operational work is solved; a **side lane** is
   any lane not ours, summoned while we work the main lane: codie with a pr always, sixth sense on by default; a **quick
