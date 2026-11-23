@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T13:41:00Z'
+updated_date: '2026-11-23T14:37:00Z'
 labels:
   - s
   - clio-main
@@ -26,10 +26,11 @@ ordinal: 1000
 - [ ] #8 f86 mods rider: the guard treats a branch with no `+` line in git cherry as merged, so its delete needs no tick (his o4)
 - [ ] #9 f87 speak FTR: the pill states line gains «no word timings», a rider for the speak lane (the designer, 15:29)
 - [ ] #10 f88 speak art-kit run: the speechify card takes the Speechify API own mark and colour (designer placeholders now)
-- [ ] #11 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #12 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #13 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #14 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #11 f89 idle member alarm: a line at my turn end when a lane member idles 10 min, no wait named (his o13)
+- [ ] #12 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #13 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #14 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #15 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2015,4 +2016,51 @@ done 2026-11-23 15:26: f83 herdr wisp: every orbit ask ticks with enter, warn on
 done 2026-11-23 15:26: f84 who-roasted job: a ticket, one folder in schedule/jobs, its log beside the gate queue log (his o6 tick)
 
 15:41 f85 detail: @tailwindcss/vite, tailwindcss, @vitejs/plugin-react, @types/react, @types/react-dom (the speak codie's find, the sixth sense agrees for three of five)
+
+PK-349:W1854 (2026-11-23 15:10, dima): yes, stop glides at halt, always start a glide on summon.
+PK-349:W1855 (2026-11-23 15:10, dima): you for example, did not created a glide for mods lane just yet.
+PK-349:W1856 (2026-11-23 15:10, dima): let's try but we need a proper way of doing this i think, let's try this way first
+PK-349:W1857 (2026-11-23 15:10, dima): let's summon after fable/opus switch topic is solved and gree on your tailfree state
+PK-349:W1858 (2026-11-23 15:10, dima): yes, 11 canvas comments — i did not looked them yet, i donot remember them
+PK-349:W1859 (2026-11-23 15:10, dima): ok but cmd+r takes 6s
+PK-349:W1860 (2026-11-23 15:12, dima): i think this check is useless, why we want to have it? ❓
+PK-349:W1861 (2026-11-23 15:12, dima): Can you explain why a threat would ever want to fake my tick? ❓
+PK-349:W1862 (2026-11-23 15:12, dima): I think that you are too suspicious and stop producing paranoid ideas.
+PK-349:W1863 (2026-11-23 15:12, dima): I have enough of them
+PK-349:W1864 (2026-11-23 15:29, dima): i'd like you do such cleanups automatically, how to have it so you auto-clean without tick? ❓
+PK-349:W1865 (2026-11-23 15:29, dima): i think this kind of ask is a pure killer of my attention.
+PK-349:W1866 (2026-11-23 15:31, dima): and sign
+PK-349:W1867 (2026-11-23 15:31, dima): Can you double-check this because I thought that we actually drew a finalized UI and what's left is to do some final touches? ❓
+PK-349:W1868 (2026-11-23 15:31, dima): Can you look up into the design files? ❓
+PK-349:W1869 (2026-11-23 15:31, dima): I thought they were already fine.
+PK-349:W1870 (2026-11-23 15:31, dima): Actually from the previous design session, I liked what we drew.
+PK-349:W1871 (2026-11-23 15:31, dima): What's missing is the final touches and maybe something else.
+PK-349:W1872 (2026-11-23 15:31, dima): I can't recall because it was long ago
+PK-349:W1873 (2026-11-23 15:31, dima): restart with opus 5.5
+PK-349:W1874 (2026-11-23 15:31, dima): Okay but you should have awareness about this label so you don't forget to set it.
+PK-349:W1875 (2026-11-23 15:31, dima): Because if we just create the label and you aren't aware of it, it will not be used
+PK-349:W1876 (2026-11-23 15:13, dima): where this job will be parked? ❓
+PK-349:W1877 (2026-11-23 15:13, dima): i want colocation and donot like stuff scatered across 100 places
+PK-349:W1878 (2026-11-23 15:35, dima): (context, not dima's words: the pasted text says «https://linear.app/x-com/project/design-system-20b2d4b50630/overview») park BYT-136 here for now, until we decide how to approach byt-136 vs blueprint v2.
+PK-349:W1879 (2026-11-23 15:35, dima): maybe we can build a complete solution and answers all questions? ❓
+PK-349:W1880 (2026-11-23 15:35, dima): chords now reloads fast fyi ✓.
+PK-349:W1881 (2026-11-23 15:46, dima): design loup v2:
+PK-349:W1882 (2026-11-23 15:46, dima): 1. picking an option should not be counted as answer yet.
+PK-349:W1883 (2026-11-23 15:46, dima): 2. instead - i pick an option, then can change it (or unpick)
+PK-349:W1884 (2026-11-23 15:46, dima): 3. steerbox stays, and right next to steerbox, a button appears — similar or same as tick button next to orbit ask steerbox
+PK-349:W1885 (2026-11-23 15:46, dima): 4. it is tickable when at least on open from questions is picked.
+PK-349:W1886 (2026-11-23 15:46, dima): 5. when ticked - question considered answered.
+PK-349:W1887 (2026-11-23 15:46, dima): unselecting answer option unticks «answered» button ticked state.
+PK-349:W1888 (2026-11-23 15:46, dima): unticking «answered» button state does not unselects selected option
+PK-349:W1889 (2026-11-23 15:46, dima): 6. any ticked answer does not pushes to desginer.
+PK-349:W1890 (2026-11-23 15:46, dima): instead it just gets marked as «ready» and joins designer via slipstream
+PK-349:W1891 (2026-11-23 15:46, dima): 7. push door should still be there.
+PK-349:W1892 (2026-11-23 15:46, dima): i think of 2 butoons.
+PK-349:W1893 (2026-11-23 15:46, dima): one more button for each question: two 2 buttons totoal.
+PK-349:W1894 (2026-11-23 15:46, dima): «tick» works via slipstream and «send» pushes (or just make it same way as my quill magic button - one ticking btn, pushes via hold).
+PK-349:W1895 (2026-11-23 15:46, dima): and another button «send all» via push.
+PK-349:W1896 (2026-11-23 15:46, dima): chords migrated.
+PK-349:W1897 (2026-11-23 15:46, dima): now what - messhunt? ❓
+
+16:37 hang-heal wisp (dima o13, 23 Nov): the speak codie sat idle 43 min (15:39–16:22) behind my hunt, spec and reset, and the mods codie idled behind FRM-658's unsealed spec; story docs/knowledge/fleet-stories/lane-member-idle/story.md; his tick: an idle-member line at my turn end (10 min, no wait named), the first case of hang-heal (f77)
 <!-- SECTION:NOTES:END -->
