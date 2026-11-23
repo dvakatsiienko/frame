@@ -7,6 +7,7 @@ import {
     type Commit,
     classify,
     currentTicketOf,
+    earlierLaneTranscripts,
     lanePace,
     lanePaceSection,
     median,
@@ -500,7 +501,7 @@ describe('ownCommits', () => {
             bash(T0, 'a', "git commit -m '🔧 x: the lane wrote this subject'"),
             result(T0 + 1, 'a', 'abcdef0 🐞 y: another lane wrote this one'),
         ]);
-        expect(ownCommits([mine, theirs], transcript)).toEqual([mine]);
+        expect(ownCommits([mine, theirs], [transcript])).toEqual([mine]);
     });
 });
 
@@ -514,7 +515,87 @@ describe('ownCommits, short subjects', () => {
             t: T0,
         };
         const transcript = jsonl([bash(T0, 'a', "git commit -m '🔧 x: a'")]);
-        expect(ownCommits([commit], transcript)).toEqual([]);
+        expect(ownCommits([commit], [transcript])).toEqual([]);
+    });
+});
+
+describe('lanePaceSection, a lane whose session rotated', () => {
+    const home = mkdtempSync(path.join(tmpdir(), 'lane-pace-rotated-'));
+    afterAll(() => rmSync(home, { force: true, recursive: true }));
+    const project = path.join(home, '.claude/projects/-a-b');
+    const head = (role: string) =>
+        jsonl([
+            {
+                message: { content: `use the ${role} skill, lane mods-lane-9` },
+                timestamp: iso(T0),
+                type: 'user',
+            },
+        ]);
+    const commit = (n: number, subject: string): Commit => ({
+        add: 5,
+        rem: 5,
+        sha: `abcdef${n}`,
+        subject,
+        t: T0 + n * 60,
+    });
+
+    test("counts the commits an earlier codie session wrote, never a sixth sense's on the same lane", () => {
+        mkdirSync(path.join(home, '.claude/shelf'), { recursive: true });
+        mkdirSync(project, { recursive: true });
+        writeFileSync(
+            path.join(home, '.claude/shelf/threads.json'),
+            JSON.stringify({
+                threads: [
+                    {
+                        cwd: '/a/b',
+                        lane: 'mods-lane-9',
+                        role: 'codie',
+                        sessionId: 'new',
+                        ticket: 'FRM-1',
+                    },
+                ],
+            }),
+        );
+        const early = commit(1, '🔧 mods: written in the earlier session');
+        const late = commit(2, '🔧 mods: written in the current session');
+        const review = commit(3, '🔧 mods: written by the sixth sense');
+        writeFileSync(
+            path.join(project, 'old.jsonl'),
+            `${head('x:crew-codie')}\n${jsonl([bash(T0 + 30, 'a', "git commit -m '🔧 mods: written in the earlier session'")])}`,
+        );
+        writeFileSync(
+            path.join(project, 'new.jsonl'),
+            `${head('x:crew-codie')}\n${jsonl([
+                bash(
+                    T0 + 100,
+                    'b',
+                    "git commit -m '🔧 mods: written in the current session'",
+                ),
+                result(
+                    T0 + 101,
+                    'b',
+                    'abcdef1 🔧 mods: written in the earlier session',
+                ),
+                text(T0 + 600),
+            ])}`,
+        );
+        writeFileSync(
+            path.join(project, 'six.jsonl'),
+            `${head('x:crew-sixth-sense')}\n${jsonl([bash(T0 + 150, 'c', "git commit -m '🔧 mods: written by the sixth sense'")])}`,
+        );
+
+        const section = lanePaceSection(home, T0, {
+            commits: () => [early, late, review],
+            size: () => null,
+        });
+
+        expect(section.output).toContain('2 commits');
+        expect(
+            earlierLaneTranscripts(project, 'new.jsonl', 'mods-lane-9', T0),
+        ).toHaveLength(1);
+        expect(
+            earlierLaneTranscripts(project, 'new.jsonl', undefined, T0),
+        ).toEqual([]);
     });
 });
 

@@ -3,7 +3,7 @@
 // against its ticket's size budget. a red never parks a lane: it names the likely fix, for clio to send as a steer.
 // the method is the 20 Nov pace read across lanes (FRM-672's refs), ported from its pace.py
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 
@@ -527,10 +527,36 @@ function sizeOf(ticket: string) {
     }
 }
 
+// the codie sessions a lane ran before its current one: a wind or a clear rotates the session, and the commits of an earlier one
+// show up only as log output in the new one. a session counts when its head names the lane and the codie contract, so a sixth
+// sense's transcript on the same lane never does
+export function earlierLaneTranscripts(
+    projectDir: string,
+    current: string,
+    lane: string | undefined,
+    since: number,
+) {
+    if (!lane || !existsSync(projectDir)) return [];
+    return readdirSync(projectDir)
+        .filter((name) => name.endsWith('.jsonl'))
+        .map((name) => path.join(projectDir, name))
+        .filter(
+            (file) =>
+                path.basename(file) !== current &&
+                statSync(file).mtimeMs / 1000 >= since,
+        )
+        .map((file) => readFileSync(file, 'utf8'))
+        .filter((text) => {
+            const head = text.slice(0, 8000);
+            return head.includes(lane) && head.includes('crew-codie');
+        });
+}
+
 // a commit is a lane's when its subject, past the emoji, sits in a tool call the lane made: the message file it wrote. a sha the lane
 // only read in a log is no proof
-export function ownCommits(commits: Commit[], transcript: string) {
-    const inputs = [...readTranscript(transcript).uses.values()]
+export function ownCommits(commits: Commit[], transcripts: string[]) {
+    const inputs = transcripts
+        .flatMap((transcript) => [...readTranscript(transcript).uses.values()])
         .map((use) => use.input)
         .join('\n');
     return commits.filter((c) => {
@@ -592,7 +618,15 @@ export function lanePaceSection(
         try {
             const transcript = readFileSync(file, 'utf8');
             const pace = lanePace({
-                commits: ownCommits(reads.commits(dir, since), transcript),
+                commits: ownCommits(reads.commits(dir, since), [
+                    transcript,
+                    ...earlierLaneTranscripts(
+                        path.dirname(file),
+                        `${thread.sessionId}.jsonl`,
+                        thread.lane,
+                        since,
+                    ),
+                ]),
                 name,
                 plan: planFile ? planOf(planFile) : null,
                 scratchpad: `/private/tmp/claude-${process.getuid?.() ?? 501}/${project}/${thread.sessionId}/scratchpad`,
