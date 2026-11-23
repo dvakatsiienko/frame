@@ -197,6 +197,92 @@ describe('sealedAhead, the member', () => {
     });
 });
 
+describe('sealedAhead, the moves a lane owes', () => {
+    test('a lane with no member is not red and carries summon in its moves', () => {
+        const out = sealedAhead([
+            lane('herdr', [sealed('FRM-1'), sealed('FRM-2')], { kind: 'none' }),
+        ]);
+        expect(out.exit).toBe(0);
+        expect(out.lines[0]).toBe(
+            '🟢 herdr — 1 FRM-1 sealed · 2 FRM-2 sealed · member none: summon at boot',
+        );
+        expect(out.lanes[0]).toMatchObject({
+            moves: ['summon (clio)'],
+            red: false,
+        });
+    });
+
+    test('a member that is live or parked adds no summon', () => {
+        const moves = (member: Member) =>
+            sealedAhead([
+                lane('herdr', [sealed('FRM-1'), sealed('FRM-2')], member),
+            ]).lanes[0]?.moves;
+        expect([
+            moves({ kind: 'live', name: 'a' }),
+            moves({ kind: 'parked', slug: 'b' }),
+        ]).toEqual([[], []]);
+    });
+
+    test('a slot both blocked and drifted owes both moves, named in the line and in --json', () => {
+        const out = sealedAhead([
+            lane('speak', [
+                { ...blocked('FRM-289', 'FRM-669'), drifted: true },
+                sealed('FRM-2'),
+            ]),
+        ]);
+        expect(out.lanes[0]).toMatchObject({
+            moves: ['unblock (clio)', 're-sign (dima)'],
+            slots: [
+                { id: 'FRM-289', moves: ['unblock (clio)', 're-sign (dima)'] },
+                { id: 'FRM-2', moves: [] },
+            ],
+        });
+        expect(out.lines[0]).toMatch(/ — unblock \(clio\), re-sign \(dima\)$/);
+    });
+
+    test('a blocked chunk that is also unsealed owes the unblock and the seal', () => {
+        expect(
+            sealedAhead([
+                lane('mods', [
+                    {
+                        ...failed('FRM-2', true, noExits),
+                        blockedBy: 'FRM-1',
+                    },
+                    sealed('FRM-3'),
+                ]),
+            ]).lanes[0]?.moves,
+        ).toEqual(['unblock (clio)', 'seal (clio)']);
+    });
+
+    test('a drifted chunk that is also unsealed owes the re-sign first, the seal follows it', () => {
+        expect(
+            sealedAhead([
+                lane('mods', [
+                    { ...failed('FRM-2', true, noExits), drifted: true },
+                    sealed('FRM-3'),
+                ]),
+            ]).lanes[0]?.moves,
+        ).toEqual(['re-sign (dima)']);
+    });
+
+    test('an unsigned chunk owes the sign, not the seal', () => {
+        expect(
+            sealedAhead([
+                lane('mods', [
+                    failed('FRM-2', false, noExits),
+                    sealed('FRM-3'),
+                ]),
+            ]).lanes[0]?.moves,
+        ).toEqual(['sign (dima)']);
+    });
+
+    test('two empty slots owe a queue each', () => {
+        expect(
+            sealedAhead([lane('herdr', [null, null])]).lanes[0]?.moves,
+        ).toEqual(['queue one (clio)', 'queue one (clio)']);
+    });
+});
+
 describe('sealedAhead, the whole answer', () => {
     test('every owed move of a lane is listed, in slot order, for the skill that walks them', () => {
         const out = sealedAhead([

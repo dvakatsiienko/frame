@@ -14,6 +14,7 @@ const RUN_TIMEOUT_MS = 60_000;
 // siesta-checks' NOT_CHECKED: a read that failed, never «ready»
 const NOT_CHECKED = 2;
 const MOVE_RESIGN = 're-sign (dima)';
+const MOVE_SUMMON = 'summon (clio)';
 // a ticket's `repo:` line names where its brief preflight runs, under home; no line means frame
 const AHEAD_REPOS: Record<string, string | undefined> = {
     bytes: 'projects/bytes',
@@ -65,6 +66,7 @@ function laneRow(lane: LaneAhead) {
             unchecked: true,
         };
     const slots = lane.slots.map((ticket) => ({
+        moves: slotMoves(ticket),
         state: aheadState(ticket),
         ticket,
     }));
@@ -73,16 +75,24 @@ function laneRow(lane: LaneAhead) {
             (s, i) => `${i + 1} ${s.ticket ? `${s.ticket.id} ` : ''}${s.state}`,
         )
         .join(' · ');
-    const owed = slots.filter((s) => s.state !== 'sealed');
     const member = memberText(lane.member);
-    const moves = owed.map((s) => moveOf(s.state));
+    // a lane with no member is not red: its move rides along, the halt summons it at boot
+    const moves = [
+        ...slots.flatMap((s) => s.moves),
+        ...(lane.member.kind === 'none' ? [MOVE_SUMMON] : []),
+    ];
+    const owed = [...new Set(slots.flatMap((s) => s.moves))];
     return {
-        line: `${owed.length ? '🔴' : '🟢'} ${lane.name} — ${text} · ${member}${moves[0] ? ` — ${moves[0]}` : ''}`,
+        line: `${owed.length ? '🔴' : '🟢'} ${lane.name} — ${text} · ${member}${owed.length ? ` — ${owed.join(', ')}` : ''}`,
         member,
         moves,
         name: lane.name,
         red: owed.length > 0,
-        slots: slots.map((s) => ({ id: s.ticket?.id ?? null, state: s.state })),
+        slots: slots.map((s) => ({
+            id: s.ticket?.id ?? null,
+            moves: s.moves,
+            state: s.state,
+        })),
         unchecked: false,
     };
 }
@@ -127,18 +137,16 @@ function aheadState(ticket: Ahead | null): string {
     return ticket.signed ? 'signed, not sealed' : 'unsigned';
 }
 
-// whose move turns each state green: the owner is in the words, the skill walking `--json` hands each to its owner
-function moveOf(state: string) {
-    if (state.startsWith('blocked by ')) return 'unblock (clio)';
-    return (
-        {
-            drifted: MOVE_RESIGN,
-            'none queued': 'queue one (clio)',
-            reseal: 'seal (clio)',
-            'signed, not sealed': 'seal (clio)',
-            unsigned: 'sign (dima)',
-        }[state] ?? ''
-    );
+// every move a slot still owes, its owner in the words (the skill walking `--json` hands each to its owner): a chunk both
+// blocked and drifted owes both
+function slotMoves(ticket: Ahead | null) {
+    if (!ticket) return ['queue one (clio)'];
+    const moves: string[] = [];
+    if (ticket.blockedBy) moves.push('unblock (clio)');
+    if (ticket.signed && ticket.drifted) moves.push(MOVE_RESIGN);
+    else if (!ticket.preflightOk)
+        moves.push(ticket.signed ? 'seal (clio)' : 'sign (dima)');
+    return moves;
 }
 
 function memberText(member: Member) {
