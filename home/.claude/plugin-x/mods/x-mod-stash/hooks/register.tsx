@@ -26,7 +26,12 @@ import {
     quietDeliveryTest,
     receiveMessage,
 } from './quiet-gate.ts';
-import { fixDrawnReply, fixStoredReply, settleReply } from './reply-fix.ts';
+import {
+    fixDrawnReply,
+    fixStoredReply,
+    settleReply,
+    stampTurn,
+} from './reply-fix.ts';
 import { endSession, forget } from './session-end.ts';
 import { currentId, refreshThreads } from './session-identity.ts';
 import { keepShelf, noteModel } from './session-record.ts';
@@ -121,6 +126,8 @@ export const register: Register = (on) => {
         armRelease($, viewDoors($), WIND_DELAY_MS);
         const endedAt = await $.clock.now();
         await endStop($, endedAt);
+        const ownId = await currentId($);
+        if (ownId) await stampTurn($, ownId, endedAt).catch(() => undefined);
         await seatDefaults($, viewDoors($)).catch(() => undefined);
         await capAtTurnEnd($, e.reason === 'error', e.answer, viewDoors($));
         await hotAtTurnEnd($, viewDoors($));

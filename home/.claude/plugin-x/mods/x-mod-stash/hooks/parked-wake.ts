@@ -11,7 +11,7 @@ import {
     prepareTurn,
 } from './keep-warm.ts';
 import { readLanes } from './lanes.ts';
-import { LEDGER_EVERY_MS, lastSpokeAt } from './quiet-books.ts';
+import { LEDGER_EVERY_MS, lastTurnAt, openTags } from './quiet-books.ts';
 import { laneMemberRow, registry } from './roster.ts';
 import {
     ADVISER_ROLE,
@@ -24,8 +24,11 @@ import {
     threadRecords,
 } from './session-identity.ts';
 import { herdrRow, partsShown } from './settings-store.ts';
+import { REPLY, type Reply } from './store-keys.ts';
 import { idleTurn, isTurnBusy, selfSubmit } from './turn.ts';
 import { bare } from './util.ts';
+import { windOf } from './wind.ts';
+import { hasHandoff } from './wind-run.ts';
 import { xRead } from './x-cli.ts';
 
 const PARKED_WAKE_MS = 10 * 60_000;
@@ -60,8 +63,6 @@ export async function relayCrowWake($: EngineInterface) {
         .write(path, JSON.stringify({ ...parked, isSent: true }))
         .catch(() => undefined);
 }
-// a lane with open steps and every live member idle is parked: the clio running it hears at 10 min, once per
-// silence, shift or not, since nobody else will; a busy turn or a refused wake asks again at the next read (PK-351:W44)
 // herdr's «lane idle alarm after» row, in minutes; empty or unreadable is the 10 min line (FRM-605 exit 4, dima's o125)
 export function parkedWakeMs(row: unknown) {
     const minutes =
@@ -76,55 +77,221 @@ export function parkedWakeMs(row: unknown) {
 }
 let parkedReadAt = 0;
 const parkedUnreadLogged = new Map<string, string>();
-// a chunk this close to its end with nothing signed after it is what a parked lane wakes its clio for (FRM-602)
+// a chunk this close to its end with nothing dispatched after it is a parked lane's question (FRM-602, FRM-692)
 const PARKED_STEPS_LEFT = 2;
-const SIGNED_READ_MS = 10 * 60_000;
-const signedReads = new Map<string, { at: number; isSigned?: boolean }>();
-// whether linear says a ticket is signed, read through x at most once per ticket in 10 min, a failed read too, so an
-// outage logs once and spawns one read a window; undefined when x cannot read it
-async function isSigned($: EngineInterface, ticket: string, now: number) {
-    const kept = signedReads.get(ticket);
-    if (kept && now - kept.at < SIGNED_READ_MS) return kept.isSigned;
+// a reviewer's wait, and how long a 🔭 wait on anyone but the runner is taken as one
+const REVIEWER_WAKE_MS = 30 * 60_000;
+const WIND_STUCK_MS = 3 * 60_000;
+const TICKET_READ_MS = 10 * 60_000;
+type NextChunk = 'dispatched' | 'signed' | 'unsigned' | 'unread';
+const ticketReads = new Map<
+    string,
+    { at: number; chunk: NextChunk; fails: number }
+>();
+const SIGN_BLOCK = /^## signed\b[^\n]*\n([\s\S]*?)(?=^## |(?![\s\S]))/mu;
+const DISPATCHED = /^[\s>*-]*🚀 dispatched /u;
+const TAKEN_BACK = /^[\s>*-]*↩️/u;
+// a 🚀 line of the sign block stands until a later ↩️ one takes it back, x's own rule; it outranks the label, which a
+// dispatch takes off
+function chunkOf(ticket: { description?: unknown; labels?: unknown }) {
+    if (!Array.isArray(ticket.labels)) return 'unread';
+    const lines = (
+        SIGN_BLOCK.exec(String(ticket.description ?? ''))?.[1] ?? ''
+    ).split('\n');
+    const at = lines.findLastIndex((l) => DISPATCHED.test(l));
+    if (at >= 0 && !lines.slice(at).some((l) => TAKEN_BACK.test(l)))
+        return 'dispatched';
+    return ticket.labels.includes('signed') ? 'signed' : 'unsigned';
+}
+// a ticket's state through x: a dispatched one is read once in 10 min, any other no older than a poll before it is said, and
+// a failed read is tried again at the next poll, «unread» only at the second in a row
+async function nextChunk(
+    $: EngineInterface,
+    ticket: string,
+    now: number,
+    isSaid: (chunk: NextChunk) => boolean,
+): Promise<NextChunk | undefined> {
+    const kept = ticketReads.get(ticket);
+    const isKept =
+        kept &&
+        kept.chunk !== 'unread' &&
+        now - kept.at < TICKET_READ_MS &&
+        (kept.chunk === 'dispatched' || isSaid(kept.chunk));
+    if (isKept) return kept.chunk;
     const read = await xRead($, ['linear', 'read', ticket], 8000);
-    try {
-        const labels = (
-            read?.data as { tickets?: { labels?: unknown }[] } | undefined
-        )?.tickets?.[0]?.labels;
-        if (!Array.isArray(labels)) throw new Error();
-        const isSigned = labels.includes('signed');
-        signedReads.set(ticket, { at: now, isSigned });
-        return isSigned;
-    } catch {
-        signedReads.set(ticket, { at: now });
+    const first = (read?.data as { tickets?: object[] } | undefined)
+        ?.tickets?.[0];
+    const chunk = first ? chunkOf(first) : 'unread';
+    const fails = chunk === 'unread' ? (kept?.fails ?? 0) + 1 : 0;
+    ticketReads.set(ticket, { at: now, chunk, fails });
+    if (fails === 1)
         await $.ui.log(
-            `x-mod-stash: x linear read ${ticket} failed; the parked lane waits`,
+            `x-mod-stash: x linear read ${ticket} failed; tried again at the next poll`,
         );
+    return fails === 1 ? undefined : chunk;
+}
+const CHUNK_SAYS = {
+    signed: 'is signed, not dispatched',
+    unread: 'could not be read from linear',
+    unsigned: 'is unsigned',
+} as const satisfies Record<Exclude<NextChunk, 'dispatched'>, string>;
+
+type Parked = {
+    at: number;
+    isIdle: boolean;
+    name: string;
+    role: LaneRole;
+    sid: string;
+};
+// what a rule says of one member or of the lane: `reason` keys «said already», `about` the members whose word re-arms it,
+// `also` the ones it is counted as said of too, a member still at work on a finished card
+type Hold = {
+    about: Parked[];
+    also?: Parked[];
+    reason: string;
+    text: string;
+};
+// what the runner was told of a member's silence: every reason, until a word of its own
+type Woke = { at: number; reasons: string[] };
+const wokeKey = (lane: StashLane, sid: string) =>
+    `${PARKED_WOKE}${lane.id}:${sid}`;
+const minutesOf = (ms: number) => Math.round(ms / 60_000);
+const RUNNER_NAMED = /\bclio\b/iu;
+
+const goneWinds = new Set<string>();
+// (3) a second wind that never fired, its handoff still in the store (23 Nov, case 4)
+async function stuckWind(
+    $: EngineInterface,
+    m: Parked,
+    now: number,
+): Promise<Hold | undefined> {
+    const wind = await windOf($, m.sid);
+    if (!wind?.slug) return undefined;
+    if (wind.state !== 'refreshing' && wind.state !== 'refused')
+        return undefined;
+    // a word this far past it is a turn since, not the end of the turn that asked
+    if (m.at - wind.at > WIND_STUCK_MS) return undefined;
+    if (now - Math.max(wind.at, m.at) < WIND_STUCK_MS) return undefined;
+    // a handoff taken never comes back under the same wind, so it is looked for no more
+    const key = `${m.sid}|${wind.slug}|${wind.at}`;
+    if (goneWinds.has(key)) return undefined;
+    if (!(await hasHandoff($, wind.slug))) {
+        goneWinds.add(key);
         return undefined;
     }
+    const by = wind.blocked ?? 'nothing it named';
+    return {
+        about: [m],
+        reason: `wind:${wind.slug}`,
+        text: `${m.name} said second wind «${wind.slug}» ${minutesOf(now - wind.at)} min ago, it never fired: held by ${by}; its handoff is still in the store`,
+    };
 }
-// the line a parked lane wakes its clio with, or none: its chunk is more than two steps from its end, or the next chunk
-// is signed (its codie goes on), or linear cannot say
-async function parkedNudge(
+
+// the member's own rules, the first that holds (FRM-692's order); `left` is the card's open steps
+async function memberHold(
+    $: EngineInterface,
+    m: Parked,
+    now: number,
+    wakeAfter: number,
+    left: number,
+    tag: { at: number; tag: string } | undefined,
+): Promise<Hold | 'waits' | undefined> {
+    const idle = now - m.at;
+    // a turn of its own past the row after it: the member went on, its [done] was no parking
+    if (
+        tag?.tag === 'done' &&
+        m.at - tag.at < wakeAfter &&
+        now - Math.max(tag.at, m.at) >= wakeAfter
+    )
+        return {
+            about: [m],
+            reason: 'done',
+            text: `${m.name} sent its [done] ${minutesOf(now - tag.at)} min ago, unanswered`,
+        };
+    if (idle < wakeAfter) return 'waits';
+    const reply = (await $.store.get(REPLY + m.sid)) as Reply | undefined;
+    const isAsking = tag?.tag === 'ask' && now - tag.at >= wakeAfter;
+    const wait =
+        reply?.wait &&
+        !reply.tasks &&
+        !isAsking &&
+        !RUNNER_NAMED.test(reply.wait)
+            ? reply.wait
+            : undefined;
+    if (wait && idle < REVIEWER_WAKE_MS) return 'waits';
+    if (!left) return undefined;
+    const sat = `${m.name} idle ${minutesOf(idle)} min`;
+    if (wait) return { about: [m], reason: 'wait', text: `${sat}, ${wait}` };
+    const ask = isAsking ? ', its [ask] unanswered' : '';
+    const on = ask || (reply?.wait && !reply.tasks ? `, ${reply.wait}` : '');
+    if (m.role === 'codie')
+        return {
+            about: [m],
+            reason: 'builder',
+            text: `${sat} with ${left} step${left === 1 ? '' : 's'} left${on}`,
+        };
+    return idle >= REVIEWER_WAKE_MS
+        ? { about: [m], reason: 'reviewer', text: `${sat}${on}` }
+        : undefined;
+}
+
+// (2) and (6), the lane's own line: a finished card with a member still idle on it, or a chunk near its end with nothing
+// dispatched after it and no member working or waiting
+async function laneHold(
     $: EngineInterface,
     lane: StashLane,
+    members: Parked[],
     now: number,
-): Promise<string | undefined> {
+    wakeAfter: number,
+    isParked: boolean,
+    isSaid: (reason: string) => boolean,
+): Promise<Hold | undefined> {
     const open = lane.items.slice(lane.current).filter((x) => !x.isDone);
+    if (!open.length) {
+        if (!lane.items.length) return undefined;
+        const idle = members.filter((m) => m.isIdle && now - m.at >= wakeAfter);
+        return idle.length
+            ? {
+                  about: idle,
+                  also: members,
+                  reason: 'finished',
+                  text: `«${lane.title}» (${lane.id}) finished, nothing queued for ${idle.map((m) => m.name).join(', ')}, idle ${minutesOf(now - Math.max(...idle.map((m) => m.at)))} min`,
+              }
+            : undefined;
+    }
+    if (!isParked) return undefined;
     const chunk = open[0]?.ticket;
     // a hand-made card names no ticket: it has no chunk to end, so its idle time is the wake
-    if (!chunk) return `«${lane.title}» has open steps`;
+    if (!chunk)
+        return {
+            about: members,
+            reason: 'open',
+            text: `«${lane.title}» has open steps`,
+        };
     // the chunk is the run of open steps from the pointer that share its ticket; the next ticket's steps end it
     const after = open.findIndex((x) => x.ticket !== chunk);
     const left = after < 0 ? open.length : after;
     if (left > PARKED_STEPS_LEFT) return undefined;
     const head = `«${lane.title}» (${lane.id}): ${left} step${left === 1 ? '' : 's'} left in ${chunk}`;
     const next = open.find((x) => x.ticket && x.ticket !== chunk)?.ticket;
-    if (!next) return `${head}, nothing queued, sign the next`;
-    const signed = await isSigned($, next, now);
-    return signed === false
-        ? `${head}; next chunk ${next} is unsigned`
+    if (!next)
+        return {
+            about: members,
+            reason: 'nothing',
+            text: `${head}, nothing queued, sign the next`,
+        };
+    const state = await nextChunk($, next, now, (c) => isSaid(`${next}:${c}`));
+    return state && state !== 'dispatched'
+        ? {
+              about: members,
+              reason: `${next}:${state}`,
+              text: `${head}; next chunk ${next} ${CHUNK_SAYS[state]}`,
+          }
         : undefined;
 }
+
+// the one idle alarm of a lane (PK-351:W44, FRM-692): its members are read one by one, and one turn of the clio running it
+// names every rule that holds, each once per silence, shift or not; a busy turn or a refused wake asks again at the next read
 export async function wakeForParkedLanes($: EngineInterface, view: ViewDoors) {
     const now = await $.clock.now();
     if (now - parkedReadAt < LEDGER_EVERY_MS) return;
@@ -134,13 +301,25 @@ export async function wakeForParkedLanes($: EngineInterface, view: ViewDoors) {
     const self = threads.find((t) => t.sessionId === myId);
     const isMain = self?.role === MAIN_ROLE;
     if (!self || (!isMain && self.role !== WING_ROLE)) return;
-    if (!(await partsShown($))('stash.glide') || (await isWindowSpent($)))
-        return;
+    const shown = await partsShown($);
+    if (!shown('stash.glide') || (await isWindowSpent($))) return;
     const home = (await $.env.get('HOME')) ?? '';
     const rows = await registry($);
     const wakeAfter = parkedWakeMs(await herdrRow($, home, 'stash.park.after'));
-    for (const lane of await readLanes($)) {
-        if (lane.endedAt || lane.current >= lane.items.length) continue;
+    const tagOf = await openTags($, now);
+    const lanes = (await readLanes($)).filter((lane) => !lane.endedAt);
+    // a member reused before its old card is ended is idle on the card with steps left, never on the finished one
+    const onOpenCard = new Set(
+        lanes
+            .filter((lane) =>
+                lane.items.slice(lane.current).some((x) => !x.isDone),
+            )
+            .flatMap((lane) => [
+                ...Object.values(lane.members),
+                ...Object.values(lane.linkedIds ?? {}),
+            ]),
+    );
+    for (const lane of lanes) {
         // a dead wing's lane falls to main; a runner is the wing's display, drawn from its record
         const isRunnerLive = threads.some(
             (t) =>
@@ -152,46 +331,100 @@ export async function wakeForParkedLanes($: EngineInterface, view: ViewDoors) {
                 ? bare(lane.runner) === bare(runnerOf(self))
                 : isMain;
         if (!isMine) continue;
-        const members = [];
+        const left = lane.items
+            .slice(lane.current)
+            .filter((x) => !x.isDone).length;
+        const isFinished = !left;
+        const members: Parked[] = [];
         const unread: string[] = [];
         for (const [role, name] of Object.entries(lane.members)) {
             if (!name) continue;
             const id = lane.linkedIds?.[role as LaneRole];
+            if (isFinished && [name, id].some((x) => x && onOpenCard.has(x)))
+                continue;
             const row = laneMemberRow(
                 rows,
                 await successorOf($, name),
                 id && (await successorOf($, id)),
             );
-            if (!row) unread.push(`${role} «${name}»`);
-            else if (row.base.sid !== myId) members.push(row);
+            if (!row) {
+                unread.push(`${role} «${name}»`);
+                continue;
+            }
+            const { name: rowName, sid, status } = row.base;
+            if (sid === myId) continue;
+            // a member whose transcript does not read is at work, as far as the wake knows
+            const at = await lastTurnAt($, home, sid);
+            members.push({
+                at: at ?? now,
+                // cc reads «shell» for an idle session with a watch or a background command up, and a live task is no wait
+                isIdle:
+                    (status === 'idle' || status === 'shell') &&
+                    at !== undefined,
+                name: rowName,
+                role: role as LaneRole,
+                sid,
+            });
         }
         if (!members.length) continue;
-        if (members.some((row) => row.base.status !== 'idle')) continue;
-        const spoke = await Promise.all(
-            members.map((row) => lastSpokeAt($, home, row.base.sid)),
-        );
-        const heard = spoke.filter((at) => at !== undefined);
-        if (heard.length < members.length) continue;
-        const at = Math.max(...heard);
-        const minutes = Math.round((now - at) / 60_000);
         // a member with no live session counts as gone; said once per silence, since `at` moves only on a new word
-        const silence = `${at}|${unread.join()}`;
-        if (unread.length && parkedUnreadLogged.get(lane.id) !== silence) {
+        const silence = `${Math.max(...members.map((m) => m.at))}|${unread.join()}`;
+        if (
+            unread.length &&
+            members.every((m) => m.isIdle) &&
+            parkedUnreadLogged.get(lane.id) !== silence
+        ) {
             parkedUnreadLogged.set(lane.id, silence);
             await $.ui.log(
                 `x-mod-stash: lane ${lane.id} reads no live session for ${unread.join(', ')}; counted as gone`,
             );
         }
-        if (now - at < wakeAfter || (await isTurnBusy($))) continue;
+        if (await isTurnBusy($)) continue;
+        const woke = new Map<string, Woke | undefined>();
+        for (const m of members)
+            woke.set(
+                m.sid,
+                (await $.store.get(wokeKey(lane, m.sid))) as Woke | undefined,
+            );
         // a ping moves `at` back to the reply before it, so only a newer word re-arms
-        const key = `${PARKED_WOKE}${lane.id}`;
-        const woke = (await $.store.get(key)) as number | undefined;
-        if (woke !== undefined && woke >= at) continue;
-        const nudge = await parkedNudge($, lane, now);
-        if (!nudge) continue;
+        const isSaid = (m: Parked, reason: string) => {
+            const was = woke.get(m.sid);
+            return (
+                !!was &&
+                was.at >= m.at &&
+                was.reasons?.includes(reason) === true
+            );
+        };
+        const holds: Hold[] = [];
+        let isParked = true;
+        for (const m of members) {
+            const hold = m.isIdle
+                ? ((shown('stash.second-wind')
+                      ? await stuckWind($, m, now)
+                      : undefined) ??
+                  (await memberHold($, m, now, wakeAfter, left, tagOf(m.sid))))
+                : 'waits';
+            if (hold === 'waits' || (hold && now - m.at < wakeAfter))
+                isParked = false;
+            if (hold && hold !== 'waits') holds.push(hold);
+        }
+        const ofLane = await laneHold(
+            $,
+            lane,
+            members,
+            now,
+            wakeAfter,
+            isParked,
+            (reason) => members.every((m) => isSaid(m, reason)),
+        );
+        if (ofLane) holds.unshift(ofLane);
+        const fresh = holds.filter((h) =>
+            h.about.some((m) => !isSaid(m, h.reason)),
+        );
+        if (!fresh.length) continue;
         const r = await selfSubmit(
             $,
-            `🅿️ parked lane: ${nudge}; its members sat idle ${minutes} min.`,
+            `🅿️ parked lane: ${fresh.map((h) => h.text).join('; ')}.`,
             false,
             () => prepareTurn(view),
         ).catch(() => undefined);
@@ -200,12 +433,24 @@ export async function wakeForParkedLanes($: EngineInterface, view: ViewDoors) {
             await armHot($, view);
             continue;
         }
-        await $.store.set(key, at);
+        for (const m of members) {
+            const said = fresh
+                .filter((h) => (h.also ?? h.about).includes(m))
+                .map((h) => h.reason);
+            if (!said.length) continue;
+            const was = woke.get(m.sid);
+            const kept = was && was.at >= m.at ? was : undefined;
+            await $.store.set(wokeKey(lane, m.sid), {
+                at: kept?.at ?? m.at,
+                reasons: [...(kept?.reasons ?? []), ...said],
+            } satisfies Woke);
+        }
     }
 }
 
 export function resetParkedWake() {
     parkedReadAt = 0;
     parkedUnreadLogged.clear();
-    signedReads.clear();
+    ticketReads.clear();
+    goneWinds.clear();
 }

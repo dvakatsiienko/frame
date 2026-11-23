@@ -316,11 +316,16 @@ export async function windReady(
         return {
             deny: 'orbit second-wind: name the handoff you just wrote, slug: "<lane or topic>-<n>"',
         };
+    const sid = await currentId($);
+    const watch = sid ? await liveWatch($, sid, true) : undefined;
+    if (watch)
+        return {
+            deny: `orbit second-wind: held by your watch «${watch}»: stop it with TaskStop and call again`,
+        };
     if (!(await hasHandoff($, name)))
         return {
             deny: `orbit second-wind: no handoff «${name}» in the store; write it with x:handoff first`,
         };
-    const sid = await currentId($);
     if (!sid) return { deny: 'orbit second-wind: this session has no id yet' };
     await $.store.set(WIND + sid, {
         at: await $.clock.now(),
@@ -382,16 +387,13 @@ export async function windAfterTurn($: EngineInterface, view: ViewDoors) {
     }
     if (!(await partsShown($))('stash.second-wind')) return;
     // the turn's own Stop lists what still runs: a watch started before the op holds the wind too
-    const watch = (
-        (await $.store.get(REPLY + sid)) as Reply | undefined
-    )?.tasks?.find((t) => t.type === 'monitor' && !t.state);
-    const blocked =
-        was.blocked ??
-        (watch && `a watch («${watch.name ?? watch.description}»)`);
+    const watch = await liveWatch($, sid, false);
+    const blocked = was.blocked ?? (watch && `a watch («${watch}»)`);
     if (blocked) {
         await $.store.set(WIND + sid, {
             at: await $.clock.now(),
             blocked,
+            slug: was.slug,
             state: 'refused',
         } satisfies StashWind);
         return;
@@ -413,10 +415,26 @@ function armWind(
             await runWind($, sid, slug, view);
     });
 }
-async function hasHandoff($: EngineInterface, slug: string) {
+// a turn's Stop is the one door to the live tasks: at a call inside the next turn, a watch stopped since is dropped by its
+// id, and a turn's end reads its own Stop as it is, so a TaskStop that failed holds the compact
+const stoppedTasks = new Set<string>();
+export function noteTaskStop(id: unknown) {
+    if (typeof id === 'string') stoppedTasks.add(id);
+}
+async function liveWatch($: EngineInterface, sid: string, isCall: boolean) {
+    const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
+    // a session that ended took its watches with it
+    if (reply?.ended !== undefined) return undefined;
+    return reply?.watches?.find(
+        (w) => !(isCall && stoppedTasks.has(w.id ?? '')),
+    )?.name;
+}
+export async function hasHandoff($: EngineInterface, slug: string) {
     const home = await $.env.get('HOME');
     const peek = await $.process
-        .run([`${home}/.local/bin/x`, 'handoff', 'peek', slug])
+        .run([`${home}/.local/bin/x`, 'handoff', 'peek', slug], {
+            timeoutMs: 8000,
+        })
         .catch(() => undefined);
     return peek?.exitCode === 0;
 }
@@ -646,6 +664,7 @@ export async function forgetFill($: EngineInterface, sid: string) {
 
 export function resetWindRun() {
     overCapLogged.clear();
+    stoppedTasks.clear();
     turnNo = 0;
     windPolls = 0;
 }

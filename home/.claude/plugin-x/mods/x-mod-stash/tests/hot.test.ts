@@ -371,6 +371,11 @@ test("a keep-hot ping's one-character reply keeps the 🔭 wait the last real re
     await clock.advance(50 * MIN);
     await stop('.');
     await endTurn($);
+    const { at, turnAt } = store.get(`reply:${SID}`) as {
+        at: number;
+        turnAt: number;
+    };
+    expect(turnAt).toBe(at);
     expect([before, pings, wait()]).toEqual([
         'waiting on ci',
         1,

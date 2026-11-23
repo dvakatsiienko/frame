@@ -3,6 +3,15 @@ import type { On } from 'claude-code';
 import { parkedWakeMs } from '../hooks/parked-wake.ts';
 import { laneMemberRow } from '../hooks/roster.ts';
 import {
+    DISPATCH,
+    WORKING,
+    codie,
+    parked,
+    parkedWorld,
+    pass,
+    sixth,
+} from './parked-world.ts';
+import {
     CODIE_SID,
     EVEN,
     LANES,
@@ -97,16 +106,6 @@ const idleLane = async (
     await w.clock.advance(11 * MIN);
 };
 
-test('a parked lane two steps from its end whose next chunk is signed wakes nobody', async ($, on) => {
-    const w = silentWorld(on, {
-        card: steps('FRM-1', 'FRM-1', 'FRM-2'),
-        labels: { 'FRM-2': ['agent', 'signed'] },
-        wait: 60,
-    });
-    await idleLane($, w);
-    expect(parkedWakes(w)).toEqual([]);
-});
-
 test('a parked lane two steps from its end whose next chunk is unsigned wakes once, naming the lane and the ticket', async ($, on) => {
     const w = silentWorld(on, {
         card: steps('FRM-1', 'FRM-1', 'FRM-2'),
@@ -121,16 +120,6 @@ test('a parked lane two steps from its end whose next chunk is unsigned wakes on
     ]);
 });
 
-test('a parked lane more than two steps from its chunk end wakes nobody', async ($, on) => {
-    const w = silentWorld(on, {
-        card: steps('FRM-1', 'FRM-1', 'FRM-1', 'FRM-2'),
-        labels: { 'FRM-2': ['agent'] },
-        wait: 60,
-    });
-    await idleLane($, w);
-    expect(parkedWakes(w)).toEqual([]);
-});
-
 test('a parked lane with nothing queued past its chunk wakes once: nothing queued, sign the next', async ($, on) => {
     const w = silentWorld(on, { card: steps('FRM-1', 'FRM-1'), wait: 60 });
     await idleLane($, w);
@@ -139,12 +128,6 @@ test('a parked lane with nothing queued past its chunk wakes once: nothing queue
             '«mods lane» (l1): 2 steps left in FRM-1, nothing queued, sign the next',
         ),
     ]);
-});
-
-test('a parked lane whose next chunk linear cannot read wakes nobody', async ($, on) => {
-    const w = silentWorld(on, { card: steps('FRM-1', 'FRM-2'), wait: 60 });
-    await idleLane($, w);
-    expect(parkedWakes(w)).toEqual([]);
 });
 
 test('a parked lane counts only the open steps of its chunk: a done one after the pointer is not left', async ($, on) => {
@@ -197,15 +180,6 @@ test('a parked hand-made card with no tickets keeps the idle wake', async ($, on
     ]);
 });
 
-test('a failed linear read waits 10 min before the next, logged once', async ($, on) => {
-    const w = silentWorld(on, { card: steps('FRM-1', 'FRM-2'), wait: 60 });
-    await idleLane($, w);
-    await w.clock.advance(3 * MIN);
-    expect(
-        w.logged.filter((l) => l.includes('linear read FRM-2')),
-    ).toHaveLength(1);
-});
-
 test('a member speaking again re-arms the parked wake', async ($, on) => {
     const w = silentWorld(on, { wait: 60 });
     await start($);
@@ -220,13 +194,6 @@ test('a member speaking again re-arms the parked wake', async ($, on) => {
     w.spoke.at = EVEN + 12 * MIN;
     await w.clock.advance(12 * MIN);
     expect(parkedWakes(w).length).toBe(2);
-});
-
-test('a finished or ended lane wakes nobody', async ($, on) => {
-    const w = silentWorld(on, { card: { current: 1 }, wait: 60 });
-    await start($);
-    await w.clock.advance(15 * MIN);
-    expect(parkedWakes(w)).toEqual([]);
 });
 
 test('a member still working wakes nobody', async ($, on) => {
@@ -391,23 +358,6 @@ test('a stopped codie and a sixth sense idle 30 min wake once, the unread line s
     ]);
 });
 
-test('a working codie beside an idle sixth sense wakes nobody', async ($, on) => {
-    const card = laneCard({
-        linkedIds: { codie: CODIE_SID, 'sixth-sense': SIXTH_SID },
-        members: { codie: codiePeer.name, 'sixth-sense': replaySixth.name },
-    });
-    const w = alarmWorld(on, {
-        also: [replaySixth],
-        files: { [LANES]: JSON.stringify({ lanes: [card] }) },
-        lastWrite: () => EVEN - 30 * MIN,
-        peer: { ...codiePeer, status: 'busy' },
-    });
-    w.store.set('quiet-wait', 60);
-    await start($);
-    await w.clock.advance(15 * MIN);
-    expect(parkedWakes(w)).toEqual([]);
-});
-
 test('a codie and a sixth sense both idle past 10 min wake once, again only after a word', async ($, on) => {
     const spoke = { at: EVEN };
     const card = laneCard({
@@ -494,4 +444,488 @@ test('a lane idle row edited mid-silence counts at the next poll', async ($, on)
     files[HERDR_SETTINGS] = herdrRows({ 'stash.park.after': 5 });
     await w.clock.advance(1 * MIN);
     expect([before, parkedWakes(w).length]).toEqual([0, 1]);
+});
+
+/* FRM-692: the members are read one by one */
+
+const ONE_LEFT = steps('FRM-1', 'FRM-2');
+const SIGNED = { labels: ['signed'] };
+const DISPATCHED = { description: DISPATCH, labels: ['agent'] };
+const builder = (text: string) => expect.stringContaining(text);
+
+/* exit 1: the next chunk */
+
+test('a parked lane whose next chunk is signed and not dispatched wakes its runner, naming both', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], {
+        card: steps('FRM-1', 'FRM-1', 'FRM-2'),
+        tickets: { 'FRM-2': SIGNED },
+    });
+    expect(await parked($, w, 2, 5)).toEqual([
+        '«mods lane» (l1): 2 steps left in FRM-1; next chunk FRM-2 is signed, not dispatched.',
+    ]);
+});
+
+test('a parked lane whose next chunk is dispatched wakes nobody while no builder sits idle', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], {
+        card: ONE_LEFT,
+        tickets: { 'FRM-2': DISPATCHED },
+    });
+    expect(await parked($, w, 2, 10)).toEqual([]);
+});
+
+test('a dispatch taken back reads as not dispatched', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], {
+        card: ONE_LEFT,
+        tickets: {
+            'FRM-2': {
+                ...SIGNED,
+                description: `${DISPATCH}\n↩️ back to Todo 2026-11-23`,
+            },
+        },
+    });
+    expect(await parked($, w, 2)).toEqual([builder('signed, not dispatched')]);
+});
+
+test('a dispatch quoted outside the sign block is no dispatch', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], {
+        card: ONE_LEFT,
+        tickets: {
+            'FRM-2': {
+                ...SIGNED,
+                description: `the shape:\n🚀 dispatched 2026-11-23 — x, codie y\n\n## signed\n\n✍️ signed\n\n## after\n🚀 dispatched 2026`,
+            },
+        },
+    });
+    expect(await parked($, w, 2)).toEqual([builder('signed, not dispatched')]);
+});
+
+test('a dispatched next chunk still wakes the runner on a builder idle with one step left', async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        card: { ...ONE_LEFT, current: 1 },
+        tickets: { 'FRM-2': DISPATCHED },
+    });
+    expect(await parked($, w, 2, 5)).toEqual([
+        builder('🔧 mods | FRM-1 idle 10 min with 1 step left'),
+    ]);
+});
+
+test('two failed linear reads in a row wake once, saying linear could not be read; one failed read says nothing', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], { card: ONE_LEFT });
+    expect([
+        await parked($, w, 1),
+        (await pass($, w, 1, 1, 1, 1), w.wakes()),
+        w.logged.filter((l) => l.includes('linear read FRM-2')).length,
+    ]).toEqual([
+        [],
+        [builder('next chunk FRM-2 could not be read from linear')],
+        1,
+    ]);
+});
+
+test('a read that fails once is tried at the next poll, and its answer is the one said', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], { card: ONE_LEFT });
+    await parked($, w, 1);
+    w.tickets['FRM-2'] = SIGNED;
+    await pass($, w, 1);
+    expect(w.wakes()).toEqual([builder('signed, not dispatched')]);
+});
+
+test('an unread next chunk that reads again wakes once more, and its next failed reads none', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], { card: ONE_LEFT });
+    await parked($, w, 1, 1);
+    w.tickets['FRM-2'] = SIGNED;
+    await pass($, w, 1);
+    delete w.tickets['FRM-2'];
+    await pass($, w, 11, 1, 1);
+    expect(w.wakes()).toEqual([
+        builder('could not be read'),
+        builder('signed, not dispatched'),
+    ]);
+});
+
+test('an unsigned next chunk signed 10 min later with no word between wakes a second time', async ($, on) => {
+    const w = parkedWorld(on, [sixth({ ago: 9 })], {
+        card: ONE_LEFT,
+        tickets: { 'FRM-2': { labels: [] } },
+    });
+    await parked($, w, 2);
+    w.tickets['FRM-2'] = SIGNED;
+    await pass($, w, 10, 1);
+    expect(w.wakes().map((t) => t.match(/FRM-2 (is [^.;]+)/)?.[1])).toEqual([
+        'is unsigned',
+        'is signed, not dispatched',
+    ]);
+});
+
+test('a chunk dispatched after its wake is read before the next word is answered', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], {
+        card: ONE_LEFT,
+        store: { 'quiet-wait': 60 },
+        tickets: { 'FRM-2': SIGNED },
+    });
+    await parked($, w, 2);
+    w.tickets['FRM-2'] = DISPATCHED;
+    w.wrote.set(sixth().sid, EVEN + 2 * MIN);
+    await pass($, w, 11);
+    expect(w.wakes().length).toBe(1);
+});
+
+const C = codie().sid;
+const R = sixth().sid;
+
+const said = (sid: string, wait: string, ago = 9) => ({
+    [`reply:${sid}`]: { at: EVEN - ago * MIN, wait },
+});
+
+/* exit 2: a finished card */
+
+const FINISHED = { current: 1 };
+for (const [why, tickets] of [
+    ['dispatched', { 'FRM-2': DISPATCHED }],
+    ['undispatched', { 'FRM-2': SIGNED }],
+    ['unreadable', {}],
+] as const)
+    test(`a finished card with an idle member wakes once, the next ticket ${why}`, async ($, on) => {
+        const w = parkedWorld(on, [codie()], { card: FINISHED, tickets });
+        expect(await parked($, w, 2, 5)).toEqual([
+            '«mods lane» (l1) finished, nothing queued for ⚡ 🔧 mods | FRM-1, idle 10 min.',
+        ]);
+    });
+
+test('a finished card wakes again only after a word of its member', async ($, on) => {
+    const w = parkedWorld(on, [codie()], { card: FINISHED });
+    const first = (await parked($, w, 2, 8)).length;
+    w.wrote.set(codie().sid, EVEN + 10 * MIN);
+    await pass($, w, 9);
+    const early = w.wakes().length;
+    await pass($, w, 2);
+    expect([first, early, w.wakes().length]).toEqual([1, 1, 2]);
+});
+
+test('a finished card whose two members went idle apart wakes once', async ($, on) => {
+    const w = parkedWorld(on, [codie(), sixth({ ago: 5 })], { card: FINISHED });
+    expect((await parked($, w, 2, 4, 25)).length).toBe(1);
+});
+
+test('a finished card with one member idle and one at work wakes once, not at each word of the second', async ($, on) => {
+    const w = parkedWorld(on, [codie(), sixth(WORKING)], { card: FINISHED });
+    await parked($, w, 2);
+    for (let i = 0; i < 3; i++) {
+        w.wrote.set(R, w.clock.now());
+        await pass($, w, 2);
+    }
+    expect(w.wakes().length).toBe(1);
+});
+
+test('every step ticked under a pointer left behind is a finished card', async ($, on) => {
+    const { items } = steps('FRM-1', 'FRM-1');
+    const w = parkedWorld(on, [codie()], {
+        card: { items: items.map((x) => ({ ...x, isDone: true })) },
+    });
+    expect(await parked($, w, 2)).toEqual([builder('finished')]);
+});
+
+test('an ended card wakes nobody', async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        card: { ...FINISHED, endedAt: EVEN },
+    });
+    expect(await parked($, w, 2, 30)).toEqual([]);
+});
+
+test('a finished card whose member is gone wakes nobody', async ($, on) => {
+    const w = parkedWorld(on, [], {
+        card: { ...FINISHED, members: { codie: 'gone' } },
+    });
+    expect(await parked($, w, 2, 10)).toEqual([]);
+});
+
+test('a member reused on an open card is not called idle on its finished one', async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        also: {
+            ...steps('FRM-1', 'FRM-1', 'FRM-1', 'FRM-2'),
+            title: 'next lane',
+        },
+        card: FINISHED,
+        store: said(C, 'waiting on 🔎 sixth sense'),
+    });
+    expect(await parked($, w, 2, 5)).toEqual([]);
+});
+
+/* exit 3: a builder */
+
+const FOUR = steps('FRM-1', 'FRM-1', 'FRM-1', 'FRM-2');
+for (const [left, card, tickets] of [
+    ['1 step', steps('FRM-1'), {}],
+    ['3 steps', steps('FRM-1', 'FRM-1', 'FRM-1'), {}],
+    ['4 steps', FOUR, { 'FRM-2': DISPATCHED }],
+] as const)
+    test(`a builder idle past the row with ${left} left wakes the runner once, naming it`, async ($, on) => {
+        const w = parkedWorld(on, [codie(), sixth(WORKING)], { card, tickets });
+        expect(await parked($, w, 2, 5)).toEqual([
+            `⚡ 🔧 mods | FRM-1 idle 10 min with ${left} left.`,
+        ]);
+    });
+
+test('a builder idle under the row wakes nobody', async ($, on) => {
+    const w = parkedWorld(on, [codie({ ago: 2 })], { card: FOUR });
+    expect(await parked($, w, 7)).toEqual([]);
+});
+
+test('a builder whose 🔭 line names its reviewer wakes nobody for 30 min, then once, the wait named', async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        card: FOUR,
+        store: said(C, 'waiting on 🔎 sixth sense'),
+    });
+    expect([
+        await parked($, w, 2, 18),
+        (await pass($, w, 2, 5), w.wakes()),
+    ]).toEqual([
+        [],
+        ['⚡ 🔧 mods | FRM-1 idle 30 min, waiting on 🔎 sixth sense.'],
+    ]);
+});
+
+test('a near-done lane whose builder waits on a named other is no parked lane', async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        card: ONE_LEFT,
+        store: said(C, 'waiting on 🙋‍♂️ dima'),
+        tickets: { 'FRM-2': SIGNED },
+    });
+    expect(await parked($, w, 2, 10)).toEqual([]);
+});
+
+test('a wait drawn from a live watch is no named wait', async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        card: FOUR,
+        store: {
+            [`reply:${C}`]: {
+                at: EVEN - 9 * MIN,
+                tasks: [{ description: 'the pr', id: 't', type: 'monitor' }],
+                wait: 'waiting on the pr',
+            },
+        },
+    });
+    expect((await parked($, w, 2)).length).toBe(1);
+});
+
+test('a builder whose 🔭 line names the runner wakes it, naming the wait', async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        card: FOUR,
+        store: said(C, 'waiting on 🦉 clio'),
+    });
+    expect(await parked($, w, 2, 5)).toEqual([
+        builder('idle 10 min with 4 steps left, waiting on 🦉 clio'),
+    ]);
+});
+
+const tagged = (sid: string, tag: string, at = EVEN - 9 * MIN) => ({
+    'quiet-tagged': { [sid]: { at, tag } },
+});
+test('an [ask] to the runner open past the row outranks a wait named on another, and is named', async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        card: FOUR,
+        store: { ...said(C, 'waiting on 🙋‍♂️ dima'), ...tagged(C, 'ask') },
+    });
+    expect(await parked($, w, 2, 5)).toEqual([builder('its [ask] unanswered')]);
+});
+
+test('a [done] to the runner open past the row wakes it whatever the card shows, the ping named', async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        card: FOUR,
+        store: {
+            ...said(C, 'waiting on 🔎 sixth sense'),
+            ...tagged(C, 'done'),
+        },
+        tickets: { 'FRM-2': DISPATCHED },
+    });
+    expect(await parked($, w, 2, 5)).toEqual([
+        '⚡ 🔧 mods | FRM-1 sent its [done] 10 min ago, unanswered.',
+    ]);
+});
+
+for (const tag of ['ask', 'done'])
+    test(`an [${tag}] the runner answered is open no more`, async ($, on) => {
+        const w = parkedWorld(on, [codie()], {
+            card: FOUR,
+            store: {
+                ...said(C, 'waiting on 🙋‍♂️ dima'),
+                ...tagged(C, tag),
+                'quiet-sent': { [C]: EVEN - 8 * MIN },
+            },
+        });
+        expect(await parked($, w, 2, 5)).toEqual([]);
+    });
+
+test('a [done] its member worked on after is no parked one', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], {
+        card: FOUR,
+        store: {
+            ...said(R, 'waiting on 🔧 codie'),
+            ...tagged(R, 'done', EVEN - 60 * MIN),
+        },
+    });
+    expect(await parked($, w, 2, 5)).toEqual([]);
+});
+
+test('a member with a background task up, its status «shell», is idle to the wake', async ($, on) => {
+    const w = parkedWorld(on, [codie({ status: 'shell' })], { card: FOUR });
+    expect(await parked($, w, 2)).toEqual([builder('idle 10 min')]);
+});
+
+test("a write past the member's own turn, a mod's reload row, moves no idle", async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        card: FOUR,
+        store: { [`reply:${C}`]: { at: EVEN - 9 * MIN } },
+    });
+    w.wrote.set(C, EVEN);
+    await parked($, w, 2);
+    w.wrote.set(C, w.clock.now());
+    await pass($, w, 12);
+    expect(w.wakes()).toEqual([builder('idle 10 min')]);
+});
+
+test('a turn that ended with no reply counts as the last one', async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        card: FOUR,
+        store: {
+            [`reply:${C}`]: { at: EVEN - 50 * MIN, turnAt: EVEN - 5 * MIN },
+        },
+    });
+    expect([await parked($, w, 4), (await pass($, w, 2), w.wakes())]).toEqual([
+        [],
+        [builder('idle 10 min')],
+    ]);
+});
+
+/* exit 4: a reviewer */
+
+test('a reviewer idle 30 min beside a working builder wakes once, two pings between and one after', async ($, on) => {
+    const w = parkedWorld(on, [codie(WORKING), sixth({ ago: 0 })], {
+        card: FOUR,
+        store: { [`reply:${R}`]: { at: EVEN - 2000 } },
+    });
+    const ping = (at: number) => {
+        w.store.set(`reply:${R}`, { at: EVEN - 2000, pingedAt: at });
+        w.wrote.set(R, at + 1000);
+    };
+    await parked($, w, 8);
+    ping(w.clock.now());
+    await pass($, w, 10);
+    ping(w.clock.now());
+    await pass($, w, 11);
+    const early = w.wakes();
+    await pass($, w, 2);
+    const at30 = w.wakes();
+    ping(w.clock.now());
+    await pass($, w, 4);
+    expect([early, at30, w.wakes().length]).toEqual([
+        [],
+        ['⚡ 🔎 mods | FRM-1 idle 30 min.'],
+        1,
+    ]);
+});
+
+test('a reviewer waiting on its builder wakes the runner at 30 min, the wait named', async ($, on) => {
+    const w = parkedWorld(on, [codie(WORKING), sixth({ ago: 28 })], {
+        card: FOUR,
+        store: said(R, 'waiting on 🔧 codie', 28),
+    });
+    expect([await parked($, w, 1), (await pass($, w, 2), w.wakes())]).toEqual([
+        [],
+        [builder('idle 30 min, waiting on 🔧 codie')],
+    ]);
+});
+
+/* exit 5: a second wind that never fired */
+
+const refused = (sid: string, at = EVEN - MIN) => ({
+    [`wind:${sid}`]: {
+        at,
+        blocked: 'a watch («ci»)',
+        slug: 'mods-9',
+        state: 'refused',
+    },
+});
+const AT = { ago: 1 };
+test('a refused second wind whose handoff still waits wakes the runner at 3 min, once, naming both', async ($, on) => {
+    const w = parkedWorld(on, [codie(AT)], {
+        card: FOUR,
+        handoffs: ['mods-9'],
+        store: refused(C),
+    });
+    expect([
+        await parked($, w, 1),
+        (await pass($, w, 2, 2), w.wakes()),
+    ]).toEqual([
+        [],
+        [
+            '⚡ 🔧 mods | FRM-1 said second wind «mods-9» 3 min ago, it never fired: held by a watch («ci»); its handoff is still in the store.',
+        ],
+    ]);
+});
+
+test('a second wind left refreshing with its handoff wakes the runner too', async ($, on) => {
+    const w = parkedWorld(on, [codie(AT)], {
+        card: FOUR,
+        handoffs: ['mods-9'],
+        store: {
+            [`wind:${C}`]: {
+                at: EVEN - MIN,
+                slug: 'mods-9',
+                state: 'refreshing',
+            },
+        },
+    });
+    expect(await parked($, w, 3)).toEqual([builder('never fired')]);
+});
+
+for (const [why, over, at, handoffs] of [
+    ['whose handoff is gone', AT, EVEN - MIN, []],
+    ['with a turn of its member since', AT, EVEN - 6 * MIN, ['mods-9']],
+    ['of a member at work', { ...AT, ...WORKING }, EVEN - MIN, ['mods-9']],
+] as const)
+    test(`a refused second wind ${why} wakes nobody`, async ($, on) => {
+        const w = parkedWorld(on, [codie(over)], {
+            card: FOUR,
+            handoffs: [...handoffs],
+            store: refused(C, at),
+        });
+        expect(await parked($, w, 5)).toEqual([]);
+    });
+
+test('a handoff found gone is looked for once', async ($, on) => {
+    const w = parkedWorld(on, [codie(AT)], { card: FOUR, store: refused(C) });
+    await parked($, w, 2, 1, 1);
+    expect(w.peeks).toEqual(['mods-9']);
+});
+
+test('a refresh that dropped its slug is compacting, no stuck wind', async ($, on) => {
+    const w = parkedWorld(on, [codie(AT)], {
+        card: FOUR,
+        handoffs: ['mods-9'],
+        store: { [`wind:${C}`]: { at: EVEN - MIN, state: 'refreshing' } },
+    });
+    expect(await parked($, w, 5)).toEqual([]);
+});
+
+test('second wind switched off, a stuck one wakes nobody', async ($, on) => {
+    const w = parkedWorld(on, [codie(AT)], {
+        card: FOUR,
+        handoffs: ['mods-9'],
+        store: { ...refused(C), shown: { 'stash.second-wind': false } },
+    });
+    expect(await parked($, w, 5)).toEqual([]);
+});
+
+test('one wake names every member a rule holds for, and the lane', async ($, on) => {
+    const w = parkedWorld(on, [codie({ ago: 9 }), sixth({ ago: 9 })], {
+        card: FINISHED,
+        handoffs: ['mods-9'],
+        store: refused(R, EVEN - 9 * MIN),
+    });
+    const [first, ...more] = await parked($, w, 2, 5);
+    expect([first, more]).toEqual([
+        expect.stringMatching(/finished.*said second wind «mods-9»/),
+        [],
+    ]);
 });

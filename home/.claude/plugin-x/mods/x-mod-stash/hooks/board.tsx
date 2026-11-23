@@ -220,7 +220,10 @@ export async function drawBoard($: EngineInterface, e: RenderInput<'Pane'>) {
                     const mark = markOf({
                         isIdle: status.isIdle,
                         isOffPattern: !!m.offPattern,
-                        ms: sinceMs ?? 0,
+                        ms:
+                            m.warmSince === undefined
+                                ? (sinceMs ?? 0)
+                                : now - m.warmSince,
                     });
                     const name = m.sid === me ? `${m.name} (here)` : m.name;
                     const line = m.tip

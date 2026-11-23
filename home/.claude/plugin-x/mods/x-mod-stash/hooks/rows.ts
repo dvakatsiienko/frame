@@ -77,11 +77,11 @@ export async function members($: EngineInterface): Promise<Member[]> {
             isHot: Boolean(hotOf(await $.store.get(HOT + r.sid))),
             model: text(await $.store.get(MODEL + r.sid)),
             offPattern: bg && !isSeated(roleOfRow(r.sid)),
-            // an idle row counts from the session's last reply, or a later keep-hot ping: cc restamps the registry
-            // whenever a thread is opened, which read «idle 55m» on a thread quiet for 9 h (PK-77)
+            // an idle row counts from the session's last reply, never a later keep-hot ping, the parked wake's clock: cc
+            // restamps the registry whenever a thread is opened, which read «idle 55m» on a thread quiet for 9 h (PK-77)
             statusSince:
                 !statusOf(r.status).isWorking && reply?.at !== undefined
-                    ? Math.max(reply.at, reply.pingedAt ?? reply.at)
+                    ? reply.at
                     : r.statusSince,
             tip:
                 pinOf(roleOfRow(r.sid)) === 1
@@ -92,6 +92,11 @@ export async function members($: EngineInterface): Promise<Member[]> {
                 reply?.waits && reply.waits.length > 1
                     ? `waiting on ${reply.waits.join('; ')}`
                     : reply?.wait,
+            // the ❄️ reads the cache, which a ping warms
+            warmSince:
+                reply?.at === undefined
+                    ? undefined
+                    : Math.max(reply.at, reply.pingedAt ?? 0),
             wind: await windOf($, r.sid),
         });
     }

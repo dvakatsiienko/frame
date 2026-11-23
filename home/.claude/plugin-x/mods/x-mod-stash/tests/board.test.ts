@@ -221,11 +221,11 @@ test('an idle row counts from its last reply, not a later registry restamp', asy
     expect(await row($, PEER)).toMatch(/💤\s*2h 0m/);
 });
 
-test('a keep-hot ping after the reply restarts the idle clock', async ($, on) => {
+test('a keep-hot ping after the reply moves no idle clock', async ($, on) => {
     fleet(on, {
         [`reply:${PEER}`]: { at: NOW - 2 * 60 * MIN, pingedAt: NOW - 5 * MIN },
     });
-    expect(await row($, PEER)).toMatch(/💤\s*5m/);
+    expect(await row($, PEER)).toMatch(/💤\s*2h 0m/);
 });
 
 test('a busy row keeps the registry stamp whatever its last reply', async ($, on) => {
@@ -233,7 +233,7 @@ test('a busy row keeps the registry stamp whatever its last reply', async ($, on
     expect(await row($, HERE)).toMatch(/🐆\s*3m/);
 });
 
-test("a keep-hot ping's reply restarts its own session's idle clock", async ($, on) => {
+test("a keep-hot ping's reply moves not its own session's idle clock", async ($, on) => {
     const f = fleet(on, {}, { patch: { 1: { status: 'idle' } } });
     await stop($, 'done.');
     await f.clock.advance(40 * MIN);
@@ -244,7 +244,7 @@ test("a keep-hot ping's reply restarts its own session's idle clock", async ($, 
     });
     await stop($, '.');
     await f.clock.advance(2 * MIN);
-    expect(await row($, HERE)).toMatch(/💤\s*2m/);
+    expect(await row($, HERE)).toMatch(/💤\s*42m/);
 });
 
 test("an idle session's time reads amber from 30 minutes", async ($, on) => {
@@ -992,6 +992,13 @@ test('an idle row inside the cache hour shows no mark', async ($, on) => {
     fleet(on, { [`reply:${PEER}`]: { at: NOW - 59 * MIN } });
     const text = await row($, PEER);
     expect([text.includes('❄️'), text.includes('⚠')]).toEqual([false, false]);
+});
+
+test('an idle row past the hour whose cache a ping warmed shows no ❄️', async ($, on) => {
+    fleet(on, {
+        [`reply:${PEER}`]: { at: NOW - 2 * 60 * MIN, pingedAt: NOW - 5 * MIN },
+    });
+    expect(await row($, PEER)).not.toContain('❄️');
 });
 
 test('a busy row never shows ❄️ however old its last reply', async ($, on) => {

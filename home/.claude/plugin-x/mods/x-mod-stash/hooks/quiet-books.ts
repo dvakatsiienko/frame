@@ -271,6 +271,18 @@ export async function lastSpokeAt(
         wrote <= reply.pingedAt + PING_WRITE_MS;
     return isPingLast ? Math.floor(reply.at / 1000) * 1000 : wrote;
 }
+// an idle member's last real turn: its own end, never a write after it (a mod's reload row, a ping); with no reply kept, the
+// transcript's last write
+export async function lastTurnAt(
+    $: EngineInterface,
+    home: string,
+    sid: string,
+) {
+    const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
+    return reply && reply.ended === undefined
+        ? Math.max(reply.at, reply.turnAt ?? 0)
+        : lastSpokeAt($, home, sid);
+}
 // when a member's newest tagged line to clio is its [done]: an untagged receipt or a turn-end note after it changes nothing,
 // a later [ask] or [escalate] does; a week back at most, past that it reads as no [done]
 async function quietDoneAt($: EngineInterface, sid: string, now: number) {
@@ -282,6 +294,24 @@ async function quietDoneAt($: EngineInterface, sid: string, now: number) {
     return last?.tag === 'done' && now - last.at <= QUIET_PARK_MS
         ? last.at
         : undefined;
+}
+// each member's newest tagged line to clio while no send of hers came after it: an [ask] or a [done] still open
+export async function openTags($: EngineInterface, now: number) {
+    const read = async (key: string) =>
+        ((await $.store.get(key).catch(() => undefined)) ?? {}) as Record<
+            string,
+            unknown
+        >;
+    const tagged = await read(QUIET_TAGGED);
+    const sends = await read(QUIET_SENT);
+    return (sid: string) => {
+        const last = tagged[sid] as { at: number; tag: string } | undefined;
+        return last &&
+            now - last.at <= QUIET_PARK_MS &&
+            Number(sends[sid] ?? 0) <= last.at
+            ? last
+            : undefined;
+    };
 }
 // a hung member sends nothing, so an open lane's member past three waits raises one alarm per silence, under a shift also one
 // turn of clio's; a refused or a busy turn asks again at the next poll; a member whose last word was its [done] is parked

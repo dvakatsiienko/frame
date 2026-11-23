@@ -47,23 +47,30 @@ export async function stopRed($: EngineInterface, reply: string) {
     ].filter(Boolean);
     return reds.length ? reds.join('\n') : undefined;
 }
-// a reply's own 🔭 line wins; else its background tasks, the first named for the band and all of them for the board
-export function waitsOf(
-    said: string | undefined,
-    tasks: readonly BackgroundTask[] | undefined,
-): Pick<Reply, 'wait' | 'waits' | 'tasks'> {
-    if (said) return { wait: said };
-    // a Stop may still list a task whose own status says it ended: read as the end notice would
+// a Stop may still list a task whose own status says it ended: read as the end notice would
+function listedTasks(tasks: readonly BackgroundTask[] | undefined) {
     const ended = (status: string): BackgroundTask['state'] =>
         /^(?:completed|failed|killed|stopped)/i.test(status)
             ? /^completed/i.test(status)
                 ? 'done'
                 : 'failed'
             : undefined;
-    const listed = tasks?.map((t) => ({
+    return tasks?.map((t) => ({
         ...t,
         state: ended((t as { status?: string }).status ?? '') ?? t.state,
     }));
+}
+const watchesOf = (tasks: readonly BackgroundTask[] | undefined) =>
+    listedTasks(tasks)
+        ?.filter((t) => t.type === 'monitor' && !t.state)
+        .map((t) => ({ id: t.id, name: t.name ?? t.description }));
+// a reply's own 🔭 line wins; else its background tasks, the first named for the band and all of them for the board
+export function waitsOf(
+    said: string | undefined,
+    tasks: readonly BackgroundTask[] | undefined,
+): Pick<Reply, 'wait' | 'waits' | 'tasks'> {
+    if (said) return { wait: said };
+    const listed = listedTasks(tasks);
     return {
         tasks: listed?.map(
             ({ agent_type, command, description, id, name, state, type }) => ({
@@ -90,7 +97,12 @@ export async function settleTask(
     if (!notice) return;
     const sid = await $.session.id();
     const was = (await $.store.get(REPLY + sid)) as Reply | undefined;
-    if (!was?.tasks?.some((t) => t.id === notice.id)) return;
+    if (!was) return;
+    if (was.watches?.some((w) => w.id === notice.id)) {
+        was.watches = was.watches.filter((w) => w.id !== notice.id);
+        await $.store.set(REPLY + sid, was);
+    }
+    if (!was.tasks?.some((t) => t.id === notice.id)) return;
     const tasks = was.tasks.map((t) =>
         t.id === notice.id ? { ...t, state: notice.state } : t,
     );
@@ -212,6 +224,7 @@ export async function settleReply(
         : {
               at: await $.clock.now(),
               name: await sessionName($),
+              watches: watchesOf(e.background_tasks),
               ...waitsOf(
                   parseWait(e.last_assistant_message ?? ''),
                   e.background_tasks,
@@ -222,6 +235,17 @@ export async function settleReply(
     await endUserTurn($);
     await view.load();
     return red ? { ...r, block: red } : r;
+}
+
+// the end of a turn that is the session's own work: the idle clock of the parked wake, which a mod's reload row moves not
+export async function stampTurn($: EngineInterface, sid: string, at: number) {
+    if (turn.pinged) return;
+    const was = (await $.store.get(REPLY + sid)) as Reply | undefined;
+    if (was)
+        await $.store.set(REPLY + sid, {
+            ...was,
+            turnAt: at,
+        } satisfies Reply);
 }
 
 // a /clear drops the conversation's last reply; an exit keeps it, marked ended, dropped a day later by pruneReplies

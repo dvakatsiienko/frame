@@ -35,7 +35,7 @@ import {
     turn,
 } from './turn.ts';
 import { orbitTexts, tickSentence } from './turn-notes.ts';
-import { takeFill, takeWind, windBlock } from './wind-run.ts';
+import { noteTaskStop, takeFill, takeWind, windBlock } from './wind-run.ts';
 
 const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';
 // the running turn, so a mid-turn reload still knows it is busy
@@ -76,6 +76,7 @@ export async function onToolCall(
             : undefined;
     const r = await next(e);
     if (r.deny !== undefined || e.agentId) return r;
+    if (e.tool === 'TaskStop') noteTaskStop(e.task_id);
     if (
         (e.tool as string) === WRAP_UP_TOOL &&
         oneLine((e as Record<string, unknown>).ask)

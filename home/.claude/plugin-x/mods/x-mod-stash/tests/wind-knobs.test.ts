@@ -642,6 +642,119 @@ test('a watch still running at the turn end holds the wind, naming it and its tw
     ]).toEqual([[], [true, true, true]]);
 });
 
+test('a watch the last turn left running refuses the op at the call, naming it, and no wind is kept', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await stopWith($, 'monitor', 'watch ci on #170');
+    const r = await ready($, SLUG);
+    expect([r.deny, w.store.has(`wind:${SID}`)]).toEqual([
+        'orbit second-wind: held by your watch «watch ci on #170»: stop it with TaskStop and call again',
+        false,
+    ]);
+});
+
+test('a watch stopped in the same turn lets the second call through, and the wind fires at its end', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await stopWith($, 'monitor', 'watch ci on #170');
+    const first = await ready($, SLUG);
+    await $.tool.call({ task_id: 't1', tool: 'TaskStop' } as never);
+    const second = await ready($, SLUG);
+    await $.classic.Stop({
+        last_assistant_message: 'i take the wind.',
+        session_id: SID,
+        stop_hook_active: false,
+    } as never);
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect([
+        first.deny !== undefined,
+        second.deny,
+        w.commands.filter((c) => c.startsWith('/compact')).length,
+    ]).toEqual([true, undefined, 1]);
+});
+
+test('a watch beside a 🔭 line refuses the op too', async ($, on) => {
+    world(on);
+    await start($);
+    await $.classic.Stop({
+        background_tasks: [
+            {
+                description: 'watch ci on #170',
+                id: 't1',
+                status: 'running',
+                type: 'monitor',
+            },
+        ],
+        last_assistant_message: 'done.\n\n🔭 waiting on the commit',
+        session_id: SID,
+        stop_hook_active: false,
+    } as never);
+    expect((await ready($, SLUG)).deny).toContain('watch ci on #170');
+});
+
+test('a TaskStop that failed leaves the turn end to refuse the wind', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await stopWith($, 'monitor', 'watch ci on #170');
+    await $.tool.call({ task_id: 't1', tool: 'TaskStop' } as never);
+    await ready($, SLUG);
+    await stopWith($, 'monitor', 'watch ci on #170');
+    await endTurn($);
+    expect(w.store.get(`wind:${SID}`)).toMatchObject({ state: 'refused' });
+});
+
+test('a watch of a session that ended holds no op of the resumed one', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set(`reply:${SID}`, {
+        at: 1,
+        ended: 2,
+        watches: [{ id: 't1', name: 'watch ci' }],
+    });
+    expect((await ready($, SLUG)).deny).toBeUndefined();
+});
+
+test("a turn's end stamps its own time on the reply, with no Stop of its own too", async ($, on) => {
+    const w = world(on);
+    await start($);
+    await stopWith($, 'shell', 'x');
+    await w.clock.advance(5000);
+    await $.turn.complete({
+        answer: '',
+        durationMs: 1,
+        isAborted: true,
+        reason: 'error',
+        turnId: 't',
+    } as never);
+    const { at, turnAt } = w.store.get(`reply:${SID}`) as {
+        at: number;
+        turnAt: number;
+    };
+    expect(turnAt - at).toBe(5000);
+});
+
+test('another task stopped leaves the watch holding the op', async ($, on) => {
+    world(on);
+    await start($);
+    await stopWith($, 'monitor', 'watch ci on #170');
+    await $.tool.call({ task_id: 't2', tool: 'TaskStop' } as never);
+    expect((await ready($, SLUG)).deny).toContain('watch ci on #170');
+});
+
+test('a refused wind keeps the handoff it named', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await ready($, SLUG);
+    await stopWith($, 'monitor', 'watch ci on #170');
+    await endTurn($);
+    expect(w.store.get(`wind:${SID}`)).toMatchObject({
+        blocked: 'a watch («watch ci on #170»)',
+        slug: SLUG,
+        state: 'refused',
+    });
+});
+
 test('a background command still running at the turn end does not hold the wind', async ($, on) => {
     const w = world(on);
     await start($);

@@ -38,6 +38,8 @@ export type StashMember = {
     name: string;
     status?: string;
     statusSince?: number;
+    // the last reply or keep-hot ping: how long its cache has been warm
+    warmSince?: number;
     wait?: string;
     // crow's row only: her newest 👀 «for you» tip, which takes the wait's place (PK-73)
     tip?: string;

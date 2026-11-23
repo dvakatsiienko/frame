@@ -7,6 +7,8 @@ import type { BackgroundTask } from './parse.ts';
 // waits: every background task's own name when the reply set no 🔭, so the board can list them all
 export type Reply = {
     at: number;
+    // when a turn that was no keep-hot ping ended, an aborted or failed one too, which fires no Stop
+    turnAt?: number;
     // a keep-hot ping's reply end: it warms the cache without being a reply dima reads
     pingedAt?: number;
     name?: string;
@@ -14,6 +16,8 @@ export type Reply = {
     waits?: string[];
     // the background tasks the wait came from, so an end notice can settle one
     tasks?: BackgroundTask[];
+    // the watches still running at that Stop, kept beside a 🔭 line, which drops `tasks`
+    watches?: { id?: string; name: string }[];
     ended?: number;
 };
 // how far this session read herdr's ticks file for it: the `at` of the newest press taken, one key per session id

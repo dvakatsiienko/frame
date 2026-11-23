@@ -765,7 +765,10 @@ test('a refusal stands over a 99 a peer asked for after it and wrote first', asy
     await clock.advance(10_000);
     peerWrote(files, 99, 5);
     await $.session.measure(weekly('rateLimits', 100));
-    expect(usage(files).week).toBe(100);
+    expect(usage(files)).toEqual({ at: 5, five: 39, week: 100 });
+    expect(JSON.parse(files[USAGE] ?? '{}').rate_limits.seven_day.read_at).toBe(
+        Math.round(NOW / 1000) + 5,
+    );
 });
 
 test('a failed request under 100 % marks no window spent', async ($, on) => {
@@ -788,6 +791,31 @@ test('a 100 % with no refused request behind it gives way to a newer answer', as
     await respond($, on);
     await $.session.measure(weekly('rateLimits', 98));
     expect(usage(files).week).toBe(98);
+});
+
+test('a refusal of an ended window writes no file', async ($, on) => {
+    const { clock, files } = meters(on);
+    await respond($, on, null);
+    await clock.advance(3 * HOUR);
+    await measure($, 100, 35);
+    expect(files[USAGE]).toBeUndefined();
+});
+
+test('a refusal carried from a window a peer saw replaced marks the newer one not spent', async ($, on) => {
+    const { clock, files } = meters(on);
+    await respond($, on);
+    await measure($, 39, 35);
+    const f = JSON.parse(files[USAGE] ?? '{}');
+    f.rate_limits.five_hour = {
+        read_at: Math.round(NOW / 1000) + 5,
+        resets_at: Math.round((NOW + 8 * HOUR) / 1000),
+        used_percentage: 4,
+    };
+    files[USAGE] = JSON.stringify(f);
+    await clock.advance(10_000);
+    await respond($, on, null);
+    await measure($, 100, 35);
+    expect(usage(files).five).toBe(4);
 });
 
 test('a refusal of an ended window marks no newer one spent', async ($, on) => {
