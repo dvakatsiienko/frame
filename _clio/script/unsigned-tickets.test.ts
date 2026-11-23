@@ -66,4 +66,11 @@ describe('unsignedTickets', () => {
         expect(postponed.map((t) => t.id)).toEqual(['FRM-1']);
         expect(red.map((t) => t.id)).toEqual(['FRM-2']);
     });
+
+    test('a postponed mark does not cover a ticket that started work', () => {
+        const marked = '⏸️ grill postponed 2026-11-23 — dima';
+        expect(
+            redIds([ticket('FRM-1', marked, { state: 'In Progress' })]),
+        ).toEqual(['FRM-1']);
+    });
 });

@@ -25,9 +25,12 @@ export function unsignedTickets(tickets: Ticket[]) {
             !t.labels.some((label) => SKIPPED_LABELS.includes(label)) &&
             !isSigned(t.description),
     );
+    // a mark holds only while the ticket waits in Todo: one that started work unsigned is red
+    const isPostponed = (t: Ticket) =>
+        t.state === 'Todo' && POSTPONED_LINE.test(t.description);
     return {
-        postponed: open.filter((t) => POSTPONED_LINE.test(t.description)),
-        red: open.filter((t) => !POSTPONED_LINE.test(t.description)),
+        postponed: open.filter(isPostponed),
+        red: open.filter((t) => !isPostponed(t)),
     };
 }
 
