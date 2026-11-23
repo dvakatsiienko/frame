@@ -12,7 +12,7 @@ import {
     prepareTurn,
 } from './keep-warm.ts';
 import { readLanes } from './lanes.ts';
-import { LEDGER_SENDS } from './parse.ts';
+import { LEDGER_SENDS, QUIET_LOG_APPEND } from './parse.ts';
 import { QUIET_NOTICE, clioAddress } from './quiet.ts';
 import { memberOf, registry } from './roster.ts';
 import { currentId, procNow, successorOf } from './session-identity.ts';
@@ -21,8 +21,9 @@ import { REPLY, type Reply } from './store-keys.ts';
 import { idleTurn, isTurnBusy, selfSubmit } from './turn.ts';
 import { memberKey, text } from './util.ts';
 
-const QUIET_LOG = 'quiet-log:';
-const QUIET_LOG_MAX = 500;
+// the log is a file a UTC day, `~/.claude/shelf/quiet-log/<day>.jsonl`, a line a delivery: the store is one file every
+// session parses whole at each read, and the log was nine tenths of it (FRM-658)
+const QUIET_LOG_DIR = '.claude/shelf/quiet-log';
 // the safety net (brief 6): the ledger's gaps, the delivery test's test ping, how long a held ping may wait past the idle wait
 export const QUIET_GAP = 'quiet-gap';
 // a send younger than the grace may still be on its way, so the ledger counts it next minute
@@ -46,20 +47,38 @@ const QUIET_ALARM_TITLE = '🚨 quiet comms';
 // osascript's own argv, so no text is ever spliced into the script
 const NOTIFY_SCRIPT =
     'on run argv\ndisplay notification (item 1 of argv) with title (item 2 of argv)\nend run';
-export const quietLogKey = (at: number) =>
-    QUIET_LOG + new Date(at).toISOString().slice(0, 10);
+const quietLogFile = (home: string | undefined, at: number) =>
+    `${home}/${QUIET_LOG_DIR}/${new Date(at).toISOString().slice(0, 10)}.jsonl`;
+// the lines of the UTC day `at` falls in; one that does not read whole is skipped
+export async function quietLogDay($: EngineInterface, at: number) {
+    const raw = await $.fs
+        .read(quietLogFile(await $.env.get('HOME'), at))
+        .catch(() => '');
+    return raw.split('\n').flatMap((line) => {
+        try {
+            const v = JSON.parse(line) as QuietLogLine | null;
+            return v ? [v] : [];
+        } catch {
+            return [];
+        }
+    });
+}
 // true once the lines, all of one moment, are in the day's log
 export async function quietLogAll($: EngineInterface, lines: QuietLogLine[]) {
     await quietKeepTagged($, lines).catch(() => undefined);
-    const key = quietLogKey(lines[0]?.at ?? 0);
-    const was = ((await $.store.get(key).catch(() => undefined)) ??
-        []) as QuietLogLine[];
-    return $.store
-        .set(key, [...was, ...lines].slice(-QUIET_LOG_MAX))
-        .then(() => true)
-        .catch(() => false);
+    const r = await $.process
+        .run([
+            'sh',
+            '-c',
+            QUIET_LOG_APPEND,
+            'sh',
+            quietLogFile(await $.env.get('HOME'), lines[0]?.at ?? 0),
+            lines.map((l) => `${JSON.stringify(l)}\n`).join(''),
+        ])
+        .catch(() => undefined);
+    return r?.exitCode === 0;
 }
-// a member's newest tagged line, per sid: the day's log keeps only its last lines, and a parked member's [done] outlives them
+// a member's newest tagged line, per sid: a parked member's [done] outlives the day's log
 async function quietKeepTagged($: EngineInterface, lines: QuietLogLine[]) {
     const tagged = lines.filter(
         (l) => l.sid && QUIET_KINDS.some((k) => k.kind === l.tag),
@@ -103,10 +122,9 @@ export async function quietFlushed($: EngineInterface, held: QuietPing[]) {
 // line (before it quiet comms logged nothing) and at the member's start
 export async function quietLedger($: EngineInterface, now: number) {
     const day = new Date(now).toISOString().slice(0, 10);
-    const judged = (
-        ((await $.store.get(QUIET_LOG + day).catch(() => undefined)) ??
-            []) as QuietLogLine[]
-    ).filter((l) => l.verdict !== 'flushed' && l.tag !== QUIET_NOTICE);
+    const judged = (await quietLogDay($, now)).filter(
+        (l) => l.verdict !== 'flushed' && l.tag !== QUIET_NOTICE,
+    );
     const opened = judged.length
         ? Math.min(...judged.map((l) => l.at))
         : Date.parse(`${day}T00:00:00Z`);
@@ -164,7 +182,7 @@ export async function quietAlarm(
         QUIET_ALARMED,
         [...raised, key].slice(-QUIET_ALARMED_MAX),
     );
-    // a test child's store is its own and its log empty, so its alarms are false; its mac is still dima's
+    // a test child's store is its own, so its alarms are false; its mac is still dima's
     if ((await $.env.get('X_MODS_TEST_CHILD')) === '1') {
         await $.ui.log(`x-mod-stash: quiet alarm in a test child: ${text}`);
         return;

@@ -30,8 +30,7 @@ helps, makes comms more efficient, and does not break our comms. make it easy to
 ## rounds
 
 - round 0 (2026-10-12, the mods coder): built in x-mod-stash, live in cclio's thread only. the a/b reads
-  `quiet-log:<day>` in the store file: `jq '[to_entries[] | select(.key|startswith("quiet-log:")) | .value[]] | group_by(.arm)'
-  ~/.claude/plugins/store/x-mod-stash_*.json`; held pings show as `🤫 n` on cclio's sessions row. proven: 14 harness
+  the log, since FRM-658 a file a day on the shelf: `jq -s 'group_by(.arm)' ~/.claude/shelf/quiet-log/*.jsonl`; held pings show as `🤫 n` on cclio's sessions row. proven: 14 harness
   tests, each branch red by mutation; the desktop hold itself at 15:48 (no turn). not yet: a real lane day per arm
 - round 1 (2026-10-12 16:53, dima's word, brief 5): the day arm is gone — quiet is on every day by default, `/quiet off` or the 🎛️ switch is the revert, and the log's `arm` reads that switch. the a/b now compares the on and off stretches dima chooses
 - round 2 (2026-10-12 17:40, dima's o49, brief 6): the safety net. the log gains `failed-open` (the hold threw, the ping

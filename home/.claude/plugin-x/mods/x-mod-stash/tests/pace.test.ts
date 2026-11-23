@@ -17,6 +17,7 @@ import {
     start,
     world,
 } from './pace-world.ts';
+import { logFile } from './quiet-helpers.ts';
 import { expect, test } from './shared-boot.ts';
 import { THREADS_FILE } from './threads.ts';
 
@@ -729,8 +730,8 @@ test('a pace line starts a turn with the quiet gate on: the mod sends it, never 
     expect([
         rungs(w),
         w.store.get(`quiet-held:${SID}`) ?? [],
-        w.store.get(`quiet-log:${day}`) ?? [],
-    ]).toEqual([['park'], [], []]);
+        w.files[logFile(day)],
+    ]).toEqual([['park'], [], undefined]);
 });
 
 /* the want */

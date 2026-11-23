@@ -19,7 +19,9 @@ import {
     held,
     heldLine,
     linesFor,
+    logFile,
     logOf,
+    logText,
     member,
     noteOf,
     notice,
@@ -598,7 +600,7 @@ test('with the switch off a send carries no contract', async ($, on) => {
 test('a held message reads as held to its sender, never as refused', async ($, on) => {
     const w = member(on, REFUSED);
     await start($);
-    w.store.set(`quiet-log:${DAY}`, [heldLine(MEMBER, EVEN)]);
+    w.seedLog(DAY, [heldLine(MEMBER, EVEN)]);
     const r = await send($, '🦉 clio', 'step 2 landed');
     expect(r.result).toEqual({
         message: "held, delivered at clio's next turn",
@@ -630,7 +632,7 @@ test('a send held across midnight still reads as held', async ($, on) => {
         peers: [CLIO],
         sent: REFUSED,
         whileSending: async () => {
-            w.store.set(`quiet-log:${nextDay}`, [heldLine(MEMBER, after)]);
+            w.seedLog(nextDay, [heldLine(MEMBER, after)]);
             await w.clock.set(after);
         },
     });
@@ -642,7 +644,7 @@ test('a send held across midnight still reads as held', async ($, on) => {
 test('a logged note of the app reads as no hold of a member send', async ($, on) => {
     const w = member(on, REFUSED);
     await start($);
-    w.store.set(`quiet-log:${DAY}`, [
+    w.seedLog(DAY, [
         { ...heldLine(MEMBER, EVEN), tag: 'notice', verdict: 'logged' },
     ]);
     const r = await send($, '🦉 clio', 'step 2 landed');
@@ -663,7 +665,7 @@ for (const [what, sent] of [
 test('a delivered send keeps its own words with a held line in the log', async ($, on) => {
     const w = member(on);
     await start($);
-    w.store.set(`quiet-log:${DAY}`, [heldLine(MEMBER, EVEN)]);
+    w.seedLog(DAY, [heldLine(MEMBER, EVEN)]);
     const r = await send($, '🦉 clio', 'step 2 landed');
     expect(r.result.message).toBe('delivered');
 });
@@ -684,10 +686,27 @@ test('a [progress] in an open slot reads as slipstreamed', async ($, on) => {
     expect(r.context).toContain(SLIPSTREAMED);
 });
 
+test('a log line torn mid-write leaves the lines beside it read', async ($, on) => {
+    const w = member(on, REFUSED);
+    await start($);
+    w.files[logFile(DAY)] =
+        `{"at":1,"fr\nnull\n${logText([heldLine(MEMBER, EVEN)])}`;
+    const r = await send($, '🦉 clio', 'step 2 landed');
+    expect(r.result.success).toBe(true);
+});
+
+test("the store's old log keys read the same as none", async ($, on) => {
+    const w = member(on, REFUSED);
+    await start($);
+    w.store.set(`quiet-log:${DAY}`, [heldLine(MEMBER, EVEN)]);
+    const r = await send($, '🦉 clio', 'step 2 landed');
+    expect(r.result).toEqual(REFUSED);
+});
+
 test('a refusal with no held line stays a refusal', async ($, on) => {
     const w = member(on, REFUSED);
     await start($);
-    w.store.set(`quiet-log:${DAY}`, [heldLine('🔎 sixth sense', EVEN)]);
+    w.seedLog(DAY, [heldLine('🔎 sixth sense', EVEN)]);
     const r = await send($, '🦉 clio', 'step 2 landed');
     expect(r.result).toEqual(REFUSED);
 });
@@ -695,7 +714,7 @@ test('a refusal with no held line stays a refusal', async ($, on) => {
 test('an older held line of the same member leaves a refusal a refusal', async ($, on) => {
     const w = member(on, REFUSED);
     await start($);
-    w.store.set(`quiet-log:${DAY}`, [heldLine(MEMBER, EVEN - MIN)]);
+    w.seedLog(DAY, [heldLine(MEMBER, EVEN - MIN)]);
     const r = await send($, '🦉 clio', 'step 2 landed');
     expect(r.result).toEqual(REFUSED);
 });
@@ -880,7 +899,7 @@ test('a throw inside the hold passes the ping and logs failed-open', async ($, o
 test('a held line that does not log passes the ping and takes it back out of the held list', async ($, on) => {
     let isBroken = false;
     const w = world(on, {
-        refuseSet: (key) => isBroken && key.startsWith('quiet-log:'),
+        isLogBroken: () => isBroken,
     });
     await start($);
     isBroken = true;
@@ -964,9 +983,7 @@ test("a note the old build held never reaches clio's prompt", async ($, on) => {
 test('an old held notice line leaves a refusal a refusal', async ($, on) => {
     const w = member(on, REFUSED);
     await start($);
-    w.store.set(`quiet-log:${DAY}`, [
-        { ...heldLine(MEMBER, EVEN), tag: 'notice' },
-    ]);
+    w.seedLog(DAY, [{ ...heldLine(MEMBER, EVEN), tag: 'notice' }]);
     const r = await send($, '🦉 clio', 'step 2 landed');
     expect(r.result).toEqual(REFUSED);
 });

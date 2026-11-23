@@ -1,5 +1,6 @@
 import { isSeated } from '../hooks/roster.ts';
 import {
+    DAY,
     HERE,
     MIN,
     NOW,
@@ -57,7 +58,6 @@ test('a held message of many lines draws its first line in the row', async ($, o
 });
 
 // the quiet ledger (brief 6): a member's transcript sends to clio against her quiet log, on her board only
-const DAY = new Date(NOW).toISOString().slice(0, 10);
 const at = (ms: number) => new Date(ms).toISOString();
 const logged = (from: string, ms: number, verdict = 'held') => ({
     arm: 'on',
@@ -92,9 +92,10 @@ type QuietGapLine = { from: string; logged: number; sent: number };
 test('a member that sent clio more pings than her log holds is a gap in the ledger, never a 🚨 row', async ($, on) => {
     const { clock, store } = fleet(
         on,
-        { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
+        {},
         {
             isOwner: true,
+            log: [logged(PEER_NAME, NOW - 30 * MIN)],
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
         },
     );
@@ -118,14 +119,10 @@ const loggedAsOld = (at: number) => ({
 test('a member renamed mid-day keeps its logged pings, so the old name leaves no gap', async ($, on) => {
     const { clock, store } = fleet(
         on,
-        {
-            [`quiet-log:${DAY}`]: [
-                loggedAsOld(NOW - 30 * MIN),
-                loggedAsOld(NOW - 20 * MIN),
-            ],
-        },
+        {},
         {
             isOwner: true,
+            log: [loggedAsOld(NOW - 30 * MIN), loggedAsOld(NOW - 20 * MIN)],
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
             threads: RENAMED_THREADS,
         },
@@ -136,9 +133,10 @@ test('a member renamed mid-day keeps its logged pings, so the old name leaves no
 test('a renamed member that sent more than its old-name lines hold still shows its gap', async ($, on) => {
     const { clock, store } = fleet(
         on,
-        { [`quiet-log:${DAY}`]: [loggedAsOld(NOW - 30 * MIN)] },
+        {},
         {
             isOwner: true,
+            log: [loggedAsOld(NOW - 30 * MIN)],
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
             threads: RENAMED_THREADS,
         },
@@ -149,15 +147,17 @@ test('a renamed member that sent more than its old-name lines hold still shows i
 test("a log line carrying the sender's session id counts for it whatever name it was logged under", async ($, on) => {
     const { clock, store } = fleet(
         on,
+        {},
         {
-            [`quiet-log:${DAY}`]: [
+            isOwner: true,
+            log: [
                 {
                     ...logged('☕️ 🧪 an unrelated name', NOW - 30 * MIN),
                     sid: PEER,
                 },
             ],
+            sends: { [PEER]: [at(NOW - 30 * MIN)] },
         },
-        { isOwner: true, sends: { [PEER]: [at(NOW - 30 * MIN)] } },
     );
     expect(await gapRow($, clock, store)).toBeUndefined();
 });
@@ -165,9 +165,10 @@ test("a log line carrying the sender's session id counts for it whatever name it
 test('a send inside the 2 min grace is not a gap yet', async ($, on) => {
     const { clock, store } = fleet(
         on,
-        { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
+        {},
         {
             isOwner: true,
+            log: [logged(PEER_NAME, NOW - 30 * MIN)],
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - MIN)] },
         },
     );
@@ -177,9 +178,10 @@ test('a send inside the 2 min grace is not a gap yet', async ($, on) => {
 test("a send before the day's first log line is not counted", async ($, on) => {
     const { clock, store } = fleet(
         on,
-        { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
+        {},
         {
             isOwner: true,
+            log: [logged(PEER_NAME, NOW - 30 * MIN)],
             sends: { [PEER]: [at(NOW - 40 * MIN), at(NOW - 30 * MIN)] },
         },
     );
@@ -189,14 +191,13 @@ test("a send before the day's first log line is not counted", async ($, on) => {
 test('a flushed line does not count as a logged delivery', async ($, on) => {
     const { clock, store } = fleet(
         on,
+        {},
         {
-            [`quiet-log:${DAY}`]: [
+            isOwner: true,
+            log: [
                 logged(PEER_NAME, NOW - 30 * MIN),
                 logged(PEER_NAME, NOW - 25 * MIN, 'flushed'),
             ],
-        },
-        {
-            isOwner: true,
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
         },
     );
@@ -206,14 +207,31 @@ test('a flushed line does not count as a logged delivery', async ($, on) => {
 test('a held app note does not count as a logged delivery', async ($, on) => {
     const { clock, store } = fleet(
         on,
+        {},
+        {
+            isOwner: true,
+            log: [
+                logged(PEER_NAME, NOW - 30 * MIN),
+                { ...logged(PEER_NAME, NOW - 25 * MIN, 'held'), tag: 'notice' },
+            ],
+            sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
+        },
+    );
+    expect(await gapRow($, clock, store)).toContain('(sent 2, logged 1)');
+});
+
+test("the ledger reads the day's file alone, the store's old log keys left or gone", async ($, on) => {
+    const { clock, store } = fleet(
+        on,
         {
             [`quiet-log:${DAY}`]: [
                 logged(PEER_NAME, NOW - 30 * MIN),
-                { ...logged(PEER_NAME, NOW - 25 * MIN, 'held'), tag: 'notice' },
+                logged(PEER_NAME, NOW - 20 * MIN),
             ],
         },
         {
             isOwner: true,
+            log: [logged(PEER_NAME, NOW - 30 * MIN)],
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
         },
     );
@@ -223,8 +241,9 @@ test('a held app note does not count as a logged delivery', async ($, on) => {
 test("the ledger's gap stays off any board but clio's", async ($, on) => {
     const { clock, store } = fleet(
         on,
-        { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
+        {},
         {
+            log: [logged(PEER_NAME, NOW - 30 * MIN)],
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
             threads: [{ sessionId: HERE }],
         },
@@ -261,14 +280,13 @@ test('a held ping inside the wait + 2 min keeps the 🤫 n plain', async ($, on)
 test("crow's lines count for her though the log keeps the registry's split «🐦 ⬛» and the board the joined «🐦‍⬛»", async ($, on) => {
     const { clock, store } = fleet(
         on,
+        {},
         {
-            [`quiet-log:${DAY}`]: [
+            isOwner: true,
+            log: [
                 logged('🐦 ⬛ crow', NOW - 30 * MIN),
                 logged('🐦 ⬛ crow', NOW - 20 * MIN),
             ],
-        },
-        {
-            isOwner: true,
             patch: { 2: { name: '🐦 ⬛ crow' } },
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
         },
@@ -284,10 +302,10 @@ test('no quiet-comms card draws on clio’s board, with pings held and a gap ope
             [`quiet-held:${HERE}`]: [
                 { at: NOW - MIN, from: PEER_NAME, text: 'step 2' },
             ],
-            [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)],
         },
         {
             isOwner: true,
+            log: [logged(PEER_NAME, NOW - 30 * MIN)],
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
         },
     );
@@ -306,14 +324,13 @@ test('no quiet-comms card draws on clio’s board, with pings held and a gap ope
 test('a member whose mode emoji changed keeps its logged pings counted: no gap', async ($, on) => {
     const { clock, store } = fleet(
         on,
+        {},
         {
-            [`quiet-log:${DAY}`]: [
+            isOwner: true,
+            log: [
                 logged('🌗 🔧 FRM-1 code: x', NOW - 30 * MIN),
                 logged('🌗 🔧 FRM-1 code: x', NOW - 25 * MIN),
             ],
-        },
-        {
-            isOwner: true,
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 25 * MIN)] },
         },
     );

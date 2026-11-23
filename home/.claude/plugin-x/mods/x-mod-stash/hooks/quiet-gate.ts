@@ -53,7 +53,7 @@ import {
     quietLedger,
     quietLog,
     quietLogAll,
-    quietLogKey,
+    quietLogDay,
     quietSilentMembers,
 } from './quiet-books.ts';
 import { settleTask } from './reply-fix.ts';
@@ -460,13 +460,10 @@ async function quietAnswered($: EngineInterface, from: string, tag: string) {
 // did clio's gate hold what this session just sent: her log line, at or after the send; the send may cross midnight
 async function isHeldSince($: EngineInterface, since: number) {
     const now = await $.clock.now();
-    const keys = new Set([quietLogKey(since), quietLogKey(now)]);
     const me = await currentId($);
     const name = await sessionName($);
-    for (const key of keys) {
-        const lines = ((await $.store.get(key).catch(() => undefined)) ??
-            []) as QuietLogLine[];
-        const isOurs = lines.some(
+    for (const at of [since, now]) {
+        const isOurs = (await quietLogDay($, at)).some(
             (l) =>
                 l.verdict === 'held' &&
                 l.tag !== QUIET_NOTICE &&

@@ -14,6 +14,7 @@ const OWNERS = {
     'lane-rounds.json': 'rounds.ts',
     'lanes.json': 'lanes.ts',
     'operator-override.json': 'override.ts',
+    'quiet-log': 'quiet-books.ts',
     'relay.json': 'parked-wake.ts',
     // syncWindStore writes it from wind-run.ts, the paths and parse are wind-store.ts's
     'second-wind.json': ['wind-run.ts', 'wind-store.ts'],

@@ -1,6 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, mock } from 'claude-code/testing';
 
+import { appendLog } from './quiet-helpers.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 // the pace watch (FRM-500): a line to the session that keeps `pace:<id>`, only when the 5h window changes its rung
@@ -91,15 +92,18 @@ export function world(
                   ]
                 : [],
     }));
-    on('process.run', () => ({
-        value: {
-            exitCode: 0,
-            isStderrTruncated: false,
-            isStdoutTruncated: false,
-            stderr: '',
-            stdout: `${PID}\nMon Oct 12 15:00:00 2026\n`,
-        },
-    }));
+    on('process.run', (_$, e) => {
+        appendLog(files, e.argv);
+        return {
+            value: {
+                exitCode: 0,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout: `${PID}\nMon Oct 12 15:00:00 2026\n`,
+            },
+        };
+    });
     on('tool.register', (_$, e) => ({
         value: { tool: `mcp__x-mod-stash__${e.name}` },
     }));

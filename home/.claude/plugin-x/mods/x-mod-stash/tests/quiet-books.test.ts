@@ -1,6 +1,7 @@
 import {
     CODIE,
     CODIE_SID,
+    DAY,
     EVEN,
     FORGED,
     MEMBER,
@@ -14,6 +15,7 @@ import {
     fromApp,
     fromAppText,
     gluedPrompt,
+    heldLine,
     linesFor,
     logOf,
     message,
@@ -34,11 +36,7 @@ test('the log names the arm from the switch', async ($, on) => {
     await quiet($, 'off');
     await ping($, '[progress] a');
     const day = new Date(EVEN).toISOString().slice(0, 10);
-    expect(
-        (w.store.get(`quiet-log:${day}`) as Record<string, unknown>[]).map(
-            (l) => l.arm,
-        ),
-    ).toEqual(['off']);
+    expect(w.logLines(day).map((l) => l.arm)).toEqual(['off']);
 });
 
 const gapNote = (w: ReturnType<typeof world>) =>
@@ -116,12 +114,34 @@ test('each delivery logs its sender, tag, verdict and whether it started a turn'
     await ping($, '[done] landed', '🔎 sixth sense');
     const day = new Date(EVEN).toISOString().slice(0, 10);
     expect(
-        (w.store.get(`quiet-log:${day}`) as Record<string, unknown>[]).map(
-            (l) => [l.from, l.tag, l.verdict, l.startedTurn, l.arm],
-        ),
+        w
+            .logLines(day)
+            .map((l) => [l.from, l.tag, l.verdict, l.startedTurn, l.arm]),
     ).toEqual([
         ['☕️ 🔧 codie: mods', 'progress', 'held', false, 'on'],
         ['🔎 sixth sense', 'done', 'passed', true, 'on'],
+    ]);
+});
+
+// FRM-658: every read of the store parses the whole of it, so the log lives in a file a day
+test('a logged delivery adds nothing to the store under the log', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await ping($, '[progress] step 2 landed');
+    expect([
+        logOf(w).length,
+        [...w.store.keys()].filter((k) => k.startsWith('quiet-log')),
+    ]).toEqual([1, []]);
+});
+
+test("a delivery keeps the lines another session wrote to the day's log", async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.seedLog(DAY, [heldLine('🔎 sixth sense', EVEN)]);
+    await ping($, '[progress] step 2 landed');
+    expect(logOf(w).map((l) => l.from)).toEqual([
+        '🔎 sixth sense',
+        '☕️ 🔧 codie: mods',
     ]);
 });
 
@@ -321,10 +341,10 @@ test("a [done] older than the day's log lines still parks the member", async ($,
     const w = silentWorld(on);
     await start($);
     await ping($, '[done] FRM-1 landed', codiePeer.name);
-    const key = `quiet-log:${new Date(w.clock.now()).toISOString().slice(0, 10)}`;
-    const kept = w.store.get(key) as Record<string, unknown>[];
-    w.store.set(
-        key,
+    const day = new Date(w.clock.now()).toISOString().slice(0, 10);
+    const kept = w.logLines(day);
+    w.seedLog(
+        day,
         Array.from({ length: 500 }, () => ({
             ...kept.at(-1),
             sid: 'someone-else',

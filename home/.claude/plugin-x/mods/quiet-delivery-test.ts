@@ -14,16 +14,24 @@ export type DeliveryTestState = 'none' | QuietVerdict;
 
 // the furthest a nonce's log lines got: a flushed line beats held, held beats none
 export function deliveryTestState(
-    store: Record<string, unknown>,
+    log: string,
     nonce: string,
 ): DeliveryTestState {
-    const lines = Object.entries(store)
-        .filter(([k, v]) => k.startsWith('quiet-log:') && Array.isArray(v))
-        .flatMap(
-            ([, v]) => v as { deliveryTest?: unknown; verdict?: unknown }[],
-        )
-        .filter((l) => l?.deliveryTest === nonce);
-    const verdicts = new Set(lines.map((l) => l.verdict));
+    const lines = log.split('\n').flatMap((line) => {
+        try {
+            return [
+                JSON.parse(line) as {
+                    deliveryTest?: unknown;
+                    verdict?: unknown;
+                } | null,
+            ];
+        } catch {
+            return [];
+        }
+    });
+    const verdicts = new Set(
+        lines.filter((l) => l?.deliveryTest === nonce).map((l) => l?.verdict),
+    );
     for (const v of ORDER) if (verdicts.has(v)) return v;
     return 'none';
 }
@@ -39,9 +47,19 @@ export function deadlineOf(argv: string[], wait?: unknown) {
         : undefined;
 }
 
-function readStores() {
+// every day's lines: a test ping may be held before midnight and flushed after it
+function readLog() {
+    const dir = join(homedir(), '.claude/shelf/quiet-log');
+    let files: string[] = [];
+    try {
+        files = readdirSync(dir);
+    } catch {}
+    return files.map((f) => readFileSync(join(dir, f), 'utf8')).join('\n');
+}
+
+// the idle wait dima set in 🎛️, from the first store that holds one
+function quietWait() {
     const dir = join(homedir(), '.claude/plugins/store');
-    const store: Record<string, unknown> = {};
     let files: string[] = [];
     try {
         files = readdirSync(dir);
@@ -49,12 +67,9 @@ function readStores() {
     for (const f of files.filter((n) => /^x-mod-stash_.*\.json$/.test(n)))
         try {
             const v = JSON.parse(readFileSync(join(dir, f), 'utf8'));
-            for (const [k, lines] of Object.entries(v))
-                store[k] = Array.isArray(lines)
-                    ? [...((store[k] as unknown[] | undefined) ?? []), ...lines]
-                    : lines;
+            if (v['quiet-wait'] !== undefined) return v['quiet-wait'];
         } catch {}
-    return store;
+    return undefined;
 }
 
 async function waitFor(
@@ -63,16 +78,16 @@ async function waitFor(
     ms: number,
 ) {
     const end = Date.now() + ms;
-    let state = deliveryTestState(readStores(), nonce);
+    let state = deliveryTestState(readLog(), nonce);
     while (!isDone(state) && Date.now() < end) {
         await sleep(2000);
-        state = deliveryTestState(readStores(), nonce);
+        state = deliveryTestState(readLog(), nonce);
     }
     return state;
 }
 
 async function main(argv: string[]) {
-    const deadline = deadlineOf(argv, readStores()['quiet-wait']);
+    const deadline = deadlineOf(argv, quietWait());
     if (deadline === undefined) {
         console.error(
             'usage: pnpm mods:quiet-delivery-test [--deadline <minutes>]',

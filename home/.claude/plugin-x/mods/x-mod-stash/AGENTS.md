@@ -44,7 +44,7 @@ dima's board, band and orbit in one cc mod: `hooks/register.tsx` is the hook wir
 - `usage.ts` — the 5h usage mirror, the context fill, the word count
 - `held.ts` — the `held:<sid>` store: every message held for a later turn, its holds, releases and tells
 - `quiet-gate.ts` — quiet comms: a received message, a ping's send, hold and release, the books poll, `/quiet`
-- `quiet-books.ts` — the quiet log, the ledger, the alarms, a silent member
+- `quiet-books.ts` — the quiet log (`quiet-log/<day>.jsonl` on the shelf), the ledger, the alarms, a silent member
 - `parked-wake.ts` — a parked lane's wake, crow's relay (`relay.json`)
 - `rounds.ts` — the round count and `lane-rounds.json`
 - `wind.ts` · `wind-store.ts` · `wind-run.ts` — second wind's `wind:` key, `second-wind.json`, and the state machine above held, with what a compact sets off

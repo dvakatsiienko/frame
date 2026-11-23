@@ -1,56 +1,47 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from 'vitest';
 
 import { deadlineOf, deliveryTestState } from './quiet-delivery-test.ts';
-import { LEDGER_SENDS } from './x-mod-stash/hooks/parse.ts';
+import { LEDGER_SENDS, QUIET_LOG_APPEND } from './x-mod-stash/hooks/parse.ts';
 
-const line = (verdict: string, deliveryTest?: string) => ({
-    at: 1,
-    from: 'frame-5e',
-    verdict,
-    ...(deliveryTest ? { deliveryTest } : {}),
-});
+const line = (verdict: string, deliveryTest?: string) =>
+    JSON.stringify({
+        at: 1,
+        from: 'frame-5e',
+        verdict,
+        ...(deliveryTest ? { deliveryTest } : {}),
+    });
 
 test('a nonce with no log line reads none', () => {
-    expect(
-        deliveryTestState({ 'quiet-log:2026-10-12': [line('held')] }, 'c1'),
-    ).toBe('none');
+    expect(deliveryTestState(line('held'), 'c1')).toBe('none');
 });
 
 test('a held nonce reads held', () => {
-    expect(
-        deliveryTestState(
-            { 'quiet-log:2026-10-12': [line('held', 'c1')] },
-            'c1',
-        ),
-    ).toBe('held');
+    expect(deliveryTestState(line('held', 'c1'), 'c1')).toBe('held');
 });
 
 test('a flushed line beats its held one, across two days', () => {
     expect(
         deliveryTestState(
-            {
-                'quiet-log:2026-10-12': [line('held', 'c1')],
-                'quiet-log:2026-10-13': [line('flushed', 'c1')],
-            },
+            `${line('held', 'c1')}\n\n${line('flushed', 'c1')}\n`,
             'c1',
         ),
     ).toBe('flushed');
 });
 
-test("another nonce's lines and other keys are ignored", () => {
+test("another nonce's lines and a torn line are ignored", () => {
     expect(
         deliveryTestState(
-            {
-                'quiet-gap': { gaps: [] },
-                'quiet-log:2026-10-12': [
-                    line('flushed', 'c2'),
-                    line('held', 'c1'),
-                ],
-            },
+            `${line('flushed', 'c2')}\n{"at":1,\n${line('held', 'c1')}\n`,
             'c1',
         ),
     ).toBe('held');
@@ -73,6 +64,19 @@ test('a bare deadline follows the idle wait dima set, falling back to 10 outside
     expect([30, 61, 'x', undefined].map((w) => deadlineOf([], w))).toEqual([
         32, 12, 12, 12,
     ]);
+});
+
+test("the log's append makes its dir and keeps every byte of the lines before", () => {
+    const home = mkdtempSync(join(tmpdir(), 'quiet-log-'));
+    const file = join(home, 'a dir/2026-10-12.jsonl');
+    const texts = [`${line('it\'s 5 % "x" $HOME \\n 🦉')}\n`, '{"at":2}\n'];
+    for (const text of texts)
+        spawnSync('sh', ['-c', QUIET_LOG_APPEND, 'sh', file, text], {
+            timeout: 10_000,
+        });
+    const kept = readFileSync(file, 'utf8');
+    rmSync(home, { force: true, recursive: true });
+    expect(kept).toBe(texts.join(''));
 });
 
 // the ledger counts a member's sends to clio from its own transcript; a send whose result said success:false never

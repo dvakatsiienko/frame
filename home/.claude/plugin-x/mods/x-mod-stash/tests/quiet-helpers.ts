@@ -1,6 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, mock } from 'claude-code/testing';
 
+import { QUIET_LOG_APPEND } from '../hooks/parse.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 export const SID = 'q1q1q1q1-clio';
@@ -14,6 +15,20 @@ export const MIN = 60_000;
 export const POLL = 60_000;
 
 export const PID = 4242;
+
+// the quiet log's file for a UTC day, its lines as the mod writes them, and the mod's append into a world's files
+export const logFile = (day: string) =>
+    `/home/.claude/shelf/quiet-log/${day}.jsonl`;
+export const logText = (lines: unknown[]) =>
+    lines.map((l) => `${JSON.stringify(l)}\n`).join('');
+export function appendLog(
+    files: Record<string, string>,
+    argv: readonly string[],
+) {
+    const [, , script, , path, text] = argv;
+    if (script === QUIET_LOG_APPEND && path)
+        files[path] = (files[path] ?? '') + text;
+}
 
 // clio by default, as the registry names her; `cwd` is where a Bash `cd` left her
 export function world(
@@ -30,6 +45,8 @@ export function world(
             undefined,
         // a store write the test makes fail
         refuseSet = (_key: string): boolean => false,
+        // the quiet log's append fails
+        isLogBroken = (): boolean => false,
         dropSubmit = (_text: string): boolean => false,
         // what a SendMessage answers
         sent = { message: 'delivered', success: true } as Record<
@@ -81,6 +98,17 @@ export function world(
     on('session.cwd', () => ({ value: cwd }));
     const logged: string[] = [];
     on('process.run', (_$, e) => {
+        if (e.argv[2] === QUIET_LOG_APPEND && isLogBroken())
+            return {
+                value: {
+                    exitCode: 1,
+                    isStderrTruncated: false,
+                    isStdoutTruncated: false,
+                    stderr: 'disk full',
+                    stdout: '',
+                },
+            };
+        appendLog(files, e.argv);
         const own = run(e.argv);
         if (own !== undefined)
             return {
@@ -178,7 +206,27 @@ export function world(
     on('turn.complete', () => ({ text: '' }));
     on('classic.Stop', () => ({}));
     on('skill.prompt', (_$, e) => ({ text: e.text }));
-    return { appended, clock, contexts, logged, queued, store, submitted };
+    // what the day's quiet log holds, in place of what it held
+    const seedLog = (day: string, lines: unknown[]) => {
+        files[logFile(day)] = logText(lines);
+    };
+    const logLines = (day: string) =>
+        (files[logFile(day)] ?? '')
+            .split('\n')
+            .filter(Boolean)
+            .map((l) => JSON.parse(l) as Record<string, unknown>);
+    return {
+        appended,
+        clock,
+        contexts,
+        files,
+        logLines,
+        logged,
+        queued,
+        seedLog,
+        store,
+        submitted,
+    };
 }
 
 export const start = ($: Engine) =>
@@ -301,9 +349,7 @@ export const settings = ($: Engine) =>
         surface: 'desktop',
     });
 
-export const logOf = (w: ReturnType<typeof world>) =>
-    (w.store.get(`quiet-log:${new Date(EVEN).toISOString().slice(0, 10)}`) ??
-        []) as Record<string, unknown>[];
+export const logOf = (w: ReturnType<typeof world>) => w.logLines(DAY);
 
 // FRM-602 decided: the wake fires only near a chunk's end with nothing signed to go to, never on idle time alone
 export const steps = (...tickets: string[]) => ({

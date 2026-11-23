@@ -284,7 +284,7 @@ test('a throw inside the glued hold fails open', async ($, on) => {
 test('a held line that will not log empties the list', async ($, on) => {
     let isBroken = false;
     const w = world(on, {
-        refuseSet: (key) => isBroken && key.startsWith('quiet-log:'),
+        isLogBroken: () => isBroken,
     });
     await start($);
     isBroken = true;
@@ -323,7 +323,7 @@ for (const [what, text] of [
 test('a refused log leaves no held line and lets the prompt in', async ($, on) => {
     let isBroken = false;
     const w = world(on, {
-        refuseSet: (key) => isBroken && key.startsWith('quiet-log:'),
+        isLogBroken: () => isBroken,
     });
     await start($);
     isBroken = true;
@@ -540,7 +540,7 @@ test('a sender of a held kind reads the held line', async ($, on) => {
     const w = member(on, REFUSED);
     await start($);
     w.store.set('quiet-ask', false);
-    w.store.set(`quiet-log:${DAY}`, [heldLine(MEMBER, EVEN)]);
+    w.seedLog(DAY, [heldLine(MEMBER, EVEN)]);
     const r = await send($, '🦉 clio', '[ask] a or b?');
     expect([r.result.message, r.context]).toEqual([
         "held, delivered at clio's next turn",
@@ -877,7 +877,7 @@ test('a send the gate held reads held, its kind back on by the end', async ($, o
     });
     await start($);
     w.store.set('quiet-ask', false);
-    w.store.set(`quiet-log:${DAY}`, [heldLine(MEMBER, EVEN)]);
+    w.seedLog(DAY, [heldLine(MEMBER, EVEN)]);
     const r = await send($, '🦉 clio', '[ask] a or b?');
     expect(r.context).toEqual([SLIPSTREAMED]);
 });
@@ -921,7 +921,7 @@ test('a flip off mid-send reads held, never pushed', async ($, on) => {
         },
     });
     await start($);
-    w.store.set(`quiet-log:${DAY}`, [heldLine(MEMBER, EVEN)]);
+    w.seedLog(DAY, [heldLine(MEMBER, EVEN)]);
     const r = await send($, '🦉 clio', '[ask] a or b?');
     expect([r.result.message, r.context]).toEqual([
         "held, delivered at clio's next turn",

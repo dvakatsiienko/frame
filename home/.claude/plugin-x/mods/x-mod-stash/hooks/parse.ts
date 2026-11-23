@@ -501,6 +501,8 @@ export function capReset(text: string, at: number): number | undefined {
     }
 }
 
+// the quiet log's lines added to a day's file: an append, so two sessions' lines never overwrite each other
+export const QUIET_LOG_APPEND = 'mkdir -p "${1%/*}" && printf %s "$2" >> "$1"';
 export const LEDGER_SENDS = [
     't=$(cat "$1"/.claude/projects/*/"$2".jsonl 2>/dev/null)',
     `bad=$(printf '%s\\n' "$t" | grep -F '\\"success\\":false' | sed -n 's/.*"tool_use_id":"\\([^"]*\\)".*/\\1/p')`,

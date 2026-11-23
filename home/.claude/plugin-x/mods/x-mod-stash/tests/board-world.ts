@@ -1,6 +1,7 @@
 import type { FsEntry, On } from 'claude-code';
 import { type Engine, mock } from 'claude-code/testing';
 
+import { logFile, logText } from './quiet-helpers.ts';
 import {
     THREADS_FILE,
     type ThreadRow,
@@ -10,6 +11,8 @@ import {
 
 export const NOW = 10_000_000;
 export const MIN = 60 * 1000;
+export const DAY = new Date(NOW).toISOString().slice(0, 10);
+const LOG_FILE = logFile(DAY);
 export const HERE = 'h1h1h1h1-here';
 export const PEER = 'p2p2p2p2-peer';
 export const GONE = 'g3g3g3g3-gone';
@@ -53,6 +56,8 @@ export function fleet(
         sends = {} as Record<string, string[]>,
         // a transcript's birth, epoch seconds by path, as `stat -f %B` prints it
         born = {} as Record<string, number>,
+        // the day's quiet log
+        log = [] as unknown[],
     } = {},
 ) {
     const runs: string[][] = [];
@@ -107,7 +112,8 @@ export function fleet(
                 }));
             return { value: threadsFile([...rows, ...threads]) };
         }
-        const extra = reads[e.path];
+        const extra =
+            e.path === LOG_FILE && log.length ? logText(log) : reads[e.path];
         if (extra !== undefined) return { value: extra };
         const entry = REGISTRY[e.path];
         if (!entry) return { deny: 'no such file' };
