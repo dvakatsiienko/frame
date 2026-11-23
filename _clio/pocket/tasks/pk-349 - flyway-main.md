@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T08:02:00Z'
+updated_date: '2026-11-23T08:25:00Z'
 labels:
   - s
   - clio-main
@@ -1494,4 +1494,33 @@ PK-349:W1451 (2026-11-23 09:56, dima): handoffs piled up, some of them did not g
 PK-349:W1452 (2026-11-23 09:56, dima): ensure everyone ingests what they need. and tell which handoffs are not needed anymore.
 PK-349:W1453 (2026-11-23 09:56, dima): speak verifier will be on fable 5.2 medium (don't forget)
 PK-349:W1454 (2026-11-23 09:56, dima): herdr core 0.1.22 released - what's there, interesting? ❓
+
+PK-349:W1455 (2026-11-23 10:08, dima, o4 steer): yes, stop glides at halt, always start a glide on summon.
+PK-349:W1456 (2026-11-23 10:08, dima, o4 steer): you, for example, did not create a glide for mods lane just yet.
+
+PK-349:W1457 (2026-11-23 10:11, dima): borrow where? ❓ (context, not dima's words: answers the line above, hc events --doc <name>, the one thing we might borrow)
+PK-349:W1458 (2026-11-23 10:11, dima): what does it do? ❓
+PK-349:W1459 (2026-11-23 10:11, dima): refresh now. (context, not dima's words: answers the line above, ⚠️ health at risk: three speak milestones missing from the queue)
+PK-349:W1460 (2026-11-23 10:11, dima): do you log it? ❓ (context, not dima's words: answers the line above, wish-loss audit: 82 checked, 75 green, 3 red)
+PK-349:W1461 (2026-11-23 10:11, dima): if no - where would be a good spot so all or most of our logs/measures are colocated? ❓
+PK-349:W1462 (2026-11-23 10:11, dima): let's do at ~thursday-friday. (context, not dima's words: answers the line above, system checkup is due, last run 12 Nov)
+PK-349:W1463 (2026-11-23 10:11, dima): read - what's there? ❓ (context, not dima's words: answers the line above, 75 upstream watches changed, not read yet)
+PK-349:W1464 (2026-11-23 10:11, dima): let's refresh it.
+PK-349:W1465 (2026-11-23 10:11, dima): anything new? ❓
+PK-349:W1466 (2026-11-23 10:11, dima): anything to drop? ❓
+PK-349:W1467 (2026-11-23 10:11, dima): solve when no intermediary questions/topics left, then i drop ask → we solve → speak.
+
+PK-349:W1468 (2026-11-23 10:16, dima, o6 steer): let's do like this, but we need to turn this log mess into something beautiful, maybe at a point of complete measure solution.
+
+PK-349:W1469 (2026-11-23 10:23, dima, o1 steer): kill dupes and obviously stale ones, bring the rest into the thread.
+
+PK-349:W1470 (2026-11-23 10:19, dima): don't forget how important the mods test cpu roasting bottleneck problem is, that current codie is solving now.
+PK-349:W1471 (2026-11-23 10:19, dima): i want it solved + safeguard to prevent new bottlenecks in future.
+PK-349:W1472 (2026-11-23 10:19, dima): bulletproof one.
+
+PK-349:W1473 (2026-11-23 10:23, dima): wtf is it? ❓ (context, not dima's words: answers the line above, a built-in chart mod (easel))
+PK-349:W1474 (2026-11-23 10:23, dima): that's quite a lot. (context, not dima's words: answers the line above, 36 drop candidates, 22 that touch us)
+PK-349:W1475 (2026-11-23 10:23, dima): can you triage them? ❓
+PK-349:W1476 (2026-11-23 10:23, dima): i'd like to drop truly stale and not needed ones but keep ones we need.
+PK-349:W1477 (2026-11-23 10:23, dima): ✓ (context, not dima's words: answers the line above, ➡️ my take: wait for the probe before choosing; b) cheapest real cut; c) the strongest; only numbers settle it)
 <!-- SECTION:NOTES:END -->
