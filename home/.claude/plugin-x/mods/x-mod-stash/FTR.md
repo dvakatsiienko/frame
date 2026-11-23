@@ -250,8 +250,10 @@
 - ✅ a gone session's keys leave the store (FRM-658:W2)
   - given a session start, once a day, when a session is neither in cc's registry nor wrote its transcript in the last 7 days (`GONE_DAYS`), then its `reply:`, `band-read:`, `model:`, `hot:`, `context:` and `quiet-held:` keys are dropped; `words:` keeps its 30 days, `kept:` its 7
   - given a transcript lookup that fails or finds none, or an empty registry, then no key is dropped
+  - given 40 days of each of these families at 12 sessions a day, when one prune pass ran, then no family holds a key past its age and the store is under 160 KB
+  - not aged: `lane-step:` and `parked-woke:`, one short key a lane, and the `lane-rounds:` keys no build writes any more
   - decision: `herdr-read:` stays, since losing it would replay dima's old presses into a session resumed after the prune
-  - proof: tests/quiet-books.test.ts::a start drops a gone session’s keys, and no key of a recent or a live one / a transcript lookup that fails halfway drops no key / a transcript lookup that finds none drops no key / a registry that lists no session drops no key / a second start of the day looks for nothing to drop
+  - proof: tests/quiet-books.test.ts::a start drops a gone session’s keys, and no key of a recent or a live one / a transcript lookup that fails halfway drops no key / a transcript lookup that finds none drops no key / a registry that lists no session drops no key / a second start of the day looks for nothing to drop / a store fed 40 days of each family keeps its ages and stays under the cap
 - ✅ x-mod-stash writes `~/.claude/shelf/cc-usage-window.json`, the newest figures any session's response named, to the decimal, in sline's old shape (`rate_limits.five_hour` / `seven_day`, `used_percentage`, `resets_at` in seconds, `written_at`), from a desktop tab too; sline no longer writes it (FRM-679)
   - given a measure after a response of its own session, or one the engine says moved a window, when that reading is as new as the file's `written_at` or newer, then the file takes its figures, higher or lower, and `written_at` is when they were read; equal figures move `written_at` alone
   - given an older reading, or a reload with no response yet and no moved window, then the file keeps its figure

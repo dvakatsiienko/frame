@@ -268,6 +268,80 @@ test('a second start of the day looks for nothing to drop', async ($, on) => {
     expect([same, w.store.has(`reply:${GONE_SID}`)]).toEqual([true, false]);
 });
 
+// exit 6: 40 days of each family, 12 sessions a day, each value as long as the live store's is on 23 Nov
+const PER_DAY = 12;
+const CAP = 160_000;
+const sidAt = (ago: number, n: number) =>
+    `${String(ago).padStart(8, '0')}-1111-4111-8111-${String(n).padStart(12, '0')}`;
+const longAs = (bytes: number) => 'x'.repeat(bytes);
+const seedOldStore = (store: Map<string, unknown>) => {
+    for (let ago = 0; ago < 40; ago++)
+        for (let n = 0; n < PER_DAY; n++) {
+            const sid = sidAt(ago, n);
+            const at = EVEN - ago * DAY_MS;
+            store.set(`reply:${sid}`, { at, text: longAs(80) });
+            store.set(`band-read:${sid}`, at);
+            store.set(`model:${sid}`, 'Opus 5.5 (xhigh)');
+            store.set(`hot:${sid}`, { at, isOn: true });
+            store.set(`context:${sid}`, 41);
+            store.set(`quiet-held:${sid}`, []);
+            store.set(`kept:${sid}`, { asks: longAs(420), at });
+            store.set(`succ:${sid}`, { at, to: sid });
+            store.set(`words:${dayOf(ago)}:${sid}`, longAs(60));
+        }
+};
+// the oldest day each family still holds a key of, in days
+const oldestDays = (store: Map<string, unknown>) => {
+    const oldest: Record<string, number> = {};
+    for (const key of store.keys()) {
+        const ago = Number(/(\d{8})-1111-/.exec(key)?.[1] ?? -1);
+        const family = key.split(':')[0] ?? '';
+        if (ago >= 0) oldest[family] = Math.max(oldest[family] ?? 0, ago);
+    }
+    return oldest;
+};
+
+test('a store fed 40 days of each family keeps its ages and stays under the cap', async ($, on) => {
+    const recent = Array.from({ length: 7 }, (_, ago) =>
+        Array.from(
+            { length: PER_DAY },
+            (__, n) => `/home/.claude/projects/-p/${sidAt(ago, n)}.jsonl\n`,
+        ).join(''),
+    ).join('');
+    const w = world(on, {
+        run: (argv) => (argv[0] === 'find' ? recent : undefined),
+    });
+    seedOldStore(w.store);
+    await start($);
+    // the words go at a reply that bolds one
+    await $.session
+        .append({
+            door: 'response',
+            message: {
+                content: [{ text: 'a wisp', type: 'text' }],
+                role: 'assistant',
+                type: 'assistant',
+            },
+            origin: { kind: 'model', model: 'claude-opus-5-5' },
+            uuid: 'u1',
+        })
+        .catch(() => undefined);
+    expect(oldestDays(w.store)).toEqual({
+        'band-read': 6,
+        context: 6,
+        hot: 6,
+        kept: 6,
+        model: 6,
+        'quiet-held': 6,
+        reply: 6,
+        succ: 6,
+        words: 30,
+    });
+    expect(JSON.stringify(Object.fromEntries(w.store)).length).toBeLessThan(
+        CAP,
+    );
+});
+
 test('a held ping that rides the next prompt logs flushed', async ($, on) => {
     const w = world(on);
     await start($);
