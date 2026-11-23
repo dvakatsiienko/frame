@@ -45,7 +45,7 @@
     <integer>10</integer>
 
     <key>ProcessType</key>
-    <string>Background</string>
+    <string>Standard</string>
 
     <key>StandardOutPath</key>
     <string>/Users/dima/.local/share/x-monitor-hotkey-live/daemon.log</string>
