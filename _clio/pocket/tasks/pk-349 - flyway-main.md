@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T18:38:00Z'
+updated_date: '2026-11-23T18:52:00Z'
 labels:
   - s
   - clio-main
@@ -2403,4 +2403,54 @@ PK-349:W2176 (2026-11-23 20:12, dima): tell when you are tail free so i can peek
 PK-349:W2177 (2026-11-23 20:14, dima): and mods verifier watis for you (something about linear comment)
 
 20:38 PK-349:W1547–W1554 (the hang-heal lines) moved to FRM-696 as FRM-696:W1–W8; the ticket is their one home now
+
+PK-349:W2178 (2026-11-23 20:27, dima): herdr resumes with a tail.
+PK-349:W2179 (2026-11-23 20:27, dima): finishes it, and only then goes to next time - fat fat files.
+PK-349:W2180 (2026-11-23 20:27, dima): FRM-695: related to frm645? ❓
+PK-349:W2181 (2026-11-23 20:27, dima): maybe move it closer it it? ❓
+PK-349:W2182 (2026-11-23 20:27, dima): and frm-686 should go right after frm-692 if possible it is more important.
+PK-349:W2183 (2026-11-23 20:27, dima): FRM-645: can go after frm-670
+PK-349:W2184 (2026-11-23 20:27, dima): you again propose to seal on boot? ❓
+PK-349:W2185 (2026-11-23 20:27, dima): why not now? ❓
+PK-349:W2186 (2026-11-23 20:27, dima): what to seal? ❓
+PK-349:W2187 (2026-11-23 20:27, dima): let's seal everything unsealed.
+PK-349:W2188 (2026-11-23 20:27, dima): and fix the peek-lanes ready skill.
+PK-349:W2189 (2026-11-23 20:27, dima): for all red items you should propose me them into separate easy to ready list that goes after all healthy chunks its hard to find unhealthy ones in a big list
+PK-349:W2190 (2026-11-23 20:31, dima): let's seal make all lanes health green.
+PK-349:W2191 (2026-11-23 20:31, dima): what is needed for it? ❓
+PK-349:W2192 (2026-11-23 12:00, dima): not too fast. (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2193 (2026-11-23 12:00, dima): fable is running behind shared weekly currently at 12% fable weekly we should be at ~5% shared weekly at least. (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2194 (2026-11-23 12:00, dima): lets keep going for now (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2195 (2026-11-23 12:00, dima): just move, stop asking for such stuff (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2196 (2026-11-23 12:00, dima): tell when and what to do, short precise steps, do what you can yourself (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2197 (2026-11-23 12:00, dima): Okay but we need to coordinate it with some of the tickets we planned for Herdr because Herdr's scope contains a ticket similar to, somehow, system messages or something like this (we invented it with your wink (?) at some point). (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2198 (2026-11-23 12:00, dima): It is probably half relevant now because those system messages were intended to hide your outputs from Wishkeeper and Crow. (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2199 (2026-11-23 12:00, dima): If you can just fold everything like this into files, instead we don't really need the harder side of a mod for this, especially because this overall output format is actually important for all surfaces not just Herdr. (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2200 (2026-11-23 12:00, dima): This problem shouldn't be solved by Herdr. (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2201 (2026-11-23 12:00, dima): It should be solved at the root of the problem, which is the way you initially write your outputs. (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2202 (2026-11-23 12:00, dima): Let's fix it right now (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2203 (2026-11-23 12:00, dima): Okay let's plan like this but do not implement and do not sign yet. (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2204 (2026-11-23 12:00, dima): Although you can sign, do not fold into mods lane scope. (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2205 (2026-11-23 12:00, dima): Instead fold into mods big picture scope as the first thing to change and actually plan because mods big picture is kind of a transitional ticket that is related to Blueprint V2 and design loupe V2. (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2206 (2026-11-23 12:00, dima): Mods big picture is blocked by the absence of a proper visualization tool for us, for me more specifically, because I don't have a door to see under the hood in an easy and fast way. (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2207 (2026-11-23 12:00, dima): Blueprint V2 and design loupe V2 combined should solve this. (o1 steer of 23 Nov, real clock unknown: 12:00 is a placeholder)
+PK-349:W2208 (2026-11-23 18:12, dima): can stray do this? ❓ (o1 steer of 23 Nov)
+
+PK-349:W2209 (2026-11-23 20:35, dima): Okay then ask me around tomorrow, somewhere after debut soon, depending on how much other stuff you will have to solve tomorrow.
+PK-349:W2210 (2026-11-23 20:37, dima): That's good that you do it now but I'm more about your habit because I ask this every single time.
+PK-349:W2211 (2026-11-23 20:37, dima): It is your daily pattern to postpone to tomorrow.
+PK-349:W2212 (2026-11-23 20:37, dima): I want for you to remove this habit of postponing for tomorrow and solve solvable items immediately when possible.
+PK-349:W2213 (2026-11-23 20:37, dima): Now it was possible to.
+PK-349:W2214 (2026-11-23 20:37, dima): Especially considering everything I've told you before about the importance of prepping the plan beforehand, so your boot is easy at the start
+PK-349:W2215 (2026-11-23 20:37, dima): whats needed from me? ❓
+PK-349:W2216 (2026-11-23 20:38, dima): i half read your replies because there are too many of them.
+PK-349:W2217 (2026-11-23 20:38, dima): fyi.
+PK-349:W2218 (2026-11-23 20:38, dima): tell when all lanes are healthy (excep
+PK-349:W2219 (2026-11-23 20:39, dima): except reactions - tmrw.
+PK-349:W2220 (2026-11-23 20:39, dima): when healthy - tell green (that you can resume all lanes tomorrow) and park.
+PK-349:W2221 (2026-11-23 20:42, dima): tell everyone to start looking for nearest chunk/slice/step point to park at.
+PK-349:W2222 (2026-11-23 20:42, dima): i plan stopping and halt soon.
+PK-349:W2223 (2026-11-23 20:42, dima): (after your health green state on lanes)
+PK-349:W2224 (2026-11-23 20:49, dima): how is your lanes health state is doing? ❓
+PK-349:W2225 (2026-11-23 20:49, dima): when we can stop? ❓
 <!-- SECTION:NOTES:END -->
