@@ -26,7 +26,6 @@
     "include": [
         "script/**/*.ts",
         "hotkeys/*.ts",
-        "speak/server.ts",
         "schedule/*.ts",
         "schedule/jobs/*/*.ts",
         "design/**/*.ts",

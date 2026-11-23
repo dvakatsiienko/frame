@@ -11,7 +11,6 @@ home/.claude/sline/sline
 home/.claude/sline/sline-state.json
 schedule/jobs/x-monitor-hotkey-stats/bin
 schedule/jobs/x-autoclean-screenshots/bin
-schedule/jobs/x-speak/bin
 
 # The shelf holds what the agents produce, and most of it is versioned. Handoffs
 # are the exception: CSTs are transient by design (deleted on ingest; nothing
@@ -87,7 +86,6 @@ schedule/state/
 # The page says which command is missing when it is absent.
 hotkeys/hotkeys.json
 hotkeys/chords/dist/
-speak/dist/
 # impeccable live resolves the app root from the repo root and leaves its manifest here. The
 # rest of its state is ignored by the .gitignore live writes and maintains inside the app.
 .impeccable/live/

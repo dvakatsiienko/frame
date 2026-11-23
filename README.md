@@ -33,9 +33,8 @@
 `_clio/` is the coordinator's home, the session that plans and routes work to background codies.
 `x/` is `x`, the agent-first cli in go + charm: one verb registry, json for agents and boards for humans (`x lane` commits and pushes from a sandboxed worktree).
 `hotkeys/` maps every keyboard chord on the machine and serves `chords`, the map's app.
-`x-speak` (a `schedule/` daemon) reads the selected text aloud on F4 (with nothing selected it pauses / resumes, as ⇧F4 always does) and stops on F5,
-rewriting ids, versions, paths and code into something a voice can say; `speak/` is its voice admin
-(`pnpm speak:admin`).
+`x-speak` (a `schedule/` job; its source is bytes' `apps/speak`) reads the selected text aloud on F4 (with nothing selected it pauses / resumes, as ⇧F4 always does) and stops on F5,
+rewriting ids, versions, paths and code into something a voice can say; its voice admin is served at 127.0.0.1:7386.
 
 <img src="home/.claude/sline/showcase/sline.svg" width="100%" alt="sline, the statusline, as a session climbs from fresh to heavy">
 

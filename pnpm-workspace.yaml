@@ -2,7 +2,6 @@ packages:
   - home/.claude/mcp-x-cloud-chat
   - hotkeys/chords
   - logos
-  - speak
   - import/raycast/extensions/x-ray
 
 allowBuilds:

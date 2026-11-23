@@ -13,7 +13,6 @@
       "!assets", // generated readme art: mac.svg keeps ascii spacing under xml:space, a reformat breaks it
       "!home/.claude/sline/showcase/sline.svg", // rendered by render-svg.ts, never hand-edited
       "!brand", // generated avatar and brand art (svg + png), never hand-formatted
-      "!speak/public/speak-*.svg", // the speak favicon, written by atelier:ship
       "!logos/marks", // brand marks and app icons fetched by art-kit logo.ts, byte-for-byte what the brand ships
       "!logos/data.gen.ts", // written by logos/build.ts
       "!_clio/blueprints/*.n8n.json", // n8n workflow exports, byte-for-byte what its api returns
@@ -93,11 +92,7 @@
       // points at a real workspace package, so the rule is satisfied there; here the target is a
       // plain directory and never can be. The cost is that a genuinely missing npm dependency in
       // src would not be caught here — typecheck and the build both still catch it.
-      "includes": [
-        "hotkeys/chords/vite.config.ts",
-        "hotkeys/chords/src/**",
-        "speak/vite.config.ts"
-      ],
+      "includes": ["hotkeys/chords/vite.config.ts", "hotkeys/chords/src/**"],
       "linter": {
         "rules": { "correctness": { "noUndeclaredDependencies": "off" } }
       }

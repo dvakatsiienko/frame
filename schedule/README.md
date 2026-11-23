@@ -32,8 +32,8 @@ it is refused.
 - `x-monitor-hotkey-live` — always on, keeps the hotkey map's data current
 - `x-autoclean-screenshots` — daily 12:00, trashes screenshots older than 7 days
 - `x-atelier-live` — always on, serves atelier (bytes `apps/atelier`) at localhost:5180
-- `x-speak` — always on, F4 reads the selection aloud (nothing selected: pause / resume), ⇧F4 pauses / resumes, F5 stops
-- `x-speak-admin` — always on, serves speak, the voice admin, at 127.0.0.1:7386
+- `x-speak` — always on (source: bytes `apps/speak/daemon`, binary `~/.local/libexec/x-speak/x-speak`), F4 reads the selection aloud (nothing selected: pause / resume), ⇧F4 pauses / resumes, F5 stops
+- `x-speak-admin` — always on, serves speak, the voice admin (bytes `apps/speak`), at 127.0.0.1:7386
 - `x-changedetector` — always on, changedetection.io at 127.0.0.1:7390, watching every upstream issue and release we follow
 - `x-cc-otel` — always on, takes every Claude Code session's OpenTelemetry export at 127.0.0.1:4318 into daily jsonl files; while the pm2 trial runs (`docs/test-drive/pm2.md`) pm2 runs it from `ecosystem.config.cjs` and the launchd job is disabled, so raycast shows it red
 

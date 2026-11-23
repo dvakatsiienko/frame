@@ -323,30 +323,6 @@ importers:
 
   logos: {}
 
-  speak:
-    dependencies:
-      '@dnd-kit/dom':
-        specifier: 0.5.3
-        version: 0.5.3
-      '@dnd-kit/helpers':
-        specifier: 0.5.3
-        version: 0.5.3
-      '@dnd-kit/react':
-        specifier: 0.5.3
-        version: 0.5.3(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      '@tanstack/react-query':
-        specifier: 5.107.2
-        version: 5.107.2(@types/react@19.3.0)(react@19.3.1)
-      react:
-        specifier: 19.3.1
-        version: 19.3.1
-      react-dom:
-        specifier: 19.3.1
-        version: 19.3.1(react@19.3.1)
-      react-error-boundary:
-        specifier: 6.1.6
-        version: 6.1.6(@types/react@19.3.0)(react@19.3.1)
-
 packages:
 
   '@adobe/leonardo-contrast-colors@1.1.0':
@@ -626,9 +602,6 @@ packages:
 
   '@dnd-kit/geometry@0.5.3':
     resolution: {integrity: sha512-U+zscNjoHfJ1xUV+XDGF89jPCoILLivWSb/U9mfM7h83f6o3X9AS9uIwG46bXUpCqPvlI/9JcOlyga5uvfyjgw==}
-
-  '@dnd-kit/helpers@0.5.3':
-    resolution: {integrity: sha512-fErbbjwKMJEdr7e+AMsXaZ6aQY4xPYBMK+nqybB34tE6/lQDLetZHsgLDKNVePsYIZCq/7uWMtlFjqysscWg5A==}
 
   '@dnd-kit/react@0.5.3':
     resolution: {integrity: sha512-BGn6bakgcRSoKMRQP8cRIGu59e5lGC3/sL0zVWmDMo/9CMPSxgjCcQltDn5TDTwAARnEbuwNEksor4rLtH/yEg==}
@@ -2896,15 +2869,6 @@ packages:
     peerDependencies:
       react: ^19.3.1
 
-  react-error-boundary@6.1.6:
-    resolution: {integrity: sha512-CDXPnXDGyFIbkwaaJ6u+xgsRmJhSi6YdgUDW1vnyKHfXp1a9pfAlM+ZET2CDu80/A+8iRcmXN0NSY9BCCoWP5A==}
-    peerDependencies:
-      '@types/react': ^18.0.0 || ^19.0.0
-      react: ^18.0.0 || ^19.0.0
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-
   react@19.3.1:
     resolution: {integrity: sha512-QNhWdt7nrgVWWQG58QuGsAR3jv3Hbe4mb4vz7w2csnHavciZJgda1CPNaldF6eVxv90ud3jUXpKlHL69gO38yw==}
     engines: {node: '>=0.10.0'}
@@ -3680,11 +3644,6 @@ snapshots:
   '@dnd-kit/geometry@0.5.3':
     dependencies:
       '@dnd-kit/state': 0.5.3
-      tslib: 2.8.1
-
-  '@dnd-kit/helpers@0.5.3':
-    dependencies:
-      '@dnd-kit/abstract': 0.5.3
       tslib: 2.8.1
 
   '@dnd-kit/react@0.5.3(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
@@ -5679,12 +5638,6 @@ snapshots:
     dependencies:
       react: 19.3.1
       scheduler: 0.28.0
-
-  react-error-boundary@6.1.6(@types/react@19.3.0)(react@19.3.1):
-    dependencies:
-      react: 19.3.1
-    optionalDependencies:
-      '@types/react': 19.3.0
 
   react@19.3.1: {}
 
