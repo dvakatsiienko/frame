@@ -45,7 +45,10 @@ x-mod-stash	tests/fields.test.ts	1
 x-mod-stash	tests/held.test.ts	1	
 x-mod-stash	tests/herdr-state.test.ts	1	
 x-mod-stash	tests/hot.test.ts	1	
+x-mod-stash	tests/lane-board.test.ts	1	
 x-mod-stash	tests/lane-card.test.ts	1	
+x-mod-stash	tests/lane-steps.test.ts	1	
+x-mod-stash	tests/lane-switch.test.ts	1	
 x-mod-stash	tests/lane.test.ts	1	
 x-mod-stash	tests/lanes-shelf.test.ts	1	
 x-mod-stash	tests/load.test.ts	1	

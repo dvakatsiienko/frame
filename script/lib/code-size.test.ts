@@ -33,10 +33,6 @@ const caps = {
         cap: 1_540,
         why: 'the siesta gate, one file of cases; +9 the queue-run case (dima o7, 2026-11-20)',
     },
-    'home/.claude/plugin-x/mods/x-mod-stash/tests/lane.test.ts': {
-        cap: 2_035,
-        why: 'the stash lane cards, one file of cases; the card-opening cases moved to lane-card.test.ts, the shared world to lane-world.ts',
-    },
     'home/.claude/plugin-x/mods/x-mod-stash/tests/wind.test.ts': {
         cap: 2_780,
         why: 'the second wind, one file of cases',

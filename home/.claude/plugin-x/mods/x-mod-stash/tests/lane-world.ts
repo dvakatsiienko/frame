@@ -282,3 +282,80 @@ export const plant = (
     }));
 };
 export const poll = (w: ReturnType<typeof world>) => w.clock.advance(5_000);
+
+export const say = ($: Engine, text: string) =>
+    $.prompt.submit({ origin: { kind: 'composer' }, text, wait: false });
+export const endTurn = ($: Engine) =>
+    $.turn.complete({
+        answer: '',
+        durationMs: 1,
+        isAborted: false,
+        reason: 'answer',
+        turnId: 't',
+    });
+export const board = ($: Engine) =>
+    $.ui.mount({
+        component: 'Pane',
+        plugin: 'x-mod-stash',
+        props: {
+            bodyColumns: 100,
+            isFocused: true,
+            placement: 'dock',
+            scroll: { bodyRows: 40, offset: 0 },
+            title: 'fleet board',
+            view: {},
+        },
+        requestId: 'x-cc-deck',
+        surface: 'desktop',
+    });
+export type Board = Awaited<ReturnType<typeof board>>;
+
+export const laneText = async (ui: Board, id = 'l1') =>
+    (await ui.find({ key: `lane:${id}`, type: 'Box' }))?.text;
+export const denied = async ($: Engine, input: Record<string, unknown>) =>
+    (await lane($, input)).deny;
+// dima's steer on lane l1 as the board keeps it
+export const steerOf = (w: { store: Map<string, unknown> }) =>
+    w.store.get('lane-steer:l1') as
+        | { steer?: string; isTaken?: boolean }
+        | undefined;
+
+export const LIVE_FIX =
+    'orbit glide: lane l1 «mods settings» is live: step it (glide step l1) or edit it (glide edit l1); end it (glide end l1) only when the lane is over';
+
+export const steer = async (ui: Board, text: string) =>
+    ui.input({ key: 'lane:l1:steer', kind: 'change', text });
+export const take = (ui: Board) => ui.press({ key: 'lane:l1:take' });
+
+export const SIXTH_SENSE = 'v0v0v0v0-sixth';
+export const linked = () =>
+    shelf(keptLane({ members: { codie: CODIE, 'sixth-sense': SIXTH_SENSE } }));
+export const published = (
+    w: ReturnType<typeof world>,
+    sid: string,
+    items: Record<string, unknown>[],
+) =>
+    w.store.set(`asks:${sid}`, {
+        asks: items.map((a) => a.text),
+        at: 1,
+        items,
+        label: 'frame',
+    });
+export const ASK = { id: 'o3', pick: 'cut it', text: 'cut the second probe?' };
+export const subText = async (ui: Board, role: string) =>
+    (await ui.find({ key: `lane:l1:${role}`, type: 'Box' }))?.text;
+
+export const step = (text: string, isDone = false) => ({ isDone, text });
+
+export const linkedPlan = async (
+    $: Engine,
+    w: ReturnType<typeof world>,
+    marks = '   ',
+) => {
+    plant(w, marked(marks));
+    const r = await create($, {
+        items: undefined,
+        plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+    });
+    return r.deny;
+};
