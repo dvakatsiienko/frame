@@ -5,7 +5,7 @@ import { type Engine, expect, mock, test } from './shared-boot.ts';
 import { liveStore } from './store.ts';
 
 // the off switch: «operator-override all [until HH:MM]» or the band's 🔓 press turns the floor to warn-only, plain rm and the
-// brake aside; it is read first, fails open, always ends, and logs every call it passed
+// brake aside; it is read first, fails open, ends at his word, and logs every call it passed
 const SID = 'o1o1o1o1-0000';
 const NOW = Date.parse('2026-11-07T14:00:00.000Z');
 const REAL = '/real-home/.local/state/x/operator-override.json';
@@ -353,11 +353,27 @@ test("the band's 🔓 press turns the floor to warn", async ($, on) => {
     expect(ran).toEqual(['git reset --hard']);
 });
 
-test('a band press with no until ends 12 h after it', async ($, on) => {
+test('a band press holds until he presses off, 11 days on', async ($, on) => {
     const { ran } = world(on, {
         files: {
             [REAL]: JSON.stringify({
-                prs: { at: '2026-11-07T01:00:00.000Z', by: 'band' },
+                prs: { at: '2026-10-27T01:00:00.000Z', by: 'band' },
+            }),
+        },
+    });
+    expect((await bash($, 'git reset --hard')).deny).toBeUndefined();
+    expect(ran).toEqual(['git reset --hard']);
+});
+
+test('a band press past the 2 h his setting asked for is over', async ($, on) => {
+    const { ran } = world(on, {
+        files: {
+            [REAL]: JSON.stringify({
+                prs: {
+                    at: '2026-11-07T11:00:00.000Z',
+                    by: 'band',
+                    until: '2026-11-07T13:00:00.000Z',
+                },
             }),
         },
     });

@@ -94,9 +94,9 @@ export async function overrideLogPass(
 }
 
 // the off switch: his «operator-override all», bare or «until HH:MM», or the band's 🔓 press. on, the floor warns and
-// runs, plain rm and the brake aside. it always ends: at its until, at the end of the session that typed it, or for a
-// press with no until PRESS_MS after it
-const PRESS_MS = 12 * 60 * 60 * 1000;
+// runs, plain rm and the brake aside. his word ends at its until, or with the session that typed it; his press holds until
+// he presses off («only i decide when override on and off, no timers», dima, 2026-11-23 15:12), or until the 2 h his band
+// setting asks for
 export async function masterOverride($: EngineInterface) {
     const path = await overrideStorePath($);
     if (!path) return undefined;
@@ -108,12 +108,7 @@ export async function masterOverride($: EngineInterface) {
             return all;
     }
     const press = await overrideGrantAt($, path, 'prs');
-    if (press?.by !== 'band') return undefined;
-    const raw = JSON.parse(await $.fs.read(path)) as OverrideGrants;
-    if (raw.prs?.until) return press;
-    return (await $.clock.now()) - Date.parse(press.at) < PRESS_MS
-        ? press
-        : undefined;
+    return press?.by === 'band' ? press : undefined;
 }
 // a session is its process, never its id, which `/clear` changes: the pid, and its start time so a reused pid reads gone
 async function startOf($: EngineInterface, pid: number) {
@@ -127,6 +122,8 @@ async function isRunning($: EngineInterface, pid: number, start: string) {
     return (await startOf($, pid)) === start;
 }
 
+// a typed word whose session process does not read ends this long after it
+const UNREAD_SESSION_MS = 12 * 60 * 60 * 1000;
 // the store after his typed ask, and the note the model reads; a write that fails is told, never silent. every flip is one
 // log line naming where the words came from, so a seat's typing into a pane shows beside his own
 export async function overrideFlip(
@@ -152,7 +149,7 @@ export async function overrideFlip(
                 ? untilAt(now, ask.until)
                 : start
                   ? undefined
-                  : new Date(now + PRESS_MS).toISOString()
+                  : new Date(now + UNREAD_SESSION_MS).toISOString()
             : undefined;
     const after = JSON.stringify(
         ask.scope === 'all'

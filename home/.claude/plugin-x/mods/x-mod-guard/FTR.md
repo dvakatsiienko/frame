@@ -177,7 +177,8 @@
 
 - ✅ the off switch turns the floor to warn-only, plain rm and the brake aside (FRM-581)
   - given his whole prompt `operator-override all`, or `operator-override all until HH:MM`, in any case, a closing period allowed, typed in `composer` or `bridge` (a bg session: `bridge` only) in a session whose registry row reads, then the store gains `all` (`by: word`) and the model is told; bare, it ends when that session's registry row goes or its pid stops; with an until, at the next HH:MM, local
-  - given his band 🔓 press, then the `prs` grant x-mod-stash writes (`by: band`) is the switch too; with no until it ends 12 h after the press
+  - given his band 🔓 press, then the `prs` grant x-mod-stash writes (`by: band`) is the switch too, until he presses off, or its until when his band setting asks for the 2 h window; one rule for every reader, x's seat switch included
+  - decision: no timer on his press: «yes, only i decide when override on and off, no timers» (dima, 2026-11-23 15:12, reversing FRM-581's 12 h)
   - given `operator-override off`, then the store empties, every switch off
   - given the switch on, when any seat runs a floor command, then it runs with a warn line naming the rule, and one «let through» line lands in `~/.local/state/x/operator-override.log`; plain rm stays refused with the trash door, the brake still stops a raw merge, and a release of the brake stays refused
   - and the switch is read before any rule, so a rule that throws or hangs never locks him out
