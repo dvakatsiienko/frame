@@ -122,6 +122,11 @@ middle take tends to win because it is in the middle, so dima picks the corner h
   every open thread when he says «round» or after 3 quiet minutes, then publish once and resolve
   them together. a question you cannot answer from the board goes into the next loupe round.
   one channel per question — clio never relays a pick for a question an ask already carries.
+- **every applied pick is logged the moment it is applied**, one line in `jobs/<app>/decision.md`: the ask
+  id, his words verbatim, the picked option, the board's exact title, and a tag: `→ ftr` when it changes what
+  the app does (one given/then sentence, naming the FTR line it replaces), `→ look` otherwise. the file ends
+  with `sent to clio through ask-N, <date>`; a new or resumed session reads it first and logs below that
+  marker (dima, 2026-11-23: «everything we decide here should be handed over to clio»).
 - **comment rounds on a long session are the cost**: a fresh session per batch of rounds, reading the
   brief and the canvas files, beats a session carrying 700k (the speak merge: $17 spread, $54 total)
 - a mash-up across takes is the expected outcome of that review, not a failure; it still says the
@@ -139,7 +144,9 @@ engineer. each names at most five problems, pinned to a region, each as problem 
 
 ## 7. hand off
 
-- `jobs/<app>/decision.md` — the pick, each rejected take and why, the revisit trigger.
+- `jobs/<app>/decision.md` — the pick, each rejected take and why, the revisit trigger, every logged pick
+  (step 5). the coordinator gets them once, here, never per round: `[done] <app> decisions: N picks, K tagged
+  ftr, decision.md § <heading>`; move the marker when «folded through ask-N» comes back.
 - `jobs/<app>/contract.md` — the direction contract, ~150 words: the thesis, the tokens, the
   type roles, the layout, the states, the hard don'ts. impeccable builds from this and the comp;
   you never edit the app's repo.

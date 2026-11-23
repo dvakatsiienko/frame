@@ -1,6 +1,6 @@
 ---
 status: open
-dates: 2026-11-13 → 2026-11-18
+dates: 2026-11-13 → 2026-11-23
 tickets: [FRM-630]
 tags: [comms, dima-graded]
 fed-by: incidents
@@ -93,5 +93,19 @@ fed-by: incidents
 - **his words:** «Why do you write me this whenever, wherever? You could just close it and tell me that you're free.» · «You clean all your small chores by yourself instead of me pointing you to all your small tails and asking me to clean them. For today I already asked you about 10 or 12 times»
 - **shape:** tails handed back
 - **fix:** craft-pm: a tail of mine never reaches him as a list; solved in the turn it is found, then one line «tail-free»; only a tail needing his word goes to orbit
+- **home:** undefined
+- **source:** undefined
+
+## c7 · volume · - · siesta · undefined
+
+- **what:** the 15:52 reply answered his question in two clauses, then printed a full siesta card (nine lines of wishkeeper findings, chores, a freebie, a usage line, a light line) he had no use for
+- **how:** the siesta skill prints the card whole into the reply that follows it
+- **why:** the card is written for clio and wishkeeper, not for him; nothing filters it to what needs his action
+- **when:** 15:52, while he worked with the designer
+- **where:** the reply to «chords migrated. now what - messhunt?»
+- **who:** clio main
+- **his words:** «i showed you a screenshot of your reply and the area that holds 95 % of the clutter in my view and brings no or almost no value: it is long and big. i don't have the time and capacity to read all of this; it only distracts me and trashes the output. the info important for me was at the start: the two clauses about the mess hunt and the design loupe. everything else in your reply is not useful for me. how to fix your replies so they are shorter and contain only relevant info? the wishkeeper results are not 100 % useless, but in such an overloaded shape they become useless as a side effect: when everything becomes too large, everything becomes irrelevant. i think you just shouldn't print your siesta cards to me, or at least print only the actionable items.»
+- **shape:** report bloat
+- **fix:** proposed 15:58: a siesta card goes to a file; the reply carries only lines that need his action, and a reply answers his question then stops
 - **home:** undefined
 - **source:** undefined

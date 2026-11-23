@@ -77,6 +77,8 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **A reply never restates what he settled** (dima, 2026-11-13: «Once we dispatch in 98% of cases I do not read your restating response … It's a duplication»; his o153, kept on his o3 tick 11-20): his questions and steers, orbit steers included, are answered first; then 📌 only what deviates from what he settled, a risk or a surprise; then one line, «running as settled», and where to look; the plan stays in phases, never reprinted; a review's findings print whole the turn they land, never folded into a ticket alone (dima, 23:53: «you hid that message … if i didn't ask you for details, you wouldn't print that», FRM-630:W4).
 
+**A reply answers his question, adds what needs his action, stops** (dima, 2026-11-23, comms case c7): a siesta card, findings I fix myself and my chores go to a file.
+
 **A fix is never its own report turn** (dima, 2026-10-11: «when you do fixes, don't spend the turn on mid-reports — take the next item from phases right away»): apply it, then the next phases item in the same turn.
 
 **A running trial lives as a phases line with its count** («assumed rows: turn 4/10»): a compact can't drop it.
