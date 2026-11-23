@@ -2095,4 +2095,11 @@ PK-349:W1924 (2026-11-23 16:45, dima): not as severe but still
 PK-349:W1925 (2026-11-23 16:45, dima): when we have solved fat files problem? ❓
 
 16:55 glide wisp (dima 16:39): a glide card goes stale, a herdr restart heals it; after his restart the mods card was gone and only speak's stayed; the mods card redrawn as l111 at 16:39; home: the herdr lane's ticket for the glide card (FRM-527), not yet folded
+
+PK-349:W1926 (2026-11-23 16:53, dima): seal two ahead.
+PK-349:W1927 (2026-11-23 16:53, dima): just in case.
+PK-349:W1928 (2026-11-23 16:53, dima): if scope changes = reseal.
+PK-349:W1929 (2026-11-23 16:53, dima): i think we just should not have unsigned tickets at all.
+PK-349:W1930 (2026-11-23 16:53, dima): if we have - we sign them before halt.
+PK-349:W1931 (2026-11-23 16:53, dima): if a grill is needed, and i don't want or don't have capacity - i can allow to skip/postpone it and grill/sign later.
 <!-- SECTION:NOTES:END -->
