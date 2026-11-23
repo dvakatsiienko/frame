@@ -1,12 +1,20 @@
+import { spawnSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import {
     type Ahead,
     type LaneAhead,
     type Member,
+    type XEnvelope,
+    type XRun,
     blockedIds,
+    lanesArg,
     openBlockers,
     pickNext,
+    readLaneAhead,
     sealedAhead,
 } from './sealed-ahead.ts';
 
@@ -232,5 +240,248 @@ describe('sealedAhead, the whole answer', () => {
             lanes: [],
             lines: ['🟢 no lane'],
         });
+    });
+});
+
+describe('sealedAhead, a lane that could not be read', () => {
+    test('is a yellow line naming the lane, exit 2, beside the lanes that read', () => {
+        const out = sealedAhead([
+            lane('speak', [sealed('FRM-1'), sealed('FRM-2')]),
+            { failed: 'x linear read FRM-9', name: 'mods' },
+        ]);
+        expect(out.exit).toBe(2);
+        expect(out.lines).toEqual([
+            '🟢 speak — 1 FRM-1 sealed · 2 FRM-2 sealed · member live speak-hunt',
+            '🟡 mods — not checked: x linear read FRM-9',
+        ]);
+    });
+
+    test('a failure outranks a red lane: not ready either way, and the exit says which', () => {
+        expect(
+            sealedAhead([
+                lane('herdr', [null, null]),
+                { failed: 'x brief preflight FRM-9', name: 'mods' },
+            ]).exit,
+        ).toBe(2);
+    });
+});
+
+describe('lanesArg', () => {
+    test.each([
+        [['--json'], []],
+        [
+            ['--lanes', 'mods', 'herdr', 'speak'],
+            ['mods', 'herdr', 'speak'],
+        ],
+        [['--lanes', 'mods', '--json'], ['mods']],
+        [['--json', '--lanes', 'speak'], ['speak']],
+        [['--lanes'], []],
+    ])('%j reads %j', (args, names) => {
+        expect(lanesArg(args)).toEqual(names);
+    });
+});
+
+/* readLaneAhead over a stubbed x: the same contract as the real one, a command with no answer fails */
+
+const homeWith = (threads: unknown[] = []) => {
+    const home = mkdtempSync(join(tmpdir(), 'sealed-ahead-'));
+    mkdirSync(join(home, '.claude/shelf'), { recursive: true });
+    writeFileSync(
+        join(home, '.claude/shelf/threads.json'),
+        JSON.stringify({ threads }),
+    );
+    return home;
+};
+
+type World = {
+    handoffs?: string[];
+    handoffsFail?: boolean;
+    // each id → what its preflight says: 'ok', or the error text
+    preflight?: Record<string, string>;
+    running?: { id: string; project: string }[];
+    signed?: {
+        id: string;
+        project: string;
+        sign?: string;
+        stateType?: string;
+    }[];
+    tickets: Record<string, Partial<TicketRead>>;
+};
+
+type TicketRead = {
+    description: string;
+    labels: string[];
+    milestone: string | null;
+    project: string;
+    relations: { id: string; state: string; type: string }[];
+    state: string;
+};
+
+const rel = (type: 'blocked by' | 'blocks', id: string, state = 'Todo') => ({
+    id,
+    state,
+    type,
+});
+
+const world = (home: string, w: World): XRun => {
+    const answers: Record<string, XEnvelope> = {
+        'handoff list --for codie': w.handoffsFail
+            ? { error: 'store unreadable', ok: false }
+            : {
+                  data: {
+                      entries: (w.handoffs ?? []).map((slug) => ({ slug })),
+                  },
+                  ok: true,
+              },
+        'linear list --team BYT --label signed': {
+            data: { tickets: [] },
+            ok: true,
+        },
+        'linear list --team BYT --state In Progress': {
+            data: { tickets: [] },
+            ok: true,
+        },
+        'linear list --team FRM --label signed': {
+            data: {
+                tickets: (w.signed ?? []).map((t) => ({
+                    sign: 'match',
+                    stateType: 'unstarted',
+                    ...t,
+                })),
+            },
+            ok: true,
+        },
+        'linear list --team FRM --state In Progress': {
+            data: { tickets: w.running ?? [] },
+            ok: true,
+        },
+    };
+    for (const [id, t] of Object.entries(w.tickets)) {
+        answers[`linear read ${id} --relations`] = {
+            data: {
+                tickets: [
+                    {
+                        description: '',
+                        id,
+                        labels: ['signed'],
+                        milestone: 'm1',
+                        project: 'mods: cc',
+                        relations: [],
+                        state: 'Todo',
+                        ...t,
+                    },
+                ],
+            },
+            ok: true,
+        };
+        const verdict = w.preflight?.[id] ?? 'ok';
+        answers[`brief preflight --repo ${join(home, 'frame')} ${id}`] =
+            verdict === 'ok'
+                ? { data: {}, ok: true }
+                : { error: verdict, ok: false };
+    }
+    return (args, mayFail = false) => {
+        const key = args.join(' ');
+        const envelope = answers[key] ?? {
+            error: `no stub: ${key}`,
+            ok: false,
+        };
+        if (!envelope.ok && !mayFail) throw new Error(`x ${key}`);
+        return envelope;
+    };
+};
+
+const running = {
+    description: '🚀 dispatched 2026-11-23',
+    state: 'In Progress',
+};
+const modsRunning = [{ id: 'FRM-1', project: 'mods: cc' }];
+
+describe('readLaneAhead, the chain', () => {
+    test('a running chunk reads its next two chunks along its blocks relations, in order', () => {
+        const home = homeWith();
+        const lanes = readLaneAhead(
+            home,
+            ['mods'],
+            world(home, {
+                preflight: { 'FRM-3': noExits },
+                running: modsRunning,
+                tickets: {
+                    'FRM-1': {
+                        ...running,
+                        relations: [rel('blocks', 'FRM-2')],
+                    },
+                    'FRM-2': {
+                        relations: [
+                            rel('blocked by', 'FRM-1', 'In Progress'),
+                            rel('blocks', 'FRM-3'),
+                        ],
+                    },
+                    'FRM-3': { relations: [rel('blocked by', 'FRM-2')] },
+                },
+            }),
+        );
+        expect(sealedAhead(lanes).lanes[0]).toMatchObject({
+            slots: [
+                { id: 'FRM-2', state: 'sealed' },
+                { id: 'FRM-3', state: 'signed, not sealed' },
+            ],
+        });
+    });
+});
+
+describe('readLaneAhead, a read that fails', () => {
+    test('names the lane and exits 2, and the lanes that read stay on the page', () => {
+        const home = homeWith();
+        const lanes = readLaneAhead(
+            home,
+            ['mods', 'speak'],
+            world(home, {
+                running: [{ id: 'FRM-1', project: 'mods: cc' }],
+                tickets: {
+                    'FRM-1': {
+                        ...running,
+                        relations: [rel('blocks', 'FRM-2')],
+                    },
+                },
+            }),
+        );
+        const out = sealedAhead(lanes);
+        expect(out.exit).toBe(2);
+        expect(out.lines[0]).toBe(
+            '🟡 mods — not checked: x linear read FRM-2 --relations',
+        );
+        expect(out.lines[1]).toContain('🔴 speak — 1 none queued');
+    });
+
+    test('a handoff list that fails is not «member none»', () => {
+        const home = homeWith();
+        const lanes = readLaneAhead(
+            home,
+            ['speak'],
+            world(home, { handoffsFail: true, tickets: {} }),
+        );
+        expect(sealedAhead(lanes).lines[0]).toBe(
+            '🟡 speak — not checked: x handoff list --for codie',
+        );
+    });
+});
+
+describe('the entry', () => {
+    test('with no x to read the tracker it prints one yellow line and exits 2, never a ready 0', () => {
+        const home = mkdtempSync(join(tmpdir(), 'sealed-ahead-bare-'));
+        const out = spawnSync(
+            'node',
+            [join(import.meta.dirname, 'sealed-ahead.ts'), '--lanes', 'mods'],
+            {
+                encoding: 'utf8',
+                env: { ...process.env, HOME: home },
+                timeout: 20_000,
+            },
+        );
+        expect(out.stdout).toMatch(
+            /^🟡 x linear list .* failed, the lanes are not checked/,
+        );
+        expect(out.status).toBe(2);
     });
 });

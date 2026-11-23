@@ -432,7 +432,10 @@ function sealedAheadSection(home: string) {
     const name = 'sealed ahead';
     try {
         const { exit, lines } = sealedAhead(readLaneAhead(home));
-        return { exit, name, output: lines.join('\n') };
+        // a lane the reads could not check is yellow here; the halt's own call of the entry takes exit 2 as not ready
+        return exit === NOT_CHECKED
+            ? { exit: 0, name, output: lines.join('\n'), status: 'not checked' }
+            : { exit, name, output: lines.join('\n') };
     } catch (e) {
         return {
             exit: 0,

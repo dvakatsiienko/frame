@@ -11,6 +11,8 @@ import { fileURLToPath } from 'node:url';
 const RESEAL_TEXT = 'sync the section to the re-sign';
 const CLOSED_STATES = ['Canceled', 'Done', 'Duplicate'];
 const RUN_TIMEOUT_MS = 60_000;
+// siesta-checks' NOT_CHECKED: a read that failed, never «ready»
+const NOT_CHECKED = 2;
 // a ticket's `repo:` line names where its brief preflight runs, under home; no line means frame
 const AHEAD_REPOS: Record<string, string | undefined> = {
     bytes: 'projects/bytes',
@@ -22,17 +24,26 @@ const LANE_PROJECTS: Record<string, string | undefined> = {
     mods: 'mods: cc',
 };
 
+// exit 0 every lane ready, 1 a move is owed, 2 a read failed so a lane is not checked: only 0 is «ready»
 export function sealedAhead(lanes: LaneAhead[]) {
     if (!lanes.length) return { exit: 0, lanes: [], lines: ['🟢 no lane'] };
     const rows = lanes.map(laneRow);
+    const unchecked = rows.some((r) => r.unchecked);
     return {
-        exit: rows.some((r) => r.red) ? 1 : 0,
+        exit: unchecked ? NOT_CHECKED : rows.some((r) => r.red) ? 1 : 0,
         lanes: rows,
         lines: rows.map((r) => r.line),
     };
 }
 
 function laneRow(lane: LaneAhead) {
+    if ('failed' in lane)
+        return {
+            line: `🟡 ${lane.name} — not checked: ${lane.failed}`,
+            name: lane.name,
+            red: false,
+            unchecked: true,
+        };
     const slots = lane.slots.map((ticket) => ({
         state: aheadState(ticket),
         ticket,
@@ -52,6 +63,7 @@ function laneRow(lane: LaneAhead) {
         name: lane.name,
         red: owed.length > 0,
         slots: slots.map((s) => ({ id: s.ticket?.id ?? null, state: s.state })),
+        unchecked: false,
     };
 }
 
@@ -118,8 +130,8 @@ function memberText(member: Member) {
 
 /* The reader: linear, the thread records and the handoff store; nothing here writes */
 
-export function readLaneAhead(home: string, names: string[] = []) {
-    const x = (args: string[], mayFail = false) => {
+export function xRunner(home: string): XRun {
+    return (args, mayFail = false) => {
         const out = spawnSync(path.join(home, '.local/bin/x'), args, {
             encoding: 'utf8',
             timeout: RUN_TIMEOUT_MS,
@@ -129,6 +141,13 @@ export function readLaneAhead(home: string, names: string[] = []) {
             throw new Error(`x ${args.join(' ')}`);
         return envelope;
     };
+}
+
+export function readLaneAhead(
+    home: string,
+    names: string[] = [],
+    x: XRun = xRunner(home),
+) {
     const list = (team: string, flag: string[]) =>
         (
             x(['linear', 'list', '--team', team, ...flag]).data as {
@@ -196,6 +215,14 @@ export function readLaneAhead(home: string, names: string[] = []) {
           ].toSorted();
 
     return lanes.map((name): LaneAhead => {
+        try {
+            return readLane(name);
+        } catch (e) {
+            return { failed: (e as Error).message, name };
+        }
+    });
+
+    function readLane(name: string): LaneAhead {
         const project = LANE_PROJECTS[name] ?? name;
         const current = running.find((t) => t.project === project);
         // the running chunk's own chain first; a slot it leaves empty takes the area's next signed chunk
@@ -219,7 +246,7 @@ export function readLaneAhead(home: string, names: string[] = []) {
             : [];
         const slots = [next, after].map((s) => s ?? queue.shift() ?? null);
         return { member: memberOf(name, members, x), name, slots };
-    });
+    }
 }
 
 // an area's signed chunks in the queue's order (a blocker first, then the lowest id): the first two of the first one's milestone
@@ -279,16 +306,12 @@ function readMembers(home: string): ThreadMember[] {
         }));
 }
 
-function memberOf(
-    name: string,
-    members: ThreadMember[],
-    x: (args: string[], mayFail?: boolean) => XEnvelope,
-): Member {
+function memberOf(name: string, members: ThreadMember[], x: XRun): Member {
     const live = members.find((m) => m.lane === name && m.isLive);
     if (live) return { kind: 'live', name: live.name };
     const slug = (
         (
-            x(['handoff', 'list', '--for', 'codie'], true).data as
+            x(['handoff', 'list', '--for', 'codie']).data as
                 | { entries?: { slug: string }[] }
                 | undefined
         )?.entries ?? []
@@ -316,13 +339,16 @@ function parsed(text: string): Record<string, unknown> {
     }
 }
 
+// the lane names after `--lanes`, up to the next flag
+export function lanesArg(args: string[]) {
+    const at = args.indexOf('--lanes');
+    return at < 0 ? [] : args.slice(at + 1).filter((a) => !a.startsWith('--'));
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const args = process.argv.slice(2);
-    const at = args.indexOf('--lanes');
-    const names =
-        at < 0 ? [] : args.slice(at + 1).filter((a) => !a.startsWith('--'));
     try {
-        const out = sealedAhead(readLaneAhead(homedir(), names));
+        const out = sealedAhead(readLaneAhead(homedir(), lanesArg(args)));
         console.log(
             args.includes('--json')
                 ? JSON.stringify(out)
@@ -333,7 +359,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         console.log(
             `🟡 ${(e as Error).message} failed, the lanes are not checked`,
         );
-        process.exitCode = 0;
+        process.exitCode = NOT_CHECKED;
     }
 }
 
@@ -356,11 +382,11 @@ export type Member =
     | { kind: 'none' }
     | { kind: 'parked'; slug: string };
 
-export type LaneAhead = {
-    member: Member;
-    name: string;
-    slots: (Ahead | null)[];
-};
+export type LaneAhead =
+    | { failed: string; name: string }
+    | { member: Member; name: string; slots: (Ahead | null)[] };
+
+export type XRun = (args: string[], mayFail?: boolean) => XEnvelope;
 
 type ListedTicket = {
     id: string;
@@ -388,4 +414,4 @@ type ThreadRecord = {
 
 type ThreadMember = { isLive: boolean; lane: string; name: string };
 
-type XEnvelope = { data?: unknown; error?: string; ok?: boolean };
+export type XEnvelope = { data?: unknown; error?: string; ok?: boolean };
