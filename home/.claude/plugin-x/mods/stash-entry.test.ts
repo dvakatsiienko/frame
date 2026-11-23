@@ -17,6 +17,7 @@ const HOOKS = [
     'session.append{door=response}',
     'ui.render{component=AssistantMessage}',
     'classic.Stop',
+    'turn.start',
     'turn.complete',
     'session.compact',
     'session.measure',

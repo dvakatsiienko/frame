@@ -34,7 +34,7 @@ import { startSession } from './session-start.ts';
 import { drawSettingsPane } from './settings-pane.tsx';
 import { setSettingsOpen } from './settings-store.ts';
 import { onToolCall } from './step-notes.ts';
-import { endBusy, endStop, markActive } from './turn.ts';
+import { beginQueuedTurn, endBusy, endStop, markActive } from './turn.ts';
 import { measureUsage } from './usage.ts';
 import { errorText } from './util.ts';
 import { load, publish, viewDoors } from './view.ts';
@@ -96,6 +96,12 @@ export const register: Register = (on) => {
     );
 
     on('classic.Stop', ($, e, next) => settleReply($, e, next, viewDoors($)));
+
+    on('turn.start', async ($, e, next) => {
+        if (!e.agentId && (await beginQueuedTurn($).catch(() => false)))
+            await keepShelf($);
+        return next(e);
+    });
 
     on('turn.complete', async ($, e, next) => {
         await markActive($).catch(() => undefined);

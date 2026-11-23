@@ -115,6 +115,15 @@ function beginTurn(isUser: boolean, isPing: boolean) {
     });
 }
 
+// a turn that began with no prompt.submit of its own: one queued behind a running turn is dequeued with no second event,
+// so its start marks it busy; answers whether it was the first to
+export async function beginQueuedTurn($: EngineInterface) {
+    if (state.isBusy) return false;
+    state.isBusy = true;
+    await keepTurn($);
+    return true;
+}
+
 // one more tool call this turn, the count after it
 export function countTool() {
     state.turnTools += 1;

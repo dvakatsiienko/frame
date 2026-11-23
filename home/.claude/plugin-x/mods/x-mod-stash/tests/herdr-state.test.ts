@@ -31,6 +31,7 @@ async function session($: Engine, on: On) {
     });
     on('tool.call', () => ({ result: {}, text: 'done' }));
     on('turn.complete', () => ({ text: '' }));
+    on('turn.start', (_$, e) => ({ turnId: e.turnId }));
     on('classic.Stop', () => ({}));
     on('skill.prompt', (_$, e) => ({ text: e.text }));
     on('state.get', (_$, e) => ({
@@ -966,6 +967,34 @@ test('a prompt writes the file working at once', async ($, on) => {
     const s = await session($, on);
     await say($);
     expect(s.read(A)?.state).toBe('working');
+});
+
+// a prompt queued behind a running turn fires no second prompt.submit when its own turn begins
+async function queuedTurn(
+    $: Engine,
+    s: Awaited<ReturnType<typeof session>>,
+    agentId?: string,
+) {
+    await say($);
+    await say($, 'queued B');
+    await endTurn($);
+    // the poll between the two turns writes the first one's end
+    await s.clock.advance(30_000);
+    const ended = s.read(A)?.state;
+    await $.turn.start({ agentId, text: 'queued B', turnId: 't2' });
+    return ended;
+}
+test('a turn begun from a queued prompt writes the file working at its start', async ($, on) => {
+    const s = await session($, on);
+    const ended = await queuedTurn($, s);
+    expect([ended, s.read(A)?.state]).toEqual(['idle', 'working']);
+});
+
+test("a subagent's start after the turn ended leaves the thread's file idle", async ($, on) => {
+    const s = await session($, on);
+    await queuedTurn($, s, 'sub1');
+    await s.clock.advance(30_000);
+    expect(s.read(A)?.state).toBe('idle');
 });
 
 // FRM-618 slice D exit 4: the file carries every field herdr's contract requires, so a rename here reds this test; the
