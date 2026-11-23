@@ -1,77 +1,163 @@
 // the boots table (FRM-678): how many times each mods test file starts the host, counted from the file with no run. a host
 // start reloads the whole mod, the cost that roasted the mac, so a file past its row reds at its first commit
-// usage: node boots.ts [--raises <base>]   the check, or the rows raised since <base>
+// usage: node boots.ts [--raises]   the check, or the rows a push raises, its lines on stdin
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { basename, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { parseSync } from 'vite';
 
 const TABLE = 'boots.tsv';
 const KIT = 'claude-code/testing';
-const SHARED = './shared-boot.ts';
+const SHARED = 'tests/shared-boot.ts';
 // a mod's whole, beside its files
 const WHOLE = '*';
-// a test file's host starts, or why they cannot be counted
-export function countBoots(source: string): Count {
-    const { program, errors } = parseSync('a.test.tsx', source, {
-        lang: 'tsx',
-        preserveParens: false,
-    });
-    if (errors.length) return { why: `does not parse: ${errors[0]?.message}` };
+// what a file may take of the kit or the helper; `test` only a test file may, since it starts the host
+const HARMLESS = ['Engine', 'expect', 'mock'];
+// the helper's imports, exports and `test`: the one place a host starts for a whole file. a change to them is a change of cost,
+// so it lands with this line
+const SHARED_PIN = '8c55ebe4d62b';
+
+// a test file's host starts, or why they cannot be counted; what is not on the list is refused, never counted as none
+export function countBoots(source: string, file = 'tests/a.test.ts'): Count {
+    const read = readSource(source, file);
+    const why =
+        read.why ?? refusedImport(read.body, file, [...HARMLESS, 'test']);
+    if (why) return { why };
     const kit = new Set<string>();
     const shared = new Set<string>();
-    for (const st of program.body as Node[]) {
-        if (st.type !== 'ImportDeclaration') continue;
-        const from = st.source.value;
-        if (from !== KIT && from !== SHARED) continue;
-        for (const s of st.specifiers) {
-            if (s.type !== 'ImportSpecifier' && st.importKind !== 'type')
-                return { why: `imports ${from} whole` };
-            if (s.imported?.name !== 'test') continue;
-            (from === KIT ? kit : shared).add(s.local.name);
-        }
-    }
+    for (const { from, specifiers } of importsOf(read.body))
+        for (const s of specifiers)
+            if (s.imported?.name === 'test')
+                (from === KIT ? kit : shared).add(s.local.name);
     let boots = 0;
     let isShared = false;
-    let why: string | undefined;
-    const visit = (n: unknown, parents: Node[]) => {
-        if (Array.isArray(n)) for (const x of n) visit(x, parents);
-        else if (n && typeof n === 'object') {
-            const node = n as Node;
-            const parent = parents.at(-1);
+    let odd: string | undefined;
+    visit(read.body, (node, parents) => {
+        const parent = parents.at(-1);
+        if (node.type !== 'Identifier' || isName(node, parent)) return;
+        const isKit = kit.has(node.name);
+        if (!isKit && !shared.has(node.name)) return;
+        if (parent?.type !== 'CallExpression' || parent.callee !== node)
+            odd ??= `${node.name} is passed on, not called`;
+        else if (!takesEngine(parent)) return;
+        else if (!isKit) isShared = true;
+        else {
             if (
-                node.type === 'Identifier' &&
-                kit.has(node.name) &&
-                !isName(node, parent)
-            ) {
-                if (parent?.type !== 'CallExpression' || parent.callee !== node)
-                    why ??= `${node.name} is passed on, not called`;
-                else if (takesEngine(parent)) {
-                    if (!isTopLevel(parents.slice(0, -1)))
-                        why ??= `${node.name} with a \`$\` sits in a loop or a function`;
-                    boots += 1;
-                }
-            }
-            if (
-                node.type === 'CallExpression' &&
-                shared.has(node.callee.name) &&
-                takesEngine(node)
+                !parents
+                    .slice(0, -1)
+                    .every((n) => n.type === 'ExpressionStatement')
             )
-                isShared = true;
-            if (isLateLoad(node, parent)) why ??= `loads ${KIT} late`;
-            const under = node.type ? [...parents, node] : parents;
-            for (const v of Object.values(node)) visit(v, under);
+                odd ??= `${node.name} with a \`$\` sits in a loop or a function`;
+            boots += 1;
         }
-    };
-    visit(program.body, []);
-    return why ? { why } : { boots: boots + (isShared ? 1 : 0) };
+    });
+    return odd ? { why: odd } : { boots: boots + (isShared ? 1 : 0) };
 }
-// the kit named anywhere but in an import or export line: a dynamic import
-const isLateLoad = (n: Node, parent: Node | undefined) =>
-    n.type === 'Literal' &&
-    n.value === KIT &&
-    !/^(?:Import|Export)\w*Declaration$/.test(parent?.type);
+
+// why a file beside the test files could start a host the table never sees
+export function refusedHelper(source: string, file = 'tests/a.ts') {
+    const read = readSource(source, file);
+    if (read.why) return read.why;
+    if (file === SHARED)
+        return pinOf(read.body, source) === SHARED_PIN
+            ? undefined
+            : `its imports, exports or test changed: ${pinOf(read.body, source)}, the pin in boots.ts says ${SHARED_PIN}`;
+    return refusedImport(read.body, file, HARMLESS);
+}
+
+function readSource(
+    source: string,
+    file: string,
+): { body: Node[]; why?: string } {
+    const { program, errors } = parseSync('a', source, {
+        lang: file.endsWith('x') ? 'tsx' : 'ts',
+        preserveParens: false,
+    });
+    const body = program.body as Node[];
+    if (errors.length)
+        return { body, why: `does not parse: ${errors[0]?.message}` };
+    let why: string | undefined;
+    visit(body, (n, parents) => {
+        if (n.type === 'ImportExpression') why ??= 'loads a module late';
+        if (
+            n.type === 'Identifier' &&
+            /^(?:require|createRequire)$/.test(n.name) &&
+            !isName(n, parents.at(-1))
+        )
+            why ??= `names ${n.name}`;
+    });
+    return { body, why };
+}
+
+const importsOf = (
+    body: Node[],
+): { from: string; specifiers: Node[]; st: Node }[] =>
+    body.flatMap((st) =>
+        st.source
+            ? [{ from: st.source.value, specifiers: st.specifiers ?? [], st }]
+            : [],
+    );
+
+function refusedImport(body: Node[], file: string, allowed: string[]) {
+    for (const { from, specifiers, st } of importsOf(body)) {
+        if (/\.test\.tsx?$/.test(from)) return `imports the test file ${from}`;
+        const isHelper = basename(from).startsWith('shared-boot');
+        if (from !== KIT && !isHelper) continue;
+        if (isHelper && join(dirname(file), from) !== SHARED)
+            return `imports ${from}, which is not ${SHARED}`;
+        if (st.type !== 'ImportDeclaration') return `hands ${from} on`;
+        for (const s of specifiers)
+            if (
+                s.type !== 'ImportSpecifier' ||
+                !allowed.includes(s.imported.name)
+            )
+                return `takes ${s.imported?.name ?? 'the whole'} of ${from}`;
+    }
+    return undefined;
+}
+
+// the source of every import and export line and of `test`, hashed; a host start anywhere else in the helper reads as none
+function pinOf(body: Node[], source: string) {
+    const isPinned = (st: Node) => /^(?:Import|Export)/.test(st.type);
+    const hosts = new Set(
+        importsOf(body).flatMap(({ from, specifiers }) =>
+            from === KIT
+                ? specifiers
+                      .filter((s) => s.imported?.name === 'test')
+                      .map((s) => s.local.name)
+                : [],
+        ),
+    );
+    let isLoose = false;
+    visit(
+        body.filter((st) => !isPinned(st)),
+        (n) => {
+            if (n.type === 'Identifier' && hosts.has(n.name)) isLoose = true;
+        },
+    );
+    if (isLoose) return 'a host start outside test';
+    const text = body
+        .filter(isPinned)
+        .map((st) => source.slice(st.start, st.end))
+        .join('\n');
+    return createHash('sha256').update(text).digest('hex').slice(0, 12);
+}
+
+function visit(
+    n: unknown,
+    at: (node: Node, parents: Node[]) => void,
+    parents: Node[] = [],
+) {
+    if (Array.isArray(n)) for (const x of n) visit(x, at, parents);
+    else if (n && typeof n === 'object') {
+        const node = n as Node;
+        if (node.type) at(node, parents);
+        const under = node.type ? [...parents, node] : parents;
+        for (const v of Object.values(node)) visit(v, at, under);
+    }
+}
 // a declared, imported or property name is no use of the kit's test
 const isName = (n: Node, parent: Node | undefined) =>
     parent?.type === 'ImportSpecifier' ||
@@ -87,79 +173,36 @@ function takesEngine(call: Node) {
         body.params.length > 0
     );
 }
-// a call at the file's top, or in a describe's own body, runs once
-function isTopLevel(parents: Node[]) {
-    return parents.every((n, i) => {
-        if (
-            /^(?:ExpressionStatement|CallExpression|BlockStatement)$/.test(
-                n.type,
-            )
-        )
-            return n.type !== 'CallExpression' || n.callee.name === 'describe';
-        return (
-            /^(?:ArrowFunction|Function)Expression$/.test(n.type) &&
-            parents[i - 1]?.callee?.name === 'describe'
-        );
-    });
-}
 
-// a helper may hand on what starts no host; anything else of the kit in one would start hosts the table never sees
-const HARMLESS = new Set(['Engine', 'expect', 'mock']);
-
-export function helperStartsHosts(source: string) {
-    const { program } = parseSync('a.ts', source, { lang: 'tsx' });
-    const hasLateLoad = (n: unknown, parent?: Node): boolean =>
-        Array.isArray(n)
-            ? n.some((x) => hasLateLoad(x, parent))
-            : !!n &&
-              typeof n === 'object' &&
-              (isLateLoad(n as Node, parent) ||
-                  Object.values(n).some((v) => hasLateLoad(v, n as Node)));
-    if (hasLateLoad(program.body)) return true;
-    return (program.body as Node[]).some((st) => {
-        if (st.source?.value !== KIT || st.importKind === 'type') return false;
-        return (
-            st.type === 'ExportAllDeclaration' ||
-            !st.specifiers.length ||
-            st.specifiers.some(
-                (s: Node) =>
-                    !HARMLESS.has(s.imported?.name ?? s.local?.name) ||
-                    s.type === 'ImportNamespaceSpecifier',
-            )
-        );
-    });
-}
-
-// every test file's count, and each helper that starts a host of its own; the kit runs a test file anywhere in a mod
+// every test file's count, and each file that could start a host the table never sees; the kit runs a test file anywhere in a mod
 export function countMods(root: string) {
     const counts: Row[] = [];
     const red: string[] = [];
-    for (const mod of readdirSync(root).filter((n) => n.startsWith('x-mod-'))) {
+    const mods = readdirSync(root).filter((n) =>
+        existsSync(join(root, n, '.claude-plugin')),
+    );
+    for (const mod of mods) {
         const files = readdirSync(join(root, mod), { recursive: true })
             .map(String)
             .filter(
                 (f) =>
-                    /\.tsx?$/.test(f) && !/(?:^|\/)(?:node_modules|\.)/.test(f),
+                    /\.[cm]?[jt]sx?$/.test(f) &&
+                    !/(?:^|\/)node_modules\/|^\.claude-plugin\//.test(f),
             )
             .sort();
         for (const file of files) {
             const source = readFileSync(join(root, mod, file), 'utf8');
-            const path = `${mod}/${file}`;
-            if (!/\.test\.tsx?$/.test(file)) {
-                if (
-                    path !== `${mod}/tests/${basename(SHARED)}` &&
-                    source.includes(KIT) &&
-                    helperStartsHosts(source)
-                )
+            if (/\.test\.tsx?$/.test(file)) {
+                const { boots, why } = countBoots(source, file);
+                if (why !== undefined)
                     red.push(
-                        `${path}: a helper starts no host, import test from ${SHARED} in the test file`,
+                        `${mod}/${file}: ${why}; import test from the mod's ${SHARED}`,
                     );
+                else counts.push({ boots, file, mod });
                 continue;
             }
-            const count = countBoots(source);
-            if (count.why !== undefined)
-                red.push(`${path}: ${count.why}; import test from ${SHARED}`);
-            else counts.push({ boots: count.boots, file, mod });
+            const why = refusedHelper(source, file);
+            if (why) red.push(`${mod}/${file}: ${why}`);
         }
     }
     return { counts, red };
@@ -170,8 +213,13 @@ export function readTable(text: string): Row[] {
         .split('\n')
         .filter((l) => l && !l.startsWith('#'))
         .map((l) => {
-            const [mod = '', file = '', boots, tick] = l.split('\t');
-            return { boots: Number(boots), file, mod, tick };
+            const [mod = '', file = '', boots = '', tick] = l.split('\t');
+            return {
+                boots: /^\d+$/.test(boots) ? Number(boots) : Number.NaN,
+                file,
+                mod,
+                tick,
+            };
         });
 }
 
@@ -187,13 +235,13 @@ const wholesOf = (counts: Row[]): Row[] =>
         mod,
     }));
 
-// the files and mods past their row, and each with no row
+// the files and mods past their row, each with no row, and each row that says no one number
 export function pastTheTable(counts: Row[], table: Row[]) {
     const rows = new Map(table.map((r) => [keyOf(r), r]));
-    const wholes = wholesOf(counts);
-    const known = new Set([...counts, ...wholes].map(keyOf));
+    const all = [...counts, ...wholesOf(counts)];
+    const known = new Set(all.map(keyOf));
     return [
-        ...[...counts, ...wholes].flatMap((c) => {
+        ...all.flatMap((c) => {
             const row = rows.get(keyOf(c));
             if (!row)
                 return [
@@ -205,9 +253,15 @@ export function pastTheTable(counts: Row[], table: Row[]) {
                   ]
                 : [];
         }),
-        ...table
-            .filter((r) => !known.has(keyOf(r)))
-            .map((r) => `${nameOf(r)}: a row for a file that is gone`),
+        ...table.flatMap((r, i) => {
+            if (!known.has(keyOf(r)))
+                return [`${nameOf(r)}: a row for a file that is gone`];
+            if (Number.isNaN(r.boots))
+                return [`${nameOf(r)}: its row holds no whole number`];
+            return table.findIndex((x) => keyOf(x) === keyOf(r)) < i
+                ? [`${nameOf(r)}: a second row`]
+                : [];
+        }),
     ];
 }
 
@@ -216,11 +270,13 @@ export function raised(table: Row[], base: Row[]) {
     const was = new Map(base.map((r) => [keyOf(r), r.boots]));
     return table.flatMap((r) => {
         const from = was.get(keyOf(r)) ?? (r.file === WHOLE ? 0 : 1);
-        return r.boots > from ? [{ ...r, from }] : [];
+        return r.boots <= from ? [] : [{ ...r, from }];
     });
 }
 
-// a raise stands on a tick dima logged: accepted, naming the file or mod and the new number
+// the one pick a tick raises a row by; he accepts it as it stands, with no steer beside it
+const raisePick = (r: Row) => `raise ${nameOf(r)} to ${r.boots}`;
+
 export function unticked(raises: (Row & { from: number })[], ticks: Tick[]) {
     return raises
         .filter(
@@ -229,22 +285,15 @@ export function unticked(raises: (Row & { from: number })[], ticks: Tick[]) {
                     (t) =>
                         t.verdict === 'tick' &&
                         String(t.at) === r.tick &&
-                        new RegExp(
-                            `(?<![\\w/-])${escaped(nameOf(r))}(?![\\w/-])`,
-                        ).test(saidIn(t)) &&
-                        new RegExp(`(?<![\\w.])${r.boots}(?![\\w.])`).test(
-                            saidIn(t),
-                        ),
+                        t.pick?.trim() === raisePick(r) &&
+                        !t.steer,
                 ),
         )
         .map(
             (r) =>
-                `${nameOf(r)}: raised ${r.from} → ${r.boots} with no tick of dima's naming it and ${r.boots} in the orbit tick log (its row says ${r.tick || 'none'})`,
+                `${nameOf(r)}: raised ${r.from} → ${r.boots} with no tick of dima's (its row says ${r.tick || 'none'}). a raise is an orbit ask whose pick is «${raisePick(r)}», ticked in herdr's orbit, and committed with that line's \`at\` from ~/.claude/shelf/orbit-ticks before his next press in that thread, which drops the line`,
         );
 }
-const saidIn = (t: Tick) => `${t.text ?? ''} ${t.pick ?? ''}`;
-const escaped = (s: string) =>
-    s.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 
 // each session logs to a file of its own, where an ask's id is its own
 export function readTicks(dir: string): Tick[] {
@@ -286,14 +335,20 @@ function tableAt(root: string, ref: string) {
 
 if (import.meta.main) {
     const root = import.meta.dirname;
-    const at = process.argv.indexOf('--raises');
-    if (at > 0) {
-        const base = tableAt(root, process.argv[at + 1] ?? 'origin/main');
-        const head = tableAt(root, 'HEAD') ?? [];
-        for (const r of base ? raised(head, base) : [])
-            console.log(
-                `⚠️ boots raised: ${nameOf(r)} ${r.from} → ${r.boots}, on tick ${r.tick}`,
+    if (process.argv.includes('--raises')) {
+        // git's pre-push lines: a worktree's push runs from the main checkout, so HEAD there is the wrong commit
+        for (const line of readFileSync(0, 'utf8').split('\n')) {
+            const [, head = '', , remote = ''] = line.split(' ');
+            if (!/[1-9a-f]/.test(head)) continue;
+            const base = tableAt(
+                root,
+                /[1-9a-f]/.test(remote) ? remote : 'origin/main',
             );
+            for (const r of base ? raised(tableAt(root, head) ?? [], base) : [])
+                console.log(
+                    `⚠️ boots raised: ${nameOf(r)} ${r.from} → ${r.boots}, on tick ${r.tick}`,
+                );
+        }
         process.exit(0);
     }
     const table = readTable(readFileSync(join(root, TABLE), 'utf8'));
@@ -320,6 +375,7 @@ type Tick = {
     at: number;
     id?: string;
     pick?: string;
+    steer?: string | null;
     text?: string;
     verdict?: string;
 };

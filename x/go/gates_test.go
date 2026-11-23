@@ -907,15 +907,16 @@ func TestFrameHookHoldsNoGateTheOverlayCannotRun(t *testing.T) {
 	}
 }
 
-func TestFrameHookKeepsTheModsSuiteTheCommits(t *testing.T) {
+// the overlay runs the tests itself and lays no boots.tsv, so it leaves these two to the commit and no other
+func TestFrameHookKeepsTwoModsGatesTheCommits(t *testing.T) {
 	t.Parallel()
 	gates, err := readHookGates("../..", "pre-commit")
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, g := range gates {
-		if suite := strings.Contains(g.run, "mods:test"); suite != g.commitOnly {
-			t.Errorf("%s: runs the suite %v, commit-only %v", g.name, suite, g.commitOnly)
+		if wants := g.name == "mods-test" || g.name == "mods-boots"; wants != g.commitOnly {
+			t.Errorf("%s: commit-only %v, want %v", g.name, g.commitOnly, wants)
 		}
 	}
 }

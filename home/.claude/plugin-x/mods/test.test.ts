@@ -2,10 +2,12 @@ import { spawnSync } from 'node:child_process';
 import {
     chmodSync,
     cpSync,
+    existsSync,
     mkdirSync,
     mkdtempSync,
     readFileSync,
     readdirSync,
+    rmSync,
     symlinkSync,
     writeFileSync,
 } from 'node:fs';
@@ -33,6 +35,20 @@ const SAMPLE = readFileSync(
     'utf8',
 );
 
+// a calm mac and a queue of the test's own: a whole run takes gate-queue.sh's long turn
+const CALM = "#!/bin/sh\necho 'load averages: 1.00 1.00 1.00'\n";
+function queueEnv(bin: string): NodeJS.ProcessEnv {
+    writeFileSync(join(bin, 'uptime'), CALM, { mode: 0o755 });
+    const env = {
+        ...process.env,
+        PATH: `${bin}:${process.env.PATH}`,
+        X_STATE: mkdtempSync(join(tmpdir(), 'mods-test-queue-')),
+    };
+    delete (env as NodeJS.ProcessEnv).GATE_QUEUE_HELD;
+    delete (env as NodeJS.ProcessEnv).MODS_TEST_QUEUED;
+    return env;
+}
+
 const run = (pass: number, fail: number) =>
     [
         'tests/a.test.ts:',
@@ -55,7 +71,7 @@ describe('a whole run of the script, a fake claude listing what it was handed', 
         chmodSync(claude, 0o755);
         return spawnSync('node', [script, ...args], {
             encoding: 'utf8',
-            env: { ...process.env, ...env, PATH: `${bin}:${process.env.PATH}` },
+            env: { ...queueEnv(bin), ...env },
             timeout: 10_000,
         });
     };
@@ -68,16 +84,49 @@ describe('a whole run of the script, a fake claude listing what it was handed', 
         expect(r.stdout).toContain('1 mods green, 1 pass, 0 fail');
     });
 
-    it('runs only the file --only names', () => {
+    it.each([
+        ['alone', []],
+        ['beside its mod', ['x-mod-guard']],
+    ])('runs only the file --only names, %s', (_, mod) => {
         const state = mkdtempSync(join(tmpdir(), 'mods-test-state-'));
-        const r = runScript(['--only', join(tests, file)], { X_STATE: state });
+        const r = runScript([...mod, '--only', join(tests, file)], {
+            X_STATE: state,
+        });
         expect(r.stdout).toContain('1 mods green, 1 pass, 0 fail');
+    });
+
+    it('runs only the file --extra brings, with the mod’s helpers beside it', () => {
+        const extra = join(
+            mkdtempSync(join(tmpdir(), 'mods-extra-')),
+            'e.test.ts',
+        );
+        writeFileSync(extra, '');
+        const r = runScript(['x-mod-guard', '--extra', extra], { X_TEST: '1' });
+        expect(r.stdout).toContain('1 mods green, 1 pass, 0 fail');
+    });
+
+    it('a whole run takes the long turn itself, a narrowed one none', () => {
+        const state = mkdtempSync(join(tmpdir(), 'mods-test-state-'));
+        runScript(['--only', join(tests, file)], {
+            X_STATE: state,
+            X_TEST: '1',
+        });
+        expect(existsSync(join(state, 'gate-queue.log'))).toBe(false);
+        runScript(['x-mod-holds'], { X_STATE: state, X_TEST: '1' });
+        expect(readFileSync(join(state, 'gate-queue.log'), 'utf8')).toMatch(
+            /\tlong\t\d+\t\d+\t0\t.*mods\/test\.ts x-mod-holds\n$/,
+        );
     });
 
     it.each([
         ['a file outside any mod', ['--only', script]],
         ['a file that is not there', ['--only', join(tests, 'no.test.ts')]],
-        ['a mod beside it', ['--only', join(tests, file), 'x-mod-holds']],
+        ['another mod beside it', ['--only', join(tests, file), 'x-mod-holds']],
+        ['--commit with no path', ['--commit']],
+        [
+            '--commit beside --only',
+            ['--commit', 'a', '--only', join(tests, file)],
+        ],
     ])('refuses %s with its usage', (_, args) => {
         const r = runScript(args, { X_TEST: '1' });
         expect([r.status, r.stderr]).toEqual([
@@ -106,11 +155,7 @@ describe('a whole run of the script, a fake claude listing what it was handed', 
         chmodSync(claude, 0o755);
         const r = spawnSync('node', [script, 'x-mod-guard'], {
             encoding: 'utf8',
-            env: {
-                ...process.env,
-                PATH: `${bin}:${process.env.PATH}`,
-                X_TEST: '1',
-            },
+            env: { ...queueEnv(bin), X_TEST: '1' },
             timeout: 10_000,
         });
         expect([r.status, readFileSync(seen, 'utf8').trim()]).toEqual([0, '1']);
@@ -120,7 +165,7 @@ describe('a whole run of the script, a fake claude listing what it was handed', 
     it('logs nothing under X_TEST', () => {
         const state = mkdtempSync(join(tmpdir(), 'mods-test-state-'));
         runScript(['x-mod-holds'], { X_STATE: state, X_TEST: '1' });
-        expect(readdirSync(state)).toEqual([]);
+        expect(readdirSync(state)).not.toContain('mods-test.log');
     });
 });
 
@@ -132,20 +177,31 @@ describe('untested', () => {
         ["only another mod's row", row('other', 'aaa'), 'no green yet'],
         ['a row of other bytes', row('m', 'bbb'), 'a green read others'],
     ])('%s refuses, naming the door', (_name, record, why) => {
-        const said = untested(record, 'm', 'aaa').join('');
+        const said = untested(record, 'm', 'aaa', ['m/a.ts'], () => [
+            'a.ts',
+        ]).join('');
         expect(said).toContain(`m: no tested stamp on these bytes (${why})`);
         expect(said).toContain('x mods edit test');
+        expect(said).toContain('pnpm mods:test --commit m/a.ts');
     });
+    const greens = `${row('m', 'bbb')}\n${row('m', 'aaa')}`;
     it('these bytes pass, however old their green', () => {
-        expect(
-            untested(`${row('m', 'bbb')}\n${row('m', 'aaa')}`, 'm', 'aaa'),
-        ).toEqual([]);
+        expect(untested(greens, 'm', 'aaa', [], () => ['a.ts'])).toEqual([]);
+    });
+    it.each([
+        ['an .md alone', ['FTR.md', 'docs/a.md'], 0],
+        ['an .md and a hook', ['FTR.md', 'hooks/a.ts'], 1],
+    ])('a green of bytes differing in %s', (_, paths, refusals) => {
+        expect(untested(greens, 'm', 'ccc', [], () => paths)).toHaveLength(
+            refusals,
+        );
     });
 });
 
 describe('a cpu cap', () => {
     it("reads the shell's count of its children", () => {
         expect(cpuOf('0m0.003s 0m0.004s\n1m2.50s 0m0.25s\n')).toBe(62.75);
+        expect(cpuOf('0m0,003s 0m0,004s\n1m2,50s 0m0,25s\n')).toBe(62.75);
     });
     it.each([
         ['x-mod-stash', 246],
@@ -160,6 +216,8 @@ describe('a cpu cap', () => {
 // the script in a repo of its own, with one mod and a claude that burns a little cpu
 describe('the script in a scratch repo', () => {
     const MODS = 'home/.claude/plugin-x/mods';
+    const HOOK = `${MODS}/m/hooks/register.ts`;
+    const OLD = `${MODS}/m/hooks/old.ts`;
     function world() {
         const dir = mkdtempSync(join(tmpdir(), 'mods-test-repo-'));
         const put = (path: string, body: string) => {
@@ -177,20 +235,28 @@ describe('the script in a scratch repo', () => {
             ),
             join(dir, 'script/lib/test-temp-dir.ts'),
         );
+        cpSync(
+            join(import.meta.dirname, '../../../../script/gate-queue.sh'),
+            join(dir, 'script/gate-queue.sh'),
+        );
         put('package.json', '{"type": "module"}');
         put(`${MODS}/m/.claude-plugin/plugin.json`, '{"name": "m"}');
-        put(
-            `${MODS}/m/hooks/register.ts`,
-            'export const register = () => {};\n',
-        );
+        put(HOOK, 'export const register = () => {};\n');
+        put(OLD, 'export {};\n');
+        put('.gitignore', 'state\nsaw\n');
         put(
             'bin/claude',
-            '#!/bin/sh\ni=0; while [ $i -lt 60000 ]; do i=$((i+1)); done\necho tests/a.test.ts:; echo "(pass) holds"; echo " 1 pass"; echo " 0 fail"\n',
+            '#!/bin/sh\nls "$3"/hooks > "$SAW"\ni=0; while [ $i -lt 60000 ]; do i=$((i+1)); done\necho tests/a.test.ts:; echo "(pass) holds"; echo " 1 pass"; echo " 0 fail"\n',
         );
         chmodSync(join(dir, 'bin/claude'), 0o755);
         const env = gitEnv();
         env.PATH = `${join(dir, 'bin')}:${env.PATH}`;
+        put('bin/uptime', CALM);
+        chmodSync(join(dir, 'bin/uptime'), 0o755);
         env.X_STATE = join(dir, 'state');
+        env.SAW = join(dir, 'saw');
+        delete env.GATE_QUEUE_HELD;
+        delete env.MODS_TEST_QUEUED;
         delete env.X_TEST;
         const git = (...args: string[]) =>
             spawnSync('git', ['-C', dir, ...args], {
@@ -208,27 +274,65 @@ describe('the script in a scratch repo', () => {
                 env,
                 timeout: 10_000,
             });
-        return { git, mods, put };
+        return { dir, git, mods, put };
     }
 
-    it('a commit of bytes no green read is refused, and a green hand run of them lets it in', () => {
+    it('a commit of bytes no green read is refused, and a green --commit of its paths lets it in', () => {
         const { git, mods, put } = world();
-        put(
-            `${MODS}/m/hooks/register.ts`,
-            'export const register = () => 1;\n',
-        );
+        put(HOOK, 'export const register = () => 1;\n');
         git('add', '.');
         const refused = mods('--skip-tested');
         expect(refused.status).toBe(1);
         expect(refused.stdout).toContain('m: no tested stamp on these bytes');
-        expect(mods('m').status).toBe(0);
+        expect(refused.stdout).toContain(`pnpm mods:test --commit ${HOOK}\n`);
+        expect([mods('m').status, mods('--skip-tested').status]).toEqual([
+            0, 1,
+        ]);
+        expect([
+            mods('--commit', HOOK).status,
+            mods('--skip-tested').status,
+        ]).toEqual([0, 0]);
+        put(`${MODS}/m/FTR.md`, '# m\n');
+        git('add', '.');
         expect(mods('--skip-tested').status).toBe(0);
-        put(
-            `${MODS}/m/hooks/register.ts`,
-            'export const register = () => 2;\n',
-        );
+        put(HOOK, 'export const register = () => 2;\n');
         git('add', '.');
         expect(mods('--skip-tested').stdout).toContain('a green read others');
+    });
+
+    it('--commit tests and stamps what its paths would commit, a peer’s edit left out and a deletion in', () => {
+        const { dir, git, mods, put } = world();
+        put(HOOK, 'export const register = () => 1;\n');
+        put(`${MODS}/m/hooks/peer.ts`, 'export const peer = 1;\n');
+        rmSync(join(dir, OLD));
+        expect(mods('--commit', HOOK, OLD).status).toBe(0);
+        expect(readFileSync(join(dir, 'saw'), 'utf8')).toBe('register.ts\n');
+        git('add', HOOK, OLD);
+        expect(mods('--skip-tested').status).toBe(0);
+    });
+
+    it('--commit of paths in no mod runs nothing', () => {
+        const { mods, put } = world();
+        put(`${MODS}/names.test.ts`, 'export {};\n');
+        expect(mods('--commit', `${MODS}/names.test.ts`).status).toBe(2);
+    });
+
+    it('a git that fails refuses', () => {
+        const { dir, git, mods, put } = world();
+        put(HOOK, 'export const register = () => 1;\n');
+        git('add', '.');
+        writeFileSync(join(dir, '.git/index'), 'no index');
+        expect(mods('--skip-tested').status).toBe(1);
+    });
+
+    it('a deleted hook and a hook with an odd name are the mod’s', () => {
+        const { git, mods, put } = world();
+        git('rm', '-q', OLD);
+        expect(mods('--skip-tested').status).toBe(1);
+        git('reset', '-q', '--hard');
+        put(`${MODS}/m/hooks/é.ts`, 'export {};\n');
+        git('add', '.');
+        expect(mods('--skip-tested').status).toBe(1);
     });
 
     it('a root test file and an .md reach no mod', () => {

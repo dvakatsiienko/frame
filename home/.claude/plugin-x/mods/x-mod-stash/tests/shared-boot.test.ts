@@ -85,3 +85,28 @@ test('a hook with a match answers its own event alone', async ($, on) => {
     const r = await $.command.run({ args: '', command: 'x' } as never);
     expect(r.text).toBe('any');
 });
+
+// work a row leaves behind, its own timer still to fire
+const { setTimeout } = globalThis as never as {
+    setTimeout: (job: (value?: unknown) => void, ms: number) => number;
+};
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+test('a row adds an ask past its end', async ($, on) => {
+    world(on);
+    await start($);
+    void wait(30).then(() => askAdded($));
+});
+
+test('the next row meets no ask of it', async ($, on) => {
+    world(on);
+    await start($);
+    await wait(60);
+    expect(await askAdded($)).toBe('o1');
+});
+
+test('a match on anything but a plain value is refused', (_$, on) => {
+    expect(() =>
+        on('command.run', { command: /x/ } as never, () => ({ text: '' })),
+    ).toThrow('on a plain value alone');
+});

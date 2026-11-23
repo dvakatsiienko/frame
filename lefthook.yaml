@@ -45,12 +45,10 @@ pre-commit:
       run: script/index-run.sh sh -c 'pnpm mods:typecheck && pnpm mods:skew'
     mods-test:
       # commit-only: `x mods edit test` runs a touched mod's tests itself and names this gate as the commit's;
-      # it runs none: a mod whose bytes no green read refuses the commit (a suite in the gate slot roasted the mac, FRM-678)
+      # it runs none: a mod whose bytes no green read refuses the commit (a suite in the gate slot roasted the mac, FRM-678).
+      # no glob: lefthook's staged list drops a deleted file
       tags: [commit-only]
-      glob: "home/.claude/plugin-x/mods/**"
-      exclude:
-        - "**/*.md"
-      run: script/index-run.sh pnpm mods:test --skip-tested
+      run: git diff --cached --name-only --no-renames | grep -qE '^home/\.claude/plugin-x/mods/' || exit 0; script/index-run.sh pnpm mods:test --skip-tested
     mods-vitest:
       # the vitest files beside the mods read the mods' files by path (twins.test.ts holds every twin copy equal), so no import
       # ties a hook to them and the related run never picks them; they run on any mod change, about 3 s, and in `x mods edit test`
@@ -74,7 +72,9 @@ pre-commit:
       run: git diff --cached --name-only --no-renames | grep -qE '\.(ts|tsx|js|go|sh)$' || exit 0; script/index-run.sh pnpm exec vitest run script/lib/code-size.test.ts
     mods-boots:
       # a mods test file starts more hosts than its row in boots.tsv, counted from the file with no run (FRM-678). no glob:
-      # lefthook's staged list drops a deleted file, and a deleted test leaves a dead row
+      # lefthook's staged list drops a deleted file, and a deleted test leaves a dead row. commit-only: `x mods edit test` lays
+      # no table, so a new file's row is not there yet
+      tags: [commit-only]
       run: git diff --cached --name-only --no-renames | grep -qE '^home/\.claude/plugin-x/mods/' || exit 0; script/index-run.sh node home/.claude/plugin-x/mods/boots.ts
     stash-resets:
       # a stash module variable no quit gives back (FRM-678); the test reads the hooks by path, so the related test run
@@ -107,7 +107,8 @@ pre-push:
       run: pnpm test:twin
     mods-boots-raises:
       # every raised row prints at the push, so dima and the coordinator read it (FRM-678)
-      run: node home/.claude/plugin-x/mods/boots.ts --raises origin/main
+      use_stdin: true
+      run: node home/.claude/plugin-x/mods/boots.ts --raises
     mirror:
       # The engine's own dogfood: if the manifest stops deriving, catch it here
       # rather than on the next machine.

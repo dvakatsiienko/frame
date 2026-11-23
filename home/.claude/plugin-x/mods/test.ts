@@ -1,8 +1,9 @@
-// pnpm mods:test [<mod>…] [--extra <file>] [--only <file>] — each mod's tests through `claude plugin test`, printing only
-// the failing tests' output, then one summary line; exit 1 when any mod is red. --extra runs one outside test file with the
-// mod's harness on a copy of the one mod named (FRM-388); --only runs one of a mod's own test files; --skip-tested, the
-// commit gate's flag, runs no test: a mod the index changes passes on a green `x mods edit test` or hand run of these bytes, any
-// other is refused; --clock-only, that verb's flag, reads only the clock rule of the named mods and runs no test
+// pnpm mods:test [<mod>…] [--extra <file>] [--only <file>] [--commit <path>…] — each mod's tests through `claude plugin test`,
+// printing only the failing tests' output, then one summary line; exit 1 when any mod is red. --extra runs one outside test
+// file with the harness of the one mod named (FRM-388); --only runs one of a mod's own test files; any other run is a whole
+// suite and takes gate-queue.sh's long turn itself. --commit tests the bytes a commit of these paths would hold and stamps
+// each touched mod; --skip-tested, the commit gate's flag, runs no test: a mod the index changes passes on the stamp of these
+// bytes, `x mods edit test`'s or --commit's, any other is refused; --clock-only reads only the clock rule of the named mods
 import { spawnSync } from 'node:child_process';
 import {
     appendFileSync,
@@ -259,7 +260,7 @@ function copyKeepingTests(from: string, mod: string, keep: string[]) {
 }
 
 // git as a hook's child: the hook's own git env points at a path outside the private copy
-function git(root: string, args: string[], index?: string) {
+function git(root: string, args: string[], index?: string, input?: string) {
     const env = { ...process.env };
     for (const key of [
         'GIT_DIR',
@@ -269,10 +270,13 @@ function git(root: string, args: string[], index?: string) {
     ])
         delete env[key];
     if (index) env.GIT_INDEX_FILE = index;
-    return (
-        spawnSync('git', ['-C', root, ...args], { encoding: 'utf8', env })
-            .stdout ?? ''
-    ).trim();
+    const r = spawnSync('git', ['-C', root, ...args], {
+        encoding: 'utf8',
+        env,
+        input,
+    });
+    if (r.status !== 0) throw new Error(`git ${args[0]}: ${r.stderr}`);
+    return r.stdout.trim();
 }
 
 // the mod's subtree as an index holds it, the commit's own when none is named
@@ -287,15 +291,32 @@ function indexedTree(root: string, mod: string, index?: string) {
     );
 }
 
-// the mod's subtree as a commit of the working tree would hold it, the bytes a hand run reads
-function workingTree(root: string, mod: string) {
-    const dir = mkdtempSync(join(tmpdir(), 'mods-tree-'));
+// the paths under mods/ an index changes
+function changedPaths(root: string, index?: string) {
+    return git(
+        root,
+        ['diff', '--cached', '--name-only', '--no-renames', '--relative', '-z'],
+        index,
+    ).split('\0');
+}
+
+// what a commit of these paths would hold of the mods, in an index and a dir of its own
+function commitOf(root: string, paths: string[]) {
+    const dir = mkdtempSync(join(tmpdir(), 'mods-commit-'));
     const index = join(dir, 'index');
     git(root, ['read-tree', 'HEAD'], index);
-    git(root, ['add', '-A', '--', mod], index);
-    const tree = indexedTree(root, mod, index);
-    rmSync(dir, { force: true, recursive: true });
-    return tree;
+    git(root, ['add', '-A', '--', ...paths.map((p) => resolve(p))], index);
+    const held = git(root, ['ls-files', '-z', '--', '.'], index);
+    git(
+        root,
+        ['checkout-index', '-z', '--stdin', `--prefix=${dir}/`],
+        index,
+        held,
+    );
+    return {
+        index,
+        root: join(dir, git(root, ['rev-parse', '--show-prefix'])),
+    };
 }
 
 // the mods a commit's staged paths touch. a path beside the mods is vitest's, and no mods test reads an .md
@@ -308,16 +329,43 @@ export function touchedMods(changed: string[], all: string[]) {
     return all.filter((mod) => touched.has(mod));
 }
 
-// a touched mod no green read on these bytes, in the words that refuse its commit
-export function untested(record: string, mod: string, tree: string) {
-    const rows = record
+// a touched mod no green read on these bytes, in the words that refuse its commit; an .md reaches no test, so a green of a
+// tree that differs in .md alone stands
+export function untested(
+    record: string,
+    mod: string,
+    tree: string,
+    paths: string[],
+    differ: (a: string, b: string) => string[],
+) {
+    const greens = record
         .split('\n')
         .map((line) => line.split('\t'))
-        .filter(([, subject]) => subject === `mod ${mod}`);
-    if (rows.some(([, , sha]) => sha === tree)) return [];
+        .filter(([, subject]) => subject === `mod ${mod}`)
+        .map(([, , sha = '']) => sha);
+    const isGreen = [...new Set(greens)]
+        .slice(-GREENS_READ)
+        .some(
+            (sha) =>
+                sha === tree ||
+                differ(sha, tree).every((path) => path.endsWith('.md')),
+        );
+    if (isGreen) return [];
     return [
-        `${mod}: no tested stamp on these bytes (${rows.length ? 'a green read others' : 'no green yet'}), so the commit is refused: run x mods edit test, or, for a change made outside it, script/gate-queue.sh --long pnpm mods:test ${mod}`,
+        `${mod}: no tested stamp on these bytes (${greens.length ? 'a green read others' : 'no green yet'}), so the commit is refused: run x mods edit test, or, for a change made outside it, pnpm mods:test --commit ${paths.join(' ')}`,
     ];
+}
+const GREENS_READ = 10;
+
+// the paths two trees differ in; a tree git no longer holds differs in all
+function differing(root: string, a: string, b: string) {
+    try {
+        return git(root, ['diff-tree', '-r', '--name-only', '-z', a, b])
+            .split('\0')
+            .filter(Boolean);
+    } catch {
+        return ['a tree git dropped'];
+    }
 }
 
 function greenRecordPath() {
@@ -327,7 +375,7 @@ function greenRecordPath() {
     );
 }
 
-// a hand run's green, in the line `x mods edit test` writes; a lost one costs one rerun
+// a --commit run's green, in the line `x mods edit test` writes; a lost one costs one rerun
 function recordGreen(mod: string, tree: string) {
     const until = Math.floor(Date.now() / 1000) + 3600;
     mkdirSync(dirname(greenRecordPath()), { recursive: true });
@@ -337,9 +385,9 @@ function recordGreen(mod: string, tree: string) {
 // the shell's own count of its children, as `times` prints it on its second line
 export function cpuOf(times: string) {
     const [, children = ''] = times.trim().split('\n');
-    return [...children.matchAll(/(\d+)m([\d.]+)s/g)].reduce(
-        (sum, [, minutes, seconds]) =>
-            sum + Number(minutes) * 60 + Number(seconds),
+    return [...children.matchAll(/(\d+)m([\d.,]+)s/g)].reduce(
+        (sum, [, minutes, seconds = '']) =>
+            sum + Number(minutes) * 60 + Number(seconds.replace(',', '.')),
         0,
     );
 }
@@ -370,6 +418,7 @@ if (import.meta.main) {
         allowPositionals: true,
         options: {
             'clock-only': { type: 'boolean' },
+            commit: { type: 'boolean' },
             extra: { type: 'string' },
             only: { type: 'string' },
             'skip-tested': { type: 'boolean' },
@@ -378,7 +427,9 @@ if (import.meta.main) {
     const all = readdirSync(root)
         .sort()
         .filter((mod) => existsSync(join(root, mod, '.claude-plugin')));
-    const unknown = positionals.filter((mod) => !all.includes(mod));
+    const unknown = values.commit
+        ? []
+        : positionals.filter((mod) => !all.includes(mod));
     // real paths, since a mod is also reached through the ~/.claude symlink
     const only =
         values.only && existsSync(values.only)
@@ -390,11 +441,12 @@ if (import.meta.main) {
         (values.extra && positionals.length !== 1) ||
         (values.only &&
             (values.extra ||
-                positionals.length ||
-                !all.includes(onlyMod as string)))
+                positionals.some((mod) => mod !== onlyMod) ||
+                !all.includes(onlyMod as string))) ||
+        (values.commit && (values.extra || values.only || !positionals.length))
     ) {
         console.error(
-            `usage: pnpm mods:test [<mod>…] [--extra <file> with one <mod>] [--only <a test file of a mod>] [--skip-tested] — mods: ${all.join(', ')}`,
+            `usage: pnpm mods:test [<mod>…] [--extra <file> with one <mod>] [--only <a test file of a mod>] [--commit <path>…] [--skip-tested] — mods: ${all.join(', ')}`,
         );
         process.exit(2);
     }
@@ -412,33 +464,54 @@ if (import.meta.main) {
     if (values['skip-tested']) {
         const path = greenRecordPath();
         const record = existsSync(path) ? readFileSync(path, 'utf8') : '';
-        const staged = git(root, [
-            'diff',
-            '--cached',
-            '--name-only',
-            '--no-renames',
-            '--relative',
-        ]).split('\n');
+        const staged = changedPaths(root);
         const red = touchedMods(staged, all).flatMap((mod) => [
             ...hookClockReads(join(root, mod)).map(
                 (at) => `a clock read outside $.clock: ${mod}/${at}`,
             ),
-            ...untested(record, mod, indexedTree(root, mod)),
+            ...untested(
+                record,
+                mod,
+                indexedTree(root, mod),
+                staged
+                    .filter((path) => path.startsWith(`${mod}/`))
+                    .map((path) => relative(process.cwd(), join(root, path))),
+                (a, b) => differing(root, a, b),
+            ),
         ]);
         for (const line of red) console.log(line);
         process.exit(red.length ? 1 : 0);
     }
-    const capsFile = join(root, '../../../../script/test-cpu-budget.tsv');
+    const isWhole = !values.extra && !only;
+    const script = join(root, '../../../../script');
+    if (isWhole && !process.env.MODS_TEST_QUEUED) {
+        const r = spawnSync(
+            join(script, 'gate-queue.sh'),
+            ['--long', process.execPath, ...process.argv.slice(1)],
+            {
+                env: { ...process.env, MODS_TEST_QUEUED: '1' },
+                stdio: 'inherit',
+            },
+        );
+        process.exit(r.status ?? 1);
+    }
+    const capsFile = join(script, 'test-cpu-budget.tsv');
     const caps = existsSync(capsFile) ? readFileSync(capsFile, 'utf8') : '';
-    const named = onlyMod ? [onlyMod] : positionals;
+    const commit = values.commit ? commitOf(root, positionals) : undefined;
+    const named = commit
+        ? touchedMods(changedPaths(root, commit.index), all)
+        : onlyMod
+          ? [onlyMod]
+          : positionals;
+    if (commit && !named.length) {
+        console.error('these paths change no mod, so nothing ran');
+        process.exit(2);
+    }
     const past: string[] = [];
     for (const mod of named.length ? named : all) {
-        let dir = join(root, mod);
-        const isWhole = !values.extra && !only;
-        const tree = isWhole ? workingTree(root, mod) : undefined;
+        let dir = join(commit?.root ?? root, mod);
         if (values.extra) {
-            dir = join(mkdtempSync(join(tmpdir(), 'mods-extra-')), mod);
-            cpSync(join(root, mod), dir, { recursive: true });
+            dir = copyKeepingTests(join(root, mod), mod, []);
             cpSync(
                 resolve(values.extra),
                 join(dir, 'tests', basename(values.extra)),
@@ -460,9 +533,11 @@ if (import.meta.main) {
                 'test',
                 dir,
             ],
-            { encoding: 'utf8' },
+            { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
         );
-        const cpu = cpuOf(readFileSync(times, 'utf8'));
+        const cpu = existsSync(times)
+            ? cpuOf(readFileSync(times, 'utf8'))
+            : Number.NaN;
         let output = `${r.stdout}${r.stderr}`;
         let { status } = r;
         const late = timedOutFiles(output);
@@ -488,22 +563,22 @@ if (import.meta.main) {
             );
         runs.push({ clockReads: clock, mod, output, status });
         const cap = cpuCap(caps, mod);
-        if (isWhole && cap !== undefined && !(cpu <= cap))
+        const isPast = isWhole && cap !== undefined && !(cpu <= cap);
+        if (isPast)
             past.push(
                 `${mod}: ${cpu.toFixed(1)} cpu-s, its cap in script/test-cpu-budget.tsv is ${cap}`,
             );
         // a throwing hook exits 0 and reads failed; a file that cannot load exits red
         const { failed: red, passed } = outcome(output);
         if (
-            tree &&
-            tree === workingTree(root, mod) &&
-            !process.env.X_TEST &&
+            commit &&
             status === 0 &&
             passed &&
             !red.length &&
-            !clock.length
+            !clock.length &&
+            !isPast
         )
-            recordGreen(mod, tree);
+            recordGreen(mod, indexedTree(root, mod, commit.index));
         if (values.extra || only)
             rmSync(dirname(dir), { force: true, recursive: true });
     }

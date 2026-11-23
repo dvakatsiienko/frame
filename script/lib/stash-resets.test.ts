@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 // the test rows of one file share one host boot (FRM-678), so a module variable kept past a session's quit leaks into the
 // next row: each owner gives its own back in an exported `reset…` function, and resetModules calls every one of them.
 // an allow-list: a top-level name is fixed by a shape named below, or a reset gives it back, or it reds here
-// beside code-size.test.ts: a root file under mods/ makes the commit hook run every mod's host suite
+// beside code-size.test.ts, a check over one tree's shape
 const HOOKS = join(
     import.meta.dirname,
     '../../home/.claude/plugin-x/mods/x-mod-stash/hooks',

@@ -129,10 +129,11 @@ func testCommit(repo, sha string, whole []string) ([]modReport, error) {
 			reports = append(reports, modReport{Mod: mod, Validate: "ok", NoTests: true})
 			continue
 		}
+		scope := suiteScopeOf(len(picked), overlay)
 		if err := setAsideTestsBut(overlay, func(rel string) bool { return slices.Contains(picked, rel) }); err != nil {
 			return nil, err
 		}
-		report, err := testModOverlay(mod, overlay, suiteFiles)
+		report, err := testModOverlay(mod, overlay, scope)
 		if err != nil {
 			return nil, err
 		}

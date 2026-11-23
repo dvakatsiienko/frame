@@ -88,8 +88,12 @@ const liveSince = () =>
     }).stdout.trimEnd();
 
 describe('gate-queue --long on a loaded mac', () => {
-    // an uptime that answers the load, and a claude and a pnpm that only say they ran
-    function loaded(load: string, args: string[]) {
+    // an uptime that answers each load in turn, the last one on; a claude and a pnpm that only say they ran
+    function loaded(
+        loads: string[],
+        args: string[],
+        extra: NodeJS.ProcessEnv = {},
+    ) {
         const { state } = fixture();
         const bin = join(state, 'bin');
         mkdirSync(bin);
@@ -97,35 +101,54 @@ describe('gate-queue --long on a loaded mac', () => {
             writeFileSync(join(bin, name), `#!/bin/sh\n${body}\n`, {
                 mode: 0o755,
             });
+        writeFileSync(join(state, 'loads'), `${loads.join('\n')}\n`);
         put(
             'uptime',
-            `echo '12:27  up 1 day, 7 users, load averages: ${load} 9.00 9.00'`,
+            `l=$(head -n 1 ${state}/loads); [ $(wc -l <${state}/loads) -gt 1 ] && sed -i.bak 1d ${state}/loads; echo "12:27  up 1 day, 7 users, load averages: $l 9.00 9.00"`,
         );
         put('claude', 'echo ran');
         put('pnpm', 'echo ran');
-        const got = queue(state, ['--long', ...args], undefined, {
+        return queue(state, ['--long', ...args], '1', {
             PATH: `${bin}:${process.env.PATH}`,
+            ...extra,
         });
-        return { ...got, row: logRows(state).at(-1) ?? [] };
     }
+    const SUITE = ['claude', 'plugin', 'test', 'mod'];
 
     test.each([
-        ['x’s suite', ['claude', 'plugin', 'test', 'mod']],
+        ['x’s suite', SUITE],
         ['a hand run', ['pnpm', 'mods:test', 'x-mod-stash']],
-    ])('%s over the number runs nothing, and says the load', (_name, args) => {
-        const got = loaded('14.01', args);
-        expect([got.status, got.stdout]).toEqual([75, '']);
-        expect(got.stderr).toMatch(
-            /^gate-queue: waited 0s, nothing ran: the 1-minute load is 14\.01, .* 14 or under/,
-        );
-        expect([got.row[1], got.row[5]]).toEqual(['14.01', '75']);
+        ['a timed run', ['/usr/bin/time', '-p', 'pnpm', 'mods:test']],
+        ['a run by its file', ['node', 'home/.claude/plugin-x/mods/test.ts']],
+        ['a shell line', ['sh', '-c', 'claude plugin test mod']],
+        ['a quiet pnpm', ['pnpm', '--silent', 'mods:test']],
+    ])(
+        '%s over the number waits, then runs nothing and says the load',
+        (_name, args) => {
+            const got = loaded(['14.01'], args);
+            expect([got.status, got.stdout]).toEqual([75, '']);
+            expect(got.stderr).toMatch(
+                /gate-queue: waited \d+s, deadline passed, nothing ran\. the 1-minute load is 14\.01, a mods suite starts at 14 or under/,
+            );
+        },
+    );
+
+    test('a load that falls inside the wait lets it run', () => {
+        const got = loaded(['30.00', '30.00', '30.00', '12.00'], SUITE);
+        expect([got.status, got.stdout]).toEqual([0, 'ran\n']);
+    });
+
+    test('a suite inside a held long turn waits for the load too', () => {
+        const held = { GATE_QUEUE_HELD: 'long' };
+        expect(loaded(['30.00'], SUITE, held).status).toBe(75);
+        expect(loaded(['9.00'], SUITE, held).stdout).toBe('ran\n');
     });
 
     test.each([
-        ['at the number', '14.00', ['claude', 'plugin', 'test', 'mod']],
+        ['at the number', '14.00', SUITE],
         ['any other long run, over it', '90.00', ['sh', '-c', 'echo ran']],
     ])('%s it runs', (_name, load, args) => {
-        const got = loaded(load, args);
+        const got = loaded([load], args);
         expect([got.status, got.stdout]).toEqual([0, 'ran\n']);
     });
 });

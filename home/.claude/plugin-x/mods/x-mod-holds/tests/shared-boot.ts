@@ -5,7 +5,7 @@ import { type Engine, test as hostTest } from 'claude-code/testing';
 export { type Engine, expect, mock } from 'claude-code/testing';
 
 // the rows of one test file share one host boot: the first row boots the mod and runs every row in turn, each with hooks,
-// `$.state` and timers of its own; a quit between two rows gives the module variables back (session-reset.ts). each row
+// `$.state` and timers of its own; a quit between two rows ends the session. each row
 // stays a test of its own that reads its verdict, so a red names its row. a row with no `$` never boots and runs as is
 const PLUGIN = 'x-mod-holds';
 
@@ -68,7 +68,7 @@ const DOORS = [
 ];
 // the one event whose hook streams
 const STEP = 'turn.step';
-// a timer stays open past its row: the row's own clock holds it, and that clock moves no more
+// a row's timers end with it: left open they slowed every row after them, and a late move of their clock fired them there
 const TIMERS = new Set(['clock.after', 'clock.every', 'clock.sleep']);
 // the kit runs real timers and types none
 const { clearTimeout, setTimeout } = globalThis as never as Timers;
@@ -92,6 +92,7 @@ const BETWEEN: Record<string, unknown> = {
     'store.keys': { value: [] },
     'store.set': { value: undefined },
 };
+const NEVER = new Promise<never>(() => undefined);
 const rows: Row[] = [];
 
 export function test(name: string, ...rest: [Body] | [Options, Body]) {
@@ -115,7 +116,7 @@ async function runRows($: Engine, on: On) {
     const world = hookDoors(on);
     for (const row of rows) {
         const rowOn = world.begin();
-        const { engine, unmountAll } = withMounts($);
+        const { engine, unmountAll } = engineOf($, row);
         try {
             await bounded(Promise.resolve(row.body(engine, rowOn)), row.ms);
         } catch (error) {
@@ -132,9 +133,11 @@ async function runRows($: Engine, on: On) {
 
 // each door answers through the hooks of the row that runs now, newest last; beneath them `$.state` starts empty each row
 function hookDoors(on: On) {
-    let hooks = new Map<string, Hooked[]>();
+    let here = new Map<string, Hooked[]>();
     let state = new Map<string, { value: unknown; version: number }>();
     let inFlight = 0;
+    let end = (_: unknown) => {};
+    let over = new Promise<unknown>(() => undefined);
     const hookAny = on as never as (event: string, hook: unknown) => void;
     for (const event of DOORS)
         hookAny(event, (host: unknown, e: Input, next: Next) => {
@@ -154,8 +157,8 @@ function hookDoors(on: On) {
                 );
             };
             const answer = at(0, e);
-            if (TIMERS.has(event) || !(answer instanceof Promise))
-                return answer;
+            if (!(answer instanceof Promise)) return answer;
+            if (TIMERS.has(event)) return Promise.race([answer, over]);
             inFlight += 1;
             return answer.finally(() => {
                 inFlight -= 1;
@@ -169,7 +172,7 @@ function hookDoors(on: On) {
         },
     );
     function hooksOf(event: string, e: Input) {
-        return (hooks.get(event) ?? [])
+        return (here.get(event) ?? [])
             .filter(
                 ({ match }) =>
                     !match ||
@@ -179,8 +182,12 @@ function hookDoors(on: On) {
     }
     let isBetween = false;
     const begin = () => {
-        const here = new Map<string, Hooked[]>();
-        hooks = here;
+        const mine = new Map<string, Hooked[]>();
+        here = mine;
+        end({ deny: 'the row is over' });
+        over = new Promise((resolve) => {
+            end = resolve;
+        });
         state = new Map();
         isBetween = false;
         const rowOn = (event: string, ...rest: unknown[]) => {
@@ -188,7 +195,11 @@ function hookDoors(on: On) {
                 throw new Error(`shared-boot.ts has no door for ${event}`);
             const hook = rest.at(-1) as Hook;
             const match = rest.length > 1 ? (rest[0] as Input) : undefined;
-            here.set(event, [...(here.get(event) ?? []), { hook, match }]);
+            if (Object.values(match ?? {}).some((v) => Object(v) === v))
+                throw new Error(
+                    `shared-boot.ts matches ${event} on a plain value alone`,
+                );
+            mine.set(event, [...(mine.get(event) ?? []), { hook, match }]);
         };
         return rowOn as never as On;
     };
@@ -249,27 +260,37 @@ function quit($: Engine) {
         .catch(() => undefined);
 }
 
-// the row's engine, each drawing it mounts taken down with it
-function withMounts($: Engine) {
+// the row's engine: each drawing it mounts is taken down with it, and a call made past the row's end never answers, so work a
+// row left behind (its own timer, a body past its bound) meets no other row
+function engineOf($: Engine, row: Row) {
     const mounted: { unmount: () => Promise<unknown> }[] = [];
-    const ui = {
-        ...copyOf($.ui),
-        mount: async (what: never) => {
-            const drawing = await $.ui.mount(what);
-            mounted.push(drawing as never);
-            return drawing;
-        },
+    const whileOn =
+        (call: Call): Call =>
+        (...args) =>
+            row.isOver ? NEVER : call(...args);
+    const guarded = (nouns: object): Input =>
+        Object.fromEntries(
+            Object.keys(nouns).map((k) => {
+                const v = (nouns as Input)[k];
+                if (typeof v === 'function') return [k, whileOn(v as Call)];
+                return [k, v && typeof v === 'object' ? guarded(v) : v];
+            }),
+        );
+    const mount = async (what: never) => {
+        const drawing = await $.ui.mount(what);
+        mounted.push(drawing as never);
+        return drawing;
     };
+    const engine = guarded($);
+    engine.ui = { ...(engine.ui as Input), mount: whileOn(mount as Call) };
     return {
-        engine: { ...copyOf($), ui } as never as Engine,
+        engine: engine as never as Engine,
         unmountAll: async () => {
             for (const drawing of mounted)
                 await drawing.unmount().catch(() => undefined);
         },
     };
 }
-const copyOf = (nouns: object) =>
-    Object.fromEntries(Object.keys(nouns).map((k) => [k, (nouns as Input)[k]]));
 
 function bounded(work: Promise<unknown>, ms: number) {
     let timer = 0;
@@ -283,6 +304,7 @@ function bounded(work: Promise<unknown>, ms: number) {
 }
 
 /* Types */
+type Call = (...args: unknown[]) => unknown;
 type Body = ($: Engine, on: On) => unknown;
 type Options = { timeoutMs?: number };
 type Row = {

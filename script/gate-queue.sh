@@ -4,7 +4,8 @@
 # --hold <label…>: the gate slot, x's own door: x lane commit and push hold it around their hook. once it has the turn it prints
 # one line and holds until its stdin gives an exit code or closes, so a dead x frees the turn; a hung hook frees it at the cap, 600 s, exit 124.
 # no flag: no turn, it says so, runs the command and logs slot none; a turn held by a wrapped chain made every commit wait behind it.
-# --long with a whole mods suite (claude plugin test, pnpm mods:test) on a 1-minute load over 14, one a core, runs nothing: exit 75.
+# a mods suite (claude plugin test, mods:test, mods/test.ts anywhere in the command) starts at a 1-minute load of 14 or under, one
+# a core: first in line it waits for the load, and past the deadline it runs nothing, exit 75. two suites back to back sat at 35.
 # a turn waits for the machine-wide slot and hands back the exit code; 75 means the wait passed its deadline.
 # a turn is a mkdir, atomic on any disk, holding the holder's pid and start time, so a dead holder or a reused pid frees it.
 # waiters line up first come, first served: one ticket file each, named <epoch>.<pid>, so a newcomer never jumps a waiter.
@@ -37,7 +38,31 @@ hold_until_told() {
 }
 # a queued run calling another queued run of its slot keeps its turn; a commit inside a long round still takes the gate slot
 [ "$slot" = gate ] && [ "$held" = gate ] && hold_until_told "$@"
-[ "$slot" = long ] && [ "$held" = long ] && exec "$@"
+load_max=14
+load_now() { uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/'; }
+is_mods_suite=
+case "$slot $*" in "long "*"plugin test"* | "long "*mods:test* | "long "*mods/test.ts*) is_mods_suite=1 ;; esac
+is_calm() { [ -z "$is_mods_suite" ] || awk -v load="$(load_now)" -v max="$load_max" 'BEGIN { exit !(load + 0 <= max + 0) }'; }
+# what a wait waits on
+holder() {
+    if [ -d "$turn" ]; then
+        echo "holder: $(tail -n 1 "$turn/holder" 2>/dev/null)"
+    else
+        echo "the 1-minute load is $(load_now), a mods suite starts at $load_max or under"
+    fi
+}
+if [ "$slot" = long ] && [ "$held" = long ]; then
+    began=$(date +%s)
+    turn=/nonexistent
+    until is_calm; do
+        if [ $(($(date +%s) - began)) -ge "${GATE_QUEUE_WAIT:-1500}" ]; then
+            echo "gate-queue: waited $(($(date +%s) - began))s, deadline passed, nothing ran. $(holder)" >&2
+            exit 75
+        fi
+        sleep "${GATE_QUEUE_POLL:-2}"
+    done
+    exec "$@"
+fi
 [ "$slot" = none ] && [ -n "$held" ] && exec "$@"
 
 state=${X_STATE:-$HOME/.local/state/x}
@@ -85,7 +110,7 @@ first_in_line() {
 
 cmd=$*
 start=$(date +%FT%T%z)
-load=$(uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/')
+load=$(load_now)
 began=$(date +%s)
 waited=0
 if [ "$slot" = none ]; then
@@ -100,16 +125,6 @@ if [ "$slot" = none ]; then
     GATE_QUEUE_HELD=none "$@"
     exit $?
 fi
-load_max=${GATE_QUEUE_LOAD_MAX:-14}
-case "$slot $cmd" in
-"long claude plugin test"* | "long pnpm mods:test"*)
-    if awk -v load="$load" -v max="$load_max" 'BEGIN { exit !(load + 0 > max + 0) }'; then
-        echo "gate-queue: waited 0s, nothing ran: the 1-minute load is $load, and a mods suite starts at $load_max or under. run it again once the mac is calm (uptime)" >&2
-        log_run - 75
-        exit 75
-    fi
-    ;;
-esac
 ticket=$tickets/$began.$$
 started_at $$ >"$tickets/.new.$$"
 mv "$tickets/.new.$$" "$ticket"
@@ -118,7 +133,7 @@ trap leave EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 next_say=0
-until first_in_line && mkdir "$turn" 2>/dev/null; do
+until first_in_line && is_calm && mkdir "$turn" 2>/dev/null; do
     # only the first in line frees a stale turn, so it never takes a turn a newer run just made
     if first_in_line && is_stale; then
         if mv "$turn" "$turn.stale.$$" 2>/dev/null; then
@@ -128,12 +143,12 @@ until first_in_line && mkdir "$turn" 2>/dev/null; do
         continue
     fi
     if [ "$waited" -ge "$wait_max" ]; then
-        echo "gate-queue: waited ${waited}s, deadline passed, nothing ran. holder: $(tail -n 1 "$turn/holder" 2>/dev/null)" >&2
+        echo "gate-queue: waited ${waited}s, deadline passed, nothing ran. $(holder)" >&2
         log_run - 75
         exit 75
     fi
     if [ "$waited" -ge "$next_say" ]; then
-        echo "gate-queue: waiting ${waited}s, holder: $(tail -n 1 "$turn/holder" 2>/dev/null)" >&2
+        echo "gate-queue: waiting ${waited}s, $(holder)" >&2
         next_say=$((next_say + 30))
     fi
     sleep "${GATE_QUEUE_POLL:-2}"

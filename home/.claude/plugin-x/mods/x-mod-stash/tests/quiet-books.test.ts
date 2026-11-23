@@ -5,6 +5,7 @@ import {
     FORGED,
     MEMBER,
     MIN,
+    POLL,
     SENT_1604,
     SID,
     alarmWorld,
@@ -514,17 +515,17 @@ test('a held ping stuck past the idle wait + 2 min raises one alarm', async ($, 
 });
 
 test('a held ping inside the idle wait + 2 min raises none', async ($, on) => {
-    const w = alarmWorld(on);
+    const w = alarmWorld(on, { refuseAppend: true });
     w.store.set(`quiet-held:${SID}`, [
         {
-            at: EVEN - 11 * MIN,
+            at: EVEN - 10.9 * MIN,
             from: '☕️ 🔧 codie: mods',
             text: '[progress] a',
         },
     ]);
     await start($);
-    await w.clock.advance(30_000);
-    expect(w.notified).toEqual([]);
+    await w.clock.advance(POLL);
+    expect([w.notified, w.scripted]).toEqual([[], []]);
 });
 
 test('an alarm neither notify nor osascript can raise is logged, never thrown', async ($, on) => {

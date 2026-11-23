@@ -587,10 +587,7 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 			case len(reached) == 0:
 				scope = suiteNone
 			default:
-				scope = suiteFiles
-				if isPastShare(len(reached), overlay) {
-					scope = suiteMost
-				}
+				scope = suiteScopeOf(len(reached), overlay)
 				if err := setAsideTestsBut(overlay, func(rel string) bool { return slices.Contains(reached, rel) }); err != nil {
 					return nil, err
 				}
@@ -628,7 +625,7 @@ const (
 // a reached set past this share of a mod's test files costs as a whole suite does: one hook of a mod reaches nearly every host test
 const longTurnShare = 1.0 / 3
 
-func isPastShare(reached int, overlay string) bool {
+func suiteScopeOf(reached int, overlay string) suiteScope {
 	tests := 0
 	_ = filepath.WalkDir(overlay, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
@@ -642,8 +639,13 @@ func isPastShare(reached int, overlay string) bool {
 		}
 		return nil
 	})
-	return float64(reached) > float64(tests)*longTurnShare
+	if float64(reached) > float64(tests)*longTurnShare {
+		return suiteMost
+	}
+	return suiteFiles
 }
+
+func (s suiteScope) isLong() bool { return s == suiteWhole || s == suiteMost }
 
 // the validator, the overlay's tsc and the tests on one mod's overlay: the verdict of the bytes it holds
 func testModOverlay(mod, overlay string, scope suiteScope) (modReport, error) {
@@ -662,14 +664,14 @@ func testModOverlay(mod, overlay string, scope suiteScope) (modReport, error) {
 	if scope == suiteNone {
 		return report, nil
 	}
-	got, _ := runSuite(overlay, scope == suiteWhole || scope == suiteMost)
+	got, _ := runSuite(overlay, scope.isLong())
 	if strings.Contains(got.log, "gate-queue: waited ") {
-		return report, &Fail{Msg: "the long turn was not free in time, so no test ran for " + mod + ": " + firstNonBlank(got.log), Next: "x mods edit test"}
+		return report, &Fail{Msg: "no test ran for " + mod + ": " + firstNonBlank(got.log), Next: "x mods edit test"}
 	}
 	log := got.log
 	report.Passed, report.Failed, report.Errored = testOutcome(log)
 	if !got.ok && timeoutOnly(log) && testTally.MatchString(log) {
-		again, kept, retried, err := runTimedOutFiles(overlay, log)
+		again, kept, retried, err := runTimedOutFiles(overlay, log, scope.isLong())
 		if err != nil {
 			return report, err
 		}
@@ -714,7 +716,7 @@ func firstNonBlank(log string) string {
 // only the files that timed out run again, as `mods/test.ts` does: a second whole run on a loaded machine times out other
 // rows. the rest step aside in this throwaway overlay, so the kit does not find them; answers the second run and the
 // passes of the files it left out
-func runTimedOutFiles(overlay, log string) (result, int, []string, error) {
+func runTimedOutFiles(overlay, log string, isLong bool) (result, int, []string, error) {
 	timedOut := map[string]bool{}
 	passes := map[string]int{}
 	file := ""
@@ -737,7 +739,7 @@ func runTimedOutFiles(overlay, log string) (result, int, []string, error) {
 	if err := setAsideTestsBut(overlay, func(rel string) bool { return timedOut[rel] }); err != nil {
 		return result{}, 0, nil, err
 	}
-	got, _ := run("", nil, "", "claude", "plugin", "test", overlay)
+	got, _ := runSuite(overlay, isLong)
 	return got, kept, slices.Sorted(maps.Keys(timedOut)), nil
 }
 
@@ -786,7 +788,15 @@ func againstRef(r *Run, repo, scratch string, changed []string, ref string) (any
 					}
 				}
 			}
-			got, _ := run("", nil, "", "claude", "plugin", "test", overlay)
+			edited := slices.DeleteFunc(modRelative(tests, mod), func(rel string) bool { return !isTestFile(rel) })
+			scope := suiteWhole
+			if len(edited) > 0 {
+				scope = suiteScopeOf(len(edited), overlay)
+				if err := setAsideTestsBut(overlay, func(rel string) bool { return slices.Contains(edited, rel) }); err != nil {
+					return "", err
+				}
+			}
+			got, _ := runSuite(overlay, scope.isLong())
 			report := modReport{Mod: mod, Validate: "skipped"}
 			report.Passed, report.Failed, report.Errored = testOutcome(got.log)
 			reports = append(reports, report)

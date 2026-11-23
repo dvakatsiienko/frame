@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -6,11 +6,11 @@ import { describe, expect, it } from 'vitest';
 import {
     countBoots,
     countMods,
-    helperStartsHosts,
     pastTheTable,
     raised,
     readTable,
     readTicks,
+    refusedHelper,
     unticked,
 } from './boots.ts';
 
@@ -33,11 +33,6 @@ describe('the host starts of one test file', () => {
         ['a body written elsewhere', `${KIT}test('a', body);`, 1],
         ['no row with a $', `${KIT}test('a', () => {});`, 0],
         [
-            'a describe',
-            `${KIT}describe('d', () => { test('a', ($) => {}); });`,
-            1,
-        ],
-        [
             'the shared boot',
             `${SHARED}test('a', ($) => {});test('b', ($) => {});`,
             1,
@@ -57,6 +52,7 @@ describe('the host starts of one test file', () => {
             `${KIT}for (const n of l) test(n, () => {});`,
             0,
         ],
+        ['a property of that name', `${KIT}const t = { test: 1 }; t.test;`, 0],
     ])('%s', (_, source, boots) => {
         expect(countBoots(source)).toEqual({ boots });
     });
@@ -69,23 +65,59 @@ describe('the host starts of one test file', () => {
             `${KIT}function row(n) { test(n, ($) => {}); } row('a');`,
         ],
         ['an arrow', `${KIT}const row = (n) => test(n, ($) => {}); row('a');`],
+        [
+            'a describe, the kit’s or its own',
+            `${KIT}describe('d', () => { test('a', ($) => {}); });`,
+        ],
         ['an alias', `${KIT}const t = test; t('a', ($) => {});`],
         ['a member', `${KIT}test.each(l)('a', ($) => {});`],
         [
             'a whole import',
             "import * as kit from 'claude-code/testing'; kit.test('a', ($) => {});",
         ],
+        ['a default import', "import kit from 'claude-code/testing';"],
+        [
+            'a string name',
+            "import { 'test' as t } from 'claude-code/testing'; t('a', ($) => {});",
+        ],
         [
             'a renamed import in a loop',
             "import { test as t } from 'claude-code/testing'; for (const n of l) t(n, ($) => {});",
         ],
-        ['a re-export', `${KIT}export { test };`],
+        ['a re-export of a local', `${KIT}export { test };`],
+        ['a re-export', "export { test } from 'claude-code/testing';"],
         [
             'a late load',
             "const { test } = await import('claude-code/testing'); test('a', ($) => {});",
         ],
+        [
+            'a late load in pieces',
+            "const k = await import('claude-code/' + 'testing');",
+        ],
+        ['a require', "const k = require('claude-code/testing');"],
+        ['another test file', "import { test } from './b.test.ts';"],
+        [
+            'another name of the helper',
+            "import { hostTest } from './shared-boot.ts';",
+        ],
+        [
+            'a helper by another path',
+            "import { test } from './sub/shared-boot.ts';",
+        ],
+        [
+            'a helper by another suffix',
+            "import { test } from './shared-boot.js';",
+        ],
+        ['the helper handed on', "export { test } from './shared-boot.ts';"],
     ])('%s is refused, uncounted', (_, source) => {
         expect(countBoots(source).why).toBeDefined();
+    });
+
+    it('a nested file reaches the one helper', () => {
+        const source =
+            "import { test } from '../shared-boot.ts';test('a', ($) => {});";
+        expect(countBoots(source, 'tests/sub/a.test.ts')).toEqual({ boots: 1 });
+        expect(countBoots(source, 'tests/a.test.ts').why).toBeDefined();
     });
 });
 
@@ -119,6 +151,28 @@ describe('the boots table', () => {
         ).toEqual([row('a.test.ts', 1)]);
     });
 
+    it.each(['many', '9x', '', '1 111', '1.5', '-1'])(
+        'a row of «%s» is named, and its raise asks a tick',
+        (boots) => {
+            const [bad] = readTable(`x-mod-a\ttests/a.test.ts\t${boots}\t`);
+            const broken = [row('*', 3), bad as never];
+            expect(pastTheTable([row('a.test.ts', 1)], broken)).toEqual([
+                'x-mod-a/tests/a.test.ts: its row holds no whole number',
+            ]);
+            expect(
+                raised(table, [row('*', 3), bad as never, row('b.test.ts', 2)]),
+            ).toHaveLength(1);
+        },
+    );
+    it('a second row of one file is named', () => {
+        expect(
+            pastTheTable(
+                [row('a.test.ts', 1), row('b.test.ts', 1)],
+                [...table, row('a.test.ts', 9)],
+            ),
+        ).toEqual(['x-mod-a/tests/a.test.ts: a second row']);
+    });
+
     const base = [row('*', 3), row('a.test.ts', 1)];
     const up = raised([row('*', 3), row('a.test.ts', 2, '1795')], base);
     const tick = {
@@ -126,13 +180,14 @@ describe('the boots table', () => {
         pick: 'raise x-mod-a/tests/a.test.ts to 2',
         verdict: 'tick',
     };
-    it('a raise on a logged tick naming the file and the number passes', () => {
+    it('a raise on a logged tick of that pick passes', () => {
         expect([up.length, unticked(up, [tick])]).toEqual([1, []]);
     });
     it.each([
         ['no tick', []],
         ['a tick typed in, never logged', [{ ...tick, at: 1 }]],
-        ['a tick sent back', [{ ...tick, verdict: 'back' }]],
+        ['a tick sent back', [{ ...tick, verdict: 'replay' }]],
+        ['a tick with a steer', [{ ...tick, steer: 'no, cut it first' }]],
         [
             'a tick on another file',
             [{ ...tick, pick: 'raise x-mod-a/tests/aa.test.ts to 2' }],
@@ -140,6 +195,14 @@ describe('the boots table', () => {
         [
             'a tick on another number',
             [{ ...tick, pick: 'raise x-mod-a/tests/a.test.ts to 22' }],
+        ],
+        [
+            'a tick declining it',
+            [{ ...tick, pick: 'never raise x-mod-a/tests/a.test.ts to 2' }],
+        ],
+        [
+            'a tick whose ask alone says it',
+            [{ ...tick, pick: 'keep 1', text: tick.pick }],
         ],
     ])('a raise on %s is named', (_, ticks) => {
         expect(unticked(up, ticks)).toHaveLength(1);
@@ -168,7 +231,7 @@ it('a tick he took back is no tick, in its own session alone', () => {
     ).toEqual([3]);
 });
 
-describe('a helper', () => {
+describe('a file beside the test files', () => {
     it.each([
         [
             'the kit’s types',
@@ -176,8 +239,9 @@ describe('a helper', () => {
         ],
         ['a mock', "import { type Engine, mock } from 'claude-code/testing';"],
         ['another module', "export * from './other.ts';"],
+        ['the helper’s mock', "import { mock } from './shared-boot.ts';"],
     ])('%s starts no host', (_, source) => {
-        expect(helperStartsHosts(source)).toBe(false);
+        expect(refusedHelper(source)).toBeUndefined();
     });
     it.each([
         ['test', "import { test } from 'claude-code/testing';"],
@@ -192,6 +256,10 @@ describe('a helper', () => {
         ],
         ['a default', "import kit from 'claude-code/testing';"],
         ['a late load', "const kit = await import('claude-code/testing');"],
+        [
+            'a template late load',
+            'const kit = await import(`claude-code/testing`);',
+        ],
         ['a re-export of all', "export * from 'claude-code/testing';"],
         ['a re-export of test', "export { test } from 'claude-code/testing';"],
         [
@@ -202,8 +270,63 @@ describe('a helper', () => {
             'test imported as mock',
             "import { test as mock } from 'claude-code/testing';",
         ],
+        ['the helper’s test', "import { test } from './shared-boot.ts';"],
+        ['a test file', "import './a.test.ts';"],
     ])('%s is refused', (_, source) => {
-        expect(helperStartsHosts(source)).toBe(true);
+        expect(refusedHelper(source)).toBeDefined();
+    });
+});
+
+describe('the shared helper', () => {
+    const FILE = 'x-mod-stash/tests/shared-boot.ts';
+    const source = readFileSync(join(import.meta.dirname, FILE), 'utf8');
+    const read = (edit: (s: string) => string) => {
+        const edited = edit(source);
+        expect(edited === source).toBe(false);
+        return refusedHelper(edited, 'tests/shared-boot.ts');
+    };
+    it('stands on its pin, a new door and all', () => {
+        expect(refusedHelper(source, 'tests/shared-boot.ts')).toBeUndefined();
+        expect(
+            read((s) =>
+                s.replace(
+                    "    'ui.toast',\n",
+                    "    'ui.toast',\n    'ui.wide',\n",
+                ),
+            ),
+        ).toBeUndefined();
+    });
+    it.each([
+        [
+            'boots each row',
+            (s: string) => s.replace('if (!body.length)', 'if (body)'),
+        ],
+        [
+            'hands the kit’s test on',
+            (s: string) =>
+                s.replace(
+                    'export { type Engine,',
+                    'export { test as hostTest2, type Engine,',
+                ),
+        ],
+        [
+            'starts a host in another function',
+            (s: string) =>
+                s.replace(
+                    'async function runRows($: Engine, on: On) {',
+                    "async function runRows($: Engine, on: On) {\n    hostTest('a', ($) => {});",
+                ),
+        ],
+        [
+            'exports another function',
+            (s: string) =>
+                s.replace(
+                    'async function runRows',
+                    'export async function runRows',
+                ),
+        ],
+    ])('one that %s is refused', (_, edit) => {
+        expect(read(edit)).toBeDefined();
     });
 });
 
@@ -212,17 +335,27 @@ it('a test file counts wherever in a mod it sits', () => {
     for (const file of [
         'tests/sub/a.test.ts',
         'hooks/b.test.tsx',
+        'tests/.z.test.ts',
+        'tests/node_modules_b/z.test.ts',
         'node_modules/d/c.test.ts',
         '.claude-plugin/types/d.test.ts',
+        'tests/h.mts',
+        'tests/.kit.ts',
+        'tests/k.js',
     ]) {
-        mkdirSync(join(root, 'x-mod-a', dirname(file)), { recursive: true });
-        writeFileSync(
-            join(root, 'x-mod-a', file),
-            `${KIT}test('a', ($) => {});`,
-        );
+        mkdirSync(join(root, 'mod-a', dirname(file)), { recursive: true });
+        writeFileSync(join(root, 'mod-a', file), `${KIT}test('a', ($) => {});`);
     }
-    expect(countMods(root).counts.map((c) => c.file)).toEqual([
+    const { counts, red } = countMods(root);
+    expect(red.map((l) => l.split(':')[0])).toEqual([
+        'mod-a/tests/.kit.ts',
+        'mod-a/tests/h.mts',
+        'mod-a/tests/k.js',
+    ]);
+    expect(counts.map((c) => c.file)).toEqual([
         'hooks/b.test.tsx',
+        'tests/.z.test.ts',
+        'tests/node_modules_b/z.test.ts',
         'tests/sub/a.test.ts',
     ]);
 });

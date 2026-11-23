@@ -205,35 +205,43 @@ func TestModsEditTestTakesTheLongTurnForAWholeSuiteOnly(t *testing.T) {
 	t.Parallel()
 	for _, c := range []struct {
 		name  string
-		args  func(base string) []string
+		args  func(base, wide string) []string
+		pulls []string
 		turns int
 	}{
-		{"a range: the head only", func(base string) []string { return []string{"--range", base + "..HEAD"} }, 1},
-		{"the overlay run, whole", func(string) []string { return []string{"--whole"} }, 1},
-		{"the overlay run, the tests a change reaches", func(string) []string { return nil }, 0},
-		{"one test file", func(string) []string { return []string{"--only", modTestA} }, 0},
+		{"a range: the head only", func(_, wide string) []string { return []string{"--range", wide + "..HEAD"} }, nil, 1},
+		{"a range: the head and an earlier commit of two thirds of the files", func(base, _ string) []string { return []string{"--range", base + "..HEAD"} }, nil, 2},
+		{"the overlay run, whole", func(_, _ string) []string { return []string{"--whole"} }, []string{modTestA}, 1},
+		{"the overlay run, the tests a change reaches", func(_, _ string) []string { return nil }, []string{modTestA}, 0},
+		{"one test file", func(_, _ string) []string { return []string{"--only", modTestA} }, []string{modTestA}, 0},
+		{"one edited file against HEAD", func(_, _ string) []string { return []string{"--against", "HEAD"} }, []string{modTestA}, 0},
+		{"two thirds of the files against HEAD", func(_, _ string) []string { return []string{"--against", "HEAD"} }, []string{modTestA, modTestB}, 1},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			dir, env := modsFixture(t)
+			commitFile(t, dir, modsDir+"m/tests/c.test.ts", "green, the third\n")
 			base := strings.TrimSpace(gitT(t, dir, "rev-parse", "HEAD"))
+			write(t, filepath.Join(dir, modTestA), "green, both\n")
+			write(t, filepath.Join(dir, modTestB), "green, both\n")
+			commitAll(t, dir)
+			wide := strings.TrimSpace(gitT(t, dir, "rev-parse", "HEAD"))
 			commitFile(t, dir, modTestA, "green, edited\n")
 			commitFile(t, dir, modTestB, "green, edited too\n")
-			commitFile(t, dir, modsDir+"m/tests/c.test.ts", "green, the third\n")
 			turns := filepath.Join(t.TempDir(), "turns")
 			write(t, filepath.Join(dir, "script/gate-queue.sh"), "#!/bin/sh\necho \"$*\" >> "+turns+"\necho 'gate-queue: waiting 30s, holder: x lane commit other.txt' >&2\n[ \"$1\" = --long ] && shift\nexec \"$@\"\n")
 			env = append(env, "X_FRAME_ROOT="+dir, "X_STATE="+t.TempDir())
-			if len(c.args(base)) == 0 || c.args(base)[0] != "--range" {
-				write(t, pullCopy(t, dir, env, modTestA), "green, pulled\n")
+			for _, path := range c.pulls {
+				write(t, pullCopy(t, dir, env, path), "green, pulled\n")
 			}
 
-			out, errs, code := xStderr(t, dir, env, append([]string{"mods", "edit", "test"}, c.args(base)...)...)
+			out, errs, code := xStderr(t, dir, env, append([]string{"mods", "edit", "test"}, c.args(base, wide)...)...)
 
 			queued := strings.Count(readFile0(turns), "--long claude plugin test")
 			if code != 0 || queued != c.turns {
-				t.Errorf("exit %d, %d whole suites took the long turn, want %d:\n%s\n%s", code, queued, c.turns, out, errs)
+				t.Errorf("exit %d, %d suites took the long turn, want %d:\n%s\n%s", code, queued, c.turns, out, errs)
 			}
-			if c.turns > 0 && !strings.Contains(errs, "gate-queue: waiting 30s, holder: x lane commit other.txt") {
+			if queued > 0 && !strings.Contains(errs, "gate-queue: waiting 30s, holder: x lane commit other.txt") {
 				t.Errorf("the wait line, who holds the turn, did not reach stderr (turns log %q):\n%s", readFile0(turns), errs)
 			}
 		})

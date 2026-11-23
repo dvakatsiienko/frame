@@ -399,7 +399,7 @@ test('nothing compacts before the turn that named the handoff ends', async ($, o
     const w = world(on);
     await start($);
     await ready($, SLUG);
-    await w.clock.advance(5_000);
+    await w.clock.advance(POLL_MS);
     expect(w.commands).toEqual([]);
 });
 
@@ -2133,7 +2133,7 @@ for (const isWindOn of [true, false])
         await start($);
         await say($, 'work');
         await compact($, 'auto');
-        await w.clock.advance(5_000);
+        await w.clock.advance(POLL_MS);
         const midTurn = heldPrompts(w.prompts).length;
         await endTurn($);
         await w.clock.advance(10_000);
