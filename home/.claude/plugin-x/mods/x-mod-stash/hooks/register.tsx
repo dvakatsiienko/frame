@@ -27,7 +27,7 @@ import {
     receiveMessage,
 } from './quiet-gate.ts';
 import { fixDrawnReply, fixStoredReply, settleReply } from './reply-fix.ts';
-import { endSession, forget } from './session-end.ts';
+import { endSession, forget, resetModules } from './session-end.ts';
 import { currentId, refreshThreads } from './session-identity.ts';
 import { keepShelf, noteModel } from './session-record.ts';
 import { startSession } from './session-start.ts';
@@ -201,11 +201,12 @@ export const register: Register = (on) => {
     );
 
     on('session.end', async ($, e, next) => {
-        await endSession(
-            $,
-            e.sessionId,
-            e.reason === 'clear' || e.reason === 'resume',
-        );
+        const isLeft = e.reason === 'clear' || e.reason === 'resume';
+        try {
+            await endSession($, e.sessionId, isLeft);
+        } finally {
+            if (!isLeft) resetModules();
+        }
         return next(e);
     });
 

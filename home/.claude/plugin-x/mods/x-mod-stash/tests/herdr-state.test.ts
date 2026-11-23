@@ -997,6 +997,28 @@ test("a subagent's start after the turn ended leaves the thread's file idle", as
     expect(s.read(A)?.state).toBe('idle');
 });
 
+// the module variables outlive a conversation, never a quit: the next prompt after one is the first of its session
+async function promptAfterEnd(
+    $: Engine,
+    s: Awaited<ReturnType<typeof session>>,
+    reason: 'other' | 'clear',
+) {
+    await say($);
+    await $.session.end({ reason, sessionId: A } as never);
+    s.files.set(JOINS, row('j1', 'first'));
+    await say($, 'B');
+    return said(s).length;
+}
+test('a quit leaves no running turn: the next prompt carries the joins', async ($, on) => {
+    const s = await session($, on);
+    expect(await promptAfterEnd($, s, 'other')).toBe(1);
+});
+
+test('a /clear mid-turn keeps the running turn: the next prompt carries no joins', async ($, on) => {
+    const s = await session($, on);
+    expect(await promptAfterEnd($, s, 'clear')).toBe(0);
+});
+
 // FRM-618 slice D exit 4: the file carries every field herdr's contract requires, so a rename here reds this test; the
 // test runs on an overlay copy that cannot reach frame's herdr/contracts/herdr-state.schema.json, so its `required` and
 // `state.enum` are pinned here, and herdr's state-schema.test.ts pins the schema to the same lists

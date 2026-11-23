@@ -22,9 +22,10 @@ type TurnState = {
     turnAfk?: boolean;
     turnTools: number;
 };
-const state: TurnState = {
+const loaded = (): TurnState => ({
     activeAt: 0,
     bookkeptAt: 0,
+    endedAt: undefined,
     gridQs: [],
     isBusy: false,
     isNudged: false,
@@ -33,9 +34,14 @@ const state: TurnState = {
     isWorkTurn: false,
     isWrapAsked: false,
     pinged: false,
+    turnAfk: undefined,
     turnTools: 0,
-};
+});
+const state = loaded();
 export const turn: Readonly<TurnState> = state;
+export function resetTurn() {
+    Object.assign(state, loaded());
+}
 
 // when the last main turn ended: 🔥 switched on while idle counts its 50 min from here, so the ping lands inside the cache's hour
 const ENDED = { key: 'ended', plugin: 'x-mod-stash' } as const;
