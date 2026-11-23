@@ -51,7 +51,6 @@ x-mod-stash	tests/lane-steps.test.ts	1
 x-mod-stash	tests/lane-switch.test.ts	1	
 x-mod-stash	tests/lane.test.ts	1	
 x-mod-stash	tests/lanes-shelf.test.ts	1	
-x-mod-stash	tests/load.test.ts	1	
 x-mod-stash	tests/meters.test.ts	1	
 x-mod-stash	tests/names-pin.test.ts	0	
 x-mod-stash	tests/operator-override.test.ts	1	
@@ -88,4 +87,3 @@ x-mod-stash	tests/wind-held.test.ts	1
 x-mod-stash	tests/wind-knobs.test.ts	1	
 x-mod-stash	tests/wind-reload.test.ts	1	
 x-mod-stash	tests/wind.test.ts	1	
-x-mod-stash	tests/words.test.ts	1	
