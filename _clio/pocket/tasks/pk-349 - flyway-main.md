@@ -22,7 +22,7 @@ ordinal: 1000
 - [ ] #4 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
 - [ ] #5 f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes
 - [ ] #6 f77 hang-heal: a ticket for the silent-member alarm outside a shift, a watch on clio, the keychain lost at login
-- [ ] #7 f85 frame package.json: root deps with no user after the chords cut (tailwind vite, plugin-react, react types): check, then drop
+- [ ] #7 f85 frame package.json: five root deps with no user after the chords cut: check, then drop
 - [ ] #8 f86 mods rider: the guard treats a branch with no `+` line in git cherry as merged, so its delete needs no tick (his o4)
 - [ ] #9 f87 speak FTR: the pill states line gains «no word timings», a rider for the speak lane (the designer, 15:29)
 - [ ] #10 f88 speak art-kit run: the speechify card takes the Speechify API own mark and colour (designer placeholders now)
