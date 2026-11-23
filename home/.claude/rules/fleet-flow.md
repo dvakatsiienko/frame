@@ -20,11 +20,11 @@ dima may steer there, and the member answers there.
   - talks to clio on the events the quiet mod pushes; all else slipstreams (`plugin-x/mods/x-mod-stash/FTR.md`)
   - talks to its sixth sense freely
   - hears from clio, sixth sense, and dima when he drops in
-  - lands as: a linear comment + the done ping
+  - lands as: a linear comment; the done ping only with no sixth sense
 - **sixth sense**
   - talks to codie; to clio only on a dispute, a round-3 or not-checkable stop, or its exit line
   - hears from codie
-  - lands as: its `clean` to clio; a dispute or a stop goes to clio
+  - lands as: its `clean`, a dispute or a stop, to clio
 - **retros** — ⏸️ per-lane ones paused: each made more work than it solved; a blocker goes in the ping. one `weekly-retro` card, Tuesday boots, over the week's transcripts, at most 3 lines become work, the rest die (`clio:boot`)
 - **designer**
   - talks to clio (one ping per spread) and to dima when he drops in

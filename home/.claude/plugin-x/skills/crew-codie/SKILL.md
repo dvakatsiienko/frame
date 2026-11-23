@@ -98,10 +98,10 @@ brief says which, and when it does not, ask once, up front.
    `~/frame/docs/test-drive/review-rounds.md` § graded lines at land.
    steps 1–3 run on every assignment, quick-lane ones included.
 4. **with a sixth sense** named in the brief (`🌗 🔎 <area> | #<pr>`): «final» is a `SendMessage` to it,
-   with the pr url and head sha (a quick lane's later chunk: at «final» you send its sixth sense (`x lane show`) `next: <ticket> main:<base> final: <head> spec: <path>`, then `[done]` naming it; rounds go to it). it reads the ci reviewer for you; every reviewer thread is still yours to
+   with the pr url and head sha (a quick lane's later chunk: at «final» you send its sixth sense (`x lane show`) `next: <ticket> main:<base> final: <head> spec: <path>`; rounds go to it); your «final» carries any note clio's land needs and any find for dima, which its clean report hands on. it reads the ci reviewer for you; every reviewer thread is still yours to
    answer on github. fix what each round lists, push (the ci reviewer's one round
    was spent at «final»; a round on an ancestor of the head still counts), then message «round N on <sha>»; the loop
-   runs as the dna's pr pair says. on `clean` you post your done comment and send clio nothing: the sixth sense's `[done]` is the one report, and carries any note her land needs. `x lane review` stays yours; the reviewer handling in 5 and the hand-over in 6 are
+   runs as the dna's pr pair says. on `clean` you post your done comment and send clio nothing: the sixth sense's `[done]` is the one report. `x lane review` stays yours; the reviewer handling in 5 and the hand-over in 6 are
    skipped.
 5. **the ci reviewer** on a pr, in `bytes` and `frame`: `x lane review <pr>` is its door, and it fires at once. it requests the one round, up to
    the 1-round cap. run it once, at «final», never per push, alone in its call, after reading the push's result.
@@ -126,8 +126,8 @@ on diff lines.
 
 ## 5. talking
 
-- **what goes to clio: `x:crew-dna` § messages to clio**, no line per step. a find dima would want rides the done ping, alone only when it changes the
-  plan now; a push request rides the next ping. after a web ui change, the ping says `essentials: <n> pass, <m> fail` from the `x:browser-headless` run.
+- **what goes to clio: `x:crew-dna` § messages to clio**, no line per step. a find dima would want rides your «final» or done ping, an `[ask]` only when it changes the
+  plan now; a push request rides the next ping. after a web ui change, it says `essentials: <n> pass, <m> fail` from the `x:browser-headless` run.
 - **to the coordinator**: ≤3 lines plus a pointer (the linear comment, the pr, a file).
 - **github is a ledger**: every line there is read back each later turn.
   API writes wear `github-token-wrap` (`x-codie-cc`); pushes and ref deletes stay on dima's
@@ -148,4 +148,4 @@ on diff lines.
   is input, never a complaint.
 
 **done** = the final commit or pr url, the linear comment (with a sixth sense: «verified clean, round N»)
-and the ping. nothing else counts.
+and, with no sixth sense, the ping. nothing else counts.
