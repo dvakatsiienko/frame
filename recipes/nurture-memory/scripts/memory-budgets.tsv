@@ -44,7 +44,7 @@ _clio/plugin-clio/skills/halt/SKILL.md	1555	2026-11-07: the halt split by thread
 _clio/plugin-clio/skills/lowtide-cuts/SKILL.md	4900	+1500 2026-11-09: renamed (PK-367), the filter test and when it runs joined (PK-367:W2, W3, dima's o36–o38); seed 2026-11-06, its size + 15 %
 _clio/plugin-clio/skills/lowtide-flyway-sync/SKILL.md	2650	+450 2026-11-12: the halt flush, his o181 tick (flyway pointer lines, siesta flyway freebie, parked member next chunk, look-card proof). +150 2026-11-12: step 2 runs flyway-done --check, the home read by command (dima o45); +100 2026-11-12: renamed into the lowtide family, its name line (PK-387); +50 2026-11-11: «seat» → «thread», 2 B a hit (dima 19:43); seed 2026-11-11, its size + 15 %
 _clio/plugin-clio/skills/lowtide-peek-chunk/SKILL.md	3100	seed 2026-11-13, its size + 15 % (FRM-626)
-_clio/plugin-clio/skills/lowtide-peek-lanes/SKILL.md	3800	seed 2026-11-12, its size + 15 %; renamed 2026-11-13 (FRM-626)
+_clio/plugin-clio/skills/lowtide-peek-lanes/SKILL.md	4100	+300 2026-11-23 20:29: the reds print as their own list after the lanes, every chunk read per project (his ask, after a peek hid 7 chunks and buried the reds). seed 2026-11-12, its size + 15 %; renamed 2026-11-13 (FRM-626)
 _clio/plugin-clio/skills/lowtide-triage/SKILL.md	3600	seed 2026-11-07: any clio splits the pile across lanes (dima, PK-352), its size + 8 %; 2026-11-11 +200: the someday and scope filter, the hunt's filter line (dima o32)
 _clio/plugin-clio/skills/lowtide/references/chunk-order.md	2300	seed 2026-11-12, its size + 15 % (PK-387:W28–W33)
 _clio/plugin-clio/skills/lowtide/references/shapes.md	1800	seed 2026-11-12, its size + 15 % (PK-387:W23, W25)

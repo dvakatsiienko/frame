@@ -30,7 +30,9 @@ his word «ready» or «healthcheck» after the lanes: peek shows, ready ensures
 
 ## the print — the reply is the report
 
-- per lane: the lane header carrying its ready verdict (🟢 or 🔴 with the owed move), then every pending chunk as a chunk line, in the order it stands
+- per lane: the lane header carrying its ready verdict (🟢 or 🔴), then every pending chunk as a chunk line, in the order it stands, with no red detail on it
+- **the reds print apart, after all lanes** (dima, 2026-11-23: «for all red items you should propose me them into separate easy to read list that goes after all healthy chunks; its hard to find unhealthy ones in a big list»): one `🔴 what needs a move` list, one line a chunk: the chunk, what is missing in plain words, whose move (mine: running or when; his: the orbit ask), and nothing healthy in it; no reds → «🟢 nothing red»
+- every chunk of the lane's project is listed, read per project from linear (`x linear list --team FRM --project <name> --state Todo`, then `In Progress`), never from the script's two slots alone
 - done chunks only when he asks for them, as done lines; a number he names («next 3») prints just those
 - the running chunk carries 🛼 and its time left
 - the reply ends with the order as one orbit ask he ticks; «reorder», «prio X» or «optimize» runs `chunk-order.md`
