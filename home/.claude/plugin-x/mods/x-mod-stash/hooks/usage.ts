@@ -62,7 +62,8 @@ export async function paceMeterOf($: EngineInterface) {
 // answer's end, so a long answer is not dated past a peer's newer one
 let respondedAt: number | undefined;
 export function noteResponse(at: number) {
-    respondedAt = at;
+    // a subagent's steps overlap the main loop's: the latest ask stands
+    respondedAt = Math.max(respondedAt ?? 0, at);
 }
 // the rate-limit mirror every fleet reader takes (clio's boot, the designer), in sline's old shape: seconds; this mod is
 // its one writer. each window carries `read_at`, and an older reading never replaces a newer one, whichever session measures
@@ -82,27 +83,34 @@ export async function saveUsage(
     const window = (kind: 'five_hour' | 'seven_day') => {
         const w = limits.find((l) => l.kind === kind);
         const was = file?.rate_limits?.[kind];
-        if (w && !(was && readOf(was) > at))
+        const resets = w?.resetsAt
+            ? Math.round(Date.parse(w.resetsAt) / 1000)
+            : null;
+        // a spent window stays spent until its reset, and the request refused for it got no response to date it by
+        const isSpent = w !== undefined && w.percentUsed >= 100;
+        const isOver = resets !== null && resets <= now;
+        if (w && !isOver && (isSpent || !(was && readOf(was) > at)))
             return {
-                read_at: at,
-                resets_at: w.resetsAt
-                    ? Math.round(Date.parse(w.resetsAt) / 1000)
-                    : null,
+                read_at: isSpent ? now : at,
+                resets_at: resets,
                 used_percentage: w.percentUsed,
             };
         return typeof was?.resets_at === 'number' && was.resets_at > now
             ? { ...was, read_at: readOf(was) }
             : null;
     };
+    const next = JSON.stringify({
+        rate_limits: {
+            five_hour: window('five_hour'),
+            seven_day: window('seven_day'),
+        },
+        written_at: Math.max(at, past(file?.written_at)),
+    });
+    // an older reading writes nothing, so it never puts back what a peer replaced meanwhile
+    if (next === JSON.stringify(file)) return;
     await $.fs.write(
         `${await $.env.get('HOME')}/.claude/shelf/cc-usage-window.json`,
-        JSON.stringify({
-            rate_limits: {
-                five_hour: window('five_hour'),
-                seven_day: window('seven_day'),
-            },
-            written_at: Math.max(at, past(file?.written_at)),
-        }),
+        next,
     );
 }
 

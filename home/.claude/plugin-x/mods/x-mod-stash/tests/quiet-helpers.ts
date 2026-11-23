@@ -27,7 +27,7 @@ export function appendLog(
 ) {
     const [, , script, , path, text] = argv;
     if (script === QUIET_LOG_APPEND && path)
-        files[path] = `${files[path] ?? ''}\n${text}`;
+        files[path] = `${files[path] ?? ''}\n${text}\n`;
 }
 
 // clio by default, as the registry names her; `cwd` is where a Bash `cd` left her
@@ -163,7 +163,9 @@ export function world(
                 ? String(POLL)
                 : isTestChild && e.name === 'X_MODS_TEST_CHILD'
                   ? '1'
-                  : '/home',
+                  : e.name === 'CLAUDE_CODE_PLUGIN_CACHE_DIR'
+                    ? '/run/plugin-cache'
+                    : '/home',
     }));
     on('ui.log', (_$, e) => {
         logged.push(String(e.text));

@@ -649,6 +649,53 @@ test('a time ahead of the clock holds no figure back', async ($, on) => {
     expect(usage(files)).toEqual({ at: 0, five: 39, week: 92 });
 });
 
+test('an ended window stays null, though an idle session still carries it', async ($, on) => {
+    const { clock, files } = meters(on);
+    await respond($, on);
+    await $.session.measure(weekly('rateLimits', 91));
+    await clock.advance(3 * HOUR);
+    await $.session.measure(weekly('context', 91));
+    expect(usage(files)).toEqual({ at: 0, five: null, week: 91 });
+});
+
+test('a reading older than the file writes nothing', async ($, on) => {
+    const { clock, files } = meters(on);
+    await respond($, on);
+    await $.session.measure(weekly('rateLimits', 91));
+    peerWrote(files, 93, 5);
+    const f = JSON.parse(files[USAGE] ?? '{}');
+    f.rate_limits.five_hour.read_at += 5;
+    const peers = JSON.stringify(f, null, 1);
+    files[USAGE] = peers;
+    await clock.advance(10_000);
+    await $.session.measure(weekly('rateLimits', 92));
+    expect(files[USAGE]).toBe(peers);
+});
+
+test("a step that asked before another's answer moves no time back", async ($, on) => {
+    const { clock, files } = meters(on);
+    await $.session.measure(weekly('rateLimits', 91));
+    let steps = 0;
+    await respond($, on, 'end_turn', async () => {
+        if (steps++) return;
+        await clock.advance(20_000);
+        await respond($, on);
+    });
+    peerWrote(files, 93, 10);
+    await $.session.measure(weekly('context', 92));
+    expect(usage(files).week).toBe(92);
+});
+
+test('a spent window beats a newer reading that is not', async ($, on) => {
+    const { clock, files } = meters(on);
+    await respond($, on);
+    await $.session.measure(weekly('rateLimits', 99));
+    peerWrote(files, 99, 5);
+    await clock.advance(10_000);
+    await $.session.measure(weekly('rateLimits', 100));
+    expect(usage(files).week).toBe(100);
+});
+
 test('a figure a newer response lowered is written too', async ($, on) => {
     const { clock, files } = meters(on);
     await $.session.measure(weekly('rateLimits', 92));

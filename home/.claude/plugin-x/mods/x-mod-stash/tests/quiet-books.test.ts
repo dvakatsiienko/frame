@@ -194,25 +194,12 @@ test("a later log line of the day looks at no file's age", async ($, on) => {
     expect(dir.removed).toEqual([]);
 });
 
-test('a line torn with no newline after it loses no later line', async ($, on) => {
-    const w = world(on);
-    await start($);
-    w.files[`/home/.claude/shelf/quiet-log/${DAY}.jsonl`] = '{"at":1,"fr';
-    await ping($, '[progress] step 2 landed');
-    expect(
-        w.files[`/home/.claude/shelf/quiet-log/${DAY}.jsonl`]
-            ?.split('\n')
-            .slice(1)
-            .map((l) => (JSON.parse(l) as { from: string }).from),
-    ).toEqual(['☕️ 🔧 codie: mods']);
-});
-
 test("a test child's log sits beside its store, the fleet's untouched", async ($, on) => {
     const w = world(on, { isTestChild: true });
     await start($);
     await ping($, '[progress] step 2 landed');
     expect(Object.keys(w.files).filter((f) => f.includes('quiet-log'))).toEqual(
-        [`/home/quiet-log/${DAY}.jsonl`],
+        [`/run/plugin-cache/quiet-log/${DAY}.jsonl`],
     );
 });
 

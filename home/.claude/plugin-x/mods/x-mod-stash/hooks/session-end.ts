@@ -74,10 +74,10 @@ async function pruneGone($: EngineInterface, now: number) {
         .split('\n')
         .map((path) => path.slice(path.lastIndexOf('/') + 1, -'.jsonl'.length))
         .filter((sid) => SESSION_ID.test(sid));
+    const rows = await registry($);
     const entries = (await $.fs.list(`${home}/.claude/sessions`)).filter((f) =>
         f.name.endsWith('.json'),
     );
-    const rows = await registry($);
     // a lookup that failed, found nobody or missed a torn registry file says nothing about who is gone
     if (found.exitCode !== 0 || !recent.length) return;
     if (!rows.length || rows.length < entries.length) return;
