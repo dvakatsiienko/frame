@@ -17,5 +17,5 @@ Dima's tick letting one other session write a held file until that session's nex
 _Avoid_: override, unlock, share
 
 **Release**:
-The end of a hold: the file is clean in git, the holder is dead, or the holder sat idle 30 minutes since its last turn.
+The end of a hold: the file is clean in git, the holder is dead, or the holder sat idle 30 minutes since its last turn; to the new main alone, the main seat moved to it from the holder after the hold was taken.
 _Avoid_: unlock, expiry

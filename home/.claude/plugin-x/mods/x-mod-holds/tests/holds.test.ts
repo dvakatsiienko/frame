@@ -557,3 +557,110 @@ test('a tick quoting the file from ~ passes it', async ($, on) => {
     w.links.set('/home/link/x.ts', '/repo/x.ts');
     expect((await edit($, w, '/repo/x.ts')).deny).toBeUndefined();
 });
+
+// FRM-596: x writes whom the seat came from and when on the record it makes coordinator; the old main's holds from before
+// then follow the seat to the new main alone
+const THREADS = '/home/.claude/shelf/threads.json';
+const SWITCHED = 1_000_000 + 5 * MIN;
+function seats(on: On, threads: unknown) {
+    on('env.get', () => ({ value: '/home' }));
+    on('fs.read', (_$, e) =>
+        e.path === THREADS && threads !== undefined
+            ? {
+                  value:
+                      typeof threads === 'string'
+                          ? threads
+                          : JSON.stringify({ threads }),
+              }
+            : { deny: 'no such file' },
+    );
+}
+const newMain = (sid: string, seatTakenFrom: string, at = SWITCHED) => ({
+    role: 'coordinator',
+    seatTakenAt: at,
+    seatTakenFrom,
+    sessionId: sid,
+});
+
+test("the new main takes the old main's hold", async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    seats(on, [newMain(B, A), { role: 'wing', sessionId: A }]);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    await w.clock.advance(6 * MIN);
+    await w.as($, B);
+    const taken = (await edit($, w, '/repo/x.ts')).deny;
+    await w.as($, C);
+    expect([taken, (await edit($, w, '/repo/x.ts')).deny]).toEqual([
+        undefined,
+        expect.stringContaining(`held by session ${B.slice(0, 8)}`),
+    ]);
+});
+
+test("a third session is still refused the old main's file after the switch", async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    seats(on, [newMain(B, A), { role: 'wing', sessionId: C, wing: 2 }]);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    await w.clock.advance(6 * MIN);
+    await w.as($, C);
+    expect((await edit($, w, '/repo/x.ts')).deny).toContain(
+        `held by session ${A.slice(0, 8)}`,
+    );
+});
+
+test('a hold the old main took after the switch stays its own', async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    seats(on, [newMain(B, A)]);
+    await w.clock.advance(6 * MIN);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    await w.as($, B);
+    expect((await edit($, w, '/repo/x.ts')).deny).toContain(
+        `held by session ${A.slice(0, 8)}`,
+    );
+});
+
+// the seat moved A to B to C: C's record names B alone, so A's older holds stay closed to C until they age out (exit 5b)
+test('a seat moved twice opens only the last main’s holds', async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    seats(on, [newMain(C, B), { role: 'wing', sessionId: B }]);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    await w.as($, B);
+    await edit($, w, '/repo/y.ts');
+    await w.clock.advance(6 * MIN);
+    await w.as($, C);
+    expect([
+        (await edit($, w, '/repo/x.ts')).deny,
+        (await edit($, w, '/repo/y.ts')).deny,
+    ]).toEqual([
+        expect.stringContaining(`held by session ${A.slice(0, 8)}`),
+        undefined,
+    ]);
+});
+
+for (const [why, threads] of [
+    ['missing', undefined],
+    ['torn', '{"threads":[{'],
+    ['of another shape', '{"v":1}'],
+    ['stepped down since', [{ ...newMain(B, A), role: 'wing' }]],
+    ['with no time', [{ ...newMain(B, A), seatTakenAt: undefined }]],
+    ['with a time in words', [{ ...newMain(B, A), seatTakenAt: 'now' }]],
+] as const)
+    test(`a new main whose record is ${why} takes no hold over`, async ($, on) => {
+        mock.store(on);
+        const w = world(on);
+        seats(on, threads);
+        await w.as($, A);
+        await edit($, w, '/repo/x.ts');
+        await w.clock.advance(6 * MIN);
+        await w.as($, B);
+        expect((await edit($, w, '/repo/x.ts')).deny).toContain(
+            `held by session ${A.slice(0, 8)}`,
+        );
+    });

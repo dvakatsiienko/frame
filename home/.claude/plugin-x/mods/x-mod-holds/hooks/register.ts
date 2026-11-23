@@ -169,6 +169,40 @@ function refusal(file: string, sid: string, hold: Hold, now: number) {
     return `x-mod-holds: ${file} is held by session ${short(sid)}, which took it ${mins} min ago. wait, or ask it to commit the file.`;
 }
 
+// the main seat moved to this session from the holder, after it took the hold: the old main edits no main checkout any more,
+// so its hold follows the seat (FRM-596). x writes both fields on the record it makes coordinator; a store that does not
+// read keeps every hold
+async function followsSeat(
+    $: EngineInterface,
+    sid: string,
+    holder: string,
+    hold: Hold,
+) {
+    const home = await $.env.get('HOME').catch(() => undefined);
+    const raw = await $.fs
+        .read(`${home}/.claude/shelf/threads.json`)
+        .catch(() => '');
+    try {
+        const { threads } = JSON.parse(raw) as {
+            threads: {
+                role?: unknown;
+                seatTakenAt?: unknown;
+                seatTakenFrom?: unknown;
+                sessionId?: unknown;
+            }[];
+        };
+        const own = threads.find((t) => t.sessionId === sid);
+        return (
+            own?.role === 'coordinator' &&
+            own.seatTakenFrom === holder &&
+            typeof own.seatTakenAt === 'number' &&
+            hold.at < own.seatTakenAt
+        );
+    } catch {
+        return false;
+    }
+}
+
 // the refusal when another live session holds the path; a released hold is cleared on the way
 async function heldBy(
     $: EngineInterface,
@@ -179,7 +213,10 @@ async function heldBy(
 ) {
     for (const c of await claimsOn($, path)) {
         if (c.sid === sid) continue;
-        if (await isReleased($, c.sid, c.hold, now)) {
+        if (
+            (await isReleased($, c.sid, c.hold, now)) ||
+            (await followsSeat($, sid, c.sid, c.hold))
+        ) {
             await $.store.delete(c.key);
             continue;
         }
