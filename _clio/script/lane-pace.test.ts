@@ -559,6 +559,7 @@ describe('lanePaceSection, a lane whose session rotated', () => {
         const early = commit(1, '🔧 mods: written in the earlier session');
         const late = commit(2, '🔧 mods: written in the current session');
         const review = commit(3, '🔧 mods: written by the sixth sense');
+        const other = commit(4, '🔧 mods: written by another codie lane');
         writeFileSync(
             path.join(project, 'old.jsonl'),
             `${head('x:crew-codie')}\n${jsonl([bash(T0 + 30, 'a', "git commit -m '🔧 mods: written in the earlier session'")])}`,
@@ -584,8 +585,13 @@ describe('lanePaceSection, a lane whose session rotated', () => {
             `${head('x:crew-sixth-sense')}\n${jsonl([bash(T0 + 150, 'c', "git commit -m '🔧 mods: written by the sixth sense'")])}`,
         );
 
+        writeFileSync(
+            path.join(project, 'other.jsonl'),
+            `${head('x:crew-codie').replace('mods-lane-9', 'mods-lane-90')}\n${jsonl([bash(T0 + 160, 'd', "git commit -m '🔧 mods: written by another codie lane'")])}`,
+        );
+
         const section = lanePaceSection(home, T0, {
-            commits: () => [early, late, review],
+            commits: () => [early, late, review, other],
             size: () => null,
         });
 

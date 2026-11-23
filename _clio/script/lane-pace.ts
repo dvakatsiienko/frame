@@ -548,7 +548,11 @@ export function earlierLaneTranscripts(
         .map((file) => readFileSync(file, 'utf8'))
         .filter((text) => {
             const head = text.slice(0, 8000);
-            return head.includes(lane) && head.includes('crew-codie');
+            // a whole lane name: `herdr` is not `herdr-lane-2`, and `mods-lane-9` is not `mods-lane-90`
+            const named = new RegExp(
+                `(?<![\\w-])${lane.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`,
+            );
+            return named.test(head) && head.includes('crew-codie');
         });
 }
 
