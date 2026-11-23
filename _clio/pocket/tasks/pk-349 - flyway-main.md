@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-22T17:21:00Z'
+updated_date: '2026-11-23T08:02:00Z'
 labels:
   - s
   - clio-main
@@ -20,10 +20,11 @@ ordinal: 1000
 - [ ] #2 f67 herdr slash list misses his skill: the scan prints it, the miss is in chat's commands(); rider in herdr handoff
 - [ ] #3 f68 launchd: one store until the merge; a BYT-124 line «split app jobs at the merge», pm2.dima moves into schedule/
 - [ ] #4 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
-- [ ] #5 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #6 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #7 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #8 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #5 f70 FRM-676 land tails: archive herdr-lane-3 (name clash), review-rounds line, decamp verify-04f76a5 and verify-829d87e
+- [ ] #6 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #7 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #8 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #9 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1470,4 +1471,27 @@ PK-349:W1431 (2026-11-22 15:37, dima): What is more convenient to draw with, Exc
 PK-349:W1432 (2026-11-22 15:37, dima): I want to see the precise measurements and numbers.
 
 19:21 pm2.dima move parked (stray slice 4 findings): install.ts takes only com.dima.* files, so a rename to com.dima.x-pm2; com.PM2 is not loaded now (n8n runs from a daemon started earlier); loading it runs pm2 resurrect against a live daemon (check pm2 jlist before/after); link and bootstrap this one job by hand, never schedule:install (re-bootstraps every job)
+
+PK-349:W1433 (2026-11-23 09:56, dima): i am starting you as fable.
+PK-349:W1434 (2026-11-23 09:56, dima): update to «almost-all-on-fable» plan.
+PK-349:W1435 (2026-11-23 09:56, dima): codies are not on fable. instead:
+PK-349:W1436 (2026-11-23 09:56, dima): only you and your wings on fable (no plans for wing today)
+PK-349:W1437 (2026-11-23 09:56, dima): crow is opus 5.5. because you are fable and she is checking you — for alternative opinion.
+PK-349:W1438 (2026-11-23 09:56, dima): mods lane - both codie and verifier - opus
+PK-349:W1439 (2026-11-23 09:56, dima): speak lane - codie - opus, verifier - fable (exception, to balance the fable-vs-shared usage window).
+PK-349:W1440 (2026-11-23 09:56, dima): designer - fable 5.2 high
+PK-349:W1441 (2026-11-23 09:56, dima): why: because i want to use you (coord) via fable for longer during the week, instead of burning all fable usage on codies-fable.
+PK-349:W1442 (2026-11-23 09:56, dima): but there is a catch: 100% of fable weekly usage = 50% of shared models weekly usage.
+PK-349:W1443 (2026-11-23 09:56, dima): so we have to balance the fable usage in a way, where fable usage should be slightly ahead of weekly usage (at 80% of used fable window there should be ~75% of weekly overall, so when fable hits 100%, weekly usage is at least ~95%).
+PK-349:W1444 (2026-11-23 09:56, dima): so i get most of fable (100% fable-weekly), and then press reset (at shared weekly ~95%), and get 50% shared weekly resetted, landing at ~45% shared weekly at that point.
+PK-349:W1445 (2026-11-23 09:56, dima): can you read weekly usage for both all models and fable? ❓
+PK-349:W1446 (2026-11-23 09:56, dima): if yes - set a watch schedule that will monitor this pace - weekly-shared usage should not go over fable-only-weekly.
+PK-349:W1447 (2026-11-23 09:56, dima): if it does - raise it and we should switch someone to fable 5.2 to balance the two usages.
+PK-349:W1448 (2026-11-23 09:56, dima): /clio:boot pm-revamp-1120-halt
+PK-349:W1449 (2026-11-23 09:56, dima): as planned - we solved herdr part yesterday, so today first lane to start - is mods lane with agreed plan (both opuses)
+PK-349:W1450 (2026-11-23 09:56, dima): we start speak when i say, so summon mods lane and park, i'll ask something first
+PK-349:W1451 (2026-11-23 09:56, dima): handoffs piled up, some of them did not get ingested yesterday? ❓
+PK-349:W1452 (2026-11-23 09:56, dima): ensure everyone ingests what they need. and tell which handoffs are not needed anymore.
+PK-349:W1453 (2026-11-23 09:56, dima): speak verifier will be on fable 5.2 medium (don't forget)
+PK-349:W1454 (2026-11-23 09:56, dima): herdr core 0.1.22 released - what's there, interesting? ❓
 <!-- SECTION:NOTES:END -->
