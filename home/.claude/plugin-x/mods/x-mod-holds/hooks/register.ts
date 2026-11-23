@@ -170,8 +170,8 @@ function refusal(file: string, sid: string, hold: Hold, now: number) {
 }
 
 // the main seat moved to this session from the holder, after it took the hold: the old main edits no main checkout any more,
-// so its hold follows the seat (FRM-596). x writes both fields on the record it makes coordinator; a store that does not
-// read keeps every hold
+// so its hold there follows the seat, never one in a worktree, where a wing goes on editing (FRM-596). x writes both fields
+// on the record it makes coordinator; a store that does not read keeps every hold
 async function followsSeat(
     $: EngineInterface,
     sid: string,
@@ -196,7 +196,8 @@ async function followsSeat(
             own?.role === 'coordinator' &&
             own.seatTakenFrom === holder &&
             typeof own.seatTakenAt === 'number' &&
-            hold.at < own.seatTakenAt
+            hold.at < own.seatTakenAt &&
+            !hold.top.includes('/.claude/worktrees/')
         );
     } catch {
         return false;

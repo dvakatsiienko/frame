@@ -130,7 +130,7 @@ func writeMainSession(path string, pid int, sid string) error {
 
 // the switch: both records and the main-session file under one lock, then every live place of both threads takes its new
 // name; a place that does not take it at once follows in the background, so a busy thread never holds the call
-func threadRoleSwitch(r *Run, key, role string, grant *seatGrant) (any, error) {
+func threadRoleSwitch(r *Run, key, role string, pass *seatPass) (any, error) {
 	path := threadStorePath()
 	if path == "" {
 		return nil, &Fail{Msg: "no thread store to write", Next: "x thread list"}
@@ -164,11 +164,9 @@ func threadRoleSwitch(r *Run, key, role string, grant *seatGrant) (any, error) {
 		unlock()
 		return nil, &Fail{Refused: true, Msg: next.SessionID + " is not a live session, so it cannot take the main seat", Next: "x thread list"}
 	}
-	if grant != nil {
-		if err := grant.take(key, role); err != nil {
-			unlock()
-			return nil, err
-		}
+	if err := pass.take(key, role); err != nil {
+		unlock()
+		return nil, err
 	}
 	wing, now := next.Wing, time.Now()
 	store.Threads[promote].SeatTakenFrom, store.Threads[promote].SeatTakenAt = "", 0
@@ -188,6 +186,9 @@ func threadRoleSwitch(r *Run, key, role string, grant *seatGrant) (any, error) {
 	if err == nil {
 		err = writeMainSession(mainSessionPath(), sessionPid(next.SessionID), next.SessionID)
 	}
+	if err != nil {
+		pass.putBack()
+	}
 	if err != nil && before != nil {
 		// the second write failed after the first took: the store goes back as it was, so no half-moved seat is left
 		if restoreErr := os.WriteFile(path, before, 0o644); restoreErr != nil {
@@ -200,11 +201,11 @@ func threadRoleSwitch(r *Run, key, role string, grant *seatGrant) (any, error) {
 	if err != nil {
 		return nil, &Fail{Msg: "the seat was not moved: " + err.Error(), Next: "x thread list"}
 	}
-	wait, nudge := renameWait()
+	pass.log(key, role)
 	var places []ordered
 	behind := 0
 	for _, sid := range moved {
-		rows := renamePlaces(sid, recordDisplay(sid), wait, nudge)
+		rows := renamePlaces(sid, recordDisplay(sid), 0, 0)
 		behind += followUntaken(sid, rows[1:])
 		places = append(places, rows...)
 	}
@@ -227,29 +228,26 @@ func threadFromTable(table processTable, tableErr error, sessionsDir string) boo
 	return tableErr != nil || len(callerChain(table, sessionsDir)) > 0
 }
 
-// from a thread the switch runs while dima's operator override is on, or on the grant x-mod-guard wrote from his tick; his own
-// terminal needs neither. the grant comes back for the switch to take under the store's lock, nil when no grant is needed
-func seatLeave(key, role string) (*seatGrant, error) {
-	if !callerIsThread() || seatOverrideOn(overrideStore()) {
+// what lets a thread's switch run: the override as it stood, or the grant x-mod-guard wrote from his tick, its file
+type seatPass struct {
+	used  overrideUsed
+	grant string
+}
+
+// from a thread the switch runs while dima's operator override is on, or on his tick's grant; nil at his own terminal, which
+// needs neither
+func seatLeave(key, role string) (*seatPass, error) {
+	if !callerIsThread() {
 		return nil, nil
 	}
-	if grant, on := seatGrantFor(overrideStore(), seatCaller(), key, role); on {
-		return &grant, nil
+	if grant, scope, on := seatOverride(overrideStore()); on {
+		return &seatPass{used: overrideUsed{Scope: scope, By: grant.By, At: grant.At}}, nil
+	}
+	if pass, on := seatGrantFor(overrideStore(), seatCaller(), key, role); on {
+		return &pass, nil
 	}
 	command := "x thread rename " + quote(key) + " --role " + role
 	return nil, &Fail{Refused: true, Msg: "moving the main seat from a thread runs while dima's operator override is on, or on his tick of a board ask whose pick quotes the whole command; neither stands", Next: command + " (with the override on, on his tick, or in dima's own terminal)"}
-}
-
-// x-mod-guard's grant (hooks/operator-override.ts, writeSeatGrant): `seat:<session>` in the override store, one switch, 60 s. any
-// Bash of this mac user can write one, so it is named, not proven
-type seatGrant struct {
-	By     string `json:"by"`
-	At     string `json:"at"`
-	Until  string `json:"until"`
-	Role   string `json:"role"`
-	Thread string `json:"thread"`
-
-	session string
 }
 
 const seatGrantLife = 60 * time.Second
@@ -266,62 +264,70 @@ func seatCaller() string {
 	return ""
 }
 
-func seatGrantFor(store, session, key, role string) (seatGrant, bool) {
+// x-mod-guard's grant (hooks/operator-override.ts, writeSeatGrant): a file `seat-grants/<session>.<tick>.json` beside the
+// override store, one switch, 60 s. any Bash of this mac user can write one, so it is named, not proven
+func seatGrantFor(store, session, key, role string) (seatPass, bool) {
 	if store == "" || session == "" {
-		return seatGrant{}, false
+		return seatPass{}, false
 	}
-	body, err := os.ReadFile(store)
-	if err != nil {
-		return seatGrant{}, false
+	files, _ := filepath.Glob(filepath.Join(filepath.Dir(store), "seat-grants", "*.json"))
+	for _, file := range files {
+		if !strings.HasPrefix(filepath.Base(file), session+".") {
+			continue
+		}
+		var grant struct {
+			By     string `json:"by"`
+			At     string `json:"at"`
+			Role   string `json:"role"`
+			Thread string `json:"thread"`
+		}
+		body, err := os.ReadFile(file)
+		if err != nil || json.Unmarshal(body, &grant) != nil {
+			continue
+		}
+		at, err := time.Parse(time.RFC3339, grant.At)
+		age := clock().Sub(at)
+		tick, isTick := strings.CutPrefix(grant.By, "tick ")
+		if err == nil && age >= 0 && age <= seatGrantLife && isTick && tick != "" && grant.Thread == key && grant.Role == role {
+			return seatPass{used: overrideUsed{Scope: "seat", By: grant.By, At: grant.At}, grant: file}, true
+		}
 	}
-	var grants map[string]json.RawMessage
-	if json.Unmarshal(body, &grants) != nil {
-		return seatGrant{}, false
-	}
-	grant := seatGrant{session: session}
-	if raw, held := grants["seat:"+session]; !held || json.Unmarshal(raw, &grant) != nil {
-		return seatGrant{}, false
-	}
-	at, err := time.Parse(time.RFC3339, grant.At)
-	age := clock().Sub(at)
-	tick, isTick := strings.CutPrefix(grant.By, "tick ")
-	isMine := isTick && tick != "" && grant.Thread == key && grant.Role == role
-	return grant, isMine && err == nil && age >= 0 && age <= seatGrantLife
+	return seatPass{}, false
 }
 
-// takes the grant, under the store's lock: gone from the file before the seat moves, so it moves one seat once
-func (g *seatGrant) take(key, role string) error {
-	store := overrideStore()
-	gone := &Fail{Refused: true, Msg: "the grant from dima's tick is no longer there, so the seat did not move", Next: "x thread rename " + quote(key) + " --role " + role + " (on a new tick)"}
-	if _, on := seatGrantFor(store, g.session, key, role); !on {
-		return gone
+// takes the grant by renaming it, before the seat moves and under the store's lock; x-mod-guard drops one by unlinking it, so
+// one of the two wins. an override needs no taking
+func (p *seatPass) take(key, role string) error {
+	if p == nil || p.grant == "" {
+		return nil
 	}
-	body, err := os.ReadFile(store)
-	if err != nil {
-		return gone
+	if os.Rename(p.grant, p.grant+".taken") != nil {
+		return &Fail{Refused: true, Msg: "the grant from dima's tick is no longer there, so the seat did not move", Next: "x thread rename " + quote(key) + " --role " + role + " (on a new tick)"}
 	}
-	var grants map[string]json.RawMessage
-	if json.Unmarshal(body, &grants) != nil {
-		return gone
-	}
-	delete(grants, "seat:"+g.session)
-	next, err := json.Marshal(grants)
-	if err == nil {
-		err = atomicWrite(store, next)
-	}
-	if err != nil {
-		return &Fail{Msg: "the grant could not be taken, so the seat did not move: " + err.Error(), Next: "ls -l " + store}
-	}
-	// the log is the one place a forged grant would show; a line that cannot land stops nothing
-	_ = overrideLogPass(&overrideUsed{Scope: "seat", By: g.By, At: g.At, DevBuild: isDevBuild()}, "moved the seat from session "+g.session+": "+key+" to "+role)
 	return nil
+}
+
+// a switch that failed after taking it gives the grant back, for x-mod-guard to hand his tick back
+func (p *seatPass) putBack() {
+	if p != nil && p.grant != "" {
+		_ = os.Rename(p.grant+".taken", p.grant)
+	}
+}
+
+// one line a move a thread made; the log is the one place a forged grant or override would show, and a line that cannot land
+// stops nothing
+func (p *seatPass) log(key, role string) {
+	if p != nil {
+		p.used.DevBuild = isDevBuild()
+		_ = overrideLogPass(&p.used, "moved the seat from session "+seatCaller()+": "+key+" to "+role)
+	}
 }
 
 // twin of x-mod-guard's masterOverride (hooks/operator-override.ts), the one rule for «override on»: a live `all`, by its until or
 // by the process that typed it, else `prs` by his band press, which holds until he presses off. prs by a shift or a typed word lands
 // prs alone and never moves the seat
-func seatOverrideOn(store string) bool {
-	if _, on := overrideGrantIn(store, "all", ""); on {
+func seatOverride(store string) (grant overrideGrant, scope string, on bool) {
+	if grant, on := overrideGrantIn(store, "all", ""); on {
 		var raw map[string]struct {
 			Pid   int    `json:"pid"`
 			Start string `json:"start"`
@@ -329,14 +335,14 @@ func seatOverrideOn(store string) bool {
 		}
 		body, err := os.ReadFile(store)
 		if err != nil || json.Unmarshal(body, &raw) != nil {
-			return false
+			return overrideGrant{}, "", false
 		}
 		if all := raw["all"]; all.Until != "" || (all.Pid > 0 && all.Start != "" && processStart(all.Pid) == all.Start) {
-			return true
+			return grant, "all", true
 		}
 	}
 	press, on := overrideGrantIn(store, overrideScopePrs, "")
-	return on && press.By == "band"
+	return press, overrideScopePrs, on && press.By == "band"
 }
 
 // the start time the guard wrote beside the pid, read the same way, so a reused pid reads gone

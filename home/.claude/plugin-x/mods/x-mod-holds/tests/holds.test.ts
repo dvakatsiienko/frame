@@ -624,6 +624,19 @@ test('a hold the old main took after the switch stays its own', async ($, on) =>
     );
 });
 
+test('a hold in a worktree stays the old main’s after the switch', async ($, on) => {
+    mock.store(on);
+    const w = world(on);
+    seats(on, [newMain(B, A)]);
+    await w.as($, A, WORKTREE);
+    await edit($, w, `${WORKTREE}/x.ts`);
+    await w.clock.advance(6 * MIN);
+    await w.as($, B);
+    expect((await edit($, w, `${WORKTREE}/x.ts`)).deny).toContain(
+        `held by session ${A.slice(0, 8)}`,
+    );
+});
+
 // the seat moved A to B to C: C's record names B alone, so A's older holds stay closed to C until they age out (exit 5b)
 test('a seat moved twice opens only the last main’s holds', async ($, on) => {
     mock.store(on);

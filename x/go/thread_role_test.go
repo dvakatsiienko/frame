@@ -362,10 +362,13 @@ func TestThreadRenameRoleFromAThreadRunsWhileTheOverrideIsOn(t *testing.T) {
 			write(t, store, c.store)
 			env := append(w.env, "X_OVERRIDE_STORE="+store)
 
-			got := xIn(t, t.TempDir(), asCaller(t, env, "coordinator"), "thread", "rename", "wing1", "--role", "main")
+			got := xIn(t, t.TempDir(), asCaller(t, env, "wing"), "thread", "rename", "wing1", "--role", "main")
 
 			if _, _, main := w.seats(t); got.code != 0 || main != "sid-b" {
 				t.Errorf("exit %d, main-session %q, want exit 0 and sid-b main:\n%s", got.code, main, got.stdout)
+			}
+			if log := readFile0(overrideLog(store)); strings.Count(log, "wing1 to main") != 1 {
+				t.Errorf("the log holds %q, want one line for the move", log)
 			}
 		})
 	}
@@ -378,29 +381,41 @@ func TestThreadRenameRoleFromAThreadIsRefused(t *testing.T) {
 	before := readFile0(w.store)
 	for _, c := range []struct {
 		name, caller, store string
+		grant               string
 		flags               []string
 		code                int
 	}{
-		{"no override", "coordinator", "", nil, 1},
-		{"prs by a shift", "coordinator", `{"prs":{"by":"shift","at":"` + overrideAt + `"}}`, nil, 1},
-		{"prs by a typed word", "coordinator", prsOn(), nil, 1},
-		{"a store that does not parse", "coordinator", `{"prs":{"by":"band"`, nil, 1},
-		{"the old word flag, which is gone", "coordinator", "", []string{"--dima-ok", "wing1"}, 2},
-		{"a codie, the override on", "codie", `{"prs":{"by":"band","at":"` + overrideAt + `"}}`, nil, 1},
-		{"a codie, a grant of its own", "codie", seatGrantOf("sid-caller", "wing1", "main", "tick o7", 0), nil, 1},
-		{"a grant for another thread", "coordinator", seatGrantOf("sid-caller", "wing2", "main", "tick o7", 0), nil, 1},
-		{"a grant for another role", "coordinator", seatGrantOf("sid-caller", "wing1", "wing:1", "tick o7", 0), nil, 1},
-		{"a grant older than 60 s", "coordinator", seatGrantOf("sid-caller", "wing1", "main", "tick o7", 61*time.Second), nil, 1},
-		{"a grant from the future", "coordinator", seatGrantOf("sid-caller", "wing1", "main", "tick o7", -time.Hour), nil, 1},
-		{"a grant for another session", "coordinator", seatGrantOf("sid-b", "wing1", "main", "tick o7", 0), nil, 1},
-		{"a grant with no tick id", "coordinator", seatGrantOf("sid-caller", "wing1", "main", "tick ", 0), nil, 1},
-		{"a grant by a word", "coordinator", seatGrantOf("sid-caller", "wing1", "main", "word", 0), nil, 1},
-		{"a grant of another shape", "coordinator", `{"seat:sid-caller":"tick o7"}`, nil, 1},
+		{"no override", "coordinator", "", "", nil, 1},
+		{"prs by a shift", "coordinator", `{"prs":{"by":"shift","at":"` + overrideAt + `"}}`, "", nil, 1},
+		{"prs by a typed word", "coordinator", prsOn(), "", nil, 1},
+		{"a store that does not parse", "coordinator", `{"prs":{"by":"band"`, "", nil, 1},
+		{"the old word flag, which is gone", "coordinator", "", "", []string{"--dima-ok", "wing1"}, 2},
+		{"a codie, the override on", "codie", `{"prs":{"by":"band","at":"` + overrideAt + `"}}`, "", nil, 1},
+		{"a codie, a grant of its own", "codie", "", seatGrantOf("wing1", "main", "tick o7", 0), nil, 1},
+		{"a grant for another thread", "coordinator", "", seatGrantOf("wing2", "main", "tick o7", 0), nil, 1},
+		{"a grant for another role", "coordinator", "", seatGrantOf("wing1", "wing:1", "tick o7", 0), nil, 1},
+		{"a grant older than 60 s", "coordinator", "", seatGrantOf("wing1", "main", "tick o7", 61*time.Second), nil, 1},
+		{"a grant from the future", "coordinator", "", seatGrantOf("wing1", "main", "tick o7", -time.Hour), nil, 1},
+		{"a grant for another session", "coordinator", "sid-b", seatGrantOf("wing1", "main", "tick o7", 0), nil, 1},
+		{"a grant with no tick id", "coordinator", "", seatGrantOf("wing1", "main", "tick ", 0), nil, 1},
+		{"a grant by a word", "coordinator", "", seatGrantOf("wing1", "main", "word", 0), nil, 1},
+		{"a grant of another shape", "coordinator", "", `["tick o7"]`, nil, 1},
+		{"a grant already taken", "coordinator", "taken", seatGrantOf("wing1", "main", "tick o7", 0), nil, 1},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			store := filepath.Join(t.TempDir(), "operator-override.json")
-			if c.store != "" {
+			grant := seatGrantPath(store, "sid-caller")
+			switch c.store {
+			case "":
+			case "sid-b":
+				grant = seatGrantPath(store, "sid-b")
+			case "taken":
+				grant += ".taken"
+			default:
 				write(t, store, c.store)
+			}
+			if c.grant != "" {
+				write(t, grant, c.grant)
 			}
 			env := append(slices.Clone(w.env), "X_OVERRIDE_STORE="+store)
 
@@ -412,26 +427,30 @@ func TestThreadRenameRoleFromAThreadIsRefused(t *testing.T) {
 			if c.code == 1 && c.caller == "coordinator" && (!strings.Contains(got.next, "override on") || !strings.Contains(got.next, "his tick") || !strings.Contains(got.next, "own terminal")) {
 				t.Errorf("next %q, want every way on: the override, his tick and dima's own terminal", got.next)
 			}
-			if c.store != "" && readFile0(store) != c.store {
-				t.Errorf("the override store holds %s, want it untouched", readFile0(store))
+			if c.grant != readFile0(grant) {
+				t.Errorf("the grant reads %q, want it untouched: %q", readFile0(grant), c.grant)
 			}
 		})
 	}
 }
 
-// what x-mod-guard writes from his tick
-func seatGrantOf(session, thread, role, by string, age time.Duration) string {
-	at := time.Now().Add(-age).UTC()
-	return fmt.Sprintf(`{"seat:%s":{"at":"%s","by":"%s","until":"%s","role":"%s","thread":"%s","spends":["o7@1:x"]}}`, session, at.Format(time.RFC3339Nano), by, at.Add(time.Minute).Format(time.RFC3339Nano), role, thread)
+// what x-mod-guard writes from his tick, and where
+func seatGrantOf(thread, role, by string, age time.Duration) string {
+	return fmt.Sprintf(`{"at":"%s","by":"%s","role":"%s","thread":"%s","spends":["o7@1:x"]}`, time.Now().Add(-age).UTC().Format(time.RFC3339Nano), by, role, thread)
 }
 
-// FRM-596 exit 2: his tick, carried as a grant, moves the seat once
+func seatGrantPath(store, session string) string {
+	return filepath.Join(filepath.Dir(store), "seat-grants", session+".o7-1.json")
+}
+
+// FRM-596 exit 2: his tick, carried as a grant, moves the seat once; the override store is never written
 func TestThreadRenameRoleFromAThreadRunsOnceOnHisTick(t *testing.T) {
 	t.Parallel()
 	w := newSeatWorld(t)
 	store := filepath.Join(t.TempDir(), "operator-override.json")
-	grant := seatGrantOf("sid-caller", "wing1", "main", "tick o7", 0)
-	write(t, store, strings.Replace(grant, `{"seat`, `{"prs":{"by":"word","at":"`+overrideAt+`"},"seat`, 1))
+	grant := seatGrantPath(store, "sid-caller")
+	write(t, store, prsOn())
+	write(t, grant, seatGrantOf("wing1", "main", "tick o7", 0))
 	env := asCaller(t, append(w.env, "X_OVERRIDE_STORE="+store), "coordinator")
 
 	first := xIn(t, t.TempDir(), env, "thread", "rename", "wing1", "--role", "main")
@@ -439,8 +458,8 @@ func TestThreadRenameRoleFromAThreadRunsOnceOnHisTick(t *testing.T) {
 	if first.code != 0 || main != "sid-b" {
 		t.Fatalf("exit %d, main-session %q, want the seat with sid-b:\n%s", first.code, main, first.stdout)
 	}
-	if left := readFile0(store); strings.Contains(left, "seat:") || !strings.Contains(left, `"prs"`) {
-		t.Errorf("the override store holds %s, want the grant gone and prs kept", left)
+	if readFile0(grant) != "" || readFile0(grant+".taken") == "" || readFile0(store) != prsOn() {
+		t.Errorf("the grant reads %q, want it taken and the override store as it was: %s", readFile0(grant), readFile0(store))
 	}
 	if log := readFile0(overrideLog(store)); !strings.Contains(log, `"by":"tick o7"`) || !strings.Contains(log, "wing1 to main") {
 		t.Errorf("the log holds %q, want one line naming the tick and the move", log)
@@ -451,27 +470,47 @@ func TestThreadRenameRoleFromAThreadRunsOnceOnHisTick(t *testing.T) {
 	}
 }
 
-// FRM-596 exit 4: a switch that fails leaves the grant to x-mod-guard, which hands the tick back and removes it
+// FRM-596 exit 4: a switch that fails leaves the grant to x-mod-guard, which hands the tick back and removes it: one that failed
+// before it took the grant, and one whose seat file could not be written after
 func TestThreadRenameRoleThatFailsLeavesTheGrant(t *testing.T) {
 	t.Parallel()
-	w := newSeatWorld(t)
-	store := filepath.Join(t.TempDir(), "operator-override.json")
-	grant := seatGrantOf("sid-caller", "wing3", "main", "tick o7", 0)
-	write(t, store, grant)
+	blocker := filepath.Join(t.TempDir(), "file")
+	write(t, blocker, "not a dir")
+	for _, c := range []struct{ name, thread, env string }{
+		{"the thread is gone", "wing3", ""},
+		{"the seat file cannot be written", "wing1", "X_MAIN_SESSION=" + filepath.Join(blocker, "main-session")},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newSeatWorld(t)
+			store := filepath.Join(t.TempDir(), "operator-override.json")
+			grant, body := seatGrantPath(store, "sid-caller"), seatGrantOf(c.thread, "main", "tick o7", 0)
+			write(t, grant, body)
+			before := readFile0(w.store)
+			env := append(w.env, "X_OVERRIDE_STORE="+store)
+			if c.env != "" {
+				env = append(env, c.env)
+			}
 
-	got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "X_OVERRIDE_STORE="+store), "coordinator"), "thread", "rename", "wing3", "--role", "main")
+			got := xIn(t, t.TempDir(), asCaller(t, env, "coordinator"), "thread", "rename", c.thread, "--role", "main")
 
-	if _, _, main := w.seats(t); got.code != 1 || main != "sid-a" || readFile0(store) != grant {
-		t.Errorf("exit %d, main-session %q, store %s, want a refusal that left the seat and the grant:\n%s", got.code, main, readFile0(store), got.stdout)
+			if got.code != 1 || readFile0(w.store) != before || readFile0(grant) != body {
+				t.Errorf("exit %d, grant %q, want a refusal that left the seat and the grant:\n%s", got.code, readFile0(grant), got.stdout)
+			}
+			if log := readFile0(overrideLog(store)); log != "" {
+				t.Errorf("the log holds %q, want no line for a seat that did not move", log)
+			}
+		})
 	}
 }
 
-// the grant is read again under the store's lock, so one that went while a switch waited moves nothing
+// the grant is taken under the store's lock, so one that went while a switch waited moves nothing
 func TestThreadRenameRoleRefusesAGrantGoneByTheLock(t *testing.T) {
 	t.Parallel()
 	w := newSeatWorld(t)
 	store := filepath.Join(t.TempDir(), "operator-override.json")
-	write(t, store, seatGrantOf("sid-caller", "wing1", "main", "tick o7", 0))
+	grant := seatGrantPath(store, "sid-caller")
+	write(t, grant, seatGrantOf("wing1", "main", "tick o7", 0))
 	env := asCaller(t, append(w.env, "X_OVERRIDE_STORE="+store), "coordinator")
 	unlock, err := lockThreadStore(w.store)
 	if err != nil {
@@ -480,12 +519,43 @@ func TestThreadRenameRoleRefusesAGrantGoneByTheLock(t *testing.T) {
 	done := make(chan int)
 	go func() { done <- xIn(t, t.TempDir(), env, "thread", "rename", "wing1", "--role", "main").code }()
 	waitForLine(t, w.log, "waiting on the thread store lock")
-	write(t, store, `{}`)
+	if err := os.Remove(grant); err != nil {
+		t.Fatal(err)
+	}
 	unlock()
 
 	code := <-done
 	if _, _, main := w.seats(t); code != 1 || main != "sid-a" {
 		t.Errorf("exit %d, main-session %q, want a refusal and sid-a still main", code, main)
+	}
+}
+
+// a thread that switches its own seat is busy with the call itself: the switch moves the seat and leaves the names to the
+// background follow, and never waits for it or types at it
+func TestThreadRenameRoleNeverWaitsForABusyThread(t *testing.T) {
+	t.Parallel()
+	w := newSeatWorld(t)
+	hc := envOf(w.env, "X_HC")
+	write(t, hc, strings.Replace(readFile0(hc), `"state":"done"`, `"state":"working"`, 1))
+	if err := os.Chmod(hc, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	follow := filepath.Join(t.TempDir(), "follow.log")
+	store := filepath.Join(t.TempDir(), "operator-override.json")
+	write(t, store, `{"prs":{"by":"band","at":"`+overrideAt+`"}}`)
+	env := asCaller(t, append(w.env, "X_OVERRIDE_STORE="+store, "X_RENAME_WAIT=20", "X_RENAME_NUDGE=0.1", "X_RENAME_FOLLOW="+follow), "wing")
+	start := time.Now()
+
+	got := xIn(t, t.TempDir(), env, "thread", "rename", "wing1", "--role", "main")
+
+	if _, _, main := w.seats(t); got.code != 0 || main != "sid-b" || time.Since(start) > 10*time.Second {
+		t.Errorf("exit %d, main-session %q after %s, want the seat moved at once:\n%s", got.code, main, time.Since(start), got.stdout)
+	}
+	if sent := readFile0(w.sent); sent != "" {
+		t.Errorf("hc was told %q, want nothing typed at a busy thread", sent)
+	}
+	if log := readFile0(follow); !strings.Contains(log, "thread sync sid-a") || !strings.Contains(log, "thread sync sid-b") {
+		t.Errorf("the follow log holds %q, want both threads followed", log)
 	}
 }
 
@@ -518,12 +588,12 @@ func TestSeatOverrideOn(t *testing.T) {
 			t.Parallel()
 			store := filepath.Join(t.TempDir(), "operator-override.json")
 			write(t, store, c.body)
-			if got := seatOverrideOn(store); got != c.want {
-				t.Errorf("seatOverrideOn(%s) = %v, want %v", c.body, got, c.want)
+			if _, _, got := seatOverride(store); got != c.want {
+				t.Errorf("seatOverride(%s) = %v, want %v", c.body, got, c.want)
 			}
 		})
 	}
-	if seatOverrideOn(filepath.Join(t.TempDir(), "none.json")) {
+	if _, _, on := seatOverride(filepath.Join(t.TempDir(), "none.json")); on {
 		t.Error("a store that is not there reads on")
 	}
 }

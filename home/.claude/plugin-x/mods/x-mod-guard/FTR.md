@@ -120,14 +120,16 @@
   - decision: no typed word, no `# dima-ok` marker, no bare yes: his tick is the one door, and a sign or a merge needs none (FRM-581: FRM-580 and FRM-566 took two ticks or a raw api call for one sign)
   - proof: tests/ticks.test.ts, tests/pick.test.ts, tests/herdr-close.test.ts::a tick quoting the command passes it inside a longer line: …; a ticked command that fails keeps the tick for the retry
 - ✅ his tick on a seat switch reaches x as a one-use grant (FRM-596)
-  - given the override off and a live tick whose pick quotes the whole line `x thread rename <thread> --role <role>`, when a thread runs that line and nothing else, then the guard spends the tick and the store gains `seat:<session>` (the thread, the role, `by: tick <ask id>`, 60 s); x moves the seat once and removes it; the guard refuses nothing here, x does
-  - given another command, thread or role than the tick quotes, a longer line, a spent tick, or a store that does not parse, then no grant is written and no tick spent
-  - given the run fails or another hook refuses it, then the grant goes and the tick is back at once; a background run that never used it, at its 60 s
+  - given the override off and a live tick whose pick quotes the whole line `x thread rename <thread> --role <role>`, when a thread runs that line and nothing else, then the guard writes a grant x moves the seat on, once: this session, thread and role, 60 s; the guard refuses nothing here, x does
+  - then the tick counts as spent while its grant is alive or taken: x takes one by renaming it, the guard drops one by unlinking it, so one of the two wins, a failed run that had moved the seat included
+  - given another command, thread or role than the tick quotes, a longer line, a spent tick, or a grant that cannot be written, then no grant and no tick spent
+  - given the run fails or another hook refuses it with the grant still there, then the grant goes and the tick is back at once; a background run that never used it, at its 60 s, past a hot reload too
   - given the override on, then no tick is spent
-  - makes: one log line a grant in `~/.local/state/x/operator-override.log`, scope `seat`; x writes one a pass
+  - makes: `~/.local/state/x/seat-grants/<session>.<tick>.json`, `.taken` once x took it, swept past the tick's 2 h; one line a grant in `operator-override.log`, scope `seat`; x writes one a move
+  - decision: never in the override store: x-mod-stash drops a 🔓 press older than that file's last write, so a grant there could swallow his press (three reviews, 2026-11-23)
   - decision: «why i have to type anything? … i vote for either orbit tick or even better: if my operator override is ON - it just works» (dima, 2026-11-23 14:59)
-  - 📌 the grant sits in the override's plain file, so a thread could write one itself: named, not checked (dima, 15:12: no forge fix)
-  - proof: tests/override.test.ts::his tick on a seat switch leaves x a 60 s grant for this session, thread and role / a seat switch his tick does not quote gets no grant: … / a grant never used is gone after 60 s, and the tick is back
+  - 📌 the grant is a plain file, so a thread could write one itself: named, not checked (dima, 15:12: no forge fix)
+  - proof: tests/override.test.ts::his tick on a seat switch leaves x a grant for this session, thread and role / a seat grant leaves the override store untouched / a seat switch his tick does not quote gets no grant: … / a switch that moved the seat and then failed keeps the tick spent / a grant never used is gone after 60 s, and the tick is back / a grant left past 60 s by a dead timer is swept, and its tick is back
 - ✅ a herdr close names a target that ends no live seat
   - given a thread's herdr close — `herdr-app do` `pane.close`, `tab.close`, `space.close`, `terminal.kill`, `overlay.close`, `app.quit` or `window.close`, or `hc kill`, `hc rm`, `hc server stop|restart` — that names no target, a target behind a variable, or one whose terminals herdr cannot name or include a live seat (a `seat=` label, or a claude agent this seat did not start), then it is refused (rule `herdr-close`, dima's o53); the window, the app and the server end every seat, so those always ask
   - then a named overlay herdr lists open, a plain shell, a claude terminal this seat started, a finished terminal and a mod-only tab this seat's own `tab.new` made run

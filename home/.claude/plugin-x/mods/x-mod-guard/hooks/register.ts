@@ -9,6 +9,7 @@ import {
     masterOverride,
     overrideFlip,
     overrideLogPass,
+    seatSpends,
     writeSeatGrant,
 } from './operator-override.ts';
 import { CLIPBOARD, CLIPBOARD_TOOL, clipboardTool } from './rules/clipboard.ts';
@@ -416,42 +417,35 @@ function unjudgedStop(typed: string): Refusal | undefined {
 }
 const JUDGE_MS = 2000;
 
-// his tick on a seat switch reaches x as a grant; what closes it, undefined when no tick covers the line. a background run says
-// nothing of how it ended, so the grant's own end hands an unused tick back
-async function openSeat(
-    $: EngineInterface,
-    command: string,
-    cwd: string,
-    spends: string[],
-) {
+// his tick on a seat switch reaches x as a grant; what drops it, undefined when no tick covers the line. the grant's file is the
+// whole record of the spend, never `$.state`: a background run says nothing of how it ended, and a timer's `$` may read the
+// state as it was at the call, so writing it back would revive a tick another call spent meanwhile
+async function openSeat($: EngineInterface, command: string, cwd: string) {
     const move = seatMove(command, cwd);
     const sid = move && (await $.session.id().catch(() => undefined));
     if (!move || !sid) return undefined;
-    const taken: string[] = [];
+    const held = await seatSpends($, sid).catch(() => undefined);
+    if (!held) return undefined;
+    const before = held.length;
     const tick = await tickFor(
         $,
         guardedOf(command),
         quotesCommand(command),
-        taken,
+        held,
     );
     if (!tick) return undefined;
-    const at = await writeSeatGrant($, {
+    const path = await writeSeatGrant($, {
         ...move,
         command,
         sid,
-        spends: taken,
-        tick: tick.id,
+        spends: held.slice(before),
+        tick,
     }).catch((err: unknown) => {
         $.ui.log(`x-mod-guard: the seat grant was not written: ${String(err)}`);
         return undefined;
     });
-    // no grant, no spend: x refuses the line and his tick stays
-    if (at === undefined) return undefined;
-    spends.push(...taken);
-    const close = async () => {
-        const back = await dropSeatGrant($, sid, at).catch(() => []);
-        await unspend($, back);
-    };
+    if (path === undefined) return undefined;
+    const close = () => dropSeatGrant($, path);
     $.clock.after(SEAT_GRANT_MS, close);
     return close;
 }
@@ -662,9 +656,7 @@ export const register: Register = (on) => {
                     `x-mod-guard: ran on dima's tick ${tick?.id}: ${targets}`,
                 );
         }
-        const closeSeat = master
-            ? undefined
-            : await openSeat($, command, cwd, spends);
+        const closeSeat = master ? undefined : await openSeat($, command, cwd);
         await spend($, spends);
         const result = await next(run !== typed ? { ...e, command: run } : e);
         if (result.deny !== undefined || result.isError) {

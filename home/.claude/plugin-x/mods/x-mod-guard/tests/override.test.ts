@@ -25,6 +25,10 @@ type World = {
     // his ticks on this seat's orbit asks, and what the call answers
     ticks?: { at: number; id: string; targets: string[]; text: string }[];
     call?: 'denied' | 'failed';
+    // what the command did to the files before it answered
+    during?: () => void;
+    // no write lands
+    isFull?: boolean;
 };
 
 function world(on: On, opts: World = {}) {
@@ -59,6 +63,12 @@ function world(on: On, opts: World = {}) {
         if (e.argv[0] === 'sh') {
             if (e.argv[5] === LOG) logged.push(e.argv[4] ?? '');
             return answer(0);
+        }
+        if (e.argv[0] === 'unlink') {
+            const path = e.argv[1] ?? '';
+            const isThere = path in files;
+            delete files[path];
+            return answer(isThere ? 0 : 1);
         }
         if (e.argv[0] === 'id')
             return answer(
@@ -99,7 +109,10 @@ function world(on: On, opts: World = {}) {
         const body = files[e.path];
         return body === undefined ? { deny: 'no such file' } : { value: body };
     });
+    const writes: string[] = [];
     on('fs.write', (_$, e) => {
+        if (opts.isFull) return { deny: 'disk full' };
+        writes.push(e.path);
         files[e.path] = e.text;
         return { value: undefined };
     });
@@ -109,17 +122,18 @@ function world(on: On, opts: World = {}) {
             ? { value: { value: opts.ticks, version: 1 } }
             : next(e),
     );
-    // the grant store as the command found it
-    const atRun: string[] = [];
+    // the files as the command found them
+    const atRun: Record<string, string>[] = [];
     on('tool.call', (_$, e) => {
         ran.push('command' in e ? String(e.command) : e.tool);
-        atRun.push(files[REAL] ?? '{}');
+        atRun.push({ ...files });
+        opts.during?.();
         if (opts.call === 'denied') return { deny: 'another hook' };
         return opts.call === 'failed'
             ? { isError: true, result: {}, text: 'failed' }
             : { result: {}, text: 'ran' };
     });
-    return { atRun, clock, files, logged, opts, ran };
+    return { atRun, clock, files, logged, opts, ran, writes };
 }
 
 // a session's first typed prompt is read like any other here: the switch works from the first
@@ -432,36 +446,38 @@ const SEAT = 'x thread rename wing1 --role main';
 const seatTick = (command = SEAT, id = 'o7') => [
     { at: NOW, id, targets: [command], text: `move: \`${command}\`` },
 ];
-const seatGrant = (store: string | undefined) =>
-    (JSON.parse(store ?? '{}') as Record<string, unknown>)[`seat:${SID}`];
-// x took the grant: it removes it as it moves the seat
+const GRANTS = '/real-home/.local/state/x/seat-grants/';
+const GRANT = `${GRANTS}${SID}.o7-${NOW}.json`;
+const grantsIn = (files: Record<string, string> | undefined) =>
+    Object.keys(files ?? {}).filter(
+        (f) => f.startsWith(GRANTS) && !f.endsWith('.taken'),
+    );
+// x takes a grant by renaming it
 const xTakes = (files: Record<string, string>) => {
-    files[REAL] = '{}';
+    for (const f of grantsIn(files)) {
+        files[`${f}.taken`] = files[f] ?? '';
+        delete files[f];
+    }
 };
 
-test('his tick on a seat switch leaves x a 60 s grant for this session, thread and role', async ($, on) => {
+test('his tick on a seat switch leaves x a grant for this session, thread and role', async ($, on) => {
     const { atRun } = world(on, { ticks: seatTick() });
     await bash($, SEAT);
-    expect(seatGrant(atRun[0])).toMatchObject({
+    expect(JSON.parse(atRun[0]?.[GRANT] ?? '{}')).toMatchObject({
         at: '2026-11-07T14:00:00.000Z',
         by: 'tick o7',
         role: 'main',
         thread: 'wing1',
-        until: '2026-11-07T14:01:00.000Z',
     });
 });
 
-test('a seat grant keeps every other grant in the store', async ($, on) => {
-    const { atRun } = world(on, {
-        files: {
-            [REAL]: JSON.stringify({ prs: { at: 'x', by: 'word' } }),
-        },
-        ticks: seatTick(),
-    });
+// x-mod-stash drops a 🔓 press older than the store's last write, so a seat grant never writes there
+test('a seat grant leaves the override store untouched', async ($, on) => {
+    const store = JSON.stringify({ prs: { at: 'x', by: 'word' } });
+    const w = world(on, { files: { [REAL]: store }, ticks: seatTick() });
     await bash($, SEAT);
-    expect(JSON.parse(atRun[0] ?? '{}')).toMatchObject({
-        prs: { at: 'x', by: 'word' },
-    });
+    await w.clock.advance(61_000);
+    expect([w.files[REAL], w.writes]).toEqual([store, [GRANT]]);
 });
 
 test('a seat grant lands one line in the log, naming the tick', async ($, on) => {
@@ -482,7 +498,30 @@ test('a spent seat tick grants nothing a second time', async ($, on) => {
     xTakes(w.files);
     await w.clock.advance(61_000);
     await bash($, SEAT);
-    expect([w.ran.length, seatGrant(w.atRun[1])]).toEqual([2, undefined]);
+    expect([w.ran.length, grantsIn(w.atRun[1])]).toEqual([2, []]);
+});
+
+test('a tick with a live grant gets no second one', async ($, on) => {
+    const w = world(on, { ticks: seatTick() });
+    await bash($, SEAT);
+    xTakes(w.files);
+    await bash($, SEAT);
+    expect(grantsIn(w.atRun[1])).toEqual([]);
+});
+
+test('a grant of another session spends no tick of this one', async ($, on) => {
+    const other = `${GRANTS}z9z9z9z9-0000.o7-${NOW}.json.taken`;
+    const { atRun } = world(on, {
+        files: {
+            [other]: JSON.stringify({
+                at: '2026-11-07T14:00:00.000Z',
+                spends: [`o7@${NOW}:${SEAT}`],
+            }),
+        },
+        ticks: seatTick(),
+    });
+    await bash($, SEAT);
+    expect(grantsIn(atRun[0])).toEqual([GRANT]);
 });
 
 for (const [why, command] of [
@@ -494,7 +533,7 @@ for (const [why, command] of [
     test(`a seat switch his tick does not quote gets no grant: ${why}`, async ($, on) => {
         const { atRun } = world(on, { ticks: seatTick(command) });
         await bash($, SEAT);
-        expect(atRun).toEqual(['{}']);
+        expect(atRun.map(grantsIn)).toEqual([[]]);
     });
 
 for (const [line, thread] of [
@@ -505,7 +544,11 @@ for (const [line, thread] of [
     test(`a ticked seat switch in another spelling is granted: ${line}`, async ($, on) => {
         const { atRun } = world(on, { ticks: seatTick(line) });
         await bash($, line);
-        expect(seatGrant(atRun[0])).toMatchObject({ role: 'main', thread });
+        const [path = ''] = grantsIn(atRun[0]);
+        expect(JSON.parse(atRun[0]?.[path] ?? '{}')).toMatchObject({
+            role: 'main',
+            thread,
+        });
     });
 
 for (const line of [
@@ -519,14 +562,14 @@ for (const line of [
     test(`a ticked line that is no seat switch gets no grant: ${line}`, async ($, on) => {
         const { atRun } = world(on, { ticks: seatTick(line) });
         await bash($, line);
-        expect(atRun).toEqual(['{}']);
+        expect(atRun.map(grantsIn)).toEqual([[]]);
     });
 
 test('a ticked line that is more than the seat switch gets no grant', async ($, on) => {
     const line = `${SEAT}; x thread list`;
     const { atRun } = world(on, { ticks: seatTick(line) });
     await bash($, line);
-    expect(atRun).toEqual(['{}']);
+    expect(atRun.map(grantsIn)).toEqual([[]]);
 });
 
 test('a seat switch with the override on spends no tick', async ($, on) => {
@@ -535,51 +578,81 @@ test('a seat switch with the override on spends no tick', async ($, on) => {
         ticks: seatTick(),
     });
     await bash($, SEAT);
-    expect(seatGrant(atRun[0])).toBeUndefined();
+    expect(grantsIn(atRun[0])).toEqual([]);
 });
 
-for (const body of ['{"prs"', '[]', 'null'])
-    test(`a store that reads ${body} is left as it is, and the tick unspent`, async ($, on) => {
-        const w = world(on, { files: { [REAL]: body }, ticks: seatTick() });
-        await bash($, SEAT);
-        const left = w.files[REAL];
-        w.files[REAL] = '{}';
-        await bash($, SEAT);
-        expect([left, seatGrant(w.atRun[1]) !== undefined]).toEqual([
-            body,
-            true,
-        ]);
-    });
+test('a grant that cannot be written leaves the tick unspent', async ($, on) => {
+    const w = world(on, { isFull: true, ticks: seatTick() });
+    await bash($, SEAT);
+    w.opts.isFull = false;
+    await bash($, SEAT);
+    expect(w.atRun.map(grantsIn)).toEqual([[], [GRANT]]);
+});
 
 for (const call of ['failed', 'denied'] as const)
     test(`a seat switch that ${call === 'failed' ? 'fails' : 'another hook refuses'} hands the tick back and removes the grant`, async ($, on) => {
         const w = world(on, { call, ticks: seatTick() });
         await bash($, SEAT);
-        const left = seatGrant(w.files[REAL]);
+        const left = grantsIn(w.files);
         delete w.opts.call;
         await bash($, SEAT);
-        expect([left, seatGrant(w.atRun[1]) !== undefined]).toEqual([
-            undefined,
-            true,
-        ]);
+        expect([left, grantsIn(w.atRun[1])]).toEqual([[], [GRANT]]);
     });
+
+test('a switch that moved the seat and then failed keeps the tick spent', async ($, on) => {
+    const w = world(on, { call: 'failed', ticks: seatTick() });
+    w.opts.during = () => xTakes(w.files);
+    await bash($, SEAT);
+    delete w.opts.call;
+    delete w.opts.during;
+    await bash($, SEAT);
+    expect(grantsIn(w.atRun[1])).toEqual([]);
+});
 
 test('a grant never used is gone after 60 s, and the tick is back', async ($, on) => {
     const w = world(on, { ticks: seatTick() });
     await bash($, SEAT);
     await w.clock.advance(59_000);
-    const held = seatGrant(w.files[REAL]) !== undefined;
+    const held = grantsIn(w.files);
     await w.clock.advance(2000);
-    const left = seatGrant(w.files[REAL]);
+    const left = grantsIn(w.files);
     await bash($, SEAT);
-    expect([held, left, seatGrant(w.atRun[1]) !== undefined]).toEqual([
-        true,
-        undefined,
-        true,
-    ]);
+    expect([held, left, grantsIn(w.atRun[1])]).toEqual([[GRANT], [], [GRANT]]);
 });
 
-test('the end of an old grant leaves a newer one alone', async ($, on) => {
+// a hot reload or a killed session drops the timer: the file's own age says it all
+test('a grant left past 60 s by a dead timer is swept, and its tick is back', async ($, on) => {
+    const { atRun } = world(on, {
+        files: {
+            [GRANT]: JSON.stringify({
+                at: '2026-11-07T13:58:59.000Z',
+                spends: [`o7@${NOW}:${SEAT}`],
+            }),
+        },
+        ticks: seatTick(),
+    });
+    await bash($, SEAT);
+    expect(JSON.parse(atRun[0]?.[GRANT] ?? '{}')).toMatchObject({
+        at: '2026-11-07T14:00:00.000Z',
+    });
+});
+
+test('a taken grant is kept for its tick’s 2 h, then swept', async ($, on) => {
+    const taken = (at: string) => JSON.stringify({ at, spends: [] });
+    const young = `${GRANTS}${SID}.o1-1.json.taken`;
+    const old = `${GRANTS}${SID}.o2-2.json.taken`;
+    const { files } = world(on, {
+        files: {
+            [old]: taken('2026-11-07T11:59:59.000Z'),
+            [young]: taken('2026-11-07T12:00:01.000Z'),
+        },
+        ticks: seatTick(),
+    });
+    await bash($, SEAT);
+    expect([files[old], files[young] !== undefined]).toEqual([undefined, true]);
+});
+
+test('the end of one grant leaves another tick’s grant alone', async ($, on) => {
     const w = world(on, {
         ticks: [...seatTick(), ...seatTick(SEAT, 'o8')],
     });
@@ -587,5 +660,5 @@ test('the end of an old grant leaves a newer one alone', async ($, on) => {
     await w.clock.advance(30_000);
     await bash($, SEAT);
     await w.clock.advance(31_000);
-    expect(seatGrant(w.files[REAL])).toBeDefined();
+    expect(grantsIn(w.files)).toEqual([GRANT]);
 });

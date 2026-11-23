@@ -416,11 +416,11 @@ func threadRenameRun(r *Run, args []string, flags Flags) (any, error) {
 		if err := coordinatorOnly("x thread rename --role"); err != nil {
 			return nil, err
 		}
-		grant, err := seatLeave(args[0], role)
+		pass, err := seatLeave(args[0], role)
 		if err != nil {
 			return nil, err
 		}
-		return threadRoleSwitch(r, args[0], role, grant)
+		return threadRoleSwitch(r, args[0], role, pass)
 	}
 	if len(args) < 2 {
 		return nil, usageFail("a rename takes the new name, or --role", "x thread rename <sid or display> '<name>'")
