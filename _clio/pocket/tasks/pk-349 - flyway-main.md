@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T15:37:00Z'
+updated_date: '2026-11-23T15:40:00Z'
 labels:
   - s
   - clio-main
@@ -29,7 +29,7 @@ ordinal: 1000
 - [ ] #11 f89 idle member alarm: a line at my turn end when a lane member idles 10 min, no wait named (his o13)
 - [ ] #12 f90 cuts pass over the board mod (x-mod-stash): what in it has no user, his ticks (his o17, this week)
 - [ ] #13 f91 designer craft: research how to search design references and query them right (his 19 Nov wish)
-- [ ] #14 f92 speak design artifacts: which to delete, which to keep, as one clear list for him (FRM-642:W21, W22)
+- [ ] #14 f92 speak design artifacts: which to delete, which to keep, as one clear list for him (his 16 Nov ask)
 - [ ] #15 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
 - [ ] #16 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
 - [ ] #17 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
@@ -2182,4 +2182,25 @@ PK-349:W1998 (2026-11-23 17:29, dima): consult with cc mods codie.
 PK-349:W1999 (2026-11-23 17:29, dima): so it is a button in my band? ❓
 
 17:33 W1985 correction: its opening «second wind: my own context reset» is clio's reply quoted; his words are «too, create one i see what it is about», and its home is not FRM-695 (answered 17:23: it is the second wind button, no demo burned)
+
+PK-349:W2000 (2026-11-23 17:30, dima): side q: why mods codie waiting for that baseline runs for so long? ❓
+PK-349:W2001 (2026-11-23 17:30, dima): is it truly needed to spend about 45 min on that? ❓
+
+PK-349:W2002 (2026-11-23 17:37, dima): side q: why mods codie waiting for that baseline runs for so long? ❓
+PK-349:W2003 (2026-11-23 17:37, dima): is it truly needed to spend about 45 min on that? ❓
+PK-349:W2004 (2026-11-23 17:37, dima): then SW also not a part of orbit? ❓ → FRM-611
+PK-349:W2005 (2026-11-23 17:37, dima): where it should be then outlined in cc mods system? ❓ → FRM-611
+PK-349:W2006 (2026-11-23 17:37, dima): a tiny second wind mod? ❓ → FRM-611
+PK-349:W2007 (2026-11-23 17:37, dima): or combined with other mini-mods that do the stuff that my buttons shows? ❓ → FRM-611
+PK-349:W2008 (2026-11-23 17:37, dima): And I also want to know why the shape of the mods in this is made in a way like this right now. → FRM-611
+PK-349:W2009 (2026-11-23 17:37, dima): Is it that codie, mods, had a reason to fold everything into orbit because it's optimal or is it just like this because no one was thinking about the proper shape of the mods? ❓ → FRM-611
+PK-349:W2010 (2026-11-23 17:37, dima): I see. → FRM-611
+PK-349:W2011 (2026-11-23 17:37, dima): There was a reason to have everything in kind of one mod but then the naming problem: it isn't named in the right way from the start so we have to rename that. → FRM-611
+PK-349:W2012 (2026-11-23 17:37, dima): To have everything renamed I have to first see and understand the structure and architecture myself but it is kind of tricky without visualization. → FRM-614
+PK-349:W2013 (2026-11-23 17:37, dima): That's why I want that design look V2 combined with the blueprint V2, and mods big picture 3 tickets should be solved in one go. → FRM-614
+PK-349:W2014 (2026-11-23 17:37, dima): Then fold everything that I've just asked for related to CC mods, the architecture, the renames, and structural thinking into the mods big picture ticket. → FRM-611
+PK-349:W2015 (2026-11-23 17:37, dima): Fold more wishes into the blueprinting app that I want for you to be able to draw me the visualization of stuff, for example, the mods system → FRM-614
+PK-349:W2016 (2026-11-23 17:37, dima): o1
+
+17:41 pointer fix (clio's note, not his words): lines W1958 to W1961 of this item live in FRM-527 at W137, not in FRM-695
 <!-- SECTION:NOTES:END -->
