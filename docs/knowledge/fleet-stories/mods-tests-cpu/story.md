@@ -1,7 +1,7 @@
 ---
 status: open
-dates: 2026-11-05 → 2026-11-20
-tickets: [FRM-662, FRM-590, PK-463]
+dates: 2026-11-05 → 2026-11-23
+tickets: [FRM-662, FRM-590, FRM-678, FRM-688, PK-463]
 tags: [cpu, tests, mods, claude-plugin-test, silence, wrong-call]
 fed-by: incidents
 ---
@@ -54,6 +54,17 @@ dima, 2026-11-20 20:48: the biggest problem in this whole incident is the silenc
 - the sixth sense's skill: a mods suite runs whole at the head only
 - `rules/fleet-hazards.md` § test cpu: a cpu roast from tests is a critical failure, the outside search first
 - the plan, ticked by dima for the mods lane's next chunk: `.scratch/mods-tests-cpu/plan.md` — a push runs the tests its diff reaches, pure logic on vitest, the dead tests gone, a fixed cpu cap per mod that only his tick raises, and four `mods/AGENTS.md` test lines whose checks land in the same chunk (`.scratch/mods-tests-cpu/agents-md-proposal.md`)
+
+## what landed (23 Nov, FRM-678 and FRM-688)
+
+- one whole x-mod-stash run: 447.67 → 169.85 cpu-s (user + sys, one run each inside `gate-queue.sh --long`, 10:33 and 13:19), −62 %; all 1,901 rows of the first run still present by name, 23 new
+- the cause 1 fix: the rows of one test file share one host start (`tests/shared-boot.ts`), so x-mod-stash starts the host 52 times a whole run, where almost every one of its ~1,900 rows did before
+- the caps, in `script/test-cpu-budget.tsv`: x-mod-stash 187 cpu-s, x-mod-guard 15, x-mod-holds 2, x-mod-redact 2; a whole run past its row is red
+- `boots.tsv` counts host starts per test file and per mod with no run; the commit reds a file past its row, a file with no row, a start in a loop
+- a raise of either table stands only on dima's tick (4fd1c3f2, after clio let a cap rise 187 → 195 unasked the same day)
+- a commit runs no mods suite; a whole suite takes the long turn alone, at a 1-minute load of 14 or under
+- not read yet: a day of lane work under the new shape (FRM-678's exit 7, 24 Nov)
+- not covered: the caps hold the four mods and x's go suite; frame's and bytes' vitest suites have no cpu row
 
 ## the line that keeps it away
 
