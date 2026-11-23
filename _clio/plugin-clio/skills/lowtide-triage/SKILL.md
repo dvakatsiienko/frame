@@ -15,6 +15,7 @@ dima, 2026-11-07, folded: «hoisting selects the scope each clio lane will execu
 3. **draft the split**: `ListAgents` names the active clios, `🦉 clio` and each `🦉🪽 clio: wing <N>`. run the freebie test (`craft-pm`) on each item, then:
    - group by area and similarity; a parent and its child, and items on the same files, stay in one lane
    - an item sits in one flyway only
+   - the stray's share is the `stray fit` tickets (`x linear list --label 'stray fit'`, `clio:pm` § the fields); a pile item that passes its test gets the label here
    - chores prefer wings; main can take them too, its lanes come first
    - a wing that owns an area keeps it
    - each lane's list: freebies and almost-freebies on top even when less wanted, then by how much he wants it, big stuff last unless he asks to prioritize it
