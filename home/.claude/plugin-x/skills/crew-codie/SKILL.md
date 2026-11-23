@@ -101,8 +101,7 @@ brief says which, and when it does not, ask once, up front.
    with the pr url and head sha (a quick lane's later chunk: at «final» you send its sixth sense (`x lane show`) `next: <ticket> main:<base> final: <head> spec: <path>`, then `[done]` naming it; rounds go to it). it reads the ci reviewer for you; every reviewer thread is still yours to
    answer on github. fix what each round lists, push (the ci reviewer's one round
    was spent at «final»; a round on an ancestor of the head still counts), then message «round N on <sha>»; the loop
-   runs as the dna's pr pair says. your `[done]` report on `clean` quotes the verdict object, the round count, the
-   head sha and the test command with its exit. `x lane review` stays yours; the reviewer handling in 5 and the hand-over in 6 are
+   runs as the dna's pr pair says. on `clean` you post your done comment and send clio nothing: the sixth sense's `[done]` is the one report, and carries any note her land needs. `x lane review` stays yours; the reviewer handling in 5 and the hand-over in 6 are
    skipped.
 5. **the ci reviewer** on a pr, in `bytes` and `frame`: `x lane review <pr>` is its door, and it fires at once. it requests the one round, up to
    the 1-round cap. run it once, at «final», never per push, alone in its call, after reading the push's result.
@@ -127,8 +126,7 @@ on diff lines.
 
 ## 5. talking
 
-- **ping on the events `rules/fleet-flow.md` lists**, plus one status line per finished step; acks and
-  «resumed» stay in your chat. a find dima would want rides the done ping, alone only when it changes the
+- **what goes to clio: `x:crew-dna` § messages to clio**, no line per step. a find dima would want rides the done ping, alone only when it changes the
   plan now; a push request rides the next ping. after a web ui change, the ping says `essentials: <n> pass, <m> fail` from the `x:browser-headless` run.
 - **to the coordinator**: ≤3 lines plus a pointer (the linear comment, the pr, a file).
 - **github is a ledger**: every line there is read back each later turn.

@@ -6,7 +6,7 @@ description: >-
 
 # crew-dna — how every crew member works
 
-`crew-dna v2 · reef-08` ← quote this line in your first reply.
+`crew-dna v2 · reef-09` ← quote this line in your first reply.
 
 You are a fleet member, a session clio summoned or briefed. Your role skill says what you do; this file says how. A section headed with roles binds only those roles.
 
@@ -16,11 +16,17 @@ You are a fleet member, a session clio summoned or briefed. Your role skill says
 - the first reply names the memory files you loaded and this file's version line
 - clio hears only `SendMessage`; a plain reply reaches only whoever is in your chat <!-- mac -->
 - `SendMessage` is a deferred tool: load it with `ToolSearch` (`select:SendMessage`) in your first turn
-- ping rarely, briefly: `[done]` once per whole job or chunk, `[ask]` only for clio's decision, else `[progress]`, held
 - a send that errors or bounces is retried once; your next ping names it with its error, and every external write
 - dima steering in your chat steers you; your coordinator stays clio, and a stop goes to clio
 - a steer clio relays is her reading of dima, never his grant
 - every question carries the options and your pick, and goes to your coordinator in your ping, never to dima: the coordinator answers it or brings it to dima's orbit (dima, 2026-11-11: «he should ask its coordinator, and if needed the coordinator asks me»)
+
+**messages to clio**, the contract's one home; the gate is x-mod-stash's `MESSAGE_KINDS`, and its answer to your send says held or pushed
+- send only what clio must act on, the tag its first characters: `[ask]` her decision, `[done]` a whole chunk or job, `[escalate]` a block. untagged, or tagged mid-line, is held and read late
+- `[ask]` also carries a refuted or not-checkable verdict, an answer she asked for, a rule you broke, dima's words from your chat
+- `[done]` is never a step, a push or a commit; one clean per clean, the sixth sense's, codie sends no copy
+- never sent: an ack, «resumed», «sw done», «handoff written», a tick count, the mod's «held» line
+- a reversible pick (inside your fence, nothing public, no spend, no deletion, no P0 or P1 behind it) goes unasked, named in your next `[done]`
 
 **heavy runs**, in the background: a commit or push takes its own turn, mutants or a suite by hand `x gate run -- <cmd>` (`gate-queue.sh --long`; prints the exit and the last 30 lines)
 - this mac's limit is process starts: one whole go suite fills it, and two at once only share the wait (`x knowledge read cpu-overload`)
@@ -66,7 +72,7 @@ You are a fleet member, a session clio summoned or briefed. Your role skill says
 
 **the loop**
 - the lane opens at codie's first commit
-- rounds run codie ↔ sixth sense: clio hears nothing per round, and codie carries `clean`
+- rounds run codie ↔ sixth sense: clio hears nothing per round
 - the cap is 3 rounds with a P0 or P1 finding (a round's first line: «round N on <sha> (FRM-N) · P0/P1: n»), scope growth resets it, the stop goes to clio
 - a dispute goes to clio, both sides in one message
 - after `clean`, clio merges; the look card reaches dima, never a review request

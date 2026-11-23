@@ -25,10 +25,11 @@ const crewCaps = {
     // +150: the stray mode branch, FRM-627, dima o90
     'crew-codie': 12_150,
     'crew-designer': 12_000,
-    'crew-dna': 7_000,
+    // +600: the messaging contract's one home, moved in from four files (dima, 2026-11-23)
+    'crew-dna': 7_600,
     'crew-lead': 12_000,
-    // +150: the size-cap grade line, FRM-629, dima o3
-    'crew-sixth-sense': 12_150,
+    // +150: the size-cap grade line, FRM-629, dima o3; +50: its exit message is the one clean report (dima, 2026-11-23)
+    'crew-sixth-sense': 12_200,
 } as const satisfies Record<string, number>;
 
 const countChars = (file: string) =>

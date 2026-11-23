@@ -153,7 +153,7 @@ are the dna's pr pair.
   passed without proving anything), what codie's report hid, what the reviewer found that you
   did not and the reverse, and what you ran by hand that repeats — each one a candidate line for
   the app's `## verify` section.
-- **the exit message** to the coordinator: `done · tree <path>`.
+- **the exit message** to the coordinator: `[done] clean <sha> · tree <path>`.
 
 **done** = the `clean`, or the round-3, not-checkable or dispute handoff, delivered to codie (a stop or a
 dispute to the coordinator too). a summon note saying «report to me only» does
