@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T10:08:00Z'
+updated_date: '2026-11-23T10:45:00Z'
 labels:
   - s
   - clio-main
@@ -22,11 +22,13 @@ ordinal: 1000
 - [ ] #4 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
 - [ ] #5 f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes
 - [ ] #6 f74 speak tails: tell dima when the old x-speak row and launchd leftovers can go — waits for: his first login
-- [ ] #7 f75 herdr wisp: the glide block stays 1 px tall, no card drawn though two lanes are open; next herdr lane
-- [ ] #8 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #9 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #10 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #11 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #7 f76 mods wisp: at his 12:09 login the stash drew a second glide card per lane from each lane-plan.md (l107, l108)
+- [ ] #8 f77 hang-heal: a ticket for the silent-member alarm outside a shift, a watch on clio, the keychain lost at login
+- [ ] #9 f78 herdr rider: orbit assumptions drawn in the deck, shaped apart from asks (his 12:43); a W-line for the herdr lane
+- [ ] #10 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #11 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #12 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #13 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1552,8 +1554,8 @@ PK-349:W1497 (2026-11-23 10:33, dima): let's tell as you predict - a, shared res
 PK-349:W1498 (2026-11-23 10:33, dima): so currently, shared weekly runs-faster-than-fable? 2 vs 3 percent? ❓
 PK-349:W1499 (2026-11-23 10:33, dima): then looks like speak codie should go fable 5.2.
 
-PK-349:W1500 (2026-11-23 10:33, dima, o7 steer): o7 and o8 - explain them a little, no tech language - what are the findings? ❓
-PK-349:W1501 (2026-11-23 10:33, dima, o7 steer): what's the proposal? ❓
+PK-349:W1644 (2026-11-23 10:33, dima, o7 steer): o7 and o8 - explain them a little, no tech language - what are the findings? ❓
+PK-349:W1645 (2026-11-23 10:33, dima, o7 steer): what's the proposal? ❓
 
 correction (stamps only, words untouched): W1481–W1496 are his 10:33 paste, stamp «(2026-11-23 10:33, dima)», not 10:25.
 correction (stamps only, words untouched): W1497 is the o7 steer, stamp «(2026-11-23 10:33, dima, o7 steer)», not 10:33 without the steer tag.
@@ -1657,4 +1659,132 @@ done 2026-11-23 11:56: f72 speak tails: tell dima the moment the old x-speak Acc
 done 2026-11-23 11:56: f73 herdr wisp: the glide block draws no card though lanes.json holds l105 and l106 open (shot 11:50); next herdr lane, with f69
 
 12:08 ticket: FRM-686 carries the comms contract wish lines (PK-349:W1530–W1564 subset, his 11:48, 11:56, 11:59, 12:06 lines), renumbered FRM-686:W1–W10; the hang-heal lines W1547–W1554 and the kit lines W1543–W1546, W1557–W1561 stay here until their own home
+
+PK-349:W1570 (2026-11-23 11:48, dima): don't forget to tell me whan i clean old launchd's.
+PK-349:W1571 (2026-11-23 11:48, dima): (context, not dima's words: 468 member messages in five days; 190 woke me, 278 slipstreamed.)
+PK-349:W1572 (2026-11-23 11:48, dima): who evaluated? researcher or you? ❓
+PK-349:W1573 (2026-11-23 11:48, dima): maybe you should actually do evaluation, because you are a coordinator? ❓
+PK-349:W1574 (2026-11-23 11:48, dima): consulted with crow? to see what's useful what's not. ❓
+PK-349:W1575 (2026-11-23 11:48, dima): (context, not dima's words: the dead weight rides the slipstream: second-wind-done pings (21), codie repeating sixth sense's clean (10), acks, progress ticks.)
+PK-349:W1576 (2026-11-23 11:48, dima): do we still need second wind done? ❓
+PK-349:W1577 (2026-11-23 11:48, dima): i thought we automated via mods (messages are just held while compacting)? or not done? ❓
+PK-349:W1578 (2026-11-23 11:48, dima): and yes remove all fluff spam.
+PK-349:W1579 (2026-11-23 11:48, dima): keep only useful messages.
+PK-349:W1580 (2026-11-23 11:48, dima): (context, not dima's words: 15 needed messages were held instead of pushed, because their tag was missing or mid-line: a refuted verdict with two decisions, a «codie took no turn since its compact».)
+PK-349:W1581 (2026-11-23 11:48, dima): fix!
+PK-349:W1582 (2026-11-23 11:48, dima): (context, not dima's words: the biggest waker is the coordinator's own background-job notices: 201 turns, more than all member pushes; 17 wakes were helga receipts her briefs asked for, against helga's skill.)
+PK-349:W1583 (2026-11-23 11:48, dima): like wishkeeper result runs? ❓
+PK-349:W1584 (2026-11-23 11:48, dima): how to optimize it, and can we, even? ❓
+PK-349:W1585 (2026-11-23 11:48, dima): how you excpect to process wishkeeper run resulsts without being waked? ❓
+PK-349:W1586 (2026-11-23 11:48, dima): (context, not dima's words: proposal of six cuts and one fix, removing about 152 messages and 44 wakes: 1. one clean report per clean, never two; 2. no second-wind-done pings; 3. helga briefs stop asking for receipts; 4. no per-step status line, progress goes; 5. no acks, no echo of held lines; 6. a reversible pick just goes, «going with a unless you stop me»; 7. any line needing dima's decision opens with [ask].)
+PK-349:W1587 (2026-11-23 11:48, dima): ok but check carefully if our system supports the no-notice-on-second-wind mode.
+PK-349:W1588 (2026-11-23 11:48, dima): Yes this is where you're too hard-babysitting.
+PK-349:W1589 (2026-11-23 11:48, dima): born based on my ask that I made long ago when I asked you to babysit the lanes too much.
+PK-349:W1590 (2026-11-23 11:48, dima): I think this per-step updates was created because of that.
+PK-349:W1591 (2026-11-23 11:48, dima): That's why I've told you to loosen this part.
+PK-349:W1592 (2026-11-23 11:48, dima): No need to update you on every single step, only usefull stuff goes over the message.
+PK-349:W1593 (2026-11-23 11:48, dima): approve overall.
+PK-349:W1594 (2026-11-23 11:48, dima): consult with crow first.
+PK-349:W1595 (2026-11-23 11:48, dima): then tell weighed proposal.
+PK-349:W1596 (2026-11-23 11:48, dima): (context, not dima's words: shared is at 8 (verified: the 11:29 row of usage-pace.log), so fable is well ahead of plan.)
+PK-349:W1597 (2026-11-23 11:48, dima): someting is off in measures.
+PK-349:W1598 (2026-11-23 11:48, dima): currently shared weekly is ahed, in my view.
+PK-349:W1599 (2026-11-23 11:48, dima): 14% fable weekly = 7% shared weekly.
+PK-349:W1600 (2026-11-23 11:48, dima): shared weekly cucrentl 9%, so shared weekly goes faster (opuses investment).
+PK-349:W1601 (2026-11-23 11:48, dima): so we should burn fable slightly more to balance out.
+PK-349:W1602 (2026-11-23 11:48, dima): wisp: you just got blocked by something.
+PK-349:W1603 (2026-11-23 11:48, dima): go look into your hook that fixes it.
+PK-349:W1604 (2026-11-23 11:48, dima): what caused you to be blocked this time? ❓
+PK-349:W1605 (2026-11-23 11:48, dima): i see now.
+PK-349:W1606 (2026-11-23 11:48, dima): API Error: 529 Overloaded.. retry.
+PK-349:W1607 (2026-11-23 11:56, dima): (context, not dima's words: clio's usage reply, «one objection, then your way»: fable 100 beside shared 95 was the goal; fable 14 asks for shared about 13, shared is 9 (verified: x probe bare '/usage', 11:49); each fable point adds only half a shared point; «keep going» ticked, both meters at 13:00.)
+PK-349:W1608 (2026-11-23 11:56, dima): 95% shared weekly at 100% fable weekly is a rough target.
+PK-349:W1609 (2026-11-23 11:56, dima): fable weekly just should go slightly faster than shared weekly so 100% fable weekly is reached until shared weeklt is 100% reached, that's it.
+PK-349:W1610 (2026-11-23 11:56, dima): the narrower the gap between it (favouring fable) the better.
+PK-349:W1611 (2026-11-23 11:56, dima): without too much enthusiasm.
+PK-349:W1612 (2026-11-23 11:56, dima): (context, not dima's words: glides: a herdr wisp; both cards exist and are open in the store.)
+PK-349:W1613 (2026-11-23 11:56, dima): why herdr UI not shows them then? ❓
+PK-349:W1614 (2026-11-23 11:56, dima): approve crew messaging regroom.
+PK-349:W1615 (2026-11-23 11:56, dima): now - how to properly implemented? ❓
+PK-349:W1616 (2026-11-23 11:56, dima): it is a vital node in entire cooms system, very important.
+PK-349:W1617 (2026-11-23 11:56, dima): how would you lay this change out architecturally? ❓
+PK-349:W1618 (2026-11-23 11:56, dima): so the comms node is very reliable, solid, and easy to change/fix? ❓
+PK-349:W1619 (2026-11-23 11:56, dima): current system is well made? needs changes? ❓
+PK-349:W1620 (2026-11-23 11:56, dima): propose how to properly implement the change.
+PK-349:W1621 (2026-11-23 11:56, dima): and after - don't forget to automate what we are fixing now, via a skill or recipe.
+PK-349:W1622 (2026-11-23 11:59, dima): (context, not dima's words: clio's usage reply, «taken as you say it»: fable a little ahead of shared, narrow gap, no chasing; fable 14 beside shared 9; watch wakes only if shared catches up.)
+PK-349:W1623 (2026-11-23 11:59, dima): I do not understand why you think that Fable 14, besides shared 9, is ahead.
+PK-349:W1624 (2026-11-23 11:59, dima): With Fable 14 the shared should be about 6 at this point, so currently Fable is lagging behind.
+PK-349:W1625 (2026-11-23 11:59, dima): With the current pace shared weekly will reach 100% sooner than Fable 100%, so we are currently burning shared usage faster than Fable usage.
+PK-349:W1626 (2026-11-23 11:59, dima): I approve your plan to update the message contract.
+PK-349:W1627 (2026-11-23 11:59, dima): It should be collocated and not scattered across ten places and should be very approachable, accessible, and visible to everyone.
+PK-349:W1628 (2026-11-23 11:59, dima): I think the mods nudge is the best idea: the table in the mod that you proposed.
+PK-349:W1629 (2026-11-23 11:59, dima): Go ahead and implement it.
+PK-349:W1630 (2026-11-23 12:02, dima): speak - move to bytes fully done and tested for being working properly? ❓
+PK-349:W1631 (2026-11-23 12:02, dima): if yes - now chords? ❓
+PK-349:W1632 (2026-11-23 12:02, dima): note: f4 works fine so i assume speak migrated OK.
+PK-349:W1633 (2026-11-23 12:02, dima): o2. tell what to do and when.
+PK-349:W1634 (2026-11-23 12:06, dima): go ticket for the mods chunk.
+PK-349:W1635 (2026-11-23 12:06, dima): propose where to have it in mods queue.
+PK-349:W1636 (2026-11-23 12:06, dima): i suppose it is very important.
+PK-349:W1637 (2026-11-23 12:06, dima): let's have it right after frm-645.
+PK-349:W1638 (2026-11-23 12:08, dima): usage, the plain projection, since my wording confused: at today's mix each fable point comes with 0.64 shared points (9 beside 14).
+PK-349:W1639 (2026-11-23 12:08, dima): so when fable reaches 100, shared stands near 64: fable hits its wall first.
+PK-349:W1640 (2026-11-23 12:08, dima): that is my read of the meters; you called «keep going», so nothing changes and you get both numbers at 13:00.
+PK-349:W1641 (2026-11-23 12:08, dima): i still think your estimate is off.
+PK-349:W1642 (2026-11-23 12:08, dima): with this pace shared weekly will reach 100% faster than fable weekly, becase each fable weekly 2% = 1% shared weekly.
+PK-349:W1643 (2026-11-23 12:08, dima): so currently shared weekly burns faster than fable weekly.
+
+correction (renumbered, words untouched): the o7-steer pair stamped «(2026-11-23 10:33, dima, o7 steer)», W1500 «what are the findings?» and W1501 «what's the proposal?», takes the next free ids: W1500 → W1644, W1501 → W1645. The 10:25 W1500 «what's the findings?» keeps W1500.
+
+PK-349:W1646 (2026-11-23 12:12, dima): what's next for comms fixing part? ❓
+PK-349:W1647 (2026-11-23 12:12, dima): do you still remember my initial query? ❓
+PK-349:W1648 (2026-11-23 12:12, dima): how to automate it so i wont' re-explain what i want each time? ❓
+PK-349:W1649 (2026-11-23 12:12, dima): why 4 glides? i expected 2. (screenshot: /Users/dima/Desktop/screenshots/CleanShot\ 2026-11-23\ at\ 12.11.58.jpg) ❓
+
+PK-349:W1650 (2026-11-23 12:17, dima): (context, not dima's words: the mod half is FRM-686)
+PK-349:W1651 (2026-11-23 12:17, dima): print few lines what mod side should do.
+PK-349:W1652 (2026-11-23 12:17, dima): (context, not dima's words: hang-heal → answered «possible»; its ticket is owed, shaped with you first)
+PK-349:W1653 (2026-11-23 12:17, dima): we need to grill it? ❓
+PK-349:W1654 (2026-11-23 12:17, dima): if yes, let's do right after speak design is refined and done.
+PK-349:W1655 (2026-11-23 12:17, dima): do speak design after: 1. finish quiet-comms-check upgrade + automate 2. final tail-free check 3. finsh speak design.
+PK-349:W1656 (2026-11-23 12:17, dima): (context, not dima's words: the paste on three things inside FRM-686: the wish block, a commit check for drift from the contract, a weekly read plus a monthly recipe that reruns today's audit and brings only the numbers)
+PK-349:W1657 (2026-11-23 12:17, dima): so weekly read now reads the message context too, not just count? ❓
+PK-349:W1658 (2026-11-23 12:17, dima): maybe just run recipe weekly? ❓
+PK-349:W1659 (2026-11-23 12:17, dima): i changed my mind, can we shape that recipe now? ❓
+PK-349:W1660 (2026-11-23 12:17, dima): (context, not dima's words: It only reads, takes a few seconds, and writes to a file I pick up. Say «done» after it.)
+PK-349:W1661 (2026-11-23 12:17, dima): i pasted it into terminal.
+
+PK-349:W1662 (2026-11-23 12:20, dima): fix glides pls, remove two not needed ones (screenshot: /Users/dima/Desktop/screenshots/CleanShot\ 2026-11-23\ at\ 12.18.06.jpg)
+PK-349:W1663 (2026-11-23 12:20, dima): after relogin heal - can you heal everyone without restarting everyone? ❓
+PK-349:W1664 (2026-11-23 12:20, dima): restarting is expensive.
+
+PK-349:W1665 (2026-11-23 12:22, dima): go grill.
+
+PK-349:W1666 (2026-11-23 12:25, dima): go, i relogout meanwhile.
+
+12:27 id fix, his words untouched: the 10:33 o7-steer pair renumbered in place, W1500 → W1644, W1501 → W1645 (wish-cover red «W1500 numbered twice»; dima's rule on ids: one number, one line)
+
+PK-349:W1667 (2026-11-23 12:25, dima, o5 steer): yes, but your grading is more important thant researcher, because you are a coord. so treat researcher input as suggestion, not truth. crow consult is required , not optional.
+
+PK-349:W1668 (2026-11-23 12:28, dima): go.
+
+PK-349:W1669 (2026-11-23 12:31, dima): (context, not dima's words: the pasted board says «not wired yet: the Monday boot's own text still names the old count; I change that line with your next go, since it edits my boot skill. The commit of all this waits for the load to drop under 8 (22 now).»)
+PK-349:W1670 (2026-11-23 12:31, dima): go.
+PK-349:W1671 (2026-11-23 12:31, dima): (context, not dima's words: the pasted board says «mods, two picks of mine shown as assumptions on your board: the old «run suites inside the commit hook» path is deleted, not kept beside the new one; and a mod's restart budget leaves room for a rightly shaped new test without your tick.»)
+PK-349:W1672 (2026-11-23 12:31, dima): btw i do not see assumptions in the herder UI - we did not implemented it.
+PK-349:W1673 (2026-11-23 12:31, dima): (context, not dima's words: the pasted board says «next from me, your order: the mod chunk's signed line through a fresh pane, the kit check in full, my 201 job wakes, then the tail-free check.»)
+PK-349:W1674 (2026-11-23 12:31, dima): go, but what is a fresh pane? ❓
+PK-349:W1675 (2026-11-23 12:31, dima): go close all tails so we can start speak designer.
+
+PK-349:W1676 (2026-11-23 12:32, dima): and wishkeeper over the new recipe pls.
+
+PK-349:W1677 (2026-11-23 12:33, dima): and everything else sofar (wishkeeper).
+PK-349:W1678 (2026-11-23 12:33, dima): glide fixed fyi: not wto
+PK-349:W1679 (2026-11-23 12:33, dima): galde fixed fyi: now 2 glides (correct)
+PK-349:W1680 (2026-11-23 12:33, dima): glide*
+
+PK-349:W1681 (2026-11-23 12:34, dima): close all tails, do SW and designer.
+
+done 2026-11-23 12:40: f75 herdr wisp: the glide block stays 1 px tall, no card drawn though two lanes are open; next herdr lane
 <!-- SECTION:NOTES:END -->
