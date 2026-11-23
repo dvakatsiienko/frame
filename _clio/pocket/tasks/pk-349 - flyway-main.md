@@ -1570,4 +1570,14 @@ PK-349:W1508 (2026-11-23 10:43, dima, o4 steer): let's try, but we need a proper
 done 2026-11-23 10:50: f70 FRM-676 land tails: archive herdr-lane-3 (name clash), review-rounds line, decamp verify-04f76a5 and verify-829d87e (FRM-676 Done)
 
 10:51 f69 herdr wisps, four open nits carried from the herdr sixth sense's 20 Nov handoff (named, no fix asked then): loadPins' non-string filter mutant survives; `waitShown` cuts «pnpm test ~/frame» to «… ~»; an unquoted path with a space is not found in orbit cards; the chat reload guard (1310c24c) waits to land on his empty quill. they ride the next herdr lane's first brief.
+
+PK-349:W1509 (2026-11-23 10:47, dima, o7 steer): yes, out.
+PK-349:W1510 (2026-11-23 10:47, dima, o7 steer): let's try this new model, i want to run clio on fable more.
+
+PK-349:W1511 (2026-11-23 10:47, dima, o6 steer): let's do like this, but we need to turn this log mess into something beautiful, maybe at a point of complete measure solution.
+PK-349:W1512 (2026-11-23 10:47, dima, o6 steer): for now - fable, but we have time before we start so let's measure until that.
+
+PK-349:W1513 (2026-11-23 10:47, dima): proceed.
+PK-349:W1514 (2026-11-23 10:47, dima): what else tails are left? ❓
+PK-349:W1515 (2026-11-23 10:48, dima): let's solve all your tails and all my questions and go speak.
 <!-- SECTION:NOTES:END -->
