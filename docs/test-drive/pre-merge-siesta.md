@@ -205,3 +205,4 @@ Ticket: none
 - 2026-11-23 19:28 · the read rode the checkpoint-6 check (6 medium, all folded) · 0 high · acted: y
 - 2026-11-23 20:05 · 80k tokens · 0 high, 4 medium, 3 low · highs real: none · acted: y (four ticket lines)
 - 2026-11-23 20:38 · 90k tokens · 2 high, 4 medium, 2 low · highs real: y · acted: y
+- 2026-11-23 21:10 · checkpoint mode · 36k tokens · 3 high, 3 medium, 2 low · highs real: y · acted: y
