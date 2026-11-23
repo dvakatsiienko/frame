@@ -85,3 +85,6 @@ Read from main's transcript `d5a522a8-2411-4457-9ea4-97ed69c3c6e5.jsonl` (🦉 c
 
 ## verdict, 2026-11-16
 - with cross-session rows read: 49 machine wakes on main today, 39 acted, 3 replied only, 7 did nothing (14 %); member messages 27, of them 5 did nothing, 23 of 27 tagged; the quiet hold keeps progress out, about one wake in seven still buys nothing. the re-count reminder is closed; the next read rides the measuring work (PK-300).
+
+## round, 2026-11-23 (the week 16–22 Nov)
+- 8 clio transcripts (main, wings, the mini day): 836 machine wakes, 702 acted, 51 replied only, 83 did nothing (9.9 %, against 14 % on the one day of 16 Nov); task notices are 58 of the 83, members 25

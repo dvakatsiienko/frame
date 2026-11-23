@@ -71,3 +71,7 @@ once a week clio draws 5 notes from `notes.jsonl` for dima to grade, and logs a 
 
 ### round, 2026-11-07 halt
 2 `#dima-caught` lines in the night's flawlog (the 03:00 wind, PK-336's close); no crow note came first on either, read by a grep of notes.jsonl for wind, undercount and PK-336: inference on wording. crow caught 2 others of mine first, the merge-line stall and the wrong misquote it withdrew.
+
+## the weekly grade, ended 2026-11-23
+
+- dima, 23 Nov: «this check is useless and brings nothing useful except additional reading … we can delete this weekly check for crow»; crow is reviewed at deliberate points he picks, never on a schedule. the one round of facts: `_clio/.scratch/boot-2026-11-23/crow-grade.md` (2 fixed, 3 partly, all five recorded ok)
