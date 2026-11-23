@@ -1,5 +1,4 @@
-import { expect, test } from 'claude-code/testing';
-
+import { expect, test } from './shared-boot.ts';
 import { NOW, bash, tickOn, world } from './ticks-world.ts';
 
 // FRM-580 and FRM-566 took two ticks or a raw api call for one sign: now the label and the body line run as written

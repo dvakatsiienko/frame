@@ -1,5 +1,6 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
+
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 // frame's scripts as their source reads: pocket-add parses no help flag, so `--help` runs it
 const SOURCES: Record<string, string> = {

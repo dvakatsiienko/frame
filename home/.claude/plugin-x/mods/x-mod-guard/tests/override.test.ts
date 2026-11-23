@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { answerPrompts } from './said.ts';
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 import { liveStore } from './store.ts';
 
 // the off switch: «operator-override all [until HH:MM]» or the band's 🔓 press turns the floor to warn-only, plain rm and the

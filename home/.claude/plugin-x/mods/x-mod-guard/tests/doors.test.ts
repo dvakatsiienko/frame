@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { answerPrompts } from './said.ts';
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 // a hooksPath override swaps out the hooks a commit or push runs, so it is refused naming its door; a plain push runs
 function world(on: On, cwd = '/home/frame') {

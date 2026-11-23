@@ -1,6 +1,6 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 import { liveStore } from './store.ts';
 
 function world(on: On, cwd: string, root: string | null = cwd) {

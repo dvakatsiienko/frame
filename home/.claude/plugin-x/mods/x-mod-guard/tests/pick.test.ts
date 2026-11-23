@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
-import { expect, mock, test } from 'claude-code/testing';
 
 import { answerPrompts } from './said.ts';
+import { expect, mock, test } from './shared-boot.ts';
 import { liveStore } from './store.ts';
 import { NOW, bash, tickOn } from './ticks-world.ts';
 

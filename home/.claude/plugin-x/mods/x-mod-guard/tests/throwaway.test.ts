@@ -1,5 +1,6 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
+
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 // FRM-467: a throwaway repo under the job's own tmp runs its git; frame's checkout and every command that starts in the tmp
 // but acts outside it keep the refusals

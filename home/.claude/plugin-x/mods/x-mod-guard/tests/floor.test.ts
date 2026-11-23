@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { answerPrompts } from './said.ts';
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 import { liveStore } from './store.ts';
 
 const SID = 'a1a1a1a1-0000';

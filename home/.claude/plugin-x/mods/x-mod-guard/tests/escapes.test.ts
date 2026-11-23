@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { ESCAPES, JOB, type World } from './escapes.ts';
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 // FRM-471: one runner for the escape table; the world is a codie session (not the coordinator) in frame's checkout,
 // with a job tmp, so every rule — the lift, the doors, the linear rules — meets each row as it would live

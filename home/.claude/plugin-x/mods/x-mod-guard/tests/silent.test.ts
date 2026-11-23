@@ -1,5 +1,6 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
+
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 // stash's 🎛️ «guard verdicts» knob (FRM-391 slice 06, dima's o11): silent drops guard's notes, never a refusal
 const STASH = '/home/.claude/plugins/store/x-mod-stash_inline-0000.json';

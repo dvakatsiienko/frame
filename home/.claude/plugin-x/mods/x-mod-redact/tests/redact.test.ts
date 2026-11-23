@@ -1,6 +1,5 @@
-import { expect, test } from 'claude-code/testing';
-
 import { maskText } from '../hooks/mask.ts';
+import { expect, test } from './shared-boot.ts';
 
 // planted fakes, shaped like the real thing and valid for nothing
 const FAKES: [string, string][] = [

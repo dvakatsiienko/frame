@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { answerPrompts } from './said.ts';
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 import { liveStore } from './store.ts';
 
 // dima's o53: the herdr codie's bare `herdr-app do overlay.close` killed main and wing 1 at 19:41 (2026-11-10), so a

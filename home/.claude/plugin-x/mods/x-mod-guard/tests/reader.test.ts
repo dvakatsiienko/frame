@@ -1,5 +1,6 @@
 import type { On } from 'claude-code';
-import { expect, mock, test } from 'claude-code/testing';
+
+import { expect, mock, test } from './shared-boot.ts';
 
 // FRM-472 06c: the shapes the reader now opens, each harmless body still runs, unwarned
 function world(on: On) {

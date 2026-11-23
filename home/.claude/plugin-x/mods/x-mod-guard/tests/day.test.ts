@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
-import { expect, mock, test } from 'claude-code/testing';
 
 import { answerPrompts } from './said.ts';
+import { expect, mock, test } from './shared-boot.ts';
 import { liveStore } from './store.ts';
 
 const NOW = new Date(2026, 9, 6, 12).getTime();

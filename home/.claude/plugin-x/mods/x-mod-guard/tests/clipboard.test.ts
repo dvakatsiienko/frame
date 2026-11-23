@@ -1,5 +1,6 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
+
+import { type Engine, expect, mock, test } from './shared-boot.ts';
 
 const SID = 'c1c1c1c1-0000';
 const DOOR = 'write a fixture file, or ask your coordinator';

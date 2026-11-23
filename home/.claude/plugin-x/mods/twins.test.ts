@@ -19,7 +19,9 @@ function sources(dir: string): string[] {
 
 const twins = new Map<string, { file: string; body: string }[]>();
 for (const mod of readdirSync(HERE).filter((n) => n.startsWith('x-mod-')))
-    for (const file of sources(join(HERE, mod, 'hooks')))
+    for (const file of ['hooks', 'tests'].flatMap((dir) =>
+        sources(join(HERE, mod, dir)),
+    ))
         for (const m of readFileSync(file, 'utf8').matchAll(TWIN)) {
             const [, name = '', body = ''] = m;
             twins.set(name, [
@@ -34,6 +36,7 @@ describe('twin blocks across mods', () => {
             'holder-gone',
             'operator-override-store',
             'proc-of',
+            'shared-boot',
         ]);
     });
     for (const [name, copies] of twins)

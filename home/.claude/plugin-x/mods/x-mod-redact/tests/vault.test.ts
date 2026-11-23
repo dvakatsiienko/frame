@@ -1,5 +1,3 @@
-import { expect, test } from 'claude-code/testing';
-
 import {
     type Vault,
     placeholderOf,
@@ -7,6 +5,7 @@ import {
     restoreText,
 } from '../hooks/mask.ts';
 import { appendCaught, isTight, toolCaught } from '../hooks/register.ts';
+import { expect, test } from './shared-boot.ts';
 
 // planted fakes built at run time, so no source line reads as a secret to a live redactor
 const FAKE = ['sk-ant-api03-', 'FAKE'.repeat(6)].join('');
