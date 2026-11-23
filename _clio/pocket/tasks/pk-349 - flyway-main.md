@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T10:45:00Z'
+updated_date: '2026-11-23T13:24:00Z'
 labels:
   - s
   - clio-main
@@ -21,14 +21,18 @@ ordinal: 1000
 - [ ] #3 f68 launchd: one store until the merge; a BYT-124 line «split app jobs at the merge», pm2.dima moves into schedule/
 - [ ] #4 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
 - [ ] #5 f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes
-- [ ] #6 f74 speak tails: tell dima when the old x-speak row and launchd leftovers can go — waits for: his first login
-- [ ] #7 f76 mods wisp: at his 12:09 login the stash drew a second glide card per lane from each lane-plan.md (l107, l108)
-- [ ] #8 f77 hang-heal: a ticket for the silent-member alarm outside a shift, a watch on clio, the keychain lost at login
-- [ ] #9 f78 herdr rider: orbit assumptions drawn in the deck, shaped apart from asks (his 12:43); a W-line for the herdr lane
-- [ ] #10 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #11 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #12 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #13 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #6 f76 mods wisp: at his 12:09 login the stash drew a second glide card per lane from each lane-plan.md (l107, l108)
+- [ ] #7 f77 hang-heal: a ticket for the silent-member alarm outside a shift, a watch on clio, the keychain lost at login
+- [ ] #8 f78 herdr rider: orbit assumptions drawn in the deck, shaped apart from asks (his 12:43); a W-line for the herdr lane
+- [ ] #9 f80 herdr wisp: a glide card created while the window runs is not drawn until herdr restarts (speak card, 14:05)
+- [ ] #10 f81 herdr wish: closing a tab with a running thread asks yes/no; a plain terminal tab closes at once (his 14:36)
+- [ ] #11 f82 FRM-678: a changed line for the cpu cap gate (187, his tick only), after the codie lands it
+- [ ] #12 f83 herdr wisp: every orbit ask ticks with enter, warn ones too; the «Ticks by click only» line goes (his 15:16)
+- [ ] #13 f84 who-roasted job: a ticket, one folder in schedule/jobs, its log beside the gate queue log (his o6 tick)
+- [ ] #14 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #15 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #16 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #17 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1787,4 +1791,215 @@ PK-349:W1680 (2026-11-23 12:33, dima): glide*
 PK-349:W1681 (2026-11-23 12:34, dima): close all tails, do SW and designer.
 
 done 2026-11-23 12:40: f75 herdr wisp: the glide block stays 1 px tall, no card drawn though two lanes are open; next herdr lane
+
+12:55 groomed, his 12:38–12:42 lines:
+PK-349:W1682 (2026-11-23 12:38, dima): question: is it possible to swap mods codie and speak codie? ❓
+PK-349:W1683 (2026-11-23 12:38, dima): so fable 5.2 codie does the mods? ❓
+PK-349:W1684 (2026-11-23 12:38, dima): i think it is worth it, because mods lane is more active, and leess pauses so it will balance the burning faster.
+PK-349:W1685 (2026-11-23 12:39, dima): swap: i mean switch.
+PK-349:W1686 (2026-11-23 12:39, dima): reassing speak codie to mods, and mods codie to speak? ❓
+PK-349:W1687 (2026-11-23 12:42, dima): (context, not dima's words: the pasted board says «speak codie is at 56% so tell him to: finish chunk, SW and move to mods side, mods codie do same but moves to speak.»)
+PK-349:W1688 (2026-11-23 12:42, dima): (context, not dima's words: the pasted board says «a fresh pane is a new terminal tab herdr opens now, after your login. It sees the keychain; threads born before the login do not, so they send those few calls through one.»)
+PK-349:W1689 (2026-11-23 12:42, dima): i do not understand how to probe it.
+PK-349:W1690 (2026-11-23 12:42, dima): (context, not dima's words: the pasted board says «assumptions: right, herdr does not draw them yet. Until it does I print each in the reply; it becomes a herdr wish line.»)
+PK-349:W1691 (2026-11-23 12:42, dima): yes add as a rider.
+PK-349:W1692 (2026-11-23 12:42, dima): assumptions should go into orbiut, and should look other way that regular asks.
+
+PK-349:W1687 (2026-11-23 12:42, dima): speak codie is at 56% so tell him to: finish chunk, SW and move to mods side, mods codie do same but moves to speak.
+
+PK-349:W1693 (2026-11-23 12:53, dima): did both codies switched? ❓
+
+PK-349:W1694 (2026-11-23 12:57, dima): where to tweak x-speak? (your part, on your board as one ask) ❓
+PK-349:W1695 (2026-11-23 12:57, dima): (context, not dima's words: the pasted board says «open Privacy & Security → Accessibility»)
+PK-349:W1696 (2026-11-23 12:57, dima): (context, not dima's words: the pasted board says «two rows are named “x-speak”; hover to see the path.»)
+PK-349:W1697 (2026-11-23 12:57, dima): (context, not dima's words: the pasted board says «Select the one pointing at /Users/dima/frame/schedule/jobs/x-speak/bin/x-speak and press −»)
+PK-349:W1698 (2026-11-23 12:57, dima): (context, not dima's words: the pasted board says «the row for /Users/dima/.local/libexec/x-speak/x-speak stays on»)
+PK-349:W1699 (2026-11-23 12:57, dima): (context, not dima's words: the pasted board says «log out and in, then one F4 on a selection»)
+
+PK-349:W1700 (2026-11-23 12:57, dima, o13 steer): wait let's solve speak x-speak
+
+PK-349:W1701 (2026-11-23 13:04, dima): remind what tails you have ? ❓
+PK-349:W1702 (2026-11-23 13:04, dima): propose what we can solve before designer.
+
+PK-349:W1703 (2026-11-23 13:08, dima): do all tails and then:
+PK-349:W1704 (2026-11-23 13:08, dima): (context, not dima's words: the pasted board says «FRM-684, priority 1, due tomorrow: its done test is not run.»)
+PK-349:W1705 (2026-11-23 13:08, dima): (context, not dima's words: the pasted board says «I read it first and tell you what your part is»)
+PK-349:W1706 (2026-11-23 13:08, dima): it should be built and you only need to check.
+PK-349:W1707 (2026-11-23 13:08, dima): then designer
+
+PK-349:W1708 (2026-11-23 13:18, dima): what the state of the switch? ❓
+PK-349:W1709 (2026-11-23 13:18, dima): i was thinking maby better to just restart codies? ❓
+PK-349:W1710 (2026-11-23 13:18, dima): stop existing ones and good point and start mods codie on fable and speak as opus? ❓
+PK-349:W1711 (2026-11-23 13:18, dima): why? ❓
+PK-349:W1712 (2026-11-23 13:18, dima): mainly i concern bacuse of how agents.md is loaded.
+PK-349:W1713 (2026-11-23 13:18, dima): if use switch option, each codie will have wrong agents.md? ❓
+
+PK-349:W1714 (2026-11-23 12:53, dima, o2 steer): Can you double-check this because I thought that we actually drew a finalized UI and what's left is to do some final touches? ❓
+
+PK-349:W1715 (2026-11-23 12:53, dima, o2 steer): Can you look up into the design files? ❓
+
+PK-349:W1716 (2026-11-23 12:53, dima, o2 steer): I thought they were already fine.
+
+PK-349:W1717 (2026-11-23 12:53, dima, o2 steer): Actually from the previous design session, I liked what we drew.
+
+PK-349:W1718 (2026-11-23 12:53, dima, o2 steer): What's missing is the final touches and maybe something else.
+
+PK-349:W1719 (2026-11-23 12:53, dima, o2 steer): I can't recall because it was long ago
+
+PK-349:W1720 (2026-11-23 13:03, dima, o1 steer): o1: i forgot to f4 after relogin
+
+PK-349:W1721 (2026-11-23 13:10, dima): after speak codie finishes chaunk (before chords) — switch mods/speak codies.
+
+PK-349:W1722 (2026-11-23 13:27, dima): no.
+
+PK-349:W1723 (2026-11-23 13:27, dima): mods codie is 59% ctx.
+
+PK-349:W1724 (2026-11-23 13:27, dima): tell him to write handoff and stop him (to second wind) summon fable 5.2 medium codie for mods and tell to ingest and proceed
+
+correction: the first PK-349:W1687 line above (labelled context) is superseded by the second, dima's own words
+
+PK-349:W1725 (2026-11-23 13:28, dima): speak codie — opus 5.5 medium (at a good point), in bytes.
+PK-349:W1726 (2026-11-23 13:28, dima): or even better - in speak folder (it is already in bytes) so it picks up right agents md (speak's one).
+PK-349:W1727 (2026-11-23 13:30, dima): and solve threads names so all names are good.
+PK-349:W1728 (2026-11-23 13:30, dima): then when everyone switched and names are good, proposse orbit ask to summon designer
+
+PK-349:W1729 (2026-11-23 13:44, dima): (context, not dima's words: the pasted text says «🟢 usage at 13:29: fable 25 → 27 %, shared 17 → 18 %, gap 9 pts.»)
+PK-349:W1730 (2026-11-23 13:44, dima): i still think you measure your own usage wrong.
+PK-349:W1731 (2026-11-23 13:44, dima): the gape currently is ~-5.
+PK-349:W1732 (2026-11-23 13:44, dima): because ~28% fable = ~14% shared.
+PK-349:W1733 (2026-11-23 13:44, dima): if shared is 18%, fable's part underpaces by ~4% shared.
+PK-349:W1734 (2026-11-23 13:44, dima): so not fable should keep up.
+PK-349:W1735 (2026-11-23 13:44, dima): while leaving ~1% as a buffer which is very slim buffer actually, i'd have at least 5% buffer.
+PK-349:W1736 (2026-11-23 13:44, dima): mod codie confirmed, mods verifier now have wrong name - mods | main. (misses ticket)
+PK-349:W1737 (2026-11-23 13:44, dima): (context, not dima's words: the pasted text says “«⚡ 🔧 mods | FRM-688», Fable 5.2 medium, born in ~/frame”)
+PK-349:W1738 (2026-11-23 13:44, dima): If he starts in frame, he properly can then navigate to the mods folder and read the agents.md from the CC mods folder properly and it properly loads and survives the second wins question
+PK-349:W1739 (2026-11-23 13:44, dima): why you don't posting orbit asks with next steps? ❓
+PK-349:W1740 (2026-11-23 13:44, dima): sign speak part and start codie
+
+PK-349:W1741 (2026-11-23 13:38, dima): (context, not dima's words: the pasted text says «📌 one catch: the next speak-lane chunk on the signed order is chords (BYT-109), and a thread born in apps/speak would not load chords' memory. I raise that at its summon»)
+PK-349:W1742 (2026-11-23 13:38, dima): That's fine because it will solve chords and then do everything remaining in speak so speak is more important than chords.
+PK-349:W1743 (2026-11-23 13:38, dima): To migrate chords code he can just read chords agents.md manually
+PK-349:W1744 (2026-11-23 13:38, dima): What's up with the mods, Codie, and when he will finish his handoff and be ready to stop? ❓
+PK-349:W1745 (2026-11-23 13:38, dima): He seemed to wait for his verifier but his verifier waits for himself for Codie.
+PK-349:W1746 (2026-11-23 13:38, dima): What's up there? ❓
+
+PK-349:W1747 (2026-11-23 13:39, dima): and where is a speak codie? ❓
+PK-349:W1748 (2026-11-23 13:39, dima): also, speak verifier thread name does not tells his ticket
+PK-349:W1749 (2026-11-23 13:41, dima): (context, not dima's words: the pasted text says «🟢 usage at 13:29: fable 25 → 27 %, shared 17 → 18 %, gap 9 pts.»)
+PK-349:W1750 (2026-11-23 13:41, dima): i still think you measure your own usage wrong.
+PK-349:W1751 (2026-11-23 13:41, dima): the gape currently is ~-5.
+PK-349:W1752 (2026-11-23 13:41, dima): because ~28% fable = ~14% shared.
+PK-349:W1753 (2026-11-23 13:41, dima): if shared is 18%, fable's part underpaces by ~4% shared.
+PK-349:W1754 (2026-11-23 13:41, dima): so not fable should keep up.
+PK-349:W1755 (2026-11-23 13:41, dima): while leaving ~1% as a buffer which is very slim buffer actually, i'd have at least 5% buffer.
+PK-349:W1756 (2026-11-23 13:53, dima): usage.
+PK-349:W1757 (2026-11-23 13:53, dima): i figured out that i was wrong too and we actually do good.
+PK-349:W1758 (2026-11-23 13:53, dima): current weekly is almost 30% = 15% shared.
+PK-349:W1759 (2026-11-23 13:53, dima): current shared 19%.
+PK-349:W1760 (2026-11-23 13:53, dima): so opus share here is only 4%.
+PK-349:W1761 (2026-11-23 13:53, dima): which is 9% below the pace.
+PK-349:W1762 (2026-11-23 13:53, dima): so we are ok, and even fable codie probably was not needed.
+PK-349:W1763 (2026-11-23 13:53, dima): but let's keep him already.
+PK-349:W1764 (2026-11-23 13:53, dima): what tools? ❓
+PK-349:W1765 (2026-11-23 13:53, dima): i am not a fan of copies, copies are not good it is essentially dupes? ❓
+PK-349:W1766 (2026-11-23 13:53, dima): how to solve without dupes? ❓
+
+correction: PK-349:W1764–W1766 are part of his 13:53 prompt, stamp (2026-11-23 13:53, dima)
+
+PK-349:W1767 (2026-11-23 13:45, dima): sign speak part and start codie
+PK-349:W1768 (2026-11-23 13:57, dima): usage:
+PK-349:W1769 (2026-11-23 13:57, dima): i figured out the my miss with numbers.
+PK-349:W1770 (2026-11-23 13:57, dima): then - after frm 688 is fully resolved end2end, park it - see usage.
+PK-349:W1771 (2026-11-23 13:57, dima): and if fable usage is OK (fable ahead) - restart mods codie into opus again.
+PK-349:W1772 (2026-11-23 13:57, dima): (my miss on back and forth)
+PK-349:W1773 (2026-11-23 13:57, dima): (context, not dima's words: the pasted text says «hotkeys:top, your most-pressed list»)
+PK-349:W1774 (2026-11-23 13:57, dima): can it just live in zsh alises? ❓
+PK-349:W1775 (2026-11-23 13:57, dima): if there is any caller of this aside from me? ❓
+PK-349:W1776 (2026-11-23 13:57, dima): even i use it rarely.
+PK-349:W1777 (2026-11-23 13:57, dima): the rule travels over the api — how? ❓
+PK-349:W1778 (2026-11-23 13:57, dima): a server is needed? ❓
+
+PK-349:W1779 (2026-11-23 14:07, dima): revive glide for speak.
+PK-349:W1780 (2026-11-23 14:07, dima): its gone now.
+PK-349:W1781 (2026-11-23 14:11, dima): how can i see what the design is currently? ❓
+PK-349:W1782 (2026-11-23 14:11, dima): list all relevant design artifacts.
+PK-349:W1783 (2026-11-23 14:11, dima): i want all stray and dupes killed and have one final design file.
+PK-349:W1784 (2026-11-23 14:11, dima): design loupe-relevant atm? ❓
+PK-349:W1785 (2026-11-23 14:11, dima): when we start loupe? ❓
+PK-349:W1786 (2026-11-23 14:11, dima): i cannot understand why you want for designer and designer wants for me? ❓
+PK-349:W1787 (2026-11-23 14:23, dima): start speak glide pls it is not present.
+PK-349:W1788 (2026-11-23 14:23, dima): i was afk (making 🍵).
+PK-349:W1789 (2026-11-23 14:23, dima): let's not rush with design - comms issues as you remember.
+PK-349:W1790 (2026-11-23 14:23, dima): guide me thorugh design step by step and let me do most of design with designer directly that will be eaiser (tell designer to not overaload me too).
+PK-349:W1791 (2026-11-23 14:23, dima): so where we start? ❓
+PK-349:W1792 (2026-11-23 14:23, dima): whats' best format and palce? ❓
+PK-349:W1793 (2026-11-23 14:23, dima): i go to loupe? or artifact? ❓
+PK-349:W1794 (2026-11-23 14:23, dima): o4 and o8 help to solve which first? with designer or with you? ❓
+
+PK-349:W1795 (2026-11-23 14:36, dima): speak — fable 5.1 high, v1.4
+PK-349:W1796 (2026-11-23 14:36, dima): speak — fable 5.1 medium, v1
+PK-349:W1797 (2026-11-23 14:36, dima): speak — opus 5.5 medium, v1
+PK-349:W1798 (2026-11-23 14:36, dima): all deleted on my side on claude.ai.
+PK-349:W1799 (2026-11-23 14:36, dima): if files on fs deleted then all clear.
+PK-349:W1800 (2026-11-23 14:36, dima): i accidentally killed you via cmd+w in herdr, and revived via revive-clio main.
+PK-349:W1801 (2026-11-23 14:36, dima): go see- did your cache busted with this? or stayted hot? ❓
+PK-349:W1802 (2026-11-23 14:36, dima): we need protection for this: if herdr tab is a running thread (not plain terminal) - closing needs a confirmation window with yes/no.
+PK-349:W1803 (2026-11-23 14:36, dima): plain terminal tabs (no running session) can close themselves with no confirm.
+
+done 2026-11-23 14:51: f79 mods codie model: when FRM-688 is done end to end and parked, read usage; fable ahead → restart it on Opus (FRM-688 Done)
+
+PK-349:W1804 (2026-11-23 14:53, dima): go.
+PK-349:W1805 (2026-11-23 14:53, dima): o2 - switch him to opus 5.5 medium.
+PK-349:W1806 (2026-11-23 14:53, dima): only you and designer are fables for now.
+PK-349:W1807 (2026-11-23 14:53, dima): side q: why are you not second winding? ❓
+PK-349:W1808 (2026-11-23 14:53, dima): auto-sw broken? ❓
+
+PK-349:W1809 (2026-11-23 14:48, dima): so what now - speak stabilizes chords then messhunt? ❓
+PK-349:W1810 (2026-11-23 14:48, dima): chords still counts hotkeys corretly - verified? ❓
+PK-349:W1811 (2026-11-23 14:48, dima): i have not time to test hotkeys recording and all other chords functionality.
+PK-349:W1812 (2026-11-23 14:59, dima): why i have to type anything? ❓
+PK-349:W1813 (2026-11-23 14:59, dima): i want simple ux without need to type anything.
+PK-349:W1814 (2026-11-23 14:59, dima): i vote for either orbit tick or even better: if my operator override is ON - it just works.
+PK-349:W1815 (2026-11-23 14:59, dima): only i can enable operator override.
+PK-349:W1816 (2026-11-23 15:10, dima): (context, not dima's words: the pasted text says «Yes, the mods test bottleneck is solved at its root: one whole stash run costs 62 % less cpu. What is not checked yet is a full day of lane work under the new shape; that read is tomorrow, 24 Nov.»)
+PK-349:W1817 (2026-11-23 15:10, dima): fold addition to fleet-stories mods cpu roast incident (how to solved, the postiive gains. lessons learned, how to not do such bottlenecks again, and why/how bottleneck actually appeared)
+PK-349:W1818 (2026-11-23 15:10, dima): is vitest actually roasts cpu? ❓
+PK-349:W1819 (2026-11-23 15:10, dima): from what i saw only go and mods tests roasts.
+PK-349:W1820 (2026-11-23 15:10, dima): so should we cover vitest with anti roast guard or hold until issue arises? ❓
+PK-349:W1821 (2026-11-23 15:10, dima): i agree only if it is worth it and useufl.
+PK-349:W1822 (2026-11-23 15:10, dima): And also if we run go lane, mods lane, and regular lane all at once and CPU starts roasting, how do we know what actually roasted the CPU? ❓
+PK-349:W1823 (2026-11-23 15:10, dima): How to identify? ❓
+PK-349:W1824 (2026-11-23 15:10, dima): (context, not dima's words: the pasted text says «http://localhost:7373/»)
+PK-349:W1825 (2026-11-23 15:10, dima): opens, looks OK but reload takes ~6s.
+
+done 2026-11-23 15:23: f74 speak tails: tell dima when the old x-speak row and launchd leftovers can go — waits for: his first login
+
+PK-349:W1826 (2026-11-23 15:01, dima): so what are the reuslts of mods tests fix? ❓
+PK-349:W1827 (2026-11-23 15:01, dima): bottleneck solved? ❓
+PK-349:W1828 (2026-11-23 15:01, dima): if yes i want to see numbers, pretty drawn/printed.
+PK-349:W1829 (2026-11-23 15:01, dima): what are the positive gains? ❓
+PK-349:W1830 (2026-11-23 15:01, dima): and - what about preventing bottlenecks in future? ❓
+PK-349:W1831 (2026-11-23 15:01, dima): it is second incident, cpu roasting related (peek into fleet stories).
+PK-349:W1832 (2026-11-23 15:12, dima): yes, only i decide when override on and off no timers.
+PK-349:W1833 (2026-11-23 15:16, dima): i want any kind of ask to be tickable with enter.
+PK-349:W1834 (2026-11-23 15:16, dima): even warn ones.
+PK-349:W1835 (2026-11-23 15:16, dima): and remove that line.
+PK-349:W1836 (2026-11-23 15:16, dima): (Ticks by click only)
+PK-349:W1837 (2026-11-23 15:16, dima): is there is a scope collected for stray for today? ❓
+PK-349:W1838 (2026-11-23 15:16, dima): i think there is already enough of stuff parked that stray could do? ❓
+PK-349:W1839 (2026-11-23 15:16, dima): like even that o6? ❓
+PK-349:W1840 (2026-11-23 15:19, dima): what stray can do outside of herdr scope? ❓
+PK-349:W1841 (2026-11-23 15:19, dima): herdr scope is for herdr lane.
+PK-349:W1842 (2026-11-23 15:23, dima): did you folded all my notes from today about herdr into herdr scope? ❓
+PK-349:W1843 (2026-11-23 15:23, dima): what is unfolded/tailed on you so far? ❓
+PK-349:W1844 (2026-11-23 15:23, dima): solve all your tails.
+PK-349:W1845 (2026-11-23 15:23, dima): as for stray.
+PK-349:W1846 (2026-11-23 15:23, dima): how do you think.
+PK-349:W1847 (2026-11-23 15:23, dima): Currently we have Stray, born pretty recently, and it is new.
+PK-349:W1848 (2026-11-23 15:23, dima): We don't have a streamlined ticket-related way to formulate the scope efficiently and properly for Stray.
+PK-349:W1849 (2026-11-23 15:23, dima): How do you think we could change the PM and ticketing system to support Stray? ❓
+PK-349:W1850 (2026-11-23 15:23, dima): For example maybe invent a label in Linear so you could mark tickets with the Stray label.
+PK-349:W1851 (2026-11-23 15:23, dima): That would mean that that kind of ticket is compatible with the Stray level of work (e.g., Sonnet 5.5 on high?) ❓
+PK-349:W1852 (2026-11-23 15:23, dima): or propose another idea.
+PK-349:W1853 (2026-11-23 15:23, dima): Or just tell them that nothing is worth doing because it's fine like this and other work would be just unnecessary work
 <!-- SECTION:NOTES:END -->
