@@ -8,11 +8,11 @@ import (
 	"strings"
 )
 
-// `claude plugin test` on a mod's overlay. a whole suite is a long round: it takes the machine-wide long turn of gate-queue.sh, so two
+// `claude plugin test` on a mod's overlay. a whole suite, or most of one, is a long round: it takes the machine-wide long turn of gate-queue.sh, so two
 // heavy suites never run at once, and a wait prints the queue's own line, who holds the turn, to stderr as it comes. a run narrowed to some
 // files is a short one and goes straight through
-func runSuite(overlay string, whole bool) (result, error) {
-	if !whole {
+func runSuite(overlay string, isLong bool) (result, error) {
+	if !isLong {
 		return run("", nil, "", "claude", "plugin", "test", overlay)
 	}
 	argv := inLongSlot([]string{"claude", "plugin", "test", overlay})

@@ -1,6 +1,8 @@
 import { spawnSync } from 'node:child_process';
 import {
     chmodSync,
+    cpSync,
+    mkdirSync,
     mkdtempSync,
     readFileSync,
     readdirSync,
@@ -8,17 +10,19 @@ import {
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
     clockReads,
+    cpuCap,
+    cpuOf,
     failures,
     outcome,
     summary,
     timedOutFiles,
-    untouchedMods,
-    whyRan,
+    touchedMods,
+    untested,
     withRerun,
 } from './test.ts';
 
@@ -119,30 +123,149 @@ describe('a whole run of the script, a fake claude listing what it was handed', 
     });
 });
 
-describe('whyRan', () => {
-    const live = 2000;
-    const stale = 1;
-    const row = (until: number, mod: string, sha: string) =>
-        `${until}\tmod ${mod}\t${sha}\t`;
-    const now = 1500 * 1000;
+describe('untested', () => {
+    const row = (mod: string, sha: string) => `1\tmod ${mod}\t${sha}\t`;
 
     it.each([
-        ['an empty record', '', 'no record'],
-        ["only another mod's row", row(live, 'other', 'aaa'), 'no record'],
-        [
-            'only a stale row of other bytes',
-            row(stale, 'm', 'bbb'),
-            'no record',
-        ],
-        ['a live row of other bytes', row(live, 'm', 'bbb'), 'other bytes'],
-        ['these bytes, stale', row(stale, 'm', 'aaa'), 'past its hour'],
-        [
-            'these bytes stale beside live others',
-            `${row(stale, 'm', 'aaa')}\n${row(live, 'm', 'bbb')}`,
-            'past its hour',
-        ],
-    ])('%s', (_name, record, want) => {
-        expect(whyRan(record, now, 'm', 'aaa')).toBe(want);
+        ['an empty record', '', 'no green yet'],
+        ["only another mod's row", row('other', 'aaa'), 'no green yet'],
+        ['a row of other bytes', row('m', 'bbb'), 'a green read others'],
+    ])('%s refuses, naming the door', (_name, record, why) => {
+        const said = untested(record, 'm', 'aaa').join('');
+        expect(said).toContain(`m: no tested stamp on these bytes (${why})`);
+        expect(said).toContain('x mods edit test');
+    });
+    it('these bytes pass, however old their green', () => {
+        expect(
+            untested(`${row('m', 'bbb')}\n${row('m', 'aaa')}`, 'm', 'aaa'),
+        ).toEqual([]);
+    });
+});
+
+describe('a cpu cap', () => {
+    it("reads the shell's count of its children", () => {
+        expect(cpuOf('0m0.003s 0m0.004s\n1m2.50s 0m0.25s\n')).toBe(62.75);
+    });
+    it.each([
+        ['x-mod-stash', 246],
+        ['x-mod-holds', undefined],
+    ])('%s reads its own row', (mod, cap) => {
+        expect(
+            cpuCap('# suite\tcpu-s\nx-go\t283\t-\nx-mod-stash\t246\t-\n', mod),
+        ).toBe(cap);
+    });
+});
+
+// the script in a repo of its own, with one mod and a claude that burns a little cpu
+describe('the script in a scratch repo', () => {
+    const MODS = 'home/.claude/plugin-x/mods';
+    function world() {
+        const dir = mkdtempSync(join(tmpdir(), 'mods-test-repo-'));
+        const put = (path: string, body: string) => {
+            mkdirSync(dirname(join(dir, path)), { recursive: true });
+            writeFileSync(join(dir, path), body);
+        };
+        cpSync(
+            join(import.meta.dirname, 'test.ts'),
+            join(dir, MODS, 'test.ts'),
+        );
+        cpSync(
+            join(
+                import.meta.dirname,
+                '../../../../script/lib/test-temp-dir.ts',
+            ),
+            join(dir, 'script/lib/test-temp-dir.ts'),
+        );
+        put('package.json', '{"type": "module"}');
+        put(`${MODS}/m/.claude-plugin/plugin.json`, '{"name": "m"}');
+        put(
+            `${MODS}/m/hooks/register.ts`,
+            'export const register = () => {};\n',
+        );
+        put(
+            'bin/claude',
+            '#!/bin/sh\ni=0; while [ $i -lt 60000 ]; do i=$((i+1)); done\necho tests/a.test.ts:; echo "(pass) holds"; echo " 1 pass"; echo " 0 fail"\n',
+        );
+        chmodSync(join(dir, 'bin/claude'), 0o755);
+        const env: NodeJS.ProcessEnv = {
+            ...process.env,
+            PATH: `${join(dir, 'bin')}:${process.env.PATH}`,
+            X_STATE: join(dir, 'state'),
+        };
+        delete env.X_TEST;
+        for (const key of Object.keys(env))
+            if (key.startsWith('GIT_')) delete env[key];
+        const git = (...args: string[]) =>
+            spawnSync(
+                'git',
+                [
+                    '-C',
+                    dir,
+                    '-c',
+                    'core.hooksPath=/dev/null',
+                    '-c',
+                    'commit.gpgsign=false',
+                    '-c',
+                    'user.name=t',
+                    '-c',
+                    'user.email=t@t',
+                    ...args,
+                ],
+                { encoding: 'utf8', env },
+            );
+        git('init', '-q');
+        git('add', '.');
+        git('commit', '-q', '-m', 'world');
+        const mods = (...args: string[]) =>
+            spawnSync('node', [join(dir, MODS, 'test.ts'), ...args], {
+                cwd: dir,
+                encoding: 'utf8',
+                env,
+            });
+        return { git, mods, put };
+    }
+
+    it('a commit of bytes no green read is refused, and a green hand run of them lets it in', () => {
+        const { git, mods, put } = world();
+        put(
+            `${MODS}/m/hooks/register.ts`,
+            'export const register = () => 1;\n',
+        );
+        git('add', '.');
+        const refused = mods('--skip-tested');
+        expect(refused.status).toBe(1);
+        expect(refused.stdout).toContain('m: no tested stamp on these bytes');
+        expect(mods('m').status).toBe(0);
+        expect(mods('--skip-tested').status).toBe(0);
+        put(
+            `${MODS}/m/hooks/register.ts`,
+            'export const register = () => 2;\n',
+        );
+        git('add', '.');
+        expect(mods('--skip-tested').stdout).toContain('a green read others');
+    });
+
+    it('a root test file and an .md reach no mod', () => {
+        const { git, mods, put } = world();
+        put(`${MODS}/names.test.ts`, 'export {};\n');
+        put(`${MODS}/m/FTR.md`, '# m\n');
+        git('add', '.');
+        const passed = mods('--skip-tested');
+        expect([passed.status, passed.stdout]).toEqual([0, '']);
+    });
+
+    it('a whole run past its cap is red, naming the mod and both numbers; under it, green', () => {
+        const { mods, put } = world();
+        put('script/test-cpu-budget.tsv', 'm\t0.001\t-\n');
+        const past = mods('m');
+        expect(past.status).toBe(1);
+        expect(past.stdout).toMatch(
+            /m: \d+\.\d cpu-s, its cap in script\/test-cpu-budget\.tsv is 0\.001/,
+        );
+        put('script/test-cpu-budget.tsv', 'm\t60\t-\n');
+        expect(mods('m').status).toBe(0);
+        put('script/test-cpu-budget.tsv', 'm\tsixty\t-\n');
+        expect(mods('m').status).toBe(1);
     });
 });
 
@@ -390,20 +513,19 @@ describe('clockReads', () => {
     });
 });
 
-describe('untouchedMods', () => {
+describe('touchedMods', () => {
     const all = ['x-mod-guard', 'x-mod-holds', 'x-mod-stash'];
 
-    it('a commit inside one mod leaves the others out', () => {
-        expect([...untouchedMods(['x-mod-guard/a.ts'], all)]).toEqual([
-            'x-mod-holds',
-            'x-mod-stash',
-        ]);
-    });
-
     it.each([
-        ['a shared path under mods', ['x-mod-guard/a.ts', 'tsconfig.json']],
-        ['nothing staged', []],
-    ])('%s runs every mod', (_name, changed) => {
-        expect(untouchedMods(changed, all).size).toBe(0);
+        ['a commit inside one mod', ['x-mod-guard/a.ts'], ['x-mod-guard']],
+        [
+            'a file beside the mods',
+            ['stash-entry.test.ts', 'test.ts', 'tsconfig.json'],
+            [],
+        ],
+        ['an .md', ['x-mod-guard/FTR.md'], []],
+        ['nothing staged', [''], []],
+    ])('%s', (_name, changed, want) => {
+        expect(touchedMods(changed, all)).toEqual(want);
     });
 });

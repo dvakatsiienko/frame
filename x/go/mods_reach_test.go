@@ -94,7 +94,14 @@ func reachWorld(t *testing.T) (dir string, env []string, calls string) {
 	env = append(env, "CLAUDE_CALLS="+calls, "X_FRAME_ROOT="+dir, "X_STATE="+t.TempDir())
 	write(t, filepath.Join(dir, modsDir, "m/hooks/x.ts"), "export const x = 1;\n")
 	write(t, filepath.Join(dir, modsDir, "m/hooks/lonely.ts"), "export const lonely = 1;\n")
+	write(t, filepath.Join(dir, modsDir, "m/hooks/wide.ts"), "export const wide = 1;\n")
 	write(t, filepath.Join(dir, modsDir, "m/tests/x.test.ts"), "import '../hooks/x.ts';\ngreen\n")
+	write(t, filepath.Join(dir, modsDir, "m/tests/y.test.ts"), "import '../hooks/wide.ts';\ngreen\n")
+	write(t, filepath.Join(dir, modsDir, "m/tests/z.test.ts"), "import '../hooks/wide.ts';\ngreen\n")
+	// a dependency's tests are none of the mod's: counted, they would hide a share
+	for _, n := range []string{"1", "2", "3", "4"} {
+		write(t, filepath.Join(dir, modsDir, "m/node_modules/dep/"+n+".test.ts"), "green\n")
+	}
 	commitAll(t, dir)
 	turns := filepath.Join(t.TempDir(), "turns")
 	write(t, filepath.Join(dir, "script/gate-queue.sh"), "#!/bin/sh\necho \"$*\" >> "+turns+"\n[ \"$1\" = --long ] && shift\nexec \"$@\"\n")
@@ -115,8 +122,10 @@ func TestModsEditRunsOnlyTheTestsAChangeReaches(t *testing.T) {
 		{"test: a hook a test imports", "hooks/x.ts", "export const x = 2;\n", []string{"test"}, "1", `"only":["tests/x.test.ts"]`, 0},
 		{"push: the same", "hooks/x.ts", "export const x = 2;\n", []string{"push"}, "1", `"only":["tests/x.test.ts"]`, 0},
 		{"a hook nothing reaches", "hooks/lonely.ts", "export const lonely = 2;\n", []string{"test"}, "", `"unreached":["hooks/lonely.ts"]`, 0},
-		{"--whole", "hooks/x.ts", "export const x = 2;\n", []string{"test", "--whole"}, "3", `"passed":3`, 1},
-		{"a manifest reaches every test", ".claude-plugin/plugin.json", `{"name": "m", "v": 2}` + "\n", []string{"test"}, "3", `"passed":3`, 1},
+		{"a reached set past a third of the suite", "hooks/wide.ts", "export const wide = 2;\n", []string{"test"}, "2", `"only":["tests/y.test.ts","tests/z.test.ts"]`, 1},
+		{"push: the same past a third", "hooks/wide.ts", "export const wide = 2;\n", []string{"push"}, "2", `"only":["tests/y.test.ts","tests/z.test.ts"]`, 1},
+		{"--whole", "hooks/x.ts", "export const x = 2;\n", []string{"test", "--whole"}, "5", `"passed":5`, 1},
+		{"a manifest reaches every test", ".claude-plugin/plugin.json", `{"name": "m", "v": 2}` + "\n", []string{"test"}, "5", `"passed":5`, 1},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
@@ -129,7 +138,7 @@ func TestModsEditRunsOnlyTheTestsAChangeReaches(t *testing.T) {
 				t.Errorf("exit %d, launches saw %q files, want %q and %q in:\n%s\n%s", code, files, c.files, c.line, out, errs)
 			}
 			if n := strings.Count(readFile0(envFile(env, "TURNS_LOG")), "--long claude plugin test"); n != c.turns {
-				t.Errorf("%d whole suites took the long turn, want %d", n, c.turns)
+				t.Errorf("%d suites took the long turn, want %d", n, c.turns)
 			}
 		})
 	}
@@ -146,8 +155,8 @@ func TestModsEditRerunsATimedOutFileOnceAndSaysSo(t *testing.T) {
 		code         int
 		files, said  string
 	}{
-		{"a file that is slow once", "SLOW-ONCE", 0, "3,1", `"retried":["tests/a.test.ts"]`},
-		{"a file that is always slow", "ALWAYS-SLOW", 1, "3,1", "rerun once: tests/a.test.ts"},
+		{"a file that is slow once", "SLOW-ONCE", 0, "5,1", `"retried":["tests/a.test.ts"]`},
+		{"a file that is always slow", "ALWAYS-SLOW", 1, "5,1", "rerun once: tests/a.test.ts"},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()

@@ -1,9 +1,8 @@
 // pnpm mods:test [<mod>…] [--extra <file>] [--only <file>] — each mod's tests through `claude plugin test`, printing only
 // the failing tests' output, then one summary line; exit 1 when any mod is red. --extra runs one outside test file with the
 // mod's harness on a copy of the one mod named (FRM-388); --only runs one of a mod's own test files; --skip-tested, the
-// commit gate's flag, passes a mod whose bytes in the index a green `x mods edit test` or an earlier hook read, and names
-// why any other ran; --clock-only, that
-// verb's flag, reads only the clock rule of the named mods and runs no test
+// commit gate's flag, runs no test: a mod the index changes passes on a green `x mods edit test` or hand run of these bytes, any
+// other is refused; --clock-only, that verb's flag, reads only the clock rule of the named mods and runs no test
 import { spawnSync } from 'node:child_process';
 import {
     appendFileSync,
@@ -15,7 +14,6 @@ import {
     readdirSync,
     realpathSync,
     rmSync,
-    writeFileSync,
 } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
@@ -260,8 +258,8 @@ function copyKeepingTests(from: string, mod: string, keep: string[]) {
     return copy;
 }
 
-// the mod's subtree as this index holds it; the hook's own git env points at a path outside the private copy
-function indexedTree(root: string, mod: string) {
+// git as a hook's child: the hook's own git env points at a path outside the private copy
+function git(root: string, args: string[], index?: string) {
     const env = { ...process.env };
     for (const key of [
         'GIT_DIR',
@@ -270,82 +268,56 @@ function indexedTree(root: string, mod: string) {
         'GIT_WORK_TREE',
     ])
         delete env[key];
-    const git = (...args: string[]) =>
-        spawnSync('git', ['-C', root, ...args], {
-            encoding: 'utf8',
-            env,
-        }).stdout?.trim();
-    return git(
-        'write-tree',
-        `--prefix=${git('rev-parse', '--show-prefix')}${mod}/`,
-    );
-}
-
-// a path under mods/ in no mod's folder, a script any run leans on; no mods test reads an .md
-export function touchesSharedPath(changed: string[], all: string[]) {
-    return changed.some(
-        (path) =>
-            !path.endsWith('.md') && !all.includes(path.split('/')[0] ?? ''),
-    );
-}
-
-// a commit's mods its staged paths never touch: no mod's tests read a sibling's folder, a shared path under mods/ runs them all
-export function untouchedMods(changed: string[], all: string[]) {
-    const touched = new Set(changed.map((path) => path.split('/')[0] ?? ''));
-    if (changed.length === 0 || touchesSharedPath(changed, all))
-        return new Set<string>();
-    return new Set(all.filter((mod) => !touched.has(mod)));
-}
-
-function stagedPaths(root: string) {
-    const env = { ...process.env };
-    for (const key of [
-        'GIT_DIR',
-        'GIT_INDEX_FILE',
-        'GIT_PREFIX',
-        'GIT_WORK_TREE',
-    ])
-        delete env[key];
+    if (index) env.GIT_INDEX_FILE = index;
     return (
-        spawnSync(
-            'git',
-            [
-                '-C',
-                root,
-                'diff',
-                '--cached',
-                '--name-only',
-                '--no-renames',
-                '--relative',
-            ],
-            { encoding: 'utf8', env },
-        ).stdout ?? ''
-    )
+        spawnSync('git', ['-C', root, ...args], { encoding: 'utf8', env })
+            .stdout ?? ''
+    ).trim();
+}
+
+// the mod's subtree as an index holds it, the commit's own when none is named
+function indexedTree(root: string, mod: string, index?: string) {
+    return git(
+        root,
+        [
+            'write-tree',
+            `--prefix=${git(root, ['rev-parse', '--show-prefix'])}${mod}/`,
+        ],
+        index,
+    );
+}
+
+// the mod's subtree as a commit of the working tree would hold it, the bytes a hand run reads
+function workingTree(root: string, mod: string) {
+    const dir = mkdtempSync(join(tmpdir(), 'mods-tree-'));
+    const index = join(dir, 'index');
+    git(root, ['read-tree', 'HEAD'], index);
+    git(root, ['add', '-A', '--', mod], index);
+    const tree = indexedTree(root, mod, index);
+    rmSync(dir, { force: true, recursive: true });
+    return tree;
+}
+
+// the mods a commit's staged paths touch. a path beside the mods is vitest's, and no mods test reads an .md
+export function touchedMods(changed: string[], all: string[]) {
+    const touched = new Set(
+        changed
+            .filter((path) => !path.endsWith('.md'))
+            .map((path) => path.split('/')[0]),
+    );
+    return all.filter((mod) => touched.has(mod));
+}
+
+// a touched mod no green read on these bytes, in the words that refuse its commit
+export function untested(record: string, mod: string, tree: string) {
+    const rows = record
         .split('\n')
-        .filter(Boolean);
-}
-
-// the mods a green overlay recorded, each line valid until its first field; a lost or stale line costs one rerun
-function testedTrees(record: string, now: number) {
-    const trees = new Set<string>();
-    for (const { isLive, mod, sha } of modRows(record, now))
-        if (isLive) trees.add(`${mod} ${sha}`);
-    return trees;
-}
-
-function modRows(record: string, now: number) {
-    return record.split('\n').flatMap((line) => {
-        const [until, subject, sha] = line.split('\t');
-        return subject?.startsWith('mod ')
-            ? [
-                  {
-                      isLive: now < Number(until) * 1000,
-                      mod: subject.slice(4),
-                      sha,
-                  },
-              ]
-            : [];
-    });
+        .map((line) => line.split('\t'))
+        .filter(([, subject]) => subject === `mod ${mod}`);
+    if (rows.some(([, , sha]) => sha === tree)) return [];
+    return [
+        `${mod}: no tested stamp on these bytes (${rows.length ? 'a green read others' : 'no green yet'}), so the commit is refused: run x mods edit test, or, for a change made outside it, script/gate-queue.sh --long pnpm mods:test ${mod}`,
+    ];
 }
 
 function greenRecordPath() {
@@ -355,29 +327,27 @@ function greenRecordPath() {
     );
 }
 
-function readGreenRecord() {
-    const path = greenRecordPath();
-    return existsSync(path) ? readFileSync(path, 'utf8') : '';
-}
-
-// why a mod's tests ran under --skip-tested, so the week can read each miss
-export function whyRan(
-    record: string,
-    now: number,
-    mod: string,
-    tree: string | undefined,
-) {
-    const rows = modRows(record, now).filter((row) => row.mod === mod);
-    if (rows.some((row) => row.sha === tree && !row.isLive))
-        return 'past its hour';
-    return rows.some((row) => row.isLive) ? 'other bytes' : 'no record';
-}
-
-// a green read these bytes, so a retry of the same commit skips them; the line `x mods edit test` writes, and a lost one costs one rerun
+// a hand run's green, in the line `x mods edit test` writes; a lost one costs one rerun
 function recordGreen(mod: string, tree: string) {
     const until = Math.floor(Date.now() / 1000) + 3600;
     mkdirSync(dirname(greenRecordPath()), { recursive: true });
     appendFileSync(greenRecordPath(), `${until}\tmod ${mod}\t${tree}\t\n`);
+}
+
+// the shell's own count of its children, as `times` prints it on its second line
+export function cpuOf(times: string) {
+    const [, children = ''] = times.trim().split('\n');
+    return [...children.matchAll(/(\d+)m([\d.]+)s/g)].reduce(
+        (sum, [, minutes, seconds]) =>
+            sum + Number(minutes) * 60 + Number(seconds),
+        0,
+    );
+}
+
+// a mod's cpu-seconds cap for one whole run; the boots table is the first net, this one catches what it cannot count
+export function cpuCap(table: string, mod: string) {
+    const row = table.split('\n').find((line) => line.split('\t')[0] === mod);
+    return row ? Number(row.split('\t')[1]) : undefined;
 }
 
 // one line per run, so a chain's count of whole runs reads from a file, never a memory (FRM-470); off under X_TEST
@@ -439,50 +409,33 @@ if (import.meta.main) {
         process.exit(reads.length ? 1 : 0);
     }
     process.on('exit', startTestTempDir());
+    if (values['skip-tested']) {
+        const path = greenRecordPath();
+        const record = existsSync(path) ? readFileSync(path, 'utf8') : '';
+        const staged = git(root, [
+            'diff',
+            '--cached',
+            '--name-only',
+            '--no-renames',
+            '--relative',
+        ]).split('\n');
+        const red = touchedMods(staged, all).flatMap((mod) => [
+            ...hookClockReads(join(root, mod)).map(
+                (at) => `a clock read outside $.clock: ${mod}/${at}`,
+            ),
+            ...untested(record, mod, indexedTree(root, mod)),
+        ]);
+        for (const line of red) console.log(line);
+        process.exit(red.length ? 1 : 0);
+    }
+    const capsFile = join(root, '../../../../script/test-cpu-budget.tsv');
+    const caps = existsSync(capsFile) ? readFileSync(capsFile, 'utf8') : '';
     const named = onlyMod ? [onlyMod] : positionals;
-    const record = values['skip-tested'] ? readGreenRecord() : undefined;
-    const tested =
-        record === undefined ? undefined : testedTrees(record, Date.now());
-    // only the gate's private copy holds exactly the index: a hand run's tests read the working tree
-    const isIndexCopy =
-        values['skip-tested'] &&
-        process.env.INDEX_RUN_BRANCH !== undefined &&
-        !values.extra &&
-        !only;
-    const whys: string[] = [];
-    const staged = values['skip-tested'] ? stagedPaths(root) : [];
-    const untouched = untouchedMods(staged, all);
-    // a record proves a mod's own bytes, and a shared path can change what its run means
-    const isSharedTouched = touchesSharedPath(staged, all);
-    let skipped = 0;
-    let untouchedRuns = 0;
+    const past: string[] = [];
     for (const mod of named.length ? named : all) {
         let dir = join(root, mod);
-        if (untouched.has(mod) && !hookClockReads(dir).length) {
-            untouchedRuns++;
-            process.stdout.write(
-                `${mod}: tests skipped, this commit never touches it\n`,
-            );
-            continue;
-        }
-        const tree = tested && indexedTree(root, mod);
-        // a clock read reds whatever was tested, so that mod runs and reads red as it always did
-        if (
-            !isSharedTouched &&
-            tested?.has(`${mod} ${tree}`) &&
-            !hookClockReads(dir).length
-        ) {
-            skipped++;
-            process.stdout.write(
-                `${mod}: tests skipped, a green already read these bytes\n`,
-            );
-            continue;
-        }
-        // a clock read's mod runs whatever its record says, and its red names why
-        if (record !== undefined && !hookClockReads(dir).length)
-            whys.push(
-                `${mod} ran: ${isSharedTouched ? 'a shared path' : whyRan(record, Date.now(), mod, tree)}`,
-            );
+        const isWhole = !values.extra && !only;
+        const tree = isWhole ? workingTree(root, mod) : undefined;
         if (values.extra) {
             dir = join(mkdtempSync(join(tmpdir(), 'mods-extra-')), mod);
             cpSync(join(root, mod), dir, { recursive: true });
@@ -495,9 +448,21 @@ if (import.meta.main) {
             dir = copyKeepingTests(realpathSync(join(root, mod)), mod, [
                 relative(realpathSync(join(root, mod)), only),
             ]);
-        const r = spawnSync('claude', ['plugin', 'test', dir], {
-            encoding: 'utf8',
-        });
+        const times = join(mkdtempSync(join(tmpdir(), 'mods-times-')), 'times');
+        const r = spawnSync(
+            'sh',
+            [
+                '-c',
+                '"$@"; code=$?; times >"$0"; exit $code',
+                times,
+                'claude',
+                'plugin',
+                'test',
+                dir,
+            ],
+            { encoding: 'utf8' },
+        );
+        const cpu = cpuOf(readFileSync(times, 'utf8'));
         let output = `${r.stdout}${r.stderr}`;
         let { status } = r;
         const late = timedOutFiles(output);
@@ -522,11 +487,17 @@ if (import.meta.main) {
                 `${mod}: a clock read outside $.clock (date bomb), give it the $.clock fallback or a clock-ok line above:\n${clock.map((c) => `  ${c}`).join('\n')}\n`,
             );
         runs.push({ clockReads: clock, mod, output, status });
+        const cap = cpuCap(caps, mod);
+        if (isWhole && cap !== undefined && !(cpu <= cap))
+            past.push(
+                `${mod}: ${cpu.toFixed(1)} cpu-s, its cap in script/test-cpu-budget.tsv is ${cap}`,
+            );
         // a throwing hook exits 0 and reads failed; a file that cannot load exits red
         const { failed: red, passed } = outcome(output);
         if (
-            isIndexCopy &&
             tree &&
+            tree === workingTree(root, mod) &&
+            !process.env.X_TEST &&
             status === 0 &&
             passed &&
             !red.length &&
@@ -536,28 +507,17 @@ if (import.meta.main) {
         if (values.extra || only)
             rmSync(dirname(dir), { force: true, recursive: true });
     }
-    const line =
-        summary(runs) +
-        (skipped ? `, ${skipped} skipped on tested bytes` : '') +
-        (untouchedRuns ? `, ${untouchedRuns} skipped as untouched` : '') +
-        whys.map((why) => `, ${why}`).join('');
+    const line = [summary(runs), ...past].join(', ');
     console.log(`\n${line}`);
-    // index-run logs user + sys for a run marked whole: every mod ran, none named or skipped
-    const wholeMark = process.env.INDEX_RUN_WHOLE_MARK;
-    if (
-        wholeMark &&
-        !process.env.VITEST &&
-        !skipped &&
-        !untouchedRuns &&
-        !named.length &&
-        !values.extra
-    )
-        writeFileSync(wholeMark, '');
     logRun(
         process.argv.slice(2).join(' '),
         reran ? `${line} (timed-out files ran again)` : line,
     );
     process.exit(
-        runs.some((r) => r.status !== 0) || line.includes('red in') ? 1 : 0,
+        runs.some((r) => r.status !== 0) ||
+            line.includes('red in') ||
+            past.length
+            ? 1
+            : 0,
     );
 }

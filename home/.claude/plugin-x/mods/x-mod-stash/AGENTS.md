@@ -56,5 +56,5 @@ dima's board, band and orbit in one cc mod: `hooks/register.tsx` is the hook wir
 
 ## checking a change
 
-- every edit goes through `x mods edit` (`../AGENTS.md`, the doors); its push runs the overlay's tsc, validate and the whole suite
+- every edit goes through `x mods edit` (`../AGENTS.md`, the doors); its push runs the overlay's tsc, validate and the tests the change reaches
 - every hooks file stays under 1,200 lines (`~/frame/script/lib/code-size.test.ts`); one past it carries a `size:` line in its head

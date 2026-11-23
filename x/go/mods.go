@@ -537,7 +537,7 @@ func (m modReport) isRed() bool { return m.Validate != "ok" || len(m.Failed)+len
 // each touched mod is copied to the job tmp with the edited copies laid over it as the commit's format step leaves them, then
 // validated, then tested, so its green proves the bytes a commit holds; a named test file narrows the run to its mod and that one file.
 // without --whole the tests are the ones the change reaches (mods_reach.go); a change that reaches every test, or --whole, runs the
-// whole suite, which takes the long turn
+// whole suite. a whole suite, or a reached set past longTurnShare of it, takes the long turn
 func overlayTest(repo string, copies *formattedCopies, changed []string, only string, whole bool) ([]modReport, error) {
 	var reports []modReport
 	mods := touchedMods(changed)
@@ -588,6 +588,9 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 				scope = suiteNone
 			default:
 				scope = suiteFiles
+				if isPastShare(len(reached), overlay) {
+					scope = suiteMost
+				}
 				if err := setAsideTestsBut(overlay, func(rel string) bool { return slices.Contains(reached, rel) }); err != nil {
 					return nil, err
 				}
@@ -597,7 +600,7 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 		if err != nil {
 			return nil, err
 		}
-		if scope == suiteFiles && only == "" {
+		if only == "" && (scope == suiteFiles || scope == suiteMost) {
 			report.Only = reached
 		}
 		if only == "" && !whole {
@@ -612,14 +615,35 @@ func overlayTest(repo string, copies *formattedCopies, changed []string, only st
 	return reports, nil
 }
 
-// how much of a mod's suite a run starts: all of it (it takes the queue's long turn), some files (no turn), or none
+// how much of a mod's suite a run starts: all of it or most of it (it takes the queue's long turn), some files (no turn), or none
 type suiteScope int
 
 const (
 	suiteWhole suiteScope = iota
+	suiteMost
 	suiteFiles
 	suiteNone
 )
+
+// a reached set past this share of a mod's test files costs as a whole suite does: one hook of a mod reaches nearly every host test
+const longTurnShare = 1.0 / 3
+
+func isPastShare(reached int, overlay string) bool {
+	tests := 0
+	_ = filepath.WalkDir(overlay, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return nil
+		}
+		if entry.IsDir() && (entry.Name() == "node_modules" || strings.HasSuffix(filepath.ToSlash(path), ".claude-plugin/types")) {
+			return filepath.SkipDir
+		}
+		if !entry.IsDir() && isTestFile(path) {
+			tests++
+		}
+		return nil
+	})
+	return float64(reached) > float64(tests)*longTurnShare
+}
 
 // the validator, the overlay's tsc and the tests on one mod's overlay: the verdict of the bytes it holds
 func testModOverlay(mod, overlay string, scope suiteScope) (modReport, error) {
@@ -638,7 +662,7 @@ func testModOverlay(mod, overlay string, scope suiteScope) (modReport, error) {
 	if scope == suiteNone {
 		return report, nil
 	}
-	got, _ := runSuite(overlay, scope == suiteWhole)
+	got, _ := runSuite(overlay, scope == suiteWhole || scope == suiteMost)
 	if strings.Contains(got.log, "gate-queue: waited ") {
 		return report, &Fail{Msg: "the long turn was not free in time, so no test ran for " + mod + ": " + firstNonBlank(got.log), Next: "x mods edit test"}
 	}

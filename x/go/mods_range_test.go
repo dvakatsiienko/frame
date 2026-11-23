@@ -219,6 +219,7 @@ func TestModsEditTestTakesTheLongTurnForAWholeSuiteOnly(t *testing.T) {
 			base := strings.TrimSpace(gitT(t, dir, "rev-parse", "HEAD"))
 			commitFile(t, dir, modTestA, "green, edited\n")
 			commitFile(t, dir, modTestB, "green, edited too\n")
+			commitFile(t, dir, modsDir+"m/tests/c.test.ts", "green, the third\n")
 			turns := filepath.Join(t.TempDir(), "turns")
 			write(t, filepath.Join(dir, "script/gate-queue.sh"), "#!/bin/sh\necho \"$*\" >> "+turns+"\necho 'gate-queue: waiting 30s, holder: x lane commit other.txt' >&2\n[ \"$1\" = --long ] && shift\nexec \"$@\"\n")
 			env = append(env, "X_FRAME_ROOT="+dir, "X_STATE="+t.TempDir())

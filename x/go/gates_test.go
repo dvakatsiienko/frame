@@ -531,24 +531,6 @@ func TestGreenOverlayRecordsNoBytesItsTestsNeverRead(t *testing.T) {
 	}
 }
 
-func TestModsChainRerunsARecordPastItsHour(t *testing.T) {
-	t.Parallel()
-	dir, env, tests := modsChain(t)
-	edited(t, dir, env, modHooks, "export const register = () => 1;\n")
-	testOverlay(t, dir, env)
-	pushOverlay(t, dir, env)
-	record := filepath.Join(envValue(env, "X_STATE"), gatesGreenFile)
-	_, rest, ok := strings.Cut(readFile(t, record), "\t")
-	if !ok {
-		t.Fatalf("no record in %s", record)
-	}
-	write(t, record, "1000\t"+rest)
-	commitHooks(t, dir, env)
-	if n := tests(); n != 2 {
-		t.Errorf("the mod's tests ran %d times, want 2: a record past its hour stands for nothing", n)
-	}
-}
-
 // what the suite printed across the chain's commits
 func suiteSaid(t *testing.T, env []string) string {
 	t.Helper()
@@ -593,9 +575,6 @@ func TestModsChainSkipsBytesTheFormatStepRewrites(t *testing.T) {
 	}
 	if n := tests(); n != 1 {
 		t.Errorf("the mod's tests ran %d times across test, push and commit, want 1\n%s", n, suiteSaid(t, env))
-	}
-	if said := suiteSaid(t, env); !strings.Contains(said, "skipped on tested bytes") {
-		t.Errorf("the suite never said it skipped:\n%s", said)
 	}
 	if read := readFile(t, saw); strings.TrimSpace(read) != committed {
 		t.Errorf("the overlay's tests read other bytes than the commit holds:\n%s\nagainst:\n%s", read, committed)
@@ -693,15 +672,15 @@ func anyList(v any) []any {
 	return list
 }
 
-func TestModsChainNamesNoWhyForAClockRead(t *testing.T) {
+func TestModsChainNamesAClockRead(t *testing.T) {
 	t.Parallel()
 	dir, env, _ := modsChain(t)
 	write(t, filepath.Join(dir, modHooks), "export const register = () => Date.now();\n")
 	if got := xIn(t, dir, env, "lane", "commit", message(t), "--", modHooks); got.code == 0 {
 		t.Fatalf("a clock read committed\n%s", got.stdout)
 	}
-	if said := suiteSaid(t, env); !strings.Contains(said, "a clock read") || strings.Contains(said, "m ran:") {
-		t.Errorf("want the clock read and no why:\n%s", said)
+	if said := suiteSaid(t, env); !strings.Contains(said, "a clock read outside $.clock: m/hooks/register.ts:1") {
+		t.Errorf("the refusal never names the clock read:\n%s", said)
 	}
 }
 
@@ -719,7 +698,7 @@ func TestModsEditOnlyReadsTheFormattedBytes(t *testing.T) {
 	}
 }
 
-func TestModsChainRunsTheSuiteOnWhatTheGreenNeverRead(t *testing.T) {
+func TestModsChainRefusesWhatTheGreenNeverRead(t *testing.T) {
 	t.Parallel()
 	saved := func(t *testing.T, dir string, env []string) []string {
 		copied := pullCopy(t, dir, env, modHooks)
@@ -766,14 +745,14 @@ func TestModsChainRunsTheSuiteOnWhatTheGreenNeverRead(t *testing.T) {
 	cases := []struct {
 		name  string
 		setup func(*testing.T, string, []string) []string
-		runs  int
-		said  []string
+		// what the refusal says; none, and the commit lands
+		said string
 	}{
-		{"a byte changed after the green", changed, 2, []string{"m ran: other bytes"}},
-		{"a save during the tests", saved, 2, []string{"m ran: no record"}},
-		{"a second mod in the commit", second, 2, []string{"m: tests skipped, a green already read these bytes", "n ran: no record"}},
-		{"a record past its hour", stale, 2, []string{"m ran: past its hour"}},
-		{"a shared path under mods", shared, 2, []string{"m ran: a shared path"}},
+		{"a byte changed after the green", changed, "m: no tested stamp on these bytes (a green read others)"},
+		{"a save during the tests", saved, "m: no tested stamp on these bytes (no green yet)"},
+		{"a second mod in the commit", second, "n: no tested stamp on these bytes (no green yet)"},
+		{"a record past its hour", stale, ""},
+		{"a path beside the mods", shared, ""},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -781,17 +760,16 @@ func TestModsChainRunsTheSuiteOnWhatTheGreenNeverRead(t *testing.T) {
 			dir, env, tests := modsChain(t)
 			paths := c.setup(t, dir, env)
 			before := tests()
-			if got := xIn(t, dir, env, append([]string{"lane", "commit", message(t), "--"}, paths...)...); got.code != 0 {
-				t.Fatalf("commit: exit %d\n%s", got.code, got.stdout)
+			got := xIn(t, dir, env, append([]string{"lane", "commit", message(t), "--"}, paths...)...)
+			if isRefused := got.code != 0; isRefused != (c.said != "") {
+				t.Errorf("commit: exit %d\n%s", got.code, got.stdout)
 			}
-			if tests() != before+1 || tests() != c.runs {
-				t.Errorf("the suite ran %d times, %d of them at the commit, want %d", tests(), tests()-before, c.runs)
+			if tests() != before {
+				t.Errorf("the commit ran the suite %d times, want 0", tests()-before)
 			}
 			said := suiteSaid(t, env)
-			for _, want := range c.said {
-				if !strings.Contains(said, want) {
-					t.Errorf("want %q in:\n%s", want, said)
-				}
+			if c.said == "" && said != "" || c.said != "" && (!strings.Contains(said, c.said) || !strings.Contains(said, "x mods edit test") || strings.Count(said, "no tested stamp") != 1) {
+				t.Errorf("want %q alone, naming the door, in:\n%s", c.said, said)
 			}
 		})
 	}
@@ -810,131 +788,6 @@ func TestModsChainSkipsBesideASharedMarkdownFile(t *testing.T) {
 	}
 	if n := tests(); n != 1 {
 		t.Errorf("the suite ran %d times, want 1: no mods test reads an .md\n%s", n, suiteSaid(t, env))
-	}
-}
-
-// the hook's suite went green, then a later step of the same commit refused it once
-func redsAfterTheSuiteOnce(t *testing.T, dir string) {
-	t.Helper()
-	marker := filepath.Join(t.TempDir(), "refused")
-	write(t, filepath.Join(dir, ".git/hooks/pre-commit"), "#!/bin/sh\nscript/index-run.sh node "+modsDir+"test.ts --skip-tested >> \"$CLAUDE_CALLS.out\" || exit 1\n[ -e "+marker+" ] && exit 0\ntouch "+marker+"\nexit 1\n")
-}
-
-func TestModsChainRetryRunsNoSecondSuiteOnBytesTheHookPassed(t *testing.T) {
-	t.Parallel()
-	dir, env, tests := modsChain(t)
-	redsAfterTheSuiteOnce(t, dir)
-	write(t, filepath.Join(dir, modHooks), "export const register = () => 1;\n")
-	if got := xIn(t, dir, env, "lane", "commit", message(t), "--", modHooks); got.code == 0 {
-		t.Fatalf("the first attempt should be refused\n%s", got.stdout)
-	}
-	commitHooks(t, dir, env)
-	if n := tests(); n != 1 {
-		t.Errorf("the suite ran %d times across a refused attempt and its retry, want 1\n%s", n, suiteSaid(t, env))
-	}
-}
-
-func TestAWholeModsRunLogsItsCpuAndASkippedOneLogsADash(t *testing.T) {
-	t.Parallel()
-	dir, env, _ := modsChain(t)
-	redsAfterTheSuiteOnce(t, dir)
-	write(t, filepath.Join(dir, modHooks), "export const register = () => 1;\n")
-	if got := xIn(t, dir, env, "lane", "commit", message(t), "--", modHooks); got.code == 0 {
-		t.Fatalf("the first attempt should be refused\n%s", got.stdout)
-	}
-	commitHooks(t, dir, env)
-
-	rows := nonBlank(readFile(t, filepath.Join(envValue(env, "X_STATE"), "gate-steps.log")))
-	if len(rows) < 2 {
-		t.Fatalf("%d rows, want the suite's run and its skip:\n%q", len(rows), rows)
-	}
-	last := func(row string) string { return row[strings.LastIndex(row, "\t")+1:] }
-	if whole := last(rows[0]); !regexp.MustCompile(`^\d+\.\d$`).MatchString(whole) {
-		t.Errorf("the whole run's last column reads %q, want user + sys:\n%s", whole, rows[0])
-	}
-	if skipped := last(rows[len(rows)-1]); skipped != "-" {
-		t.Errorf("the skipped run's last column reads %q, want -:\n%s", skipped, rows[len(rows)-1])
-	}
-}
-
-func TestAModsRunOfPartOfTheModsLogsADash(t *testing.T) {
-	t.Parallel()
-	lastColumn := func(t *testing.T, env []string) string {
-		t.Helper()
-		rows := nonBlank(readFile(t, filepath.Join(envValue(env, "X_STATE"), "gate-steps.log")))
-		if len(rows) == 0 {
-			t.Fatal("no gate-steps row")
-		}
-		row := rows[len(rows)-1]
-		return row[strings.LastIndex(row, "\t")+1:]
-	}
-	t.Run("one mod named", func(t *testing.T) {
-		t.Parallel()
-		dir, env, _ := modsChain(t)
-		hand := exec.Command("bash", "script/index-run.sh", "node", modsDir+"test.ts", "m")
-		hand.Dir, hand.Env = dir, append(append(cleanEnv(), "X_TEST=1"), env...)
-		if out, err := hand.CombinedOutput(); err != nil {
-			t.Fatalf("%v\n%s", err, out)
-		}
-		if got := lastColumn(t, env); got != "-" {
-			t.Errorf("last column %q, want -", got)
-		}
-	})
-	t.Run("a commit that leaves one mod untouched", func(t *testing.T) {
-		t.Parallel()
-		dir, env, _ := modsChain(t)
-		sibling := filepath.Join(dir, modsDir, "n")
-		write(t, filepath.Join(sibling, ".claude-plugin/plugin.json"), `{"name": "n"}`+"\n")
-		write(t, filepath.Join(sibling, "tests/a.test.ts"), "green\n")
-		write(t, filepath.Join(sibling, "hooks/register.ts"), "export const register = () => {};\n")
-		gitT(t, dir, "add", ".")
-		gitT(t, dir, "-c", "core.hooksPath=/dev/null", "commit", "-q", "-m", "a sibling mod")
-		touched := modsDir + "n/hooks/register.ts"
-		write(t, filepath.Join(dir, touched), "export const register = () => 1;\n")
-		if got := xIn(t, dir, env, "lane", "commit", message(t), "--", touched); got.code != 0 {
-			t.Fatalf("exit %d\n%s", got.code, got.stdout)
-		}
-		if got := lastColumn(t, env); got != "-" {
-			t.Errorf("last column %q, want -", got)
-		}
-	})
-}
-
-func TestModsChainRetryRerunsARedSuite(t *testing.T) {
-	t.Parallel()
-	for _, red := range []string{"RED\n", "HOOK-THROWS\n", "DIES-QUIET\n"} {
-		t.Run(strings.TrimSpace(red), func(t *testing.T) {
-			t.Parallel()
-			dir, env, tests := modsChain(t)
-			write(t, filepath.Join(dir, modTestA), red)
-			for range 2 {
-				if got := xIn(t, dir, env, "lane", "commit", message(t), "--", modTestA); got.code == 0 {
-					t.Fatalf("a red suite committed\n%s", got.stdout)
-				}
-			}
-			if n := tests(); n != 2 {
-				t.Errorf("the suite ran %d times, want 2: a red records nothing", n)
-			}
-		})
-	}
-}
-
-// a hand run reads the working tree, never the index, so its green proves nothing a commit holds
-func TestHandSkipTestedRecordsNothing(t *testing.T) {
-	t.Parallel()
-	dir, env, _ := modsChain(t)
-	write(t, filepath.Join(dir, modHooks), "export const register = () => 1;\n")
-	hand := exec.Command("node", modsDir+"test.ts", "--skip-tested")
-	hand.Dir = dir
-	// a gate's own go tests inherit this; here no gate runs
-	hand.Env = slices.DeleteFunc(append(append(cleanEnv(), "X_TEST=1"), env...), func(pair string) bool {
-		return strings.HasPrefix(pair, "INDEX_RUN_BRANCH=")
-	})
-	if out, err := hand.CombinedOutput(); err != nil {
-		t.Fatalf("%v\n%s", err, out)
-	}
-	if record := readFile(t, filepath.Join(envValue(env, "X_STATE"), gatesGreenFile)); strings.Contains(record, "mod m") {
-		t.Errorf("a hand run recorded a green:\n%s", record)
 	}
 }
 

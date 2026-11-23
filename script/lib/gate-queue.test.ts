@@ -87,6 +87,49 @@ const liveSince = () =>
         timeout: 10_000,
     }).stdout.trimEnd();
 
+describe('gate-queue --long on a loaded mac', () => {
+    // an uptime that answers the load, and a claude and a pnpm that only say they ran
+    function loaded(load: string, args: string[]) {
+        const { state } = fixture();
+        const bin = join(state, 'bin');
+        mkdirSync(bin);
+        const put = (name: string, body: string) =>
+            writeFileSync(join(bin, name), `#!/bin/sh\n${body}\n`, {
+                mode: 0o755,
+            });
+        put(
+            'uptime',
+            `echo '12:27  up 1 day, 7 users, load averages: ${load} 9.00 9.00'`,
+        );
+        put('claude', 'echo ran');
+        put('pnpm', 'echo ran');
+        const got = queue(state, ['--long', ...args], undefined, {
+            PATH: `${bin}:${process.env.PATH}`,
+        });
+        return { ...got, row: logRows(state).at(-1) ?? [] };
+    }
+
+    test.each([
+        ['x’s suite', ['claude', 'plugin', 'test', 'mod']],
+        ['a hand run', ['pnpm', 'mods:test', 'x-mod-stash']],
+    ])('%s over the number runs nothing, and says the load', (_name, args) => {
+        const got = loaded('14.01', args);
+        expect([got.status, got.stdout]).toEqual([75, '']);
+        expect(got.stderr).toMatch(
+            /^gate-queue: waited 0s, nothing ran: the 1-minute load is 14\.01, .* 14 or under/,
+        );
+        expect([got.row[1], got.row[5]]).toEqual(['14.01', '75']);
+    });
+
+    test.each([
+        ['at the number', '14.00', ['claude', 'plugin', 'test', 'mod']],
+        ['any other long run, over it', '90.00', ['sh', '-c', 'echo ran']],
+    ])('%s it runs', (_name, load, args) => {
+        const got = loaded(load, args);
+        expect([got.status, got.stdout]).toEqual([0, 'ran\n']);
+    });
+});
+
 describe('gate-queue, no flag: no turn', () => {
     test.each([
         ['a script path', ['landing.sh']],

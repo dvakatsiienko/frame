@@ -4,6 +4,7 @@
 # --hold <label…>: the gate slot, x's own door: x lane commit and push hold it around their hook. once it has the turn it prints
 # one line and holds until its stdin gives an exit code or closes, so a dead x frees the turn; a hung hook frees it at the cap, 600 s, exit 124.
 # no flag: no turn, it says so, runs the command and logs slot none; a turn held by a wrapped chain made every commit wait behind it.
+# --long with a whole mods suite (claude plugin test, pnpm mods:test) on a 1-minute load over 14, one a core, runs nothing: exit 75.
 # a turn waits for the machine-wide slot and hands back the exit code; 75 means the wait passed its deadline.
 # a turn is a mkdir, atomic on any disk, holding the holder's pid and start time, so a dead holder or a reused pid frees it.
 # waiters line up first come, first served: one ticket file each, named <epoch>.<pid>, so a newcomer never jumps a waiter.
@@ -99,6 +100,16 @@ if [ "$slot" = none ]; then
     GATE_QUEUE_HELD=none "$@"
     exit $?
 fi
+load_max=${GATE_QUEUE_LOAD_MAX:-14}
+case "$slot $cmd" in
+"long claude plugin test"* | "long pnpm mods:test"*)
+    if awk -v load="$load" -v max="$load_max" 'BEGIN { exit !(load + 0 > max + 0) }'; then
+        echo "gate-queue: waited 0s, nothing ran: the 1-minute load is $load, and a mods suite starts at $load_max or under. run it again once the mac is calm (uptime)" >&2
+        log_run - 75
+        exit 75
+    fi
+    ;;
+esac
 ticket=$tickets/$began.$$
 started_at $$ >"$tickets/.new.$$"
 mv "$tickets/.new.$$" "$ticket"
