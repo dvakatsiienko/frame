@@ -71,11 +71,12 @@ pre-commit:
       # drops a deleted file, and a deleted giant must meet its dead row in the commit that deletes it
       run: git diff --cached --name-only --no-renames | grep -qE '\.(ts|tsx|js|go|sh)$' || exit 0; script/index-run.sh pnpm exec vitest run script/lib/code-size.test.ts
     mods-boots:
-      # a mods test file starts more hosts than its row in boots.tsv, counted from the file with no run (FRM-678). no glob:
+      # a mods test file starts more hosts than its row in boots.tsv, counted from the file with no run, and a cpu cap in
+      # test-cpu-budget.tsv raised with no tick of dima's (FRM-678). no glob:
       # lefthook's staged list drops a deleted file, and a deleted test leaves a dead row. commit-only: `x mods edit test` lays
       # no table, so a new file's row is not there yet
       tags: [commit-only]
-      run: git diff --cached --name-only --no-renames | grep -qE '^home/\.claude/plugin-x/mods/' || exit 0; script/index-run.sh node home/.claude/plugin-x/mods/boots.ts
+      run: git diff --cached --name-only --no-renames | grep -qE '^home/\.claude/plugin-x/mods/|^script/test-cpu-budget\.tsv$' || exit 0; script/index-run.sh node home/.claude/plugin-x/mods/boots.ts
     stash-resets:
       # a stash module variable no quit gives back (FRM-678); the test reads the hooks by path, so the related test run
       # never picks it. no glob: lefthook's staged list drops a deleted file

@@ -28,7 +28,7 @@ fleet sees whether the page earns its place.
 
 go test runs fill the mac's kernel with spawned git, about 377 git/s beside any other work (`docs/knowledge/fleet-stories/cpu-overload/cases.md`); a process is the unit of cost here, so count spawns before adding a fixture. the numbers are one suite run, full list `go-test-cost.md` in FRM-521's lane state.
 
-- a whole run's line is `script/test-cpu-budget.tsv`: `pnpm x-go:gate` and `pnpm x-go:test` red past it by hand, ci and `x lane commit` only log; a raise is its one row, dated, with its reason. read a head beside a base run of the same hour: 386 → 308 cpu-s (FRM-528)
+- a whole run's line is `script/test-cpu-budget.tsv`: `pnpm x-go:gate` and `pnpm x-go:test` red past it by hand, ci and `x lane commit` only log; a raise is its row on dima's tick, or the commit reds (mods `AGENTS.md`). read a head beside a base run of the same hour: 386 → 308 cpu-s (FRM-528)
 - build a repo fixture once and copy it with `copyFixture` (`fixture_template_test.go`): no spawn per test. `repo`, `world`, `modsFixture`, `layers`, `newRebaseWorld`, `newMergeWorld`, `verifyWorld` and `revertWorld` already do; each other builder is under 3 cpu-s
 - call `xIn` when the binary's behaviour is the proof: on a 402 cpu-s tagged run, 1,066 runs were 176 cpu-s, now the biggest part of a run; `lane verify-tree` 445 ms, `lane commit` 275 ms, `lane merge-auto` 175 ms; x's bare launch is 18 ms
 - a test's own git was 6,743 runs, 126 cpu-s on that run, before the merge and revert seeds; `git push` 62 ms each

@@ -4,16 +4,19 @@ import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+    capsRaised,
     countBoots,
     countMods,
     pastTheTable,
     raised,
+    readCaps,
     readPin,
     readTable,
     readTicks,
     refusedHelper,
     unpinned,
     unticked,
+    untickedCaps,
 } from './boots.ts';
 
 const KIT = "import { type Engine, test } from 'claude-code/testing';\n";
@@ -228,6 +231,62 @@ describe('the boots table', () => {
         expect(
             [1, 2].map((n) => raised([row('new.test.ts', n)], base).length),
         ).toEqual([0, 1]);
+    });
+});
+
+describe('the cpu caps', () => {
+    const caps = (cpu: string, tick = '') =>
+        readCaps(
+            `# suite\tcpu-s\tdate\treason\ttick\nx-go\t283\t2026-11-07\twhy\t\nx-mod-a\t${cpu}\t2026-11-23\twhy\t${tick}\n`,
+        );
+    const base = caps('187');
+    const tick = {
+        at: 1795,
+        pick: 'raise the x-mod-a cpu cap to 195',
+        verdict: 'tick',
+    };
+    it('a raised cap with no tick is named', () => {
+        expect(untickedCaps(capsRaised(caps('195'), base), [])).toEqual([
+            expect.stringContaining(
+                'x-mod-a raised 187 → 195 cpu-s with no tick of dima’s'.replace(
+                    '’',
+                    "'",
+                ),
+            ),
+        ]);
+    });
+    it.each([
+        ['a tick typed in, never logged', '1', tick],
+        [
+            'a tick on another number',
+            '1795',
+            { ...tick, pick: 'raise the x-mod-a cpu cap to 200' },
+        ],
+        ['a tick with a steer', '1795', { ...tick, steer: 'measure first' }],
+    ])('a raised cap on %s is named', (_, at, logged) => {
+        expect(
+            untickedCaps(capsRaised(caps('195', at), base), [logged]),
+        ).toHaveLength(1);
+    });
+    it('a raised cap on a logged tick of that pick passes', () => {
+        expect(
+            untickedCaps(capsRaised(caps('195', '1795'), base), [tick]),
+        ).toEqual([]);
+    });
+    it.each([
+        ['a lowered cap', '170', 0],
+        ['an unchanged cap', '187', 0],
+        ['a cap that reads as no number', 'lots', 1],
+    ])('%s counts %s raises', (_, cpu, n) => {
+        expect(capsRaised(caps(cpu), base)).toHaveLength(n);
+    });
+    it('a new suite’s first cap is a raise', () => {
+        expect(
+            capsRaised(
+                [...base, { cpu: '5', suite: 'x-mod-new', tick: '' }],
+                base,
+            ).map((c) => c.suite),
+        ).toEqual(['x-mod-new']);
     });
 });
 

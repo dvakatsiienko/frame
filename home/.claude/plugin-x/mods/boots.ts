@@ -1,5 +1,6 @@
 // the boots table (FRM-678): how many times each mods test file starts the host, counted from the file with no run. a host
 // start reloads the whole mod, the cost that roasted the mac, so a file past its row reds at its first commit
+// the cpu caps beside it (script/test-cpu-budget.tsv) rise by the same door: a raised row with no tick of dima's reds
 // usage: node boots.ts [--raises]   the check, or the rows a push raises, its lines on stdin
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -9,6 +10,7 @@ import { basename, dirname, join } from 'node:path';
 import { parseSync } from 'vite';
 
 const TABLE = 'boots.tsv';
+const CAPS = 'test-cpu-budget.tsv';
 const KIT = 'claude-code/testing';
 const SHARED = 'tests/shared-boot.ts';
 // a mod's whole, beside its files
@@ -318,6 +320,42 @@ export function unticked(raises: (Row & { from: number })[], ticks: Tick[]) {
         );
 }
 
+// a suite's cpu cap, and the `at` of the tick its last raise stands on, the row's fifth column
+export function readCaps(text: string): Cap[] {
+    return text
+        .split('\n')
+        .filter((l) => l && !l.startsWith('#'))
+        .map((l) => {
+            const [suite = '', cpu = '', , , tick] = l.split('\t');
+            return { cpu, suite, tick };
+        });
+}
+
+// the caps that went up, a new suite's and one that reads as no number included
+export function capsRaised(caps: Cap[], base: Cap[]) {
+    const was = new Map(base.map((c) => [c.suite, c.cpu]));
+    return caps.flatMap((c) => {
+        const from = was.get(c.suite) ?? '0';
+        return c.cpu === from || Number(c.cpu) <= Number(from)
+            ? []
+            : [{ ...c, from }];
+    });
+}
+
+const capPick = (c: Cap) => `raise the ${c.suite} cpu cap to ${c.cpu}`;
+
+export function untickedCaps(
+    raises: (Cap & { from: string })[],
+    ticks: Tick[],
+) {
+    return raises
+        .filter((c) => !isTicked(capPick(c), c.tick, ticks))
+        .map(
+            (c) =>
+                `${CAPS}: ${c.suite} raised ${c.from} → ${c.cpu} cpu-s with no tick of dima's (its row says ${c.tick || 'none'}). ${raiseDoor(capPick(c))}`,
+        );
+}
+
 // a pin moved with no tick; a table with none yet takes its first
 export function unpinned(pin: Pin, base: Pin, ticks: Tick[]) {
     if (!base.hash || pin.hash === base.hash) return [];
@@ -358,31 +396,43 @@ export function readTicks(dir: string): Tick[] {
 }
 
 // the table as a commit holds it; empty only before its first commit
-function tableAt(root: string, ref: string) {
+function tableAt(root: string, ref: string, table = TABLE) {
     const git = (...args: string[]) =>
         execFileSync('git', args, { cwd: root, encoding: 'utf8' });
-    if (!git('log', '-1', '--format=%h', ref, '--', TABLE).trim())
+    if (!git('log', '-1', '--format=%h', ref, '--', table).trim())
         return undefined;
-    return git('show', `${ref}:./${TABLE}`);
+    return git('show', `${ref}:./${table}`);
 }
 
 // the table a push replaces; a new branch, or a remote commit this clone never fetched, reads against origin/main
-function baseTable(root: string, remote: string) {
+function baseTable(root: string, remote: string, table = TABLE) {
     try {
-        return tableAt(root, /[1-9a-f]/.test(remote) ? remote : 'origin/main');
+        return tableAt(
+            root,
+            /[1-9a-f]/.test(remote) ? remote : 'origin/main',
+            table,
+        );
     } catch {
-        return tableAt(root, 'origin/main');
+        return tableAt(root, 'origin/main', table);
     }
 }
 
 if (import.meta.main) {
     const root = import.meta.dirname;
+    const script = join(root, '../../../../script');
     if (process.argv.includes('--raises')) {
         // git's pre-push lines: a worktree's push runs from the main checkout, so HEAD there is the wrong commit
         const pushed = process.stdin.isTTY ? '' : readFileSync(0, 'utf8');
         for (const line of pushed.split('\n')) {
             const [, head = '', , remote = ''] = line.split(' ');
             if (!/[1-9a-f]/.test(head)) continue;
+            const caps = tableAt(script, head, CAPS);
+            const capsBase = baseTable(script, remote, CAPS);
+            if (caps && capsBase)
+                for (const c of capsRaised(readCaps(caps), readCaps(capsBase)))
+                    console.log(
+                        `⚠️ cpu cap raised: ${c.suite} ${c.from} → ${c.cpu} cpu-s, on tick ${c.tick}`,
+                    );
             const base = baseTable(root, remote);
             const now = tableAt(root, head);
             if (!base || !now) continue;
@@ -404,7 +454,17 @@ if (import.meta.main) {
     const { counts, red } = countMods(root, pin.hash);
     const base = tableAt(root, 'HEAD');
     const ticks = readTicks(join(homedir(), '.claude/shelf/orbit-ticks'));
+    const capsBase = tableAt(script, 'HEAD', CAPS);
     const found = [
+        ...(capsBase
+            ? untickedCaps(
+                  capsRaised(
+                      readCaps(readFileSync(join(script, CAPS), 'utf8')),
+                      readCaps(capsBase),
+                  ),
+                  ticks,
+              )
+            : []),
         ...red,
         ...pastTheTable(counts, table),
         ...(base
@@ -424,6 +484,7 @@ type Node = any;
 type Count =
     | { boots: number; why?: undefined }
     | { boots?: undefined; why: string };
+type Cap = { cpu: string; suite: string; tick?: string };
 type Pin = { hash?: string; tick?: string };
 type Row = { boots: number; file: string; mod: string; tick?: string };
 type Tick = {

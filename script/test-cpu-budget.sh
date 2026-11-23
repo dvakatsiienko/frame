@@ -116,7 +116,7 @@ if [ "$code" -eq 0 ] && [ -z "$log_only" ] && [ "$leg" != vm-overlap ] && [ -n "
     cat >&2 <<EOF
 test-cpu-budget: $suite used $used cpu-s, its budget is $budget cpu-s.
 read what grew first; a later lane may read a cost it did not add, since a related run never counts.
-to raise it on purpose: its one row in script/test-cpu-budget.tsv, with the date and the reason.
+its row in script/test-cpu-budget.tsv rises only on dima's tick: an orbit ask whose pick is «raise the $suite cpu cap to <n>», the tick's \`at\` in the row.
 EOF
     exit 1
 fi
