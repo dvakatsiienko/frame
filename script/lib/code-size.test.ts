@@ -41,10 +41,6 @@ const caps = {
         cap: 2_035,
         why: 'the stash lane cards, one file of cases; the card-opening cases moved to lane-card.test.ts, the shared world to lane-world.ts',
     },
-    'home/.claude/plugin-x/mods/x-mod-stash/tests/pace.test.ts': {
-        cap: 1_318,
-        why: 'the stash pace, one file of cases',
-    },
     'home/.claude/plugin-x/mods/x-mod-stash/tests/wind.test.ts': {
         cap: 2_780,
         why: 'the second wind, one file of cases',
