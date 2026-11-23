@@ -81,25 +81,8 @@
       }
     },
     {
-      // Two shapes the dependency rule cannot see.
-      //
-      // The vite config imports the bundler and its plugins, which are workspace-root
-      // devDependencies on purpose — one version, one renovate PR — so the app's own manifest
-      // does not declare them. That is the shape we want, not a mistake.
-      //
-      // `src` imports `@hotkeys/*`, a tsconfig path alias to the modules chord.ts and manual.ts,
-      // which the node side of this feature shares. In bytes the same ergonomic (`@ui/kit/*`)
-      // points at a real workspace package, so the rule is satisfied there; here the target is a
-      // plain directory and never can be. The cost is that a genuinely missing npm dependency in
-      // src would not be caught here — typecheck and the build both still catch it.
-      "includes": ["hotkeys/chords/vite.config.ts", "hotkeys/chords/src/**"],
-      "linter": {
-        "rules": { "correctness": { "noUndeclaredDependencies": "off" } }
-      }
-    },
-    {
-      // vitest is the one runner, a workspace-root devDependency for the same reason as vite
-      // above; a workspace package's test imports it without declaring it.
+      // vitest is the one runner, a workspace-root devDependency on purpose — one version, one
+      // renovate pr; a workspace package's test imports it without declaring it.
       "includes": ["home/.claude/mcp-x-cloud-chat/src/**/*.test.ts"],
       "linter": {
         "rules": { "correctness": { "noUndeclaredDependencies": "off" } }

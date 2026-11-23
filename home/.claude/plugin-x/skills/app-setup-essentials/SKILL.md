@@ -9,8 +9,6 @@ Every app carries the same essentials, and one script proves it. **The list live
 script**: `bytes/script/apps-essentials.ts` (BYT-111). Read its data, never a copy here.
 
 - bytes: `pnpm apps:essentials` (every app) · `--app <name|path>` (one) · `--staged` (the commit hook)
-- chords, the one app outside bytes: `node ~/projects/bytes/script/apps-essentials.ts --app hotkeys/chords`,
-  which frame's `chords-essentials` hook runs on a chords commit
 - it is a required check on bytes main, runs in the commit hook, and prints in clio's boot digest
 - a gap prints `🔴 <app> <row> — <detail>` and names the tool that fills it; a 🟡 is a doc gone stale
   and never fails

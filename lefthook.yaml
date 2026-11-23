@@ -89,11 +89,6 @@ pre-commit:
       # a git-crypt file moved to a path no filter line covers ships plaintext — d1bddfb5 put one on
       # public main (2026-10-07). no glob: the moved file can live anywhere
       run: node script/git-crypt-rename-check.ts
-    chords-essentials:
-      # chords is the one app outside bytes; the essentials list lives once, in bytes' checker
-      # (BYT-111), so frame calls it by path. a mac without bytes checked out skips, never blocks.
-      glob: "hotkeys/chords/**"
-      run: test -f "$HOME/projects/bytes/script/apps-essentials.ts" || exit 0; node "$HOME/projects/bytes/script/apps-essentials.ts" --app hotkeys/chords
 
 pre-push:
   parallel: true

@@ -32,7 +32,7 @@
 (`plugin-x`), hooks, output styles, and `sline`, the statusline.
 `_clio/` is the coordinator's home, the session that plans and routes work to background codies.
 `x/` is `x`, the agent-first cli in go + charm: one verb registry, json for agents and boards for humans (`x lane` commits and pushes from a sandboxed worktree).
-`hotkeys/` maps every keyboard chord on the machine and serves `chords`, the map's app.
+`hotkeys/` maps every keyboard chord on the machine and serves `chords`, the map's app (its source is bytes' `apps/chords`).
 `x-speak` (a `schedule/` job; its source is bytes' `apps/speak`) reads the selected text aloud on F4 (with nothing selected it pauses / resumes, as ⇧F4 always does) and stops on F5,
 rewriting ids, versions, paths and code into something a voice can say; its voice admin is served at 127.0.0.1:7386.
 
@@ -43,7 +43,7 @@ rewriting ids, versions, paths and code into something a voice can say; its voic
 chords is a keyboard map app: every key binding on every modifier layer, how often each one
 fires, and which keys are still free. powered by launchd daemon that counts key presses.
 
-<img src="hotkeys/chords/showcase.png" width="100%" alt="chords: the hyper layer on a NuPhy Air75, each bound key with its app and press count">
+<img src="hotkeys/showcase.png" width="100%" alt="chords: the hyper layer on a NuPhy Air75, each bound key with its app and press count">
 
 ## 🪞 mirror
 

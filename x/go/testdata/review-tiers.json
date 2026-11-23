@@ -252,7 +252,6 @@
         {
             "paths": [
                 ".github/workflows/renovate.yml",
-                "hotkeys/chords/package.json",
                 "package.json",
                 "pnpm-lock.yaml",
                 "speak/package.json"
@@ -261,11 +260,7 @@
             "title": "🌲 evergreen: Update patches (patch)"
         },
         {
-            "paths": [
-                "hotkeys/chords/package.json",
-                "pnpm-lock.yaml",
-                "speak/package.json"
-            ],
+            "paths": ["pnpm-lock.yaml", "speak/package.json"],
             "pr": 134,
             "title": "🌲 evergreen: Update minors to v0.5.3"
         },

@@ -6,7 +6,7 @@
   - schedule — always on: RunAtLoad plus KeepAlive, relaunch throttled to one start per 10s
   - reads — the jsonl x-monitor-hotkey-stats appends; this job never touches the keyboard
   - writes — ~/frame/hotkeys/hotkeys.json on a rescan, and hotkeys/manual.ts on a ui rebind
-  - serves — http://localhost:7373 — chords/dist plus /api/hotkeys, /api/notes, /api/manual, and /api/presses as server-sent events
+  - serves — http://localhost:7373 — the page bytes built (~/projects/bytes/apps/chords/dist) plus /api/hotkeys, /api/notes, /api/manual, and /api/presses as server-sent events
   - idle cost — one stat per log file every 2s; the month's log is reparsed only after a change
   - output — ~/.local/share/x-monitor-hotkey-live/daemon.log, daemon.err.log for stderr
   - source — ~/frame/hotkeys/live.ts
@@ -14,7 +14,7 @@
   - open — http://localhost:7373
   - manual — pnpm hotkeys:live runs the same watcher and server in a terminal
   - setup — mkdir -p ~/.local/share/x-monitor-hotkey-live; launchd will not create a missing log dir
-  - gotcha — needs no permission of any kind, and its socket is bound to 127.0.0.1 only
+  - gotcha — needs no permission of any kind; its socket is bound to every interface, a write is taken from loopback only
 
   Why the node path below is fnm's `default` alias and not `which node`: a shell's node lives
   under ~/.local/state/fnm_multishells/<pid>_<stamp>, which dies with that shell, and launchd

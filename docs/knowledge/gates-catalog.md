@@ -31,7 +31,6 @@ Ticket: FRM-530. A ⛩️ gate is a check that refuses: it stops a commit, a pus
 - **mods-boots**: a mods test file starts no more hosts than its row in `boots.tsv`, a raised row stands on a logged tick of dima's (`home/.claude/plugin-x/mods/boots.ts`)
 - **stash-resets**: no x-mod-stash hooks file holds a module variable a quit does not give back (`script/lib/stash-resets.test.ts`)
 - **git-crypt-rename**: a moved secret file stays encrypted, 2 s
-- **chords-essentials**, **speak-essentials**: those two apps keep their required parts
 - **speak-daemon-test** (bytes): speak's swift tests, the normalizer's golden cases and the argv parser, run on the mac where `swiftc` exists
 
 ## frame — when you commit, the message

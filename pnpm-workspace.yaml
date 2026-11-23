@@ -1,21 +1,14 @@
 packages:
   - home/.claude/mcp-x-cloud-chat
-  - hotkeys/chords
   - logos
   - import/raycast/extensions/x-ray
 
 allowBuilds:
-  # vgpu's node adapter and its Dawn bindings. The chords app is browser-only and imports the
-  # base entry, never `vgpu/node`, so neither native build has to run — and not running them
-  # keeps a week-old package's postinstall out of this machine. Flip to true if `vgpu/node`
-  # is ever wanted for headless rendering.
-  '@vgpu/adapter-node': false
   esbuild: true
   lefthook: true
   # mods:live loads node-pty's own darwin-arm64 prebuild, so no node-gyp build; the script sets
   # the prebuilt spawn-helper's exec bit, which the tarball drops
   node-pty: false
-  webgpu: false
 
 # renovate's own gate, in minutes (3 days): pnpm outdated reads it, so it stops listing what renovate may not take yet
 minimumReleaseAge: 4320

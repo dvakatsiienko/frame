@@ -20,8 +20,7 @@
         "skipLibCheck": true
     },
     // `hotkeys/*.ts` is the node side of that feature and belongs here: same runtime, same
-    // erasable-syntax rule. A single `*` does not recurse, so `hotkeys/chords` keeps its own
-    // tsconfig — that one is a browser app. Until this line existed nothing typechecked those
+    // erasable-syntax rule. Until this line existed nothing typechecked those
     // files at all, and a field deleted from an interface stayed green through the whole gate.
     "include": [
         "script/**/*.ts",

@@ -141,35 +141,8 @@ export const canonical = (hotkey: Hotkey): Hotkey => ({
     mods: canonicalMods(hotkey.mods),
 });
 
-// A typed filter query, spelled the way chordOf spells a chord. dima reaches for the modifiers
-// in whatever order his hand finds them, so `cmd+shift+l` has to match the canonical
-// `shift+cmd+l`. Tokens this file knows as modifiers are sorted into modOrder; anything else
-// keeps its place behind them, which is what lets a query that is not a chord at all pass
-// through unchanged and still match a note's prose.
-export const canonicalQuery = (text: string) => {
-    const parts = text.split('+').filter(Boolean);
-    const mods = parts.filter((part) => modOrder.includes(part));
-    const rest = parts.filter((part) => !modOrder.includes(part));
-
-    return [canonicalMods(mods.join('+')), ...rest].filter(Boolean).join('+');
-};
-
-// The chord a press stream update is about. One 2s tick can move a real chord and a bare
-// modifier pressed on its own right after; the real chord wins, or a rebind hears only the
-// modifier and drops the press. (The daemon no longer logs a chord's own release as bare.)
-export const pressedChord = (
-    previous: Record<string, number>,
-    counts: Record<string, number>,
-) => {
-    const moved = Object.keys(counts).filter(
-        (chord) => (counts[chord] ?? 0) > (previous[chord] ?? 0),
-    );
-
-    return moved.find((chord) => chord.includes('+')) ?? moved[0];
-};
-
-// Takes the two fields it reads rather than a whole Hotkey, so the map can spell a free key's
-// chord — a key with no binding has no row to hand over.
+// Takes the two fields it reads rather than a whole Hotkey, so a caller can spell the
+// chord of a key with no binding — that one has no row to hand over.
 export const chordOf = (hotkey: Pick<Hotkey, 'key' | 'mods'>) => {
     const mods = canonicalMods(hotkey.mods);
     return mods ? `${mods}+${hotkey.key}` : hotkey.key;

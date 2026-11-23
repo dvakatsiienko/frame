@@ -54,7 +54,7 @@ pnpm frame:link untrack ~/.gitconfig   # hand a file back to ~, drop it from the
 ## one home per feature
 
 **a feature lives in ONE directory named after it** — `schedule/` owns every scheduled job,
-`hotkeys/` owns every hotkey tool; its served app is `hotkeys/chords/` — read
+`hotkeys/` owns every hotkey tool; its page is bytes' `apps/chords` — read
 `hotkeys/AGENTS.md` before touching either; a new feature or mini-app gets its own root directory the day it is born. before adding a file, ask which feature it belongs to and put
 it in that home; `script/`, `docs/` and `lib/` are not homes, they are where scatter starts. the one crossing: a feature's scheduled **daemon** lives under
 `schedule/jobs/<name>/` (plist, source, `bin/`), its readers and tools stay in the feature's home.
@@ -84,7 +84,7 @@ it in that home; `script/`, `docs/` and `lib/` are not homes, they are where sca
 lands with its README update in the same commit** — a toolchain move (pnpm → bun), a renamed
 command, a new top-level feature. `pnpm badges:sync` redraws `assets/badges/` from the repo; the
 sline clip re-renders via `home/.claude/sline/showcase/` (`show.sh`, then `render-svg.ts`); the
-chords shot is `hotkeys/chords/showcase.png`, retaken with agent-browser on `localhost:7373`.
+chords shot is `hotkeys/showcase.png`, retaken with agent-browser on `localhost:7373`.
 
 ## docs and tracker
 
