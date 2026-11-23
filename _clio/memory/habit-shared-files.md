@@ -67,6 +67,7 @@ Working artifacts die the turn their job is done: resolved pocket items, scratch
 `/tmp` dumps from CLI heredocs.
 
 - **a background task dies the turn its answer is read** — a shell or an agent whose result folded gets `TaskStop` with its id that turn, and a check of the running list rides every siesta; only the standing pr and ci watches outlive their turn
+- **a leftover branch with every commit on main by content is deleted unasked**, named in one line: `git cherry main <branch>` prints no `+` first (dima's o4, 2026-11-23)
 - **a tails check closes every report** (dima's o174): grooms, `flyway-done.ts <PK> --check`, my 🦉 reminders past their day, a member's probe or kept tree; mine cleared unasked, his to orbit
 
 - 🚫 never destroy pending or ambiguous content (root `CLAUDE.md`, the invariant #8) — in doubt, mark done and
