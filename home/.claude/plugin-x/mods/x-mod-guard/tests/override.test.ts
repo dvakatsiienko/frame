@@ -22,6 +22,9 @@ type World = {
     cwd?: 'throws' | 'slow';
     // the session's id now: a `/clear` mints a new one for the same process
     sid?: string;
+    // his ticks on this seat's orbit asks, and what the call answers
+    ticks?: { at: number; id: string; targets: string[]; text: string }[];
+    call?: 'denied' | 'failed';
 };
 
 function world(on: On, opts: World = {}) {
@@ -101,11 +104,22 @@ function world(on: On, opts: World = {}) {
         return { value: undefined };
     });
     on('ui.log', () => ({ value: undefined }));
+    on('state.get', (_$, e, next) =>
+        opts.ticks && e.plugin === 'x-mod-stash' && e.key === 'ticks'
+            ? { value: { value: opts.ticks, version: 1 } }
+            : next(e),
+    );
+    // the grant store as the command found it
+    const atRun: string[] = [];
     on('tool.call', (_$, e) => {
         ran.push('command' in e ? String(e.command) : e.tool);
-        return { result: {}, text: 'ran' };
+        atRun.push(files[REAL] ?? '{}');
+        if (opts.call === 'denied') return { deny: 'another hook' };
+        return opts.call === 'failed'
+            ? { isError: true, result: {}, text: 'failed' }
+            : { result: {}, text: 'ran' };
     });
-    return { clock, files, logged, ran };
+    return { atRun, clock, files, logged, opts, ran };
 }
 
 // a session's first typed prompt is read like any other here: the switch works from the first
@@ -411,4 +425,167 @@ test('every pass lands in the log x writes', async ($, on) => {
         scope: 'all',
         what: 'let through: git branch -D old',
     });
+});
+
+// FRM-596: his tick on a board ask whose pick quotes a seat switch reaches x as a one-use grant for this session; nothing typed
+const SEAT = 'x thread rename wing1 --role main';
+const seatTick = (command = SEAT, id = 'o7') => [
+    { at: NOW, id, targets: [command], text: `move: \`${command}\`` },
+];
+const seatGrant = (store: string | undefined) =>
+    (JSON.parse(store ?? '{}') as Record<string, unknown>)[`seat:${SID}`];
+// x took the grant: it removes it as it moves the seat
+const xTakes = (files: Record<string, string>) => {
+    files[REAL] = '{}';
+};
+
+test('his tick on a seat switch leaves x a 60 s grant for this session, thread and role', async ($, on) => {
+    const { atRun } = world(on, { ticks: seatTick() });
+    await bash($, SEAT);
+    expect(seatGrant(atRun[0])).toMatchObject({
+        at: '2026-11-07T14:00:00.000Z',
+        by: 'tick o7',
+        role: 'main',
+        thread: 'wing1',
+        until: '2026-11-07T14:01:00.000Z',
+    });
+});
+
+test('a seat grant keeps every other grant in the store', async ($, on) => {
+    const { atRun } = world(on, {
+        files: {
+            [REAL]: JSON.stringify({ prs: { at: 'x', by: 'word' } }),
+        },
+        ticks: seatTick(),
+    });
+    await bash($, SEAT);
+    expect(JSON.parse(atRun[0] ?? '{}')).toMatchObject({
+        prs: { at: 'x', by: 'word' },
+    });
+});
+
+test('a seat grant lands one line in the log, naming the tick', async ($, on) => {
+    const { logged } = world(on, { ticks: seatTick() });
+    await bash($, SEAT);
+    expect(logged.map((l) => JSON.parse(l))).toMatchObject([
+        {
+            by: 'tick o7',
+            scope: 'seat',
+            what: `granted for session ${SID}: ${SEAT}`,
+        },
+    ]);
+});
+
+test('a spent seat tick grants nothing a second time', async ($, on) => {
+    const w = world(on, { ticks: seatTick() });
+    await bash($, SEAT);
+    xTakes(w.files);
+    await w.clock.advance(61_000);
+    await bash($, SEAT);
+    expect([w.ran.length, seatGrant(w.atRun[1])]).toEqual([2, undefined]);
+});
+
+for (const [why, command] of [
+    ['another command', 'x thread list'],
+    ['another thread', 'x thread rename wing2 --role main'],
+    ['another role', 'x thread rename wing1 --role wing:2'],
+    ['a longer line around it', `${SEAT}; x thread list`],
+] as const)
+    test(`a seat switch his tick does not quote gets no grant: ${why}`, async ($, on) => {
+        const { atRun } = world(on, { ticks: seatTick(command) });
+        await bash($, SEAT);
+        expect(atRun).toEqual(['{}']);
+    });
+
+for (const [line, thread] of [
+    ["x thread rename '🦉🪽 clio: wing 1' --role main", '🦉🪽 clio: wing 1'],
+    ['X_DEV=1 x thread rename --role=main wing1', 'wing1'],
+    ['x --json thread rename wing1 --role main', 'wing1'],
+] as const)
+    test(`a ticked seat switch in another spelling is granted: ${line}`, async ($, on) => {
+        const { atRun } = world(on, { ticks: seatTick(line) });
+        await bash($, line);
+        expect(seatGrant(atRun[0])).toMatchObject({ role: 'main', thread });
+    });
+
+for (const line of [
+    'x thread rename wing1 main --role main',
+    'x thread rename wing1 main',
+    'x thread rename --role main',
+    'x lane thread rename wing1 --role main',
+    'y thread rename wing1 --role main',
+    "sh -c 'x thread rename wing1 --role main'",
+])
+    test(`a ticked line that is no seat switch gets no grant: ${line}`, async ($, on) => {
+        const { atRun } = world(on, { ticks: seatTick(line) });
+        await bash($, line);
+        expect(atRun).toEqual(['{}']);
+    });
+
+test('a ticked line that is more than the seat switch gets no grant', async ($, on) => {
+    const line = `${SEAT}; x thread list`;
+    const { atRun } = world(on, { ticks: seatTick(line) });
+    await bash($, line);
+    expect(atRun).toEqual(['{}']);
+});
+
+test('a seat switch with the override on spends no tick', async ($, on) => {
+    const { atRun } = world(on, {
+        files: { [REAL]: ALL_ON },
+        ticks: seatTick(),
+    });
+    await bash($, SEAT);
+    expect(seatGrant(atRun[0])).toBeUndefined();
+});
+
+for (const body of ['{"prs"', '[]', 'null'])
+    test(`a store that reads ${body} is left as it is, and the tick unspent`, async ($, on) => {
+        const w = world(on, { files: { [REAL]: body }, ticks: seatTick() });
+        await bash($, SEAT);
+        const left = w.files[REAL];
+        w.files[REAL] = '{}';
+        await bash($, SEAT);
+        expect([left, seatGrant(w.atRun[1]) !== undefined]).toEqual([
+            body,
+            true,
+        ]);
+    });
+
+for (const call of ['failed', 'denied'] as const)
+    test(`a seat switch that ${call === 'failed' ? 'fails' : 'another hook refuses'} hands the tick back and removes the grant`, async ($, on) => {
+        const w = world(on, { call, ticks: seatTick() });
+        await bash($, SEAT);
+        const left = seatGrant(w.files[REAL]);
+        delete w.opts.call;
+        await bash($, SEAT);
+        expect([left, seatGrant(w.atRun[1]) !== undefined]).toEqual([
+            undefined,
+            true,
+        ]);
+    });
+
+test('a grant never used is gone after 60 s, and the tick is back', async ($, on) => {
+    const w = world(on, { ticks: seatTick() });
+    await bash($, SEAT);
+    await w.clock.advance(59_000);
+    const held = seatGrant(w.files[REAL]) !== undefined;
+    await w.clock.advance(2000);
+    const left = seatGrant(w.files[REAL]);
+    await bash($, SEAT);
+    expect([held, left, seatGrant(w.atRun[1]) !== undefined]).toEqual([
+        true,
+        undefined,
+        true,
+    ]);
+});
+
+test('the end of an old grant leaves a newer one alone', async ($, on) => {
+    const w = world(on, {
+        ticks: [...seatTick(), ...seatTick(SEAT, 'o8')],
+    });
+    await bash($, SEAT);
+    await w.clock.advance(30_000);
+    await bash($, SEAT);
+    await w.clock.advance(31_000);
+    expect(seatGrant(w.files[REAL])).toBeDefined();
 });

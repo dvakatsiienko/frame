@@ -338,6 +338,15 @@ func TestThreadRenameRoleFromAThreadIsRefused(t *testing.T) {
 		{"a store that does not parse", "coordinator", `{"prs":{"by":"band"`, nil, 1},
 		{"the old word flag, which is gone", "coordinator", "", []string{"--dima-ok", "wing1"}, 2},
 		{"a codie, the override on", "codie", `{"prs":{"by":"band","at":"` + overrideAt + `"}}`, nil, 1},
+		{"a codie, a grant of its own", "codie", seatGrantOf("sid-caller", "wing1", "main", "tick o7", 0), nil, 1},
+		{"a grant for another thread", "coordinator", seatGrantOf("sid-caller", "wing2", "main", "tick o7", 0), nil, 1},
+		{"a grant for another role", "coordinator", seatGrantOf("sid-caller", "wing1", "wing:1", "tick o7", 0), nil, 1},
+		{"a grant older than 60 s", "coordinator", seatGrantOf("sid-caller", "wing1", "main", "tick o7", 61*time.Second), nil, 1},
+		{"a grant from the future", "coordinator", seatGrantOf("sid-caller", "wing1", "main", "tick o7", -time.Hour), nil, 1},
+		{"a grant for another session", "coordinator", seatGrantOf("sid-b", "wing1", "main", "tick o7", 0), nil, 1},
+		{"a grant with no tick id", "coordinator", seatGrantOf("sid-caller", "wing1", "main", "tick ", 0), nil, 1},
+		{"a grant by a word", "coordinator", seatGrantOf("sid-caller", "wing1", "main", "word", 0), nil, 1},
+		{"a grant of another shape", "coordinator", `{"seat:sid-caller":"tick o7"}`, nil, 1},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			store := filepath.Join(t.TempDir(), "operator-override.json")
@@ -351,10 +360,83 @@ func TestThreadRenameRoleFromAThreadIsRefused(t *testing.T) {
 			if _, _, main := w.seats(t); got.code != c.code || main != "sid-a" || readFile0(w.store) != before {
 				t.Errorf("exit %d, main-session %q, want exit %d and the seat and the store as they were:\n%s", got.code, main, c.code, got.stdout)
 			}
-			if c.code == 1 && c.caller == "coordinator" && (!strings.Contains(got.next, "override on") || !strings.Contains(got.next, "own terminal")) {
-				t.Errorf("next %q, want both ways on: the override and dima's own terminal", got.next)
+			if c.code == 1 && c.caller == "coordinator" && (!strings.Contains(got.next, "override on") || !strings.Contains(got.next, "his tick") || !strings.Contains(got.next, "own terminal")) {
+				t.Errorf("next %q, want every way on: the override, his tick and dima's own terminal", got.next)
+			}
+			if c.store != "" && readFile0(store) != c.store {
+				t.Errorf("the override store holds %s, want it untouched", readFile0(store))
 			}
 		})
+	}
+}
+
+// what x-mod-guard writes from his tick
+func seatGrantOf(session, thread, role, by string, age time.Duration) string {
+	at := time.Now().Add(-age).UTC()
+	return fmt.Sprintf(`{"seat:%s":{"at":"%s","by":"%s","until":"%s","role":"%s","thread":"%s","spends":["o7@1:x"]}}`, session, at.Format(time.RFC3339Nano), by, at.Add(time.Minute).Format(time.RFC3339Nano), role, thread)
+}
+
+// FRM-596 exit 2: his tick, carried as a grant, moves the seat once
+func TestThreadRenameRoleFromAThreadRunsOnceOnHisTick(t *testing.T) {
+	t.Parallel()
+	w := newSeatWorld(t)
+	store := filepath.Join(t.TempDir(), "operator-override.json")
+	grant := seatGrantOf("sid-caller", "wing1", "main", "tick o7", 0)
+	write(t, store, strings.Replace(grant, `{"seat`, `{"prs":{"by":"word","at":"`+overrideAt+`"},"seat`, 1))
+	env := asCaller(t, append(w.env, "X_OVERRIDE_STORE="+store), "coordinator")
+
+	first := xIn(t, t.TempDir(), env, "thread", "rename", "wing1", "--role", "main")
+	_, _, main := w.seats(t)
+	if first.code != 0 || main != "sid-b" {
+		t.Fatalf("exit %d, main-session %q, want the seat with sid-b:\n%s", first.code, main, first.stdout)
+	}
+	if left := readFile0(store); strings.Contains(left, "seat:") || !strings.Contains(left, `"prs"`) {
+		t.Errorf("the override store holds %s, want the grant gone and prs kept", left)
+	}
+	if log := readFile0(overrideLog(store)); !strings.Contains(log, `"by":"tick o7"`) || !strings.Contains(log, "wing1 to main") {
+		t.Errorf("the log holds %q, want one line naming the tick and the move", log)
+	}
+	second := xIn(t, t.TempDir(), env, "thread", "rename", "wing1", "--role", "main")
+	if _, _, after := w.seats(t); second.code != 1 || after != "sid-b" {
+		t.Errorf("exit %d, main-session %q, want the second run refused and the seat where it was", second.code, after)
+	}
+}
+
+// FRM-596 exit 4: a switch that fails leaves the grant to x-mod-guard, which hands the tick back and removes it
+func TestThreadRenameRoleThatFailsLeavesTheGrant(t *testing.T) {
+	t.Parallel()
+	w := newSeatWorld(t)
+	store := filepath.Join(t.TempDir(), "operator-override.json")
+	grant := seatGrantOf("sid-caller", "wing3", "main", "tick o7", 0)
+	write(t, store, grant)
+
+	got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "X_OVERRIDE_STORE="+store), "coordinator"), "thread", "rename", "wing3", "--role", "main")
+
+	if _, _, main := w.seats(t); got.code != 1 || main != "sid-a" || readFile0(store) != grant {
+		t.Errorf("exit %d, main-session %q, store %s, want a refusal that left the seat and the grant:\n%s", got.code, main, readFile0(store), got.stdout)
+	}
+}
+
+// the grant is read again under the store's lock, so one that went while a switch waited moves nothing
+func TestThreadRenameRoleRefusesAGrantGoneByTheLock(t *testing.T) {
+	t.Parallel()
+	w := newSeatWorld(t)
+	store := filepath.Join(t.TempDir(), "operator-override.json")
+	write(t, store, seatGrantOf("sid-caller", "wing1", "main", "tick o7", 0))
+	env := asCaller(t, append(w.env, "X_OVERRIDE_STORE="+store), "coordinator")
+	unlock, err := lockThreadStore(w.store)
+	if err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan int)
+	go func() { done <- xIn(t, t.TempDir(), env, "thread", "rename", "wing1", "--role", "main").code }()
+	waitForLine(t, w.log, "waiting on the thread store lock")
+	write(t, store, `{}`)
+	unlock()
+
+	code := <-done
+	if _, _, main := w.seats(t); code != 1 || main != "sid-a" {
+		t.Errorf("exit %d, main-session %q, want a refusal and sid-a still main", code, main)
 	}
 }
 

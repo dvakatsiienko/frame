@@ -10,7 +10,7 @@
 - decision: the guard stands in for the permission prompt that bypass mode removed, nothing more; cc's auto mode is not it, since it stops and asks after 3 blocks in a row or 20 in all
 - decision: it refuses only work lost for good; a refusal never stops the session: the agent gets its door and carries on
 - 🧭 his words always override it (his 16:01: «my words always override the guard»): today one orbit tick runs a refused command once and `operator override all|prs|off` lifts the floor; under his own `prs` override, by typed word or band press, merge-auto's brake is a warning line (FRM-631, his 16:43: «i want my operator override to override the brake»), while a shift's grant and `all` alone still stop at it, and the guard's own raw-merge brake still stops
-- decision: it never guards a process (a sign, a merge, proof of his word) and never fences clio's own slips
+- decision: it never guards a process (a sign, a merge, proof of his word) and never fences clio's own slips; its one carried tick is the seat switch's, handed to x with no refusal of its own (FRM-596, dima, 2026-11-23 15:12)
 - decision: a new refusal needs a real incident, his signed word and a kill date; a hint is free
 
 ## every Bash call
@@ -119,6 +119,15 @@
   - makes: the spent ticks in x-mod-guard's `$.state`, `<ask id>@<tick time>:<what it authorized>`
   - decision: no typed word, no `# dima-ok` marker, no bare yes: his tick is the one door, and a sign or a merge needs none (FRM-581: FRM-580 and FRM-566 took two ticks or a raw api call for one sign)
   - proof: tests/ticks.test.ts, tests/pick.test.ts, tests/herdr-close.test.ts::a tick quoting the command passes it inside a longer line: …; a ticked command that fails keeps the tick for the retry
+- ✅ his tick on a seat switch reaches x as a one-use grant (FRM-596)
+  - given the override off and a live tick whose pick quotes the whole line `x thread rename <thread> --role <role>`, when a thread runs that line and nothing else, then the guard spends the tick and the store gains `seat:<session>` (the thread, the role, `by: tick <ask id>`, 60 s); x moves the seat once and removes it; the guard refuses nothing here, x does
+  - given another command, thread or role than the tick quotes, a longer line, a spent tick, or a store that does not parse, then no grant is written and no tick spent
+  - given the run fails or another hook refuses it, then the grant goes and the tick is back at once; a background run that never used it, at its 60 s
+  - given the override on, then no tick is spent
+  - makes: one log line a grant in `~/.local/state/x/operator-override.log`, scope `seat`; x writes one a pass
+  - decision: «why i have to type anything? … i vote for either orbit tick or even better: if my operator override is ON - it just works» (dima, 2026-11-23 14:59)
+  - 📌 the grant sits in the override's plain file, so a thread could write one itself: named, not checked (dima, 15:12: no forge fix)
+  - proof: tests/override.test.ts::his tick on a seat switch leaves x a 60 s grant for this session, thread and role / a seat switch his tick does not quote gets no grant: … / a grant never used is gone after 60 s, and the tick is back
 - ✅ a herdr close names a target that ends no live seat
   - given a thread's herdr close — `herdr-app do` `pane.close`, `tab.close`, `space.close`, `terminal.kill`, `overlay.close`, `app.quit` or `window.close`, or `hc kill`, `hc rm`, `hc server stop|restart` — that names no target, a target behind a variable, or one whose terminals herdr cannot name or include a live seat (a `seat=` label, or a claude agent this seat did not start), then it is refused (rule `herdr-close`, dima's o53); the window, the app and the server end every seat, so those always ask
   - then a named overlay herdr lists open, a plain shell, a claude terminal this seat started, a finished terminal and a mod-only tab this seat's own `tab.new` made run

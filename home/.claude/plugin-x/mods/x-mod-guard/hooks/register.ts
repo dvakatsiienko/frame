@@ -3,10 +3,13 @@ import type { EngineInterface, Register, ToolCallResult } from 'claude-code';
 import { herdrSafeOf, keepTabsMade } from './herdr-close.ts';
 import { stashOver } from './holds.ts';
 import {
+    SEAT_GRANT_MS,
     brakeOf,
+    dropSeatGrant,
     masterOverride,
     overrideFlip,
     overrideLogPass,
+    writeSeatGrant,
 } from './operator-override.ts';
 import { CLIPBOARD, CLIPBOARD_TOOL, clipboardTool } from './rules/clipboard.ts';
 import type { Context, Refusal } from './rules/command.ts';
@@ -26,6 +29,7 @@ import {
     releasesBrake,
 } from './rules/raw-merge.ts';
 import { rewrite } from './rules/rewrite.ts';
+import { seatMove } from './rules/seat-move.ts';
 import { message, refusals, removedTrees, tmpDirs } from './rules.ts';
 import {
     type Tick,
@@ -412,6 +416,46 @@ function unjudgedStop(typed: string): Refusal | undefined {
 }
 const JUDGE_MS = 2000;
 
+// his tick on a seat switch reaches x as a grant; what closes it, undefined when no tick covers the line. a background run says
+// nothing of how it ended, so the grant's own end hands an unused tick back
+async function openSeat(
+    $: EngineInterface,
+    command: string,
+    cwd: string,
+    spends: string[],
+) {
+    const move = seatMove(command, cwd);
+    const sid = move && (await $.session.id().catch(() => undefined));
+    if (!move || !sid) return undefined;
+    const taken: string[] = [];
+    const tick = await tickFor(
+        $,
+        guardedOf(command),
+        quotesCommand(command),
+        taken,
+    );
+    if (!tick) return undefined;
+    const at = await writeSeatGrant($, {
+        ...move,
+        command,
+        sid,
+        spends: taken,
+        tick: tick.id,
+    }).catch((err: unknown) => {
+        $.ui.log(`x-mod-guard: the seat grant was not written: ${String(err)}`);
+        return undefined;
+    });
+    // no grant, no spend: x refuses the line and his tick stays
+    if (at === undefined) return undefined;
+    spends.push(...taken);
+    const close = async () => {
+        const back = await dropSeatGrant($, sid, at).catch(() => []);
+        await unspend($, back);
+    };
+    $.clock.after(SEAT_GRANT_MS, close);
+    return close;
+}
+
 export const register: Register = (on) => {
     // a member's call of computer use's pasteboard writer: the clipboard rule by the tool's name, his tick on an ask
     // quoting that name and the off switch open it as they open the floor; no member sign, or one that does not read, runs
@@ -618,10 +662,15 @@ export const register: Register = (on) => {
                     `x-mod-guard: ran on dima's tick ${tick?.id}: ${targets}`,
                 );
         }
+        const closeSeat = master
+            ? undefined
+            : await openSeat($, command, cwd, spends);
         await spend($, spends);
         const result = await next(run !== typed ? { ...e, command: run } : e);
-        if (result.deny !== undefined || result.isError)
+        if (result.deny !== undefined || result.isError) {
             await unspend($, spends);
+            await closeSeat?.();
+        }
         if (result.deny !== undefined)
             return {
                 deny: ISOLATED.test(result.deny)

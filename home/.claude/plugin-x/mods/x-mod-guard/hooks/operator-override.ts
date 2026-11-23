@@ -198,3 +198,77 @@ export async function brakeOf($: EngineInterface) {
         return BRAKE_UNREAD;
     }
 }
+
+// his tick on a seat switch, carried to x: a grant for this session and this one command, removed by x as it moves the seat,
+// alive SEAT_GRANT_MS. x refuses the switch; the guard only says a tick stood behind it (dima's 15:12, 2026-11-23). the store is a
+// plain file, so a grant is named in the log, never proven
+export const SEAT_GRANT_MS = 60_000;
+type SeatGrant = {
+    at: string;
+    by: string;
+    until: string;
+    role: string;
+    thread: string;
+    // the spent keys the tick comes back by when the grant goes unused
+    spends: string[];
+};
+const seatKey = (sid: string) => `seat:${sid}`;
+
+async function readGrants($: EngineInterface, path: string) {
+    const raw = await $.fs.read(path).catch(() => '{}');
+    const grants: unknown = JSON.parse(raw);
+    if (!grants || typeof grants !== 'object' || Array.isArray(grants))
+        throw new Error(`${path} is not a json object`);
+    return grants as Record<string, unknown>;
+}
+
+// the stamp the grant was written at, its name for closing it later
+export async function writeSeatGrant(
+    $: EngineInterface,
+    seat: {
+        command: string;
+        role: string;
+        sid: string;
+        spends: string[];
+        thread: string;
+        tick: string;
+    },
+) {
+    const path = await overrideStorePath($);
+    if (!path) throw new Error('the system user record did not read');
+    const grants = await readGrants($, path);
+    const now = await $.clock.now();
+    const grant: SeatGrant = {
+        at: new Date(now).toISOString(),
+        by: `tick ${seat.tick}`,
+        role: seat.role,
+        spends: seat.spends,
+        thread: seat.thread,
+        until: new Date(now + SEAT_GRANT_MS).toISOString(),
+    };
+    await $.fs.write(
+        path,
+        JSON.stringify({ ...grants, [seatKey(seat.sid)]: grant }),
+    );
+    await overrideLogPass(
+        $,
+        { at: grant.at, by: grant.by, scope: 'seat' },
+        `granted for session ${seat.sid}: ${seat.command}`,
+    ).catch(() => undefined);
+    return grant.at;
+}
+
+// a grant x did not take goes, and names the tick to hand back; one x took, or a newer one, stays as it is
+export async function dropSeatGrant(
+    $: EngineInterface,
+    sid: string,
+    at: string,
+) {
+    const path = await overrideStorePath($);
+    if (!path) return [];
+    const { [seatKey(sid)]: held, ...rest } = await readGrants($, path);
+    const grant = held as SeatGrant | undefined;
+    if (grant?.at !== at) return [];
+    await $.fs.write(path, JSON.stringify(rest));
+    return grant.spends;
+}
