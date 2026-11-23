@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T18:10:00Z'
+updated_date: '2026-11-23T18:38:00Z'
 labels:
   - s
   - clio-main
@@ -19,12 +19,13 @@ ordinal: 1000
 - [ ] #1 f67 herdr slash list misses his skill: the scan prints it, the miss is in chat's commands(); rider in herdr handoff
 - [ ] #2 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
 - [ ] #3 f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes
-- [ ] #4 f77 hang-heal beyond FRM-692: who watches clio herself, the keychain lost at login — waits for: dima, a shape
-- [ ] #5 f86 mods rider: the guard treats a branch with no `+` line in git cherry as merged, so its delete needs no tick (his o4)
-- [ ] #6 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #7 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #8 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #9 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #4 f86 mods rider: the guard treats a branch with no `+` line in git cherry as merged, so its delete needs no tick (his o4)
+- [ ] #5 f93 seal drafts with open questions for dima: FRM-582 (9), FRM-691 (7), in ~/frame/.scratch/seal-drafts/
+- [ ] #6 f94 FRM-582 emoji reactions: its ten questions to dima, three a batch, after boot — on: 2026-11-24
+- [ ] #7 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #8 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #9 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #10 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2375,4 +2376,31 @@ PK-349:W2159 (2026-11-23 20:06, dima): your turn now.
 PK-349:W2160 (2026-11-23 20:06, dima): … ? solve now.
 
 PK-349:W2161 (2026-11-23 15:29, dima, o3 steer): But I thought we have a subtle fade-out effect for text or you mean something else? ❓
+
+done 2026-11-23 20:12: f77 hang-heal beyond FRM-692: who watches clio herself, the keychain lost at login — waits for: dima, a shape (FRM-692 In Progress)
+
+PK-349:W2162 (2026-11-23 20:08, dima): Mine, still tonight: solve all mechanicals on you.
+PK-349:W2163 (2026-11-23 20:08, dima): that are not gated by a date or something.
+
+PK-349:W2164 (2026-11-23 20:11, dima): … whats left? ❓
+PK-349:W2165 (2026-11-23 20:11, dima): do if possible
+PK-349:W2166 (2026-11-23 20:11, dima): … tomorrow? ❓
+PK-349:W2167 (2026-11-23 20:11, dima): … i want you tail free for this ideally soon i plan to stop soon
+PK-349:W2168 (2026-11-23 20:11, dima): … do
+
+PK-349:W2169 (2026-11-23 20:13, dima): … should be fine we groomed it yesterday
+
+PK-349:W2170 (2026-11-23 20:19, dima): fixup and print /clio:lowtide-peek-lanes again.
+PK-349:W2171 (2026-11-23 20:19, dima): and are you sure you listed all chunks for all lanes? ❓
+
+PK-349:W2172 (2026-11-23 20:19, dima): Remind what Herdr lane should resume out of its handoff with FRM-620? ❓
+
+PK-349:W2173 (2026-11-23 20:12, dima): why you stopped to use orbit? ❓
+PK-349:W2174 (2026-11-23 20:12, dima): something broke? ❓
+PK-349:W2175 (2026-11-23 20:12, dima): i did not saw aasks for a while
+PK-349:W2176 (2026-11-23 20:12, dima): tell when you are tail free so i can peek lanes for health check and ask you to stop
+
+PK-349:W2177 (2026-11-23 20:14, dima): and mods verifier watis for you (something about linear comment)
+
+20:38 PK-349:W1547–W1554 (the hang-heal lines) moved to FRM-696 as FRM-696:W1–W8; the ticket is their one home now
 <!-- SECTION:NOTES:END -->
