@@ -1,2 +1,6 @@
 # suite	cpu-s	date	reason
 x-go	283	2026-11-07	5 workers on git-slim, lone median 226 + 25 %, 3 at once read 263, FRM-525
+x-mod-stash	187	2026-11-23	the whole run at 220289e0, 169.9 at load 4.8 + 10 %, FRM-678 (the baseline read 447.7)
+x-mod-guard	16	2026-11-23	its whole run the same hour, 14.0 + 10 %, FRM-678
+x-mod-holds	2	2026-11-23	its whole run the same hour, 0.9; under 2 a loaded mac is the noise, FRM-678
+x-mod-redact	2	2026-11-23	its whole run the same hour, 0.5; under 2 a loaded mac is the noise, FRM-678

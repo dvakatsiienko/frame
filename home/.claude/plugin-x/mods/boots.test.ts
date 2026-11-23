@@ -31,6 +31,11 @@ describe('the host starts of one test file', () => {
             1,
         ],
         ['a body written elsewhere', `${KIT}test('a', body);`, 1],
+        [
+            'a function body, which may read arguments',
+            `${KIT}test('a', function () { arguments[0]; });`,
+            1,
+        ],
         ['no row with a $', `${KIT}test('a', () => {});`, 0],
         [
             'the shared boot',
@@ -221,7 +226,7 @@ it('a tick he took back is no tick, in its own session alone', () => {
         rows.map((r) => `${JSON.stringify(r)}\n`).join('');
     writeFileSync(
         join(dir, 'a.jsonl'),
-        lines(tick, { ...tick, at: 2, verdict: 'untick' }),
+        lines(tick, { ...tick, at: 2, text: 'reworded', verdict: 'untick' }),
     );
     writeFileSync(join(dir, 'b.jsonl'), `${lines({ ...tick, at: 3 })}{half`);
     expect(

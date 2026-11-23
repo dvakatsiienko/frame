@@ -165,13 +165,10 @@ const isName = (n: Node, parent: Node | undefined) =>
         parent.property === n &&
         !parent.computed) ||
     (parent?.type === 'Property' && parent.key === n && !parent.shorthand);
-// a row that takes no `$` starts no host; one whose body is not written in place may take it
+// a row that takes no `$` starts no host; only an arrow written in place shows it, since a function reads `arguments`
 function takesEngine(call: Node) {
     const body = call.arguments.at(-1);
-    return (
-        !/^(?:ArrowFunction|Function)Expression$/.test(body?.type) ||
-        body.params.length > 0
-    );
+    return body?.type !== 'ArrowFunctionExpression' || body.params.length > 0;
 }
 
 // every test file's count, and each file that could start a host the table never sees; the kit runs a test file anywhere in a mod
@@ -317,7 +314,6 @@ export function readTicks(dir: string): Tick[] {
                         (later, j) =>
                             j > i &&
                             later.id === t.id &&
-                            later.text === t.text &&
                             later.verdict !== 'tick',
                     ),
             );

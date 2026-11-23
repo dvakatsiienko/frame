@@ -133,6 +133,15 @@ function runModsChild(temp: string) {
         '#!/bin/sh\nmktemp -d "$TMPDIR/leak.XXXXXX" >/dev/null\necho tests/a.test.ts:\necho "(pass) ran"\n',
     );
     chmodSync(join(bin, 'claude'), 0o755);
+    // a whole run takes gate-queue.sh's long turn on a calm mac: this one has a queue and a load of its own
+    writeFileSync(
+        join(bin, 'uptime'),
+        "#!/bin/sh\necho 'load averages: 1.00 1.00 1.00'\n",
+        { mode: 0o755 },
+    );
+    const env = childEnv(temp);
+    delete env.GATE_QUEUE_HELD;
+    delete env.MODS_TEST_QUEUED;
     return spawnSync(
         process.execPath,
         [join(root, 'home/.claude/plugin-x/mods/test.ts'), 'x-mod-guard'],
@@ -140,8 +149,9 @@ function runModsChild(temp: string) {
             cwd: root,
             encoding: 'utf8',
             env: {
-                ...childEnv(temp),
+                ...env,
                 PATH: `${bin}:${process.env.PATH}`,
+                X_STATE: join(bin, 'state'),
                 X_TEST: '1',
             },
             timeout: 10_000,
