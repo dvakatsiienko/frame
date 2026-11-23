@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T14:37:00Z'
+updated_date: '2026-11-23T14:55:00Z'
 labels:
   - s
   - clio-main
@@ -2063,4 +2063,36 @@ PK-349:W1896 (2026-11-23 15:46, dima): chords migrated.
 PK-349:W1897 (2026-11-23 15:46, dima): now what - messhunt? ❓
 
 16:37 hang-heal wisp (dima o13, 23 Nov): the speak codie sat idle 43 min (15:39–16:22) behind my hunt, spec and reset, and the mods codie idled behind FRM-658's unsealed spec; story docs/knowledge/fleet-stories/lane-member-idle/story.md; his tick: an idle-member line at my turn end (10 min, no wait named), the first case of hang-heal (f77)
+
+PK-349:W1898 (2026-11-23 16:26, dima): this is bad, how to fix coordinating wisp? ❓
+PK-349:W1899 (2026-11-23 16:26, dima): trace a spot where and how speak parked without you noticed and tell how to prevent it in future.
+PK-349:W1900 (2026-11-23 16:26, dima): 40 min lost is a lot.
+PK-349:W1901 (2026-11-23 16:26, dima): they could already finish messhunt and wisphunt fixes.
+PK-349:W1902 (2026-11-23 16:26, dima): ok let's do speak in the right way.
+
+PK-349:W1903 (2026-11-23 16:45, dima): Then it is another wishkeeper Flow coordination flow and it should also be logged in as an incident because if I didn't remind you, it would be parked for the same or similar reason.
+PK-349:W1904 (2026-11-23 16:45, dima): What's the cause here? ❓
+PK-349:W1905 (2026-11-23 16:45, dima): You do not seal this pack in time? ❓
+PK-349:W1906 (2026-11-23 16:45, dima): What is the actual missing part: the sign or the sealed spec itself? ❓
+PK-349:W1907 (2026-11-23 16:45, dima): From my observation, from what I see, you are lazy to sign tickets when it is needed and also you seem to miss sealing the spec, like right now.
+PK-349:W1908 (2026-11-23 16:45, dima): How I see it: I find myself always pushing on you to sign tickets, especially when we finish the day and do the halt.
+PK-349:W1909 (2026-11-23 16:45, dima): You always want to postpone signing tickets and sealing your specs until tomorrow, which, if done via your way, leads to the following picture: we boot and spend 1 or 2 hours on prepping the plan for a day and only then start, instead of starting right now, right on the boot.
+PK-349:W1910 (2026-11-23 16:45, dima): That's why I push you always to prep our next day before halt, so on the next boot you have everything ready.
+PK-349:W1911 (2026-11-23 16:45, dima): Your mode doesn't work here.
+PK-349:W1912 (2026-11-23 16:45, dima): Right now I do this manually and you still, for some reason, want to postpone everything until later, which is bad.
+PK-349:W1913 (2026-11-23 16:45, dima): I always ask you to solve stuff in place and keep repeating that.
+PK-349:W1914 (2026-11-23 16:45, dima): I spend a lot of my energy on this, which I instead would have spent on some other more useful stuff.
+PK-349:W1915 (2026-11-23 16:45, dima): How to fix this, your habit? ❓
+PK-349:W1916 (2026-11-23 16:45, dima): It is dangerous because you could just leave modslane parked as well for some time until I notice or you notice.
+PK-349:W1917 (2026-11-23 16:45, dima): Propose how to fix this.
+PK-349:W1918 (2026-11-23 16:45, dima): It is important as well and don't forget to log this incident in Fleet Stories as well.
+PK-349:W1919 (2026-11-23 16:45, dima): And tell how the folder will be named for "speak lane parked for 40 minutes incident" and for "mods lane not sealed spec incident".
+PK-349:W1920 (2026-11-23 16:45, dima): wait, numbers do not look good
+PK-349:W1921 (2026-11-23 16:45, dima): why 10k? ❓
+PK-349:W1922 (2026-11-23 16:45, dima): i thought we agreed to have no fat files and the ceiling is 1.2k loc? ❓
+PK-349:W1923 (2026-11-23 16:45, dima): 44k loc? 🤔 ❓
+PK-349:W1924 (2026-11-23 16:45, dima): not as severe but still
+PK-349:W1925 (2026-11-23 16:45, dima): when we have solved fat files problem? ❓
+
+16:55 glide wisp (dima 16:39): a glide card goes stale, a herdr restart heals it; after his restart the mods card was gone and only speak's stayed; the mods card redrawn as l111 at 16:39; home: the herdr lane's ticket for the glide card (FRM-527), not yet folded
 <!-- SECTION:NOTES:END -->
