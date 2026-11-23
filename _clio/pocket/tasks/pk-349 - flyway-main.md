@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T13:36:00Z'
+updated_date: '2026-11-23T13:41:00Z'
 labels:
   - s
   - clio-main
@@ -2013,4 +2013,6 @@ done 2026-11-23 15:26: f82 FRM-678: a changed line for the cpu cap gate (187, hi
 done 2026-11-23 15:26: f83 herdr wisp: every orbit ask ticks with enter, warn ones too; the «Ticks by click only» line goes (his 15:16)
 
 done 2026-11-23 15:26: f84 who-roasted job: a ticket, one folder in schedule/jobs, its log beside the gate queue log (his o6 tick)
+
+15:41 f85 detail: @tailwindcss/vite, tailwindcss, @vitejs/plugin-react, @types/react, @types/react-dom (the speak codie's find, the sixth sense agrees for three of five)
 <!-- SECTION:NOTES:END -->
