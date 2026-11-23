@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T15:40:00Z'
+updated_date: '2026-11-23T16:37:00Z'
 labels:
   - s
   - clio-main
@@ -2203,4 +2203,52 @@ PK-349:W2015 (2026-11-23 17:37, dima): Fold more wishes into the blueprinting ap
 PK-349:W2016 (2026-11-23 17:37, dima): o1
 
 17:41 pointer fix (clio's note, not his words): lines W1958 to W1961 of this item live in FRM-527 at W137, not in FRM-695
+
+17:41 → FRM-611:W53, his steer on that ask
+
+PK-349:W2017 (2026-11-23 18:32, dima): on clio's line "Speak on the glide": it refreshed after i restarted the herdr app.
+PK-349:W2018 (2026-11-23 18:32, dima): on clio's line "Where speak is: slice 0 merged, slice 1 building, the first of seven done.": actual speak app v2 is after slice 7? ❓
+PK-349:W2019 (2026-11-23 18:32, dima): proceed.
+PK-349:W2020 (2026-11-23 18:32, dima): let's start turning into hunting your tails.
+PK-349:W2021 (2026-11-23 18:32, dima): i have ~2h of time budget for today after that we should stop.
+PK-349:W2022 (2026-11-23 18:32, dima): what i want today:
+PK-349:W2023 (2026-11-23 18:32, dima): mods and speak as much as possible
+PK-349:W2024 (2026-11-23 18:32, dima): stray ideally closes all its tails and helps you close yours
+PK-349:W2025 (2026-11-23 18:32, dima): you should be fully 100% tailfree (except snoozes, and time-gated stuff)
+PK-349:W2026 (2026-11-23 18:32, dima): on clio's bullet "plan all lanes to stop +- at same point…": And by the way take a look at the wind-down skill.
+PK-349:W2027 (2026-11-23 18:32, dima): Does it currently ask you to park the lanes with the requirement that they finish their chunk first and only then park? ❓
+PK-349:W2028 (2026-11-23 18:32, dima): Because if it requires a chunk to be finished, I think it is wrong.
+PK-349:W2029 (2026-11-23 18:32, dima): It is actually a good idea on paper but in reality it doesn't work because even based on today's pace, chunks can take too much time.
+PK-349:W2030 (2026-11-23 18:32, dima): Winding down with such a restriction isn't always work so we need a more granular wind-down mode.
+PK-349:W2031 (2026-11-23 18:32, dima): What I value more is the synchronous, or as much as possible synchronous, stop of all lanes.
+PK-349:W2032 (2026-11-23 18:32, dima): Why? Because what I don't want is the following picture.
+PK-349:W2033 (2026-11-23 18:32, dima): For example I give you a wind-down budget for 2 hours.
+PK-349:W2034 (2026-11-23 18:32, dima): One lane finishes a chunk in 1 hour and stops and the other lane finishes its part in a full 2 hours and stops.
+PK-349:W2035 (2026-11-23 18:32, dima): The first lane then wastes 1 hour that it could work meanwhile.
+PK-349:W2036 (2026-11-23 18:32, dima): That's why I propose a more granular window.
+PK-349:W2037 (2026-11-23 18:32, dima): Instead of taking the chunk merge as a stop point, we could just granularize and stick to slices, for example, or even steps in the plan of the line.
+PK-349:W2038 (2026-11-23 18:32, dima): Essentially the wind-down should be a safe mode of telling you something like, "Let's plan a granular wind-down in 2 hours."
+PK-349:W2039 (2026-11-23 18:32, dima): If I told you, "Stop everyone right now," the work should be stoppable in roughly a few minutes.
+PK-349:W2040 (2026-11-23 18:32, dima): Everyone would just finish their slices or steps, commit, write handoffs, and stop.
+PK-349:W2041 (2026-11-23 18:32, dima): Note on this: I don't plan for you to tell, "Stop everyone right now."
+PK-349:W2042 (2026-11-23 18:32, dima): It is kind of an emergency case and rare so do not expect me to tell this too often.
+PK-349:W2043 (2026-11-23 18:32, dima): Let's just sharpen the wind-down skill to be more granular.
+PK-349:W2044 (2026-11-23 18:32, dima): I'm more interested in how lanes actually work, for example, why I would need to go away soon, and tell your «finish as soon as possbile», how that would look like? ❓
+PK-349:W2045 (2026-11-23 18:32, dima): can lanes just finish their slices and commit + handoff so they can safely resume tomorrow? ❓
+PK-349:W2046 (2026-11-23 18:32, dima): how specs are structured? ❓
+PK-349:W2047 (2026-11-23 18:32, dima): tell me so i can understand possible stop points:
+PK-349:W2048 (2026-11-23 18:32, dima): 1. chunk → slice → ticket step? like this? ❓
+PK-349:W2049 (2026-11-23 18:32, dima): then we meanwhile:
+PK-349:W2050 (2026-11-23 18:32, dima): on clio's bullet "1. peek-lanes: mods, herdr, speak": Also tell me if we have any kind of safety check or health check for lanes.
+PK-349:W2051 (2026-11-23 18:32, dima): This is related to what I asked before today because you always want to postpone designing and health checking the lanes.
+PK-349:W2052 (2026-11-23 18:32, dima): This ends up in a situation where we do 2 hours of paperwork on boot and actual lane starts 1 hour or 2 hours after the boot.
+PK-349:W2053 (2026-11-23 18:32, dima): I want a system that would allow us to easily do a health check for all lanes, pick them properly, and prep their plans 1 day ahead so tomorrow at boot you start immediately and you have everything ready.
+PK-349:W2054 (2026-11-23 18:32, dima): How to have that? ❓
+PK-349:W2055 (2026-11-23 18:32, dima): From what I know peek-lanes is only about inspection.
+PK-349:W2056 (2026-11-23 18:32, dima): It isn't about actually ensuring that lanes are in a healthy state.
+PK-349:W2057 (2026-11-23 18:32, dima): Tell where the health check actually would be best placed: inside of the peek-lanes itself? ❓
+PK-349:W2058 (2026-11-23 18:32, dima): on clio's line "The spike passed: your idea works in one app…": where the shot is? ❓
+PK-349:W2059 (2026-11-23 18:32, dima): i do not see.
+PK-349:W2060 (2026-11-23 18:32, dima): can i try what stray built? ❓
+PK-349:W2061 (2026-11-23 18:32, dima): start server.
 <!-- SECTION:NOTES:END -->
