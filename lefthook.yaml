@@ -72,6 +72,10 @@ pre-commit:
       # test run never picks it; on a month's test drive, docs/test-drive/size-cap.md. no glob: lefthook's staged list
       # drops a deleted file, and a deleted giant must meet its dead row in the commit that deletes it
       run: git diff --cached --name-only --no-renames | grep -qE '\.(ts|tsx|js|go|sh)$' || exit 0; script/index-run.sh pnpm exec vitest run script/lib/code-size.test.ts
+    mods-boots:
+      # a mods test file starts more hosts than its row in boots.tsv, counted from the file with no run (FRM-678). no glob:
+      # lefthook's staged list drops a deleted file, and a deleted test leaves a dead row
+      run: git diff --cached --name-only --no-renames | grep -qE '^home/\.claude/plugin-x/mods/' || exit 0; script/index-run.sh node home/.claude/plugin-x/mods/boots.ts
     stash-resets:
       # a stash module variable no quit gives back (FRM-678); the test reads the hooks by path, so the related test run
       # never picks it. no glob: lefthook's staged list drops a deleted file
@@ -101,6 +105,9 @@ pre-push:
       # only a main push carrying code runs it; a branch push and a pocket, memory or .md main push skip (FRM-557)
       use_stdin: true
       run: pnpm test:twin
+    mods-boots-raises:
+      # every raised row prints at the push, so dima and the coordinator read it (FRM-678)
+      run: node home/.claude/plugin-x/mods/boots.ts --raises origin/main
     mirror:
       # The engine's own dogfood: if the manifest stops deriving, catch it here
       # rather than on the next machine.
