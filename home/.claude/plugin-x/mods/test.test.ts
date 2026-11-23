@@ -13,6 +13,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
+import { gitEnv } from '../../../../script/lib/git-fixture.ts';
 import {
     clockReads,
     cpuCap,
@@ -187,32 +188,16 @@ describe('the script in a scratch repo', () => {
             '#!/bin/sh\ni=0; while [ $i -lt 60000 ]; do i=$((i+1)); done\necho tests/a.test.ts:; echo "(pass) holds"; echo " 1 pass"; echo " 0 fail"\n',
         );
         chmodSync(join(dir, 'bin/claude'), 0o755);
-        const env: NodeJS.ProcessEnv = {
-            ...process.env,
-            PATH: `${join(dir, 'bin')}:${process.env.PATH}`,
-            X_STATE: join(dir, 'state'),
-        };
+        const env = gitEnv();
+        env.PATH = `${join(dir, 'bin')}:${env.PATH}`;
+        env.X_STATE = join(dir, 'state');
         delete env.X_TEST;
-        for (const key of Object.keys(env))
-            if (key.startsWith('GIT_')) delete env[key];
         const git = (...args: string[]) =>
-            spawnSync(
-                'git',
-                [
-                    '-C',
-                    dir,
-                    '-c',
-                    'core.hooksPath=/dev/null',
-                    '-c',
-                    'commit.gpgsign=false',
-                    '-c',
-                    'user.name=t',
-                    '-c',
-                    'user.email=t@t',
-                    ...args,
-                ],
-                { encoding: 'utf8', env },
-            );
+            spawnSync('git', ['-C', dir, ...args], {
+                encoding: 'utf8',
+                env,
+                timeout: 10_000,
+            });
         git('init', '-q');
         git('add', '.');
         git('commit', '-q', '-m', 'world');
@@ -221,6 +206,7 @@ describe('the script in a scratch repo', () => {
                 cwd: dir,
                 encoding: 'utf8',
                 env,
+                timeout: 10_000,
             });
         return { git, mods, put };
     }
