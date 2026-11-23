@@ -42,7 +42,7 @@ load_max=14
 load_now() { uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/'; }
 is_mods_suite=
 case "$slot $*" in "long "*"plugin test"* | "long "*mods:test* | "long "*mods/test.ts*) is_mods_suite=1 ;; esac
-is_calm() { [ -z "$is_mods_suite" ] || awk -v load="$(load_now)" -v max="$load_max" 'BEGIN { exit !(load + 0 <= max + 0) }'; }
+is_calm() { [ -z "$is_mods_suite" ] || awk -v now="$(load_now)" -v max="$load_max" 'BEGIN { exit !(now + 0 <= max + 0) }'; }
 # what a wait waits on
 holder() {
     if [ -d "$turn" ]; then
