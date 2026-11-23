@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -288,33 +289,111 @@ func TestThreadRenameRoleTwoAtOnceLeaveOneMain(t *testing.T) {
 	}
 }
 
-// exit 2: from a thread the switch is refused whatever it types: the guard that proves dima's typed word is not built (slice 07's mods
-// half), so a flag naming the thread would unlock any wing by itself; the refusal says to run it from his own terminal and names no flag
-func TestThreadRenameRoleFromAThreadIsRefused(t *testing.T) {
+// the process that typed `operator-override all`, as the guard writes it beside the pid
+func startHere(t *testing.T) string {
+	t.Helper()
+	out, err := exec.Command("ps", "-o", "lstart=", "-p", strconv.Itoa(os.Getpid())).Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return strings.TrimSpace(string(out))
+}
+
+// FRM-596 exit 1: from a thread the switch runs while dima's operator override is on
+func TestThreadRenameRoleFromAThreadRunsWhileTheOverrideIsOn(t *testing.T) {
 	t.Parallel()
-	for _, c := range []struct {
-		name   string
-		caller string
-		flags  []string
-		code   int
-	}{
-		{"wing 1", "coordinator", nil, 1},
-		{"wing 1 typing a word of its own", "coordinator", []string{"--dima-ok", "wing1"}, 2},
-		{"a codie", "codie", nil, 1},
+	for _, c := range []struct{ name, store string }{
+		{"a live all", fmt.Sprintf(`{"all":{"by":"word","at":"%s","pid":%d,"start":"%s"}}`, overrideAt, os.Getpid(), startHere(t))},
+		{"prs by his band press", `{"prs":{"by":"band","at":"` + overrideAt + `"}}`},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			w := newSeatWorld(t)
+			store := filepath.Join(t.TempDir(), "operator-override.json")
+			write(t, store, c.store)
+			env := append(w.env, "X_OVERRIDE_STORE="+store)
 
-			got := xIn(t, t.TempDir(), asCaller(t, w.env, c.caller), append([]string{"thread", "rename", "wing1", "--role", "main"}, c.flags...)...)
+			got := xIn(t, t.TempDir(), asCaller(t, env, "coordinator"), "thread", "rename", "wing1", "--role", "main")
 
-			if _, _, main := w.seats(t); got.code != c.code || main != "sid-a" {
-				t.Errorf("exit %d, main-session %q, want exit %d and sid-a still main:\n%s", got.code, main, c.code, got.stdout)
-			}
-			if c.code == 1 && c.caller == "coordinator" && (strings.Contains(got.next, "--dima-ok") || !strings.Contains(got.next, "own terminal")) {
-				t.Errorf("next %q, want the way to dima's own terminal and no flag that unlocks it", got.next)
+			if _, _, main := w.seats(t); got.code != 0 || main != "sid-b" {
+				t.Errorf("exit %d, main-session %q, want exit 0 and sid-b main:\n%s", got.code, main, got.stdout)
 			}
 		})
+	}
+}
+
+// FRM-596 exit 1: every other override state refuses with nothing written. a refusal leaves the world as it was, so the rows share one
+func TestThreadRenameRoleFromAThreadIsRefused(t *testing.T) {
+	t.Parallel()
+	w := newSeatWorld(t)
+	before := readFile0(w.store)
+	for _, c := range []struct {
+		name, caller, store string
+		flags               []string
+		code                int
+	}{
+		{"no override", "coordinator", "", nil, 1},
+		{"prs by a shift", "coordinator", `{"prs":{"by":"shift","at":"` + overrideAt + `"}}`, nil, 1},
+		{"prs by a typed word", "coordinator", prsOn(), nil, 1},
+		{"a store that does not parse", "coordinator", `{"prs":{"by":"band"`, nil, 1},
+		{"the old word flag, which is gone", "coordinator", "", []string{"--dima-ok", "wing1"}, 2},
+		{"a codie, the override on", "codie", `{"prs":{"by":"band","at":"` + overrideAt + `"}}`, nil, 1},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			store := filepath.Join(t.TempDir(), "operator-override.json")
+			if c.store != "" {
+				write(t, store, c.store)
+			}
+			env := append(slices.Clone(w.env), "X_OVERRIDE_STORE="+store)
+
+			got := xIn(t, t.TempDir(), asCaller(t, env, c.caller), append([]string{"thread", "rename", "wing1", "--role", "main"}, c.flags...)...)
+
+			if _, _, main := w.seats(t); got.code != c.code || main != "sid-a" || readFile0(w.store) != before {
+				t.Errorf("exit %d, main-session %q, want exit %d and the seat and the store as they were:\n%s", got.code, main, c.code, got.stdout)
+			}
+			if c.code == 1 && c.caller == "coordinator" && (!strings.Contains(got.next, "override on") || !strings.Contains(got.next, "own terminal")) {
+				t.Errorf("next %q, want both ways on: the override and dima's own terminal", got.next)
+			}
+		})
+	}
+}
+
+// the reader of «override on», row by row, as x-mod-guard's masterOverride reads the same store
+func TestSeatOverrideOn(t *testing.T) {
+	t.Parallel()
+	here, pid := startHere(t), os.Getpid()
+	ago := func(d time.Duration) string { return time.Now().Add(-d).UTC().Format(time.RFC3339Nano) }
+	for _, c := range []struct {
+		name, body string
+		want       bool
+	}{
+		{"all by its live process", fmt.Sprintf(`{"all":{"by":"word","at":"%s","pid":%d,"start":"%s"}}`, ago(48*time.Hour), pid, here), true},
+		{"all whose pid now starts at another time", fmt.Sprintf(`{"all":{"by":"word","at":"%s","pid":%d,"start":"Mon Jan  1 00:00:00 2024"}}`, ago(0), pid), false},
+		{"all with no process and no until", fmt.Sprintf(`{"all":{"by":"word","at":"%s"}}`, ago(0)), false},
+		{"all before its until", fmt.Sprintf(`{"all":{"by":"word","at":"%s","until":"%s"}}`, ago(0), ago(-time.Hour)), true},
+		{"all past its until, its process alive", fmt.Sprintf(`{"all":{"by":"word","at":"%s","until":"%s","pid":%d,"start":"%s"}}`, ago(time.Hour), ago(time.Minute), pid, here), false},
+		{"all with no one named", fmt.Sprintf(`{"all":{"at":"%s","pid":%d,"start":"%s"}}`, ago(0), pid, here), false},
+		{"a dead all beside a band press", fmt.Sprintf(`{"all":{"by":"word","at":"%s"},"prs":{"by":"band","at":"%s"}}`, ago(0), ago(0)), true},
+		{"a band press 13 h old", fmt.Sprintf(`{"prs":{"by":"band","at":"%s"}}`, ago(13*time.Hour)), true},
+		{"a band press before its until", fmt.Sprintf(`{"prs":{"by":"band","at":"%s","until":"%s"}}`, ago(time.Hour), ago(-time.Hour)), true},
+		{"a band press past its until", fmt.Sprintf(`{"prs":{"by":"band","at":"%s","until":"%s"}}`, ago(time.Hour), ago(time.Minute)), false},
+		{"prs by a shift", fmt.Sprintf(`{"prs":{"by":"shift","at":"%s"}}`, ago(0)), false},
+		{"prs by a typed word", fmt.Sprintf(`{"prs":{"by":"word","at":"%s"}}`, ago(0)), false},
+		{"one scope of a wrong shape", fmt.Sprintf(`{"prs":{"by":"band","at":"%s"},"all":[]}`, ago(0)), false},
+		{"an empty store", `{}`, false},
+		{"a store that does not parse", `{"prs"`, false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			store := filepath.Join(t.TempDir(), "operator-override.json")
+			write(t, store, c.body)
+			if got := seatOverrideOn(store); got != c.want {
+				t.Errorf("seatOverrideOn(%s) = %v, want %v", c.body, got, c.want)
+			}
+		})
+	}
+	if seatOverrideOn(filepath.Join(t.TempDir(), "none.json")) {
+		t.Error("a store that is not there reads on")
 	}
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -215,11 +216,42 @@ func threadFromTable(table processTable, tableErr error, sessionsDir string) boo
 	return tableErr != nil || len(callerChain(table, sessionsDir)) > 0
 }
 
-// from a thread the switch is refused: it runs only on dima's typed word, which x-mod-guard is to prove against his last prompt, and
-// that guard half is not built (FRM-596 slice 07), so no flag a thread can type unlocks it; his own terminal needs no word
+// from a thread the switch runs while dima's operator override is on, and is refused otherwise; his own terminal needs neither
 func seatWordRefusal(key, role string) error {
-	if !callerIsThread() {
+	if !callerIsThread() || seatOverrideOn(overrideStore()) {
 		return nil
 	}
-	return &Fail{Refused: true, Msg: "moving the main seat from a thread runs only on dima's typed word, and the guard that proves it is not built yet: run it from his own terminal", Next: "x thread rename " + key + " --role " + role + " (in dima's own terminal)"}
+	command := "x thread rename " + quote(key) + " --role " + role
+	return &Fail{Refused: true, Msg: "moving the main seat from a thread runs only while dima's operator override is on, and it is off: ask him to press it on, or to run it in his own terminal", Next: command + " (with the override on, or in dima's own terminal)"}
+}
+
+// twin of x-mod-guard's masterOverride (hooks/operator-override.ts), the one rule for «override on»: a live `all`, by its until or
+// by the process that typed it, else `prs` by his band press, which holds until he presses off. prs by a shift or a typed word lands
+// prs alone and never moves the seat
+func seatOverrideOn(store string) bool {
+	if _, on := overrideGrantIn(store, "all", ""); on {
+		var raw map[string]struct {
+			Pid   int    `json:"pid"`
+			Start string `json:"start"`
+			Until string `json:"until"`
+		}
+		body, err := os.ReadFile(store)
+		if err != nil || json.Unmarshal(body, &raw) != nil {
+			return false
+		}
+		if all := raw["all"]; all.Until != "" || (all.Pid > 0 && all.Start != "" && processStart(all.Pid) == all.Start) {
+			return true
+		}
+	}
+	press, on := overrideGrantIn(store, overrideScopePrs, "")
+	return on && press.By == "band"
+}
+
+// the start time the guard wrote beside the pid, read the same way, so a reused pid reads gone
+func processStart(pid int) string {
+	got, _ := run("", nil, "", "ps", "-o", "lstart=", "-p", strconv.Itoa(pid))
+	if !got.ok {
+		return ""
+	}
+	return strings.TrimSpace(got.out)
 }
