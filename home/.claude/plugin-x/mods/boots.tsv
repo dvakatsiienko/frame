@@ -32,8 +32,10 @@ x-mod-redact	tests/vault.test.ts	1
 x-mod-stash	*	53	
 x-mod-stash	tests/afk.test.ts	1	
 x-mod-stash	tests/band.test.ts	1	
+x-mod-stash	tests/board-chips.test.ts	1	
 x-mod-stash	tests/board-orbit.test.ts	1	
 x-mod-stash	tests/board-phases.test.ts	1	
+x-mod-stash	tests/board-quiet.test.ts	1	
 x-mod-stash	tests/board.test.ts	1	
 x-mod-stash	tests/boot.test.ts	1	
 x-mod-stash	tests/cost.test.ts	0	
