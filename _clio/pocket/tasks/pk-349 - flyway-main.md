@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T13:24:00Z'
+updated_date: '2026-11-23T13:36:00Z'
 labels:
   - s
   - clio-main
@@ -21,18 +21,15 @@ ordinal: 1000
 - [ ] #3 f68 launchd: one store until the merge; a BYT-124 line «split app jobs at the merge», pm2.dima moves into schedule/
 - [ ] #4 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
 - [ ] #5 f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes
-- [ ] #6 f76 mods wisp: at his 12:09 login the stash drew a second glide card per lane from each lane-plan.md (l107, l108)
-- [ ] #7 f77 hang-heal: a ticket for the silent-member alarm outside a shift, a watch on clio, the keychain lost at login
-- [ ] #8 f78 herdr rider: orbit assumptions drawn in the deck, shaped apart from asks (his 12:43); a W-line for the herdr lane
-- [ ] #9 f80 herdr wisp: a glide card created while the window runs is not drawn until herdr restarts (speak card, 14:05)
-- [ ] #10 f81 herdr wish: closing a tab with a running thread asks yes/no; a plain terminal tab closes at once (his 14:36)
-- [ ] #11 f82 FRM-678: a changed line for the cpu cap gate (187, his tick only), after the codie lands it
-- [ ] #12 f83 herdr wisp: every orbit ask ticks with enter, warn ones too; the «Ticks by click only» line goes (his 15:16)
-- [ ] #13 f84 who-roasted job: a ticket, one folder in schedule/jobs, its log beside the gate queue log (his o6 tick)
-- [ ] #14 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #15 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #16 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #17 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #6 f77 hang-heal: a ticket for the silent-member alarm outside a shift, a watch on clio, the keychain lost at login
+- [ ] #7 f85 frame package.json: root deps with no user after the chords cut (tailwind vite, plugin-react, react types): check, then drop
+- [ ] #8 f86 mods rider: the guard treats a branch with no `+` line in git cherry as merged, so its delete needs no tick (his o4)
+- [ ] #9 f87 speak FTR: the pill states line gains «no word timings», a rider for the speak lane (the designer, 15:29)
+- [ ] #10 f88 speak art-kit run: the speechify card takes the Speechify API own mark and colour (designer placeholders now)
+- [ ] #11 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #12 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #13 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #14 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2002,4 +1999,18 @@ PK-349:W1850 (2026-11-23 15:23, dima): For example maybe invent a label in Linea
 PK-349:W1851 (2026-11-23 15:23, dima): That would mean that that kind of ticket is compatible with the Stray level of work (e.g., Sonnet 5.5 on high?) ❓
 PK-349:W1852 (2026-11-23 15:23, dima): or propose another idea.
 PK-349:W1853 (2026-11-23 15:23, dima): Or just tell them that nothing is worth doing because it's fine like this and other work would be just unnecessary work
+
+done 2026-11-23 15:26: f76 mods wisp: at his 12:09 login the stash drew a second glide card per lane from each lane-plan.md (l107, l108)
+
+done 2026-11-23 15:26: f78 herdr rider: orbit assumptions drawn in the deck, shaped apart from asks (his 12:43); a W-line for the herdr lane
+
+done 2026-11-23 15:26: f80 herdr wisp: a glide card created while the window runs is not drawn until herdr restarts (speak card, 14:05)
+
+done 2026-11-23 15:26: f81 herdr wish: closing a tab with a running thread asks yes/no; a plain terminal tab closes at once (his 14:36)
+
+done 2026-11-23 15:26: f82 FRM-678: a changed line for the cpu cap gate (187, his tick only), after the codie lands it (FRM-678 In Progress)
+
+done 2026-11-23 15:26: f83 herdr wisp: every orbit ask ticks with enter, warn ones too; the «Ticks by click only» line goes (his 15:16)
+
+done 2026-11-23 15:26: f84 who-roasted job: a ticket, one folder in schedule/jobs, its log beside the gate queue log (his o6 tick)
 <!-- SECTION:NOTES:END -->
