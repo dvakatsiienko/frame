@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T08:51:00Z'
+updated_date: '2026-11-23T09:23:00Z'
 labels:
   - s
   - clio-main
@@ -1580,4 +1580,21 @@ PK-349:W1512 (2026-11-23 10:47, dima, o6 steer): for now - fable, but we have ti
 PK-349:W1513 (2026-11-23 10:47, dima): proceed.
 PK-349:W1514 (2026-11-23 10:47, dima): what else tails are left? ❓
 PK-349:W1515 (2026-11-23 10:48, dima): let's solve all your tails and all my questions and go speak.
+
+correction (stamps only, words untouched): W1498–W1499 are his 10:37 herdr-typed line, stamp «(2026-11-23 10:37, dima)», not 10:34.
+
+correction (words, spelling only): W1500 reads «what's the findings?», his «whats the findings?» fixed for spelling only, not «what are the findings?».
+
+PK-349:W1500 (2026-11-23 10:25, dima): o7 and o8 - explain them a little, no tech language - what's the findings? ❓
+
+PK-349:W1516 (2026-11-23 10:52, dima): 20 leftover verify trees → decamped, each clean and on main (verified: 0 left).
+PK-349:W1517 (2026-11-23 10:52, dima): when we have branch/wtrees autodeletion? ❓
+PK-349:W1518 (2026-11-23 10:58, dima): tell when you are tailfree.
+
+PK-349:W1519 (2026-11-23 10:55, dima, o1 steer): no, if codie goes fable, then verifier is opus. only 1 fable per crew.
+
+PK-349:W1520 (2026-11-23 10:54, dima): do all except crew-pm. (context, not dima's words: "all" is the board above it, clio's lines: two keep-open comments for the stale cc issues; the crow badge crow weekly grade, the empty-wakes recount, the orbit-asks re-measure; cc 2.1.330's 142 changes read for borrows)
+PK-349:W1521 (2026-11-23 10:54, dima): skip for now. (context, not dima's words: the line it points at, "the crew-pm board redraw, after today's model changes settle", is clio's board text; "skip for now" is his, on crew-pm)
+
+11:23 PK-349:W1520 (2026-11-23 10:54, dima): do all except crew-pm. — done at the boot board: the two keep-open comments, the empty-wakes recount, the orbit-asks re-measure, the cc 2.1.330 read; the weekly crow grade deleted on his later word; crew-pm skipped (W1521)
 <!-- SECTION:NOTES:END -->
