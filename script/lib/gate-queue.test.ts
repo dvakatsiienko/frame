@@ -934,7 +934,12 @@ describe('gate-queue cpu log', () => {
 
     test('a finished run writes one row of the nine columns, the first log untouched', () => {
         const { state } = fixture();
+        // ci is linux, whose iostat takes other flags: the mac's two rows, its first the boot average
+        const env = stubbed(state, {
+            iostat: 'echo " us sy id"; echo " 15 8 77 2 2 2"; echo " 43 10 47 2 2 2"',
+        });
         queue(state, ['--long', 'sh', '-c', 'sleep 2'], '20', {
+            ...env,
             GATE_QUEUE_IDLE_SAMPLES: '1',
         });
         const rows = cpuRows(state);
@@ -945,7 +950,7 @@ describe('gate-queue cpu log', () => {
         expect([slot, mods, waited]).toEqual(['long', '0', '0']);
         expect([idle, load, ran, cpu, spawnMs]).toEqual(Array(5).fill(number));
         expect(Number(ran)).toBeGreaterThanOrEqual(2);
-        expect(Number(idle)).toBeLessThanOrEqual(100);
+        expect(idle).toBe('47');
         expect(rows[0]).toHaveLength(9);
         expect(logRows(state)[0]).toHaveLength(8);
     });
