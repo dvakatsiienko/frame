@@ -957,16 +957,28 @@ test('a starter that is the poster is refused, another session of its role is st
         ticket: 'FRM-670',
     };
     const own = { lane: 'mods', ticket: 'FRM-670', who: 'codie' };
+    const speak = {
+        area: 'speak',
+        lane: 'speak-hunt',
+        name: '🌗 🔧 speak | FRM-683',
+        role: 'codie',
+    };
     const self: [object, Omit<ThreadRow, 'sessionId'>][] = [
         [own, codie],
-        [{ ...own, lane: 'Mods-lane-9' }, codie],
+        [{ ...own, lane: '⚡ mods lane 9' }, codie],
         [
             { ...own, who: 'sixth sense' },
             { ...codie, role: 'sixth-sense' },
         ],
+        // no ticket on the record: the one its thread name ends in, else its lane word
+        [{ ...own, ticket: 'FRM-683' }, speak],
         [
-            { ...own, lane: 'mods-lane-9' },
-            { ...codie, ticket: undefined },
+            { ...own, lane: 'speak' },
+            { ...speak, name: 'speak' },
+        ],
+        [
+            { ...own, lane: 'Speak-hunt' },
+            { ...speak, name: undefined },
         ],
         [{ who: 'wing 2' }, { role: 'wing', wing: 2 }],
         [{ topic: 'x', who: 'crow' }, { role: 'adviser' }],
@@ -980,8 +992,8 @@ test('a starter that is the poster is refused, another session of its role is st
         [own, undefined],
         [own, {}],
         [own, { ...codie, ticket: 'FRM-1' }],
-        [own, { ...codie, ticket: undefined }],
-        [own, { ...codie, area: 'herdr', lane: 'herdr-lane-3' }],
+        [{ ...own, lane: 'speak' }, speak],
+        [own, { ...speak, name: undefined }],
         [{ topic: 'x', who: 'codie' }, codie],
         [{ topic: 'x', who: 'codie' }, { role: 'codie' }],
         [{ topic: 'x', who: 'plain cc' }, {}],

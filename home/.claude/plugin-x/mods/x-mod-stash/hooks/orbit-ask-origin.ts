@@ -59,15 +59,14 @@ function isPoster(from: AskFrom, self: ThreadRecord | undefined) {
     const wing = from.who.match(WING);
     if (wing) return self.role === 'wing' && self.wing === Number(wing[1]);
     if (self.role !== ROLES[from.who]) return false;
-    // a member's own is its lane and ticket, its lane alone while its record has no ticket; a topic always means another session of its role
-    return (
-        !isMember(from.who) ||
-        (from.lane !== undefined &&
-            (self.ticket
-                ? self.ticket === from.ticket &&
-                  [self.area, self.lane].includes(from.lane.toLowerCase())
-                : self.lane === from.lane.toLowerCase()))
-    );
+    if (!isMember(from.who)) return true;
+    // a topic always means another session of its role; one ticket has one member of a role, so however its lane is
+    // spelled the ticket decides: the record's, else the one the thread's name ends in, else the lane word alone
+    if (from.lane === undefined) return false;
+    const ticket = self.ticket ?? self.name?.match(/ \| ([A-Z]+-\d+)$/)?.[1];
+    return ticket
+        ? ticket === from.ticket
+        : [self.area, self.lane].includes(from.lane.toLowerCase());
 }
 
 // a session on the schema from before this field sends a bare `null` as the word
@@ -109,7 +108,7 @@ function fromOf(
         };
     if (isPoster(from, self))
         return {
-            deny: `from names you, the poster; leave it out, the ask is already yours`,
+            deny: `from names you, the poster; leave it out, the ask is already yours${isMember(who) ? `; for another ${who}, give its topic` : ''}`,
         };
     return from;
 }

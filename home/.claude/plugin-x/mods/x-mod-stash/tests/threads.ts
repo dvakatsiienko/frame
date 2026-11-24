@@ -3,6 +3,7 @@ export const THREADS_FILE = '/home/.claude/shelf/threads.json';
 
 export type ThreadRow = {
     sessionId: string;
+    name?: string;
     role?: string;
     display?: string;
     roleName?: string;
