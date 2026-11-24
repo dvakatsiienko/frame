@@ -13,7 +13,7 @@ every recipe opens on his one session:
 S=$(rex client ls --json | jq -er '[.clients[]|select(.info.kind=="app")|.session_ids[]?]|unique|if length==1 then .[0] else empty end') || S=$(rex ls --json | jq -er '.sessions|if length==1 then .[0].session_id else empty end') || echo 'ask him which session'
 ```
 
-📌 **an empty `-s` or `-b` silently targets his focused pane**, so `rex send` would type into his live prompt. each recipe runs in one Bash call, stopping on a failed step; a later call passes the full ids literally. inside a Rex terminal `$REX_SESSION` and `$REX_BLOCK` name yours.
+📌 **an empty `-s` or `-b` silently targets his focused pane**, so `rex send` would type into his live prompt. each recipe runs in one Bash call, stopping on a failed step; a later call passes the full ids literally. inside a Rex terminal `$REX_BLOCK` names yours; `-s "$REX_BLOCK"` needs a build where `rex session inspect "$REX_BLOCK"` answers.
 
 ## read his pane — before asking for a paste or a screenshot
 
