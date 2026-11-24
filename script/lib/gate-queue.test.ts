@@ -660,6 +660,9 @@ describe('gate-queue --long', () => {
         ['batch', ['sh', '-c', 'pnpm mods:test --only "$PWD/a.test.ts"']],
         ['batch', ['sh', '-c', 'pnpm test && pnpm exec x verify red f a b']],
         ['batch', ['sh', '-c', 'pnpm mods:test && node mut.mjs']],
+        ['batch', ['sh', '-c', 'pnpm mods:test a; node mut.mjs']],
+        ['batch', ['sh', '-c', 'pnpm mods:test a | node mut.mjs']],
+        ['batch', ['sh', '-c', 'pnpm mods:test a $(node mut.mjs)']],
         ['batch', ['sh', '-c', 'pnpm test | tee out']],
         ['batch', ['sh', '-c', 'pnpm test $(python3 mut.py)']],
         ['batch', ['sh', '-c', 'cd x && pnpm typecheck']],
@@ -780,6 +783,58 @@ describe('gate-queue --long', () => {
         plantTicket(turn, `0.${born}.m.${process.pid}`, liveSince());
         plantHolder(turn, String(process.pid), liveSince());
         expect(onLoad(state, '30.00', ['true']).status).toBe(75);
+    });
+
+    // the read alone: in the script a held turn refuses the mkdir too, all but in the moment its release runs
+    test('no suite reads as kept out while the turn is held', () => {
+        const { turn } = fixture();
+        mkdirSync(turn);
+        writeFileSync(`${turn}.freed`, '5\n');
+        const text = readFileSync(script, 'utf8');
+        const from = text.indexOf('is_load_outside() {');
+        const read = text.slice(from, text.indexOf('\n}\n', from) + 3);
+        const got = spawnSync(
+            '/bin/bash',
+            [
+                '-c',
+                `set -u\nturn=${turn}\nis_low_load() { return 1; }\n${read}\nis_load_outside 0.5.m.1 && echo past; rmdir $turn; is_load_outside 0.5.m.1 && echo free`,
+            ],
+            { encoding: 'utf8', timeout: 10_000 },
+        );
+        expect([got.stdout, got.stderr]).toEqual(['free\n', '']);
+    });
+
+    test('a batch the load gates stands in line with the gated mark', async () => {
+        const { state, turn } = fixture();
+        const bin = join(state, 'bin');
+        mkdirSync(bin);
+        writeFileSync(
+            join(bin, 'uptime'),
+            '#!/bin/sh\necho "1 day, load averages: 30.00 1.00 1.00"\n',
+            { mode: 0o755 },
+        );
+        const run = spawn(
+            script,
+            ['--long', 'sh', '-c', 'claude plugin test m; true'],
+            {
+                env: {
+                    ...queueEnv(state, '3'),
+                    PATH: `${bin}:${process.env.PATH}`,
+                },
+            },
+        );
+        const gone = new Promise((done) => run.on('exit', done));
+        const tickets = () =>
+            existsSync(`${turn}.tickets`)
+                ? readdirSync(`${turn}.tickets`).filter(
+                      (n) => !n.startsWith('.'),
+                  )
+                : [];
+        while (!tickets().length && run.exitCode === null) await sleep(20);
+        expect(tickets()).toEqual([
+            expect.stringMatching(new RegExp(`^\\d+\\.m\\.${run.pid}$`)),
+        ]);
+        await gone;
     });
 
     test('a run that ends says when the turn was free, the gate slot writes nothing', () => {
