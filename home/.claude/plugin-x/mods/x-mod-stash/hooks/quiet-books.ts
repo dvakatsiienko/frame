@@ -124,6 +124,10 @@ export async function quietLogAll($: EngineInterface, lines: QuietLogLine[]) {
         .catch(() => undefined);
     return r?.exitCode === 0;
 }
+// a member's newest tagged line, and its last [done] under a later one
+type Line = { at: number; doneAt?: number; tag: string };
+const lineDoneAt = (line: Line | undefined) =>
+    line?.tag === 'done' ? line.at : line?.doneAt;
 // a member's newest tagged line, per sid: a parked member's [done] outlives the day's log
 export async function quietKeepTagged(
     $: EngineInterface,
@@ -131,23 +135,21 @@ export async function quietKeepTagged(
     owner = MAIN_OWNER,
 ) {
     const key = bookKey(QUIET_TAGGED, owner);
-    const tagged = lines.filter(
-        (l) => l.sid && QUIET_KINDS.some((k) => k.kind === l.tag),
+    const tagged = lines.filter((l) =>
+        QUIET_KINDS.some((k) => k.kind === l.tag),
     );
-    const now = tagged[0]?.at;
+    const now = tagged.find((l) => l.sid)?.at;
     if (now === undefined) return;
-    const was = ((await $.store.get(key)) ?? {}) as Record<
-        string,
-        { at: number; tag: string }
-    >;
-    await $.store.set(key, {
-        ...Object.fromEntries(
-            Object.entries(was).filter(([, l]) => now - l.at < QUIET_PARK_MS),
-        ),
-        ...Object.fromEntries(
-            tagged.map((l) => [l.sid, { at: l.at, tag: l.tag }]),
-        ),
-    });
+    const was = ((await $.store.get(key)) ?? {}) as Record<string, Line>;
+    const kept = Object.fromEntries(
+        Object.entries(was).filter(([, l]) => now - l.at < QUIET_PARK_MS),
+    );
+    for (const { at, sid, tag } of tagged) {
+        if (!sid) continue;
+        const doneAt = tag === 'done' ? at : lineDoneAt(kept[sid]);
+        kept[sid] = { at, ...(doneAt ? { doneAt } : {}), tag };
+    }
+    await $.store.set(key, kept);
 }
 // past an import the validator follows `$` only into a function declaration
 export function quietLog($: EngineInterface, line: QuietLogLine) {
@@ -327,7 +329,6 @@ export async function lastTurnAt(
 // line, a week back at most, while no send came after it; `doneAt`, when that line is its [done], an untagged receipt or a
 // turn-end note after it changing nothing; `settledAt`, the [done] of a codie's reviewer, its card's work done
 // (FRM-698, dima's a): until its clio sends it any line, it is dispatched again, or another card names it
-type Line = { at: number; tag: string };
 type Book = { sends: Record<string, unknown>; tagged: Record<string, unknown> };
 export async function quietBooksOf(
     $: EngineInterface,
@@ -375,11 +376,14 @@ export async function quietBooksOf(
         },
         sentAt,
         settledAt: (lane: StashLane, codie: string, reviewer?: string) => {
-            const done = reviewer ? last(reviewer, codie) : undefined;
-            if (done?.tag !== 'done') return undefined;
-            // the card named this codie after the [done]: the [done] was another card's
-            const named = lane.history.findLast(
-                (h) => h.act === 'create' || h.act === 'link codie',
+            // a later [ask] of the reviewer's unsays no [done]
+            const doneAt = reviewer
+                ? lineDoneAt(last(reviewer, codie))
+                : undefined;
+            if (doneAt === undefined) return undefined;
+            // the card named this codie or this reviewer after the [done]: the [done] was another card's
+            const named = lane.history.findLast((h) =>
+                ['create', 'link codie', 'link sixth-sense'].includes(h.act),
             )?.at;
             const names = [codie, lane.members.codie];
             const isElsewhere = lanes.some(
@@ -392,10 +396,10 @@ export async function quietBooksOf(
                     ),
             );
             return !isElsewhere &&
-                (named ?? 0) <= done.at &&
-                sentAt(codie) <= done.at &&
-                (recordOf(codie)?.dispatchedAt ?? 0) <= done.at
-                ? done.at
+                (named ?? 0) <= doneAt &&
+                sentAt(codie) <= doneAt &&
+                (recordOf(codie)?.dispatchedAt ?? 0) <= doneAt
+                ? doneAt
                 : undefined;
         },
     };

@@ -168,6 +168,8 @@ type Parked = {
 type Hold = {
     about: Parked[];
     also?: Parked[];
+    // when the open [done] or [ask] it names was sent
+    ping?: number;
     reason: string;
     text: string;
 };
@@ -175,7 +177,10 @@ type Hold = {
 type Woke = { at: number; reasons: string[] };
 // one key a member: a ping said on its card is not said again when the card ends; a card's own reasons carry its id
 const wokeKey = (sid: string) => `${PARKED_WOKE}${sid}`;
-// the reviewer's [done] a settled codie's finished card was said under: no word of its own says it again
+// the open ping a runner was told of, and which runner: once each, whatever the member says after it
+type Told = { at: number; to: string };
+const pingKey = (sid: string) => `parked-ping:${sid}`;
+// a settled codie's finished card was said: no word of its own says it again, until its silence ends
 const overKey = (sid: string, lane: StashLane) =>
     `parked-over:${lane.id}:${sid}`;
 const minutesOf = (ms: number) => Math.round(ms / 60_000);
@@ -265,12 +270,18 @@ function memberHold(
     )
         return {
             about: [m],
+            ping: tag.at,
             reason: 'done',
             text: openPing(m, tag, now),
         };
     if (!left)
         return tag && isAsking && idle >= wakeAfter
-            ? { about: [m], reason: 'ask', text: openPing(m, tag, now) }
+            ? {
+                  about: [m],
+                  ping: tag.at,
+                  reason: 'ask',
+                  text: openPing(m, tag, now),
+              }
             : undefined;
     if (isSettled && !isAsking) return undefined;
     const sat = `${m.name} idle ${minutesOf(idle)} min`;
@@ -413,9 +424,16 @@ async function sayParked(
     members: Parked[],
     woke: Map<string, Woke | undefined>,
     view: ViewDoors,
+    owner: string,
 ) {
     if (!(await sayLine($, fresh, view))) return false;
     for (const m of members) {
+        const ping = fresh.find((h) => h.ping && h.about.includes(m))?.ping;
+        if (ping)
+            await $.store.set(pingKey(m.sid), {
+                at: ping,
+                to: owner,
+            } satisfies Told);
         const said = fresh
             .filter((h) => (h.also ?? h.about).includes(m))
             .map((h) => h.reason);
@@ -430,15 +448,27 @@ async function sayParked(
     return true;
 }
 
-// a member on a dialog (FRM-698, dima's o8): cc's registry says whether, herdr says what it asks. cc's own stamp of
-// the read tells one dialog from the next, kept in the store, so a reload says it no second time
+// a member on a dialog (FRM-698, dima's o8): cc's registry says whether, herdr says what it asks. one unbroken
+// stretch of the read is one dialog, kept in the store, so a reload says it no second time
 const DIALOG = 'parked-dialog:';
 const DIALOG_WAKE_MS = 3 * 60_000;
+// cc 2.1.331's own words, as its table reads them
 const DIALOGS = {
+    'goal proposal': 'permission',
     'input needed': 'question',
     'permission prompt': 'permission',
+    'sandbox request': 'permission',
+    'worker request': 'permission',
 } as const;
-type Dialog = { isSaid: boolean; since: number };
+// `readAt` and `stamp`, the last poll's read: a stamp that moved while nobody read is another dialog, one moved between two
+// polls is cc drawing the same one again
+type Dialog = {
+    readAt: number;
+    saidTo?: string;
+    since: number;
+    stamp?: number;
+};
+const DIALOG_GAP_MS = 3 * LEDGER_EVERY_MS;
 type DialogRead = (typeof DIALOGS)[keyof typeof DIALOGS] | 'none' | 'unknown';
 const isDialog = (word: string): word is keyof typeof DIALOGS =>
     Object.hasOwn(DIALOGS, word);
@@ -551,12 +581,19 @@ async function wakeForDialogs(
             if (was) await $.store.delete(key);
             continue;
         }
-        const isSame = was && (statusSince ?? was.since) === was.since;
-        const kept = isSame
-            ? was
-            : { isSaid: false, since: statusSince ?? now };
-        if (!isSame) await $.store.set(key, kept);
-        if (kept.isSaid || now - kept.since < DIALOG_WAKE_MS) continue;
+        const isSame =
+            was &&
+            (statusSince === was.stamp || now - was.readAt < DIALOG_GAP_MS) &&
+            (row.startedAt ?? 0) <= was.since;
+        const kept: Dialog = {
+            ...(isSame ? was : { since: statusSince ?? now }),
+            readAt: now,
+            stamp: statusSince,
+        };
+        await $.store.set(key, kept);
+        // main is the last to hear: what she was told, no wing is told again
+        if ([runner, MAIN_OWNER].includes(kept.saidTo ?? '')) continue;
+        if (now - kept.since < DIALOG_WAKE_MS) continue;
         if (await isTurnBusy($)) return;
         const words = await dialogWords($, name, row.pid);
         due.push({
@@ -569,7 +606,10 @@ async function wakeForDialogs(
     if (!due.length || (await isTurnBusy($))) return;
     if (!(await sayLine($, due, view))) return;
     for (const { kept, key } of due)
-        await $.store.set(key, { ...kept, isSaid: true } satisfies Dialog);
+        await $.store.set(key, {
+            ...kept,
+            saidTo: ownerOf(self),
+        } satisfies Dialog);
 }
 
 type RecordRead = {
@@ -610,24 +650,23 @@ async function wakeForUncarded(
         if (runner !== mine || !ping) continue;
         if (ping.tag === 'done' && t.role === 'sixth-sense') continue;
         const m = await parkedOf($, row, t.role, home, now);
-        const isOpen =
-            ping.tag === 'ask' ||
-            (ping.tag === 'done' && m.at - ping.at < wakeAfter);
+        // no other rule names a member on no card: a turn of its own or a resume after the ping answers nothing
+        const isOpen = ping.tag === 'ask' || ping.tag === 'done';
         const quietFor = now - Math.max(ping.at, m.at);
         if (!m.isIdle || !isOpen || quietFor < wakeAfter) continue;
+        const told = (await $.store.get(pingKey(m.sid))) as Told | undefined;
+        if (told?.at === ping.at && [mine, MAIN_OWNER].includes(told.to))
+            continue;
         members.push(m);
         holds.push({
             about: [m],
+            ping: ping.at,
             reason: ping.tag,
             text: openPing(m, ping, now),
         });
     }
     if (!holds.length || (await isTurnBusy($))) return;
-    const woke = await wokeOf($, members);
-    const fresh = holds.filter((h) =>
-        h.about.some((m) => !isSaidOf(woke.get(m.sid), m, h.reason)),
-    );
-    if (fresh.length) await sayParked($, fresh, members, woke, view);
+    await sayParked($, holds, members, await wokeOf($, members), view, mine);
 }
 
 // the one idle alarm of a lane (PK-351:W44, FRM-692): its members are read one by one, and one turn of the clio running it
@@ -738,9 +777,14 @@ export async function wakeForParkedLanes($: EngineInterface, view: ViewDoors) {
             m.role === 'codie' && isBooked
                 ? books.settledAt(lane, m.sid, reviewer)
                 : undefined;
-        const over = new Map<string, unknown>();
-        for (const m of members)
-            over.set(m.sid, await $.store.get(overKey(m.sid, lane)));
+        const over = new Map<string, boolean>();
+        for (const m of members) {
+            const key = overKey(m.sid, lane);
+            const isOver = (await $.store.get(key)) !== undefined;
+            if (isOver && isBooked && settledAt(m) === undefined)
+                await $.store.delete(key);
+            else over.set(m.sid, isOver);
+        }
         const holds: Hold[] = [];
         let isParked = true;
         for (const m of members) {
@@ -784,8 +828,7 @@ export async function wakeForParkedLanes($: EngineInterface, view: ViewDoors) {
             wakeAfter,
             isParked,
             (reason) => members.every((m) => isSaid(m, reason)),
-            (m) =>
-                settledAt(m) !== undefined && over.get(m.sid) === settledAt(m),
+            (m) => settledAt(m) !== undefined && over.get(m.sid) === true,
         );
         if (ofLane) holds.unshift(ofLane);
         const fresh = holds.filter((h) =>
@@ -793,7 +836,8 @@ export async function wakeForParkedLanes($: EngineInterface, view: ViewDoors) {
         );
         if (!fresh.length) continue;
         const isSayingOver = ofLane && !left && fresh.includes(ofLane);
-        if (!(await sayParked($, fresh, members, woke, view))) continue;
+        const owner = ownerOf(self);
+        if (!(await sayParked($, fresh, members, woke, view, owner))) continue;
         if (isSayingOver)
             for (const m of members)
                 if (settledAt(m) !== undefined)
