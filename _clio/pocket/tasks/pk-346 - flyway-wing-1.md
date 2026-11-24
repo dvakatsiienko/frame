@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-24T14:13:00Z'
+updated_date: '2026-11-24T15:57:00Z'
 labels:
   - s
   - clio-wing-1
@@ -18,12 +18,13 @@ ordinal: 1001
 <!-- AC:BEGIN -->
 - [ ] #1 f55 FRM-582 emoji reactions: its ten questions, three a batch — with: dima
 - [ ] #2 f59 FRM-696 hang-heal: the full shape-idea grill — with: dima
-- [ ] #3 f52 📅 FRM-465 exit 5, the minors half: both repos get a minors pr at the 07:00 window — on: 2026-11-25
-- [ ] #4 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #5 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #6 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #7 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
-- [ ] #8 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
+- [ ] #3 f61 PK-468 ticket flow: where we stand and his next step — with: dima
+- [ ] #4 f52 📅 FRM-465 exit 5, the minors half: both repos get a minors pr at the 07:00 window — on: 2026-11-25
+- [ ] #5 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #6 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #7 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #8 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #9 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
 <!-- AC:END -->
 
 ## Implementation Notes

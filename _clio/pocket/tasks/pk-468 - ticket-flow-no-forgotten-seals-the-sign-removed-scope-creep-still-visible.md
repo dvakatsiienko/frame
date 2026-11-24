@@ -4,14 +4,14 @@ title: 'ticket flow: no forgotten seals, the sign removed, scope creep still vis
 status: open
 assignee: []
 created_date: '2026-11-24T14:49:00Z'
-updated_date: '2026-11-24T15:44:00Z'
+updated_date: '2026-11-24T15:57:00Z'
 labels:
   - s
   - clio-wing-1
 dependencies: []
-priority: next
+priority: now
 type: task
-ordinal: 99999
+ordinal: 2100
 ---
 
 ## Implementation Notes
@@ -234,4 +234,24 @@ PK-468:W107 (2026-11-24 17:42, dima): I did not answered your grill fully, becau
 PK-468:W108 (2026-11-24 17:42, dima): and even current decisions are not clear enough to me.
 
 PK-468:W109 (2026-11-24 17:42, dima): I am not sure if it will solve the problem and if it will make things better.
+
+17:57 state page: ~/frame/.claude/worktrees/clio-wing-1/.scratch/ticket-flow/STATE.md (agreed, open, facts, the first step); kept in step each turn we talk about it
+
+PK-468:W110 (2026-11-24 17:56, dima): [➡️ So I'd build only the green part and try it for a week on mods, speak and herdr. We count three things: parks for a missing seal, seals I missed, and sign asks to you. Re-signs, «ready» and creep stay open until those numbers are in, and then a short grill covers just them. If the week shows nothing, you've lost one small check.] Maybe it is a good idea but how to keep progress of what we just discussed in a way so I don't need to explain everything and also make it easy to move to the second part? ❓
+
+PK-468:W111 (2026-11-24 17:56, dima): For example, dropping resigns, because I still don't like how resigns work and I want to change it, maybe even now.
+
+PK-468:W112 (2026-11-24 17:56, dima): What I don't like about doing it now is that I didn't invent a good move.
+
+PK-468:W113 (2026-11-24 17:56, dima): If I just ask you to remove the signs or move them to a floor, a sign only happens once when...
+
+PK-468:W114 (2026-11-24 17:56, dima): With the shape idea it actually doesn't bring any positive value because, in the same way, we can just still delete signing entirely.
+
+PK-468:W115 (2026-11-24 17:56, dima): It will be the same as signing recently shaped junk by me.
+
+PK-468:W116 (2026-11-24 17:56, dima): It would only bring a note that that was clearly a ticket that was created by me on my wish.
+
+PK-468:W117 (2026-11-24 17:56, dima): How to keep track of this thing? ❓
+
+PK-468:W118 (2026-11-24 17:56, dima): Maybe create a pocket item because I think that we should keep track of this ticket.
 <!-- SECTION:NOTES:END -->
