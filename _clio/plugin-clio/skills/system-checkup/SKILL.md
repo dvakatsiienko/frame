@@ -2,41 +2,68 @@
 name: system-checkup
 description: >-
   load on «system checkup», «checkup», «health check», «is our system healthy», «checkup <check>»,
-  or when the boot digest says the checkup is due — the one plate of every health check in the fleet,
-  run whole or one check at a time.
+  «sitting one» to «sitting four» — the one plate of every health check in the fleet, run in four
+  sittings or one check at a time.
 ---
 
 # /clio:system-checkup — the unification plate
 
 dima, 2026-10-19: «whenever we want to know if our system is in good health, we go to the system
-checkup flow, and it should have everything. it's a unification plate.» a granular set of checks, never
-a monolith: each check keeps its own home and is listed here by pointer, so a check that lives in a hook,
-a script or another skill is never copied. the plate grows a check at a time, while we do real operational
-work; `recipes/refresh-system-checkup/` sharpens it.
+checkup flow, and it should have everything. it's a unification plate.» each check keeps its own home and
+is listed here by pointer, never copied. `recipes/refresh-system-checkup/` sharpens the plate.
 
-## the run
+dima, 2026-11-24: «if everything that the system checkup asks for will be run at once, I think it will blur
+the result … it is worth making this system checkup gradual … it shouldn't be too granular so we don't run
+it for 2 days … it should also propose action items, not just tell numbers».
 
-- **whole**: every check below, top to bottom, in one pass. **targeted**: `checkup <id>` runs one
+## the run — four sittings, one question each
+
+- a checkup starts only on his word; nothing schedules it and nothing reminds him (dima, 2026-11-24: «remove schedule for system checkup»)
+- **a sitting** runs its checks, then stops for his steer; the four fit one day, in this order: a broken thing blocks reading the rest, and each next sitting is cheaper to act on once the one before is clean. `checkup <id>` runs one check
 - **a finding is fixed in place first** (dima, 2026-10-19: «prefer fix in place for checkup findings»): a
-  freebie-sized fix lands in the same run, and the run line names it. what is too big, needs his word, or
-  destroys something (a worktree, a process, a plugin, a permission) becomes one orbit ask with its fix
-- a check that cannot run says so on its line — `could not run: <why>` — never a silent skip
+  freebie-sized fix lands inside the sitting. what is too big, needs his word, or destroys something (a
+  worktree, a process, a plugin, a permission) is an action
+- **a sitting ends in at most three actions**, each told as «you get, you lose», each an orbit ask with its fix; what is left beyond three shows as one line with its count, never parked unseen; everything healthy stays in the log
+- a check that cannot run says so on its line, `could not run: <why>`, never a silent skip
 - the log: one line per check per run in `~/frame/_clio/checkup/log.md`,
-  `YYYY-MM-DD · <id> · 🟢 | 🔴 <what> · fixed: <what> | asked: <what> | —`. a check's «last red» is the
-  newest 🔴 line for its id there, derived, never kept by hand; a check green for 90 days goes up for removal
-- a postponed run is one line too, `YYYY-MM-DD · postponed · 🟡 <his word> · next due YYYY-MM-DD`; the boot reads it and holds the DUE line until that date
-- the reply is one board: 🔴 first with what was fixed, then 🟡, then one count line of greens
+  `YYYY-MM-DD · <id> · 🟢 | 🔴 <what> · fixed: <what> | asked: <what> | —`; a check green for 90 days goes up for removal
+- **a new check joins by naming the sitting whose question it answers**; a sitting holds at most six checks
 
-## the checks
+## sitting 1 · running right — is anything broken now
 
-own — the checks this plate runs itself (scripts sit in `scripts/` beside this file):
+- **hook-health** — hook latency and errors per hook over the last days of the local OTel tap ·
+  script, `scripts/hook-health.sh [days]` (🔴 p95 over 1 s or any error, 🟡 over 300 ms)
+
+- **boot-digest** — settings symlink, repos vs origin, ci reds, sessions and worktrees, usage ·
+  `BOOT_STRICT=1 ~/frame/_clio/.claude/hooks/boot-prefetch.sh`, its `🚨 FAIL` lines only
+
+- **pocket** — pocket drift · `node ~/frame/_clio/script/pocket-check.ts`
+
+- **go-vulns** — `pnpm x-go:vuln`
+
+## sitting 2 · current — is anything out of date
+
+- **evergreen** — renovate prs, brew and the apps lane · `clio:evergreen`, its newest report read; a whole
+  checkup runs its gather (`evergreen/references/read.md` § 1) without the full read
+
+- **test-drives** — overdue or undated trials · `pnpm test-drive:check`
+
+- **recipe-candidates** — subjects that want a recipe, and stale recipes (dima, 2026-10-20, FRM-270) · a `helper`: research docs and trials that will be refreshed again, areas with a moving outside world, each recipe's last log date · list in `~/frame/.scratch/recipe-candidates.md`, each pick an orbit ask
+
+## sitting 3 · shaped right — is anything built the wrong way
+
 - **skill-shape** — skills that would gain from a split into a reference file, a step a script should do,
   logic duplicated across skills · judgment, a `helper` card with the method and last run of
   `docs/research/skill-split-scriptify-scan.md` (deleted 2026-11-04, `git log` holds it); strength-3 items only, the rest stay in that doc
-- **hook-health** — hook latency and errors per hook over the last days of the local OTel tap ·
-  script, `scripts/hook-health.sh [days]` (🔴 p95 over 1 s or any error, 🟡 over 300 ms)
+
 - **naming-family-first** — a family's shared word gone last · script, `node scripts/naming-family-first.ts`
   (🔴 a breach; a rename is an ask)
+
+- **memory-lint** — budgets, dead pointers, cut quotes in memory files; warns on quote drift vs `HEAD`, dead
+  paths, closed tickets beside pending words, 12-word repeats · runs at every commit
+  (`recipes/nurture-memory/scripts/memory-lint.ts`); here its full run, `node <that path>`
+
+## sitting 4 · worth keeping — is anything dead weight
 
 - **install-census** — what is installed and what is used, more often than a memory sweep (dima,
   2026-10-19: the system checkup runs more often than `recipes/nurture-memory`, which runs every 1–3
@@ -46,41 +73,19 @@ own — the checks this plate runs itself (scripts sit in `scripts/` beside this
   - its ranked list goes to `~/frame/_clio/checkup/install-census.md`, rewritten each run, its log line pointing there
   - a 🔴 here is a removal, so it is always an orbit ask, one per item, never fixed in place; the memory sweep's prune step reads that list
 
-- **recipe-candidates** — subjects that want a recipe, and stale recipes (dima, 2026-10-20, FRM-270) · a `helper`: research docs and trials that will be refreshed again, areas with a moving outside world, each recipe's last log date · list in `~/frame/.scratch/recipe-candidates.md`, each pick an orbit ask
-
-colocated — checks that live elsewhere, run or read from here:
 - **cli-purpose** — are the `x` verbs used, is a hand-typed command worth a verb · `pnpm x:cli-census`,
   judged through `cli-drift-check`; a red line writes one pocket item per 0-call verb through `pocket-add`; plus dima's side (FRM-41): his zsh aliases and functions, raycast
   scripts and pnpm scripts, each absorb / leave / delete with its invoker, use read from `~/.zsh_history`
   — his tools are `granular`, so a verdict here is always an ask
-- **memory-lint** — budgets, dead pointers, cut quotes in memory files; warns on quote drift vs `HEAD`, dead
-  paths, closed tickets beside pending words, 12-word repeats · runs at every commit
-  (`recipes/nurture-memory/scripts/memory-lint.ts`); here its full run, `node <that path>`
-- **pocket** — pocket drift · `node ~/frame/_clio/script/pocket-check.ts`
-- **test-drives** — overdue or undated trials · `pnpm test-drive:check`
-- **boot-digest** — settings symlink, repos vs origin, ci reds, sessions and worktrees, usage ·
-  `BOOT_STRICT=1 ~/frame/_clio/.claude/hooks/boot-prefetch.sh`, its `🚨 FAIL` lines only
-- **go-vulns** — `pnpm x-go:vuln`
-- **evergreen** — renovate prs, brew and the apps lane · `clio:evergreen`, its newest report read; a whole
-  checkup runs its gather (`evergreen/references/read.md` § 1) without the full read
 
-apart, by name only:
+## apart — by name only, never inside a sitting
+
 - **fleet-weak-spots** — the fleet's top 5 bottlenecks · five reads, plus tickets born from his wish against clio's proposal, counted · one page, an action and a proof number each; his reading of a spot replaces the page's · last page: `.scratch/fleet-weak-spots/`
 - **operator-comms** — can he read what the fleet writes · `recipes/refresh-fleet-operator-comms/recipe.md`
 
 not here, on purpose: the memory content groom, `doctor prompt-audit` and `/skill-doctor` stay in
 `recipes/nurture-memory` (dima, 2026-10-19: never duplicated).
 
-## cadence — on trial
-
-dima, 2026-10-19: «let's try a cadence and see if scheduled runs work with it. if it works, let's keep a
-cadence; if not, I'll just switch it to a manual system checkup invocation».
-every halt runs one check, the one longest since its last log line (`clio:halt` phase 3.3), so the
-whole plate turns in ~2 weeks (dima's o59 tick). the fallback: the boot digest prints `DUE` once 7 days
-pass with no log line at all, and a whole run is offered on the board, never run unasked. the trial:
-`docs/test-drive/system-checkup-cadence.md`.
-
 ## completion criterion
 
-every check in the list ran or printed `could not run`, each has its log line, every 🔴 is fixed or is
-an orbit ask, and the board is the reply.
+a sitting: each of its checks ran or printed `could not run`, each has its log line, every small find is fixed, and at most three actions reached him as orbit asks. the checkup: his word after sitting four.

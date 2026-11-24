@@ -37,3 +37,7 @@ one line per check per run: `YYYY-MM-DD · <id> · 🟢 | 🔴 <what> · fixed: 
 - 2026-11-05 · naming-entity-first · 🟢 316 names, 0 lead with a verb · —
 - 2026-11-07 · boot-digest · 🟢 all checks green at the 03:06 pickup, read from its own output · —
 - 2026-11-12 · naming-family-first · 🔴 348 names, 4 scatter a family: fork-bash-check, idle-check, inbox-prep-check, surface-mirror-check · asked: orbit (the rename, names first)
+- 2026-11-24 · hook-health · 🔴 the prompt hooks take over 2 s on 1 prompt in 20 (p95 2,351 ms), the turn-end hooks 1.1 s, the pre-shell check errored 3 times with one 32 s run · asked: orbit (find the slow prompt hook; read the three errors)
+- 2026-11-24 · boot-digest · 🟢 all checks green, read from its own output · —
+- 2026-11-24 · pocket · 🟢 7 tasks, all checks green · —
+- 2026-11-24 · go-vulns · 🟢 no vulnerabilities found · —

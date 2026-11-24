@@ -1,5 +1,5 @@
 ---
-status: live
+status: dropped
 until: 2026-11-25
 dies-when: the verdict line below is written
 ---
@@ -23,3 +23,5 @@ Ticket: none (pocket PK-203)
 - 2026-10-22 · halt slice 2 · agnix (oldest, tied at 10-19, first in order) · ~60 s, 🟢 0 errors · ran unprompted at the halt, no dima turn
 
 ## verdict
+
+- 2026-11-24 · **dropped** — dima: «remove schedule for system checkup». the halt slice and the boot's due line are gone; the checkup runs only on his word, in four sittings (`clio:system-checkup`)

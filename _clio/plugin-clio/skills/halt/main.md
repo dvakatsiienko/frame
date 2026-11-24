@@ -97,10 +97,6 @@ red runs `clio:shape-test-drive` § 4; an item with no evidence today still gets
 names is being dropped by default.
 **then the summon base:** the first-request `cache_read_input_tokens` / `cache_creation_input_tokens` of the day's fresh agents (their transcripts' first assistant `usage`) — a base that moved re-sizes the grid in `x:crew-lead`.
 
-## phase 3.3 — one checkup slice 🩺
-
-run the one check of `clio:system-checkup` whose newest line in `_clio/checkup/log.md` is the oldest (a check never logged goes first), the skill's way: fix in place first, its log line written, a 🔴 that needs dima as an orbit ask. one check, never the plate; the whole wheel turns in ~2 weeks of halts (dima's o59 tick, on trial in `docs/test-drive/system-checkup-cadence.md`, whose round line this step also writes).
-
 ## phase 3.5 — milestones, before the board
 
 the boot prints every open milestone with the roadmap block, so a stale one misinforms the next session directly. before writing the CST:
