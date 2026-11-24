@@ -8,6 +8,7 @@ import type {
     StashPlan,
     StashTick,
 } from '../types/stash.d.ts';
+import { askKind } from './orbit-ask-kind.ts';
 import { type OriginRead, askOrigin } from './orbit-ask-origin.ts';
 import { ORBIT_TEXT_MAX, oneLine } from './util.ts';
 
@@ -315,9 +316,12 @@ export function orbitOp(
                     );
                 const told = askOrigin(v, read, false);
                 if ('deny' in told) misses.push(told.deny);
+                const typed = askKind(text, oneLine(v.kind));
+                if ('deny' in typed) misses.push(typed.deny);
                 if (misses.length)
                     wrong.push(`«${text.slice(0, 40)}»: ${misses.join('; ')}`);
-                const long = overCapText(text);
+                const led = 'deny' in typed ? { text } : typed;
+                const long = overCapText(led.text);
                 if (long) wrong.push(long);
                 added.push({
                     ...('deny' in told ? {} : told.origin),
@@ -325,7 +329,7 @@ export function orbitOp(
                     id: `o${next++}`,
                     ...(link ? { link } : {}),
                     pick: oneLine(v.pick) || 'no pick',
-                    text,
+                    ...led,
                 });
             }
             if (wrong.length) return { deny: `orbit add: ${wrong.join('\n')}` };
@@ -407,14 +411,18 @@ export function orbitOp(
         case 'follow': {
             const id = typeof input.id === 'string' ? input.id : '';
             const text = oneLine(input.text);
-            if (!o.asks.some((a) => a.id === id) || !text)
+            const was = o.asks.find((a) => a.id === id);
+            if (!was || !text)
                 return {
                     deny: `orbit follow: needs a known id and a text, got «${id}»`,
                 };
             const told = askOrigin(input, read, true);
             if ('deny' in told)
                 return { deny: `orbit follow: ${id}: ${told.deny}` };
-            const tooLong = overCap('follow', [text]);
+            const typed = askKind(text, '', was.kind);
+            if ('deny' in typed)
+                return { deny: `orbit follow: ${id}: ${typed.deny}` };
+            const tooLong = overCap('follow', [typed.text]);
             if (tooLong) return tooLong;
             return {
                 orbit: {
@@ -434,7 +442,7 @@ export function orbitOp(
                                   pick: oneLine(input.pick) || a.pick,
                                   // his steer answered the old question
                                   steer: undefined,
-                                  text,
+                                  ...typed,
                                   word: undefined,
                               }
                             : a,

@@ -12,6 +12,10 @@ _Avoid_: deck, band, dock
 An open question a session put to dima through orbit's tool: one line, its pick, its area, its ask origin and a hidden note, live until the session resolves it; a ticked one resolves «as ticked» or «changed: <what>».
 _Avoid_: question, todo, pending
 
+**Ask kind**:
+What an ask wants of dima: a look ask is ready and needs only his check, a test ask has him probe something; one with no kind is a plain ask. Its text opens with the kind's word.
+_Avoid_: type, look card, test card
+
 **Ask origin**:
 Why an ask exists, and who started it when that is not the thread posting it: its fields `why` and `from`, drawn as one muted line under the pick.
 _Avoid_: source, reason

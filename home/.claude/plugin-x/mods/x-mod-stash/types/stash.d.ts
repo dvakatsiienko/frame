@@ -24,9 +24,11 @@ export type AskFrom = {
 };
 
 // `from.line`: the starter as this mod draws it, badge and all, so another surface copies no badge table
+export type AskKind = 'look' | 'test';
 export type PublishedAsk = Omit<AskOrigin, 'from'> & {
     from?: AskFrom & { line: string };
     id: string;
+    kind?: AskKind;
     text: string;
     pick: string;
     link?: string;
@@ -153,6 +155,8 @@ export type StashTurn = {
 // locked while the turn it joined runs, changed after a follow-up, resolved until that turn ends
 export type OrbitAsk = AskOrigin & {
     id: string;
+    // a look or a test ask; its text opens with the kind's word (FRM-645)
+    kind?: AskKind;
     text: string;
     pick: string;
     hiddenNote?: string;

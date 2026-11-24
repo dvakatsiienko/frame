@@ -391,7 +391,7 @@ test("orbit's schema names every argument its ops read", async ($, on) => {
         props.act?.enum,
     ]).toEqual([
         [],
-        ['area', 'from', 'hiddenNote', 'link', 'pick', 'text', 'why'],
+        ['area', 'from', 'hiddenNote', 'kind', 'link', 'pick', 'text', 'why'],
         ['create', 'edit', 'link', 'step', 'end'],
     ]);
 });

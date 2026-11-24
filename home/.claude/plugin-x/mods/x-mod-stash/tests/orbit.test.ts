@@ -1071,6 +1071,48 @@ test("an ask's origin rides its store item, and a follow keeps each field it lea
     ]);
 });
 
+// FRM-645: herdr pins an ask by its text's lead, so the stored text opens with the kind's word, once and with no emoji
+for (const [text, kind, kept] of [
+    ['the new card', 'look', ['look', 'look: the new card']],
+    ['Look: the new card', 'look', ['look', 'look: the new card']],
+    ['🧪 test: press it twice', 'test', ['test', 'test: press it twice']],
+    ['👀 look: the new card', undefined, ['look', 'look: the new card']],
+    ['push FRM-1', undefined, [undefined, 'push FRM-1']],
+    ['push FRM-1', '', [undefined, 'push FRM-1']],
+    ['look at the new card', undefined, [undefined, 'look at the new card']],
+    ['x', 'probe', /«x»: kind «probe» is neither look nor test/],
+    ['test: x', 'look', /its text opens «test:» while its kind is look/],
+    ['look:', undefined, /its text says nothing past «look:»/],
+    ['a'.repeat(85), 'look', /is 91 chars; keep it ≤90/],
+] as const)
+    test(`an ask «${text.slice(0, 24)}» with kind ${kind} is kept by its lead or refused`, () => {
+        const got = added([{ ...ASK, kind, text }]);
+        if (kept instanceof RegExp) expect(got).toMatch(kept);
+        else
+            expect(
+                typeof got === 'string' ? got : [got[0]?.kind, got[0]?.text],
+            ).toEqual(kept);
+    });
+
+test('a kind rides the store item, and a follow keeps it or takes the new lead', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await orbit($, {
+        asks: [{ ...ASK, kind: 'look', text: 'the new card' }],
+        op: 'add',
+    });
+    const seen = [items(w)?.[0]];
+    for (const text of ['the card, fixed', 'test: press it'])
+        seen.push(
+            (await orbit($, { id: 'o1', op: 'follow', text }), items(w)?.[0]),
+        );
+    expect(seen.map((a) => [a?.kind, a?.text])).toEqual([
+        ['look', 'look: the new card'],
+        ['look', 'look: the card, fixed'],
+        ['test', 'test: press it'],
+    ]);
+});
+
 test('a «changed:» resolve beside an add refused for its area is refused too', async ($, on) => {
     const w = world(on, { [AREAS]: 'mods 🧩\n' });
     await start($);

@@ -85,6 +85,7 @@ export async function saveOrbit(
                     ...(a.from
                         ? { from: { ...a.from, line: fromLine(a.from) } }
                         : {}),
+                    ...(a.kind ? { kind: a.kind } : {}),
                     ...(a.why ? { why: a.why } : {}),
                     ...(a.link ? { link: a.link } : {}),
                     ...(a.mark ? { mark: a.mark } : {}),

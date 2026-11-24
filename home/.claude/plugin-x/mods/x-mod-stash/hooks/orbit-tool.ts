@@ -96,6 +96,8 @@ export const ORBIT_PROPS = {
                 area: { type: 'string' },
                 from: ASK_FROM,
                 hiddenNote: { type: 'string' },
+                // no enum: the op's own refusal names the two kinds
+                kind: { type: 'string' },
                 link: { type: 'string' },
                 pick: { type: 'string' },
                 text: { type: 'string' },

@@ -578,6 +578,13 @@
   - decision: the tool's text prints the list's words as read at the session's start; the check reads the file live
   - 📌 a session on the old text is refused once and lands its retry with the new fields, no restart (probed live, cc 2.1.331, 24 Nov)
   - proof: tests/orbit.test.ts::an ask names an area off the list file as it stands… / with the area list gone any one word lands… / an ask with no why… / a starter off the list… / a starter that is the poster is refused… / the poster is read from the session's own thread record / an ask's origin rides its store item… / a «changed:» resolve beside an add refused for its area…; tests/board-orbit.test.ts::an ask draws its area before its text…; tests/lane-board.test.ts::unfolded, a subcard draws the member's asks as a view…; tests/orbit-tool.test.ts::orbit's text names the required area and why…
+- ✅ an ask's kind: a look ask and a test ask, apart from a plain one (FRM-645)
+  - makes: `kind` (`look` or `test`) on the ask and on its item under `asks:<sid>`, which rides whole to `herdr-state/<sid>.json`
+  - given an `add` whose ask carries `kind: look` or `kind: test`, then it is stored with that kind and its text opens «look: » or «test: » once, with no emoji, so herdr pins it with no change of its own; the 90-char cap counts the lead
+  - and a text already led so, past a 👀 or 🧪, takes that kind with no `kind` given; any other ask is as before
+  - and a kind that is neither, a lead that is the other kind's, or a lead with nothing after it refuses the whole add in that ask's one line
+  - and a `follow` keeps the kind, its new text led; a new text led by the other word changes it
+  - proof: tests/orbit.test.ts::an ask «…» with kind … is kept by its lead or refused (11 rows); ::a kind rides the store item, and a follow keeps it or takes the new lead
 - ✅ a clio boot keeps going after a spawn (FRM-426, flawlog 2026-10-29 13:10)
   - given clio's session loaded `clio:boot` and has printed no reply as long as the board (300 characters or more) since
   - when `start_session` returns, whose own hint says «then end your turn»
