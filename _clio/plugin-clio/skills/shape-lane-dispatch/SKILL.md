@@ -36,7 +36,7 @@ an exit line whose check reads shared state (a live session, `~/.local/state`, t
 
 ## 4 · the seal
 
-`x brief preflight` passes; it reads the exit lines from the spec (FRM-423). a flag on a verb that exists is proven by one grep and said so beside the line. the target's own AGENTS.md rules and its `FTR.md` decisions are read against the lines: a line they forbid is rewritten. a board or band change carries a shot of the board with every card open and the redraw cost measured. the chunk is 🦭 sealed; the print is one row: `🦭 **sealed**, N exit lines`.
+`x brief preflight` passes; it reads the exit lines from the spec (FRM-423). a flag on a verb that exists is proven by one grep and said so beside the line. the target's own AGENTS.md rules and its `FTR.md` decisions are read against the lines: a line they forbid is rewritten. a board or band change carries a shot of the board with every card open and the redraw cost measured. the chunk is 🦭 sealed, then [additions.md](additions.md) runs: what clio added unasked, one quiet ask.
 
 ## 5 · the summon and the greenlight
 
