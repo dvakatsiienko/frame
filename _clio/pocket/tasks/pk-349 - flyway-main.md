@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T11:06:00Z'
+updated_date: '2026-11-24T11:09:00Z'
 labels:
   - s
   - clio-main
@@ -2588,4 +2588,20 @@ PK-349:W2305 (2026-11-24 13:04, dima): Create this ticket and it needs a shape i
 PK-349:W2306 (2026-11-24 13:04, dima): Tell yourself in the ticket that before we solve this ticket you should first fully describe to me how current Glide works and what it depends on (e.g., Matt's tickets, Matt's skills, specs, and tickets), so I understand how current Glide works and can think of a solution.
 
 PK-349:W2307 (2026-11-24 13:04, dima): Tell yourself as well to help me understand how Glide works in simple words so don't use too much technical language.
+
+PK-349:W2308 (2026-11-24 12:49, dima): how to unblock mods codie right now? ❓
+
+PK-349:W2309 (2026-11-24 12:49, dima): how much left of 28 fault test? ❓
+
+PK-349:W2310 (2026-11-24 12:49, dima): i think 28 fault tests is longer than what mods codie want to die? ❓
+
+PK-349:W2311 (2026-11-24 12:49, dima): let mods codie part pass then resume fault tests? ❓
+
+PK-349:W2312 (2026-11-24 12:53, dima): [Your order is the rule from now on: mods' whole run goes first, long fault runs and the stray's tests yield to it.] so how it have it? ❓
+
+PK-349:W2313 (2026-11-24 12:53, dima): [Your order is the rule from now on: mods' whole run goes first, long fault runs and the stray's tests yield to it.] memory lines? ❓
+
+PK-349:W2314 (2026-11-24 12:53, dima): [Your order is the rule from now on: mods' whole run goes first, long fault runs and the stray's tests yield to it.] propose how to fix
+
+moved 13:09 24 Nov: W2295–W2307 (the glide rethink wish) live in FRM-697 as FRM-697:W1–W13
 <!-- SECTION:NOTES:END -->
