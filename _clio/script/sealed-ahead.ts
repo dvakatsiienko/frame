@@ -341,7 +341,13 @@ function queuedChunks(
     read: (id: string) => AheadTicket,
     seal: (id: string, bar: string[]) => Ahead,
 ): Ahead[] {
-    const tickets = signed.map((t) => read(t.id));
+    // a chunk he postponed is no slot, whatever its id
+    const tickets = signed
+        .map((t) => read(t.id))
+        .filter(
+            (t) =>
+                !t.labels.includes('snoozed') && !t.labels.includes('someday'),
+        );
     const inArea = new Set(tickets.map((t) => t.id));
     const waits = (t: AheadTicket) =>
         openBlockers(t.relations).filter((id) => inArea.has(id));

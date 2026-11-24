@@ -927,6 +927,15 @@ describe('readLaneAhead, a lane with no running chunk', () => {
         });
     });
 
+    test.each(['snoozed', 'someday'])('a %s chunk takes no slot', (label) => {
+        const home = homeWith();
+        const signed = [{ id: 'FRM-5', project: 'mods: cc' }];
+        const tickets = { 'FRM-5': { labels: ['signed', label] } };
+        const w = world(home, { signed, tickets });
+        const out = sealedAhead(readLaneAhead(home, ['mods'], w));
+        expect(out.lines[0]).not.toContain('FRM-5');
+    });
+
     test("the second slot is not «blocked by» the first: the chain's own earlier link is barred", () => {
         const home = homeWith();
         const out = sealedAhead(readLaneAhead(home, ['mods'], chain(home)));
