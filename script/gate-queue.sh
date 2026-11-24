@@ -193,6 +193,33 @@ log_run() {
     printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$load" "$slot" "$waited" "$1" "$2" "${session:--}" "$(one_line "$cmd")" >>"$log"
 }
 
+# a second log beside the first, one row a run that took or waited for a turn, to measure the load gate: start, slot, mods suite (1/0),
+# idle % at the start (the mean of 3 one-second iostat samples, the first being the boot average), the 1-min load, wait s, run s, the
+# child's cpu s, the slowest of 5 /usr/bin/true spawns in ms. the sampling runs beside the wait, so a run never starts later for it, and
+# a field the sample did not finish or could not read is -; nothing reads this log to decide anything
+cpu_log=$state/gate-queue-cpu.log
+sample=$state/gate-queue-cpu.sample.$$
+take_sample() {
+    local spawn idle
+    spawn=$(perl -MTime::HiRes=time -e 'for (1 .. 5) { $t = time; system("/usr/bin/true"); $d = (time - $t) * 1000; $m = $d if $d > $m } printf "%.0f", $m' 2>/dev/null)
+    idle=$(iostat -w 1 -c $((${GATE_QUEUE_IDLE_SAMPLES:-3} + 1)) -n 0 2>/dev/null | awk '$1 ~ /^[0-9]+$/ && NF >= 3 { n++; if (n > 1) { sum += $3; kept++ } } END { if (kept > 0) printf "%.0f", sum / kept }')
+    printf '%s\t%s\n' "${idle:--}" "${spawn:--}" >"$sample.tmp" && mv "$sample.tmp" "$sample"
+}
+# the cpu seconds (user + sys) of every child this shell has waited for, into cpu_now; `times` runs in this shell, never in a
+# substitution or a pipe, whose fork would report its own children; bash prints them on its second line
+read_children_cpu() {
+    times >"$sample.times"
+    cpu_now=$(sed -n 2p "$sample.times" | awk '{ for (i = 1; i <= 2; i++) { split($i, p, "m"); s += p[1] * 60 + p[2] } printf "%.1f", s }')
+}
+# one row to the sibling log, then the sample is done with
+log_cpu() {
+    local idle=- spawn=- cpu=${2--}
+    [ -s "$sample" ] && IFS=$'\t' read -r idle spawn <"$sample"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$slot" "${is_mods_suite:-0}" "${idle:--}" "$load" "$waited" "${1--}" "$cpu" "${spawn:--}" >>"$cpu_log"
+    kill "$sampler" 2>/dev/null
+    rm -f "$sample" "$sample.tmp" "$sample.times"
+}
+
 freed() { [ "$slot" != long ] || { date +%s >"$turn.freed.$$" && mv "$turn.freed.$$" "$turn.freed"; }; }
 # the turn stood free for the suite of this ticket, 2 min from its arrival or the last release, and the load kept it out
 is_load_outside() {
@@ -243,6 +270,8 @@ if [ "$slot" = none ]; then
     GATE_QUEUE_HELD=none "$@"
     exit $?
 fi
+(take_sample) </dev/null >/dev/null 2>&1 &
+sampler=$!
 ticket=$tickets/${is_suite:+0.}$began.${is_mods_suite:+m.}$$
 started_at $$ >"$tickets/.new.$$"
 mv "$tickets/.new.$$" "$ticket"
@@ -264,6 +293,7 @@ until first_in_line past-load && is_calm && mkdir "$turn" 2>/dev/null; do
     if [ "$waited" -ge "$wait_max" ]; then
         echo "gate-queue: waited ${waited}s, deadline passed, nothing ran. $(holder)" >&2
         log_run - 75
+        log_cpu - -
         exit 75
     fi
     if [ "$waited" -ge "$next_say" ]; then
@@ -275,11 +305,16 @@ until first_in_line past-load && is_calm && mkdir "$turn" 2>/dev/null; do
 done
 
 took=$(date +%s)
+read_children_cpu
+cpu_before=$cpu_now
 release() {
-    local code=$? ran=$(($(date +%s) - took))
+    local code=$? ran=$(($(date +%s) - took)) cpu
+    read_children_cpu
+    cpu=$(awk -v now="$cpu_now" -v was="$cpu_before" 'BEGIN { printf "%.1f", now - was }')
     freed
     rm -rf "$turn"
     log_run "$ran" "$code"
+    log_cpu "$ran" "$cpu"
     # a batch run whole keeps every suite behind it: two held the turn 21 min each while four suites stood 7 to 16 (2026-11-24)
     if [ "$slot" = long ] && [ -z "$is_suite$is_hold" ] && [ "$ran" -gt "${GATE_QUEUE_BATCH_MAX:-180}" ]; then
         echo "gate-queue: this batch kept the long turn ${ran}s; run it in groups under 3 min, each its own --long, so a lane's suite goes between" >&2
