@@ -39,6 +39,7 @@ export function parkedWorld(
         // a second card on the board, open beside the first
         also = undefined as object | undefined,
         card = {} as Partial<StashLane> | object,
+        extraFiles = {} as Record<string, string>,
         handoffs = [] as string[],
         // the clio's own name, a wing's too
         name = '🦉 clio',
@@ -60,6 +61,7 @@ export function parkedWorld(
         members: Object.fromEntries(members.map((m) => [m.role, m.name])),
     };
     const files: Record<string, string> = {
+        ...extraFiles,
         [LANES]: JSON.stringify({
             lanes: [
                 laneCard({ ...ofMembers, ...card }),

@@ -570,6 +570,22 @@ test('an unread next chunk that reads again wakes once more, and its next failed
     ]);
 });
 
+test('a ticket read for one wake is read again for the next, however soon the row brings it', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], {
+        card: ONE_LEFT,
+        extraFiles: { [HERDR_SETTINGS]: herdrRows({ 'stash.park.after': 5 }) },
+        tickets: { 'FRM-2': { labels: [] } },
+    });
+    await parked($, w, 2);
+    w.wrote.set(R, EVEN + 2 * MIN);
+    w.tickets['FRM-2'] = SIGNED;
+    await pass($, w, 6);
+    expect(w.wakes()).toEqual([
+        builder('is unsigned'),
+        builder('is signed, not dispatched'),
+    ]);
+});
+
 test('an unsigned next chunk signed 10 min later with no word between wakes a second time', async ($, on) => {
     const w = parkedWorld(on, [sixth({ ago: 9 })], {
         card: ONE_LEFT,
