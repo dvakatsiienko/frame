@@ -125,7 +125,7 @@ export function dropWaitAside(text: string) {
 // not policed. fences, quotes, inline code, bold text and links keep theirs; «wish» only as a noun, after a determiner.
 // members are rules/fleet-identity.md's, minus the names that are plain english too (helper, retro, classifier,
 // explore, cc) — those would badge a helper function or the retro file
-const MEMBERS = {
+export const MEMBERS = {
     clio: '🦉',
     'cloud chat': '☁️',
     'cloud-chat': '☁️',

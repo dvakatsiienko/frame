@@ -13,7 +13,6 @@ import {
     isFresh,
     joinRowsText,
     joinText,
-    oneLine,
     planText,
 } from './orbit.ts';
 import { takeMarks, takePlanMark } from './orbit-presses.ts';
@@ -35,6 +34,7 @@ import {
     turn,
 } from './turn.ts';
 import { orbitTexts, tickSentence } from './turn-notes.ts';
+import { oneLine } from './util.ts';
 import { noteTaskStop, takeFill, takeWind, windBlock } from './wind-run.ts';
 
 const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';

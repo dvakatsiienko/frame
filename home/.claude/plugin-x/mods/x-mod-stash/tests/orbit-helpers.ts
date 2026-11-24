@@ -21,6 +21,9 @@ export const savedSteer = (store: Map<string, unknown>) =>
 export const texts = async (ui: Board) =>
     (await ui.findAll({ type: 'Text' })).map((t) => t.text ?? '').join('\n');
 
+// the list of areas an ask may name (FRM-670)
+export const AREAS = '/home/.claude/shelf/orbit-areas.txt';
+
 export const SETTINGS = '/home/.claude/shelf/herdr-settings/settings.json';
 
 export const typed = (rows: Record<string, string>) => ({
@@ -182,7 +185,13 @@ export function tickLog(on: On) {
 export const addLinked = ($: Engine, link: string) =>
     orbit($, {
         asks: [
-            { link, pick: 'read it', text: 'the proposal for the catch kinds' },
+            {
+                area: 'mods',
+                link,
+                pick: 'read it',
+                text: 'the proposal for the catch kinds',
+                why: 'a test ask',
+            },
         ],
         op: 'add',
     }) as Promise<{ deny?: string }>;

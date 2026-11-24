@@ -16,6 +16,7 @@ import {
     planMarked,
     steeredOrbit,
 } from './orbit.ts';
+import { fromLine } from './orbit-ask-origin.ts';
 import { currentId, identity, sessionName } from './session-identity.ts';
 import { HERDR_READ } from './store-keys.ts';
 import { markActive } from './turn.ts';
@@ -79,6 +80,12 @@ export async function saveOrbit(
                     id: a.id,
                     pick: a.pick,
                     text: a.text,
+                    ...(a.area ? { area: a.area } : {}),
+                    ...(a.areaEmoji ? { areaEmoji: a.areaEmoji } : {}),
+                    ...(a.from
+                        ? { from: { ...a.from, line: fromLine(a.from) } }
+                        : {}),
+                    ...(a.why ? { why: a.why } : {}),
                     ...(a.link ? { link: a.link } : {}),
                     ...(a.mark ? { mark: a.mark } : {}),
                     ...(a.steer ? { steer: a.steer } : {}),

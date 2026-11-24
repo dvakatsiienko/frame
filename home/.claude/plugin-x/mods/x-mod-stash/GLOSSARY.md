@@ -9,8 +9,16 @@ The shared row and the one store behind it; every feature below lives in it.
 _Avoid_: deck, band, dock
 
 **Ask**:
-An open question a session put to dima through orbit's tool: one line, its pick and a hidden note, live until the session resolves it; a ticked one resolves «as ticked» or «changed: <what>».
+An open question a session put to dima through orbit's tool: one line, its pick, its area, its ask origin and a hidden note, live until the session resolves it; a ticked one resolves «as ticked» or «changed: <what>».
 _Avoid_: question, todo, pending
+
+**Ask origin**:
+Why an ask exists, and who started it when that is not the thread posting it: its fields `why` and `from`, drawn as one muted line under the pick.
+_Avoid_: source, reason
+
+**Area**:
+What an ask is about, one word of `~/.claude/shelf/orbit-areas.txt` with the list's emoji, drawn before the ask's text.
+_Avoid_: theme, tag, scope (a lane's)
 
 **Closing word**:
 The word a resolve gives an ask («landed», «dropped: superseded by o58»): the ask stays dim with it for one more turn, then leaves.

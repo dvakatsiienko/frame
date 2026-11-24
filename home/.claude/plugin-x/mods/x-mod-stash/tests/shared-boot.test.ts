@@ -26,7 +26,9 @@ const start = ($: Engine) =>
     $.session.start({ cwd: '/tmp', isInteractive: true, surface: 'terminal' });
 async function askAdded($: Engine) {
     const r = await $.tool.call({
-        asks: [{ pick: 'yes', text: 'ship it' }],
+        asks: [
+            { area: 'mods', pick: 'yes', text: 'ship it', why: 'a test ask' },
+        ],
         op: 'add',
         tool: TOOL,
     } as never);

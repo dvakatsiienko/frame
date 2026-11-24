@@ -120,6 +120,8 @@ export type ThreadRecord = {
     pid?: number;
     role?: string;
     lane?: string;
+    // the lane's plain word, as its thread name shows it: lane mods-lane-9 reads mods
+    area?: string;
     // the clio that summoned or dispatched a member, by x's owner label: clio-main or clio-wing-<n>; she hears its idle alarm
     coordinator?: string;
     // the one that dispatched it into its lane, whose session opens the lane's card

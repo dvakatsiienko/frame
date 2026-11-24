@@ -140,9 +140,11 @@ export const orbit = ($: Engine, input: Record<string, unknown>) =>
 export const add = ($: Engine, ...asks: [string, string][]) =>
     orbit($, {
         asks: asks.map(([text, pick]) => ({
+            area: 'mods',
             hiddenNote: `came from ${text}`,
             pick,
             text,
+            why: 'a test ask',
         })),
         op: 'add',
     });

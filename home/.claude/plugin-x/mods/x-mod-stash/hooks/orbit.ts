@@ -8,13 +8,13 @@ import type {
     StashPlan,
     StashTick,
 } from '../types/stash.d.ts';
+import { type OriginRead, askOrigin } from './orbit-ask-origin.ts';
+import { ORBIT_TEXT_MAX, oneLine } from './util.ts';
 
 export const ORBIT_TOOL = 'mcp__x-mod-stash__orbit';
 export const PLAN_MAX = 7;
 // a followed-up ask's mark, before its id so the text keeps the full width — a try, dima may swap the glyph (o6)
 export const CHANGED_MARK = '🆕';
-// an ask, a follow-up or a phase reads at a glance in the narrow board (dima's o60, 22:13)
-export const ORBIT_TEXT_MAX = 90;
 // at most this many assumptions a turn, and on the board at once (FRM-382 exit 2: under one a turn on average)
 export const ASSUMED_MAX = 3;
 // an ask's one link: an https url, an obsidian://open url, or an absolute or home path to a file, spaces allowed in the
@@ -36,8 +36,6 @@ export function linkLabel(target: string) {
 }
 export const ASSUMED_TURNS = 3;
 
-export const oneLine = (v: unknown) =>
-    typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '';
 const idsOf = (v: unknown) =>
     Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
 
@@ -262,14 +260,14 @@ export const isGuardGated = (text: string) =>
     /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|^\s*(?:merge|land)\b|`[^`]+`/iu.test(
         text,
     );
+const overCapText = (x: string) =>
+    [...x].length > ORBIT_TEXT_MAX
+        ? `«${[...x].slice(0, 40).join('')}…» is ${[...x].length} chars; keep it ≤${ORBIT_TEXT_MAX}, subject first, detail in hiddenNote`
+        : undefined;
 // the first text over the cap, named with its length, so the session can shorten that one
 function overCap(op: string, texts: string[]) {
-    const long = texts.find((x) => [...x].length > ORBIT_TEXT_MAX);
-    return long === undefined
-        ? undefined
-        : {
-              deny: `orbit ${op}: «${[...long].slice(0, 40).join('')}…» is ${[...long].length} chars; keep it ≤${ORBIT_TEXT_MAX}, subject first, detail in hiddenNote`,
-          };
+    const long = texts.map(overCapText).find(Boolean);
+    return long ? { deny: `orbit ${op}: ${long}` } : undefined;
 }
 
 // a ticked ask shipped as picked, or changed with a new round beside it (PK-204: twice reported done narrower than ticked)
@@ -296,11 +294,13 @@ export function orbitOp(
     isTurn: boolean,
     planMax: number = PLAN_MAX,
     isAmended = false,
+    read: OriginRead = { areas: [] },
 ): { orbit: StashOrbit; result: string } | { deny: string } {
     switch (input.op) {
         case 'add': {
             const raw = Array.isArray(input.asks) ? input.asks : [];
             const added: OrbitAsk[] = [];
+            const wrong: string[] = [];
             let next = o.next;
             for (const item of raw) {
                 const v = (item ?? {}) as Record<string, unknown>;
@@ -308,11 +308,19 @@ export function orbitOp(
                 if (!text) continue;
                 const hiddenNote = oneLine(v.hiddenNote);
                 const link = oneLine(v.link);
+                const misses: string[] = [];
                 if (link && !ASK_LINK.test(link))
-                    return {
-                        deny: `orbit add: link «${link.slice(0, 40)}» is neither an https url, an obsidian://open url nor a file path (/… or ~/…)`,
-                    };
+                    misses.push(
+                        `link «${link.slice(0, 40)}» is neither an https url, an obsidian://open url nor a file path (/… or ~/…)`,
+                    );
+                const told = askOrigin(v, read, false);
+                if ('deny' in told) misses.push(told.deny);
+                if (misses.length)
+                    wrong.push(`«${text.slice(0, 40)}»: ${misses.join('; ')}`);
+                const long = overCapText(text);
+                if (long) wrong.push(long);
                 added.push({
+                    ...('deny' in told ? {} : told.origin),
                     hiddenNote: hiddenNote || undefined,
                     id: `o${next++}`,
                     ...(link ? { link } : {}),
@@ -320,15 +328,11 @@ export function orbitOp(
                     text,
                 });
             }
+            if (wrong.length) return { deny: `orbit add: ${wrong.join('\n')}` };
             if (!added.length)
                 return {
-                    deny: 'orbit add: asks needs one { text, pick } or more',
+                    deny: 'orbit add: asks needs one { text, pick, area, why } or more',
                 };
-            const tooLong = overCap(
-                'add',
-                added.map((a) => a.text),
-            );
-            if (tooLong) return tooLong;
             return {
                 orbit: { ...o, asks: [...o.asks, ...added], next },
                 result: `added ${added.map((a) => a.id).join(', ')} to dima's orbit; never repeat them in the reply`,
@@ -407,6 +411,9 @@ export function orbitOp(
                 return {
                     deny: `orbit follow: needs a known id and a text, got «${id}»`,
                 };
+            const told = askOrigin(input, read, true);
+            if ('deny' in told)
+                return { deny: `orbit follow: ${id}: ${told.deny}` };
             const tooLong = overCap('follow', [text]);
             if (tooLong) return tooLong;
             return {
@@ -416,6 +423,7 @@ export function orbitOp(
                         a.id === id
                             ? {
                                   ...a,
+                                  ...told.origin,
                                   isChanged: true,
                                   isClosed: undefined,
                                   isHerdrMark: undefined,

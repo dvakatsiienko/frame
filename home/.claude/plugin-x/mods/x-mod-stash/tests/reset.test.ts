@@ -53,7 +53,9 @@ async function session($: Engine, on: On) {
         surface: 'terminal',
     });
     await $.tool.call({
-        asks: [{ pick: 'yes', text: 'ship it' }],
+        asks: [
+            { area: 'mods', pick: 'yes', text: 'ship it', why: 'a test ask' },
+        ],
         op: 'add',
         tool: TOOL,
     } as never);
@@ -110,7 +112,14 @@ test('after a session.end of reason clear, the next write keys on the new conver
         sessionId: 'a1a1a1a1-0000',
     } as never);
     await $.tool.call({
-        asks: [{ pick: 'yes', text: 'ship the next one' }],
+        asks: [
+            {
+                area: 'mods',
+                pick: 'yes',
+                text: 'ship the next one',
+                why: 'a test ask',
+            },
+        ],
         op: 'add',
         tool: TOOL,
     } as never);

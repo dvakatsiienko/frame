@@ -1,6 +1,7 @@
 import type { On } from 'claude-code';
 
 import {
+    AREAS,
     addLinked,
     assume,
     partOff,
@@ -78,7 +79,7 @@ test('a follow-up keeps its id and place with new text, led by 🆕', async ($, 
     ]).toEqual([
         ['o1', 'o2'],
         expect.stringMatching(
-            /^🆕 o1: push the branch once ci is green➡️ after ci🛎️ tick/u,
+            /^🆕 o1 mods: push the branch once ci is green➡️ after cia test ask🛎️ tick/u,
         ),
     ]);
 });
@@ -113,7 +114,13 @@ test("an agent's own orbit ops never write a tick", async ($, on) => {
         ops: [
             {
                 asks: [
-                    { mark: 'accepted', pick: 'yes', text: 'push `origin`' },
+                    {
+                        area: 'mods',
+                        mark: 'accepted',
+                        pick: 'yes',
+                        text: 'push `origin`',
+                        why: 'a test ask',
+                    },
                 ],
                 op: 'add',
             },
@@ -214,7 +221,11 @@ test('the phase lines knob caps a plan and its nudge', async ($, on) => {
 });
 
 test("orbit's description fits the 4096 chars cc shows the model, every op named", async ($, on) => {
-    world(on);
+    world(on, {
+        [AREAS]: 'chords cli fleet herdr memory mods pm speak stray trophy-sys'
+            .split(' ')
+            .join('\n'),
+    });
     await start($);
     const ops = [...registered.described.matchAll(/^op (\w+)/gmu)].map(
         (m) => m[1],
@@ -225,6 +236,17 @@ test("orbit's description fits the 4096 chars cc shows the model, every op named
     ]);
 });
 
+test("orbit's text names the required area and why, and from with every starter", async ($, on) => {
+    world(on, { [AREAS]: 'chords 🎹\nspeak 🎙️\n' });
+    await start($);
+    const add = registered.described.match(/^op add.*$/mu)?.[0] ?? '';
+    expect(add).toContain('area, required: chords, speak;');
+    expect(add).toContain('why, required: 2+ words;');
+    expect(add).toContain(
+        "from: a starter not you, { who: crow, wishkeeper, codie, sixth sense, wing N, main clio, designer, helga, dima's rule, plain cc }",
+    );
+});
+
 /* brief 8 item 1: an ask carries one link dima opens in a click */
 
 test('a link that is neither an https url nor a file path is refused, and no ask lands', async ($, on) => {
@@ -232,7 +254,7 @@ test('a link that is neither an https url nor a file path is refused, and no ask
     await start($);
     const r = await addLinked($, 'javascript:alert(1)');
     expect([r.deny, w.store.has('asks:o1o1o1o1-orbit')]).toEqual([
-        'orbit add: link «javascript:alert(1)» is neither an https url, an obsidian://open url nor a file path (/… or ~/…)',
+        'orbit add: «the proposal for the catch kinds»: link «javascript:alert(1)» is neither an https url, an obsidian://open url nor a file path (/… or ~/…)',
         false,
     ]);
 });
@@ -245,7 +267,7 @@ test('an obsidian:// link that writes (new, overwrite) is refused, and no ask la
         'obsidian://new?vault=v&file=_hq%2Finbox&overwrite=true',
     );
     expect([r.deny, w.store.has('asks:o1o1o1o1-orbit')]).toEqual([
-        'orbit add: link «obsidian://new?vault=v&file=_hq%2Finbox&» is neither an https url, an obsidian://open url nor a file path (/… or ~/…)',
+        'orbit add: «the proposal for the catch kinds»: link «obsidian://new?vault=v&file=_hq%2Finbox&» is neither an https url, an obsidian://open url nor a file path (/… or ~/…)',
         false,
     ]);
 });
@@ -264,12 +286,24 @@ test('a gated ask carries isGated in the store, a plain ask none', async ($, on)
     const w = world(on);
     await start($);
     const asks = [
-        { pick: 'run it', text: '⚠️ mirror: `git push --mirror origin`' },
         {
+            area: 'mods',
+            pick: 'run it',
+            text: '⚠️ mirror: `git push --mirror origin`',
+            why: 'a test ask',
+        },
+        {
+            area: 'mods',
             pick: 'merge it',
             text: 'merge https://github.com/x/y/pull/7 at abc1234',
+            why: 'a test ask',
         },
-        { pick: 'cut it', text: 'cut the probe?' },
+        {
+            area: 'mods',
+            pick: 'cut it',
+            text: 'cut the probe?',
+            why: 'a test ask',
+        },
     ];
     await orbit($, { asks, op: 'add' });
     const items = (
@@ -298,8 +332,10 @@ test("orbit's schema names every argument its ops read", async ($, on) => {
     expect([
         [
             'act',
+            'area',
             'asks',
             'current',
+            'from',
             'id',
             'ids',
             'items',
@@ -313,13 +349,14 @@ test("orbit's schema names every argument its ops read", async ($, on) => {
             'text',
             'texts',
             'title',
+            'why',
             'words',
         ].filter((name) => !(name in props)),
         inner('asks'),
         props.act?.enum,
     ]).toEqual([
         [],
-        ['hiddenNote', 'link', 'pick', 'text'],
+        ['area', 'from', 'hiddenNote', 'link', 'pick', 'text', 'why'],
         ['create', 'edit', 'link', 'step', 'end'],
     ]);
 });
@@ -401,7 +438,17 @@ test('one call carrying an add, a resolve and a plan lands all three', async ($,
     await add($, ['push FRM-1', 'yes']);
     const r = await orbit($, {
         ops: [
-            { asks: [{ pick: 'yes', text: 'trash the probe' }], op: 'add' },
+            {
+                asks: [
+                    {
+                        area: 'mods',
+                        pick: 'yes',
+                        text: 'trash the probe',
+                        why: 'a test ask',
+                    },
+                ],
+                op: 'add',
+            },
             { ids: ['o1'], op: 'resolve' },
             { lines: ['now: build', 'next: test'], op: 'plan' },
         ],
@@ -426,7 +473,17 @@ test('a call whose resolve is refused reports per op, the other ops landing', as
     const ui = await ticked($, w);
     const r = await orbit($, {
         ops: [
-            { asks: [{ pick: 'yes', text: 'trash the probe' }], op: 'add' },
+            {
+                asks: [
+                    {
+                        area: 'mods',
+                        pick: 'yes',
+                        text: 'trash the probe',
+                        why: 'a test ask',
+                    },
+                ],
+                op: 'add',
+            },
             { ids: ['o1'], op: 'resolve' },
             { lines: ['now: build'], op: 'plan' },
         ],

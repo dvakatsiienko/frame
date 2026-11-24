@@ -8,7 +8,24 @@ export type StashEntry = {
     at: number;
 };
 
-export type PublishedAsk = {
+// what an ask says beside its text (FRM-670): its area with the list's emoji, why it exists, and who started it when
+// that is not the thread posting it: a codie or a sixth sense by its lane and ticket or a topic, the rest by a topic if any
+export type AskOrigin = {
+    area?: string;
+    areaEmoji?: string;
+    from?: AskFrom;
+    why?: string;
+};
+export type AskFrom = {
+    lane?: string;
+    ticket?: string;
+    topic?: string;
+    who: string;
+};
+
+// `from.line`: the starter as this mod draws it, badge and all, so another surface copies no badge table
+export type PublishedAsk = Omit<AskOrigin, 'from'> & {
+    from?: AskFrom & { line: string };
     id: string;
     text: string;
     pick: string;
@@ -134,7 +151,7 @@ export type StashTurn = {
 
 // one ask to dima in orbit: what is asked and clio's pick, the steer clio keeps for herself, dima's mark and steer;
 // locked while the turn it joined runs, changed after a follow-up, resolved until that turn ends
-export type OrbitAsk = {
+export type OrbitAsk = AskOrigin & {
     id: string;
     text: string;
     pick: string;

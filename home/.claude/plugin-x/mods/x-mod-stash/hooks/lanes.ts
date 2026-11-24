@@ -10,7 +10,7 @@ import type {
     StashEntry,
     StashLane,
 } from '../types/stash.d.ts';
-import { oneLine, steered } from './orbit.ts';
+import { steered } from './orbit.ts';
 import { PREFIX, currentOrbit } from './orbit-store.ts';
 import { type Registered, laneMemberRow, registry } from './roster.ts';
 import {
@@ -23,7 +23,7 @@ import {
     threadRecords,
 } from './session-identity.ts';
 import { partsShown } from './settings-store.ts';
-import { bare, errorText, expandHome } from './util.ts';
+import { bare, errorText, expandHome, oneLine } from './util.ts';
 import { xRead } from './x-cli.ts';
 
 type Entry = StashEntry;

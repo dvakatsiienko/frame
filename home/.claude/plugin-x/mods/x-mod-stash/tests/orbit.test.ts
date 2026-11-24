@@ -1,5 +1,8 @@
 import { closedMark } from '../hooks/board-kit.tsx';
+import { orbitOp } from '../hooks/orbit.ts';
+import { type OriginRead, STARTER_WORDS } from '../hooks/orbit-ask-origin.ts';
 import {
+    AREAS,
     HERDR_FILE,
     addLinked,
     assume,
@@ -11,6 +14,7 @@ import {
     stateOf,
     texts,
     tickLog,
+    ticked,
 } from './orbit-helpers.ts';
 import {
     SID,
@@ -25,6 +29,7 @@ import {
     world,
 } from './orbit-world.ts';
 import { type Engine, expect, test } from './shared-boot.ts';
+import { THREADS_FILE, type ThreadRow, threadsFile } from './threads.ts';
 
 test('an ask the turn left unanswered gets its controls back when the turn ends', async ($, on) => {
     world(on);
@@ -810,4 +815,259 @@ test("herdr's phases tick joins a running turn at its next step", async ($, on) 
     })}\n`;
     const step = await $.tool.call({ command: 'ls', tool: 'Bash' });
     expect((step.context ?? []).join('\n')).toMatch(/his steer: «b next»/);
+});
+
+/* FRM-670: ask origin — the area, the why and the starter of an ask */
+
+const READ: OriginRead = {
+    areas: [
+        { emoji: '🧩', word: 'mods' },
+        { emoji: '🎙️', word: 'speak' },
+    ],
+};
+const ASK = {
+    area: 'mods',
+    pick: 'yes',
+    text: 'push it',
+    why: 'it rang twice',
+};
+// one add as the tool's rules read it: the refusal, or the asks it landed
+const added = (
+    asks: Record<string, unknown>[],
+    self?: Omit<ThreadRow, 'sessionId'>,
+) => {
+    const op = orbitOp(
+        { asks: [], next: 1, turns: 0 },
+        { asks, op: 'add' },
+        false,
+        undefined,
+        false,
+        { ...READ, self: self && { sessionId: SID, ...self } },
+    );
+    return 'deny' in op ? op.deny : op.orbit.asks;
+};
+const items = (w: ReturnType<typeof world>) =>
+    (w.store.get(`asks:${SID}`) as { items?: Record<string, unknown>[] })
+        ?.items;
+
+test('an ask names an area off the list file as it stands: none or an unknown one is refused with the list, a line added to it lands at once', async ($, on) => {
+    const w = world(on, { [AREAS]: '# areas\nmods 🧩\nspeak 🎙️\n' });
+    await start($);
+    const { area: _, ...bare } = ASK;
+    const asked = async (fields: object) =>
+        (await orbit($, { asks: [{ ...bare, ...fields }], op: 'add' })) as {
+            deny?: string;
+        };
+    const none = (await asked({})).deny;
+    const off = (await asked({ area: 'pm' })).deny;
+    const isKept = Boolean(items(w));
+    const landed = (await asked({ area: 'speak' })).deny;
+    w.files[AREAS] += 'pm 📋\n';
+    const grown = (await asked({ area: 'pm' })).deny;
+    expect([none, off, isKept, landed, grown]).toEqual([
+        expect.stringMatching(/«push it»: it has no area, one of mods, speak/),
+        expect.stringMatching(/area «pm» is off the list, one of mods, speak/),
+        false,
+        undefined,
+        undefined,
+    ]);
+    expect(items(w)?.map((a) => [a.area, a.areaEmoji])).toEqual([
+        ['speak', '🎙️'],
+        ['pm', '📋'],
+    ]);
+});
+
+test('with the area list gone any one word lands, and the answer says so', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = (await orbit($, { asks: [ASK], op: 'add' })) as {
+        result?: string;
+    };
+    const follow = (await orbit($, {
+        area: 'pm',
+        id: 'o1',
+        op: 'follow',
+        text: 'push it now',
+    })) as { result?: string };
+    const refused = await Promise.all(
+        [' ', 'two words', 'x'.repeat(21), '\u200b'].map(
+            async (area) =>
+                (
+                    (await orbit($, {
+                        asks: [{ ...ASK, area }],
+                        op: 'add',
+                    })) as { deny?: string }
+                ).deny,
+        ),
+    );
+    const unread = expect.stringMatching(/orbit-areas\.txt could not be read/);
+    expect([r.result, follow.result, items(w)?.length, refused]).toEqual([
+        unread,
+        unread,
+        1,
+        Array(4).fill(expect.stringMatching(/its area is one plain word/)),
+    ]);
+});
+
+test('an ask with no why, a blank one or a one-word one refuses the whole add, naming the ask, the field and the fix', () => {
+    for (const why of [undefined, '  ', 'because', '— .'])
+        expect(added([ASK, { ...ASK, text: 'cut it', why }])).toMatch(
+            /^orbit add: «cut it»: .*why.*; add why, a short clause of two words or more/,
+        );
+    expect(
+        added([{ ...ASK, why: 'x'.repeat(50).concat(' ', 'x'.repeat(50)) }]),
+    ).toMatch(/^orbit add: «push it»: its why is 101 chars; keep it ≤90/);
+    // every miss of every ask in one refusal, so one retry lands
+    expect(
+        added([
+            { ...ASK, area: 'nope', link: 'inbox.md', text: 'cut it' },
+            { ...ASK, text: 'y'.repeat(91), why: '' },
+        ]),
+    ).toMatch(/cut it.*link.*off the list.*\n.*no why.*\n.*is 91 chars/);
+    expect(added([{ ...ASK, why: 'too  slow ' }])).toMatchObject([
+        { id: 'o1', why: 'too slow' },
+    ]);
+});
+
+test('a starter off the list, with no which-one, or with a lane it cannot have is refused', () => {
+    const refused: [unknown, RegExp][] = [
+        [
+            { who: 'retro' },
+            new RegExp(`use ${STARTER_WORDS}.*drop from and lead the why`),
+        ],
+        ['crow', /from is an object/],
+        [{ who: 'codie' }, /lane and ticket, or a topic/],
+        [{ lane: 'mods', who: 'codie' }, /lane and ticket, or a topic/],
+        [{ ticket: 'FRM-1', topic: 'x', who: 'sixth sense' }, /never both/],
+        [{ lane: 'mods', ticket: 'FRM-1', who: 'crow' }, /no lane or ticket/],
+        [{ topic: 'x'.repeat(90), who: 'crow' }, /from draws \d+ chars/],
+    ];
+    for (const [from, why] of refused)
+        expect(added([{ ...ASK, from }])).toMatch(why);
+    expect(added([{ ...ASK, from: { who: 'Dima’s rule' } }])).toMatchObject([
+        { from: { who: "dima's rule" } },
+    ]);
+});
+
+test('a starter that is the poster is refused, another session of its role is stored', () => {
+    const codie = {
+        area: 'mods',
+        lane: 'mods-lane-9',
+        role: 'codie',
+        ticket: 'FRM-670',
+    };
+    const own = { lane: 'mods', ticket: 'FRM-670', who: 'codie' };
+    const self: [object, Omit<ThreadRow, 'sessionId'>][] = [
+        [own, codie],
+        [{ ...own, lane: 'Mods-lane-9' }, codie],
+        [
+            { ...own, who: 'sixth sense' },
+            { ...codie, role: 'sixth-sense' },
+        ],
+        [
+            { ...own, lane: 'mods-lane-9' },
+            { ...codie, ticket: undefined },
+        ],
+        [{ who: 'wing 2' }, { role: 'wing', wing: 2 }],
+        [{ topic: 'x', who: 'crow' }, { role: 'adviser' }],
+        [{ who: 'helga' }, { role: 'copyist' }],
+        [{ who: 'designer' }, { role: 'designer' }],
+        [{ who: 'main clio' }, { role: 'coordinator' }],
+    ];
+    for (const [from, record] of self)
+        expect(added([{ ...ASK, from }], record)).toMatch(/from names you/);
+    const other: [object, Omit<ThreadRow, 'sessionId'> | undefined][] = [
+        [own, undefined],
+        [own, {}],
+        [own, { ...codie, ticket: 'FRM-1' }],
+        [own, { ...codie, ticket: undefined }],
+        [own, { ...codie, area: 'herdr', lane: 'herdr-lane-3' }],
+        [{ topic: 'x', who: 'codie' }, codie],
+        [{ topic: 'x', who: 'codie' }, { role: 'codie' }],
+        [{ topic: 'x', who: 'plain cc' }, {}],
+        [{ who: 'wing 1' }, { role: 'wing', wing: 2 }],
+        [{ who: 'main clio' }, { role: 'wing', wing: 2 }],
+    ];
+    for (const [from, record] of other)
+        expect(added([{ ...ASK, from }], record)).toHaveLength(1);
+});
+
+test("the poster is read from the session's own thread record", async ($, on) => {
+    const w = world(on, {
+        [THREADS_FILE]: threadsFile([
+            { area: 'mods', role: 'codie', sessionId: SID, ticket: 'FRM-670' },
+        ]),
+    });
+    await start($);
+    const r = (await orbit($, {
+        asks: [
+            { ...ASK, from: { lane: 'mods', ticket: 'frm-670', who: 'codie' } },
+        ],
+        op: 'add',
+    })) as { deny?: string };
+    expect([r.deny, items(w)]).toEqual([
+        expect.stringMatching(/from names you/),
+        undefined,
+    ]);
+});
+
+test("an ask's origin rides its store item, and a follow keeps each field it leaves out", async ($, on) => {
+    const w = world(on, { [AREAS]: 'mods 🧩\nspeak 🎙️\n' });
+    await start($);
+    await orbit($, {
+        asks: [{ ...ASK, from: { who: 'crow' }, text: '⚠️ push it' }],
+        op: 'add',
+    });
+    const seen: unknown[] = [items(w)?.[0]];
+    const follow = async (fields: object) => {
+        const r = (await orbit($, {
+            id: 'o1',
+            op: 'follow',
+            text: '⚠️ push it now',
+            ...fields,
+        })) as { deny?: string };
+        const { area, from, why } = items(w)?.[0] ?? {};
+        seen.push(r.deny ?? [area, (from as { who?: string })?.who, why]);
+    };
+    await follow({});
+    await follow({ why: 'ci is green' });
+    await follow({ why: 'green' });
+    await follow({ why: 'so '.repeat(31) });
+    await follow({ area: 'speak', from: { who: 'helga' } });
+    await follow({ area: 'nope' });
+    await follow({ from: null });
+    await follow({ from: 'null' });
+    expect(seen).toEqual([
+        {
+            area: 'mods',
+            areaEmoji: '🧩',
+            from: { line: '🐦‍⬛ crow', who: 'crow' },
+            id: 'o1',
+            isGated: true,
+            pick: 'yes',
+            text: '⚠️ push it',
+            why: 'it rang twice',
+        },
+        ['mods', 'crow', 'it rang twice'],
+        ['mods', 'crow', 'ci is green'],
+        expect.stringMatching(/o1: why «green» is one word/),
+        expect.stringMatching(/o1: its why is 92 chars/),
+        ['speak', 'helga', 'ci is green'],
+        expect.stringMatching(/area «nope» is off the list/),
+        ['speak', undefined, 'ci is green'],
+        ['speak', undefined, 'ci is green'],
+    ]);
+});
+
+test('a «changed:» resolve beside an add refused for its area is refused too', async ($, on) => {
+    const w = world(on, { [AREAS]: 'mods 🧩\n' });
+    await start($);
+    await ticked($, w);
+    const r = (await orbit($, {
+        ops: [
+            { asks: [{ ...ASK, area: 'nope' }], op: 'add' },
+            { ids: ['o1'], op: 'resolve', words: { o1: 'changed: narrower' } },
+        ],
+    })) as { deny?: string };
+    expect(r.deny).toMatch(/off the list.*\n2 resolve: refused/s);
 });

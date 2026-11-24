@@ -566,6 +566,18 @@
   - given clio adds an ask with `link` — an https url, an `obsidian://open` url (a writing `new` or `overwrite` url is refused), or a file path from `/` or `~/`, spaces allowed in the path (an iCloud vault path, FRM-426)
   - then its row draws `🔗 <host>` as a link to the url, or `🔗 <file name>` (an obsidian url: its note), a press opening it through `open`; any other link (`http://`, `file://`, a bare word) is refused and no ask lands
   - proof: tests/orbit.test.ts::an ask's https link draws as a link to that url / an ask's file link opens through open / file link may hold spaces / obsidian:// link / an obsidian:// link that writes (new, overwrite) is refused / an http url, a file:// url and a bare word are still refused
+- ✅ ask origin: every ask names its area and why it exists, and who started it when the poster did not (FRM-670)
+  - makes: `area`, `areaEmoji`, `why` and `from` on the ask, and on its item under `asks:<sid>` in the store, `from.line` there the starter as drawn («🔧 mods | FRM-662»), so herdr's twin (FRM-620) copies no badge table
+  - given `~/.claude/shelf/orbit-areas.txt`, one «word emoji» a line, `#` a comment, when an ask is added, then its `area` is a word of that list as it stands at the call: an edit is live with no reload; none or an unknown one refuses the whole add, the refusal printing the list
+  - and an add with no `why`, a blank one or a one-word one is refused whole; every ask's misses come in one refusal, each naming the ask, the field and the fix, so one retry lands
+  - and `from` is `{ who, lane and ticket, or topic }`, `who` one of crow, wishkeeper, codie, sixth sense, wing N, main clio, designer, helga, dima's rule, plain cc; a codie or a sixth sense says which one; a starter off the list is posted with no `from`, its name leading the why, as the refusal says
+  - and a `from` that names the poster is refused: its role from its thread record, a wing by its number, a codie or a sixth sense by its lane and ticket; a topic from one of those two or a plain cc always means another session; a session with no record is never refused on it
+  - then the board draws «🎙️ speak: » between the id and the text, and one muted line under the pick: «🔧 mods | FRM-662 · <why>», «🐦‍⬛ crow · <why>», «🎨 designer: <topic> · <why>», or the why alone; the glide subcard draws the same; an ask from before this draws neither
+  - and a `follow` keeps each field it leaves out, checks and replaces each it carries, `from: null` clears the starter
+  - decision: the list gone, unreadable or empty → any one word lands with no emoji and the answer says so: a lost file never locks every ask
+  - decision: the tool's text prints the list's words as read at the session's start; the check reads the file live
+  - 📌 a session on the old text is refused once and lands its retry with the new fields, no restart (probed live, cc 2.1.331, 24 Nov)
+  - proof: tests/orbit.test.ts::an ask names an area off the list file as it stands… / with the area list gone any one word lands… / an ask with no why… / a starter off the list… / a starter that is the poster is refused… / the poster is read from the session's own thread record / an ask's origin rides its store item… / a «changed:» resolve beside an add refused for its area…; tests/board-orbit.test.ts::an ask draws its area before its text…; tests/lane-board.test.ts::unfolded, a subcard draws the member's asks as a view…; tests/orbit-tool.test.ts::orbit's text names the required area and why…
 - ✅ a clio boot keeps going after a spawn (FRM-426, flawlog 2026-10-29 13:10)
   - given clio's session loaded `clio:boot` and has printed no reply as long as the board (300 characters or more) since
   - when `start_session` returns, whose own hint says «then end your turn»
@@ -578,7 +590,7 @@
 - ✅ the model reads orbit's whole tool description (dima's o50)
   - given cc shows a model only the first 4096 chars of a tool's description (cc's cap from 2.1.296; 2048 before it)
   - when a session loads orbit
-  - then its description fits in 4096 (3,184 bytes) and names every op — add, resolve, follow, assume, plan, glide — with its rule; glide stays whole
+  - then its description fits in 4096 (3,410 chars with ten areas) and names every op — add, resolve, follow, assume, plan, glide — with its rule; glide stays whole
   - and it holds every how-to rule of an ask, which left `rules/fleet-mods.md` § orbit for it (FRM-640): when an ask goes up, who a member asks, what a pick names, how a reply names an ask, a guard-refused command; with the mod off no orbit rule is left in memory beyond the reply shape
   - and the tool loads up front (`isDeferred: false`), never behind ToolSearch
   - 📌 a session already running keeps the description it loaded until it restarts; a `--bg` session draws no board and is unchanged

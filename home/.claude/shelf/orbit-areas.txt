@@ -1,0 +1,11 @@
+# the areas an orbit ask names (FRM-670), one «word emoji» a line, read at every add: an edit is live at once
+chords 🎹
+cli 🐚
+fleet 🌌
+herdr 🐑
+memory 🧠
+mods 🧩
+pm 📋
+speak 🎙️
+stray 🐕
+trophy-sys 🏆

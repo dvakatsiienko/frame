@@ -192,7 +192,14 @@ test('an orbit add opening «Q2» passes, and a reply lacking «❓ **Q2**» red
     await start($);
     await say($, 'grill me');
     const r = await orbit($, {
-        asks: [{ pick: 'a', text: 'Q2 which door for the tick record?' }],
+        asks: [
+            {
+                area: 'mods',
+                pick: 'a',
+                text: 'Q2 which door for the tick record?',
+                why: 'a test ask',
+            },
+        ],
         op: 'add',
     });
     expect([r.deny, (await stop($, 'asked in orbit.')).block]).toEqual([
@@ -206,7 +213,14 @@ test('a reply printing «❓ **Q2**» passes the Stop', async ($, on) => {
     await start($);
     await say($, 'grill me');
     await orbit($, {
-        asks: [{ pick: 'a', text: 'Q2 which door for the tick record?' }],
+        asks: [
+            {
+                area: 'mods',
+                pick: 'a',
+                text: 'Q2 which door for the tick record?',
+                why: 'a test ask',
+            },
+        ],
         op: 'add',
     });
     expect(
@@ -219,7 +233,14 @@ test('a round with its title inside the bold passes the Stop, no reprint', async
     await start($);
     await say($, 'grill me');
     await orbit($, {
-        asks: [{ pick: 'a', text: 'Q2 which door for the tick record?' }],
+        asks: [
+            {
+                area: 'mods',
+                pick: 'a',
+                text: 'Q2 which door for the tick record?',
+                why: 'a test ask',
+            },
+        ],
         op: 'add',
     });
     expect(
@@ -232,7 +253,14 @@ test('a printed «❓ **Q20**» does not stand in for «Q2»', async ($, on) => 
     await start($);
     await say($, 'grill me');
     await orbit($, {
-        asks: [{ pick: 'a', text: 'Q2 which door for the tick record?' }],
+        asks: [
+            {
+                area: 'mods',
+                pick: 'a',
+                text: 'Q2 which door for the tick record?',
+                why: 'a test ask',
+            },
+        ],
         op: 'add',
     });
     expect((await stop($, '❓ **Q20** another question')).block).toMatch(
