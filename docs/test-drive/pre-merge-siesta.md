@@ -211,3 +211,4 @@ Ticket: none
 - 2026-11-24 14:47 · 159k tokens · 0 high, 3 medium, 4 low · highs real: none · mediums real 3 of 3 · acted: 1 fixed (the two dialog cases on FRM-696), 1 asked (the stale hazard guard clause), 1 in a fix round (the roast row and exited workers)
 - 2026-11-24 15:30 wing 1 · 79k tokens · 2 high, 4 medium, 2 low · highs real: y, both (reply-check cleared a claim on «I tried» with no call; the voice line replaced his vibe words) · acted: both highs fixed, 4 mediums fixed, 1 asked (his measures lever)
 - 2026-11-24 15:20 · 99k tokens · 2 high, 4 medium, 3 low · highs real: y (a close without its live done test; a wish line that lost two of his phrases) · acted: 1 high fixed, 1 reopened and asked, 4 mediums fixed or asked
+- 2026-11-24 15:40 · 62k tokens · 1 high, 4 medium, 4 low · highs real: y (a re-sign line that did not match the live body) · acted: high fixed, 3 mediums fixed, 1 asked
