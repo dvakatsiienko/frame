@@ -958,6 +958,17 @@ describe('gate-queue cpu log', () => {
         expect(cpuRows(state)).toHaveLength(1);
     });
 
+    test('a run that ends before its sample leaves no sample file behind', async () => {
+        const { state } = fixture();
+        queue(state, ['--long', 'true'], '20', {
+            GATE_QUEUE_IDLE_SAMPLES: '1',
+        });
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        expect(
+            readdirSync(state).filter((f) => f.startsWith('gate-queue-cpu.s')),
+        ).toEqual([]);
+    });
+
     test('a sample that fails writes - and the run goes on', () => {
         const { state } = fixture();
         const got = queue(

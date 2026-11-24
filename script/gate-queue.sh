@@ -203,7 +203,8 @@ take_sample() {
     local spawn idle
     spawn=$(perl -MTime::HiRes=time -e 'for (1 .. 5) { $t = time; system("/usr/bin/true"); $d = (time - $t) * 1000; $m = $d if $d > $m } printf "%.0f", $m' 2>/dev/null)
     idle=$(iostat -w 1 -c $((${GATE_QUEUE_IDLE_SAMPLES:-3} + 1)) -n 0 2>/dev/null | awk '$1 ~ /^[0-9]+$/ && NF >= 3 { n++; if (n > 1) { sum += $3; kept++ } } END { if (kept > 0) printf "%.0f", sum / kept }')
-    printf '%s\t%s\n' "${idle:--}" "${spawn:--}" >"$sample.tmp" && mv "$sample.tmp" "$sample"
+    printf '%s\t%s\n' "${idle:--}" "${spawn:--}" >"$sample.tmp"
+    if kill -0 $$ 2>/dev/null; then mv "$sample.tmp" "$sample"; else rm -f "$sample.tmp"; fi
 }
 # the cpu seconds (user + sys) of every child this shell has waited for, into cpu_now; `times` runs in this shell, never in a
 # substitution or a pipe, whose fork would report its own children; bash prints them on its second line
@@ -216,9 +217,11 @@ log_cpu() {
     local idle=- spawn=- cpu=${2--}
     [ -s "$sample" ] && IFS=$'\t' read -r idle spawn <"$sample"
     printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$slot" "${is_mods_suite:-0}" "${idle:--}" "$load" "$waited" "${1--}" "$cpu" "${spawn:--}" >>"$cpu_log"
-    kill "$sampler" 2>/dev/null
-    rm -f "$sample" "$sample.tmp" "$sample.times"
+    drop_sample
 }
+# the sampler is never killed: its pid is long reused by the end of a run. it ends by itself, and keeps no file once the run is gone
+drop_sample() { rm -f "$sample" "$sample.tmp" "$sample.times"; }
+drop_sample
 
 freed() { [ "$slot" != long ] || { date +%s >"$turn.freed.$$" && mv "$turn.freed.$$" "$turn.freed"; }; }
 # the turn stood free for the suite of this ticket, 2 min from its arrival or the last release, and the load kept it out
@@ -271,11 +274,13 @@ if [ "$slot" = none ]; then
     exit $?
 fi
 (take_sample) </dev/null >/dev/null 2>&1 &
-sampler=$!
 ticket=$tickets/${is_suite:+0.}$began.${is_mods_suite:+m.}$$
 started_at $$ >"$tickets/.new.$$"
 mv "$tickets/.new.$$" "$ticket"
-leave() { rm -f "$ticket"; }
+leave() {
+    rm -f "$ticket"
+    drop_sample
+}
 trap leave EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
@@ -314,6 +319,8 @@ release() {
     freed
     rm -rf "$turn"
     log_run "$ran" "$code"
+    # a held turn's work runs under x, never as this shell's child
+    [ -n "$is_hold" ] && cpu=-
     log_cpu "$ran" "$cpu"
     # a batch run whole keeps every suite behind it: two held the turn 21 min each while four suites stood 7 to 16 (2026-11-24)
     if [ "$slot" = long ] && [ -z "$is_suite$is_hold" ] && [ "$ran" -gt "${GATE_QUEUE_BATCH_MAX:-180}" ]; then
