@@ -55,9 +55,9 @@ same 6 slips, same transcript, through the FRM-502 `packWake` and `decisionOf` u
 
 his o2 tick, 2026-11-20 15:28: one crow, her bar unchanged; each catch of his that a held note of hers had named is one line here, read at the 27 Nov verdict beside her sent precision
 
-- (none yet)
+- none from 20 to 24 Nov; closed on his o46 tick, 24 Nov: the verdict is dropped, crow stays as she is
 
-## the weekly grade (standing)
+## the weekly grade (dropped 24 Nov, his o47 tick: «drop: you graded two rounds, all useful, and you catch a bad note yourself when it shows»)
 once a week clio draws 5 notes from `notes.jsonl` for dima to grade, and logs a round here: his grades, the `--changed` share over `verdicts.jsonl`, and the `#dima-caught` lines crow flagged first.
 
 - 2026-11-11 · wing 1 · 5 of the week's 107 sent notes (every 21st): 11-04 FRM-501 round 2, 11-06 the one-door overclaim, 11-07 the unflipped override, 11-09 FRM-550 Q2's new crow duty, 11-10 helga's lost theming W5 · clio's read: hit, hit, hit, hit, meh; dima, 14:16: «In my mind Crow performs well. I confirm, I believe these numbers»; 14:47: «I am satisfied with crow and I think it is very useful», no single catch he recalls, so no per-note grades. next round: five plain lines he answers one word each, never orbit picks (5 turns spent on this one) · `--changed` since 11-04: 235 of the 254 verdicts carrying the field changed something (92.5 %); 129 of 383 carry no field, so about 61 % of all verdicts are known to have changed something · `#dima-caught` first-flagged: not counted this round
