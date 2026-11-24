@@ -54,17 +54,49 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	// the exit lines bind where the seal wrote them: the lane spec's section for this ticket, else the ticket's own
-	exitText, from, fix := body, id, "x linear body "+id
 	paths, section := laneSpecSection(repo, id)
 	if len(paths) > 1 {
-		shown := make([]string, len(paths))
-		for i, p := range paths {
-			shown[i] = home(p)
-		}
-		return nil, &Fail{Refused: true, Msg: id + " has a section in " + plural(len(paths), "lane spec") + ": " + strings.Join(shown, ", ") + " — one spec binds a ticket",
+		return nil, &Fail{Refused: true, Msg: id + " has a section in " + specList(paths) + " — one spec binds a ticket",
 			Next: "remove the stale section, then x brief preflight " + id}
 	}
+	read, err := preflightFindings(repo, id, body, paths, section, r.Step)
+	if err != nil {
+		return nil, err
+	}
+	found, exits, from, fix := read.found, read.exits, read.from, read.fix
+
+	// a ticket's commit has no line, so it sorts after every line
+	slices.SortStableFunc(found, func(a, b finding) int { return cmp.Compare(lineOrLast(a), lineOrLast(b)) })
+	if len(found) > 0 {
+		r.Show(findingRows(found, r.board.inner()-nameCell-2), nameCell+2)
+		msg := []string{plural(len(found), "problem") + " in " + from}
+		for _, f := range found {
+			if f.Line == 0 {
+				msg = append(msg, fmt.Sprintf("%s commit %s — %s", f.Kind, f.What, f.Why))
+				continue
+			}
+			msg = append(msg, fmt.Sprintf("line %d: %s %s — %s", f.Line, f.Kind, f.What, f.Why))
+		}
+		return nil, &Fail{Refused: true, Msg: strings.Join(msg, "\n"), Next: fix}
+	}
+	r.Done(fmt.Sprintf("ok: %s from %s, numbered, each with a surface", plural(exits, "exit line"), from), "")
+	return ordered{{"ticket", id}, {"exits", exits}, {"from", from}, {"repo", repo}}, nil
+}
+
+// what the checks read of a ticket's text against its lane spec: the findings, the exit lines counted, and where they were read from
+type preflightRead struct {
+	found     []finding
+	exits     int
+	from, fix string
+}
+
+// the runner a check's steps go through: a verb's own board in preflight, none in a dispatch
+type stepFunc func(name, doing string, work func() (string, error)) error
+
+// preflightFindings runs every check of a ticket's text, `x brief preflight` and `x lane dispatch` both: the exit lines bind where
+// the seal wrote them, the lane spec's section for this ticket, else the ticket's own text; paths names every spec holding a section
+func preflightFindings(repo, id, body string, paths []string, section string, step stepFunc) (preflightRead, error) {
+	exitText, from, fix := body, id, "x linear body "+id
 	if section != "" {
 		exitText, from, fix = section, home(paths[0])+" § "+id, "edit "+home(paths[0])
 	}
@@ -72,7 +104,7 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 
 	var found []finding
 	exits := 0
-	if err := r.Step("lint", "the exit lines and the grill words", func() (string, error) {
+	if err := step("lint", "the exit lines and the grill words", func() (string, error) {
 		// the raw lines, headings included: a heading is the likeliest place for «redesign»; the spec's section too
 		sources := []struct{ text, where string }{{body, ""}}
 		if exitText != body {
@@ -118,27 +150,27 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 		}
 		return plural(exits, "exit line"), nil
 	}); err != nil {
-		return nil, err
+		return preflightRead{}, err
 	}
 
-	if err := r.Step("verbs", "each x verb and flag the exit lines name", func() (string, error) {
+	if err := step("verbs", "each x verb and flag the exit lines name", func() (string, error) {
 		before := len(found)
 		found = append(found, xCommandFindings(exitText, verbs)...)
 		return plural(len(found)-before, "finding"), nil
 	}); err != nil {
-		return nil, err
+		return preflightRead{}, err
 	}
 
-	if err := r.Step("resolve", "each exit-line command resolves here, none is run", func() (string, error) {
+	if err := step("resolve", "each exit-line command resolves here, none is run", func() (string, error) {
 		before := len(found)
 		found = append(found, resolveFindings(exitText, repo)...)
 		return plural(len(found)-before, "finding"), nil
 	}); err != nil {
-		return nil, err
+		return preflightRead{}, err
 	}
 
 	var shipped []string
-	if err := r.Step("main", "what origin/main already holds", func() (string, error) {
+	if err := step("main", "what origin/main already holds", func() (string, error) {
 		_, _ = gitIn(repo, "fetch", "-q", "origin", "main")
 		before := len(found)
 		verbsOnMain := mainVerbs(repo)
@@ -166,38 +198,37 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 		}
 		return fmt.Sprintf("%s, %s on main", plural(len(found)-before, "finding"), plural(len(shipped), "commit")), nil
 	}); err != nil {
-		return nil, err
+		return preflightRead{}, err
 	}
+	return preflightRead{found, exits, from, fix}, nil
+}
 
-	// a ticket's commit has no line, so it sorts after every line
-	slices.SortStableFunc(found, func(a, b finding) int { return cmp.Compare(lineOrLast(a), lineOrLast(b)) })
-	if len(found) > 0 {
-		r.Show(findingRows(found, r.board.inner()-nameCell-2), nameCell+2)
-		msg := []string{plural(len(found), "problem") + " in " + from}
-		for _, f := range found {
-			if f.Line == 0 {
-				msg = append(msg, fmt.Sprintf("%s commit %s — %s", f.Kind, f.What, f.Why))
-				continue
-			}
-			msg = append(msg, fmt.Sprintf("line %d: %s %s — %s", f.Line, f.Kind, f.What, f.Why))
-		}
-		return nil, &Fail{Refused: true, Msg: strings.Join(msg, "\n"), Next: fix}
+// the specs a ticket has a section in, named by path
+func specList(paths []string) string {
+	shown := make([]string, len(paths))
+	for i, p := range paths {
+		shown[i] = home(p)
 	}
-	r.Done(fmt.Sprintf("ok: %s from %s, numbered, each with a surface", plural(exits, "exit line"), from), "")
-	return ordered{{"ticket", id}, {"exits", exits}, {"from", from}, {"repo", repo}}, nil
+	return plural(len(paths), "lane spec") + ": " + strings.Join(shown, ", ")
+}
+
+// sealRecorded is the hash the spec section's `wish:` line records and the line it sits on; "" when the section records none
+func sealRecorded(section string) (line int, recorded string) {
+	for i, text := range strings.Split(section, "\n") {
+		if strings.HasPrefix(text, "wish:") {
+			if found := signHash.FindStringSubmatch(text); found != nil {
+				return i + 1, found[1]
+			}
+			break
+		}
+	}
+	return 0, ""
 }
 
 // sealDrift is the spec section's recorded seal hash when the ticket's current text, above its closing ## signed, hashes to another
 // in none of the forms a sign holds; signed is the hash a re-seal would set
 func sealDrift(section, ticket string) (line int, recorded, signed string) {
-	for i, text := range strings.Split(section, "\n") {
-		if strings.HasPrefix(text, "wish:") {
-			if found := signHash.FindStringSubmatch(text); found != nil {
-				line, recorded = i+1, found[1]
-			}
-			break
-		}
-	}
+	line, recorded = sealRecorded(section)
 	text := ticket
 	if above, _, ok := signedBlock(ticket); ok {
 		text = above

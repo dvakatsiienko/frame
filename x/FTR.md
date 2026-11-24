@@ -498,6 +498,7 @@
   - given a section whose `wish:` line records `body <hash>` and a ticket whose current text above `## signed` hashes to another (in none of the raw, normalized, legacy or stripped forms), then it reds naming both and «the ticket's text moved since the seal»; a `✍️` or `✏️` line decides nothing, a section with no hash never reds, and the 🚀 and ↩️ lines a dispatch writes are left out of the hash, the same function `x linear sign-check` and the re-stamp use (FRM-700)
   - given a `.scratch/<feature>/spec.md` in the repo with a `## <ticket> —` section, when `x brief preflight <ticket>` runs, then it lints that section's exit lines instead of the ticket's, and its ok names the spec it read; with no such section, the ticket's own exit lines as before
   - decision: the spec binds, so a seal no longer copies its exit lines into the ticket (FRM-423 grill)
+  - decision: every check of a ticket's text is one function, `preflightFindings`, which `x brief preflight` and `x lane dispatch` both run, the step runner passed in; the dispatch refuses on the seal and warns on the rest (FRM-700)
 - ✅ `x brief preflight <ticket>` checks every `x` verb and flag an exit line names, statically
   - given an exit section whose backticks or fenced lines name an `x` verb, a sub-verb or a flag the registry lacks (`x lane gaet`, `x lane gate --dry`)
   - when `x brief preflight <ticket>` runs
