@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T18:49:00Z'
+updated_date: '2026-11-24T18:54:00Z'
 labels:
   - s
   - clio-main
@@ -18,19 +18,18 @@ ordinal: 1000
 <!-- AC:BEGIN -->
 - [ ] #1 f113 the plan over all herdr work (FRM-616), parked on his word — later: dima 19:32 («tomorrow or the day after») — parked: 2026-11-24
 - [ ] #2 f116 decamp the verify trees (frame 5, bytes FRM-683 after its round 2) — waits for: FRM-645 — parked: 2026-11-24
-- [ ] #3 f117 stray: FRM-700's third read, one P1 and four small — on: 2026-11-25 — parked: 2026-11-24
-- [ ] #4 f114 FRM-678: the queue's free-CPU number, read from two days of rows, then one number to dima — on: 2026-11-26 — parked: 2026-11-24
-- [ ] #5 f115 FRM-596 slice 09: my hook design, and its live-wing done test — on: 2026-11-27 — parked: 2026-11-24
-- [ ] #6 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #7 f104 ⏳ herdr wisp: the slash list misses his skill, in chat's commands() — waits for: FRM-620
-- [ ] #8 f105 ⏳ herdr wisps: the phases steer text empties; a Read picture says «gone» on click — waits for: FRM-620
-- [ ] #9 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
-- [ ] #10 f107 ⏳ herdr wisp: a triple click selects one visual run, not the bullet (shot 24 Nov) — waits for: FRM-620
-- [ ] #11 f108 ⏳ herdr wisp: a click on a file path or dir link does nothing (his o6) — waits for: FRM-620
-- [ ] #12 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
-- [ ] #13 f112 ⏳ FRM-585 annotate (F6) seal, right after FRM-699 — waits for: FRM-699
-- [ ] #14 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
-- [ ] #15 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #3 f114 FRM-678: the queue's free-CPU number, read from two days of rows, then one number to dima — on: 2026-11-26 — parked: 2026-11-24
+- [ ] #4 f115 FRM-596 slice 09: my hook design, and its live-wing done test — on: 2026-11-27 — parked: 2026-11-24
+- [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #6 f104 ⏳ herdr wisp: the slash list misses his skill, in chat's commands() — waits for: FRM-620
+- [ ] #7 f105 ⏳ herdr wisps: the phases steer text empties; a Read picture says «gone» on click — waits for: FRM-620
+- [ ] #8 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
+- [ ] #9 f107 ⏳ herdr wisp: a triple click selects one visual run, not the bullet (shot 24 Nov) — waits for: FRM-620
+- [ ] #10 f108 ⏳ herdr wisp: a click on a file path or dir link does nothing (his o6) — waits for: FRM-620
+- [ ] #11 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
+- [ ] #12 f112 ⏳ FRM-585 annotate (F6) seal, right after FRM-699 — waits for: FRM-699
+- [ ] #13 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
+- [ ] #14 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2793,4 +2792,9 @@ PK-349:W2419 (2026-11-24 20:47, dima, on «the stray stopped with two small rows
 PK-349:W2420 (2026-11-24 20:47, dima): cpu: maybe it is a more complicated topic than the stray can solve, and maybe Opus needs to solve it? ❓ or you solved it? ❓
 PK-349:W2421 (2026-11-24 20:47, dima): flush everything.
 PK-349:W2422 (2026-11-24 20:52, dima, on «tomorrow mods, speak and herdr read 🟢, so one word starts each»): if I just «boot» you tomorrow, do you start everyone out of a handoff? I mean with no words. ❓
+
+done 2026-11-24 20:54: f117 stray: FRM-700's third read, one P1 and four small — on: 2026-11-25 — parked: 2026-11-24 (FRM-700 Todo)
+
+PK-349:W2423 (2026-11-24 20:54, dima, on «the start check's tails to an Opus codie»): can you then start mods coding as usual, but add: ask him to do this as a writer, before continuing with his mods stuff?
+PK-349:W2424 (2026-11-24 20:54, dima, on the CPU log's small tail): and solve this tail too, since it is close to what the mods codie does anyways.
 <!-- SECTION:NOTES:END -->
