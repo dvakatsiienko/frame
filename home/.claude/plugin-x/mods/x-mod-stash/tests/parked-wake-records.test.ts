@@ -83,32 +83,33 @@ const wingRow = (over: object) => ({
     ...over,
 });
 const ofWing = codie({ record: { coordinator: 'clio-wing-1' } });
-for (const [who, name, threads, wakes] of [
-    ['a wing wakes for its own member', WING_1.display, [], 1],
+const ALIVE = { sessions: [wingRow({})], threads: [{ ...WING_1, pid: 90 }] };
+for (const [who, name, over, wakes] of [
+    ['a wing wakes for its own member', WING_1.display, {}, 1],
+    ['main does not wake for a live wing’s member', '🦉 clio', ALIVE, 0],
     [
-        'main does not wake for a live wing’s member',
+        'main wakes for a dead wing’s member',
         '🦉 clio',
-        [{ ...WING_1, pid: 90 }],
-        0,
+        { threads: [WING_1] },
+        1,
     ],
-    ['main wakes for a dead wing’s member', '🦉 clio', [WING_1], 1],
     [
-        'another wing does not wake',
-        '🦉🪽 clio: wing 2',
-        [{ ...WING_1, pid: 90 }],
-        0,
+        'main wakes for a wing’s that died, its pid still on record',
+        '🦉 clio',
+        { threads: ALIVE.threads },
+        1,
     ],
+    ['another wing does not wake', '🦉🪽 clio: wing 2', ALIVE, 0],
 ] as const)
     test(`a member on no card, its [done] open: ${who}`, async ($, on) => {
         const w = parkedWorld(on, [ofWing], {
             card: ENDED,
             name,
-            sessions: threads.some((th) => 'pid' in th) ? [wingRow({})] : [],
             store: {
                 ...OPEN_DONE,
                 'quiet-tagged:clio-wing-1': OPEN_DONE['quiet-tagged'],
             },
-            threads: [...threads],
+            ...structuredClone(over as object),
         });
         expect((await parked($, w, 2)).length).toBe(wakes);
     });
@@ -372,6 +373,18 @@ for (const [why, text] of [
             [WAKE, WAKE.replace(APPROVE, text)],
         ]);
     });
+
+test('a registry with no stamp counts from the first read, a clear one ends it', async ($, on) => {
+    const bare = codie({ status: 'waiting', waitingFor: 'input needed' });
+    const w = parkedWorld(on, [bare], { ...asks, card: ENDED });
+    await parked($, w, 1, 3);
+    const first = w.wakes().length;
+    w.reads(bare, WORKING);
+    await pass($, w, 1);
+    w.reads(bare, {});
+    await pass($, w, 1, 4);
+    expect([first, w.wakes().length]).toEqual([1, 2]);
+});
 
 test('a second dialog with no read between is a new wake, by its stamp', async ($, on) => {
     const w = parkedWorld(on, [stuck], { ...asks, card: ENDED });
