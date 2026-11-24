@@ -480,6 +480,9 @@
 - ⬜ `x brief check` flags a mod path with no `plugin-authoring`
   - given a brief that names a file or dir of one cc mod (`plugin-x/mods/x-mod-<name>…`; a file at the mods root is no mod's) and never names `plugin-authoring`, then it fails naming the line; with the skill named anywhere it passes
   - given a brief that names only the mods dir itself, as a fence does, or no mod path, then nothing is flagged
+- ✅ `x brief check` flags an ask the messaging contract rules out
+  - given a line outside quotes asking a member for a receipt, an ack, progress or a line per step, commit or push, and no «never», «no» or «only» on it, then a finding names the line (FRM-686)
+  - given a helga brief (it opens on her name or names `crew-helga`) that asks for `[done]` and never says `blocking`, then a finding names the line
 - ✅ `x brief check` refuses a skill that waits on the user's approval
   - given a brief names a skill (`x:<name>`, `mattpocock-skills:<name>`, matt's `<name>`, `/<name>`, «the <name> skill», or any hyphenated word naming one) whose `SKILL.md` asks to «quiz the user» or iterate «until the user approves», and no line skips it («skip … quiz»; an unrelated «no push until dima approves» does not)
   - when it runs

@@ -58,7 +58,14 @@ var (
 	jevWord     = regexp.MustCompile(`(?i)\bjev\b`)
 	reuseWord   = regexp.MustCompile(`(?i)\breus(?:e|es|ed|ing)\b`)
 	keepWord    = regexp.MustCompile(`(?i)\bkeep(?:s|ing)?\b`)
-	otherPush   = regexp.MustCompile(`(?i)\b(?:clio|the coordinator|dima)\s+(?:will\s+|then\s+)?push(?:es)?\b`)
+	// the fleet's messaging contract (FRM-686): a member sends a question, a finished chunk or a block, never a receipt or a
+	// per-step line; a line that says «never» or «no» states the rule
+	receiptAsk = regexp.MustCompile(`(?i)\b(?:send|ping|message|report|reply|answer)s?\b[^,.;\n][^.;\n]{0,50}?\b(?:receipts?|acks?|progress|sw done|status (?:line|ping|update)s?|(?:per|each|every) (?:step|commit|push))\b|\b(?:per|each|every) (?:step|commit|push)\b[^.;\n]{0,50}\b(?:send|ping|message|report|reply)\b`)
+	noAsk      = regexp.MustCompile(`(?i)\b(?:no|never|not|nothing|without|only|unless)\b|n['’]t\b`)
+	doneAsk    = regexp.MustCompile(`(?i)\b(?:send|ping|message|report|reply|answer)s?\b[^.;\n]{0,50}\[done\]`)
+	blocking   = regexp.MustCompile(`(?i)\bblocking\b`)
+	nonBlock   = regexp.MustCompile(`(?i)\b(?:non-?|not )blocking\b`)
+	otherPush  = regexp.MustCompile(`(?i)\b(?:clio|the coordinator|dima)\s+(?:will\s+|then\s+)?push(?:es)?\b`)
 	// a skill however it is named: prefixed, a slash command, «the <name> skill», or any hyphenated word (`to-tickets`);
 	// a word naming no skill reads no file
 	skillName  = regexp.MustCompile("(?:\\b(?:x:|mattpocock-skills:|matt's `?)|(?:^|\\s)/(?:x:)?)([a-z][\\w-]*)|\\b([a-z][\\w-]*)`? skill\\b|\\b([a-z]+(?:-[a-z]+)+)\\b")
@@ -392,6 +399,7 @@ func missingTickets(ids map[string]int) ([]string, error) {
 func lint(lines []briefLine, skill func(name string) string) []finding {
 	var found []finding
 	jevAt, pushAt, modAt, hasBudget, skipsQuiz, namesAuthoring := 0, 0, 0, false, false, false
+	doneAt, isHelga, isBlocking, hasText := 0, false, false, false
 	var skills []string
 	skillAt := map[string]int{}
 	for _, line := range lines {
@@ -400,6 +408,18 @@ func lint(lines []briefLine, skill func(name string) string) []finding {
 		prose := quotedText.ReplaceAllString(text, "")
 		if reuseWord.MatchString(prose) && !keepWord.MatchString(prose) {
 			found = append(found, finding{line.n, "lint", "reuse", "a «reuse» names what to keep (the worktree, the branch, the context) on the same line"})
+		}
+		if strings.TrimSpace(text) != "" {
+			// a helga brief opens on her name or names her skill
+			isHelga = isHelga || strings.Contains(text, "crew-helga") || (!hasText && strings.Contains(strings.ToLower(text), "helga"))
+			hasText = true
+		}
+		isBlocking = isBlocking || blocking.MatchString(nonBlock.ReplaceAllString(text, ""))
+		if asked := receiptAsk.FindString(prose); asked != "" && !noAsk.MatchString(prose) {
+			found = append(found, finding{line.n, "lint", strings.TrimSpace(asked), "a member sends no receipt and no step line: a question, a finished chunk or a block (x:crew-dna § messages to clio)"})
+		}
+		if doneAt == 0 && doneAsk.MatchString(text) && !noAsk.MatchString(prose) {
+			doneAt = line.n
 		}
 		if pushAt == 0 && otherPush.MatchString(prose) {
 			pushAt = line.n
@@ -436,6 +456,9 @@ func lint(lines []briefLine, skill func(name string) string) []finding {
 	// a mod's hooks contract lives in cc's own skill, which no brief router loads for a member
 	if modAt > 0 && !namesAuthoring {
 		found = append(found, finding{modAt, "lint", "mod path", "a brief that names a cc mod's files names the `plugin-authoring` skill to load first"})
+	}
+	if doneAt > 0 && isHelga && !isBlocking {
+		found = append(found, finding{doneAt, "lint", "[done]", "helga logs her receipts; only a brief that says `blocking` asks her for a [done]"})
 	}
 	if jevAt > 0 && !hasBudget {
 		found = append(found, finding{jevAt, "lint", "jev", "a brief that touches jev names its budget"})
