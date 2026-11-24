@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T11:46:00Z'
-updated_date: '2026-11-24T14:09:00Z'
+updated_date: '2026-11-24T14:19:00Z'
 labels:
   - s
   - clio-wing-1
@@ -391,4 +391,24 @@ PK-467:W182 (2026-11-24 16:03, dima, o42 steer): Okay but make sure that mini bo
 PK-467:W183 (2026-11-24 16:03, dima, o42 steer): When I boot you in mini mode, you correctly boot in mini mode.
 
 PK-467:W184 (2026-11-24 16:03, dima, o42 steer): Just optimize everything
+
+PK-467:W185 (2026-11-24 16:03, dima): [pace] Yes it is currently paused because the 5-hour window is not active for me now but it probably will be active again sometime after 5 December (when my current $200 plan ends and I switch to the $100 plan)
+
+PK-467:W186 (2026-11-24 16:03, dima): [test-first] So can we have a comparison or is it already too late? ❓
+
+PK-467:W187 (2026-11-24 16:03, dima): [the headless browser recipe] Then remove this from system checkup.
+
+PK-467:W188 (2026-11-24 16:03, dima): The refresh headless browser recipe is relevant but I think agents browser is good enough so we don't need this recipe run now.
+
+PK-467:W189 (2026-11-24 16:03, dima): It shouldn't be a part of system checkup too
+
+PK-467:W190 (2026-11-24 16:06, dima): remove f70, I will solve rex with you later, it is in my mind not in todo
+
+PK-467:W191 (2026-11-24 16:13, dima): f53 + f39 + f41: delegate to main clio
+
+PK-467:W192 (2026-11-24 16:16, dima): [old copies of our own two plugins] So it is another place that keeps growing infinitely.
+
+PK-467:W193 (2026-11-24 16:16, dima): How to make it auto-clean? ❓
+
+PK-467:W194 (2026-11-24 16:16, dima): [the jev compaction plugin] I asked you to fold everything related to jev into a single linear ticket and mark it as snoozed so remove the reminder
 <!-- SECTION:NOTES:END -->

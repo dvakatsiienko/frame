@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T14:04:00Z'
+updated_date: '2026-11-24T14:14:00Z'
 labels:
   - s
   - clio-main
@@ -16,15 +16,17 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #2 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #3 f104 ⏳ herdr wisp: the slash list misses his skill, in chat's commands() — waits for: FRM-620
-- [ ] #4 f105 ⏳ herdr wisps: the phases steer text empties; a Read picture says «gone» on click — waits for: FRM-620
-- [ ] #5 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
-- [ ] #6 f107 ⏳ herdr wisp: a triple click selects one visual run, not the bullet (shot 24 Nov) — waits for: FRM-620
-- [ ] #7 f108 ⏳ herdr wisp: a click on a file path or dir link does nothing (his o6) — waits for: FRM-620
-- [ ] #8 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #9 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #1 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #2 f104 ⏳ herdr wisp: the slash list misses his skill, in chat's commands() — waits for: FRM-620
+- [ ] #3 f105 ⏳ herdr wisps: the phases steer text empties; a Read picture says «gone» on click — waits for: FRM-620
+- [ ] #4 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
+- [ ] #5 f107 ⏳ herdr wisp: a triple click selects one visual run, not the bullet (shot 24 Nov) — waits for: FRM-620
+- [ ] #6 f108 ⏳ herdr wisp: a click on a file path or dir link does nothing (his o6) — waits for: FRM-620
+- [ ] #7 f109 ⏳ FRM-585 annotate reply text: the copy-then-find probe, then Q1 to dima — waits for: FRM-683
+- [ ] #8 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
+- [ ] #9 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
+- [ ] #10 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #11 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2641,4 +2643,6 @@ done 2026-11-24 16:04: f99 sealed-ahead.ts: read a chunk placed ahead of a lane 
 done 2026-11-24 16:04: f98 prompt-groom.ts --linear crashes for helga: no codie linear token in the keychain; run it from my thread or fix
 
 2026-11-24 16:04 f98 closed: helga writes groom files only, the linear read runs from main's thread.
+
+done 2026-11-24 16:14: f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29 (FRM-516 Todo)
 <!-- SECTION:NOTES:END -->
