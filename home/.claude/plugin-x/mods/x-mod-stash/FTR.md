@@ -585,6 +585,12 @@
   - and a kind that is neither, a lead that is the other kind's, or a lead with nothing after it refuses the whole add in that ask's one line
   - and a `follow` keeps the kind, its new text led; a new text led by the other word changes it
   - proof: tests/orbit.test.ts::an ask «…» with kind … is kept by its lead or refused (11 rows); ::a kind rides the store item, and a follow keeps it or takes the new lead
+- ✅ look and test asks sit on top of the board's orbit, led by their emoji (FRM-645)
+  - given asks of every kind, when the board draws, then look asks come first, then test asks, then the rest, each in the order they came, in orbit alone; a typed one is led by its kind's emoji there and in a glide subcard
+  - and the drawn line leaves the text's own «look: » or «test: » out while the emoji shows; the stored text keeps it, so herdr's pin still reads it
+  - and an emoji is his: `stash.orbit.look.emoji`, `stash.orbit.test.emoji` in herdr's settings, read at each poll of an open board; blank or unreadable is 👀 and 🧪
+  - and a typed ask answered this turn leads with ✅ until the turn ends, a plain one with 👀 as before, so one 👀 never means two things
+  - proof: tests/board-orbit.test.ts::look asks draw first, then test asks, then the rest… ; ::a look ask answered this turn leads with ✅, never 👀; ::an ask answered this turn leads its line with 👀…; a live frame, 24 Nov (`~/.local/state/looks/FRM-645/`)
 - ✅ how a look and a test ask are written is his to steer (FRM-645)
   - given a text in `stash.orbit.look.how` or `stash.orbit.test.how` of `~/.claude/shelf/herdr-settings/settings.json` (herdr writes the file, this mod only reads it), when a session's next prompt goes, then it carries one line, «a look ask: <his>; a test ask: <his>», once; a changed row tells it again, as do a compaction, a `/clear` and a resume
   - given a row blank, the file missing or not parsing, then the built-in words

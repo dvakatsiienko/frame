@@ -1,6 +1,6 @@
 import type { On } from 'claude-code';
 
-import { addLinked, assume, hrefs } from './orbit-helpers.ts';
+import { addLinked, assume, hrefs, typed } from './orbit-helpers.ts';
 import {
     type Board,
     SID,
@@ -175,6 +175,53 @@ test('an ask answered this turn leads its line with 👀 until the turn ends', a
     await orbit($, { ids: ['o1'], op: 'resolve' });
     const row = await ui.find({ key: 'orbit:ask:o1', type: 'Box' });
     expect(row?.text?.startsWith('👀 o1 mods:')).toBe(true);
+});
+
+// FRM-645: an ask that needs his eyes or hands sits on top, led by its kind's emoji
+test('look asks draw first, then test asks, then the rest, each led by its emoji, his row over the built-in one', async ($, on) => {
+    const w = world(on, typed({ 'stash.orbit.look.emoji': '🔭' }));
+    await start($);
+    const ui = await board($);
+    await add(
+        $,
+        ['a plain one', 'x'],
+        ['test: press it', 'x'],
+        ['a plain two', 'x'],
+        ['look: the card', 'x'],
+    );
+    await w.clock.advance(5_000);
+    const rows = await Promise.all(
+        (await asksShown(ui)).map(
+            async (id) =>
+                (
+                    await ui.find({ key: `orbit:ask:${id}`, type: 'Box' })
+                )?.text?.split('➡️')[0],
+        ),
+    );
+    expect(rows).toEqual([
+        '🔭 o4 mods: the card',
+        '🧪 o2 mods: press it',
+        'o1 mods: a plain one',
+        'o3 mods: a plain two',
+    ]);
+});
+
+test('a look ask answered this turn leads with ✅, never 👀', async ($, on) => {
+    world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['look: the card', 'x']);
+    await say($, 'go');
+    const read = async () =>
+        (await ui.find({ key: 'orbit:ask:o1', type: 'Box' }))?.text?.split(
+            '➡️',
+        )[0];
+    const before = await read();
+    await orbit($, { ids: ['o1'], op: 'resolve' });
+    expect([before, await read()]).toEqual([
+        '👀 o1 mods: the card',
+        '✅ o1 mods: look: the card',
+    ]);
 });
 
 test('a ticket id in an ask opens its linear page', async ($, on) => {

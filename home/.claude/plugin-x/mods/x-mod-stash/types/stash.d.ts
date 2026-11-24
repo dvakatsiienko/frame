@@ -25,6 +25,7 @@ export type AskFrom = {
 
 // `from.line`: the starter as this mod draws it, badge and all, so another surface copies no badge table
 export type AskKind = 'look' | 'test';
+export type KindEmoji = Record<AskKind, string>;
 export type PublishedAsk = Omit<AskOrigin, 'from'> & {
     from?: AskFrom & { line: string };
     id: string;
@@ -135,6 +136,8 @@ export type StashBoardView = {
     isColour: boolean;
     // the ctx meter drawn as a ring (C), else the % with a bar under it (B)
     isRing: boolean;
+    // what leads a look ask and a test ask, his words in herdr's settings or the built-in ones
+    kindEmoji?: KindEmoji;
     // the poll's clock, so the board's «busy 3m» spans move on their own
     at: number;
     // clio's board only: each dev-mods probe past its probe, «<mod> (<session short id>)»

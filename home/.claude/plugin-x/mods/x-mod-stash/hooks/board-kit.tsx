@@ -14,6 +14,7 @@ import {
 import { LANE_ROLES } from './lanes.ts';
 import { cardBorder } from './look.ts';
 import { CHANGED_MARK, linkLabel } from './orbit.ts';
+import { askLead, askWords } from './orbit-ask-kind.ts';
 import { areaLine, originLine } from './orbit-ask-origin.ts';
 import { pressMark } from './orbit-presses.ts';
 import { changeAssumed, markAsks, orbitNow } from './orbit-store.ts';
@@ -277,12 +278,12 @@ export async function boardKit($: EngineInterface, e: RenderInput<'Pane'>) {
                         {/* an ask answered this turn leads its line with 👀 until the turn ends — inline, so the row keeps its left
                 edge; a hover card would need a box of its own (dima, 20:34, 20:39) */}
                         <Text>
-                            {a.isResolved ? '👀 ' : ''}
+                            {askLead(a, board?.kindEmoji)}
                             {/* a joined ask's mark leads its line, so the row below holds only 🔊 and the steer (dima, 11:57) */}
                             {a.isChanged ? `${CHANGED_MARK} ` : ''}
                             <Text bold>{a.id}</Text>
                             {a.area ? ` ${areaLine(a)}: ` : ': '}
-                            {linkedJSX(a.text, `ask:${a.id}`)}
+                            {linkedJSX(askWords(a), `ask:${a.id}`)}
                         </Text>
                         {/* the pick on a line of its own, the mock's card shape (dima, 17:00) */}
                         <Text>

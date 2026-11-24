@@ -40,6 +40,7 @@ import {
 } from './session-identity.ts';
 import { readSwitch, refreshShown, settings } from './settings-store.ts';
 import { AFK_KEY, REPLY, type Reply, WAKER_KEY } from './store-keys.ts';
+import { kindEmojiOf, orbitTexts } from './turn-notes.ts';
 import { errorText, resetObject } from './util.ts';
 import { windOf } from './wind.ts';
 
@@ -148,6 +149,7 @@ export async function publish($: EngineInterface) {
             at: now,
             isColour: await readSwitch($, 'colour'),
             isRing: await readSwitch($, 'ring'),
+            kindEmoji: kindEmojiOf(await orbitTexts($)),
             members: await members($).catch(() => undefined),
             ...(keptSteers.size
                 ? { keptSteers: Object.fromEntries(keptSteers) }

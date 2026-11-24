@@ -3,8 +3,9 @@
 
 import type { EngineInterface } from 'claude-code';
 
-import type { StashOrbit } from '../types/stash.d.ts';
+import type { KindEmoji, StashOrbit } from '../types/stash.d.ts';
 import { ORBIT_TOOL } from './orbit.ts';
+import { KIND_EMOJI } from './orbit-ask-kind.ts';
 import { type IsPartOn, herdrRows } from './settings-store.ts';
 
 export const STALE_TURNS = 3;
@@ -15,8 +16,10 @@ export const planAge = (o: StashOrbit) =>
 // missing row, or a settings file that does not read, is the built-in text
 const ORBIT_TEXT_ROWS = {
     lane: 'stash.orbit.text.lane-stale',
+    lookEmoji: 'stash.orbit.look.emoji',
     lookHow: 'stash.orbit.look.how',
     plan: 'stash.orbit.text.plan-stale',
+    testEmoji: 'stash.orbit.test.emoji',
     testHow: 'stash.orbit.test.how',
     tick: 'stash.orbit.text.tick',
 } as const;
@@ -34,8 +37,10 @@ export async function orbitTexts($: EngineInterface): Promise<OrbitTexts> {
     };
     return {
         lane: typed(ORBIT_TEXT_ROWS.lane),
+        lookEmoji: typed(ORBIT_TEXT_ROWS.lookEmoji),
         lookHow: typed(ORBIT_TEXT_ROWS.lookHow),
         plan: typed(ORBIT_TEXT_ROWS.plan),
+        testEmoji: typed(ORBIT_TEXT_ROWS.testEmoji),
         testHow: typed(ORBIT_TEXT_ROWS.testHow),
         tick: typed(ORBIT_TEXT_ROWS.tick),
     };
@@ -59,6 +64,10 @@ const TEST_HOW =
     'say what he presses and what he should see, its plain numbered steps in the linked file';
 export const howNote = (texts: OrbitTexts) =>
     `a look ask: ${texts.lookHow ?? LOOK_HOW}; a test ask: ${texts.testHow ?? TEST_HOW}.`;
+export const kindEmojiOf = (texts: OrbitTexts): KindEmoji => ({
+    look: texts.lookEmoji ?? KIND_EMOJI.look,
+    test: texts.testEmoji ?? KIND_EMOJI.test,
+});
 const PLAN_STALE_TEXT = 'stale: set it again';
 export const LANE_STALE_TEXT = `lane {id} «{title}» moved nothing for {n} of your turns, stale: step it or end it through ${ORBIT_TOOL} op glide.`;
 // what this session was last told of its orbit and its stale lanes, in process memory as `isPrimed` is: the same state
