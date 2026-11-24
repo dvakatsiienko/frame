@@ -34,6 +34,18 @@ describe('a planted line is red, naming its line', () => {
         ['a non-blocking brief: send me a receipt', RECEIPT],
         ['fix the blocking bug, then send clio progress', RECEIPT],
         ['report back after each step', STEP],
+        ['report status after each step', STEP],
+        ['write clio one line per step', STEP],
+        ['let clio know after each slice', STEP],
+        ['give clio a status after every step', RECEIPT],
+        ['post a status to clio', RECEIPT],
+        ['confirm receipt to the coordinator', RECEIPT],
+        ['acknowledge every message', RECEIPT],
+        ['never skip it: send me a receipt', RECEIPT],
+        ['not only the end: ping clio per step', STEP],
+        ['open with [FYI]', '[fyi] is no tag of the contract'],
+        ['tag it [note]', '[note] is no tag of the contract'],
+        ['message clio «[update] done»', '[update] is no tag of the contract'],
     ])('%s', (line, reason) => {
         expect(read(line)).toEqual([[3, reason]]);
     });
@@ -52,6 +64,9 @@ describe('what the skills say today is green', () => {
         'the final report carries its receipts',
         'reply in the thread with the receipt attached',
         'a pr title opens with [wip]',
+        'open with [wip] in the pr title',
+        'the rule, `x:crew-dna`: never send a receipt',
+        'no row, by x:crew-dna, asks a member to send a receipt',
         'send a [link][ref]',
         'send his question on while the work is in progress',
         'a route dir is `[slug]/page.tsx`, a table `[profile]`',

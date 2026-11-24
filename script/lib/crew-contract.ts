@@ -2,18 +2,25 @@
 // or a brief template names no tag outside it and asks no member for a receipt or a per-step line
 const NAMED_TAG = /`\[(?:🪜 ?)?([a-z][a-z-]{2,})\](?=[ `])/gu;
 const SENT_TAG =
-    /\b(?:send|sends|ping|pings|message|messages|opens?|opening|tagged|as|with|leads?|starts?)(?: (?:clio|the coordinator|it|one|as|with|a|an))* \[(?:🪜 ?)?([a-z][a-z-]{2,})\](?![([])/giu;
+    /\b(?:send|sends|ping|pings|message|messages|opens?|opening|tag|tagged|as|with|leads?|starts?)(?: (?:clio|the coordinator|it|one|as|with|a|an))* [«“"]?\[(?:🪜 ?)?([a-z][a-z-]{2,})\](?![([])/giu;
 // a bracketed word is a message tag only on a line about messages: `[slug]` in a route is none
 const ABOUT =
     /\b(?:clio|coordinator|sends?|pings?|messages?|SendMessage|tag(?:s|ged)?)\b/u;
+// «open with [x]» is an order to a sender, unless the line names what else opens so
+const OPENS =
+    /\bopen(?: it| them)? with\b(?!.*\b(?:pr|title|commit|branch|file|page|section)\b)/iu;
 const PROGRESS = /\[(progress)\]/gu;
 // «message», «report», «reply» and «answer» are nouns too, so they count only with someone after them
-const SEND = String.raw`\b(?:(?:send|sends|ping|pings|tell|tells)\b(?!,)|(?:message|report|reply|answer)s? (?:to )?(?:me|us|clio|the coordinator|back|with)\b)`;
+const SEND = String.raw`\b(?:(?:send|sends|ping|pings|tell|tells)\b(?!,)|(?:message|report|reply|answer)s? (?:to )?(?:me|us|clio|the coordinator|back|with)\b|\b(?:write|give|update|notify)s? (?:me|us|clio|the coordinator)\b|\blets? (?:me|us|clio|the coordinator) know\b|\b(?:report|post)s? (?:a |the |your )?status\b)`;
 const STEP = String.raw`(?:per|each|every) (?:step|commit|push|slice|edit)\b`;
 const ASKS = [
     [
         'a receipt or a status line',
         String.raw`${SEND}[^.;\n]{0,50}\b(?:receipts?|acks?|(?<!in )progress|sw done|status (?:line|ping|update)s?)\b`,
+    ],
+    [
+        'a receipt or a status line',
+        String.raw`\b(?:give|post)s? (?:(?:me|us|clio|the coordinator) )?a status\b|\bconfirms? (?:the )?receipt\b|\backnowledges? (?:every|each|all|the) messages?\b`,
     ],
     ['a per-step line', String.raw`${SEND}[^.;\n]{0,50}\b${STEP}`],
     ['a per-step line', String.raw`\b${STEP}[^.;\n]{0,50}${SEND}`],
@@ -40,9 +47,10 @@ export function contractRefusals(
 ): ContractRefusal[] {
     const found: ContractRefusal[] = [];
     for (const [i, text] of body.split('\n').entries()) {
-        const shapes = ABOUT.test(text)
-            ? [NAMED_TAG, SENT_TAG, PROGRESS]
-            : [PROGRESS];
+        const shapes =
+            ABOUT.test(text) || OPENS.test(text)
+                ? [NAMED_TAG, SENT_TAG, PROGRESS]
+                : [PROGRESS];
         const named = shapes.flatMap((re) =>
             [...text.matchAll(re)].map((m) => m[1]?.toLowerCase() ?? ''),
         );
@@ -57,7 +65,9 @@ export function contractRefusals(
         for (const [what, source] of ASKS) {
             const asked = text.match(new RegExp(source, 'iu'));
             if (!asked) continue;
-            const from = text.slice(0, asked.index).search(/[^.;\n]{0,60}$/);
+            const from = text
+                .slice(0, asked.index)
+                .search(/(?:[^.;:\n]|:(?! )){0,60}$/);
             const clause = text.slice(
                 Math.max(0, from),
                 (asked.index ?? 0) + asked[0].length,

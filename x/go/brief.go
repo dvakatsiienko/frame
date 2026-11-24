@@ -34,7 +34,7 @@ type briefLine struct {
 }
 
 // «message», «report», «reply» and «answer» are nouns too, so they count only with someone after them
-const sendWord = `\b(?:(?:send|ping|tell)s?\b|(?:message|report|reply|answer)s? (?:to )?(?:me|us|clio|the coordinator|back|with)\b)`
+const sendWord = `\b(?:(?:send|ping|tell)s?\b|(?:message|report|reply|answer)s? (?:to )?(?:me|us|clio|the coordinator|back|with)\b|\b(?:write|give|update|notify)s? (?:me|us|clio|the coordinator)\b|\blets? (?:me|us|clio|the coordinator) know\b|\b(?:report|post)s? (?:a |the |your )?status\b)`
 
 var (
 	codeSpan   = regexp.MustCompile("`([^`\n]+)`")
@@ -63,12 +63,12 @@ var (
 	keepWord    = regexp.MustCompile(`(?i)\bkeep(?:s|ing)?\b`)
 	// the fleet's messaging contract (FRM-686): a member sends a question, a finished chunk or a block, never a receipt or a
 	// per-step line; a line that says «never» or «no» states the rule
-	receiptAsk = regexp.MustCompile(`(?i)(?:` + sendWord + `)[^.;\n]{0,50}?\b(?:receipts?|acks?|progress|sw done|status (?:line|ping|update)s?|(?:per|each|every) (?:step|commit|push))\b|\b(?:per|each|every) (?:step|commit|push)\b[^.;\n]{0,50}(?:` + sendWord + `)`)
+	receiptAsk = regexp.MustCompile(`(?i)(?:` + sendWord + `)[^.;\n]{0,50}?\b(?:receipts?|acks?|progress|sw done|status (?:line|ping|update)s?|(?:per|each|every) (?:step|commit|push|slice|edit))\b|\b(?:give|post)s? (?:(?:me|us|clio|the coordinator) )?a status\b|\bconfirms? (?:the )?receipt\b|\backnowledges? (?:every|each|all|the) messages?\b|\b(?:per|each|every) (?:step|commit|push|slice|edit)\b[^.;\n]{0,50}(?:` + sendWord + `)`)
 	noAsk      = regexp.MustCompile(`(?i)\b(?:no|never|not|nothing|without|only|unless)\b|n['’]t\b`)
 	doneAsk    = regexp.MustCompile(`(?i)\b(?:send|ping|message|report|reply|answer)s?\b[^.;\n]{0,50}\[done\]`)
 	inProgress = regexp.MustCompile(`(?i)\bin progress\b`)
 	helgaHead  = regexp.MustCompile(`(?i)^[^\pL\d]*helga(?:[^\pL\d'’]|$)|(?:use the (?:x:)?|/x:)crew-helga\b`)
-	clauseHead = regexp.MustCompile(`[^.;]{0,60}$`)
+	clauseHead = regexp.MustCompile(`(?:[^.;:]|:[^ .;:]){0,60}$`)
 	// the brief marks itself: on its first line, at a line's start or in backticks
 	blocking   = regexp.MustCompile("(?i)^\\W*blocking\\b|`blocking`")
 	firstBlock = regexp.MustCompile(`(?i)\bblocking\b`)

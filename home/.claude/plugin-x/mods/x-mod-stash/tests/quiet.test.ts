@@ -92,6 +92,10 @@ test(`the crew’s messages push ${PUSHED_BEFORE} before the decision rule, ${pu
 for (const [why, body, tag] of [
     ['on a later line', 'CI is green\n[ask] a or b?', 'ask'],
     ['on a later line, an emoji before it', 'green\n🚨 [ask] a?', 'ask'],
+    ['in a list item', 'step done\n- [ask] a or b?', 'ask'],
+    ['in a numbered item', 'step done\n1. 🚨 [ask] a or b?', 'ask'],
+    ['in a lettered item', 'step done\nb) [ask] a or b?', 'ask'],
+    ['in bold', 'step done\n**[ask]** a or b?', 'ask'],
     ['mid-line', 'green, then [ask] a or b?', 'none'],
     ['in a fence', 'the form:\n```\n[ask] a or b?\n```\nlanded', 'none'],
     ['in a fence of four', '````\n```\n[ask] a?\n```\n````', 'none'],
@@ -122,6 +126,10 @@ for (const [body, push] of [
     ['the form:\n```\none decision for you\n```', undefined],
     ['the form:\n~~~\none decision for you\n~~~', undefined],
     ['not now. one decision for you', 'decision'],
+    ['no blockers; decision for you: merge', 'decision'],
+    ['nothing else changed, a decision for you', 'decision'],
+    ['nothing red but a decision for you', 'decision'],
+    ['none red — a ruling for you', 'decision'],
     ['🐦‍⬛ crow: one decision for you', undefined],
     ['no decision for you', undefined],
     ['no look call for you', undefined],
@@ -145,10 +153,27 @@ for (const body of [
     'sw done, dima must sign the cut',
     'sw done: step 3 next\n- the second line',
     'sw done: needs dima’s tick',
+    'sw done: main is down',
+    'sw done: a secret was pushed',
+    'sw done: i deleted the worktree',
+    'sw done: your merge reverted my commit',
+    'sw done: which step next',
+    'sw done: store empty, starting step 3',
+    'sw done: not sure about exit 4',
+    'sw done: parked on your review',
+    'sw done: handoff ingested\nstep 3 next',
     'held: 🎀 helga is compacting; your message joins its next turn, I hope',
 ])
     test(`no logged line: ${body}`, () => {
         expect(quietLogged(body)).toBe(undefined);
+    });
+
+for (const body of [
+    'sw done',
+    '🐦‍🔥 sw done — herdr-lane-3-12 ingested (store empty for it); parked, step 3 next.',
+])
+    test(`a logged line: ${body}`, () => {
+        expect(quietLogged(body)).toBe('sw-done');
     });
 
 test('[progress] is no kind of the table', () => {

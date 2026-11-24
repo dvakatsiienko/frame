@@ -85,7 +85,7 @@ export const MESSAGE_ROWS = [
     // dead weight
     [
         40,
-        'logged',
+        'held',
         'sw done: handoff in the store (codie). the next me waits for your sealed section and `next:`, then a design map',
     ],
     [
@@ -95,43 +95,43 @@ export const MESSAGE_ROWS = [
     ],
     [
         51,
-        'logged',
+        'held',
         'sw done — herdr lane 3 codie, handoff ingested (store empty for it). holding: sixth sense round 4',
     ],
     [
         245,
-        'logged',
+        'held',
         'sw done — herdr codie picked up its handoff; slices 3–5 closed clean. parked for your next: (slice A).',
     ],
     [
         270,
-        'logged',
-        'sw done: handoff ingested, starting slice C of 6 at step 58.',
+        'held',
+        'sw done: herdr-lane-3-12 ingested, starting slice C of 6 at step 58 (the block probe and the import probe on both sides).',
     ],
     [
         279,
-        'logged',
+        'held',
         'sw done: handoff ingested, slice C ticked closed, starting slice D of 6 with your 17:30 rider.',
     ],
     [
         294,
         'logged',
-        'sw done: herdr lane 3 picked up its handoff. it is on origin/main. next: slice D’s 5 review fixes.',
+        'sw done: herdr lane 3 picked up herdr-lane-3-14. c1d3f9ab is on origin/main. next: slice D’s 5 review fixes, then 66d herdr side.',
     ],
     [
         320,
         'logged',
-        'sw done — herdr codie picked up its handoff (store holds no file of mine); starting slice E step 69 test-first.',
+        'sw done — herdr codie picked up herdr-lane-3-15 (store holds no file of mine, verified by list); starting FRM-618 slice E step 69 test-first.',
     ],
     [
         331,
-        'logged',
+        'held',
         'sw done: herdr lane 3 picked up slice F; the ci-binaries test is green again, the push is running now.',
     ],
     [
         358,
-        'logged',
-        'sw done: handoff ingested, store empty. starting slice A step 77, test-first.',
+        'held',
+        'sw done: herdr-lane-3-17 ingested, store empty. starting slice A step 77 (pure attachments + not-found), test-first.',
     ],
     [
         127,

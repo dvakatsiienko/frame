@@ -15,7 +15,7 @@ export const MESSAGE_KINDS = [
         isTag: true,
         kind: 'ask',
         lands: 'pushes',
-        reads: 'opens with [ask], an emoji before it allowed, or a later line does',
+        reads: 'opens with [ask], an emoji before it allowed, or a later line or list item does',
         who: 'any member',
     },
     {
@@ -58,7 +58,7 @@ export const MESSAGE_KINDS = [
         example: 'sw done: handoff ingested, step 3 next',
         kind: 'sw-done',
         lands: 'logged',
-        reads: 'one line opening «sw done», with no question, tag, «ask», «for you», dima, decision or block in it',
+        reads: 'one line opening «sw done», every word of it one of a pickup’s few',
         who: 'any member',
     },
     {
@@ -100,14 +100,19 @@ export type MessageKind = (typeof MESSAGE_KINDS)[number]['kind'];
 const ROWS: readonly MessageRow[] = MESSAGE_KINDS;
 
 // flags are regional indicators and a keycap is a digit with its mark: neither is Extended_Pictographic
-const EMOJI_RUN = String.raw`^(?:[\s\p{Extended_Pictographic}\p{Regional_Indicator}\p{Emoji_Modifier}\u{E0020}-\u{E007F}\uFE0F\u200D]|[0-9#*]\uFE0F?\u20E3)*`;
+const EMOJIS = String.raw`(?:[\s\p{Extended_Pictographic}\p{Regional_Indicator}\p{Emoji_Modifier}\u{E0020}-\u{E007F}\uFE0F\u200D]|[0-9#*]\uFE0F?\u20E3)*`;
+const EMOJI_RUN = `^${EMOJIS}`;
 const PUSH_TAG = new RegExp(
     String.raw`${EMOJI_RUN}\[(${ROWS.flatMap((r) => (r.isTag ? [r.kind] : [])).join('|')}|🪜 ?escalate)\]`,
     'u',
 );
 const FENCE =
     /^[ \t]*(`{3,}|~{3,})[^`\n]*\n[\s\S]*?(?:^[ \t]*\1[`~]*[ \t]*$|(?![\s\S]))/gm;
-const ASK_LINE = new RegExp(String.raw`${EMOJI_RUN}\[ask\]`, 'mu');
+// a list's mark, a heading's or a bold's may stand before it
+const ASK_LINE = new RegExp(
+    String.raw`^\s*(?:(?:[-*+•]|#+|(?:\d+|[a-z])[.)])[ \t]+)*(?:\*\*|__)?${EMOJIS}\[ask\]`,
+    'mu',
+);
 // crow's notes open with her badge and name; the rest of what she writes waits
 const CROW = /^\s*🐦\u200D⬛/u;
 const CROW_ESCALATE =
@@ -121,12 +126,24 @@ const FOR_DIMA = new RegExp(
     String.raw`(?<![\w/.-])(?:(?<!\bnothing(?:[ \t]+\w+)?[ \t]+)for ${DIMA}(?![\w/-]|\.\w|['’]s tick\b)|(?<!(?:\bnot|n['’]t|\bno longer|\bnothing(?:[ \t]+else)?)[ \t]+)(?:needs|waiting on) ${DIMA}(?![\w/-]|\.\w))`,
     'iu',
 );
+// a refusing word reaches only to its clause's end
 const DECISION =
-    /(?<!(?:\b(?:no|not|nothing|never|none|neither|nor|zero|tool)|n['’]t)\b[^.\n]{0,32})\b(?:decisions?|rulings?|call|calls(?![ \t]+for you to\b))(?:[ \t]+(?:for you|is yours|are yours)|,[ \t]+yours)\b/iu;
-const SW_DONE = new RegExp(String.raw`${EMOJI_RUN}sw done\b.*$`, 'iu');
-// a sw done line with any of these may say something, so it is held, never logged
-const SW_DONE_REAL =
-    /\?|\[\p{L}|\b(?:asks?|dima|for you|yours|decisions?|decide\w*|rulings?|calls?|block(?:ed|er|ing)|stuck|refus\w*|fail\w*|broken?|red|did not|not checked|can(?:not|['’]t)|needs?|please|wrong|lost|errors?)\b/iu;
+    /(?<!(?:\b(?:no|not|nothing|never|none|neither|nor|zero|tool)|n['’]t)\b(?:(?!\b(?:but|except|besides|beyond|only)\b)[^.,;:—–(\n]){0,32})\b(?:decisions?|rulings?|call|calls(?![ \t]+for you to\b))(?:[ \t]+(?:for you|is yours|are yours)|,[ \t]+yours)\b/iu;
+const SW_DONE = new RegExp(String.raw`${EMOJI_RUN}sw done\b(.*)$`, 'iu');
+// a sw done line is logged only when every word past its head is a pickup's, from this short list; any other word may be
+// news, so the line waits (FRM-686, round 1: a list of words that may not stand there leaked a word at a time)
+const SW_DONE_PHRASES =
+    /\bpicked up\b|\bingested\W+store empty(?: (?:for|of) it)?\b|\bstore holds no file of mine(?:, verified by list)?(?![\w-])|\b[0-9a-f]{7,40} is on origin\/main\b/giu;
+const SW_DONE_WORDS =
+    /^(?:and|at|back|cli|codie|fixes|handoff|herdr|ingested|lane|mods|next|of|on|parked|review|side|slices?|speak|starting|starts|steps?|stray|test-first|the|then|[a-h]|\d+[a-z]?|(?:frm|byt)-\d+|[a-z]+-lane(?:-\d+)+[a-z]?)$/iu;
+const isBareSwDone = (line: string) =>
+    line
+        .match(SW_DONE)?.[1]
+        ?.replace(SW_DONE_PHRASES, ' ')
+        .split(/[\s,.;:()`—–]+/u)
+        .every(
+            (word) => !word || SW_DONE_WORDS.test(word.replace(/['’]s$/u, '')),
+        );
 // the mod's own lines to a sender, written here alone, so a reworded one is still known
 export const MOD_LINES = {
     compacting: (name: string) =>
@@ -200,9 +217,7 @@ export function quietLogged(body: string) {
         MOD_LINES.unwound('NAME', 'NAME'),
     ];
     if (held.some((shape) => isModLine(shape, line))) return 'held';
-    return SW_DONE.test(line) && !SW_DONE_REAL.test(line)
-        ? 'sw-done'
-        : undefined;
+    return isBareSwDone(line) ? 'sw-done' : undefined;
 }
 
 // `isReport`: the app's note of a member's turn end quotes what it told dima, so only its head is a tag
