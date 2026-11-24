@@ -1,10 +1,12 @@
 ---
 id: PK-468
-title: 'ticket flow: no forgotten seals, the sign removed, scope creep still visible'
+title: >-
+  ticket flow: no forgotten seals, signing moves to clio, scope creep still
+  visible
 status: open
 assignee: []
 created_date: '2026-11-24T14:49:00Z'
-updated_date: '2026-11-24T16:15:00Z'
+updated_date: '2026-11-24T16:20:00Z'
 labels:
   - s
   - clio-wing-1
@@ -272,4 +274,14 @@ PK-468:W125 (2026-11-24 18:09, dima): What about my operator override? ❓
 PK-468:W126 (2026-11-24 18:09, dima): When it is enabled I want everything to be mergeable without ask and it is currently active
 
 18:15 stays open: signing moved (471e999), still his: the start's seal check, the queue-move trigger, the counter's fix, scope creep, two guard rule lines
+
+PK-468:W127 (2026-11-24 18:15, dima): after this lands what we left to do from what we planned to improve this signing part and other parts.
+
+PK-468:W128 (2026-11-24 18:15, dima): I've asked about tickets flow.
+
+PK-468:W129 (2026-11-24 18:15, dima): This grill [grip]? ❓
+
+PK-468:W130 (2026-11-24 18:15, dima): What is the ticket about it and where is it? ❓
+
+18:20 PK-468:W150 (2026-11-24 18:09, dima's 🛎️ tick on clio's ask o5, accepted as picked): «signing moves to me: I groom and sign, you get no sign or re-sign asks, from now?» pick «yes, from now: near tickets re-signed at each edit, a guard edit's merge still asks you»
 <!-- SECTION:NOTES:END -->
