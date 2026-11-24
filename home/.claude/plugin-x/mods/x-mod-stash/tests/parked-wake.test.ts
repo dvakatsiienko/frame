@@ -854,21 +854,27 @@ for (const [wait, runner, wakes, name = runner] of [
         expect((await parked($, w, 2, 5)).length).toBe(wakes);
     });
 
-for (const [why, wait, tag, at] of [
-    ['a [done] under the row since its member', undefined, 'done', 12],
-    ['an [ask] under the row', 'waiting on 🙋‍♂️ dima', 'ask', 1],
-] as const)
-    test(`${why} is no open one yet`, async ($, on) => {
-        const ago = tag === 'done' ? 5 : 9;
-        const w = parkedWorld(on, [sixth()], {
-            card: FOUR,
-            store: {
-                [`reply:${R}`]: { at: EVEN - ago * MIN, wait },
-                ...tagged(R, tag, EVEN - at * MIN),
-            },
-        });
-        expect(await parked($, w, 2, 2)).toEqual([]);
+test('a [done] under the row since its member spoke is no open one yet', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], {
+        card: FOUR,
+        store: {
+            [`reply:${R}`]: { at: EVEN - 5 * MIN },
+            ...tagged(R, 'done', EVEN - 12 * MIN),
+        },
     });
+    expect(await parked($, w, 2, 2)).toEqual([]);
+});
+
+test('an [ask] under the row leaves its wait on another standing', async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        card: FOUR,
+        store: {
+            ...said(C, 'waiting on 🙋‍♂️ dima'),
+            ...tagged(C, 'ask', EVEN - MIN),
+        },
+    });
+    expect(await parked($, w, 2, 2)).toEqual([]);
+});
 
 test('a [done] its member worked on after is no parked one', async ($, on) => {
     const w = parkedWorld(on, [sixth()], {
