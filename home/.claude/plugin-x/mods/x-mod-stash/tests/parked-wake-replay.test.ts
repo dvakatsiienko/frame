@@ -9,7 +9,7 @@ import {
 import { MIN, steps } from './quiet-helpers.ts';
 import { expect, test } from './shared-boot.ts';
 
-/* FRM-692:W4, the probe: the idle stretches of 23 Nov 2026 as `docs/knowledge/fleet-stories/lane-member-idle/story.md` names
+/* FRM-692:W4, the probe: the idle stretches of 23 Nov 2026 as `docs/knowledge/fleet-stories/lane-members-idle-and-waste-time/story.md` names
    them, minute by minute. four nobody was told of, each one wake now; four that were fine, each none */
 
 const at = (h: number, m: number, s = 0) =>

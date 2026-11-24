@@ -2,6 +2,7 @@ import type { On } from 'claude-code';
 import { type Engine, mock } from 'claude-code/testing';
 
 import { QUIET_LOG_APPEND } from '../hooks/parse.ts';
+import { pollSkip } from './poll-skip.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 export const SID = 'q1q1q1q1-clio';
@@ -85,6 +86,7 @@ export function world(
     const submitted: string[] = [];
     const appended: string[] = [];
     const queued: string[] = [];
+    const skipPolls = pollSkip(on, poll);
     const clock = mock.clock(on, { now });
     const store = new Map<string, unknown>();
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
@@ -240,6 +242,8 @@ export function world(
         logged,
         queued,
         seedLog,
+        // time passing in two polls
+        skip: (ms: number) => skipPolls(clock, ms),
         store,
         submitted,
     };

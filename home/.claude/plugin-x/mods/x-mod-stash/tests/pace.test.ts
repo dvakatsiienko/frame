@@ -32,7 +32,7 @@ test(
         await start($);
         await w.clock.advance(POLL);
         const first = rungs(w);
-        await w.clock.advance(5 * MIN);
+        await w.skip(5 * MIN);
         expect([first, rungs(w)]).toEqual([['park'], ['park']]);
     },
 );
@@ -53,7 +53,7 @@ test('a window on pace from the start sends no resume', async ($, on) => {
     const w = world(on, WATCH);
     w.meter(30, LEFT);
     await start($);
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     expect(w.turns).toEqual([]);
 });
 
@@ -114,7 +114,7 @@ test('90 % used with more than 1 h left sends one park', async ($, on) => {
     const w = world(on, WATCH);
     w.meter(91, LEFT);
     await start($);
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     expect(rungs(w)).toEqual(['park']);
 });
 
@@ -122,7 +122,7 @@ test('≤ 1 h left sends one burn', async ($, on) => {
     const w = world(on, WATCH);
     w.meter(30, 40 * MIN);
     await start($);
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     expect(rungs(w)).toEqual(['burn']);
 });
 
@@ -194,7 +194,7 @@ test(
         await start($);
         await w.clock.advance(MIN);
         await endTurn($);
-        await w.clock.advance(40 * MIN);
+        await w.skip(40 * MIN);
         expect(rungs(w)).toEqual(['park', 'resume']);
     },
 );
@@ -221,7 +221,7 @@ test('a stale park stays quiet at 78 % used, no flap through a lower rung', asyn
     await start($);
     await w.clock.advance(POLL);
     await endTurn($);
-    await w.clock.advance(11 * MIN);
+    await w.skip(11 * MIN);
     expect(rungs(w)).toEqual(['park']);
 });
 
@@ -241,7 +241,7 @@ test('with no pace key no line ever', async ($, on) => {
     seat(w, MEMBER);
     w.meter(46, LEFT);
     await start($);
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     expect(w.turns).toEqual([]);
 });
 
@@ -252,7 +252,7 @@ test('a pace key deleted before the crossing sends no line', async ($, on) => {
     await w.clock.advance(POLL);
     w.store.delete(`pace:${SID}`);
     w.meter(46, LEFT, 0, w.clock.now());
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     expect(w.turns).toEqual([]);
 });
 
@@ -357,7 +357,7 @@ test('a window never parked hears no resume under pace', async ($, on) => {
     const w = world(on, WATCH);
     w.meter(20, LEFT);
     await start($);
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     expect(w.turns).toEqual([]);
 });
 
@@ -365,7 +365,7 @@ test('at or under pace past 70 % nothing is said', async ($, on) => {
     const w = world(on, WATCH);
     w.meter(72, 80 * MIN);
     await start($);
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     expect(w.turns).toEqual([]);
 });
 
@@ -380,7 +380,7 @@ test('97 % sends one stop and aborts nothing', async ($, on) => {
     });
     w.meter(97, 2 * HOUR);
     await start($);
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     expect([rungs(w), aborts]).toEqual([['stop'], 0]);
 });
 
@@ -391,10 +391,10 @@ test('a frozen 97 % past its reset sends one new window, no burn, no repeat stop
     await w.clock.advance(POLL);
     await endTurn($);
     const frozen = w.files[METER];
-    await w.clock.advance(3 * MIN);
+    await w.skip(3 * MIN);
     w.files[METER] = frozen ?? '';
     await endTurn($);
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     expect(rungs(w)).toEqual(['stop', 'new window']);
 });
 
@@ -416,7 +416,7 @@ test(
         await start($);
         await w.clock.advance(MIN);
         await endTurn($);
-        await w.clock.advance(2 * HOUR + MIN);
+        await w.skip(2 * HOUR + MIN);
         expect(paces(w).at(-1)).toBe(
             '🔋 new window: reset done, resume the fleet; a hand park stays',
         );
@@ -440,7 +440,7 @@ test(
         await start($);
         await w.clock.advance(MIN);
         await endTurn($);
-        await w.clock.advance(21 * MIN);
+        await w.skip(21 * MIN);
         expect(w.store.get(`pace:${SID}`)).toEqual({ off: true });
     },
 );
@@ -466,7 +466,7 @@ test(
         await start($);
         await w.clock.advance(MIN);
         await endTurn($);
-        await w.clock.advance(40 * MIN);
+        await w.skip(40 * MIN);
         expect(paces(w).some((t) => t.startsWith('🔋 new window'))).toBe(false);
     },
 );
@@ -545,12 +545,12 @@ test(
         await endTurn($);
         const pings = () =>
             w.turns.filter((t) => t.includes('keep-hot ping')).length;
-        await w.clock.advance(24 * MIN);
+        await w.skip(24 * MIN);
         const before = pings();
-        await w.clock.advance(2 * MIN);
+        await w.skip(2 * MIN);
         const at45 = pings();
         await endTurn($);
-        await w.clock.advance(5 * MIN);
+        await w.skip(5 * MIN);
         expect([before, at45, pings()]).toEqual([0, 1, 1]);
     },
 );
@@ -566,11 +566,11 @@ test(
         w.state.isRefused = true;
         const pings = () =>
             w.turns.filter((t) => t.includes('keep-hot ping')).length;
-        await w.clock.advance(26 * MIN);
+        await w.skip(26 * MIN);
         w.state.isRefused = false;
-        await w.clock.advance(MIN * 3);
+        await w.skip(3 * MIN);
         const noRetry = pings();
-        await w.clock.advance(30 * MIN);
+        await w.skip(30 * MIN);
         expect([noRetry, pings()]).toEqual([0, 1]);
     },
 );
@@ -595,7 +595,7 @@ test('a cache that outlives the reset gets no late ping', async ($, on) => {
     w.meter(50, 30 * MIN);
     await start($);
     await endTurn($);
-    await w.clock.advance(5 * POLL);
+    await w.skip(5 * POLL);
     expect(w.turns).toEqual([]);
 });
 
@@ -604,7 +604,7 @@ test('at 100 % no ping is sent', { timeoutMs: 60_000 }, async ($, on) => {
     w.meter(100, 65 * MIN);
     await start($);
     await endTurn($);
-    await w.clock.advance(55 * MIN);
+    await w.skip(55 * MIN);
     expect(w.turns).toEqual([]);
 });
 
@@ -618,10 +618,10 @@ test('a queued send counts as sent: no second line while it waits', async ($, on
     });
     w.meter(46, LEFT);
     await start($);
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     const waiting = rungs(w);
     release();
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     expect([waiting, rungs(w)]).toEqual([['park'], ['park']]);
 });
 
@@ -630,7 +630,7 @@ test('an ended session’s key sends nothing: only its own session polls it', as
     seat(w, MEMBER);
     w.meter(46, LEFT);
     await start($);
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     expect(w.turns).toEqual([]);
 });
 
@@ -709,7 +709,7 @@ test('a dead target revived after 5 polls gets one line', async ($, on) => {
     w.state.isRefused = true;
     w.meter(46, LEFT);
     await start($);
-    await w.clock.advance(5 * POLL);
+    await w.skip(5 * POLL);
     const dead = w.turns.length;
     w.state.isRefused = false;
     await w.clock.advance(2 * POLL);

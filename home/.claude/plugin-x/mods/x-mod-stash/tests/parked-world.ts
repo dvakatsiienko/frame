@@ -136,7 +136,7 @@ export const turnEnd = ($: Engine) =>
 // minutes of the lane's silence, clio's own turn ended after each step of it
 export async function pass($: Engine, w: World, ...minutes: number[]) {
     for (const m of minutes) {
-        await w.clock.advance(m * MIN);
+        await w.skip(m * MIN);
         await turnEnd($);
     }
 }

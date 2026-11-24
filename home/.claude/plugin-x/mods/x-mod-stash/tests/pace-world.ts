@@ -1,6 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, mock } from 'claude-code/testing';
 
+import { pollSkip } from './poll-skip.ts';
 import { appendLog } from './quiet-helpers.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
@@ -22,6 +23,7 @@ export function world(
     now = NOW,
     poll = POLL,
 ) {
+    const skipPolls = pollSkip(on, poll);
     const clock = mock.clock(on, { now });
     const store = new Map<string, unknown>(Object.entries(initial));
     const files: Record<string, string> = {
@@ -130,7 +132,8 @@ export function world(
             written_at: Math.round((t - age) / 1000),
         });
     };
-    return { clock, files, meter, state, store, turns };
+    const skip = (ms: number) => skipPolls(clock, ms);
+    return { clock, files, meter, skip, state, store, turns };
 }
 
 export const start = ($: Engine) =>

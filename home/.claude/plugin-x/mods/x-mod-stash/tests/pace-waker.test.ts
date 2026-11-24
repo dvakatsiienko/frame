@@ -146,7 +146,7 @@ test('a start with no end expires when its window resets', async ($, on) => {
     w.store.set(`pace:${SID}`, { since: NOW });
     await w.clock.advance(POLL);
     const during = wakerOn(w);
-    await w.clock.advance(21 * MIN);
+    await w.skip(21 * MIN);
     expect([during, w.store.get(`pace:${SID}`), wakerOn(w)]).toEqual([
         true,
         { on: true },
@@ -179,7 +179,7 @@ test('a start with no meter takes its expiry from a later poll', async ($, on) =
     w.store.set(`pace:${SID}`, { since: NOW });
     await w.clock.advance(POLL);
     w.meter(30, 30 * MIN, 0, w.clock.now());
-    await w.clock.advance(35 * MIN);
+    await w.skip(35 * MIN);
     expect(w.store.get(`pace:${SID}`)).toEqual({ on: true });
 });
 
@@ -190,7 +190,7 @@ test('a member’s start with no end leaves no key when its window resets', asyn
     await start($);
     w.store.set(`pace:${SID}`, { since: NOW });
     await w.clock.advance(POLL);
-    await w.clock.advance(21 * MIN);
+    await w.skip(21 * MIN);
     expect(w.store.get(`pace:${SID}`)).toBeUndefined();
 });
 
@@ -231,7 +231,7 @@ test(
         await w.clock.advance(POLL);
         w.state.isRefused = false;
         w.store.delete(`pace:${SID}`);
-        await w.clock.advance(51 * 60_000);
+        await w.skip(51 * MIN);
         expect(w.turns.some((t) => t.includes('keep-hot'))).toBe(true);
     },
 );
@@ -309,7 +309,7 @@ test('click off, restart with the same id, cross +5: no line', async ($, on) => 
     await ui.press({ key: 'pace-watch' });
     await start($);
     w.meter(46, LEFT);
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     expect([w.store.get(`pace:${SID}`), w.turns]).toEqual([{ off: true }, []]);
 });
 
@@ -363,7 +363,7 @@ test('the door’s off holds across a restart like a click', async ($, on) => {
     const w = world(on, { [`pace:${SID}`]: { off: true } });
     w.meter(46, LEFT);
     await start($);
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     expect([w.store.get(`pace:${SID}`), w.turns]).toEqual([{ off: true }, []]);
 });
 

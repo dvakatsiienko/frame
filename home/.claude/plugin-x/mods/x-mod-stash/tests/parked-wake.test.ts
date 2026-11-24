@@ -84,9 +84,9 @@ const parkedWakes = (w: { submitted: string[] }) =>
 test('a lane whose members sit idle 10 min wakes its clio once, no shift needed', async ($, on) => {
     const w = silentWorld(on, { wait: 60 });
     await start($);
-    await w.clock.advance(9 * MIN);
+    await w.skip(9 * MIN);
     const early = parkedWakes(w).length;
-    await w.clock.advance(2 * MIN);
+    await w.skip(2 * MIN);
     await $.turn.complete({
         answer: 'ok',
         durationMs: 1,
@@ -94,16 +94,16 @@ test('a lane whose members sit idle 10 min wakes its clio once, no shift needed'
         reason: 'answer',
         turnId: 't',
     });
-    await w.clock.advance(5 * MIN);
+    await w.skip(5 * MIN);
     expect([early, parkedWakes(w).length]).toEqual([0, 1]);
 });
 
 const idleLane = async (
     $: Engine,
-    w: { clock: { advance: (ms: number) => Promise<void> } },
+    w: { skip: (ms: number) => Promise<void> },
 ) => {
     await start($);
-    await w.clock.advance(11 * MIN);
+    await w.skip(11 * MIN);
 };
 
 test('a parked lane two steps from its end whose next chunk is unsigned wakes once, naming the lane and the ticket', async ($, on) => {
@@ -183,7 +183,7 @@ test('a parked hand-made card with no tickets keeps the idle wake', async ($, on
 test('a member speaking again re-arms the parked wake', async ($, on) => {
     const w = silentWorld(on, { wait: 60 });
     await start($);
-    await w.clock.advance(11 * MIN);
+    await w.skip(11 * MIN);
     await $.turn.complete({
         answer: 'ok',
         durationMs: 1,
@@ -192,7 +192,7 @@ test('a member speaking again re-arms the parked wake', async ($, on) => {
         turnId: 't',
     });
     w.spoke.at = EVEN + 12 * MIN;
-    await w.clock.advance(12 * MIN);
+    await w.skip(12 * MIN);
     expect(parkedWakes(w).length).toBe(2);
 });
 
@@ -202,7 +202,7 @@ test('a member still working wakes nobody', async ($, on) => {
         wait: 60,
     });
     await start($);
-    await w.clock.advance(15 * MIN);
+    await w.skip(15 * MIN);
     expect(parkedWakes(w)).toEqual([]);
 });
 
@@ -214,7 +214,7 @@ test("a live wing's lane wakes nobody here", async ($, on) => {
         wait: 60,
     });
     await start($);
-    await w.clock.advance(15 * MIN);
+    await w.skip(15 * MIN);
     expect(parkedWakes(w)).toEqual([]);
 });
 
@@ -224,14 +224,14 @@ test("a dead wing's lane falls to main", async ($, on) => {
         wait: 60,
     });
     await start($);
-    await w.clock.advance(15 * MIN);
+    await w.skip(15 * MIN);
     expect(parkedWakes(w).length).toBe(1);
 });
 
 test('a ping moving the last word back wakes no second time', async ($, on) => {
     const w = silentWorld(on, { wait: 60 });
     await start($);
-    await w.clock.advance(11 * MIN);
+    await w.skip(11 * MIN);
     await $.turn.complete({
         answer: 'ok',
         durationMs: 1,
@@ -240,7 +240,7 @@ test('a ping moving the last word back wakes no second time', async ($, on) => {
         turnId: 't',
     });
     w.spoke.at = EVEN - 5 * MIN;
-    await w.clock.advance(12 * MIN);
+    await w.skip(12 * MIN);
     expect(parkedWakes(w).length).toBe(1);
 });
 
@@ -315,7 +315,7 @@ test('the 14:55 replay: each card entry resolves to its own live session after a
 
 test('the 14:55 replay: a codie renamed after its link and at work wakes nobody', async ($, on) => {
     const { w } = await replay1455($, on);
-    await w.clock.advance(15 * MIN);
+    await w.skip(15 * MIN);
     expect(parkedWakes(w)).toEqual([]);
 });
 
@@ -347,7 +347,7 @@ test('a stopped codie and a sixth sense idle 30 min wake once, the unread line s
     w.store.set('quiet-wait', 60);
     await start($);
     for (let tick = 0; tick < 5; tick++) {
-        await w.clock.advance(3 * MIN);
+        await w.skip(3 * MIN);
         await turnEnd($);
     }
     expect([parkedWakes(w).length, unreadLines(w)]).toEqual([
@@ -371,15 +371,15 @@ test('a codie and a sixth sense both idle past 10 min wake once, again only afte
     });
     w.store.set('quiet-wait', 60);
     await start($);
-    await w.clock.advance(9 * MIN);
+    await w.skip(9 * MIN);
     const early = parkedWakes(w).length;
     for (let tick = 0; tick < 4; tick++) {
-        await w.clock.advance(3 * MIN);
+        await w.skip(3 * MIN);
         await turnEnd($);
     }
     const quiet = parkedWakes(w).length;
     spoke.at = EVEN + 22 * MIN;
-    await w.clock.advance(12 * MIN);
+    await w.skip(12 * MIN);
     expect([early, quiet, parkedWakes(w).length]).toEqual([0, 1, 2]);
 });
 
@@ -398,7 +398,7 @@ async function parkedAfter($: Engine, on: On, settings?: string) {
     const seen: number[] = [];
     let at = 0;
     for (const minute of [4, 6, 11, 24, 26]) {
-        await w.clock.advance((minute - at) * MIN);
+        await w.skip((minute - at) * MIN);
         at = minute;
         await turnEnd($);
         seen.push(parkedWakes(w).length);
@@ -438,11 +438,11 @@ test('a lane idle row edited mid-silence counts at the next poll', async ($, on)
     const files: Record<string, string> = {};
     const w = silentWorld(on, { files, wait: 60 });
     await start($);
-    await w.clock.advance(6 * MIN);
+    await w.skip(6 * MIN);
     await turnEnd($);
     const before = parkedWakes(w).length;
     files[HERDR_SETTINGS] = herdrRows({ 'stash.park.after': 5 });
-    await w.clock.advance(1 * MIN);
+    await w.skip(1 * MIN);
     expect([before, parkedWakes(w).length]).toEqual([0, 1]);
 });
 
