@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T14:49:00Z'
-updated_date: '2026-11-24T16:37:00Z'
+updated_date: '2026-11-24T16:52:00Z'
 labels:
   - s
   - clio-wing-1
@@ -296,4 +296,8 @@ PK-468:W133 (2026-11-24 18:37, dima): [when you're fresh, you and me: one grill,
 PK-468:W134 (2026-11-24 18:37, dima): [1 Dec, me: count parks, missed seals, coders hitting gaps and the critic's serious finds. then we decide on the sign as a script.] When we reach this date gate, ensure you remind me properly what we are up to doing on the 1st of December (e.g. link me to today's thread and remind me that that reminder is about fixing the ticket flow).
 
 PK-468:W135 (2026-11-24 18:37, dima): Remind me that we removed or changed the signing mechanism
+
+18:47 dima's 18:46 ticks, grill 2 as picked (o1 o2 o3): a fresh helper finds the additions at each seal; shown at the seal of the next chunk, mid-run ones joined and marked new; one quiet orbit ask per chunk, a press opens the list, silence keeps all. his words 18:46: «proceed, tell when everything is built and you can park.»
+
+18:52 stays open: the stray's two chunks, the trigger's first real line seen, his 1 Dec check; STATE.md is level
 <!-- SECTION:NOTES:END -->

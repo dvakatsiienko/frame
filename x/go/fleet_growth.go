@@ -38,6 +38,12 @@ type growthCrossing struct {
 	Then    int    `json:"then,omitempty"`
 	Now     int    `json:"now,omitempty"`
 	Count   int    `json:"count,omitempty"`
+	// the date it was first reported, empty for one a baseline from before this field named; Calmed: reported before, under its limit now
+	First  string `json:"first,omitempty"`
+	Calmed bool   `json:"calmed,omitempty"`
+	// a fixes crossing names both its counts: Count since the part's seed or last keep (Since, its date), Week all in 7 days
+	Since string `json:"since,omitempty"`
+	Week  int    `json:"week,omitempty"`
 	// the ask clio puts on the board: the part's origin, its size then → now, its fixes and his turns, and the three answers
 	Ask string `json:"ask"`
 }
@@ -52,11 +58,13 @@ type growthData struct {
 }
 
 // at is the instant the part was seeded or last kept: fixes and turns count only from it; reported lists the trigger kinds already
-// named since then, so a crossing is raised once
+// named since then: a size or fixes one prints on every run until the keep, the rough turns one only the once
 type growthEntry struct {
 	Lines    int      `json:"lines"`
 	At       string   `json:"at"`
 	Reported []string `json:"reported,omitempty"`
+	// the date each reported kind was first named, for the kinds named since the field exists
+	First map[string]string `json:"first,omitempty"`
 }
 
 type growthBaseline struct {
@@ -103,14 +111,14 @@ func fleetGrowth(r *Run, _ []string, flags Flags) (any, error) {
 		}
 	}
 	if hadBaseline {
-		fixes, err := growthFixCounts(root, now, baseline)
+		fixes, week, err := growthFixCounts(root, now, baseline)
 		if err != nil {
 			data.Error = err.Error()
 		}
 		turns := growthTurnCounts(now, baseline, parts)
 		for _, part := range parts {
 			if fixes[part] >= growthFixes {
-				data.Crossings = append(data.Crossings, growthCrossing{Part: part, Trigger: "fixes", Count: fixes[part]})
+				data.Crossings = append(data.Crossings, growthCrossing{Part: part, Trigger: "fixes", Count: fixes[part], Week: week[part], Since: sinceOf(baseline, part)})
 			}
 			if turns[part] >= growthTurns {
 				data.Crossings = append(data.Crossings, growthCrossing{Part: part, Trigger: "turns (rough)", Count: turns[part]})
@@ -120,24 +128,59 @@ func fleetGrowth(r *Run, _ []string, flags Flags) (any, error) {
 		slices.SortStableFunc(data.Crossings, func(a, b growthCrossing) int {
 			return strings.Compare(a.Part, b.Part)*3 + rank[a.Trigger] - rank[b.Trigger]
 		})
-		fresh := []growthCrossing{}
+		// a size or fixes crossing prints on every run until the keep; the rough turns one prints once
+		live := map[[2]string]bool{}
+		for _, c := range data.Crossings {
+			live[[2]string{c.Part, c.Trigger}] = true
+		}
+		shown := []growthCrossing{}
 		for _, c := range data.Crossings {
 			entry := baseline.Parts[c.Part]
-			if slices.Contains(entry.Reported, c.Trigger) {
+			named := slices.Contains(entry.Reported, c.Trigger)
+			if named && c.Trigger == "turns (rough)" {
 				continue
 			}
-			entry.Reported = append(entry.Reported, c.Trigger)
-			baseline.Parts[c.Part] = entry
-			fresh, changed = append(fresh, c), true
+			if !named {
+				entry.Reported = append(entry.Reported, c.Trigger)
+				if c.Trigger != "turns (rough)" {
+					entry.First = maps.Clone(entry.First)
+					if entry.First == nil {
+						entry.First = map[string]string{}
+					}
+					entry.First[c.Trigger] = now.Format(time.DateOnly)
+				}
+				baseline.Parts[c.Part], changed = entry, true
+			}
+			c.First = entry.First[c.Trigger]
+			shown = append(shown, c)
 		}
-		data.Crossings = fresh
-		if len(fresh) > 0 {
+		// a kind reported before and under its limit now stays in the report, saying so, until the keep
+		for _, part := range parts {
+			entry := baseline.Parts[part]
+			for _, trigger := range []string{"size", "fixes"} {
+				if !slices.Contains(entry.Reported, trigger) || live[[2]string{part, trigger}] {
+					continue
+				}
+				calmed := growthCrossing{Part: part, Trigger: trigger, Calmed: true, First: entry.First[trigger]}
+				if trigger == "size" {
+					calmed.Then, calmed.Now = entry.Lines, sizes[part]
+				} else {
+					calmed.Count, calmed.Week, calmed.Since = fixes[part], week[part], sinceOf(baseline, part)
+				}
+				shown = append(shown, calmed)
+			}
+		}
+		slices.SortStableFunc(shown, func(a, b growthCrossing) int {
+			return strings.Compare(a.Part, b.Part)*3 + rank[a.Trigger] - rank[b.Trigger]
+		})
+		data.Crossings = shown
+		if len(shown) > 0 {
 			origins, err := growthOrigins(root)
 			if err != nil {
 				data.Error = err.Error()
 			}
 			for i, c := range data.Crossings {
-				data.Crossings[i].Ask = growthAsk(c, baseline.Parts[c.Part].Lines, sizes[c.Part], origins[c.Part], fixes[c.Part], turns[c.Part])
+				data.Crossings[i].Ask = growthAsk(c, baseline.Parts[c.Part].Lines, sizes[c.Part], origins[c.Part], growthFixCount{since: sinceOf(baseline, c.Part), count: fixes[c.Part], week: week[c.Part]}, turns[c.Part])
 			}
 		}
 	}
@@ -168,7 +211,11 @@ func growthLines(data growthData) []string {
 	}
 	var lines []string
 	for _, c := range data.Crossings {
-		lines = append(lines, c.Ask)
+		if c.First != "" {
+			lines = append(lines, c.Ask+" first: "+c.First)
+		} else {
+			lines = append(lines, c.Ask)
+		}
 	}
 	return lines
 }
@@ -248,25 +295,30 @@ func growthPartOf(file string, families []string) (string, bool) {
 	return "x " + best, best != ""
 }
 
+// the date a part was seeded or last kept, as its fixes and turns count from it
+func sinceOf(b growthBaseline, part string) string {
+	return b.seededAt(part).Format(time.DateOnly)
+}
+
 // the instant a part was seeded; a missing or unreadable stamp counts every event
 func (b growthBaseline) seededAt(part string) time.Time {
 	at, _ := time.Parse(time.RFC3339, b.Parts[part].At)
 	return at
 }
 
-// 🐞 commits of the last 7 days touching each part's files, from the part's seed on: one git read over the five roots, each commit
-// credited once to every part it touched
-func growthFixCounts(root string, now time.Time, baseline growthBaseline) (map[string]int, error) {
+// 🐞 commits of the last 7 days touching each part's files: week counts them all, since only those from the part's seed or last keep
+// on; one git read over the five roots, each commit credited once to every part it touched
+func growthFixCounts(root string, now time.Time, baseline growthBaseline) (since, week map[string]int, err error) {
 	out, err := exec.Command("git", "-C", root, "log", "--since="+now.Add(-growthWindow).Format(time.RFC3339), "--name-only", "--format=%x1e%ct%x09%s", "--",
 		growthModsDir, growthHerdrDir, growthSkillsX, growthSkillsClo, growthGoDir).Output()
 	if err != nil {
-		return nil, &Fail{Msg: "git log failed: " + err.Error(), Next: "git status"}
+		return nil, nil, &Fail{Msg: "git log failed: " + err.Error(), Next: "git status"}
 	}
 	var families []string
 	for _, family := range familyList {
 		families = append(families, family.Name)
 	}
-	counts := map[string]int{}
+	since, week = map[string]int{}, map[string]int{}
 	for commit := range strings.SplitSeq(string(out), "\x1e") {
 		head, files, _ := strings.Cut(commit, "\n")
 		secs, subject, ok := strings.Cut(head, "\t")
@@ -281,12 +333,15 @@ func growthFixCounts(root string, now time.Time, baseline growthBaseline) (map[s
 			}
 		}
 		for part := range touched {
-			if _, known := baseline.Parts[part]; known && at >= baseline.seededAt(part).Unix() {
-				counts[part]++
+			if _, known := baseline.Parts[part]; known {
+				week[part]++
+				if at >= baseline.seededAt(part).Unix() {
+					since[part]++
+				}
 			}
 		}
 	}
-	return counts, nil
+	return since, week, nil
 }
 
 type promptBlock struct {
@@ -379,9 +434,23 @@ func growthOrigins(root string) (map[string]growthOrigin, error) {
 	return origins, nil
 }
 
-func growthAsk(c growthCrossing, then, now int, origin growthOrigin, fixes, turns int) string {
-	return fmt.Sprintf("%s crossed on %s: %s → %s lines. first commit «%s» on %s. fixes in 7 days: %d, his turns in a day (rough): %d. keep, shrink or delete?",
-		c.Part, c.Trigger, thousands(then), thousands(now), origin.subject, origin.date, fixes, turns)
+// a part's fixes: counted from its seed or last keep (since is that date), and all of the last 7 days
+type growthFixCount struct {
+	since       string
+	count, week int
+}
+
+func growthAsk(c growthCrossing, then, now int, origin growthOrigin, fixes growthFixCount, turns int) string {
+	if c.Calmed {
+		under := fmt.Sprintf("%d fixes in 7 days", c.Count)
+		if c.Trigger == "size" {
+			under = thousands(c.Now) + " lines"
+		}
+		return fmt.Sprintf("%s crossed on %s, was over the limit, now %s: the part calmed down. first commit «%s» on %s. keep it, shrink or delete?",
+			c.Part, c.Trigger, under, origin.subject, origin.date)
+	}
+	return fmt.Sprintf("%s crossed on %s: %s → %s lines. first commit «%s» on %s. fixes since %s: %d, in 7 days: %d, his turns in a day (rough): %d. keep, shrink or delete?",
+		c.Part, c.Trigger, thousands(then), thousands(now), origin.subject, origin.date, fixes.since, fixes.count, fixes.week, turns)
 }
 
 func thousands(n int) string {

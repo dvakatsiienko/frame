@@ -56,9 +56,9 @@ func growthAt(t *testing.T, root string, env []string, now string) growthData {
 	return envelope.Data
 }
 
-// a crossing without its ask text, for the tests that compare what crossed
+// a crossing without its ask text, its first date and its dated counts, for the tests that compare what crossed
 func bare(c growthCrossing) growthCrossing {
-	c.Ask = ""
+	c.Ask, c.First, c.Since, c.Week = "", "", "", 0
 	return c
 }
 
@@ -285,28 +285,229 @@ func keepAt(t *testing.T, root string, env []string, now string, part string) ra
 	return xIn(t, root, append(env, "X_NOW="+now), "fleet", "growth", "--keep", part, "--json")
 }
 
-// exit 3, the first half: a crossing is a part plus a trigger kind and is named once; another kind on the same part is a new crossing
-func TestFleetGrowthNamesACrossingOnce(t *testing.T) {
+// FRM-701 exit 1: a size or fixes crossing prints on every run until it is kept, with the date it was first reported
+func TestFleetGrowthPrintsAReportedCrossingOnEveryRunWithItsFirstDate(t *testing.T) {
 	t.Parallel()
 	root, env := growthWorld(t)
 	growthAt(t, root, env, "2026-11-20T09:00:00Z")
 	write(t, filepath.Join(root, growthMod), strings.Repeat("x\n", 200))
 	gitT(t, root, "add", "-A")
-	if first := growth(t, root, env); len(first.Crossings) != 1 || first.Crossings[0].Trigger != "size" {
-		t.Fatalf("first run %+v, want the size crossing", first.Crossings)
-	}
-
-	if again := growth(t, root, env); len(again.Crossings) != 0 {
-		t.Errorf("second run %+v, want the reported size crossing quiet", again.Crossings)
-	}
-
 	for range 3 {
 		fixCommit(t, root, growthAlphaDir, growthFix, 1)
 	}
-	got := growth(t, root, env)
-	if len(got.Crossings) != 1 || got.Crossings[0].Trigger != "fixes" {
-		t.Errorf("after 3 fixes %+v, want only the new «fixes» crossing", got.Crossings)
+
+	for _, now := range []string{growthNow, "2026-11-21T12:00:00Z", "2026-11-22T12:00:00Z"} {
+		got := growthAt(t, root, env, now)
+
+		if len(got.Crossings) != 2 {
+			t.Fatalf("run at %s: %+v, want the size and the fixes crossings", now, got.Crossings)
+		}
+		for _, c := range got.Crossings {
+			if c.First != "2026-11-20" || c.Calmed {
+				t.Errorf("run at %s: %+v, want first 2026-11-20 and not calmed", now, c)
+			}
+		}
 	}
+}
+
+// the text prints the first date beside the ask, which stays the ask
+func TestFleetGrowthPrintsTheFirstDateInItsText(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	growthAt(t, root, env, "2026-11-20T09:00:00Z")
+	for range 3 {
+		fixCommit(t, root, growthAlphaDir, growthFix, 1)
+	}
+
+	got := xIn(t, root, append(env, "X_NOW="+growthNow), "fleet", "growth", "--board")
+
+	if !strings.Contains(got.stdout, "first: 2026-11-20") || !strings.Contains(got.stdout, "keep, shrink or delete?") {
+		t.Errorf("text %q, want the ask and «first: 2026-11-20»", got.stdout)
+	}
+}
+
+// a crossing that fell back under its limit stays in the report until the keep, and says it calmed down
+func TestFleetGrowthKeepsACalmedCrossingInTheReportUntilTheKeep(t *testing.T) {
+	t.Parallel()
+	t.Run("fixes", func(t *testing.T) {
+		t.Parallel()
+		root, env := growthWorld(t)
+		growthAt(t, root, env, "2026-11-20T09:00:00Z")
+		for range 3 {
+			fixCommit(t, root, growthAlphaDir, growthFix, 1)
+		}
+		growth(t, root, env)
+
+		got := growthAt(t, root, env, "2026-11-29T12:00:00Z")
+
+		if len(got.Crossings) != 1 || got.Crossings[0].Trigger != "fixes" || !got.Crossings[0].Calmed || got.Crossings[0].First != "2026-11-20" {
+			t.Fatalf("crossings %+v, want the fixes crossing, calmed, first 2026-11-20", got.Crossings)
+		}
+		if ask := got.Crossings[0].Ask; !strings.Contains(ask, "was over the limit, now 0") || !strings.Contains(ask, "calmed down") {
+			t.Errorf("ask %q, want «was over the limit, now 0» and «calmed down»", ask)
+		}
+	})
+	t.Run("size", func(t *testing.T) {
+		t.Parallel()
+		root, env := growthWorld(t)
+		growthAt(t, root, env, "2026-11-20T09:00:00Z")
+		write(t, filepath.Join(root, growthMod), strings.Repeat("x\n", 200))
+		gitT(t, root, "add", "-A")
+		growth(t, root, env)
+		write(t, filepath.Join(root, growthMod), strings.Repeat("x\n", 150))
+		gitT(t, root, "add", "-A")
+
+		got := growthAt(t, root, env, "2026-11-21T12:00:00Z")
+
+		if len(got.Crossings) != 1 || got.Crossings[0].Trigger != "size" || !got.Crossings[0].Calmed || got.Crossings[0].Now != 150 {
+			t.Fatalf("crossings %+v, want the size crossing, calmed, at 150", got.Crossings)
+		}
+		if ask := got.Crossings[0].Ask; !strings.Contains(ask, "was over the limit, now 150") || !strings.Contains(ask, "calmed down") {
+			t.Errorf("ask %q, want «was over the limit, now 150» and «calmed down»", ask)
+		}
+	})
+}
+
+// the rough turns trigger still prints once: six skills carry it today and six standing reds would be noise
+func TestFleetGrowthPrintsTheRoughTurnsCrossingOnce(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	growthAt(t, root, env, "2026-11-20T09:00:00Z")
+	promptsDay(t, env, "2026-11-20", "22:00 x-mod-alpha is slow", "22:05 the X-MOD-ALPHA band", "22:10 x-mod-alpha again")
+	if first := growth(t, root, env); len(first.Crossings) != 1 || first.Crossings[0].Trigger != "turns (rough)" {
+		t.Fatalf("first run %+v, want the turns crossing", first.Crossings)
+	}
+
+	if again := growth(t, root, env); len(again.Crossings) != 0 {
+		t.Errorf("second run %+v, want the reported turns crossing quiet", again.Crossings)
+	}
+}
+
+// a baseline written before the first date existed: read whole, no entry dropped, the crossing prints with no date
+func TestFleetGrowthReadsABaselineWithNoFirstDate(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	growthAt(t, root, env, "2026-11-20T09:00:00Z")
+	reportedAs(t, env, "x-mod-alpha", "fixes")
+	for range 3 {
+		fixCommit(t, root, growthAlphaDir, growthFix, 1)
+	}
+	before := len(seededLines(t, env))
+
+	got := growth(t, root, env)
+
+	if len(got.Crossings) != 1 || got.Crossings[0].Trigger != "fixes" || got.Crossings[0].First != "" || got.Crossings[0].Calmed {
+		t.Errorf("crossings %+v, want the fixes crossing with no first date", got.Crossings)
+	}
+	if after := len(seededLines(t, env)); after != before {
+		t.Errorf("%d parts in the baseline after the run, want the %d it held", after, before)
+	}
+}
+
+// a part reported for fixes, then no fix commit for 8 days: its row says it is under the limit now (the same fixture as the want line, less its 15 fixes)
+func TestFleetGrowthSaysAReportedPartIsUnderItsLimitNow(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	growthAt(t, root, env, "2026-11-20T09:00:00Z")
+	reportedAs(t, env, "x-mod-alpha", "fixes")
+
+	got := growthAt(t, root, env, "2026-11-28T12:00:00Z")
+
+	if len(got.Crossings) != 1 || !got.Crossings[0].Calmed || !strings.Contains(got.Crossings[0].Ask, "was over the limit, now 0") {
+		t.Errorf("crossings %+v, want the reported fixes row, calmed", got.Crossings)
+	}
+}
+
+// the want line: x-mod-stash on 24 Nov, reported for fixes on 23 Nov, 15 fix commits since, and nothing printed that day
+func TestFleetGrowthPrintsTheStashsFifteenFixesTheDayAfterItsReport(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	write(t, filepath.Join(root, "home/.claude/plugin-x/mods/x-mod-stash/hooks/main.ts"), strings.Repeat("x\n", 100))
+	gitT(t, root, "add", "-A")
+	gitT(t, root, "commit", "-q", "-m", "the stash")
+	growthAt(t, root, env, "2026-11-23T16:36:00Z")
+	reportedAs(t, env, "x-mod-stash", "fixes")
+	for i := range 15 {
+		growthCommit(t, root, "home/.claude/plugin-x/mods/x-mod-stash", "🐞 x-mod-stash: a fix", fmt.Sprintf("2026-11-24T%02d:%02d:00Z", 8+i/4, i%4*10), 1)
+	}
+
+	got := growthAt(t, root, env, "2026-11-24T18:00:00Z")
+
+	want := growthCrossing{Part: "x-mod-stash", Trigger: "fixes", Count: 15}
+	if len(got.Crossings) != 1 || bare(got.Crossings[0]) != want {
+		t.Errorf("crossings %+v, want only %+v", got.Crossings, want)
+	}
+}
+
+// a keep answers every kind at once: nothing prints after it, and the part prints again at twice its size at the keep
+func TestFleetGrowthKeepSilencesEveryKindAndTheSizeStartsAgainFromTheKeep(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	growthAt(t, root, env, "2026-11-20T09:00:00Z")
+	write(t, filepath.Join(root, growthMod), strings.Repeat("x\n", 200))
+	gitT(t, root, "add", "-A")
+	for range 3 {
+		fixCommit(t, root, growthAlphaDir, growthFix, 1)
+	}
+	growth(t, root, env)
+	keepAt(t, root, env, growthNow, "x-mod-alpha")
+
+	if got := growthAt(t, root, env, "2026-11-21T12:00:00Z"); len(got.Crossings) != 0 {
+		t.Fatalf("after the keep %+v, want nothing of any kind", got.Crossings)
+	}
+
+	write(t, filepath.Join(root, growthMod), strings.Repeat("x\n", 2*203))
+	gitT(t, root, "add", "-A")
+	got := growthAt(t, root, env, "2026-11-22T12:00:00Z")
+	if len(got.Crossings) != 1 || got.Crossings[0].Trigger != "size" || got.Crossings[0].Then != 203 || got.Crossings[0].First != "2026-11-22" {
+		t.Errorf("at twice the kept size %+v, want the size crossing from 203, first 2026-11-22", got.Crossings)
+	}
+}
+
+// the fixes count runs from the seed or the keep, so the crossing names both it and the week's: «fixes since <date>: 3, in 7 days: 7»
+func TestFleetGrowthNamesTheFixesSinceTheKeepAndInSevenDays(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	growthAt(t, root, env, "2026-11-20T09:00:00Z")
+	for range 4 {
+		fixCommit(t, root, growthAlphaDir, growthFix, 5)
+	}
+	keepAt(t, root, env, growthNow, "x-mod-alpha")
+	for range 3 {
+		fixCommit(t, root, growthAlphaDir, growthFix, -1)
+	}
+
+	got := growthAt(t, root, env, "2026-11-21T12:00:00Z")
+
+	if len(got.Crossings) != 1 {
+		t.Fatalf("crossings %+v, want the fixes crossing alone", got.Crossings)
+	}
+	c := got.Crossings[0]
+	if c.Trigger != "fixes" || c.Count != 3 || c.Week != 7 || c.Since != "2026-11-20" {
+		t.Errorf("crossing %+v, want fixes, 3 since 2026-11-20, 7 in the week", c)
+	}
+	if !strings.Contains(c.Ask, "fixes since 2026-11-20: 3, in 7 days: 7") {
+		t.Errorf("ask %q, want «fixes since 2026-11-20: 3, in 7 days: 7»", c.Ask)
+	}
+}
+
+// the baseline as an older x wrote it: the kinds a part was reported for, with no dates
+func reportedAs(t *testing.T, env []string, part string, kinds ...string) {
+	t.Helper()
+	file := filepath.Join(strings.TrimPrefix(env[1], "X_STATE="), "fleet-growth", "baseline.json")
+	raw, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var baseline struct {
+		Parts map[string]map[string]any `json:"parts"`
+	}
+	if err := json.Unmarshal(raw, &baseline); err != nil {
+		t.Fatal(err)
+	}
+	baseline.Parts[part]["reported"] = kinds
+	out, _ := json.Marshal(baseline)
+	write(t, file, string(out))
 }
 
 // exit 3, the second half: --keep re-seeds the part at today's size and stamps «kept at»; the 3 fixes still inside 7 days predate it, so
@@ -381,7 +582,7 @@ func TestFleetGrowthNamesTheGuardBeforeDimaSpotsIt(t *testing.T) {
 			ask = c.Ask
 		}
 	}
-	for _, want := range []string{"x-mod-guard", "932 → 2,617 lines", "first commit «✨ x-mod-guard: the guard stands in for the permission prompt» on 2026-11-06", "fixes in 7 days: 3", "his turns in a day (rough): 2", "keep, shrink or delete"} {
+	for _, want := range []string{"x-mod-guard", "932 → 2,617 lines", "first commit «✨ x-mod-guard: the guard stands in for the permission prompt» on 2026-11-06", "fixes since 2026-11-06: 3, in 7 days: 3", "his turns in a day (rough): 2", "keep, shrink or delete"} {
 		if !strings.Contains(ask, want) {
 			t.Errorf("the ask lacks %q:\n%s", want, ask)
 		}

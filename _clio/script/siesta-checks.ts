@@ -80,8 +80,8 @@ function script(dir: string, name: string, file: string, args: string[]) {
     return { exit: out.status ?? 1, name, output };
 }
 
-// a fleet part that doubled, or drew 3 fixes in 7 days or 3 of his turns in a day (FRM-590): x names each crossing
-// once, so a crossing reds the section until its ask is on his board
+// a fleet part that doubled, or drew 3 fixes in 7 days or 3 of his turns in a day (FRM-590): x names a
+// size or fixes crossing on every run until his keep (FRM-701), so one ask a crossing, never one a siesta
 function partGrowth(home: string) {
     const name = 'part growth';
     const out = spawnSync(
@@ -91,7 +91,7 @@ function partGrowth(home: string) {
     );
     try {
         const { crossings, parts, seeded } = JSON.parse(out.stdout).data as {
-            crossings: { ask: string }[];
+            crossings: { ask: string; first?: string }[];
             parts: number;
             seeded: boolean;
         };
@@ -107,8 +107,10 @@ function partGrowth(home: string) {
             exit: 1,
             name,
             output: [
-                `🔴 ${crossings.length} crossing(s): each goes to orbit with its first W-line added`,
-                ...crossings.map((c) => c.ask),
+                `🔴 ${crossings.length} crossing(s): each not yet asked goes to orbit with its first W-line added`,
+                ...crossings.map((c) =>
+                    c.first ? `${c.ask} (first: ${c.first})` : c.ask,
+                ),
             ].join('\n\n'),
         };
     } catch {

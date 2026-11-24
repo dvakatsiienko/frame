@@ -1241,14 +1241,14 @@
         {
             "flags": {
                 "keep": {
-                    "description": "answer a crossing: keep this part, re-seeding its size to today and counting fixes and turns from now",
+                    "description": "answer a crossing of every kind at once: keep this part, re-seeding its size to today and counting fixes and turns from now",
                     "type": "string",
                     "value": "part"
                 }
             },
             "name": "fleet growth",
             "needsApply": false,
-            "purpose": "the parts of the fleet (cc mods, herdr mods, verb families, skills) that outgrew the size they were seeded at",
+            "purpose": "the fleet parts (cc mods, herdr mods, verb families, skills) that outgrew their seeded size, named until kept",
             "touches": [
                 "the frame tree's tracked files of each part, read for their lines",
                 "~/.local/state/x/fleet-growth/baseline.json — each part's seeded size, written on the first run and for a part born later"

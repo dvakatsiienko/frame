@@ -34,7 +34,6 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **phases** — each thread's next moves, the lines it keeps with orbit's plan op; one block pinned at the deck's bottom, a group per thread in antenna's order
 - **glide** — one card per running lane, its steps and «we are here»; drawn in the deck today, settled at the sidebar's bottom, stuck there and growing upward
 - **x-herdr-deck** — our deck mod: orbit, glide and phases; it publishes each thread's facts for antenna and the chat
-- **x-herdr-agents** — our old agents list, out of the layout since antenna took the sidebar; kept in the tree until his word
 - **x-herdr-tabs** — our tab bar above a space's panes, each agent tab by its session name; copied from zoo's `my-tabs` (FRM-567)
 - **draft** — what dima has typed in the quill and not yet sent; kept per thread across a reload
 - **mark** — the quill's words marked to join a thread's turn (🍕), kept with the draft by one owner (`quill.js`) until a turn takes them or he takes the mark off
