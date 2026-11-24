@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import type { RoastConfig, RoastDeps } from './roast.ts';
-import { poll } from './roast.ts';
+import { busyCoresOf, poll } from './roast.ts';
 
 const JOB = import.meta.dirname;
 const LOG = 'x-cpu-roast-culprit-log.log';
@@ -71,12 +71,23 @@ const psText = (rows: Proc[]) =>
     `PID PPID TIME COMMAND\n${rows.map(([pid, ppid, cpu, command]) => `${pid} ${ppid} ${clock(cpu)} ${command}`).join('\n')}\n`;
 
 // a simulated clock and machine: the odd ps call answers BASE, the even one HOT, so every baseline and its row get a pair
-function sim(options: { threadsFail?: boolean; spanSeconds?: number } = {}) {
+function sim(
+    options: {
+        busy?: (number | null)[];
+        threadsFail?: boolean;
+        spanSeconds?: number;
+    } = {},
+) {
     const stateDir = mkdtempSync(join(tmpdir(), 'roast-'));
-    const calls = { cwd: [] as number[], ps: 0, threads: 0 };
+    const calls = { busy: 0, cwd: [] as number[], ps: 0, threads: 0 };
     let now = START;
     let load: number | null = 25;
     const deps: RoastDeps = {
+        // the busy cores each over-poll reads: the list in order, then its last value
+        busyCores: () => {
+            const list = options.busy ?? [8];
+            return list[Math.min(calls.busy++, list.length - 1)] ?? null;
+        },
         cwdOf: (pid) => {
             calls.cwd.push(pid);
             return CWD[pid] ?? '';
@@ -138,7 +149,7 @@ describe('one row names the lane that burned the cpu', () => {
         expect(fields[2]).toBe(
             'mods-lane-9 135.5s, speak-hunt 80.2s, worktree-x 40.0s, no lane 35.0s',
         );
-        expect(fields).toHaveLength(8);
+        expect(fields).toHaveLength(9);
         expect(fields[3]).toMatch(/^11 120\.0s .* @ mods-lane-9$/);
         expect(fields[4]).toMatch(
             /^21 80\.0s go test \.\/\.\.\. @ speak-hunt$/,
@@ -146,6 +157,7 @@ describe('one row names the lane that burned the cpu', () => {
         expect(fields[5]).toMatch(/^30 40\.0s .* @ worktree-x$/);
         expect(fields[6]).toBe('60 30.0s vm-go-test @ no lane');
         expect(fields[7]).toBe('50 15.0s git status @ mods-lane-9');
+        expect(fields[8]).toMatch(/^seen /);
         expect(machine.calls).toMatchObject({ ps: 2, threads: 1 });
         expect(machine.calls.cwd).toEqual([30, 40]);
     });
@@ -169,6 +181,47 @@ describe('one row names the lane that burned the cpu', () => {
     });
 });
 
+describe('a row says how much of the busy cpu it saw', () => {
+    it('sets the cpu time gained by live processes against the busy cores the over-polls read, averaged over the window', () => {
+        // 6 over-polls read 4, 8, 8, 8, 8, 8 cores: a mean of 44/6 over 300 s
+        const machine = sim({ busy: [4, 8] });
+        for (const second of minutes(0, 300)) machine.at(second);
+
+        expect((machine.rows()[0] ?? '').split('\t').at(-1)).toBe(
+            'seen 290.7 of 2200.0 busy core-s',
+        );
+    });
+
+    it('reads the busy cores no more once the row is written', () => {
+        const machine = sim();
+        for (const second of minutes(0, 600)) machine.at(second);
+
+        expect(machine.rows()).toHaveLength(1);
+        expect(machine.calls.busy).toBe(6);
+    });
+
+    it('says «of ?» when no over-poll could read the busy cores', () => {
+        const machine = sim({ busy: [null] });
+        for (const second of minutes(0, 300)) machine.at(second);
+
+        expect((machine.rows()[0] ?? '').split('\t').at(-1)).toBe(
+            'seen 290.7 of ? busy core-s',
+        );
+    });
+
+    it('reads the busy share off the last iostat line, times the cores', () => {
+        const text = `              disk0       cpu    load average
+    KB/t  tps  MB/s  us sy id   1m   5m   15m
+   17.68  395  6.83  14  7 79  8.33 14.86 13.62
+    6.55   55  0.35  11  7 82  8.33 14.86 13.62
+`;
+
+        expect(busyCoresOf(text, 14)).toBeCloseTo(2.52, 5);
+        expect(busyCoresOf('iostat: not found\n', 14)).toBeNull();
+        expect(busyCoresOf('a b c d e f g h\n', 14)).toBeNull();
+    });
+});
+
 describe('a quiet mac costs one uptime and no file but its stamp', () => {
     it('writes no row over 1,440 polls under the threshold, and a fresh last-poll stamp', () => {
         const machine = sim();
@@ -179,7 +232,7 @@ describe('a quiet mac costs one uptime and no file but its stamp', () => {
         expect(
             Number(readFileSync(join(machine.stateDir, LAST_POLL), 'utf8')),
         ).toBe(START + 1439 * 60_000);
-        expect(machine.calls).toEqual({ cwd: [], ps: 0, threads: 0 });
+        expect(machine.calls).toEqual({ busy: 0, cwd: [], ps: 0, threads: 0 });
     });
 
     it('keeps a stretch in progress when uptime cannot be read', () => {
@@ -334,6 +387,10 @@ describe('main.ts as a real process', () => {
             `printf 'p%s\\nfcwd\\nn${MAIN}/.claude/worktrees/worktree-x\\n' "$3"`,
         );
         put('x', `echo '${THREADS}'`);
+        put(
+            'iostat',
+            'printf "  disk0 cpu load average\\n  KB/t tps MB/s us sy id 1m 5m 15m\\n 1 1 1 14 7 79 8 14 13\\n 1 1 1 11 7 82 8 14 13\\n"',
+        );
 
         const run = spawnSync(process.execPath, [join(JOB, 'main.ts')], {
             encoding: 'utf8',
@@ -353,6 +410,7 @@ describe('main.ts as a real process', () => {
             .filter(Boolean);
         expect(rows).toHaveLength(1);
         expect(rows[0]?.split('\t')[2]).toContain('mods-lane-9 135.5s');
+        expect(rows[0]).toMatch(/\tseen [\d.]+ of [\d.]+ busy core-s$/);
         expect(readdirSync(state).sort()).toEqual(
             [LAST_POLL, LOG, 'x-cpu-roast-culprit-log.stamp'].sort(),
         );

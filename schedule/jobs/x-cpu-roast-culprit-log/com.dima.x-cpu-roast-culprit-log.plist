@@ -6,7 +6,7 @@
   - schedule — every 60 s (StartInterval) and once at load: one poll per start, then it exits
   - threshold — a 1-minute load of 20 or more that stays for 5 minutes of wall time writes one row per stretch; X_ROAST_LOAD and X_ROAST_SECONDS override both
   - idle cost — one `uptime` a poll; while the load is over, one `ps` at the start of the stretch and one when the row is written, plus `x thread list` and an `lsof` per heavy process of no thread
-  - output — ~/.local/state/x/x-cpu-roast-culprit-log.log, one tsv line a roast: time, load, the cpu per lane, the top 5 processes; beside it .stamp (the stretch) and .last-poll (the job ran)
+  - output — ~/.local/state/x/x-cpu-roast-culprit-log.log, one tsv line a roast: time, load, the cpu per lane, the top 5 processes, how much of the busy cpu it saw (an exited worker's cpu is gone from ps); beside it .stamp (the stretch) and .last-poll (the job ran)
   - launchd's own output — ~/.local/share/x-cpu-roast-culprit-log/run.log and run.err.log
   - source — ~/frame/schedule/jobs/x-cpu-roast-culprit-log/main.ts, roast.ts
   - read — node ~/frame/schedule/jobs/x-cpu-roast-culprit-log/read.ts --since HH:MM; exit 1 on a row after it, or when the job is not running

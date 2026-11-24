@@ -8,6 +8,7 @@ import {
 import { join } from 'node:path';
 
 export interface RoastDeps {
+    busyCores(): number | null;
     now(): number;
     load(): number | null;
     ps(): string;
@@ -48,6 +49,8 @@ interface Proc {
 }
 
 interface Stamp {
+    // the busy cores each over-poll read; a stamp written before this field has none
+    busy?: number[];
     overSince: number;
     lastOver: number;
     rowWritten: boolean;
@@ -77,6 +80,8 @@ export function poll(config: RoastConfig, deps: RoastDeps): void {
     } else {
         stamp.lastOver = now;
     }
+    const busy = stamp.rowWritten ? null : deps.busyCores();
+    if (busy !== null) stamp.busy = [...(stamp.busy ?? []), busy];
     if (
         !stamp.rowWritten &&
         now - stamp.overSince >= config.spanSeconds * 1000
@@ -84,11 +89,21 @@ export function poll(config: RoastConfig, deps: RoastDeps): void {
         const wait = config.gapSeconds * 1000 - (now - stamp.baseline.at);
         if (wait > 0) deps.sleep(wait);
         const procs = parsePs(deps.ps());
+        const at = deps.now();
+        const samples = stamp.busy ?? [];
+        // the mean of the busy cores read while it stayed over, across the window the cpu time was gained in
+        const busyCoreSeconds =
+            samples.length === 0
+                ? null
+                : (samples.reduce((sum, cores) => sum + cores, 0) /
+                      samples.length) *
+                  ((at - stamp.baseline.at) / 1000);
         const line = rowOf(
-            deps.now(),
+            at,
             load,
             stamp.baseline.centis,
             procs,
+            busyCoreSeconds,
             deps,
         );
         appendFileSync(join(config.stateDir, LOG), `${line}\n`);
@@ -136,6 +151,7 @@ function rowOf(
     load: number,
     baseline: Stamp['baseline']['centis'],
     procs: Proc[],
+    busyCoreSeconds: number | null,
     deps: RoastDeps,
 ): string {
     // the cpu each process gained since the baseline; one born since it counts its whole cpu time
@@ -187,8 +203,23 @@ function rowOf(
         load.toFixed(2),
         perLane,
         ...top,
+        // an exited worker's cpu is gone from every ps column, so the row says how much of the busy cpu it saw
+        `seen ${(gains.reduce((sum, { gain }) => sum + gain, 0) / 100).toFixed(1)} of ${busyCoreSeconds === null ? '?' : busyCoreSeconds.toFixed(1)} busy core-s`,
         ...(threads.unread ? ['threads unread'] : []),
     ].join('\t');
+}
+
+// `iostat -c 2 -w 1`: the last line holds the busy share of the second just read, `us sy id` ahead of the three load averages
+export function busyCoresOf(text: string, cores: number): number | null {
+    const fields = (text.trim().split('\n').at(-1) ?? '')
+        .trim()
+        .split(/\s+/)
+        .map(Number);
+    const us = fields.at(-6);
+    const sy = fields.at(-5);
+    if (us === undefined || sy === undefined) return null;
+    if (Number.isNaN(us) || Number.isNaN(sy)) return null;
+    return ((us + sy) / 100) * cores;
 }
 
 const seconds = (centis: number) => `${(centis / 100).toFixed(1)}s`;

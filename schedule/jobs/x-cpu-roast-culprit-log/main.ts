@@ -1,9 +1,9 @@
 import { execFileSync } from 'node:child_process';
-import { homedir } from 'node:os';
+import { availableParallelism, homedir } from 'node:os';
 import { join } from 'node:path';
 
 import type { RoastDeps } from './roast.ts';
-import { poll } from './roast.ts';
+import { busyCoresOf, poll } from './roast.ts';
 
 // a 1-minute load of 20 or more that stays for 5 minutes writes one row; the env names are for a test and the one live step
 const LOAD_MIN = 20;
@@ -20,6 +20,16 @@ const run = (file: string, args: string[], timeout: number) =>
     });
 
 const deps: RoastDeps = {
+    busyCores: () => {
+        try {
+            return busyCoresOf(
+                run('iostat', ['-c', '2', '-w', '1'], 10_000),
+                availableParallelism(),
+            );
+        } catch {
+            return null;
+        }
+    },
     cwdOf: (pid) => {
         try {
             const folder = run(

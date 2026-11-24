@@ -22,7 +22,7 @@ four runs of one probe: `ps -Ao pid,ppid,time,%cpu,command` twice 5 s apart (pla
   - load 11.2, a mods suite with 14 `claude plugin test` workers: **0 of 5** shared; the column listed five workers born after the first sample, each with a delta of 0.00 s, while the delta named the five steady burners at 70 to 77 % of a core each
   - load 19.8, a burst: 3 of 5 shared
   - so the job ranks by cpu time, never by `%cpu`
-- `ps -S` (exited children summed into the parent) and the plain delta named the same top 5 in all four runs, the visible share of the machine's busy core-seconds within 3 points of each other (63 to 66 % at load 11.2). its use, folding a spawn storm into the live parent over a long span, was not measured
+- an exited worker's cpu is gone from every ps column on macOS 27.2.1, `-S` included: `ps -S` named the same top 5 as the plain delta in all four runs (63 to 66 % of the busy core-seconds visible at load 11.2, within 3 points of each other), and a `sh -c` that waited on three `python3` children of 1 s each (`/usr/bin/time -p`: user 0.42 + sys 0.59 for one) read `0:00.01` under both `ps -o time=` and `ps -S -o time=` (24 Nov 15:00), although `man ps` promises the sum. so a spawn storm of short workers is a blind spot no ps flag closes: every row ends with `seen N of M busy core-s` (the cpu time live processes gained, against the busy cores `iostat` read at each over-poll times the window), so a blind row says so. a) the stamp remembers what each over-poll saw, so a gone worker still charges its last-seen time to its lane: only if a real roast row reads under half seen
 - processes born inside the gap are a third of what ps can see: at load 11.2, 16 new processes carried 16.2 of 47.7 visible core-seconds. a delta over pids found in both samples alone would drop them, so a process born since the baseline counts its whole cpu time
 - a 5 s window sees a burst only in part: at load 19.8 the window was 33 busy core-seconds of 70 possible, and the workers appeared only in the `%cpu` column. the row diffs against a baseline taken when the load first went over, not against a 5 s window
 - the folder of the heaviest processes does not name the lane: the 14 suite workers ran from `/var/folders/…/x-mods-overlay-*/x-mod-stash`, neither a lane tree nor the main checkout
@@ -32,5 +32,6 @@ four runs of one probe: `ps -Ao pid,ppid,time,%cpu,command` twice 5 s apart (pla
 
 ## rounds
 - 2026-11-24 · exit line 0 measured, four probe runs under the mods and speak lanes' suites
+- 2026-11-24 · wishkeeper's read: a worker that exits between the baseline and the row ranks 0 s; `-S` measured a no-op, so each row ends with `seen N of M busy core-s`
 
 ## verdict
