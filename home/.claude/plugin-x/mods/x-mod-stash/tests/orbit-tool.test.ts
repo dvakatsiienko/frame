@@ -260,19 +260,19 @@ for (const [what, line, words] of [
     [
         'a list for dima goes in the text',
         'add',
-        'a list for him goes in the text',
+        'a list for him goes in the text, a longer one in a file',
     ],
     [
         'a file for dima goes in link, named in the text',
         'add',
-        'a file in link (an https/obsidian:// url or path), named in words in the text',
+        'a file or page in link (https/obsidian:// url or path), named in words in text',
     ],
     [
         'an ask reads plain',
         'add',
         'plain: what happens for him, no plan number («(24)») or unexplained label',
     ],
-    ['a --bg session sets no phases', 'plan', 'a --bg session sets none'],
+    ['a --bg session sets no phases', 'plan', 'a --bg session sets neither'],
 ] as const)
     test(`orbit's text says ${what}`, async ($, on) => {
         world(on);

@@ -7,6 +7,7 @@ import {
     SIXTH_SENSE,
     TOOL,
     board,
+    codieAt,
     create,
     endTurn,
     kept,
@@ -428,7 +429,10 @@ test('a /clear records the id the session goes on under', async ($, on) => {
 
 // FRM-643: a member's asks reach dima through its coordinator; the subcard only shows them
 test("unfolded, a subcard draws the member's asks as a view: line and pick, no tick, replay, sound or steer", async ($, on) => {
-    const w = world(on, { files: linked() });
+    const w = world(on, {
+        files: linked(),
+        peers: [codieAt(CODIE, { kind: 'bg' })],
+    });
     published(w, CODIE, [
         {
             ...ASK,
@@ -451,8 +455,8 @@ test("unfolded, a subcard draws the member's asks as a view: line and pick, no t
     ]).toEqual([false, undefined]);
 });
 
-async function memberWithAsk($: Engine, on: On, kind?: 'bg') {
-    const w = world(on, { kind, name: '☕️ 🔧 codie' });
+async function memberWithAsk($: Engine, on: On) {
+    const w = world(on, { name: '☕️ 🔧 codie' });
     await start($);
     await $.tool.call({
         asks: [
@@ -470,21 +474,20 @@ async function memberWithAsk($: Engine, on: On, kind?: 'bg') {
     return w;
 }
 
-for (const kind of [undefined, 'bg'] as const)
-    test(`a ${kind ?? 'foreground'} member publishes its open asks whole, with ids, for the glide card`, async ($, on) => {
-        const w = await memberWithAsk($, on, kind);
-        expect(
-            (w.store.get(`asks:${SID}`) as { items?: unknown[] })?.items,
-        ).toEqual([
-            {
-                area: 'mods',
-                id: 'o1',
-                pick: 'cut it',
-                text: 'cut the second probe?',
-                why: 'a test ask',
-            },
-        ]);
-    });
+test('a member publishes its open asks whole, with ids, for the glide card', async ($, on) => {
+    const w = await memberWithAsk($, on);
+    expect(
+        (w.store.get(`asks:${SID}`) as { items?: unknown[] })?.items,
+    ).toEqual([
+        {
+            area: 'mods',
+            id: 'o1',
+            pick: 'cut it',
+            text: 'cut the second probe?',
+            why: 'a test ask',
+        },
+    ]);
+});
 
 test('an idle member with a herdr press wakes once, after dima prompts anywhere', async ($, on) => {
     const w = await memberWithAsk($, on);

@@ -590,9 +590,9 @@
 - ✅ the model reads orbit's whole tool description (dima's o50)
   - given cc shows a model only the first 4096 chars of a tool's description (cc's cap from 2.1.296; 2048 before it)
   - when a session loads orbit
-  - then its description fits in 4096 (3,606 chars with ten areas) and names every op — add, resolve, follow, assume, plan, glide — with its rule; glide stays whole
+  - then its description fits in 4096 (3,609 chars with ten areas) and names every op — add, resolve, follow, assume, plan, glide — with its rule; glide stays whole
   - and it holds every how-to rule of an ask, which left `rules/fleet-mods.md` § orbit for it (FRM-640): when an ask goes up, who a member asks, what a pick names, how a reply names an ask, a guard-refused command; with the mod off no orbit rule is left in memory beyond the reply shape
-  - and it says what an ask shows dima (FRM-677): the hidden note never holds what he must read or pick; a list for him goes in the text, a longer one in a file; a file goes in `link`, named in words in the text; an ask reads plain, with no plan number and no unexplained label; a `--bg` session sets no phases
+  - and it says what an ask shows dima (FRM-677): the hidden note never holds what he must read or pick; a list for him goes in the text, a longer one in a file; a file or a page goes in `link`, named in words in the text; an ask reads plain, with no plan number and no unexplained label; a `--bg` session sets no phases
   - decision: words in the tool's text, no refusal and no hint at add (his o3 tick, 22 Nov)
   - and the tool loads up front (`isDeferred: false`), never behind ToolSearch
   - 📌 a session already running keeps the description it loaded until it restarts; a `--bg` session draws no board, and its asks reach dima through its coordinator and the glide subcard
@@ -868,7 +868,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then the no-board reminder below tells the session to end its reply with the asks fence — «⏳ waiting on your word:» and every open orbit ask with its id and pick — instead of the orbit reminder
   - decision: on mobile mods draw nothing, so orbit is invisible there; orbit stays the one store and the session writes his answers back by id (dima, 2026-10-10)
   - and the reminder asks for «🌔 next:» and the plan's next 3 moves as bullets under the fence, and names a stale plan to set again — the board's phases are gone on mobile too (dima's o112, 2026-10-11; the `x:mobile-mode` skill prints the same shape)
-  - given `🌔 phases` switched off in settings, then the reminder asks for no next moves and names no stale plan
+  - given `🌔 phases` switched off in settings, or a `--bg` session, then the reminder asks for no next moves and names no stale plan
 - ✅ one no-board reminder, for 📱 mobile mode and 🪐 orbit switched off alike (dima's o162)
   - given mobile mode on, or `🪐 orbit asks` switched off in settings, then the prompt carries the same reminder, word for word: «no board reaches dima: …», the asks fence with every open ask's id and pick, each new ask as one ➡️ line, the plan's next 3 moves
   - given mobile mode off and orbit on, then no prompt carries it, only the orbit reminder
@@ -1138,7 +1138,7 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - decision: phases set in the last 2 turns still hold, so a working turn that did not move them stays quiet (clio's brief 8, 2026-10-12)
   - decision: never a Stop block, never an extra turn (dima's o14, 2026-10-11 11:27)
   - decision: a q&a turn of reads gets no nudge — the 3-turn stale mark covers it; the nudge on every turn drove 235 plan calls in one session (PK-70, dima 00:28: «fewer redundant tool calls, phases still real-time»)
-  - proof: tests/orbit.test.ts::a session's first prompt says phases are its live plan; ::after a /clear the first prompt says phases are its live plan again; ::the third tool call of a working turn with no phases set carries the nudge, o… ; the --bg rows: tests/step-notes.test.ts::a working --bg turn gets no phases nudge (+ over phases it set long ago); tests/turn-notes.test.ts::a --bg session's first prompt names no phases (+ asks told with no word of a plan, old plan never told stale, no-board reminder); tests/orbit-tool.test.ts::a --bg session's plan op answers that phases are off there…; tests/lane-board.test.ts::a bg member publishes its open asks whole… — not asserted: each tool kind that counts as working not separately asserted
+  - proof: tests/orbit.test.ts::a session's first prompt says phases are its live plan; ::after a /clear the first prompt says phases are its live plan again; ::the third tool call of a working turn with no phases set carries the nudge, o… ; the --bg rows: tests/step-notes.test.ts::a working --bg turn gets no phases nudge (+ over phases it set long ago); tests/turn-notes.test.ts::a --bg session's first prompt names no phases (+ asks told with no word of a plan, old plan never told stale, no-board reminder); tests/orbit-tool.test.ts::a --bg session's plan op answers that phases are off there…; tests/lane-board.test.ts::unfolded, a subcard draws the member's asks as a view… (a --bg member) — not asserted: each tool kind that counts as working not separately asserted
 - ✅ dima reorders, ticks and steers the phases on the board (o84)
   - given the session's 🌔 phases card shows its plan
   - then each line ends in `↑` `↓` at its right edge, the same two buttons on every line, so the column never drifts; the first line's ↑ and the last's ↓ do nothing on a press (dima, 21:20–21:24: missing arrows read as confusing, dim text drifted and looked ugly, a disabled button would change size), and one `🛎️ tick` with a `steer` field sits in the card's head row, right of the title and left of 📂, every part centered on that row (dima, 21:26: a row of its own looked off and took a line)
