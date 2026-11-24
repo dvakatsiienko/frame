@@ -1,10 +1,10 @@
 ---
 id: PK-466
 title: 'fleet stories: a structure and a framework for growing them'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-23T16:53:00Z'
-updated_date: '2026-11-24T11:34:00Z'
+updated_date: '2026-11-24T11:44:00Z'
 labels:
   - s
   - clio-wing-1
@@ -110,4 +110,6 @@ PK-466:W41 (2026-11-24 13:31, dima): drop both? ❓
 PK-466:W42 (2026-11-24 13:31, dima): I want these incidents to be only created on my requests because I want these fleet stories to be hand-picked by me (because I evaluate differently than you).
 
 PK-466:W43 (2026-11-24 13:31, dima): (your name proposals are OK but i want only to keep ones created by my request)
+
+close: 13:44 done on dima's word («close the fleet stories revamp item»): five dirs renamed, the two cpu stories as one family, the cpu go story sorted with fixes-applied-and-open.md, two unasked stories trashed, stories only on his request (habit-cto, halt, fleet-stories/AGENTS.md); the duckdb query line (W14) not built, his «maybe»
 <!-- SECTION:NOTES:END -->
