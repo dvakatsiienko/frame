@@ -56,6 +56,7 @@ same 6 slips, same transcript, through the FRM-502 `packWake` and `decisionOf` u
 his o2 tick, 2026-11-20 15:28: one crow, her bar unchanged; each catch of his that a held note of hers had named is one line here, read at the 27 Nov verdict beside her sent precision
 
 - never fed: no habit compared her held notes with his prompts, so «none» was no result (wishkeeper, 24 Nov 16:19). one case it should hold: 23 Nov 17:25, she held «the new orbit card is a herdr build, but it went to the mods codie», he asked «are you sure in mods not in herdr?» at 17:22 and ordered the split at 17:29
+- measured 24 Nov over 18–24 Nov (`_clio/.scratch/crow-silence/result.md`): 4 of 29 held notes named a thing he raised later (1 whole, 3 partly); 97 of 102 sent marked right, clio's grading; of ~114 catches of his she sent first on 6, held 5, had nothing on 95 awake, 8 not awake. closed on his o1 tick, bar, cap and gap unchanged
 
 ## the weekly grade (dropped 24 Nov, his o47 tick: «drop: you graded two rounds, all useful, and you catch a bad note yourself when it shows»)
 once a week clio draws 5 notes from `notes.jsonl` for dima to grade, and logs a round here: his grades, the `--changed` share over `verdicts.jsonl`, and the `#dima-caught` lines crow flagged first.
