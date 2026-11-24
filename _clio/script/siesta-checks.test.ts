@@ -21,9 +21,9 @@ const CHECKS = [
     'flyway-done',
     'wish-cover',
     'close-net',
-    'tails-check',
+    'check-tails',
     'blueprint-drift',
-    'helper-count',
+    'count-helpers',
 ];
 
 // a fixture HOME whose frame/_clio/script holds stubs: each prints its args and exits with the code it is given
@@ -209,7 +209,7 @@ describe('siesta-checks', () => {
         ['pocket-check', 'pocket-check'],
         ['close-net', 'close net'],
         ['blueprint-drift', 'blueprint drift'],
-        ['helper-count', 'helper count'],
+        ['count-helpers', 'helper count'],
     ])('a red %s reds its section and the run', (script, name) => {
         const home = fixtureHome({ [script]: 1 });
         const out = run(home);
@@ -225,7 +225,7 @@ describe('siesta-checks', () => {
             'blueprint-drift ran --since 14:30',
         );
         expect(section(out, 'helper count')).toContain(
-            'helper-count ran --since 14:30',
+            'count-helpers ran --since 14:30',
         );
         expect(section(out, 'pocket-check')).not.toContain('--since');
     });

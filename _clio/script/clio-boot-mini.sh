@@ -34,7 +34,7 @@ echo
 echo "--- boot digest ---"
 BOOT_STRICT=1 "$home/.claude/hooks/boot-prefetch.sh"
 echo
-echo "--- the mini checklist (clio:boot § mini mode) ---"
-awk '/^## mini mode/{on=1} on&&/^---$/{exit} on' "$home/plugin-clio/skills/boot/SKILL.md"
+echo "--- the mini checklist (clio:boot references/mini.md) ---"
+cat "$home/plugin-clio/skills/boot/references/mini.md"
 echo
 echo "clio:* skills do not load outside _clio/: read plugin-clio/skills/<name>/SKILL.md by path when a step names one."

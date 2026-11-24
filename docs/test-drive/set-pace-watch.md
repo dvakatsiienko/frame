@@ -32,4 +32,4 @@ at adopt: propose cutting the window reads from `habit-ctx-load-balancing` (dima
 
 ## verdict
 
-- 2026-11-24 · **parked** (dima's tick) — its habit is paused since 11-05 («the 5h window is removed until i leave it, after a month i probably switch back to $100»), 3 rounds, all 11-04; condition: he is back on a plan with a 5h window that matters
+- 2026-11-24 · **parked** (dima's tick) — its habit is paused since 11-05 («the 5h window is removed until i leave it, after a month i probably switch back to $100»), 3 rounds, all 11-04; condition: he is back on the $100 plan, some time after 2026-12-05 (his 2026-11-24 word; the wake line is in `_reminders.md`)

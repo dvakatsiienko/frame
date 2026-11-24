@@ -5,7 +5,7 @@ argument-hint: "[mini | board | <handoff slug>]"
 
 # /clio:boot
 
-light boot by default. an argument that loosely means the full picture — «board», «full», or
+light boot by default. **`mini` → read [mini](references/mini.md) whole now: its numbered list is the whole boot, and the steps below run only where it names one.** an argument that loosely means the full picture — «board», «full», or
 similar — adds tracker orientation; any other argument is a handoff topic, ingested at step 4
 (`/clio:boot <slug>` is the whole opener).
 run silently, report as ONE opening message, after the two reviews (step 8); a harness «say what you're doing» nudge before it gets «booting, board next» and nothing more.
@@ -67,9 +67,7 @@ and the next ticket from it; never re-query what it already printed.
 - 🐦‍⬛ **crow lives one clio session**, in either mode (`_crow/AGENTS.md` § how it runs): dima says he opened her desktop tab → `pnpm -C ~/frame crow:keep-cache-hot`; otherwise `pnpm -C ~/frame crow:start opus --pane`; without `--pane` it is the `--bg` fallback, a session on opus 5.5 medium that writes its own 🔥 key; it refuses when one already runs, which counts as up. the halt stops a `--bg` one. a pick-up of either sidecar after dima reinits it: crow boots from `_crow/AGENTS.md` + the `x:crew-adviser` charter, helga from `x:crew-helga`.
 - 🐙 every upstream change the digest prints (a gh watch line, a changedetector watch changed since last viewed) is read during the boot — the new comments or the release notes — and the board carries one line each: what moved and whether it touches us, or «nothing that touches us», plus a proposed borrow for each that touches us, an orbit ask when it costs work (dima, 2026-10-23; 2026-10-16: «did you read them during the boot?»); a watch closed upstream, or whose fix ships in every cc we run (the desktop's bundled one included), dies here with `pnpm -C ~/frame x-changedetector:watch-remove <url>`, named on the board (dima, 2026-10-20)
 - 🧬 a «🧬 evergreen turn» line in the digest → load `clio:evergreen` now and run its § the day: its read starts beside the boot, and the board's item 1 is the evergreen turn. any other day, open renovate PRs get one board line (count, oldest, a red one named).
-- 📏 **a Monday boot: `weekly-wish-loss-audit` and a run of `recipes/nurture-crew-comms/recipe.md`, in the opening message, no ask** (PK-349:W1054–W1055; the recipe replaced the bare empty-wakes count, dima 2026-11-23): `node script/wish-cover.ts --audit-week`; the recipe's step 1 is `python3 -I recipes/nurture-crew-comms/scripts/extract.py 7 recipes/nurture-crew-comms/last`; numbers first, then for each poor number a proposed fix that makes the next count good
-- 🦡 **a Tuesday boot: `weekly-retro`** (dima, PK-349:W1160, 2026-11-16 23:23, moved from Wednesday; 2026-11-07 replaced the per-lane ones): one `retro` card over the week's lane transcripts plus any filed `*-retro.md`, started at the boot; its interesting results print with the boot message, with action-item proposals as one orbit ask; at most 3 lines become work, picked by cost rank and the ≥3 gate, a ticket body line each, its diff in a comment, landed by that ticket's next lane, the rest die, and the filed files go to `trash`
-- ⏸️ **the memory pass is not weekly for now** (dima, PK-349:W1160, 2026-11-16 23:23: «memory-pass is not weekly, I think, for now. I have too many chores.»): run on his ask, `pnpm -C ~/frame --silent memory:pass --out <scratch>/pass.md`, then one `helper` card judges its candidates through `recipes/nurture-memory/recipe.md` step 7's lenses, cutting only redundancy, never a step of an essential flow (dima, 2026-10-28: «prefer cuts in memory, but it doesn't mean that essential flows should die»); edits follow `habit-memory-edits` § the line, the proposals print in the thread with one orbit ask for the batch, and the savings (bytes before → after) go in the reply
+- 📏 a Monday or Tuesday boot, or a memory pass he asks for → read [weekly](references/weekly.md) and run its line
 
 ## 5. reminders ⏰📌
 the digest prints every `⏰📌` and every `⏰` whose `due:` has come; each gets its own board line (the `clio:remind` contract: a stuck one is raised at every boot, unprompted, and dies only when dima says drop it). none → say nothing.
@@ -120,31 +118,6 @@ the board, one message, short lines, **no queries here — pure assembly**:
   2026-09-11: «keep this habit») — the pocket's order (`backlog task list --plain --sort ordinal`), then the main lane's open linear tickets, top milestone first, lanes marked, sub-batches labeled;
   **the board ends here and waits for dima's word.** he corrects the parse first; his word puts it in `flyway: main` (`flyway-done.ts --add`)
 - 🥊 self-grill, last line (omit if nothing real)
----
-
-## mini mode — `/clio:boot mini`
-
-the light boot: no cst ingest, no lanes. same silence, one opening message; the inbox is parsed only on his ask (item 2).
-
-**an eject from the main flow, and the economy boot** (dima, 2026-11-22; a weekly-near-cap day, or a few questions and a stop): solve what he raises; global plans hold.
-- the handoffs are the next day's plan, never followed; grooming them is allowed (tweak, sort, plan, grill)
-- a side question gets a plain cc answer
-- it always ends in halt mini, even on a bare «halt»: the handoff is extended, never replaced
-- **🎀 helga** starts on the first groom; **🐦‍⬛ crow** only on his ask (a full boot starts her as usual)
-- no lane unless really needed; a **🐕 stray** only on a prepped batch, offered once enough chores pile up
-- a no-work day pauses the clocks on his word: dated waits move by the lost days (`until:`, flyway `on:`, `⏰ due:`, dated trials); calendar-bound lines stay
-
-1. healthcheck (step 1, unchanged)
-2. inbox: optional. untouched by default: read only, his named items ordered, a done one ✅ in place, nothing copied or folded. his prompt asks to process it → step 3 runs whole (helga's prep, every item a pocket item) and step 8's wishkeeper reads the parse before the board (dima, 2026-11-15: «if asked to process inbox, full proper process, including wishkeeper»)
-3. merge monitor — only when codie with an open `codie/*` or `coder/*` pr is alive (step 4's monitor line)
-4. open renovate count (step 4's last line; the digest waits for his word)
-5. stuck reminders (step 5)
-6. self-grill (step 6)
-7. flawlog file for the day (step 7)
-
-skipped on purpose: the roadmap block, handoff ingest, the run-id continuity (a pending cst stays
-pending and is named in the board, never pulled). the board ends with his asks in his order and
-stops.
 
 ---
 

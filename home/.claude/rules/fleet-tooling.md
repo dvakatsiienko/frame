@@ -34,7 +34,7 @@ the cloud chat leaf `/areas/tooling.md`; the `cc only` section never leaves the 
 
 - **rex** — dima's terminal and a session server any shell on this mac drives; the door: `rules/fleet-doors.md`, the recipes: `x:rex`
   - `rex capture` reads any pane, `rex block call … program_status` says what a Claude Code in a pane is doing (`working`, `blocked`, `done`)
-  - on trial, the numbers: `docs/test-drive/rex.md`
+  - the record: `docs/test-drive/rex.md`
 - **package.json** — before printing or writing a manifest, `x:guide-conventions` (`conventions/package-json.md`)
 - **`claude plugin eval` only on dima's word** — an eval run spends the weekly usage fast (dima, 2026-10-16)
 - **a bare cc for clean runs** — `x probe bare '<prompt>'` (it wraps `claude -p --model haiku --safe-mode --strict-mcp-config` from a temp dir), run in the background: no `CLAUDE.md`, rules, plugins, hooks, mods or MCP, only cc's built-ins. reach for it when our setup must not touch the answer: «is it us or cc?» probes, a model A/B, an upstream bug repro, a blind lane, the token weight of our memory (bare `/context` vs ours). `--bare` needs an API key, so it fails on our login

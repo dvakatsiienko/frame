@@ -48,8 +48,6 @@ it for 2 days … it should also propose action items, not just tell numbers».
 
 - **test-drives** — overdue or undated trials · `pnpm test-drive:check`
 
-- **recipe-candidates** — stale recipes: each recipe's last log date against its own «suggest a run when» line; a subject for a new recipe is not hunted here (dima, 2026-11-24: «remove it from system checkup») · each pick an orbit ask
-
 ## sitting 3 · shaped right — is anything built the wrong way
 
 - **skill-shape** — skills that would gain from a split into a reference file, a step a script should do,

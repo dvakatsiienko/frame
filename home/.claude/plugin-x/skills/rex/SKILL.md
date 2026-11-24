@@ -73,4 +73,4 @@ a key action in `init.lua`, a `rex do` script, a live `rex.on` watcher, a timer,
 - `rex kill` ends every program in that session: only a session you made, by its id; `rex server stop` ends them all and stays his call
 - font, cursor and tabs live in Rex's Settings, `~/.config/rex/init.lua` holds keys and actions only; themes and fonts are his
 
-past these recipes (layouts, floating panes, remote hosts, the api), load the built-in `rex` skill: its guide comes from the installed cli. a use worth a number gets its round in `~/frame/docs/test-drive/rex.md`.
+past these recipes (layouts, floating panes, remote hosts, the api), load the built-in `rex` skill: its guide comes from the installed cli.

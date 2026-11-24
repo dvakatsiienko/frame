@@ -11,9 +11,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
-import { tailsOf } from './tails-check.ts';
+import { tailsOf } from './check-tails.ts';
 
-const script = join(import.meta.dirname, 'tails-check.ts');
+const script = join(import.meta.dirname, 'check-tails.ts');
 let dir = '';
 
 beforeEach(() => {

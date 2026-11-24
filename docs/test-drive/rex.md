@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-26
 dies-when: the verdict line below is written
 fits: clio codie
@@ -71,3 +71,5 @@ set up from scratch, migration selective: gruvbox is the one thing carried over 
 - fold these habits into their final home
 
 ## verdict
+
+- 2026-11-24 · **adopted** — dima: «rex is much better than warp on all metrics. your lower usage is another topic, to be solved later. you just need proper instructions to use it more proactively.»

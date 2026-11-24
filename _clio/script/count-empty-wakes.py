@@ -1,5 +1,5 @@
 # the empty-wakes count: machine wakes of one clio transcript, classed by what the turn after did
-# usage: python3 -I script/empty-wakes-count.py <transcript.jsonl> <since, ISO UTC like 2026-11-09T00:00>
+# usage: python3 -I script/count-empty-wakes.py <transcript.jsonl> <since, ISO UTC like 2026-11-09T00:00>
 # run per clio transcript of the week at the Monday boot; append one row to docs/test-drive/gate-speed/empty-wakes.md
 # the rules and their first round: docs/test-drive/gate-speed/empty-wakes.md § 2026-11-16 round
 import json,re,collections,sys

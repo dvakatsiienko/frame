@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# rename-asks-count.py <since YYYY-MM-DD> <out file>: dima's prompts with a rename word, deduped across resumed copies
+# count-rename-asks.py <since YYYY-MM-DD> <out file>: dima's prompts with a rename word, deduped across resumed copies
 # a floor: a plain «what is X?» and a slash command's args hold no counted rename word. stamps are local time
 # the _clio/memory/_reminders.md recount line owns this script
 import glob, json, os, re, sys

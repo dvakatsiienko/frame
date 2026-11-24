@@ -1,5 +1,5 @@
 // the day must not end with an open tail the operator did not keep: one file per day, every day file read.
-// usage: node tails-check.ts [--json] | --add '<text>' | --done '<exact start of a line's text>'
+// usage: node check-tails.ts [--json] | --add '<text>' | --done '<exact start of a line's text>'
 // CLIO_TAILS_DIR moves the directory, CLIO_TAILS_TODAY=YYYY-MM-DD the clock.
 import {
     existsSync,
@@ -17,7 +17,7 @@ const KEPT_MARKER = /— kept: dima \d{4}-\d{2}-\d{2}/;
 const DAY_FILE = /^(\d{4}-\d{2}-\d{2})\.md$/;
 const SHOWN_CHARS = 160;
 const usage =
-    "usage: node tails-check.ts [--json] | --add '<text>' | --done '<start of a line's text>'";
+    "usage: node check-tails.ts [--json] | --add '<text>' | --done '<start of a line's text>'";
 
 export function tailsOf(text: string): Tail[] {
     return text.split('\n').flatMap((row, index) => {

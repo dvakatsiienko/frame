@@ -1,4 +1,4 @@
-// helper and helper-lite spawns per live session since a time (default today 00:00 local): node helper-count.ts [--since <ISO or HH:MM local>]
+// helper and helper-lite spawns per live session since a time (default today 00:00 local): node count-helpers.ts [--since <ISO or HH:MM local>]
 import { readFileSync, statSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
