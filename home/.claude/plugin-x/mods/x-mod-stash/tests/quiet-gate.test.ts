@@ -196,7 +196,13 @@ test('a turn-end report with an [ask] line or a decision in it starts no turn', 
     await start($);
     const a = await fromApp($, noteOf(MEMBER, 'the call is yours'));
     const b = await fromApp($, noteOf(MEMBER, 'sent it:\n[ask] a or b?'));
-    expect([a.drop, b.drop, w.contexts]).toEqual(['', '', []]);
+    expect([
+        a.drop,
+        b.drop,
+        w.contexts,
+        stored(w),
+        logOf(w).map((l) => l.verdict),
+    ]).toEqual(['', '', [], [], ['logged', 'logged']]);
 });
 
 test('a delivery test ping in an open slot is held, the slot left', async ($, on) => {
