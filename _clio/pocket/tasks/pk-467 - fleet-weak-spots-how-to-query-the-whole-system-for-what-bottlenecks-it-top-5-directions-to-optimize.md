@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T11:46:00Z'
-updated_date: '2026-11-24T14:19:00Z'
+updated_date: '2026-11-24T17:14:00Z'
 labels:
   - s
   - clio-wing-1
@@ -411,4 +411,6 @@ PK-467:W192 (2026-11-24 16:16, dima): [old copies of our own two plugins] So it 
 PK-467:W193 (2026-11-24 16:16, dima): How to make it auto-clean? ❓
 
 PK-467:W194 (2026-11-24 16:16, dima): [the jev compaction plugin] I asked you to fold everything related to jev into a single linear ticket and mark it as snoozed so remove the reminder
+
+19:14 handed back at wing 1's halt; open by two things of his: the weak-spots count owed (tickets from his wish against clio's proposals) and his 15:02 line on dima-intervenes (W124), both asked on his word
 <!-- SECTION:NOTES:END -->
