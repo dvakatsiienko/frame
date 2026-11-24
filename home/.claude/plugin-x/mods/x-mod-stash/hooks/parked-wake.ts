@@ -557,6 +557,7 @@ async function wakeForDialogs(
             : { isSaid: false, since: statusSince ?? now };
         if (!isSame) await $.store.set(key, kept);
         if (kept.isSaid || now - kept.since < DIALOG_WAKE_MS) continue;
+        if (await isTurnBusy($)) return;
         const words = await dialogWords($, name, row.pid);
         due.push({
             kept,

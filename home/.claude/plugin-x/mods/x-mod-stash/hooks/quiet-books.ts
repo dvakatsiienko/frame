@@ -323,20 +323,9 @@ export async function lastTurnAt(
         : await transcriptTime($, MADE, home, sid);
     return at === undefined ? undefined : Math.max(at, startedAt);
 }
-// when a member's newest tagged line to clio is its [done]: an untagged receipt or a turn-end note after it changes nothing,
-// a later [ask] or [escalate] does; a week back at most, past that it reads as no [done]
-async function quietDoneAt($: EngineInterface, sid: string, now: number) {
-    const last = (
-        (await $.store.get(QUIET_TAGGED).catch(() => undefined)) as
-            | Record<string, { at: number; tag: string }>
-            | undefined
-    )?.[sid];
-    return last?.tag === 'done' && now - last.at <= QUIET_PARK_MS
-        ? last.at
-        : undefined;
-}
 // the books of a clio's pings, hers and those of the clio a member's record names, dead or not: `open`, a member's newest tagged
-// line, a week back at most, while no send came after it; `settledAt`, the [done] of a codie's reviewer, its card's work done
+// line, a week back at most, while no send came after it; `doneAt`, when that line is its [done], an untagged receipt or a
+// turn-end note after it changing nothing; `settledAt`, the [done] of a codie's reviewer, its card's work done
 // (FRM-698, dima's a): until its clio sends it any line, it is dispatched again, or another card names it
 type Line = { at: number; tag: string };
 type Book = { sends: Record<string, unknown>; tagged: Record<string, unknown> };
@@ -367,20 +356,26 @@ export async function quietBooksOf(
         [...new Set([mine, recordOf(sid)?.coordinator || mine])].flatMap(
             (owner) => books.get(owner) ?? [],
         );
-    const last = (sid: string) =>
-        booksOf(sid)
+    // a member whose session ended has no record: its line is looked for where a live one's is kept, `by` its card's codie
+    const last = (sid: string, by = sid) =>
+        [...new Set([...booksOf(sid), ...booksOf(by)])]
             .flatMap(({ tagged }) => (tagged[sid] as Line | undefined) ?? [])
             .filter((line) => now - line.at <= QUIET_PARK_MS)
             .sort((a, b) => b.at - a.at)[0];
     const sentAt = (sid: string) =>
         Math.max(...booksOf(sid).map(({ sends }) => Number(sends[sid] ?? 0)));
     return {
+        doneAt: (sid: string) => {
+            const line = last(sid);
+            return line?.tag === 'done' ? line.at : undefined;
+        },
         open: (sid: string) => {
             const line = last(sid);
             return line && sentAt(sid) <= line.at ? line : undefined;
         },
+        sentAt,
         settledAt: (lane: StashLane, codie: string, reviewer?: string) => {
-            const done = reviewer ? last(reviewer) : undefined;
+            const done = reviewer ? last(reviewer, codie) : undefined;
             if (done?.tag !== 'done') return undefined;
             // the card named this codie after the [done]: the [done] was another card's
             const named = lane.history.findLast(
@@ -432,8 +427,6 @@ export async function quietSilentMembers(
         (await readNumber($, 'quietWait')) * 60_000 * QUIET_SILENT_WAITS;
     const home = (await $.env.get('HOME')) ?? '';
     const rows = await registry($);
-    const sends = ((await $.store.get(QUIET_SENT).catch(() => undefined)) ??
-        {}) as Record<string, number>;
     const me = await currentId($);
     const pace = me
         ? ((await $.store.get(PACE + me)) as { since?: number } | undefined)
@@ -456,8 +449,8 @@ export async function quietSilentMembers(
                 continue;
             const spokeAt = await lastSpokeAt($, home, row.base.sid);
             if (spokeAt === undefined || now - spokeAt < waitMs) continue;
-            const doneAt = await quietDoneAt($, row.base.sid, now);
-            const sentAt = sends[row.base.sid] ?? 0;
+            const doneAt = books.doneAt(row.base.sid);
+            const sentAt = books.sentAt(row.base.sid);
             if (doneAt !== undefined && sentAt <= doneAt) continue;
             const at =
                 doneAt === undefined ? spokeAt : Math.max(spokeAt, sentAt);

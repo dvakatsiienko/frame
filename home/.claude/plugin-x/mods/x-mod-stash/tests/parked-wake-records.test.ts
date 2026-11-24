@@ -7,8 +7,9 @@ import {
     parkedWorld,
     pass,
     sixth,
+    turnEnd,
 } from './parked-world.ts';
-import { EVEN, MIN, ping, send, start, steps } from './quiet-helpers.ts';
+import { EVEN, MIN, ping, say, send, start, steps } from './quiet-helpers.ts';
 import { expect, test } from './shared-boot.ts';
 
 const C = codie().sid;
@@ -282,6 +283,19 @@ test('a settled codie stays so once its reviewer’s session ended', async ($, o
     expect(await parked($, w, 2, 35)).toEqual([]);
 });
 
+test('a wing’s codie stays settled in main once its reviewer’s session ended', async ($, on) => {
+    const w = parkedWorld(on, [ofWing], {
+        card: {
+            ...FOUR,
+            linkedIds: { codie: C, 'sixth-sense': R },
+            members: { codie: codie().name, 'sixth-sense': sixth().name },
+        },
+        store: { 'quiet-tagged:clio-wing-1': SETTLED['quiet-tagged'] },
+        tickets: { 'FRM-2': DISPATCHED },
+    });
+    expect(await parked($, w, 2, 35)).toEqual([]);
+});
+
 test('an open [ask] on a finished card wakes after the finished wake', async ($, on) => {
     const w = parkedWorld(on, both, { card: FINISHED, store: SETTLED });
     const first = await parked($, w, 2);
@@ -373,6 +387,18 @@ for (const [why, text] of [
             [WAKE, WAKE.replace(APPROVE, text)],
         ]);
     });
+
+test('a busy clio’s polls ask herdr nothing, her turn’s end does', async ($, on) => {
+    const w = parkedWorld(on, [stuck], { ...asks, card: ENDED });
+    await start($);
+    await say($, 'look at the board');
+    await w.skip(4 * MIN);
+    await w.skip(4 * MIN);
+    const busy = [w.asked.length, w.wakes().length];
+    await turnEnd($);
+    await pass($, w, 2);
+    expect([busy, w.wakes().length]).toEqual([[0, 0], 1]);
+});
 
 test('a registry with no stamp counts from the first read, a clear one ends it', async ($, on) => {
     const bare = codie({ status: 'waiting', waitingFor: 'input needed' });

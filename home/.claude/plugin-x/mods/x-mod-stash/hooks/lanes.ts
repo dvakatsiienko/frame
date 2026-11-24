@@ -139,22 +139,24 @@ export function glideOp(
             return { deny: 'orbit glide: link names the member session id' };
         if (role !== 'codie' && role !== 'sixth-sense')
             return { deny: 'orbit glide: role is codie or sixth-sense' };
+        const linked = oneLine(input.linkedId) || session;
+        // a rename re-links the same session under its new name: no new member
+        const isNew = lane.linkedIds?.[role] !== linked;
         return put(
             {
                 ...lane,
-                history: [
-                    ...lane.history,
-                    {
-                        act: `link ${role}`,
-                        at: now,
-                        current: lane.current,
-                        done,
-                    },
-                ],
-                linkedIds: {
-                    ...lane.linkedIds,
-                    [role]: oneLine(input.linkedId) || session,
-                },
+                history: isNew
+                    ? [
+                          ...lane.history,
+                          {
+                              act: `link ${role}`,
+                              at: now,
+                              current: lane.current,
+                              done,
+                          },
+                      ]
+                    : lane.history,
+                linkedIds: { ...lane.linkedIds, [role]: linked },
                 members: { ...lane.members, [role]: session },
             },
             `lane ${lane.id}: ${role} is ${session}`,

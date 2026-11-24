@@ -106,6 +106,20 @@ test('a second link of a role replaces the first', async ($, on) => {
     });
 });
 
+test('a re-link of the same session names no new member', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await create($);
+    const link = (session: string) =>
+        lane($, { act: 'link', id: 'l1', role: 'codie', session });
+    await link('one-codie');
+    await link('one-codie');
+    await link('two-codie');
+    expect(
+        kept(w)[0]?.history.filter((h) => h.act === 'link codie').length,
+    ).toBe(2);
+});
+
 test('a second open lane of one topic is refused, naming the open one and its fix', async ($, on) => {
     const w = world(on);
     await start($);
