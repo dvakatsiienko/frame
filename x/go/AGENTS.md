@@ -36,7 +36,7 @@ go test runs fill the mac's kernel with spawned git, about 377 git/s beside any 
 - a fixture hook waits with `markerWait` (`gate_turn_test.go`): a bare poll on a marker outlived its dead test by up to 3.2 h, 24 of them at about 240 spawns/s
 - a seed writes the same path form, resolved or raw, that it passes `copyFixture` as `from`, or the rewrite misses it
 - a counter passed through a child's env can lie on a duplicate key: go's getenv keeps the first, exec's dedupe keeps the last
-- a heavy run by hand takes `~/frame/script/gate-queue.sh --long`, and a measure states its run count and time first: 16 suite runs behind the queue took about 80 min
+- a heavy run by hand takes `~/frame/script/gate-queue.sh --long`, a mutant script around each group under 3 min, never itself; a measure states runs and time first (16 runs: 80 min)
 
 ## the contract
 

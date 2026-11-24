@@ -559,21 +559,23 @@ describe('gate-queue --long', () => {
         ['a whole go test', ['go', 'test', '-count=1', './...']],
         ['a go suite of a dir', ['go', '-C', 'x/go', 'test', '-count=1', '.']],
         ['a package’s own suite', ['pnpm', '--filter', 'speak', 'test']],
+        ['a package by one word', ['pnpm', '--filter=speak', 'test']],
+        ['a timed suite', ['env', 'A=1', 'claude', 'plugin', 'test', 'mod']],
+        ['a shell line of suites', ['sh', '-c', 'pnpm mods:test && pnpm test']],
     ])(
         '%s takes the turn before a batch queued ahead of it',
         { timeout: 30_000 },
         async (_name, args) => {
-            expect(
-                await orderOf([
-                    ['batch', BATCH],
-                    ['suite', args],
-                ]),
-            ).toEqual(['holder', 'suite', 'batch']);
+            const order = await orderOf([
+                ['batch', BATCH],
+                ['suite', args],
+            ]);
+            expect([...new Set(order)]).toEqual(['holder', 'suite', 'batch']);
         },
     );
 
-    test('one file of a suite, a red round and a go test by name keep their order', {
-        timeout: 30_000,
+    test('one file of a suite, a red round, a go test by name and a run that only holds a suite’s words keep their order', {
+        timeout: 60_000,
     }, async () => {
         expect(
             await orderOf([
@@ -583,6 +585,10 @@ describe('gate-queue --long', () => {
                 ['named', ['go', 'test', '-run=TestX', './...']],
                 ['proof', ['batch', 'red-proof', 'plugin test mod']],
                 ['extra', ['pnpm', 'mods:test', 'm', '--extra', 'f']],
+                ['file', ['pnpm', 'test', 'a.test.ts']],
+                ['words', ['batch', 'claude plugin test mod; pnpm test']],
+                ['loop', ['sh', '-c', 'batch; claude plugin test mod']],
+                ['mutants', ['sh', '-c', 'pnpm mods:test && batch']],
             ]),
         ).toEqual([
             'holder',
@@ -592,6 +598,12 @@ describe('gate-queue --long', () => {
             'named',
             'proof',
             'extra',
+            'file',
+            'words',
+            'loop',
+            'loop',
+            'mutants',
+            'mutants',
         ]);
     });
 
@@ -615,28 +627,34 @@ describe('gate-queue --long', () => {
             1,
         ],
         ['a short batch says nothing', '60', ['true'], 0],
-        [
-            'a long suite says nothing',
-            '1',
-            ['sh', '-c', 'sleep 2 # x-go:test'],
-            0,
-        ],
+        ['a long suite says nothing', '1', ['go', 'test', './...'], 0],
     ])('%s', (_name, bound, args, says) => {
         const { state } = fixture();
+        const bin = join(state, 'bin');
+        mkdirSync(bin);
+        writeFileSync(join(bin, 'go'), '#!/bin/sh\nsleep 2\n', { mode: 0o755 });
         const got = queue(state, ['--long', ...args], '20', {
             GATE_QUEUE_BATCH_MAX: String(Number(bound) - 1),
+            PATH: `${bin}:${process.env.PATH}`,
         });
         expect(got.stderr.split('run it in groups').length - 1).toBe(says);
     });
 
+    // a mods suite first in line over the load, and a batch behind it at a free turn
     test.each([
-        ['30.00', 0],
-        ['3.00', 75],
+        ['30.00', 600, 600, 0],
+        ['3.00', 600, 600, 75],
+        ['30.00', 5, 600, 75],
+        ['30.00', 600, 5, 75],
+        ['30.00', 600, undefined, 0],
     ])(
-        'a batch takes a free turn past a mods suite waiting on the load (%s: exit %d)',
-        (load, status) => {
+        'a batch goes past a mods suite over the load once the turn stood free 2 min (load %s, in line %s s, free %s s: exit %d)',
+        (load, inLine, free, status) => {
             const { state, turn } = fixture();
-            plantTicket(turn, `0.1.m.${process.pid}`, liveSince());
+            const ago = (s: number) => Math.floor(Date.now() / 1000) - s;
+            plantTicket(turn, `0.${ago(inLine)}.m.${process.pid}`, liveSince());
+            if (free !== undefined)
+                writeFileSync(`${turn}.freed`, `${ago(free)}\n`);
             const bin = join(state, 'bin');
             mkdirSync(bin);
             writeFileSync(
@@ -651,6 +669,18 @@ describe('gate-queue --long', () => {
             ).toBe(status);
         },
     );
+
+    test('a run that ends, and a dead holder freed, say when the turn was free', () => {
+        const ran = fixture();
+        long(ran.state, ['true']);
+        const dead = fixture();
+        plantHolder(dead.turn, '999999', 'Fri Nov  6 10:00:00 2026');
+        long(dead.state, ['true']);
+        for (const { turn } of [ran, dead])
+            expect(
+                Date.now() / 1000 - Number(readFileSync(`${turn}.freed`)),
+            ).toBeLessThan(30);
+    });
 
     test('a ticket of the old form still holds its place', () => {
         const { state, turn } = fixture();
