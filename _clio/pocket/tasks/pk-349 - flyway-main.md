@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T18:06:00Z'
+updated_date: '2026-11-24T18:08:00Z'
 labels:
   - s
   - clio-main
@@ -2754,4 +2754,20 @@ PK-349:W2399 (2026-11-24 19:50, dima): let's try.
 PK-349:W2400 (2026-11-24 19:50, dima): it is not a habit.
 
 PK-349:W2401 (2026-11-24 19:50, dima): I just ask you to wind down with rough estimate when, then plan lanes with wing one, and once we fuly done I ask you to stop everyone and we halt.
+
+PK-349:W2402 (2026-11-24 19:54, dima): lets /clio:lowtide-peek-lanes for mods now
+
+PK-349:W2403 (2026-11-24 20:03, dima): so mods have only 4 chunks unbuild left, from what was planned? ❓
+
+PK-349:W2404 (2026-11-24 20:03, dima): mods: plan approved.
+
+PK-349:W2405 (2026-11-24 20:03, dima): let's do peek lanes for speak.
+
+PK-349:W2406 (2026-11-24 20:05, dima): speak is OK.
+
+PK-349:W2407 (2026-11-24 20:05, dima): anything else left? ❓
+
+PK-349:W2408 (2026-11-24 20:05, dima): you are tail free? ❓
+
+PK-349:W2409 (2026-11-24 20:05, dima): we an stop everyone? ❓
 <!-- SECTION:NOTES:END -->
