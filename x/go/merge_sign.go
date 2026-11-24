@@ -301,7 +301,7 @@ func newSignIn(current, body string) string {
 	return ""
 }
 
-// x-mod-guard's judge of a body set: a sign or a merge grant is dima's word, so a file adding one is refused; a body
+// x-mod-guard's judge of a body set: a sign or a merge grant is written through clio's shape-lane, so a file adding one is refused; a body
 // that adds neither needs no read of linear, and a linear that does not read counts the file as new
 func linearSignCheck(r *Run, args []string, flags Flags) (any, error) {
 	id := args[0]
@@ -333,7 +333,7 @@ func linearSignCheck(r *Run, args []string, flags Flags) (any, error) {
 		return nil, &Fail{Msg: id + "'s current body did not read, so the file counts as a new sign: " + err.Error(), Next: "x linear read " + id}
 	}
 	if why := newSignIn(ptrText(current.Description), string(body)); why != "" {
-		return nil, &Fail{Refused: true, Msg: "the file holds " + why + "; a sign is dima's word", Next: "ask dima to tick «✍️ sign " + id + ": <title>», or to type «sign " + id + "» himself"}
+		return nil, &Fail{Refused: true, Msg: "the file holds " + why + "; a sign is clio's, written through her clio:shape-lane skill", Next: "hand " + id + " to clio: she signs it through clio:shape-lane, never through a body file"}
 	}
 	r.Done("adds no sign", "")
 	return map[string]any{"id": id, "newSign": false, "hash": bodySignHash(string(body))}, nil
