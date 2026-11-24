@@ -167,11 +167,43 @@ for (const body of [
         ]).toEqual([true, [], [], [], [['logged', false]]]);
     });
 
-test('a bare sw done spends no answer slot', async ($, on) => {
+test('a bare sw done in an open slot is held, the slot left for the answer', async ($, on) => {
     const w = answering(on);
     await start($);
     await send($, CODIE.name, 'which one?');
     await ping($, SW_DONE);
+    const before = [w.queued.length, stored(w).length];
+    await ping($, 'the second one');
+    expect([before, w.queued.length]).toEqual([[0, 1], 1]);
+});
+
+test('with mobile mode on a bare sw done is logged too', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await $.skill.prompt({
+        skill: 'x:mobile-mode',
+        text: '# mobile-mode',
+    } as never);
+    await ping($, SW_DONE);
+    expect([w.queued, logOf(w).map((l) => l.verdict)]).toEqual([
+        [],
+        ['logged'],
+    ]);
+});
+
+test('a turn-end report with an [ask] line or a decision in it starts no turn', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const a = await fromApp($, noteOf(MEMBER, 'the call is yours'));
+    const b = await fromApp($, noteOf(MEMBER, 'sent it:\n[ask] a or b?'));
+    expect([a.drop, b.drop, w.contexts]).toEqual(['', '', []]);
+});
+
+test('a delivery test ping in an open slot is held, the slot left', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await send($, CODIE.name, 'which one?');
+    await ping($, 'quiet delivery test c7: a test ping');
     const before = w.queued.length;
     await ping($, 'the second one');
     expect([before, w.queued.length]).toEqual([0, 1]);
@@ -631,10 +663,17 @@ test('with a kind switched off, the line names neither it nor its door', async (
     expect(r.context?.join()).not.toContain('[ask]');
 });
 
-test('a bare sw done reads as logged to its sender, its door named, the slot unread', async ($, on) => {
-    const w = member(on, REFUSED);
+test('a bare sw done in an open slot reads as slipstreamed to its sender', async ($, on) => {
+    const w = member(on);
     await start($);
     w.store.set('quiet-asked', { '🔧codie:mods': EVEN - MIN });
+    const r = await send($, '🦉 clio', SW_DONE);
+    expect(r.context).toContain(SLIPSTREAMED);
+});
+
+test('a bare sw done reads as logged to its sender, its door named', async ($, on) => {
+    const w = member(on, REFUSED);
+    await start($);
     w.seedLog(DAY, [{ ...heldLine(MEMBER, EVEN), verdict: 'logged' }]);
     const r = await send($, '🦉 clio', SW_DONE);
     expect([r.result, r.context]).toEqual([

@@ -90,7 +90,7 @@ export const MESSAGE_ROWS = [
     ],
     [
         41,
-        'logged',
+        'held',
         'sw done: mods lane 8 codie picked up its handoff. FRM-661 still waits on dima’s look; ready for your next:',
     ],
     [

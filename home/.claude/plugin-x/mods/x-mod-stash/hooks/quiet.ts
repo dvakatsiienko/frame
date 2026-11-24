@@ -58,7 +58,7 @@ export const MESSAGE_KINDS = [
         example: 'sw done: handoff ingested, step 3 next',
         kind: 'sw-done',
         lands: 'logged',
-        reads: 'one line opening «sw done», with no question, «ask», «for you» or «for dima» in it',
+        reads: 'one line opening «sw done», with no question, tag, «ask», «for you», dima, decision or block in it',
         who: 'any member',
     },
     {
@@ -105,11 +105,14 @@ const PUSH_TAG = new RegExp(
     String.raw`${EMOJI_RUN}\[(${ROWS.flatMap((r) => (r.isTag ? [r.kind] : [])).join('|')}|🪜 ?escalate)\]`,
     'u',
 );
-const FENCE = /^[ \t]*```[\s\S]*?(?:^[ \t]*```|(?![\s\S]))/gm;
+const FENCE =
+    /^[ \t]*(`{3,}|~{3,})[^`\n]*\n[\s\S]*?(?:^[ \t]*\1[`~]*[ \t]*$|(?![\s\S]))/gm;
 const ASK_LINE = new RegExp(String.raw`${EMOJI_RUN}\[ask\]`, 'mu');
 // crow's notes open with her badge and name; the rest of what she writes waits
 const CROW = /^\s*🐦\u200D⬛/u;
-const CROW_ESCALATE = /^\s*🐦\u200D⬛[ \t]*crow\b[^\n[]*\[(?:🪜 ?)?escalate\]/u;
+const CROW_ESCALATE =
+    /^\s*🐦\u200D⬛[ \t]*crow\b[^\n:[]*:\s*\[(?:🪜 ?)?escalate\]/u;
+const QUOTED = /^[ \t]*>.*$|«[^»\n]*»/gm;
 const CODE_SPAN = /`[^`]*`/g;
 // the fleet's 🔭 line prints him bold, his badge glued on
 const DIMA = String.raw`(?:\*\*)?(?:[\p{Extended_Pictographic}\u200D\uFE0F]+\s*)?dima`;
@@ -119,9 +122,11 @@ const FOR_DIMA = new RegExp(
     'iu',
 );
 const DECISION =
-    /(?<!\bno(?:[ \t]+\w+)?[ \t]+)\b(?:decisions?|rulings?|calls?)(?:[ \t]+(?:for you|is yours|are yours)|,[ \t]+yours)\b/iu;
+    /(?<!(?:\b(?:no|not|nothing|never|none|neither|nor|zero|tool)|n['’]t)\b[^.\n]{0,32})\b(?:decisions?|rulings?|call|calls(?![ \t]+for you to\b))(?:[ \t]+(?:for you|is yours|are yours)|,[ \t]+yours)\b/iu;
 const SW_DONE = new RegExp(String.raw`${EMOJI_RUN}sw done\b.*$`, 'iu');
-const SW_DONE_REAL = /\?|\bask\b|\bfor you\b/iu;
+// a sw done line with any of these may say something, so it is held, never logged
+const SW_DONE_REAL =
+    /\?|\[\p{L}|\b(?:asks?|dima|for you|yours|decisions?|decide\w*|rulings?|calls?|block(?:ed|er|ing)|stuck|refus\w*|fail\w*|broken?|red|did not|not checked|can(?:not|['’]t)|needs?|please|wrong|lost|errors?)\b/iu;
 // the mod's own lines to a sender, written here alone, so a reworded one is still known
 export const MOD_LINES = {
     compacting: (name: string) =>
@@ -140,7 +145,7 @@ const isModLine = (shape: string, line: string) =>
     ).test(line);
 // a sw done line stays held by its words, the lines after it are read
 const SW_DONE_LINE = new RegExp(
-    String.raw`${EMOJI_RUN}(?:\[[^\]\n]*\]\s*)?sw done\b.*$`,
+    String.raw`${EMOJI_RUN}(?:\[progress\]\s*)?sw done\b.*$`,
     'gimu',
 );
 
@@ -195,29 +200,38 @@ export function quietLogged(body: string) {
         MOD_LINES.unwound('NAME', 'NAME'),
     ];
     if (held.some((shape) => isModLine(shape, line))) return 'held';
-    return SW_DONE.test(line) &&
-        !line.includes('\n') &&
-        !SW_DONE_REAL.test(line) &&
-        !FOR_DIMA.test(line)
+    return SW_DONE.test(line) && !SW_DONE_REAL.test(line)
         ? 'sw-done'
         : undefined;
 }
 
-export function quietTag(body: string) {
+// `isReport`: the app's note of a member's turn end quotes what it told dima, so only its head is a tag
+export function quietTag(body: string, isReport = false) {
     const tag = body.match(PUSH_TAG)?.[1];
     if (tag) return tag.endsWith('escalate') ? 'escalate' : tag;
+    if (isReport) return 'none';
     if (CROW.test(body)) return CROW_ESCALATE.test(body) ? 'escalate' : 'none';
     return ASK_LINE.test(body.replace(FENCE, '')) ? 'ask' : 'none';
 }
 
 // why a message starts a turn by its own words; undefined holds it, unless it answers clio. a kind switched off holds like
 // an untagged line, «for dima» still pushes
-export function quietPush(body: string, kindsOff: readonly string[] = []) {
-    const tag = quietTag(body);
+export function quietPush(
+    body: string,
+    kindsOff: readonly string[] = [],
+    isReport = false,
+) {
+    const tag = quietTag(body, isReport);
     if (tag !== 'none' && !kindsOff.includes(tag)) return 'tag';
     const words = body.replace(SW_DONE_LINE, '').replace(CODE_SPAN, '');
     if (FOR_DIMA.test(words)) return 'for-dima';
-    return !CROW.test(body) && DECISION.test(words) ? 'decision' : undefined;
+    if (isReport || CROW.test(body)) return undefined;
+    const own = body
+        .replace(FENCE, '')
+        .replace(QUOTED, '')
+        .replace(SW_DONE_LINE, '')
+        .replace(CODE_SPAN, '');
+    return DECISION.test(own) ? 'decision' : undefined;
 }
 
 // clio's checkpoint words to the whole fleet, every clause of a real send (her transcripts, 2026-11-07): no work in them,

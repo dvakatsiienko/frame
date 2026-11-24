@@ -24,6 +24,7 @@ import type { ViewDoors } from './keep-warm.ts';
 import { LANE_OWNER } from './orbit-tool.ts';
 import {
     MESSAGE_KINDS,
+    QUIET_DELIVERY_TEST,
     QUIET_HELD_LINE,
     QUIET_LOGGED_LINE,
     QUIET_NOTICE,
@@ -97,11 +98,19 @@ export async function quietKindsOff($: EngineInterface) {
     return off;
 }
 // why a message starts a turn; first, a push spends the slot too
-export async function quietWhy($: EngineInterface, from: string, body: string) {
+export async function quietWhy(
+    $: EngineInterface,
+    from: string,
+    body: string,
+    isReport = false,
+) {
     // a notice with no report says nothing, so it answers nothing: the member's real answer keeps the slot
-    const isAnswer = body !== '' && (await quietAnswered($, from));
+    const isAnswer =
+        body !== '' &&
+        !QUIET_DELIVERY_TEST.test(body) &&
+        (await quietAnswered($, from));
     const why: QuietLogLine['why'] =
-        quietPush(body, await quietKindsOff($)) ??
+        quietPush(body, await quietKindsOff($), isReport) ??
         (isAnswer ? 'answer' : undefined);
     return why;
 }
@@ -233,7 +242,7 @@ export async function quietHoldPrompt(
         }),
         // a report opening a tag with its kind switched off waits with its words, its log line still a note's
         ...glued.notes.map(({ body, from, head }) => {
-            const kind = quietTag(body);
+            const kind = quietTag(body, true);
             return {
                 body,
                 from,
@@ -260,15 +269,22 @@ export async function quietHoldPrompt(
         const cut = new Set<number>();
         const judged = [];
         for (const item of items) {
-            const isLogged = isOn && quietLogged(item.body) !== undefined;
+            const logged = isOn ? quietLogged(item.body) : undefined;
             judged.push({
                 ...item,
-                isLogged,
+                isLogged:
+                    logged !== undefined &&
+                    !(await isOpenAnswer($, item.from, logged)),
                 sid: memberOf(members, item.from)?.base.sid,
-                // a logged line answers nothing, so the slot stays open
-                why: isLogged
+                // a logged shape answers nothing, so the slot stays open
+                why: logged
                     ? undefined
-                    : await quietWhy($, item.from, item.body),
+                    : await quietWhy(
+                          $,
+                          item.from,
+                          item.body,
+                          item.tag === QUIET_NOTICE,
+                      ),
             });
         }
         // a meta prompt starting a turn takes no rewrite (the engine's isMeta docs): all of it holds, or none
@@ -364,7 +380,11 @@ export async function quietSendStart(
     const to = text(e.to);
     const message = text(e.message) ?? '';
     // a bare subscribe (`notify_when_idle`, no words) says nothing, so it answers no ping and sends none
-    if (!to || !message.trim() || !(await readSwitch($, 'quiet')))
+    if (
+        !to ||
+        !String(e.message ?? '').trim() ||
+        !(await readSwitch($, 'quiet'))
+    )
         return undefined;
     if (await isLaneOwner($))
         return {
@@ -386,10 +406,7 @@ export async function quietSendStart(
     const at = await $.clock.now();
     const name = await sessionName($);
     const asked = name ? (await askedOf($))[memberKey(name)] : undefined;
-    const isAnswer =
-        asked !== undefined &&
-        isQuietAnswer(asked, at) &&
-        !quietLogged(message);
+    const isAnswer = asked !== undefined && isQuietAnswer(asked, at);
     return {
         at,
         isAnswer,
@@ -420,10 +437,12 @@ export async function quietSendEnd(
     // behind her turn, can still read otherwise after a flip
     const kindsOff = await quietKindsOff($);
     const tag = quietTag(send.message);
+    const logged = quietLogged(send.message);
     const isPush =
-        send.isAnswer || quietPush(send.message, kindsOff) !== undefined;
+        (send.isAnswer && !logged) ||
+        quietPush(send.message, kindsOff) !== undefined;
     const rows = MESSAGE_KINDS.filter((r) => !kindsOff.includes(r.kind));
-    if (quietLogged(send.message)) {
+    if (logged && !send.isAnswer) {
         const line = quietSenderLine('logged', rows);
         return isHeld
             ? {
@@ -485,6 +504,16 @@ async function quietSentTo($: EngineInterface, to: string) {
         ),
         [sid]: now,
     });
+}
+// a «sw done» while clio's question to its sender is open may be the answer: held, and the slot left for a real one
+async function isOpenAnswer(
+    $: EngineInterface,
+    from: string,
+    logged: ReturnType<typeof quietLogged>,
+) {
+    if (logged !== 'sw-done') return false;
+    const at = (await askedOf($))[memberKey(from)];
+    return at !== undefined && isQuietAnswer(at, await $.clock.now());
 }
 // true when this message answers clio's question, and spends the slot
 async function quietAnswered($: EngineInterface, from: string) {
@@ -647,7 +676,8 @@ export async function receiveMessage(
                 ...marks,
             } as const;
             // read before the answer slot, which a logged line leaves open
-            if (isOn && quietLogged(body)) {
+            const logged = isOn ? quietLogged(body) : undefined;
+            if (logged && !(await isOpenAnswer($, from, logged))) {
                 const isLogged = await quietLog($, {
                     ...line,
                     startedTurn: false,
@@ -656,7 +686,7 @@ export async function receiveMessage(
                 if (!isLogged) throw new Error('the logged line did not log');
                 return { consumed: `quiet comms logged ${from}'s message` };
             }
-            const why = await quietWhy($, from, body);
+            const why = logged ? undefined : await quietWhy($, from, body);
             if (isOn && !isMobile && !why) {
                 const q = await quietOf($);
                 // consumed only once both the held list and its log line landed: a ping no store holds is a lost one
