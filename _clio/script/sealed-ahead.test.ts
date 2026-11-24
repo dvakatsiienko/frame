@@ -11,6 +11,7 @@ import {
     type XEnvelope,
     type XRun,
     blockedIds,
+    isBuilt,
     lanesArg,
     openBlockers,
     pickNext,
@@ -581,6 +582,51 @@ describe('readLaneAhead, a chunk placed ahead of the started one', () => {
             'FRM-9',
             'FRM-2',
         ]);
+    });
+
+    test('a built sibling back in Todo is no chunk ahead; a ↩️ after its 🚀 makes it one again', () => {
+        const body = 'lane: quick\n\n## signed\n\n🚀 dispatched 2026-11-24 — x';
+        expect(isBuilt({ description: body, state: 'Todo' })).toBe(true);
+        expect(isBuilt({ description: body, state: 'In Progress' })).toBe(
+            false,
+        );
+        expect(
+            isBuilt({
+                description: `${body}\n↩️ back to Todo 2026-11-25 — y`,
+                state: 'Todo',
+            }),
+        ).toBe(false);
+        expect(isBuilt({ description: 'lane: quick', state: 'Todo' })).toBe(
+            false,
+        );
+
+        const home = homeWith();
+        const lanes = readLaneAhead(
+            home,
+            ['mods'],
+            world(home, {
+                running: modsRunning,
+                tickets: {
+                    'FRM-1': {
+                        ...running,
+                        relations: [
+                            rel('blocked by', 'FRM-9'),
+                            rel('blocks', 'FRM-2'),
+                        ],
+                    },
+                    'FRM-2': { relations: [rel('blocked by', 'FRM-1')] },
+                    'FRM-9': {
+                        description: body,
+                        project: 'mods: cc',
+                        relations: [],
+                        state: 'Todo',
+                    },
+                },
+            }),
+        );
+        expect(
+            sealedAhead(lanes).lanes[0]?.slots?.map((s) => s?.id),
+        ).not.toContain('FRM-9');
     });
 });
 

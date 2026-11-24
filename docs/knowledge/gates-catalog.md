@@ -85,7 +85,7 @@ Ticket: FRM-530. A ⛩️ gate is a check that refuses: it stops a commit, a pus
 - **x-go:gate**: all the cli's checks at once
 - **x verify red**: a new test really can fail
 - **brief check**, **brief summon**, **brief preflight**: a brief and a spec are right before a lane starts
-- **lane dispatch**: a chunk carries dima's sign
+- **lane dispatch**: a chunk carries a sign
 - **pocket-check**, **wish-cover**, **prompt-groom**: none of dima's words got lost
 
 ## in a session

@@ -40,7 +40,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **flyway** (was «day plan») — a clio lane's live plan, never closed: `habit-shared-files`. <!-- cc -->
 - lane init (the contract: `craft-fleet-flow`):
   - **🍫 chunk** — one ticket a lane takes; a lane runs one or more in order, its lane plan's slices the steps of its glide card
-  - **✍️ signed** — dima's yes on a chunk in `clio:shape-lane`: a `signed` label, a dated `## signed` line; a change after it asks a re-sign
+  - **✍️ signed** — clio groomed it, a lane could start from it alone (`clio:shape-lane`): a `signed` label, a dated line; a near edit signs again
   - **dispatch** — dima's pick of signed chunks, which starts their lane; «what can we dispatch?»
   - **🦭 sealed** — a chunk whose spec and exit lines are written, at dispatch, before codie starts
   - **🟢 greenlight** — clio's yes on codie's lane plan, after the summon

@@ -137,6 +137,16 @@ function isOnlyStarted(preflightError: string) {
     );
 }
 
+// built and back in Todo: its last 🚀 has no ↩️ after it, so it waits on a look, never on a lane
+export function isBuilt(ticket: Pick<AheadTicket, 'description' | 'state'>) {
+    const lastDispatch = ticket.description.lastIndexOf('\n🚀 dispatched');
+    return (
+        ticket.state === 'Todo' &&
+        lastDispatch !== -1 &&
+        !ticket.description.includes('\n↩️', lastDispatch)
+    );
+}
+
 function aheadState(ticket: Ahead | null): string {
     if (!ticket) return 'none queued';
     if (ticket.blockedBy) return `blocked by ${ticket.blockedBy}`;
@@ -277,6 +287,7 @@ export function readLaneAhead(
             ? pickNext(
                   openBlockers(current.relations, [])
                       .filter((id) => read(id).project === project)
+                      .filter((id) => !isBuilt(read(id)))
                       .map((id) => seal(id, [])),
               )
             : null;
