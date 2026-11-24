@@ -674,6 +674,36 @@ test('a watch stopped in the same turn lets the second call through, and the win
     ]).toEqual([true, undefined, 1]);
 });
 
+test('a watch stopped in a turn cut off before its Stop holds no wind', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await stopWith($, 'monitor', 'watch ci on #170');
+    await w.clock.advance(5000);
+    await $.tool.call({ task_id: 't1', tool: 'TaskStop' } as never);
+    await ready($, SLUG);
+    await $.turn.complete({
+        answer: '',
+        durationMs: 1,
+        isAborted: true,
+        reason: 'error',
+        turnId: 't',
+    } as never);
+    await w.clock.advance(2_000);
+    expect(w.commands.filter((c) => c.startsWith('/compact')).length).toBe(1);
+});
+
+test('a watch that ended on its own refuses no op', async ($, on) => {
+    world(on);
+    on('session.receive', (_$, e) => ({ text: e.text }));
+    await start($);
+    await stopWith($, 'monitor', 'watch ci on #170');
+    await $.session.receive({
+        origin: { kind: 'task-notification' },
+        text: '<task-notification>\n<task-id>t1</task-id>\n<status>completed</status>\n<summary>Monitor "watch ci on #170" stream ended</summary>\n</task-notification>',
+    });
+    expect((await ready($, SLUG)).deny).toBeUndefined();
+});
+
 test('a watch beside a 🔭 line refuses the op too', async ($, on) => {
     world(on);
     await start($);

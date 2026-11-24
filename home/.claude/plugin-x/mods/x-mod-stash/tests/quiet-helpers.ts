@@ -367,7 +367,7 @@ export const settings = ($: Engine) =>
 
 export const logOf = (w: ReturnType<typeof world>) => w.logLines(DAY);
 
-// FRM-602 decided: the wake fires only near a chunk's end with nothing signed to go to, never on idle time alone
+// a card's open steps, each with its ticket
 export const steps = (...tickets: string[]) => ({
     items: tickets.map((ticket, i) => ({
         done: false,

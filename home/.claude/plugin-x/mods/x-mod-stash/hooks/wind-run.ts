@@ -317,7 +317,7 @@ export async function windReady(
             deny: 'orbit second-wind: name the handoff you just wrote, slug: "<lane or topic>-<n>"',
         };
     const sid = await currentId($);
-    const watch = sid ? await liveWatch($, sid, true) : undefined;
+    const watch = sid ? await liveWatch($, sid) : undefined;
     if (watch)
         return {
             deny: `orbit second-wind: held by your watch «${watch}»: stop it with TaskStop and call again`,
@@ -387,7 +387,7 @@ export async function windAfterTurn($: EngineInterface, view: ViewDoors) {
     }
     if (!(await partsShown($))('stash.second-wind')) return;
     // the turn's own Stop lists what still runs: a watch started before the op holds the wind too
-    const watch = await liveWatch($, sid, false);
+    const watch = await liveWatch($, sid, was.at);
     const blocked = was.blocked ?? (watch && `a watch («${watch}»)`);
     if (blocked) {
         await $.store.set(WIND + sid, {
@@ -416,18 +416,19 @@ function armWind(
     });
 }
 // a turn's Stop is the one door to the live tasks: at a call inside the next turn, a watch stopped since is dropped by its
-// id, and a turn's end reads its own Stop as it is, so a TaskStop that failed holds the compact
+// id, and a turn's end reads its own Stop as it is, so a TaskStop that failed holds the compact; a turn cut off before its
+// Stop leaves the one from before the call, read as the call read it
 const stoppedTasks = new Set<string>();
 export function noteTaskStop(id: unknown) {
     if (typeof id === 'string') stoppedTasks.add(id);
 }
-async function liveWatch($: EngineInterface, sid: string, isCall: boolean) {
+async function liveWatch($: EngineInterface, sid: string, calledAt?: number) {
     const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
     // a session that ended took its watches with it
     if (reply?.ended !== undefined) return undefined;
-    return reply?.watches?.find(
-        (w) => !(isCall && stoppedTasks.has(w.id ?? '')),
-    )?.name;
+    const isOld = calledAt === undefined || (reply?.at ?? 0) < calledAt;
+    return reply?.watches?.find((w) => !(isOld && stoppedTasks.has(w.id ?? '')))
+        ?.name;
 }
 async function hasHandoff($: EngineInterface, slug: string) {
     return (await peekHandoff($, slug)) === 'here';

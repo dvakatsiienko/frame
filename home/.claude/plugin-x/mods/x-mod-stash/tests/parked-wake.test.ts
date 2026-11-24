@@ -570,6 +570,19 @@ test('an unread next chunk that reads again wakes once more, and its next failed
     ]);
 });
 
+test('two failed reads an hour apart are not two in a row', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], { card: ONE_LEFT });
+    await parked($, w, 1);
+    w.spoke(R, EVEN + 61 * MIN);
+    await pass($, w, 60, 9, 1);
+    const first = w.wakes();
+    await pass($, w, 1);
+    expect([first, w.wakes()]).toEqual([
+        [],
+        [builder('could not be read from linear')],
+    ]);
+});
+
 test('a ticket read for one wake is read again for the next, however soon the row brings it', async ($, on) => {
     const w = parkedWorld(on, [sixth()], {
         card: ONE_LEFT,
@@ -577,7 +590,7 @@ test('a ticket read for one wake is read again for the next, however soon the ro
         tickets: { 'FRM-2': { labels: [] } },
     });
     await parked($, w, 2);
-    w.wrote.set(R, EVEN + 2 * MIN);
+    w.spoke(R, EVEN + 2 * MIN);
     w.tickets['FRM-2'] = SIGNED;
     await pass($, w, 6);
     expect(w.wakes()).toEqual([
@@ -608,7 +621,7 @@ test('a chunk dispatched after its wake is read before the next word is answered
     });
     await parked($, w, 2);
     w.tickets['FRM-2'] = DISPATCHED;
-    w.wrote.set(sixth().sid, EVEN + 2 * MIN);
+    w.spoke(R, EVEN + 2 * MIN);
     await pass($, w, 11);
     expect(w.wakes().length).toBe(1);
 });
@@ -638,10 +651,10 @@ for (const [why, tickets] of [
 test('a finished card wakes again only after a word of its member', async ($, on) => {
     const w = parkedWorld(on, [codie()], { card: FINISHED });
     const first = (await parked($, w, 2, 8)).length;
-    w.wrote.set(codie().sid, EVEN + 10 * MIN);
+    w.spoke(C, EVEN + 10 * MIN);
     await pass($, w, 9);
     const early = w.wakes().length;
-    await pass($, w, 2);
+    await pass($, w, 2, 1, 1);
     expect([first, early, w.wakes().length]).toEqual([1, 1, 2]);
 });
 
@@ -654,7 +667,7 @@ test('a finished card with one member idle and one at work wakes once, not at ea
     const w = parkedWorld(on, [codie(), sixth(WORKING)], { card: FINISHED });
     await parked($, w, 2);
     for (let i = 0; i < 3; i++) {
-        w.wrote.set(R, w.clock.now());
+        w.spoke(R, w.clock.now());
         await pass($, w, 2);
     }
     expect(w.wakes().length).toBe(1);
@@ -828,6 +841,7 @@ for (const [wait, runner, wakes, name = runner] of [
     ['waiting on **🦉🪽 ****🦉 clio****: wing 2**', '🦉 clio', 0],
     ['waiting on **🔎 sixth sense** (clio-lean)', '🦉 clio', 0],
     ['waiting on 🦉 clio', WING, 1],
+    ['waiting on the coordinator', '🦉 clio', 1],
     // a dead wing's lane, fallen to main
     ['waiting on 🦉🪽 clio: wing 9', '🦉🪽 clio: wing 9', 1, '🦉 clio'],
 ] as const)
@@ -838,6 +852,22 @@ for (const [wait, runner, wakes, name = runner] of [
             store: said(C, wait),
         });
         expect((await parked($, w, 2, 5)).length).toBe(wakes);
+    });
+
+for (const [why, wait, tag, at] of [
+    ['a [done] under the row since its member', undefined, 'done', 12],
+    ['an [ask] under the row', 'waiting on 🙋‍♂️ dima', 'ask', 1],
+] as const)
+    test(`${why} is no open one yet`, async ($, on) => {
+        const ago = tag === 'done' ? 5 : 9;
+        const w = parkedWorld(on, [sixth()], {
+            card: FOUR,
+            store: {
+                [`reply:${R}`]: { at: EVEN - ago * MIN, wait },
+                ...tagged(R, tag, EVEN - at * MIN),
+            },
+        });
+        expect(await parked($, w, 2, 2)).toEqual([]);
     });
 
 test('a [done] its member worked on after is no parked one', async ($, on) => {
@@ -868,6 +898,25 @@ test("a write past the member's own turn, a mod's reload row, moves no idle", as
     expect(w.wakes()).toEqual([builder('idle 10 min')]);
 });
 
+for (const [why, reply] of [
+    ['a resumed member', { at: EVEN - 600 * MIN, ended: EVEN - 590 * MIN }],
+    ['a member stopped with no end', { at: EVEN - 600 * MIN }],
+    ['a member with no reply kept', undefined],
+] as const)
+    test(`${why} counts from its process's start, and a write moves nothing`, async ($, on) => {
+        const w = parkedWorld(
+            on,
+            [codie({ ago: 300, startedAt: EVEN - 9 * MIN })],
+            { card: FOUR, store: reply ? { [`reply:${C}`]: reply } : {} },
+        );
+        await start($);
+        const atStart = w.wakes();
+        await pass($, w, 2);
+        w.wrote.set(C, w.clock.now());
+        await pass($, w, 12);
+        expect([atStart, w.wakes()]).toEqual([[], [builder('idle 10 min')]]);
+    });
+
 test('a turn that ended with no reply counts as the last one', async ($, on) => {
     const w = parkedWorld(on, [codie()], {
         card: FOUR,
@@ -882,6 +931,32 @@ test('a turn that ended with no reply counts as the last one', async ($, on) => 
 });
 
 /* exit 4: a reviewer */
+
+for (const [why, member, store, wakes] of [
+    ['a reviewer', sixth({ ago: 29 }), {}, 1],
+    [
+        'a 🔭 wait',
+        codie({ ago: 29 }),
+        {
+            [`reply:${codie().sid}`]: {
+                at: EVEN - 29 * MIN,
+                wait: 'waiting on 🙋‍♂️ dima',
+            },
+        },
+        1,
+    ],
+    ['a builder', codie({ ago: 29 }), {}, 0],
+] as const)
+    test(`herdr's row at 60 min: ${why} idle 31 min wakes ${wakes}`, async ($, on) => {
+        const w = parkedWorld(on, [member], {
+            card: FOUR,
+            extraFiles: {
+                [HERDR_SETTINGS]: herdrRows({ 'stash.park.after': 60 }),
+            },
+            store,
+        });
+        expect((await parked($, w, 2)).length).toBe(wakes);
+    });
 
 test('a reviewer idle 30 min beside a working builder wakes once, two pings between and one after', async ($, on) => {
     const w = parkedWorld(on, [codie(WORKING), sixth({ ago: 0 })], {

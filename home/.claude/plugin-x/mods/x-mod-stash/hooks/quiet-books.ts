@@ -43,6 +43,9 @@ export const QUIET_PARK_MS = 7 * 24 * 60 * 60_000;
 const PING_WRITE_MS = 60_000;
 const LAST_WRITE =
     'stat -f %m "$1"/.claude/projects/*/"$2".jsonl 2>/dev/null | sort -n | tail -n 1';
+// when a transcript's file was made: a /clear makes one, a row written into it later moves nothing
+const MADE =
+    'stat -f %B "$1"/.claude/projects/*/"$2".jsonl 2>/dev/null | sort -n | tail -n 1';
 const QUIET_ALARM_TITLE = '🚨 quiet comms';
 // osascript's own argv, so no text is ever spliced into the script
 const NOTIFY_SCRIPT =
@@ -251,6 +254,18 @@ export async function takeGapNotes($: EngineInterface) {
             `🤫 quiet-comms ledger: ${g.from} sent you ${g.sent} pings and your quiet log holds ${g.logged}: ${size(g)} skipped the hold, check its log line.`,
     );
 }
+async function transcriptTime(
+    $: EngineInterface,
+    script: string,
+    home: string,
+    sid: string,
+) {
+    const out = await $.process
+        .run(['sh', '-c', script, 'sh', home, sid])
+        .catch(() => undefined);
+    const seconds = Number(out?.stdout.trim());
+    return seconds > 0 ? seconds * 1000 : undefined;
+}
 // a keep-hot ping's reply is no word of the member's: a last write no later than its end reads as the reply before it,
 // in whole seconds as a write's time is; a write past that is real work
 export async function lastSpokeAt(
@@ -258,12 +273,8 @@ export async function lastSpokeAt(
     home: string,
     sid: string,
 ) {
-    const out = await $.process
-        .run(['sh', '-c', LAST_WRITE, 'sh', home, sid])
-        .catch(() => undefined);
-    const seconds = Number(out?.stdout.trim());
-    if (!(seconds > 0)) return undefined;
-    const wrote = seconds * 1000;
+    const wrote = await transcriptTime($, LAST_WRITE, home, sid);
+    if (wrote === undefined) return undefined;
     const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
     const isPingLast =
         !!reply?.pingedAt &&
@@ -271,17 +282,19 @@ export async function lastSpokeAt(
         wrote <= reply.pingedAt + PING_WRITE_MS;
     return isPingLast ? Math.floor(reply.at / 1000) * 1000 : wrote;
 }
-// an idle member's last real turn: its own end, never a write after it (a mod's reload row, a ping); with no reply kept, the
-// transcript's last write
+// an idle member's last real turn: its own end, never a write after it (a mod's reload row, a ping); a resumed process counts
+// from its start, and with no reply kept, from the transcript's making
 export async function lastTurnAt(
     $: EngineInterface,
     home: string,
     sid: string,
+    startedAt = 0,
 ) {
     const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
-    return reply && reply.ended === undefined
+    const at = reply
         ? Math.max(reply.at, reply.turnAt ?? 0)
-        : lastSpokeAt($, home, sid);
+        : await transcriptTime($, MADE, home, sid);
+    return at === undefined ? undefined : Math.max(at, startedAt);
 }
 // when a member's newest tagged line to clio is its [done]: an untagged receipt or a turn-end note after it changes nothing,
 // a later [ask] or [escalate] does; a week back at most, past that it reads as no [done]

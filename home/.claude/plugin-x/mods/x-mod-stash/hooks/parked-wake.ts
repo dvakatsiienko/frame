@@ -107,7 +107,7 @@ function chunkOf(ticket: { description?: unknown; labels?: unknown }) {
     return ticket.labels.includes('signed') ? 'signed' : 'unsigned';
 }
 // a ticket's state through x: a dispatched one is read once in 10 min, any other no older than a poll before it is said, and
-// a failed read is tried again at the next poll, «unread» only at the second in a row
+// a failed read is tried again at the next poll, «unread» only at the second in a row, 10 min apart at most
 async function nextChunk(
     $: EngineInterface,
     ticket: string,
@@ -125,7 +125,8 @@ async function nextChunk(
     const first = (read?.data as { tickets?: object[] } | undefined)
         ?.tickets?.[0];
     const chunk = first ? chunkOf(first) : 'unread';
-    const fails = chunk === 'unread' ? (kept?.fails ?? 0) + 1 : 0;
+    const wasFailing = kept && now - kept.at < TICKET_READ_MS ? kept.fails : 0;
+    const fails = chunk === 'unread' ? wasFailing + 1 : 0;
     ticketReads.set(ticket, { at: now, chunk, fails });
     if (fails === 1)
         await $.ui.log(
@@ -161,14 +162,16 @@ const wokeKey = (lane: StashLane, sid: string) =>
 const minutesOf = (ms: number) => Math.round(ms / 60_000);
 const wingsIn = (text: string) =>
     [...text.matchAll(/wing (\d+)/giu)].map((m) => m[1]);
-// a 🔭 wait on the clio running the lane: «clio» with no wing named is any runner, a wing its number; `runners` are her own
+// a 🔭 wait on the clio running the lane: «clio» or «coordinator» with no wing named is any runner, a wing its number; `runners` are her own
 // display and the card's, a dead wing's whose lane fell to her
 function namesRunner(wait: string, runners: string[]) {
     const said = unbold(wait);
     const wings = runners.flatMap(wingsIn);
     return (
         wingsIn(said).some((n) => wings.includes(n)) ||
-        /(?<![\w-])clio(?![\w-])/iu.test(said.replace(/clio: wing \d+/giu, ''))
+        /(?<![\w-])(?:clio|coordinator)(?![\w-])/iu.test(
+            said.replace(/clio: wing \d+/giu, ''),
+        )
     );
 }
 
@@ -215,8 +218,8 @@ async function waitOf(
     return { onOther: isOnOther ? said : undefined, said };
 }
 
-// the member's own rules, the first that holds (FRM-692's order); `left` is the card's open steps, `isSitting` past the row
-// with no wait that still guards it
+// the member's own rules, the first that holds (FRM-692's order); `left` is the card's open steps; herdr's row is a builder's
+// alone, a reviewer's 30 min and a wait's stand whatever it says
 function memberHold(
     m: Parked,
     now: number,
@@ -225,7 +228,6 @@ function memberHold(
     tag: { at: number; tag: string } | undefined,
     wait: Awaited<ReturnType<typeof waitOf>>,
     isAsking: boolean,
-    isSitting: boolean,
 ): Hold | undefined {
     const idle = now - m.at;
     // a turn of its own past the row after it: the member went on, its [done] was no parking
@@ -239,18 +241,22 @@ function memberHold(
             reason: 'done',
             text: `${m.name} sent its [done] ${minutesOf(now - tag.at)} min ago, unanswered`,
         };
-    if (!isSitting || !left) return undefined;
+    if (!left) return undefined;
     const sat = `${m.name} idle ${minutesOf(idle)} min`;
     if (wait.onOther)
-        return { about: [m], reason: 'wait', text: `${sat}, ${wait.onOther}` };
+        return idle >= REVIEWER_WAKE_MS
+            ? { about: [m], reason: 'wait', text: `${sat}, ${wait.onOther}` }
+            : undefined;
     const ask = isAsking ? ', its [ask] unanswered' : '';
     const on = ask || (wait.said ? `, ${wait.said}` : '');
     if (m.role === 'codie')
-        return {
-            about: [m],
-            reason: 'builder',
-            text: `${sat} with ${left} step${left === 1 ? '' : 's'} left${on}`,
-        };
+        return idle >= wakeAfter
+            ? {
+                  about: [m],
+                  reason: 'builder',
+                  text: `${sat} with ${left} step${left === 1 ? '' : 's'} left${on}`,
+              }
+            : undefined;
     return idle >= REVIEWER_WAKE_MS
         ? { about: [m], reason: 'reviewer', text: `${sat}${on}` }
         : undefined;
@@ -379,7 +385,7 @@ export async function wakeForParkedLanes($: EngineInterface, view: ViewDoors) {
             const { name: rowName, sid, status } = row.base;
             if (sid === myId) continue;
             // a member whose transcript does not read is at work, as far as the wake knows
-            const at = await lastTurnAt($, home, sid);
+            const at = await lastTurnAt($, home, sid, row.startedAt);
             members.push({
                 at: at ?? now,
                 // cc reads «shell» for an idle session with a watch or a background command up, and a live task is no wait
@@ -436,23 +442,13 @@ export async function wakeForParkedLanes($: EngineInterface, view: ViewDoors) {
                 isAsking,
             );
             const idle = now - m.at;
-            const isSitting =
-                idle >= wakeAfter && !(wait.onOther && idle < REVIEWER_WAKE_MS);
-            if (!isSitting) isParked = false;
+            if (idle < wakeAfter || (wait.onOther && idle < REVIEWER_WAKE_MS))
+                isParked = false;
             const hold =
                 (shown('stash.second-wind')
                     ? await stuckWind($, m, now)
                     : undefined) ??
-                memberHold(
-                    m,
-                    now,
-                    wakeAfter,
-                    left,
-                    tag,
-                    wait,
-                    isAsking,
-                    isSitting,
-                );
+                memberHold(m, now, wakeAfter, left, tag, wait, isAsking);
             if (hold) holds.push(hold);
         }
         const ofLane = await laneHold(

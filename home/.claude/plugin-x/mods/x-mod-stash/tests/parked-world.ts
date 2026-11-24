@@ -13,6 +13,8 @@ export type ParkedMember = {
     pid: number;
     role: 'codie' | 'sixth-sense';
     sid: string;
+    // when its process started, in the registry
+    startedAt?: number;
     status?: string;
 };
 export const codie = (over: Partial<ParkedMember> = {}): ParkedMember => ({
@@ -56,6 +58,7 @@ export function parkedWorld(
     const wrote = new Map(
         members.map((m) => [m.sid, m.at ?? now - (m.ago ?? 9) * MIN]),
     );
+    const made = new Map(wrote);
     const ofMembers = {
         linkedIds: Object.fromEntries(members.map((m) => [m.role, m.sid])),
         members: Object.fromEntries(members.map((m) => [m.role, m.name])),
@@ -75,12 +78,15 @@ export function parkedWorld(
         files,
         name,
         now,
-        peers: members.map(({ name, pid, sid, status = 'idle' }) => ({
-            name,
-            pid,
-            sessionId: sid,
-            status,
-        })),
+        peers: members.map(
+            ({ name, pid, sid, startedAt, status = 'idle' }) => ({
+                name,
+                pid,
+                sessionId: sid,
+                startedAt,
+                status,
+            }),
+        ),
         run: (argv) => {
             if (argv[1] === 'handoff') {
                 peeks.push(String(argv[3]));
@@ -98,8 +104,8 @@ export function parkedWorld(
                       })
                     : 1;
             }
-            const at =
-                argv[0] === 'sh' ? wrote.get(String(argv[5])) : undefined;
+            const read = argv[2]?.includes('%B') ? made : wrote;
+            const at = argv[0] === 'sh' ? read.get(String(argv[5])) : undefined;
             return at === undefined ? undefined : `${Math.floor(at / 1000)}\n`;
         },
     });
@@ -109,7 +115,13 @@ export function parkedWorld(
         w.submitted
             .filter((text) => text.startsWith('🅿️ parked lane: '))
             .map((text) => text.slice('🅿️ parked lane: '.length));
-    return { ...w, handoffs, peeks, tickets, wakes, wrote };
+    // a turn of a member's own, ended at `at`
+    const spoke = (sid: string, at: number) =>
+        w.store.set(`reply:${sid}`, {
+            ...(w.store.get(`reply:${sid}`) as object | undefined),
+            at,
+        });
+    return { ...w, handoffs, peeks, spoke, tickets, wakes, wrote };
 }
 type World = ReturnType<typeof parkedWorld>;
 
