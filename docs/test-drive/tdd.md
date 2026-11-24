@@ -57,3 +57,4 @@ one line per ticket: date · ticket · tdd loaded? · verifier findings · round
 ## verdict
 
 - 2026-11-24 · **closed, not proven** (dima's tick) — the comparison without tdd never ran, so no pair exists; the 5 last «keep» lines are the coders' own words. only a bug fix starts test-first now; a feature gets a few weighed tests at its end
+- 2026-11-24 · the look-back (dima's tick, 16:07): 53 coder sessions since 10-06, 13 loaded the skill, 40 not · rounds to clean: median 4 over 7 tickets against 3 over 15, one ticket moving flips it · test lines per code line 0.56 against 0.60 · findings per ticket: 2 matched, no answer · **cannot tell**; no sign it helps, hurts or adds tests

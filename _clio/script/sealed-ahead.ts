@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 // x brief preflight's own words for a sealed spec whose recorded hash trails the ticket's newest sign
 const RESEAL_TEXT = 'sync the section to the re-sign';
+const STARTED_TEXT = 'main already carries a commit for';
 const CLOSED_STATES = ['Canceled', 'Done', 'Duplicate'];
 const RUN_TIMEOUT_MS = 60_000;
 // siesta-checks' NOT_CHECKED: a read that failed, never «ready»
@@ -128,6 +129,14 @@ export function pickNext<T extends Ahead>(candidates: T[]): T | null {
     );
 }
 
+// a sealed chunk whose first step already landed: preflight's only problems are its own commits on main
+function isOnlyStarted(preflightError: string) {
+    const problems = preflightError.split('\n').slice(1);
+    return (
+        problems.length > 0 && problems.every((p) => p.includes(STARTED_TEXT))
+    );
+}
+
 function aheadState(ticket: Ahead | null): string {
     if (!ticket) return 'none queued';
     if (ticket.blockedBy) return `blocked by ${ticket.blockedBy}`;
@@ -212,7 +221,7 @@ export function readLaneAhead(
             drifted: (signOf.get(id) ?? 'match') !== 'match',
             id,
             preflightError: error ?? '',
-            preflightOk: ok === true,
+            preflightOk: ok === true || isOnlyStarted(error ?? ''),
             relations: t.relations ?? [],
             signed: t.labels.includes('signed'),
         };
@@ -235,6 +244,7 @@ export function readLaneAhead(
         .filter(
             (t) =>
                 t.state === 'In Progress' &&
+                !t.labels.includes('needs human') &&
                 /^🚀 dispatched/m.test(t.description) &&
                 t.description.split('\n')[0]?.trim() !== 'lane: main',
         );
@@ -262,11 +272,21 @@ export function readLaneAhead(
         const project = LANE_PROJECTS[name] ?? name;
         const current = running.find((t) => t.project === project);
         // the running chunk's own chain first; a slot it leaves empty takes the area's next signed chunk
-        const next = current ? nextOf(current.relations, [current.id]) : null;
-        const after =
-            current && next
-                ? nextOf(next.relations, [current.id, next.id])
-                : null;
+        // a parked chunk's own open blocker in its area was placed ahead of it, so it runs first
+        const ahead = current
+            ? pickNext(
+                  openBlockers(current.relations, [])
+                      .filter((id) => read(id).project === project)
+                      .map((id) => seal(id, [])),
+              )
+            : null;
+        const behind = current ? nextOf(current.relations, [current.id]) : null;
+        const next = ahead ?? behind;
+        const after = ahead
+            ? behind
+            : current && next
+              ? nextOf(next.relations, [current.id, next.id])
+              : null;
         const taken = [current?.id, next?.id, after?.id];
         const queue = [next, after].some((s) => s === null)
             ? queuedChunks(

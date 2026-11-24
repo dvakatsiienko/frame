@@ -47,3 +47,5 @@ one line per check per run: `YYYY-MM-DD · <id> · 🟢 | 🔴 <what> · fixed: 
 - 2026-11-24 · naming-family-first · 🔴 367 names, 4 scatter a family: empty-wakes-count, helper-count, rename-asks-count, tails-check · asked: orbit
 - 2026-11-24 · memory-lint · 🟢 the full run, 0 errors, 0 warnings · —
 - 2026-11-24 · skill-shape · 🔴 one strength-3 split: boot's mini mode and weekday lines (about 3,500 chars) load on every full boot · asked: orbit
+- 2026-11-24 · install-census · 🔴 46 of our and vendored skills with 0 uses in 30 days (358 KB, most of them in bytes); stale plugin version folders, 90 of x and 133 of clio (845 MB by a helper's read); fast-jev-compaction's cache is back (61 MB); x-cloud-chat and context7 unused · asked: orbit
+- 2026-11-24 · cli-purpose · 🟡 4 verbs at 0 calls in 14 days: lane unlock (an emergency tool, kept), gh repo-slug, events log, events day · asked: orbit
