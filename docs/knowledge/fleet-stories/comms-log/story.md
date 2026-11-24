@@ -1,6 +1,6 @@
 ---
 status: open
-dates: 2026-11-13 → 2026-11-23
+dates: 2026-11-13 → 2026-11-24
 tickets: [FRM-630]
 tags: [comms, dima-graded]
 fed-by: incidents
@@ -107,5 +107,33 @@ fed-by: incidents
 - **his words:** «i showed you a screenshot of your reply and the area that holds 95 % of the clutter in my view and brings no or almost no value: it is long and big. i don't have the time and capacity to read all of this; it only distracts me and trashes the output. the info important for me was at the start: the two clauses about the mess hunt and the design loupe. everything else in your reply is not useful for me. how to fix your replies so they are shorter and contain only relevant info? the wishkeeper results are not 100 % useless, but in such an overloaded shape they become useless as a side effect: when everything becomes too large, everything becomes irrelevant. i think you just shouldn't print your siesta cards to me, or at least print only the actionable items.»
 - **shape:** report bloat
 - **fix:** proposed 15:58: a siesta card goes to a file; the reply carries only lines that need his action, and a reply answers his question then stops
+- **home:** undefined
+- **source:** undefined
+
+## c8 · volume · - · siesta · undefined
+
+- **what:** a reply opened «Hazard line updated as ticked: `rules/fleet-hazards.md` now says the hook allows a clean call …» and went on to a reviewer's note on how a cpu measurement might count a test worker as zero: nothing he uses changed, nothing for him to decide. beside it he marked a useful one: «Kokoro is back and the ear test is closed», a thing he uses working again, said in its first three words
+- **how:** each finished chore got its own reply
+- **why:** the rules asked for every state change to be reported with its command; nothing asked whether he had a use for it
+- **when:** 11-24, before 15:03
+- **where:** the main thread
+- **who:** clio main
+- **his words:** «useless noise» · «useful — i know kokoro is back (my readaloud door)» · «I opened her thread and can clearly show you what is useless for me and what is useful»
+- **shape:** housekeeping told as news
+- **fix:** the format rules open with: write as said aloud to a colleague who was not in the room; before writing ask «does this change something he uses, or need his decision?», neither → write nothing
+- **home:** undefined
+- **source:** undefined
+
+## c9 · volume · - · siesta · undefined
+
+- **what:** a reply told the agent's own save trouble («The hazard line's commit was refused by the memory check (it grew the file by 11 bytes …) so I shortened the clause … The commit is running again»), and another said «committed and on origin (verified: `git status` reads level …)». he marked OK only the reviewer's verdict that a fix was clean at round 3: progress on a lane he follows
+- **how:** a refused commit and its retry each got a reply
+- **why:** nothing told an agent its own chores are not news; the refusing check was wing 1's new net-zero memory check
+- **when:** 11-24, before 15:06
+- **where:** the main thread
+- **who:** clio main
+- **his words:** «useless tech noise, only overloads» · «OK — i see the progress on key part of the lane (round 3 clean)» · «In the output you spend effort to write your replies, and I spend effort to filter them out, which is double inefficient. They only hurt.»
+- **shape:** own chores told step by step
+- **fix:** an agent's own chores (a save refused and retried, a commit landed, a file trimmed) are never told to him; progress on a lane he follows is one sentence, the outcome first
 - **home:** undefined
 - **source:** undefined
