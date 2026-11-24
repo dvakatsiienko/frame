@@ -148,6 +148,17 @@
             "timeout": 30
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/dima/frame/_clio/script/queue-moved.ts",
+            "async": true,
+            "timeout": 150
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [

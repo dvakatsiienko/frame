@@ -1,5 +1,6 @@
-// a lane's health at a glance, per lane (FRM-693, grown for PK-349:W2046–W2058): are the next two chunks behind it ready,
-// and does it have a member to run them? a lane parks into a chunk nobody sealed, and the idle alarm only rings after the stall
+// a lane's health at a glance, per lane (FRM-693, grown for PK-349:W2046–W2058): are the running chunk and the one ahead of it
+// ready (a lane with no running chunk: its first two queued), and does it have a member to run them? a lane parks into a chunk
+// nobody sealed, and the idle alarm only rings after the stall
 // usage: node sealed-ahead.ts [--lanes mods herdr speak] [--json]    (no names: every lane with a member or a signed chunk queued)
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
@@ -15,6 +16,7 @@ const RUN_TIMEOUT_MS = 60_000;
 // siesta-checks' NOT_CHECKED: a read that failed, never «ready»
 const NOT_CHECKED = 2;
 const MOVE_RESIGN = 're-sign (clio)';
+const MOVE_SEAL = 'seal (clio)';
 const MOVE_SUMMON = 'summon (clio)';
 // a ticket's `repo:` line names where its brief preflight runs, under home; no line means frame
 const AHEAD_REPOS: Record<string, string | undefined> = {
@@ -71,18 +73,23 @@ function laneRow(lane: LaneAhead) {
         state: aheadState(ticket),
         ticket,
     }));
-    const text = slots
-        .map(
+    // a running chunk has no signed label, so only its stale seal is read, never its slot moves
+    const reseal = lane.running?.isStale ? lane.running : null;
+    const text = [
+        ...(reseal ? [`running ${reseal.id} reseal`] : []),
+        ...slots.map(
             (s, i) => `${i + 1} ${s.ticket ? `${s.ticket.id} ` : ''}${s.state}`,
-        )
-        .join(' · ');
+        ),
+    ].join(' · ');
     const member = memberText(lane.member);
+    const sealMoves = reseal ? [MOVE_SEAL] : [];
     // a lane with no member is not red: its move rides along, the halt summons it at boot
     const moves = [
+        ...sealMoves,
         ...slots.flatMap((s) => s.moves),
         ...(lane.member.kind === 'none' ? [MOVE_SUMMON] : []),
     ];
-    const owed = [...new Set(slots.flatMap((s) => s.moves))];
+    const owed = [...new Set([...sealMoves, ...slots.flatMap((s) => s.moves)])];
     return {
         line: `${owed.length ? '🔴' : '🟢'} ${lane.name} — ${text} · ${member}${owed.length ? ` — ${owed.join(', ')}` : ''}`,
         member,
@@ -164,7 +171,7 @@ function slotMoves(ticket: Ahead | null) {
     if (ticket.blockedBy) moves.push('unblock (clio)');
     if (ticket.signed && ticket.drifted) moves.push(MOVE_RESIGN);
     else if (!ticket.preflightOk)
-        moves.push(ticket.signed ? 'seal (clio)' : 'sign (clio)');
+        moves.push(ticket.signed ? MOVE_SEAL : 'sign (clio)');
     return moves;
 }
 
@@ -293,13 +300,10 @@ export function readLaneAhead(
             : null;
         const behind = current ? nextOf(current.relations, [current.id]) : null;
         const next = ahead ?? behind;
-        const after = ahead
-            ? behind
-            : current && next
-              ? nextOf(next.relations, [current.id, next.id])
-              : null;
-        const taken = [current?.id, next?.id, after?.id];
-        const queue = [next, after].some((s) => s === null)
+        // the running chunk and one ahead; a lane with none running keeps its first two queued
+        const wanted = current ? [next] : [null, null];
+        const taken = [current?.id, next?.id];
+        const queue = wanted.some((s) => s === null)
             ? queuedChunks(
                   signed.filter(
                       (t) =>
@@ -311,8 +315,22 @@ export function readLaneAhead(
                   seal,
               )
             : [];
-        const slots = [next, after].map((s) => s ?? queue.shift() ?? null);
-        return { member: memberOf(name, members, x), name, slots };
+        const slots = wanted.map((s) => s ?? queue.shift() ?? null);
+        // a running chunk whose own seal trails the re-sign owes clio its reseal
+        const runningRow = current
+            ? {
+                  id: current.id,
+                  isStale: seal(current.id, []).preflightError.includes(
+                      RESEAL_TEXT,
+                  ),
+              }
+            : undefined;
+        return {
+            member: memberOf(name, members, x),
+            name,
+            ...(runningRow && { running: runningRow }),
+            slots,
+        };
     }
 }
 
@@ -495,7 +513,12 @@ export type Member =
 
 export type LaneAhead =
     | { failed: string; name: string }
-    | { member: Member; name: string; slots: (Ahead | null)[] };
+    | {
+          member: Member;
+          name: string;
+          running?: { id: string; isStale: boolean };
+          slots: (Ahead | null)[];
+      };
 
 export type SignIssue = { id: string; sign: string };
 
