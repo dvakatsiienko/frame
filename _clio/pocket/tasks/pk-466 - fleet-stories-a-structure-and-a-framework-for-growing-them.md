@@ -112,4 +112,6 @@ PK-466:W42 (2026-11-24 13:31, dima): I want these incidents to be only created o
 PK-466:W43 (2026-11-24 13:31, dima): (your name proposals are OK but i want only to keep ones created by my request)
 
 close: 13:44 done on dima's word («close the fleet stories revamp item»): five dirs renamed, the two cpu stories as one family, the cpu go story sorted with fixes-applied-and-open.md, two unasked stories trashed, stories only on his request (habit-cto, halt, fleet-stories/AGENTS.md); the duckdb query line (W14) not built, his «maybe»
+
+close: W1 done, W2 done, W3 done, W4 done, W5 done, W6 done, W7 done, W8 done, W9 done, W10 done, W11 done, W12 done, W13 done, W14 dropped (duckdb querying, his «maybe», not built), W15 done, W16 done, W17 done, W18 done, W19 done, W20 done, W21 done, W22 done, W23 done, W24 done, W25 done, W26 done, W27 done, W28 done, W29 done, W30 done, W31 done, W32 done, W33 done, W34 done, W35 done, W36 done, W37 done, W38 done, W39 done, W40 done, W41 done, W42 done, W43 done
 <!-- SECTION:NOTES:END -->
