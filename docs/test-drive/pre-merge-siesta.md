@@ -221,3 +221,4 @@ Ticket: none
 - 2026-11-24 18:01 · 159k tokens · 1 high, 7 medium, 3 low · highs real: y (an ask that hid a dropped want) · acted: high settled by his 17:59 words and the 18:04 reply, 6 mediums fixed, 1 (the herdr chunk unsealed) running
 - 2026-11-24 18:19 wing 1 · 226k tokens · 1 high, 6 medium, 4 low · highs real: y (a built ticket told as an unsigned running chunk) · acted: high fixed with its cause, 6 mediums fixed or listed
 - 2026-11-24 18:31 · checkpoint mode · 72k tokens · 0 high, 5 medium, 1 low · highs real: none · acted: all folded into the handoff
+- 2026-11-24 18:45 · 189k tokens · 1 high, 3 medium, 5 low · highs real: y (a size ask with 3 fixes where git holds 62) · acted: high told and re-asked, its label joins FRM-701; 3 mediums fixed
