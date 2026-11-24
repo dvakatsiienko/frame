@@ -16,6 +16,7 @@ import {
     planMarked,
     steeredOrbit,
 } from './orbit.ts';
+import { hiddenBy, isShown } from './orbit-ask-kind.ts';
 import { fromLine } from './orbit-ask-origin.ts';
 import { currentId, identity, sessionName } from './session-identity.ts';
 import { HERDR_READ } from './store-keys.ts';
@@ -55,12 +56,15 @@ export async function saveOrbit(
         (!orbitWrites && (read?.version ?? 0) >= orbitVersion
             ? read?.value?.asks
             : undefined) ?? orbit.asks;
+    const now = await $.clock.now();
     orbit = {
         ...next,
         asks: next.asks.map((a) =>
             mounted(
                 was.find((w) => w.id === a.id),
-                a,
+                a.hidden && a.hidden.at === undefined
+                    ? { ...a, hidden: { ...a.hidden, at: now } }
+                    : a,
                 a.id === typedId,
             ),
         ),
@@ -69,13 +73,15 @@ export async function saveOrbit(
     if (isKept) await keepState($, { orbit }).catch(() => undefined);
     const sid = await currentId($);
     if (!sid) return isKept;
-    const open = orbit.asks.filter((a) => !a.isResolved);
+    const held = orbit.asks.filter((a) => !a.isResolved);
+    const open = held.filter(isShown);
     const asks = open.map((a) => a.text);
-    if (asks.length)
+    // a hidden ask still holds the fleet's counter by this key, so no thread mints its id
+    if (held.length)
         await $.store
             .set(PREFIX + sid, {
                 asks,
-                at: await $.clock.now(),
+                at: now,
                 items: open.map((a) => ({
                     id: a.id,
                     pick: a.pick,
@@ -309,6 +315,7 @@ export async function absorbMarks(
                         accepted.push(a);
                     return {
                         ...a,
+                        hidden: hiddenBy(a, m.mark),
                         isChanged: false,
                         isHerdrMark: true,
                         mark: m.mark,

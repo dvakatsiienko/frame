@@ -5,7 +5,7 @@ import type { EngineInterface } from 'claude-code';
 
 import type { KindEmoji, StashOrbit } from '../types/stash.d.ts';
 import { ORBIT_TOOL } from './orbit.ts';
-import { KIND_EMOJI } from './orbit-ask-kind.ts';
+import { KIND_EMOJI, isShown } from './orbit-ask-kind.ts';
 import { type IsPartOn, herdrRows } from './settings-store.ts';
 
 export const STALE_TURNS = 3;
@@ -130,7 +130,7 @@ export function orbitReminder(
 // the one reply shape while no board reaches dima — 📱 mobile mode, where mods draw nothing, or 🪐 orbit switched off —
 // the same text either way (dima's o162); x:mobile-mode keeps only its phone bits and points here
 export function noBoardReminder(o: StashOrbit, isOn: IsPartOn) {
-    const open = o.asks.filter((a) => !a.isResolved);
+    const open = o.asks.filter((a) => !a.isResolved && isShown(a));
     const ids = open.length ? ` (${open.map((a) => a.id).join(', ')})` : '';
     // the phases are gone off the board too: the plan's next 3 moves print under the fence (dima's o112, 2026-10-11)
     const isPhasesOn = isOn('stash.phases');

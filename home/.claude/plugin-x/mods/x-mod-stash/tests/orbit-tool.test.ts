@@ -292,6 +292,11 @@ for (const [what, line, words] of [
         'glide',
         "a parked lane's through the halt",
     ],
+    [
+        'a fixing follow hides a look or a test',
+        'follow',
+        'on a look or test a why opening «fixing» hides it, your next follow shows it',
+    ],
     ['a --bg session sets no phases', 'plan', 'a --bg session sets neither'],
 ] as const)
     test(`orbit's text says ${what}`, async ($, on) => {

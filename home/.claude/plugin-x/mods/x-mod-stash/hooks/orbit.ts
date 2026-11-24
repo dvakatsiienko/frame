@@ -8,7 +8,7 @@ import type {
     StashPlan,
     StashTick,
 } from '../types/stash.d.ts';
-import { askKind } from './orbit-ask-kind.ts';
+import { askKind, isFixing } from './orbit-ask-kind.ts';
 import { type OriginRead, askOrigin } from './orbit-ask-origin.ts';
 import { ORBIT_TEXT_MAX, oneLine } from './util.ts';
 
@@ -424,6 +424,11 @@ export function orbitOp(
                 return { deny: `orbit follow: ${id}: ${typed.deny}` };
             const tooLong = overCap('follow', [typed.text]);
             if (tooLong) return tooLong;
+            const isHide = isFixing(typed.kind, oneLine(input.why));
+            // «fixing …» says why it hides, never why the ask exists
+            const { why, ...rest } = told.origin;
+            const origin =
+                isHide || why === undefined ? rest : { ...rest, why };
             return {
                 orbit: {
                     ...o,
@@ -431,7 +436,8 @@ export function orbitOp(
                         a.id === id
                             ? {
                                   ...a,
-                                  ...told.origin,
+                                  ...origin,
+                                  hidden: isHide ? {} : undefined,
                                   isChanged: true,
                                   isClosed: undefined,
                                   isHerdrMark: undefined,
@@ -448,7 +454,9 @@ export function orbitOp(
                             : a,
                     ),
                 },
-                result: `${id} changed in place`,
+                result: isHide
+                    ? `${id} hidden from dima; your next follow with another why shows it`
+                    : `${id} changed in place`,
             };
         }
         case 'plan': {

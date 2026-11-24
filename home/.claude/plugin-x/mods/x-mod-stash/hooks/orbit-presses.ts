@@ -15,15 +15,28 @@ import {
     planTaken,
 } from './orbit.ts';
 import {
+    hiddenBy,
+    isShown,
+    isStranded,
+    strandedLine,
+} from './orbit-ask-kind.ts';
+import {
     currentOrbit,
     inMarking,
     markAsksNow,
     recordTicks,
     saveOrbit,
 } from './orbit-store.ts';
+import {
+    MAIN_OWNER,
+    currentId,
+    ownerOf,
+    sessionName,
+    threadRecords,
+} from './session-identity.ts';
 import { keepShelf } from './session-record.ts';
 import { partsShown } from './settings-store.ts';
-import { selfSubmit, turn } from './turn.ts';
+import { isTurnBusy, selfSubmit, turn } from './turn.ts';
 import { orbitTexts, tickSentence } from './turn-notes.ts';
 
 // the running turn, so a mid-turn reload still knows it is busy
@@ -59,6 +72,55 @@ export async function wakeForMarks($: EngineInterface, view: ViewDoors) {
             false,
             () => prepareTurn(view),
         ).catch(() => undefined);
+}
+// a hide never strands a look (FRM-645:W29): 60 min with no follow is one line to the poster's coordinator, else main
+// clio; main clio's own ask wakes her instead, once idle. told only once it went, so a refused send goes at the next poll
+export async function tellStranded($: EngineInterface, view: ViewDoors) {
+    const now = await $.clock.now();
+    const sid = await currentId($);
+    if (!sid || !(await partsShown($))('stash.orbit')) return;
+    for (const a of (await currentOrbit($)).asks) {
+        if (!isStranded(a, now)) continue;
+        const threads = await threadRecords($);
+        const self = threads.find((t) => t.sessionId === sid);
+        const line = strandedLine(
+            a,
+            (await sessionName($)) ?? self?.display ?? sid,
+        );
+        const live = threads.filter(
+            (t) => t.pid !== undefined && t.sessionId !== sid,
+        );
+        const lead =
+            live.find(
+                (t) => ownerOf(t) !== '' && ownerOf(t) === self?.coordinator,
+            ) ?? live.find((t) => ownerOf(t) === MAIN_OWNER);
+        if (ownerOf(self) === MAIN_OWNER) {
+            if (await isTurnBusy($)) return;
+            await selfSubmit($, line, false, () => prepareTurn(view));
+        } else {
+            if (!lead) return;
+            const sent = await $.session.send({
+                text: line,
+                to: { sessionId: lead.sessionId },
+            });
+            if (!sent.isDelivered) return;
+        }
+        await inMarking(async () => {
+            const o = await currentOrbit($);
+            await saveOrbit(
+                $,
+                {
+                    ...o,
+                    asks: o.asks.map((x) =>
+                        x.id === a.id && x.hidden
+                            ? { ...x, hidden: { ...x.hidden, isTold: true } }
+                            : x,
+                    ),
+                },
+                () => keepShelf($),
+            );
+        });
+    }
 }
 // a turn takes his marks in the marking queue: a press lands wholly before or after the lock, never inside it
 export function takeMarks(
@@ -106,7 +168,13 @@ async function pressMarkNow(
         () => keepShelf($),
         (a) =>
             a.id === id
-                ? { ...a, isChanged: false, isHerdrMark: undefined, mark: next }
+                ? {
+                      ...a,
+                      hidden: hiddenBy(a, next),
+                      isChanged: false,
+                      isHerdrMark: undefined,
+                      mark: next,
+                  }
                 : a,
         false,
         undefined,
@@ -121,7 +189,7 @@ async function pressAllAsksNow(
 ) {
     await $.state.set(MOBILE, false).catch(() => undefined);
     const open = (await currentOrbit($)).asks.filter(
-        (a) => !a.mark && !a.isLocked && !a.isResolved,
+        (a) => !a.mark && !a.isLocked && !a.isResolved && isShown(a),
     );
     // the text too: a follow keeps the id and asks a new question he has not read
     const asks = open.filter(

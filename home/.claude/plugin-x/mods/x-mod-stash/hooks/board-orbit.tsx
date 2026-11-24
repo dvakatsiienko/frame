@@ -5,7 +5,7 @@ import type { EngineInterface } from 'claude-code';
 import { type BoardKit, LINE_GAP } from './board-kit.tsx';
 import { field } from './fields.ts';
 import { isAllAsksMarkable } from './orbit.ts';
-import { pinned } from './orbit-ask-kind.ts';
+import { isShown, pinned } from './orbit-ask-kind.ts';
 import { pressAllAsks } from './orbit-presses.ts';
 import { changeAssumed } from './orbit-store.ts';
 import { keepShelf } from './session-record.ts';
@@ -56,7 +56,7 @@ export function orbitCard($: EngineInterface, k: BoardKit) {
             {/* an answered ask stays until its turn ends, so dima sees it go */}
             {isFolded('orbit')
                 ? null
-                : pinned(o.asks).map((a, i) => askJSX(a, i))}
+                : pinned(o.asks.filter(isShown)).map((a, i) => askJSX(a, i))}
             {!isFolded('orbit') &&
             o.assumed?.length &&
             isPartOn('stash.assumed') ? (

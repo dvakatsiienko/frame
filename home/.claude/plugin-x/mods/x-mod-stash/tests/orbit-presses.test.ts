@@ -3,12 +3,15 @@ import {
     assume,
     herdrPress,
     lastContext,
+    lines,
     mobile,
     pressRace,
     tickLog,
 } from './orbit-helpers.ts';
 import {
+    SID,
     add,
+    asksShown,
     board,
     endTurn,
     joined,
@@ -18,6 +21,7 @@ import {
     world,
 } from './orbit-world.ts';
 import { type Engine, expect, test } from './shared-boot.ts';
+import { THREADS_FILE, threadsFile } from './threads.ts';
 
 test('check all accepts every open ask', async ($, on) => {
     const w = world(on);
@@ -635,3 +639,155 @@ for (const [site, act] of [
 
 /* FRM-531: a thread switch on the desktop detaches the client and drops the board's view; the return attaches it, and
    the board draws fresh 2–20 ms later and again 76–131 ms after that (the desktop log, 2026-11-07: detach → attach → draw, a timer firing in between) */
+
+// FRM-645:W13: a look or a test is on his boards only while it is ready
+const ASK = {
+    area: 'mods',
+    pick: 'yes',
+    text: 'push it',
+    why: 'it rang twice',
+};
+const items = (w: ReturnType<typeof world>) =>
+    (w.store.get(`asks:${SID}`) as { items?: Record<string, unknown>[] })
+        ?.items;
+const followed = ($: Engine, fields: object) =>
+    orbit($, { id: 'o1', op: 'follow', text: 'look: the card', ...fields });
+
+test("a look ask its poster is fixing leaves the board and the published asks, its next follow shows it, the ask's own why kept", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    const toasts: unknown[] = [];
+    on('ui.toast', (_$, e) => {
+        toasts.push(e.text);
+        return { value: undefined };
+    });
+    await orbit($, {
+        asks: [{ ...ASK, text: 'look: the card' }, ASK],
+        op: 'add',
+    });
+    const seen: unknown[] = [];
+    const read = async () =>
+        seen.push([
+            items(w)?.map((a) => `${a.id} ${a.why}`),
+            await asksShown(ui),
+        ]);
+    await followed($, { why: 'fixing the wrap' });
+    await read();
+    await ui.press({ key: 'orbit:all' });
+    await followed($, {});
+    await read();
+    await followed($, { why: 'Fixing it again' });
+    await followed($, { why: 'prefixing holds now' });
+    await read();
+    const other = 'o2 it rang twice';
+    expect([seen, toasts]).toEqual([
+        [
+            [[other], ['o2']],
+            [
+                ['o1 it rang twice', other],
+                ['o1', 'o2'],
+            ],
+            [
+                ['o1 prefixing holds now', other],
+                ['o1', 'o2'],
+            ],
+        ],
+        [],
+    ]);
+});
+
+test('a plain ask never hides, whatever its why or his 🔁', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { asks: [ASK], op: 'add' });
+    await followed($, { text: 'push it', why: 'fixing the wrap' });
+    await ui.press({ key: 'orbit:rejected:o1' });
+    expect([items(w)?.length, await asksShown(ui)]).toEqual([1, ['o1']]);
+});
+
+test('his 🔁 hides a test ask at once and past its turn, its turn still hears it, and the follow shows it', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, {
+        asks: [{ ...ASK, text: 'test: press it' }, ASK],
+        op: 'add',
+    });
+    await ui.press({ key: 'orbit:rejected:o1' });
+    const seen = [await asksShown(ui)];
+    await say($, 'go');
+    const heard = joined(w.contexts).join('\n');
+    await ui.press({ key: 'orbit:all' });
+    await mobile($);
+    await endTurn($);
+    seen.push(await asksShown(ui));
+    await say($, 'on my phone');
+    const fence = lines(w);
+    await orbit($, { id: 'o1', op: 'follow', text: 'test: press it now' });
+    seen.push(await asksShown(ui));
+    expect([
+        seen,
+        /o1 ↩️ rejected/u.test(heard),
+        /o2 🛎️ accepted/u.test(fence) || fence.includes('(o2)'),
+        fence.includes('o1'),
+    ]).toEqual([[['o2'], ['o2'], ['o1', 'o2']], true, true, false]);
+});
+
+test("herdr's 🔁 hides a look ask, its untick shows it again", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, { asks: [{ ...ASK, text: 'look: the card' }], op: 'add' });
+    const at = await w.clock.now();
+    herdrPress(w, 'o1', { at: at + 1, verdict: 'replay' });
+    await w.clock.advance(5_000);
+    const hidden = await asksShown(ui);
+    herdrPress(w, 'o1', { at: at + 2, verdict: 'untick' });
+    await w.clock.advance(5_000);
+    expect([hidden, await asksShown(ui)]).toEqual([[], ['o1']]);
+});
+
+test('a look ask hidden 60 min with no follow is told to its coordinator once the send goes, and stays hidden', async ($, on) => {
+    on('env.get', (_$, e) => ({
+        value: e.name === 'X_STASH_POLL_MS' ? String(10 * 60_000) : '/home',
+    }));
+    const w = world(on, {
+        [THREADS_FILE]: threadsFile([
+            { coordinator: 'clio-wing-2', role: 'codie', sessionId: SID },
+            { pid: 7, role: 'coordinator', sessionId: 'main' },
+            { pid: 8, role: 'wing', sessionId: 'wing2', wing: 2 },
+        ]),
+    });
+    const sent: unknown[] = [];
+    on('session.send', (_$, e) => {
+        sent.push([e.to, e.text]);
+        return sent.length > 1
+            ? { isDelivered: true }
+            : { isDelivered: false, reason: 'not reachable' };
+    });
+    await start($);
+    const ui = await board($);
+    await orbit($, {
+        asks: [{ ...ASK, text: 'look: FRM-9, the card' }],
+        op: 'add',
+    });
+    await followed($, {
+        text: 'look: FRM-9, the card',
+        why: 'fixing the wrap',
+    });
+    await w.clock.advance(55 * 60_000);
+    const early = sent.length;
+    await w.clock.advance(50 * 60_000);
+    expect([early, sent, await asksShown(ui)]).toEqual([
+        0,
+        Array(2).fill([
+            'wing2',
+            expect.stringMatching(
+                /^\[escalate\] a look ask stands hidden 60 min with no follow: o1 «look: FRM-9, the card» \(FRM-9\)/,
+            ),
+        ]),
+        [],
+    ]);
+});

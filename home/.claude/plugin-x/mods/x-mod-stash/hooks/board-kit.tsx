@@ -14,7 +14,7 @@ import {
 import { LANE_ROLES } from './lanes.ts';
 import { cardBorder } from './look.ts';
 import { CHANGED_MARK, linkLabel } from './orbit.ts';
-import { askLead, askWords } from './orbit-ask-kind.ts';
+import { askLead, askWords, isShown } from './orbit-ask-kind.ts';
 import { areaLine, originLine } from './orbit-ask-origin.ts';
 import { pressMark } from './orbit-presses.ts';
 import { changeAssumed, markAsks, orbitNow } from './orbit-store.ts';
@@ -96,7 +96,7 @@ export async function boardKit($: EngineInterface, e: RenderInput<'Pane'>) {
     const o = (await $.state.get(ORBIT)).value ?? orbitNow();
     // mobile draws no Input: its steers wait for another surface
     const Input = 'Input' in ui ? ui.Input : undefined;
-    const open = o.asks.filter((a) => !a.isResolved);
+    const open = o.asks.filter((a) => !a.isResolved && isShown(a));
     const age = planAge(o);
     // 🛎️ and ↩️ are one toggle each, side by side at the row's left: lit while it holds, plain while it does not
     // an ask card's door: this session's own orbit; a lane card passes a view door, which draws no control

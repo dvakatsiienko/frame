@@ -160,6 +160,8 @@ export type OrbitAsk = AskOrigin & {
     id: string;
     // a look or a test ask; its text opens with the kind's word (FRM-645)
     kind?: AskKind;
+    // kept from dima while its poster fixes it: since when, and whether its coordinator was told it stands
+    hidden?: { at?: number; isTold?: boolean };
     text: string;
     pick: string;
     hiddenNote?: string;

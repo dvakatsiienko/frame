@@ -591,6 +591,15 @@
   - and an emoji is his: `stash.orbit.look.emoji`, `stash.orbit.test.emoji` in herdr's settings, read at each poll of an open board; blank or unreadable is 👀 and 🧪
   - and a typed ask answered this turn leads with ✅ until the turn ends, a plain one with 👀 as before, so one 👀 never means two things
   - proof: tests/board-orbit.test.ts::look asks draw first, then test asks, then the rest… ; ::a look ask answered this turn leads with ✅, never 👀; ::an ask answered this turn leads its line with 👀…; a live frame, 24 Nov (`~/.local/state/looks/FRM-645/`)
+- ✅ a look or a test is on his boards only while it is ready (FRM-645)
+  - given a look or test ask, when its poster's `follow` carries a `why` opening with «fixing», then it leaves the board's orbit, its check-all, the no-board fence, every count, the glide subcard and the `asks` of `herdr-state/<sid>.json`; the orbit keeps it, and the poster's next `follow` without that word shows it with its id
+  - and the «fixing …» why is never kept: the ask's own why is drawn again
+  - given he marks it 🔁, on the board or in herdr, then it hides at once and stays hidden past the turn that hears the mark, until the poster's `follow`; a 🔁 he takes back before that shows it
+  - and a plain ask never hides; no round line and no timer hides or shows one
+  - given one hidden for 60 min with no `follow`, then it stays hidden and its coordinator (the poster's, by its thread record; main clio's own ask wakes her once idle) gets one `[escalate]` line naming the ask and its ticket, told once it went
+  - and a hidden ask still holds the fleet's counter, so no thread mints its id
+  - decision: the poster's own word, not a codie's round line: that goes out when the fix is ready (clio, 24 Nov, on his 23 Nov 20:41 words)
+  - proof: tests/orbit-presses.test.ts::a look ask its poster is fixing leaves the board and the published asks… ; ::a plain ask never hides… ; ::his 🔁 hides a test ask at once… ; ::herdr's 🔁 hides a look ask, its untick shows it again; ::a look ask hidden 60 min with no follow is told…; tests/orbit-tool.test.ts::orbit's text says a fixing follow hides a look or a test — not asserted: main clio's own stranded ask, the kept counter
 - ✅ how a look and a test ask are written is his to steer (FRM-645)
   - given a text in `stash.orbit.look.how` or `stash.orbit.test.how` of `~/.claude/shelf/herdr-settings/settings.json` (herdr writes the file, this mod only reads it), when a session's next prompt goes, then it carries one line, «a look ask: <his>; a test ask: <his>», once; a changed row tells it again, as do a compaction, a `/clear` and a resume
   - given a row blank, the file missing or not parsing, then the built-in words
@@ -609,13 +618,13 @@
 - ✅ the model reads orbit's whole tool description (dima's o50)
   - given cc shows a model only the first 4096 chars of a tool's description (cc's cap from 2.1.296; 2048 before it)
   - when a session loads orbit
-  - then its description fits in 4096 (3,850 chars with ten areas) and names every op — add, resolve, follow, assume, plan, glide — with its rule; glide stays whole
+  - then its description fits in 4096 (3,928 chars with ten areas) and names every op — add, resolve, follow, assume, plan, glide — with its rule; glide stays whole
   - and it holds every how-to rule of an ask, which left `rules/fleet-mods.md` § orbit for it (FRM-640): when an ask goes up, who a member asks, what a pick names, how a reply names an ask, a guard-refused command; with the mod off no orbit rule is left in memory beyond the reply shape
   - and it says what an ask shows dima (FRM-677, FRM-645): an ask's `kind` and that both are pinned; an ask for his hands links a file of plain numbered steps; a running lane's glide card stays until every plan line is ticked, a parked lane's through the halt; the hidden note never holds what he must read or pick; a list for him goes in the text, a longer one in a file; a file or a page goes in `link`, named in words in the text; an ask reads plain, with no plan number and no unexplained label; a `--bg` session sets no phases
   - decision: words in the tool's text, no refusal and no hint at add (his o3 tick, 22 Nov)
   - and the tool loads up front (`isDeferred: false`), never behind ToolSearch
   - 📌 a session already running keeps the description it loaded until it restarts; a `--bg` session draws no board, and its asks reach dima through its coordinator and the glide subcard
-  - proof: tests/orbit-tool.test.ts::orbit's text says … (9 rows); tests/orbit.test.ts::orbit's description fits the 4096 chars cc shows the model, every op named; orbit registers loaded up front, never behind ToolSearch
+  - proof: tests/orbit-tool.test.ts::orbit's text says … (10 rows); tests/orbit.test.ts::orbit's description fits the 4096 chars cc shows the model, every op named; orbit registers loaded up front, never behind ToolSearch
 the session's asks to dima, ticked instead of copy-pasted; one orbit per session, in the board's lower half. it replaced the reply-parsed, cross-thread asks list in the row (dima, 2026-10-10: «the current stash asks implementation doesn't work for me»).
 - makes: one `asks:<session>` key in x-mod-stash's `$.store` holding the session's open asks, so every board's `🪐 n` counts them; orbit itself lives in the session's `$.state`
 - proven live 2026-10-10 in a `pnpm mods:live` terminal session: a real model added two asks and a plan through the tool, both drew in `/board`; a tick then a bare «go on» reached the model, which resolved it; a tick made during a running turn was answered in that same turn and left at its end; a tick that landed after a turn ended rode the next prompt
