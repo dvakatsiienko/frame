@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T17:00:00Z'
+updated_date: '2026-11-24T17:10:00Z'
 labels:
   - s
   - clio-main
@@ -2682,4 +2682,23 @@ PK-349:W2348 (2026-11-24 18:59, dima): in any case: commit and handoff so everyo
 PK-349:W2349 (2026-11-24 18:59, dima): Essentially when I ask for wind down, it is a wind down but I want efficiency.
 PK-349:W2350 (2026-11-24 18:59, dima): I don't like what's currently happening because you stopped everyone 6, 7 minutes ago roughly and stray is still active.
 PK-349:W2351 (2026-11-24 18:59, dima): If wind down worked more optimally, everyone could still be active and maybe someone even would finish a more meaningful part.
+
+19:10 wind-down steer 2, folded into clio:wind-down steps 0, 4–6:
+PK-349:W2352 (2026-11-24 19:07, dima): «nothing new» is wrong.
+PK-349:W2353 (2026-11-24 19:07, dima): you shoul'd say «we plan a winddown soon, look for a good spot to commit, do handoff and park.».
+PK-349:W2354 (2026-11-24 19:07, dima): so lanes are seeking to finish current chunk (if not too long), or at least slice (if not too long), or step, if slice/chunk are too far.
+PK-349:W2355 (2026-11-24 19:07, dima): The new message looks better.
+PK-349:W2356 (2026-11-24 19:07, dima): Now I see numbers and estimates.
+PK-349:W2357 (2026-11-24 19:07, dima): Let's then change "wind down" more.
+PK-349:W2358 (2026-11-24 19:07, dima): When I write you a "wind down," instead of stopping everyone immediately, when you just receive a skill, you should at first send everyone a "wind down" notice without time.
+PK-349:W2359 (2026-11-24 19:07, dima): Everyone is just aware that we plan a "wind down" and getting prepared for looking for a parked state.
+PK-349:W2360 (2026-11-24 19:07, dima): Then you print me this message with estimates and a proposal for when to actually wind down.
+PK-349:W2361 (2026-11-24 19:07, dima): We should measure roughly a good synchronous wind-down stop point where everyone finishes some meaningful part.
+PK-349:W2362 (2026-11-24 19:07, dima): First you tell me the times, estimated based on today's pace, when everyone finishes its nearest parts: a chunk if it is not hours ahead, as lies if it is also not more than 1 hour ahead, and otherwise we pick some.
+PK-349:W2363 (2026-11-24 19:07, dima): Wind down to that target and move to that target while everyone keeps doing their stuff.
+PK-349:W2364 (2026-11-24 19:07, dima): For example today, the whole forest parts would be roughly mod whole chunk or speaks whole slice that would land roughly, at 8 pm.
+PK-349:W2365 (2026-11-24 19:07, dima): So for example, if mod chunk finishes at 19:40 and speak is still finishing its slice, then while speak finishes its slice, the mods can still start a new chunk and do a few steps.
+PK-349:W2366 (2026-11-24 19:07, dima): We then each window need to pick a stop target.
+PK-349:W2367 (2026-11-24 19:07, dima): We wait for the lane that is selected to be a stop target (e.g., to finish its part to park) and then everyone else parks wherever they are.
+PK-349:W2368 (2026-11-24 19:07, dima): Will it work? ❓
 <!-- SECTION:NOTES:END -->
