@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T19:06:00Z'
+updated_date: '2026-11-24T19:11:00Z'
 labels:
   - s
   - clio-main
@@ -2800,4 +2800,6 @@ PK-349:W2424 (2026-11-24 20:54, dima, on the CPU log's small tail): and solve th
 
 PK-349:W2425 (2026-11-24 21:06, dima): why did it take so much time since my last message (20:54) until now? ❓
 PK-349:W2426 (2026-11-24 21:06, dima): do you agree for the mods codie to start with the riders/tails, then resume mods? (he still starts in the same workdir as usual) ❓
+
+PK-349:W2427 (2026-11-24 21:11, dima): are you sure it is necessary to solve now? maybe the mods codie tomorrow? ❓
 <!-- SECTION:NOTES:END -->
