@@ -609,13 +609,13 @@
 - ✅ the model reads orbit's whole tool description (dima's o50)
   - given cc shows a model only the first 4096 chars of a tool's description (cc's cap from 2.1.296; 2048 before it)
   - when a session loads orbit
-  - then its description fits in 4096 (3,609 chars with ten areas) and names every op — add, resolve, follow, assume, plan, glide — with its rule; glide stays whole
+  - then its description fits in 4096 (3,850 chars with ten areas) and names every op — add, resolve, follow, assume, plan, glide — with its rule; glide stays whole
   - and it holds every how-to rule of an ask, which left `rules/fleet-mods.md` § orbit for it (FRM-640): when an ask goes up, who a member asks, what a pick names, how a reply names an ask, a guard-refused command; with the mod off no orbit rule is left in memory beyond the reply shape
-  - and it says what an ask shows dima (FRM-677): the hidden note never holds what he must read or pick; a list for him goes in the text, a longer one in a file; a file or a page goes in `link`, named in words in the text; an ask reads plain, with no plan number and no unexplained label; a `--bg` session sets no phases
+  - and it says what an ask shows dima (FRM-677, FRM-645): an ask's `kind` and that both are pinned; an ask for his hands links a file of plain numbered steps; a running lane's glide card stays until every plan line is ticked, a parked lane's through the halt; the hidden note never holds what he must read or pick; a list for him goes in the text, a longer one in a file; a file or a page goes in `link`, named in words in the text; an ask reads plain, with no plan number and no unexplained label; a `--bg` session sets no phases
   - decision: words in the tool's text, no refusal and no hint at add (his o3 tick, 22 Nov)
   - and the tool loads up front (`isDeferred: false`), never behind ToolSearch
   - 📌 a session already running keeps the description it loaded until it restarts; a `--bg` session draws no board, and its asks reach dima through its coordinator and the glide subcard
-  - proof: tests/orbit-tool.test.ts::orbit's text says … (5 rows); tests/orbit.test.ts::orbit's description fits the 4096 chars cc shows the model, every op named; orbit registers loaded up front, never behind ToolSearch
+  - proof: tests/orbit-tool.test.ts::orbit's text says … (9 rows); tests/orbit.test.ts::orbit's description fits the 4096 chars cc shows the model, every op named; orbit registers loaded up front, never behind ToolSearch
 the session's asks to dima, ticked instead of copy-pasted; one orbit per session, in the board's lower half. it replaced the reply-parsed, cross-thread asks list in the row (dima, 2026-10-10: «the current stash asks implementation doesn't work for me»).
 - makes: one `asks:<session>` key in x-mod-stash's `$.store` holding the session's open asks, so every board's `🪐 n` counts them; orbit itself lives in the session's `$.state`
 - proven live 2026-10-10 in a `pnpm mods:live` terminal session: a real model added two asks and a plan through the tool, both drew in `/board`; a tick then a bare «go on» reached the model, which resolved it; a tick made during a running turn was answered in that same turn and left at its end; a tick that landed after a turn ended rode the next prompt

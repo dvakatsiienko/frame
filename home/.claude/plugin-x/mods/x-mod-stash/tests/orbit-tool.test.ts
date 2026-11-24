@@ -272,6 +272,26 @@ for (const [what, line, words] of [
         'add',
         'plain: what happens for him, no plan number («(24)») or unexplained label',
     ],
+    [
+        'an ask has a kind, look or test',
+        'add',
+        'kind: look (ready, only his check is left) or test (he probes something), both pinned;',
+    ],
+    [
+        'an ask for his hands links its steps',
+        'add',
+        'an ask for his hands links a file of plain numbered steps;',
+    ],
+    [
+        "a running lane's card stays until its plan is ticked",
+        'glide',
+        "a running lane's card stays until every plan line is ticked",
+    ],
+    [
+        "a parked lane's card stays through the halt",
+        'glide',
+        "a parked lane's through the halt",
+    ],
     ['a --bg session sets no phases', 'plan', 'a --bg session sets neither'],
 ] as const)
     test(`orbit's text says ${what}`, async ($, on) => {
