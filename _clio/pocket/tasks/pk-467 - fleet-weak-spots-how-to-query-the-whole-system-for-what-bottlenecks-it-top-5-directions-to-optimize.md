@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T11:46:00Z'
-updated_date: '2026-11-24T13:49:00Z'
+updated_date: '2026-11-24T14:09:00Z'
 labels:
   - s
   - clio-wing-1
@@ -353,4 +353,42 @@ PK-467:W163 (2026-11-24 15:48, dima): now 1/3 left.
 PK-467:W164 (2026-11-24 15:48, dima): no fable until I say from now on.
 
 PK-467:W165 (2026-11-24 15:48, dima): (designer only)
+
+PK-467:W166 (2026-11-24 15:53, dima): trials — drop proposed.
+
+PK-467:W167 (2026-11-24 15:53, dima): the pace watch: park it, since you paused the habit it serves
+
+PK-467:W168 (2026-11-24 15:53, dima): Can you remind me what the trial is for Pace, which I don't remember? ❓
+
+PK-467:W169 (2026-11-24 15:53, dima): test-first coding: adopt it, its last five rounds all said keep
+
+PK-467:W170 (2026-11-24 15:53, dima): And this one too.
+
+PK-467:W171 (2026-11-24 15:53, dima): Remind how I proposed to test-first coding trial? ❓
+
+PK-467:W172 (2026-11-24 15:53, dima): Actually how do you think this trial is related to the test bottleneck in mods we created? ❓
+
+PK-467:W173 (2026-11-24 15:53, dima): I asked for the test-first approach and now code is creating too many tests, which bottlenecks my CPU? ❓
+
+PK-467:W174 (2026-11-24 15:53, dima): Or what? ❓
+
+PK-467:W175 (2026-11-24 15:56, dima): one check is not finished: the scan for new recipe subjects is still running.
+
+PK-467:W176 (2026-11-24 15:56, dima): this scan is part of system checkup? ❓
+
+PK-467:W177 (2026-11-24 15:56, dima): if yes - remove it from system checkup, it is not needed there.
+
+PK-467:W178 (2026-11-24 16:03, dima, o40 steer): adopted, remove from test drive.
+
+PK-467:W179 (2026-11-24 16:03, dima, o40 steer): rex is much better than warp on all metrics.
+
+PK-467:W180 (2026-11-24 16:03, dima, o40 steer): your lower usage is another topic, to be solved later.
+
+PK-467:W181 (2026-11-24 16:03, dima, o40 steer): you just need proper instructions to use it more proactively.
+
+PK-467:W182 (2026-11-24 16:03, dima, o42 steer): Okay but make sure that mini boot works for me as it is.
+
+PK-467:W183 (2026-11-24 16:03, dima, o42 steer): When I boot you in mini mode, you correctly boot in mini mode.
+
+PK-467:W184 (2026-11-24 16:03, dima, o42 steer): Just optimize everything
 <!-- SECTION:NOTES:END -->
