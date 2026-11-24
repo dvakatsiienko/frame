@@ -206,18 +206,21 @@ func asSigned(above string) string {
 	return folded
 }
 
-// dispatchMarkLine is a line a dispatch writes into a body: the 🚀 line, or a ↩️ one that takes it back, with the blank line after it
-var dispatchMarkLine = regexp.MustCompile(`(?m)^(?:🚀 dispatched |↩️)[^\n]*(?:\n\n?|\z)`)
+// dispatchMarkLine is a line a dispatch writes into a body, in exactly the shape it is written in: the 🚀 line (a date, the lane, the
+// codie, then the base and the sixth sense when it has them), or the ↩️ one that takes it back to Todo (a date, then the why and the
+// left asks when it names them), with the blank line after it. a line carrying anything more, scope typed after its fields included,
+// is text, and moves the hash
+var dispatchMarkLine = regexp.MustCompile(`(?m)^(?:🚀 dispatched \d{4}-\d{2}-\d{2} — .+?, codie \S+?(?:, main:[0-9a-f]+)?(?:, sixth sense \S+)?|↩️ back to Todo \d{4}-\d{2}-\d{2}(?: — [^\n]* · left: [^\n]*)?)$(?:\n\n?|\z)`)
 
 // stripDispatchMarks takes those lines out: a quick dispatch writes its 🚀 line above `## signed`, so it would move the hash of a
 // text that did not change in scope
 func stripDispatchMarks(text string) string { return dispatchMarkLine.ReplaceAllString(text, "") }
 
 // signForms are the hashes a text may carry in a sign or a seal: raw, normalized, the legacy stamp's, and each of the first two
-// again with the dispatch marks taken out; bodySignHash is the one new stamps write
+// again with the dispatch marks taken out, and the legacy one of the stripped text; bodySignHash is the one new stamps write
 func signForms(above string) []string {
 	stripped := stripDispatchMarks(above)
-	return []string{shortHash(above), shortHash(asSigned(above)), shortHash(unescaped(above)), shortHash(stripped), shortHash(asSigned(stripped))}
+	return []string{shortHash(above), shortHash(asSigned(above)), shortHash(unescaped(above)), shortHash(stripped), shortHash(asSigned(stripped)), shortHash(unescaped(stripped))}
 }
 
 // bodySignHash is the hash x's sign reader compares for a text: the normalized form of what sits above its closing

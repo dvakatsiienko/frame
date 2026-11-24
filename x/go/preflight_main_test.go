@@ -50,7 +50,7 @@ func TestPreflightReadsASpecSectionsRecordedSealAgainstTheTicketsText(t *testing
 		{"the raw hash of a text that is not normalized", wish(bodyHash("## want\n\na thing\n\n\n")), "## want\n\na thing\n\n\n## signed\n\n✍️ signed\n", false},
 		{"no recorded hash", "wish: FRM-1 · the contract", ticket("a thing", "✍️ signed · body def67890"), false},
 		{"sealed before its dispatch line was written", wish(bodyHash("lane: quick\n\n## want\n\na thing\n\n⸻ 🪪 stamp — please keep 🙏\n\n")), quick("🚀 dispatched 2026-11-24 — l, codie s, main:abc1234\n\n"), false},
-		{"sealed before a take-back line was written", wish(bodyHash("lane: quick\n\n## want\n\na thing\n\n⸻ 🪪 stamp — please keep 🙏\n\n")), quick("↩️ taken back 2026-11-24\n\n"), false},
+		{"sealed before a take-back line was written", wish(bodyHash("lane: quick\n\n## want\n\na thing\n\n⸻ 🪪 stamp — please keep 🙏\n\n")), quick("↩️ back to Todo 2026-11-24\n\n"), false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

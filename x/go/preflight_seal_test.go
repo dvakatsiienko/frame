@@ -19,8 +19,14 @@ func TestBodySignHashLeavesTheDispatchMarksOut(t *testing.T) {
 		same        bool
 	}{
 		{"a 🚀 line above the stamp", "🚀 dispatched 2026-11-24 — l, codie s, main:abc1234\n\n", true},
-		{"a ↩️ line", "↩️ taken back 2026-11-24, the lane moved\n\n", true},
-		{"both", "🚀 dispatched 2026-11-23 — l, codie s\n\n↩️ taken back\n\n🚀 dispatched 2026-11-24 — l2, codie s2\n\n", true},
+		{"a ↩️ line", "↩️ back to Todo 2026-11-24 — the lane moved · left: none\n\n", true},
+		{"a bare ↩️ line with its date", "↩️ back to Todo 2026-11-24\n\n", true},
+		{"a 🚀 line with a sixth sense", "🚀 dispatched 2026-11-24 — l, codie s, main:abc1234, sixth sense t\n\n", true},
+		{"a 🚀 line with scope typed after its fields", "🚀 dispatched 2026-11-24 — l, codie s, and add the pill to the build\n\n", false},
+		{"a 🚀 line with no date", "🚀 dispatched now — l, codie s\n\n", false},
+		{"a ↩️ line of no fixed shape", "↩️ taken back, drop the cleaner\n\n", false},
+		{"a ↩️ line with scope after its date", "↩️ back to Todo 2026-11-24 and add the pill\n\n", false},
+		{"both", "🚀 dispatched 2026-11-23 — l, codie s\n\n↩️ back to Todo 2026-11-23\n\n🚀 dispatched 2026-11-24 — l2, codie s2\n\n", true},
 		{"a 🚀 inside a sentence", "the 🚀 dispatched line is clio's\n\n", false},
 		{"another line that opens with a rocket", "🚀 launched with the lane\n\n", false},
 		{"a ↩️ inside a bullet", "- ↩️ the old way\n\n", false},
@@ -78,5 +84,17 @@ func TestAQuickTicketReSignedAfterItsDispatchLineKeepsItsSeal(t *testing.T) {
 	}
 	if line, recorded, now := sealDrift("wish: FRM-1 · body "+sealed+"\n", stamped); recorded != "" {
 		t.Errorf("seal drift at line %d: %s against %s, want none", line, recorded, now)
+	}
+}
+
+// FRM-700 review: the legacy stamp's hash (linear's escapes taken out, nothing normalized) of the text with the dispatch marks out
+func TestBodySignReadsTheLegacyHashOfTheStrippedText(t *testing.T) {
+	t.Parallel()
+	// three newlines at the end, so the normalized form of the stripped text is another hash than the legacy one
+	above := sealHeader + "cost \\~5\n\n🚀 dispatched 2026-11-24 — l, codie s\n\n" + sealStamp + "\n"
+	legacy := bodyHash(sealHeader + "cost ~5\n\n" + sealStamp + "\n")
+
+	if state, _, _ := bodySign(above + "## signed\n\n✍️ signed · body " + legacy + "\n"); state != signMatch {
+		t.Errorf("the legacy hash of the stripped text reads %s, want %s", state, signMatch)
 	}
 }
