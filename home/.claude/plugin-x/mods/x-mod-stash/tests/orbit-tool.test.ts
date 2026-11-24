@@ -144,7 +144,9 @@ test('an ask text over 90 chars is refused with its length', async ($, on) => {
     world(on);
     await start($);
     const r = await add($, [long, 'yes']);
-    expect((r as { deny?: string }).deny).toMatch(/91 chars; keep it ≤90/);
+    expect((r as { deny?: string }).deny).toMatch(
+        /91 chars; keep it ≤90, subject first, detail he need not read in hiddenNote/,
+    );
 });
 
 test('a follow text over 90 chars is refused', async ($, on) => {
@@ -248,6 +250,37 @@ test("orbit's text names the required area and why, and from with every starter"
         "from: a starter not you, { who: crow, wishkeeper, codie, sixth sense, wing N, main clio, designer, helga, dima's rule, plain cc }",
     );
 });
+
+for (const [what, line, words] of [
+    [
+        'the note never holds what dima must read or pick',
+        'add',
+        'never what he must read or pick',
+    ],
+    [
+        'a list for dima goes in the text',
+        'add',
+        'a list for him goes in the text',
+    ],
+    [
+        'a file for dima goes in link, named in the text',
+        'add',
+        'a file in link (an https/obsidian:// url or path), named in words in the text',
+    ],
+    [
+        'an ask reads plain',
+        'add',
+        'plain: what happens for him, no plan number («(24)») or unexplained label',
+    ],
+    ['a --bg session sets no phases', 'plan', 'a --bg session sets none'],
+] as const)
+    test(`orbit's text says ${what}`, async ($, on) => {
+        world(on);
+        await start($);
+        expect(
+            registered.described.match(new RegExp(`^op ${line}.*$`, 'mu'))?.[0],
+        ).toContain(words);
+    });
 
 /* brief 8 item 1: an ask carries one link dima opens in a click */
 

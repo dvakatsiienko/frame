@@ -262,7 +262,7 @@ export const isGuardGated = (text: string) =>
     );
 const overCapText = (x: string) =>
     [...x].length > ORBIT_TEXT_MAX
-        ? `«${[...x].slice(0, 40).join('')}…» is ${[...x].length} chars; keep it ≤${ORBIT_TEXT_MAX}, subject first, detail in hiddenNote`
+        ? `«${[...x].slice(0, 40).join('')}…» is ${[...x].length} chars; keep it ≤${ORBIT_TEXT_MAX}, subject first, detail he need not read in hiddenNote`
         : undefined;
 // the first text over the cap, named with its length, so the session can shorten that one
 function overCap(op: string, texts: string[]) {
