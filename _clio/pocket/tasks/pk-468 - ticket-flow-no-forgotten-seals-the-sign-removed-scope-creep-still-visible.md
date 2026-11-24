@@ -4,7 +4,7 @@ title: 'ticket flow: no forgotten seals, the sign removed, scope creep still vis
 status: open
 assignee: []
 created_date: '2026-11-24T14:49:00Z'
-updated_date: '2026-11-24T15:57:00Z'
+updated_date: '2026-11-24T16:15:00Z'
 labels:
   - s
   - clio-wing-1
@@ -254,4 +254,22 @@ PK-468:W116 (2026-11-24 17:56, dima): It would only bring a note that that was c
 PK-468:W117 (2026-11-24 17:56, dima): How to keep track of this thing? ❓
 
 PK-468:W118 (2026-11-24 17:56, dima): Maybe create a pocket item because I think that we should keep track of this ticket.
+
+PK-468:W119 (2026-11-24 18:04, dima): [Can re-signs stop now?] maybe then just do as I initially proposed? ❓
+
+PK-468:W120 (2026-11-24 18:04, dima): keep signs, and move them to you instead? ❓
+
+PK-468:W121 (2026-11-24 18:04, dima): so your «ready» proposal.
+
+PK-468:W122 (2026-11-24 18:04, dima): becomes signing? ❓
+
+PK-468:W123 (2026-11-24 18:04, dima): and you should resign/groom each time you update the ticket? ❓
+
+PK-468:W124 (2026-11-24 18:09, dima): [merging a guard or review edit. today that permission can sit inside your sign. I'd never write it, each merge asks you. my re-sign also cancels an old permission, so it fails on the safe side.] Wait so you will not be able to merge without me again? ❓
+
+PK-468:W125 (2026-11-24 18:09, dima): What about my operator override? ❓
+
+PK-468:W126 (2026-11-24 18:09, dima): When it is enabled I want everything to be mergeable without ask and it is currently active
+
+18:15 stays open: signing moved (471e999), still his: the start's seal check, the queue-move trigger, the counter's fix, scope creep, two guard rule lines
 <!-- SECTION:NOTES:END -->
