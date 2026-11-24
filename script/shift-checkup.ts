@@ -136,40 +136,6 @@ const checks: Check[] = [
         },
         why: 'a member pings only when done or blocked — the watch is what wakes clio on a new commit or a green pr',
     },
-    {
-        name: 'fast-jev-compaction',
-        run: () => {
-            const settings = JSON.parse(
-                readFileSync(
-                    join(frame, '_clio/.claude/settings.json'),
-                    'utf8',
-                ),
-            );
-            const on =
-                settings.enabledPlugins?.[
-                    'fast-jev-compaction@fast-jev-compaction'
-                ] === true;
-            const health = spawnSync(
-                join(frame, 'script/op-run.sh'),
-                ['node', join(frame, 'script/jev-report.ts'), '--health'],
-                { encoding: 'utf8', timeout: 20_000 },
-            );
-            const jevUp =
-                health.status === 0 &&
-                !/402|billing|credit/i.test(health.stdout + health.stderr);
-            if (on === jevUp) return true;
-            // a parked trial stays off even when jev answers (dima, 2026-11-01, o70: «keep it parked»)
-            const drive = readFileSync(
-                join(frame, 'docs/test-drive/jev-compaction.md'),
-                'utf8',
-            );
-            if (!on && /^status: frozen$/m.test(drive)) return true;
-            return on
-                ? 'on at clio scope while jev refuses — a compaction would call a dead api; set it false in _clio/.claude/settings.json'
-                : 'jev answers again — turn the plugin back on at clio scope, its test drive prefers it';
-        },
-        why: 'jev compacts at 95 % keeping the last 10 messages when its credit is live; frozen, cc native autocompact + the shift recompact hook carry the shift',
-    },
 ];
 
 let red = 0;

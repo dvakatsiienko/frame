@@ -243,7 +243,6 @@
   "enabledPlugins": {
     "clio@clio": true,
     "neuroarxiv@neuroarxiv": true,
-    "fast-jev-compaction@fast-jev-compaction": false,
     "cc-plugin-you-should-know@builtin": false,
     "x-cloud-chat@x-com": false
   },
