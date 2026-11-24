@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-24T11:07:00Z'
+updated_date: '2026-11-24T11:48:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,14 +17,19 @@ ordinal: 1001
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 f50 system checkup, due since 12 Nov: run clio:system-checkup whole, reds only reach dima (his o3 steer)
-- [ ] #2 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
-- [ ] #3 f53 ⏳ FRM-585 annotate reply text: the copy-then-find probe, then Q1 to dima — waits for: the speak lane
-- [ ] #4 f52 📅 FRM-465 exit 5, the minors half: both repos get a minors pr at the 07:00 window — on: 2026-11-25
-- [ ] #5 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
-- [ ] #6 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #7 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #8 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #9 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #2 f54 FRM-614 blueprint v2: the shape-idea grill with dima, its name picked inside
+- [ ] #3 f55 FRM-582 emoji reactions: its ten questions to dima, three a batch
+- [ ] #4 f56 FRM-691 cpu roast: its seven questions to dima, then it seals
+- [ ] #5 f57 FRM-696 hang-heal: the full shape-idea grill with dima
+- [ ] #6 f58 PK-467 fleet weak-spot hunt: five reads, one page, top 5 — waits for: dima o2
+- [ ] #7 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
+- [ ] #8 f53 ⏳ FRM-585 annotate reply text: the copy-then-find probe, then Q1 to dima — waits for: the speak lane
+- [ ] #9 f52 📅 FRM-465 exit 5, the minors half: both repos get a minors pr at the 07:00 window — on: 2026-11-25
+- [ ] #10 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
+- [ ] #11 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #12 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #13 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #14 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -769,4 +774,6 @@ done 2026-11-24 13:07: f48 📅 wishkeeper card verdict: highs real ≥ 4 in 5 o
 done 2026-11-24 13:07: f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-29
 
 13:07 the 30-day read, on his 12:59 word, 5 days early: x stats over 29 days (27 Oct → 24 Nov) reads knowledge 34 calls (18 read, 16 list; 19 at the last read), probe bare 66 (0 at the last read): both kept, no ask. wishkeeper card adopted on his o3 tick, the verdict line in docs/test-drive/wishkeeper-cache.md
+
+13:48 correction to the 13:0x FRM-465 note (crow's catch): «8 of 8» counts only the patch prs renovate merged itself; bytes #137 and #158 were merged by hand after 2 and 5 days, and since the 18 Nov window change the proof is 3 of 3 (#161, #163, #164)
 <!-- SECTION:NOTES:END -->
