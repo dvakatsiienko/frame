@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T12:51:00Z'
+updated_date: '2026-11-24T13:22:00Z'
 labels:
   - s
   - clio-main
@@ -24,10 +24,11 @@ ordinal: 1000
 - [ ] #6 f99 sealed-ahead.ts: read a chunk placed ahead of a lane running one (herdr prints red though its spec is ready)
 - [ ] #7 f100 mods wisp: the review-rounds counter booked my «next: slice 3» on a slice-less key and escalated round 4 falsely
 - [ ] #8 f101 herdr wisp: a click on a file path or a dir link in chat does nothing, with or without Cmd (his o6)
-- [ ] #9 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #10 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #11 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #12 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #9 f103 x lane landed sees no quick-lane commit whose body lacks its «step N of» line; one ticket closed by hand
+- [ ] #10 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #11 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #12 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #13 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2620,4 +2621,6 @@ PK-349:W2317 (2026-11-24 13:53, dima): Print 5 remaining at once.
 PK-349:W2318 (2026-11-24 13:53, dima): Honestly I'm not really into answering them precisely because I didn't dig into details too much to understand fully how it works.
 
 PK-349:W2319 (2026-11-24 13:53, dima): But I think it works if I check up on your proposals so let's proceed with this mode
+
+done 2026-11-24 15:22: f102 x lane landed sees no commit of a quick lane whose bodies lack «step N of <ticket>»: FRM-691 closed by hand, its spec not archived (FRM-691 Done)
 <!-- SECTION:NOTES:END -->

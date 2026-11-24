@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-24T12:35:00Z'
+updated_date: '2026-11-24T13:23:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,19 +16,20 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f50 system checkup, due since 12 Nov: run clio:system-checkup whole, reds only reach dima (his o3 steer)
-- [ ] #2 f55 FRM-582 emoji reactions: its ten questions to dima, three a batch
-- [ ] #3 f58 PK-467 fleet weak-spot hunt: five reads, one page, top 5 — waits for: dima o2
-- [ ] #4 f59 FRM-696 hang-heal: the full shape-idea grill with dima
-- [ ] #5 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
-- [ ] #6 f53 ⏳ FRM-585 annotate reply text: the copy-then-find probe, then Q1 to dima — waits for: the speak lane
-- [ ] #7 f52 📅 FRM-465 exit 5, the minors half: both repos get a minors pr at the 07:00 window — on: 2026-11-25
-- [ ] #8 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
-- [ ] #9 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #10 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #11 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #12 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
-- [ ] #13 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
+- [ ] #1 f55 FRM-582 emoji reactions: its ten questions to dima, three a batch
+- [ ] #2 f59 FRM-696 hang-heal: the full shape-idea grill with dima
+- [ ] #3 f61 PK-467 fleet weak spots 4 and 5: walked with dima one at a time, the page is with him
+- [ ] #4 f66 system checkup in four sittings: the shape-idea round with dima, his tick given, after the weak spots
+- [ ] #5 f67 writing rules, second pass: the deletion list written for his tick, so the files end smaller
+- [ ] #6 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
+- [ ] #7 f53 ⏳ FRM-585 annotate reply text: the copy-then-find probe, then Q1 to dima — waits for: the speak lane
+- [ ] #8 f52 📅 FRM-465 exit 5, the minors half: both repos get a minors pr at the 07:00 window — on: 2026-11-25
+- [ ] #9 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
+- [ ] #10 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #11 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #12 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #13 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #14 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -781,4 +782,16 @@ done 2026-11-24 13:51: f56 FRM-691 cpu roast: its seven questions to dima, then 
 13:51 FRM-691 handed back to main on her word (dima asked her about its seven questions at 13:50 in her thread): she asks his two, seals it, the stray builds it; my line f56 is out
 
 done 2026-11-24 14:34: f54 FRM-614 blueprint v2: the shape-idea grill with dima, its name picked inside (FRM-614 Todo)
+
+done 2026-11-24 15:19: f58 PK-467 fleet weak-spot hunt: five reads, one page, top 5 — waits for: dima o2 (PK-467 open)
+
+done 2026-11-24 15:19: f50 system checkup, due since 12 Nov: run clio:system-checkup whole, reds only reach dima (his o3 steer)
+
+done 2026-11-24 15:22: f62 ⏳ system checkup turns gradual, each sitting ends in actions: my four-sitting proposal — waits for: dima
+
+done 2026-11-24 15:23: f64 ⏳ system checkup turns gradual, four sittings each ending in actions — waits for: dima o6
+
+done 2026-11-24 15:23: f65 ⏳ writing rules, second pass: a deletion list so the files end smaller — waits for: dima o7
+
+done 2026-11-24 15:23: f63 ⏳ comms check recipe: starts from his comms log, tests his two questions — waits for: dima o5
 <!-- SECTION:NOTES:END -->
