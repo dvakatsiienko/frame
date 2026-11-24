@@ -486,6 +486,33 @@ test('a dispatch taken back reads as not dispatched', async ($, on) => {
     expect(await parked($, w, 2)).toEqual([builder('signed, not dispatched')]);
 });
 
+test('a sample sign block above the real one is not read', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], {
+        card: ONE_LEFT,
+        tickets: {
+            'FRM-2': {
+                description: `## signed\nthe sample\n\n${DISPATCH}\n## signed-label notes\nafter it`,
+                labels: [],
+            },
+        },
+    });
+    expect(await parked($, w, 2, 5)).toEqual([]);
+});
+
+test('a quick ticket has no sign block, its dispatch closes the body', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], {
+        card: ONE_LEFT,
+        tickets: {
+            'FRM-2': {
+                description:
+                    '## why\n\nit hurts\n\n🚀 dispatched 2026-11-24 — chores, codie y',
+                labels: [],
+            },
+        },
+    });
+    expect(await parked($, w, 2, 5)).toEqual([]);
+});
+
 test('a dispatch quoted outside the sign block is no dispatch', async ($, on) => {
     const w = parkedWorld(on, [sixth()], {
         card: ONE_LEFT,
@@ -756,6 +783,47 @@ for (const tag of ['ask', 'done'])
         expect(await parked($, w, 2, 5)).toEqual([]);
     });
 
+test('with quiet comms off no ping is booked, so none reads as open', async ($, on) => {
+    const w = parkedWorld(on, [sixth()], {
+        card: FOUR,
+        store: { ...tagged(R, 'done'), 'quiet-comms': false },
+    });
+    expect(await parked($, w, 2, 5)).toEqual([]);
+});
+
+test('a near-done lane with a [done] and a wait named on another says the [done] alone', async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        card: steps('FRM-1'),
+        store: {
+            ...said(C, 'waiting on 🔎 sixth sense'),
+            ...tagged(C, 'done'),
+        },
+    });
+    expect(await parked($, w, 2)).toEqual([
+        '⚡ 🔧 mods | FRM-1 sent its [done] 10 min ago, unanswered.',
+    ]);
+});
+
+const WING = '🦉🪽 clio: wing 1';
+for (const [wait, runner, wakes, name = runner] of [
+    ['waiting on 🪽 wing 1', WING, 1],
+    ['waiting on 🦉🪽 clio: wing 2', WING, 0],
+    ['waiting on 🦉🪽 clio: wing 2', '🦉 clio', 0],
+    ['waiting on **🦉🪽 ****🦉 clio****: wing 2**', '🦉 clio', 0],
+    ['waiting on **🔎 sixth sense** (clio-lean)', '🦉 clio', 0],
+    ['waiting on 🦉 clio', WING, 1],
+    // a dead wing's lane, fallen to main
+    ['waiting on 🦉🪽 clio: wing 9', '🦉🪽 clio: wing 9', 1, '🦉 clio'],
+] as const)
+    test(`${name} runs the lane of a builder «${wait}»: ${wakes} wake at 10 min`, async ($, on) => {
+        const w = parkedWorld(on, [codie()], {
+            card: { ...FOUR, runner },
+            name,
+            store: said(C, wait),
+        });
+        expect((await parked($, w, 2, 5)).length).toBe(wakes);
+    });
+
 test('a [done] its member worked on after is no parked one', async ($, on) => {
     const w = parkedWorld(on, [sixth()], {
         card: FOUR,
@@ -892,6 +960,47 @@ for (const [why, over, at, handoffs] of [
         });
         expect(await parked($, w, 5)).toEqual([]);
     });
+
+test('a peek that failed is tried at the next poll', async ($, on) => {
+    const w = parkedWorld(on, [codie(AT)], {
+        card: FOUR,
+        handoffs: ['mods-9'],
+        peeksDown: 1,
+        store: refused(C),
+    });
+    expect([await parked($, w, 2), (await pass($, w, 1), w.wakes())]).toEqual([
+        [],
+        [builder('never fired')],
+    ]);
+});
+
+test('a peek that reads several handoffs is tried at the next poll', async ($, on) => {
+    const w = parkedWorld(on, [codie(AT)], {
+        card: FOUR,
+        peekSays: 'several pending handoffs match',
+        store: refused(C),
+    });
+    await parked($, w, 2);
+    w.handoffs.push('mods-9');
+    await pass($, w, 1);
+    expect(w.wakes()).toEqual([builder('never fired')]);
+});
+
+test('a wind asked early in a long turn, its compact lost, is a stuck one', async ($, on) => {
+    const w = parkedWorld(on, [codie(AT)], {
+        card: FOUR,
+        handoffs: ['mods-9'],
+        store: {
+            [`reply:${C}`]: { at: EVEN - MIN },
+            [`wind:${C}`]: {
+                at: EVEN - 8 * MIN,
+                slug: 'mods-9',
+                state: 'refreshing',
+            },
+        },
+    });
+    expect(await parked($, w, 3)).toEqual([builder('never fired')]);
+});
 
 test('a handoff found gone is looked for once', async ($, on) => {
     const w = parkedWorld(on, [codie(AT)], { card: FOUR, store: refused(C) });

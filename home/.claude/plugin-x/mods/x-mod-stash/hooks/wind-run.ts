@@ -429,14 +429,26 @@ async function liveWatch($: EngineInterface, sid: string, isCall: boolean) {
         (w) => !(isCall && stoppedTasks.has(w.id ?? '')),
     )?.name;
 }
-export async function hasHandoff($: EngineInterface, slug: string) {
+async function hasHandoff($: EngineInterface, slug: string) {
+    return (await peekHandoff($, slug)) === 'here';
+}
+// a read that failed, ran out of time or found several handoffs says nothing of this one
+const HANDOFF_GONE = /no pending handoff matches|handoff store is clean/u;
+export async function peekHandoff(
+    $: EngineInterface,
+    slug: string,
+    timeoutMs?: number,
+) {
     const home = await $.env.get('HOME');
     const peek = await $.process
-        .run([`${home}/.local/bin/x`, 'handoff', 'peek', slug], {
-            timeoutMs: 8000,
-        })
+        .run(
+            [`${home}/.local/bin/x`, 'handoff', 'peek', slug],
+            timeoutMs === undefined ? {} : { timeoutMs },
+        )
         .catch(() => undefined);
-    return peek?.exitCode === 0;
+    if (!peek) return 'unread';
+    if (peek.exitCode === 0) return 'here';
+    return HANDOFF_GONE.test(peek.stdout + peek.stderr) ? 'gone' : 'unread';
 }
 async function runWind(
     $: EngineInterface,

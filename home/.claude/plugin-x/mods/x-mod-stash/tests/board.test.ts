@@ -994,6 +994,15 @@ test('an idle row inside the cache hour shows no mark', async ($, on) => {
     expect([text.includes('❄️'), text.includes('⚠')]).toEqual([false, false]);
 });
 
+test('an idle row counts from a turn that ended with no reply', async ($, on) => {
+    fleet(on, {
+        [`reply:${PEER}`]: { at: NOW - 2 * 60 * MIN, turnAt: NOW - 5 * MIN },
+    });
+    const shown = await row($, PEER);
+    expect(shown).toMatch(/💤\s*5m/);
+    expect(shown).not.toContain('❄️');
+});
+
 test('an idle row past the hour whose cache a ping warmed shows no ❄️', async ($, on) => {
     fleet(on, {
         [`reply:${PEER}`]: { at: NOW - 2 * 60 * MIN, pingedAt: NOW - 5 * MIN },

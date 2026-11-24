@@ -40,7 +40,13 @@ export function parkedWorld(
         also = undefined as object | undefined,
         card = {} as Partial<StashLane> | object,
         handoffs = [] as string[],
+        // the clio's own name, a wing's too
+        name = '🦉 clio',
         now = EVEN,
+        // peeks of the handoff that fail before one answers
+        peeksDown = 0,
+        // what a peek that finds no one handoff prints
+        peekSays = 'no pending handoff matches',
         store = {} as Record<string, unknown>,
         tickets = {} as Record<string, Ticket>,
     } = {},
@@ -65,6 +71,7 @@ export function parkedWorld(
     };
     const w = world(on, {
         files,
+        name,
         now,
         peers: members.map(({ name, pid, sid, status = 'idle' }) => ({
             name,
@@ -75,7 +82,10 @@ export function parkedWorld(
         run: (argv) => {
             if (argv[1] === 'handoff') {
                 peeks.push(String(argv[3]));
-                return handoffs.includes(String(argv[3])) ? '' : 1;
+                if (peeks.length <= peeksDown) throw new Error('timed out');
+                return handoffs.includes(String(argv[3]))
+                    ? ''
+                    : { exitCode: 2, stdout: peekSays };
             }
             if (argv[1] === 'linear') {
                 const id = String(argv[3]);
