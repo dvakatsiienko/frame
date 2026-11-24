@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T10:37:00Z'
+updated_date: '2026-11-24T10:48:00Z'
 labels:
   - s
   - clio-main
@@ -22,13 +22,17 @@ ordinal: 1000
 - [ ] #4 f86 mods rider: the guard treats a branch with no `+` line in git cherry as merged, so its delete needs no tick (his o4)
 - [ ] #5 f93 seal drafts with open questions for dima: FRM-582 (9), FRM-691 (7), in ~/frame/.scratch/seal-drafts/
 - [ ] #6 f95 herdr wisp: a triple click in chat selects one visual run, not the whole bullet (his shot 24 Nov 12:29); joins f69
-- [ ] #7 f96 FRM-585 annotate reply text: herdr-app#691 closed, PR 1265 merged 23 Nov, not in 0.1.17; unblocks at herdr next release
+- [ ] #7 f96 FRM-585 annotate reply text: herdr-app#691 done upstream, not in 0.1.17; unblocks at the next herdr release
 - [ ] #8 f97 rex skill names REX_SESSION, which rex dropped (use REX_BLOCK); also --no-open is now --url-only: fix the skill
-- [ ] #9 f94 FRM-582 emoji reactions: its ten questions to dima, three a batch, after boot — on: 2026-11-24
-- [ ] #10 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #11 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #12 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #13 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #9 f98 prompt-groom.ts --linear crashes for helga: no codie linear token in the keychain; run it from my thread or fix
+- [ ] #10 f99 sealed-ahead.ts: read a chunk placed ahead of a lane running one (herdr prints red though its spec is ready)
+- [ ] #11 f100 mods wisp: the review-rounds counter booked my «next: slice 3» on a slice-less key and escalated round 4 falsely
+- [ ] #12 f101 herdr wisp: a click on a file path or a dir link in chat does nothing, with or without Cmd (his o6)
+- [ ] #13 f94 FRM-582 emoji reactions: its ten questions to dima, three a batch, after boot — on: 2026-11-24
+- [ ] #14 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #15 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #16 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #17 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2517,4 +2521,44 @@ PK-349:W2272 (2026-11-24 12:28, dima): [📌 re-login to claude before 1 Dec] wh
 PK-349:W2273 (2026-11-24 12:28, dima): [🟢 wish-loss audit: 30 red → 1 red since 16 Nov (86 checked)] are you sure you should run this audit every day? ❓
 
 PK-349:W2274 (2026-11-24 12:28, dima): [🟢 wish-loss audit: 30 red → 1 red since 16 Nov (86 checked)] i thought it is only weekly? ❓
+
+PK-349:W2275 (2026-11-24 12:39, dima): [It is not parked, it waits on the mac's load. (mods)] during a usual day when we have multiple lanes, modscody in such a case would wait forever because CPU load would never fall off? ❓
+
+PK-349:W2276 (2026-11-24 12:39, dima): [It is not parked, it waits on the mac's load. (mods)] stray paused? ❓
+
+PK-349:W2277 (2026-11-24 12:39, dima): [It is not parked, it waits on the mac's load. (mods)] why did mods codie not resume? ❓
+
+PK-349:W2278 (2026-11-24 12:39, dima): [Speak is running, not parked. Its 🔧 codie started the rerun of the 28 planted faults at 12:18 and waits on that run; i] what is this? ❓
+
+PK-349:W2279 (2026-11-24 12:39, dima): [Speak is running, not parked. Its 🔧 codie started the rerun of the 28 planted faults at 12:18 and waits on that run; i] and why it takes more than 20 min? ❓
+
+PK-349:W2280 (2026-11-24 12:39, dima): [Speak is running, not parked. Its 🔧 codie started the rerun of the 28 planted faults at 12:18 and waits on that run; i] does not look good.
+
+PK-349:W2281 (2026-11-24 12:39, dima): [he could ship something useful during that time.] what is 28 planted faults? ❓
+
+PK-349:W2282 (2026-11-24 12:39, dima): [One thing in them matters to you directly: annotate reply text got unblocked upstream.] very good! mark in ticket.
+
+PK-349:W2283 (2026-11-24 12:39, dima): [🟢 herdr-app#691 closed as done (verified: gh issue view, its pr merged 23 Nov): a mod can now read the text you select and highlight a range in it] select a piece of a message → RMB (context menu) → copy → now copies only the selected stuff? ❓
+
+PK-349:W2284 (2026-11-24 12:39, dima): [🟢 herdr-app#691 closed as done (verified: gh issue view, its pr merged 23 Nov): a mod can now read the text you select and highlight a range in it] and also «reply» (cite) your messages works now? ❓
+
+PK-349:W2285 (2026-11-24 12:39, dima): [herdr 0.1.17, the one you run: a mod can take over clicks on links and paths in a terminal, and rename a pane. Worth a try for opening a file path from a thread's output in your chat] try now, send me something.
+
+PK-349:W2286 (2026-11-24 12:45, dima): [what are the 28 planted faults? The 🔧 codie breaks its own code on purpose in 28 places, one at a time, and checks that a test goes red each time. A fault no test notices is a hole in the tests. Each one reruns the daemon's swap test, about 45 s, so 28 take 20–40 min.] why is such a time-inefficient test needed? ❓
+
+PK-349:W2287 (2026-11-24 12:45, dima): [what are the 28 planted faults? The 🔧 codie breaks its own code on purpose in 28 places, one at a time, and checks that a test goes red each time. A fault no test notices is a hole in the tests. Each one reruns the daemon's swap test, about 45 s, so 28 take 20–40 min.] how often does it run? ❓
+
+PK-349:W2288 (2026-11-24 12:45, dima): [what are the 28 planted faults? The 🔧 codie breaks its own code on purpose in 28 places, one at a time, and checks that a test goes red each time. A fault no test notices is a hole in the tests. Each one reruns the daemon's swap test, about 45 s, so 28 take 20–40 min.] i do not like such inefficient tests.
+
+PK-349:W2289 (2026-11-24 12:45, dima): [what are the 28 planted faults? The 🔧 codie breaks its own code on purpose in 28 places, one at a time, and checks that a test goes red each time. A fault no test notices is a hole in the tests. Each one reruns the daemon's swap test, about 45 s, so 28 take 20–40 min.] they need to be run either once a year or be optimized, like run in parallel while codie does something else.
+
+PK-349:W2290 (2026-11-24 12:45, dima): [what are the 28 planted faults? The 🔧 codie breaks its own code on purpose in 28 places, one at a time, and checks that a test goes red each time. A fault no test notices is a hole in the tests. Each one reruns the daemon's swap test, about 45 s, so 28 take 20–40 min.] same for mods codie.
+
+PK-349:W2291 (2026-11-24 12:45, dima): [what are the 28 planted faults? The 🔧 codie breaks its own code on purpose in 28 places, one at a time, and checks that a test goes red each time. A fault no test notices is a hole in the tests. Each one reruns the daemon's swap test, about 45 s, so 28 take 20–40 min.] it is not good that his waiting is blocked by someone else.
+
+PK-349:W2292 (2026-11-24 12:45, dima): [what are the 28 planted faults? The 🔧 codie breaks its own code on purpose in 28 places, one at a time, and checks that a test goes red each time. A fault no test notices is a hole in the tests. Each one reruns the daemon's swap test, about 45 s, so 28 take 20–40 min.] so mods codie is parked for an hour just because of miscoordination.
+
+PK-349:W2293 (2026-11-24 12:45, dima): [what are the 28 planted faults? The 🔧 codie breaks its own code on purpose in 28 places, one at a time, and checks that a test goes red each time. A fault no test notices is a hole in the tests. Each one reruns the daemon's swap test, about 45 s, so 28 take 20–40 min.] you could spot this and tell mods codie to do something else while speak codie does his inefficient 28 tests stuff.
+
+PK-349:W2294 (2026-11-24 12:45, dima): i think it is another fleet story. coordination gap. which i do not have time to solve atm.
 <!-- SECTION:NOTES:END -->
