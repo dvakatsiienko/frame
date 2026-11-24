@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-24T13:23:00Z'
+updated_date: '2026-11-24T13:35:00Z'
 labels:
   - s
   - clio-wing-1
@@ -18,9 +18,9 @@ ordinal: 1001
 <!-- AC:BEGIN -->
 - [ ] #1 f55 FRM-582 emoji reactions: its ten questions to dima, three a batch
 - [ ] #2 f59 FRM-696 hang-heal: the full shape-idea grill with dima
-- [ ] #3 f61 PK-467 fleet weak spots 4 and 5: walked with dima one at a time, the page is with him
-- [ ] #4 f66 system checkup in four sittings: the shape-idea round with dima, his tick given, after the weak spots
-- [ ] #5 f67 writing rules, second pass: the deletion list written for his tick, so the files end smaller
+- [ ] #3 f66 system checkup in four sittings: the shape-idea round with dima, his tick given, after the weak spots
+- [ ] #4 f67 writing rules, second pass: the deletion list written for his tick, so the files end smaller
+- [ ] #5 f69 my tail checks: red on a small item parked past its day, quiet on labels
 - [ ] #6 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
 - [ ] #7 f53 ⏳ FRM-585 annotate reply text: the copy-then-find probe, then Q1 to dima — waits for: the speak lane
 - [ ] #8 f52 📅 FRM-465 exit 5, the minors half: both repos get a minors pr at the 07:00 window — on: 2026-11-25
@@ -794,4 +794,8 @@ done 2026-11-24 15:23: f64 ⏳ system checkup turns gradual, four sittings each 
 done 2026-11-24 15:23: f65 ⏳ writing rules, second pass: a deletion list so the files end smaller — waits for: dima o7
 
 done 2026-11-24 15:23: f63 ⏳ comms check recipe: starts from his comms log, tests his two questions — waits for: dima o5
+
+done 2026-11-24 15:33: f61 PK-467 fleet weak spots 4 and 5: walked with dima one at a time, the page is with him (PK-467 open)
+
+done 2026-11-24 15:35: f68 FRM-696 hang-heal gets weak spot 5: the page numbers and his 15:32 words join its wish block (FRM-696 Todo)
 <!-- SECTION:NOTES:END -->
