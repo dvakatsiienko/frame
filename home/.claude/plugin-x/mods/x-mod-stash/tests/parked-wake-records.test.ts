@@ -199,6 +199,22 @@ for (const [why, isAnswered, wakes] of [
         expect(w.wakes().length).toBe(wakes);
     });
 
+for (const [why, last] of [
+    ['an [escalate] after it', []],
+    ['two of them after it', ['[escalate] still refused']],
+] as const)
+    test(`an [ask] on no card, ${why}, still wakes for the [ask]`, async ($, on) => {
+        const w = parkedWorld(on, [codie()], {
+            card: ENDED,
+            store: said(C, 'waiting on 🦉 clio', 0),
+        });
+        await start($);
+        for (const line of ['[ask] a?', '[escalate] the gate refuses', ...last])
+            await ping($, line, codie().name);
+        await pass($, w, 11);
+        expect(w.wakes().at(-1)).toContain('sent its [ask]');
+    });
+
 test('a wing’s send closes no ping of main’s', async ($, on) => {
     const w = parkedWorld(on, [codie()], {
         card: ENDED,

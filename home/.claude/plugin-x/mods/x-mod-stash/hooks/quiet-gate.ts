@@ -23,10 +23,10 @@ import {
 import type { ViewDoors } from './keep-warm.ts';
 import { LANE_OWNER } from './orbit-tool.ts';
 import {
+    MESSAGE_KINDS,
     QUIET_HELD_LINE,
+    QUIET_LOGGED_LINE,
     QUIET_NOTICE,
-    QUIET_PUSHED,
-    QUIET_SLIPSTREAMED,
     bareTo,
     isQuietAnswer,
     isQuietPause,
@@ -35,10 +35,11 @@ import {
     messageKind,
     peerPing,
     quietGlued,
-    quietHeldText,
     quietIdleNotices,
     quietKindHeld,
+    quietLogged,
     quietPush,
+    quietSenderLine,
     quietTag,
     rowOfTo,
 } from './quiet.ts';
@@ -98,8 +99,7 @@ export async function quietKindsOff($: EngineInterface) {
 // why a message starts a turn; first, a push spends the slot too
 export async function quietWhy($: EngineInterface, from: string, body: string) {
     // a notice with no report says nothing, so it answers nothing: the member's real answer keeps the slot
-    const isAnswer =
-        body !== '' && (await quietAnswered($, from, quietTag(body)));
+    const isAnswer = body !== '' && (await quietAnswered($, from));
     const why: QuietLogLine['why'] =
         quietPush(body, await quietKindsOff($)) ??
         (isAnswer ? 'answer' : undefined);
@@ -228,7 +228,7 @@ export async function quietHoldPrompt(
                 kind: tag,
                 marks,
                 tag,
-                text: quietHeldText(body),
+                text: body.trim(),
             };
         }),
         // a report opening a tag with its kind switched off waits with its words, its log line still a note's
@@ -238,7 +238,7 @@ export async function quietHoldPrompt(
                 body,
                 from,
                 head,
-                isTagged: kind !== 'none' && kind !== 'progress',
+                isTagged: kind !== 'none',
                 kind,
                 marks: {},
                 tag: QUIET_NOTICE,
@@ -259,17 +259,24 @@ export async function quietHoldPrompt(
         const lines: QuietLogLine[] = [];
         const cut = new Set<number>();
         const judged = [];
-        for (const item of items)
+        for (const item of items) {
+            const isLogged = isOn && quietLogged(item.body) !== undefined;
             judged.push({
                 ...item,
+                isLogged,
                 sid: memberOf(members, item.from)?.base.sid,
-                why: await quietWhy($, item.from, item.body),
+                // a logged line answers nothing, so the slot stays open
+                why: isLogged
+                    ? undefined
+                    : await quietWhy($, item.from, item.body),
             });
+        }
         // a meta prompt starting a turn takes no rewrite (the engine's isMeta docs): all of it holds, or none
         const canCut = !isEngineNotice || judged.every((j) => !j.why);
         for (const {
             from,
             head,
+            isLogged,
             isTagged,
             kind,
             marks,
@@ -286,8 +293,10 @@ export async function quietHoldPrompt(
                 ...(sid ? { sid } : {}),
                 ...marks,
             };
-            // a turn-end note is logged and goes no further, in every mode the switch is on: nobody acted on 10 of 13 in an hour
-            if (!isTagged && tag === QUIET_NOTICE && isOn && canCut && !why) {
+            // a turn-end note is logged and goes no further, in every mode the switch is on: nobody acted on 10 of 13 in an
+            // hour; a bare sw done and the mod's own line the same (FRM-686)
+            const isNote = !isTagged && tag === QUIET_NOTICE && isOn && !why;
+            if ((isLogged || isNote) && canCut) {
                 cut.add(head);
                 lines.push({ ...line, startedTurn: false, verdict: 'logged' });
             } else if (isHolding && canCut && !why) {
@@ -378,7 +387,7 @@ export async function quietSendStart(
     const isAnswer =
         asked !== undefined &&
         isQuietAnswer(asked, at) &&
-        quietTag(message) !== 'progress';
+        !quietLogged(message);
     return {
         at,
         isAnswer,
@@ -411,12 +420,26 @@ export async function quietSendEnd(
     const tag = quietTag(send.message);
     const isPush =
         send.isAnswer || quietPush(send.message, kindsOff) !== undefined;
+    const rows = MESSAGE_KINDS.filter((r) => !kindsOff.includes(r.kind));
+    if (quietLogged(send.message)) {
+        const line = quietSenderLine('logged', rows);
+        return isHeld
+            ? {
+                  held: {
+                      ...answer,
+                      message: QUIET_LOGGED_LINE,
+                      success: true,
+                  },
+                  line,
+              }
+            : { line };
+    }
     const line =
         isPush && !isHeld
-            ? QUIET_PUSHED
+            ? quietSenderLine('pushed', rows)
             : kindsOff.includes(tag)
               ? quietKindHeld(tag)
-              : QUIET_SLIPSTREAMED;
+              : quietSenderLine('slipstreamed', rows);
     return isHeld
         ? { held: { ...answer, message: QUIET_HELD_LINE, success: true }, line }
         : { line };
@@ -461,9 +484,8 @@ async function quietSentTo($: EngineInterface, to: string) {
         [sid]: now,
     });
 }
-// true when this message answers clio's question, and spends the slot; a [progress] neither pushes nor spends it
-async function quietAnswered($: EngineInterface, from: string, tag: string) {
-    if (tag === 'progress') return false;
+// true when this message answers clio's question, and spends the slot
+async function quietAnswered($: EngineInterface, from: string) {
     const asked = await askedOf($);
     const key = memberKey(from);
     const at = asked[key];
@@ -480,7 +502,7 @@ async function isHeldSince($: EngineInterface, since: number) {
     for (const at of [since, now]) {
         const isOurs = (await quietLogDay($, at)).some(
             (l) =>
-                l.verdict === 'held' &&
+                (l.verdict === 'held' || l.verdict === 'logged') &&
                 l.tag !== QUIET_NOTICE &&
                 l.at >= since &&
                 (l.sid
@@ -614,7 +636,6 @@ export async function receiveMessage(
             const isMobile = (await $.state.get(MOBILE)).value === true;
             const isBusyNow = await isTurnBusy($);
             const sid = memberOf(await registry($), from)?.base.sid;
-            const why = await quietWhy($, from, body);
             const line = {
                 arm,
                 at: now,
@@ -623,6 +644,17 @@ export async function receiveMessage(
                 ...(sid ? { sid } : {}),
                 ...marks,
             } as const;
+            // read before the answer slot, which a logged line leaves open
+            if (isOn && quietLogged(body)) {
+                const isLogged = await quietLog($, {
+                    ...line,
+                    startedTurn: false,
+                    verdict: 'logged',
+                });
+                if (!isLogged) throw new Error('the logged line did not log');
+                return { consumed: `quiet comms logged ${from}'s message` };
+            }
+            const why = await quietWhy($, from, body);
             if (isOn && !isMobile && !why) {
                 const q = await quietOf($);
                 // consumed only once both the held list and its log line landed: a ping no store holds is a lost one
@@ -634,7 +666,7 @@ export async function receiveMessage(
                             at: now,
                             from,
                             tag,
-                            text: quietHeldText(body),
+                            text: body.trim(),
                             ...marks,
                         },
                     ],
@@ -685,12 +717,12 @@ export async function receiveMessage(
     });
     return compact ?? next(e);
 }
-// the delivery test: a model-free test [progress] ping to clio through the real peer path; its run reads the log by nonce
+// the delivery test: a model-free test ping to clio through the real peer path; its run reads the log by nonce
 export async function quietDeliveryTest($: EngineInterface, args: string) {
     const nonce = args.trim() || `c${(await $.clock.now()).toString(36)}`;
     const r = await $.session
         .send({
-            text: `[progress] quiet delivery test ${nonce}: a test ping from /quiet-delivery-test, nothing to do`,
+            text: `quiet delivery test ${nonce}: a test ping from /quiet-delivery-test, nothing to do`,
             to: LANE_OWNER,
         })
         .catch((err) => ({

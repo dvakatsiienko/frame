@@ -64,7 +64,7 @@ const logged = (from: string, ms: number, verdict = 'held') => ({
     at: ms,
     from,
     startedTurn: false,
-    tag: 'progress',
+    tag: 'none',
     verdict,
 });
 const PEER_NAME = '☕️ 🔧 FRM-1 code: x';

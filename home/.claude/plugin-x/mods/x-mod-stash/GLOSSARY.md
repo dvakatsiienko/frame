@@ -97,7 +97,7 @@ _Avoid_: guess, assumed ask
 a session's own stash telling it, through one line, when the 5h window changes its rung on the ladder, on while `pace:<session id>` sits in the store without `{ off: true }`, the coordinator's thread on by default; no model between the lines.
 
 **Quiet comms**:
-clio's thread holding a member's message until her next turn or the idle flush instead of starting one, unless it pushes: it opens `[ask]`, `[done]` or `[escalate]`, names dima in words, or is the member's first answer to her within 30 min; the sender's own stash adds the rule to its SendMessage result; on by default, `/quiet off` (or 🎛️) its revert. each of the three tags has its own 🎛️ switch: a **push kind** switched off holds like an untagged line. a **lone shape**, the app's or engine's notice that a member's turn ended, logs one line and goes no further, afk or not or a shift runs.
+clio's thread holding a member's message until her next turn or the idle flush instead of starting one, unless it pushes: it opens `[ask]`, `[done]` or `[escalate]`, opens a later line with `[ask]`, names dima or a decision of hers in words, or is the member's first answer to her within 30 min; the sender's own stash adds the rule to its SendMessage result; on by default, `/quiet off` (or 🎛️) its revert. each of the three tags has its own 🎛️ switch: a **push kind** switched off holds like an untagged line. a **lone shape**, the app's or engine's notice that a member's turn ended, logs one line and goes no further, afk or not or a shift runs.
 _Avoid_: mute, silent mode, filter
 
 _Avoid_: prompt rewriter, polish
@@ -107,7 +107,7 @@ the one store a session keeps every message that waits for it in, whatever holds
 _Avoid_: steer-held list, quiet-held list, the two stores
 
 **Message kind**:
-what a slipstream message is, from the one list in `hooks/quiet.ts` (`MESSAGE_KINDS`): ask, done, escalate, progress, for-dima, untagged, the mod's own held and joined lines, and dima's herdr joins (`herdr-join`); each says how it reads and what it does, and every held message goes in named by its kind after its sender (FRM-583).
+what a slipstream message is, from the one list in `hooks/quiet.ts` (`MESSAGE_KINDS`): ask, done, escalate, for-dima, decision, sw-done, untagged, the mod's own held and joined lines, and dima's herdr joins (`herdr-join`); each row says who sends it, how it reads, what it is for, an example and where it lands (pushes, waits or logged), and the sender's line is rendered from them; every held message goes in named by its kind after its sender (FRM-583).
 _Avoid_: tag (the quiet log's stored word), message type, category
 
 **Herdr join**:

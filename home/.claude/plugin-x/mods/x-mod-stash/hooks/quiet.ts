@@ -3,13 +3,113 @@
 import { type Registered, memberOf } from './roster.ts';
 import { memberKey } from './util.ts';
 
+// the one table of slipstream message kinds (FRM-583, FRM-564:W22, FRM-686:W8): every hold names a held message by its kind
+// from here, the push tags and the sender's line are read from it, and a kind not on it is no kind. `who` may send it,
+// `reads` is how a message is classified as it, `does` what it is for, `lands` what becomes of it in clio's thread;
+// `isTag` a kind its message opens with; `door` when a held message's sender resends it opening this tag
+export const MESSAGE_KINDS = [
+    {
+        does: 'a question for the receiver',
+        door: 'if the coordinator must decide',
+        example: '[ask] land it now, or after the siesta?',
+        isTag: true,
+        kind: 'ask',
+        lands: 'pushes',
+        reads: 'opens with [ask], an emoji before it allowed, or a later line does',
+        who: 'any member',
+    },
+    {
+        does: 'a finished chunk or job',
+        example: '[done] FRM-686 is clean on main',
+        isTag: true,
+        kind: 'done',
+        lands: 'pushes',
+        reads: 'opens with [done]',
+        who: 'any member',
+    },
+    {
+        does: 'a block that climbs a rung',
+        example: '[escalate] the gate refuses every push',
+        isTag: true,
+        kind: 'escalate',
+        lands: 'pushes',
+        reads: 'opens with [escalate] or [🪜 escalate], crow’s name before it allowed',
+        who: 'any member',
+    },
+    {
+        does: 'needs dima, whatever its tag',
+        example: 'the cut is ready, waiting on dima',
+        kind: 'for-dima',
+        lands: 'pushes',
+        reads: 'no push tag, names dima in words: «for dima», «waiting on dima»',
+        who: 'any member',
+    },
+    {
+        does: 'a decision that is clio’s, whatever its tag',
+        example:
+            'round 1 is refuted; one decision for you: keep the path, or not',
+        kind: 'decision',
+        lands: 'pushes',
+        reads: 'no push tag, a decision, ruling or call said to be hers: «a decision for you», «one ruling is yours», «decisions, yours»',
+        who: 'any member',
+    },
+    {
+        does: 'a thread back from a compact, nothing in it for clio',
+        example: 'sw done: handoff ingested, step 3 next',
+        kind: 'sw-done',
+        lands: 'logged',
+        reads: 'one line opening «sw done», with no question, «ask», «for you» or «for dima» in it',
+        who: 'any member',
+    },
+    {
+        does: 'a receipt, a steer or an answer; an answer to her question pushes',
+        example: 'step 2 landed',
+        kind: 'untagged',
+        lands: 'waits',
+        reads: 'none of the above',
+        who: 'any member',
+    },
+    {
+        does: "tells a sender its message waits for the receiver's next turn",
+        example:
+            'held: 🔧 codie is compacting; your message joins its next turn',
+        kind: 'held',
+        lands: 'logged',
+        reads: 'sent by x-mod-stash, never by a member, its whole text one of its lines',
+        who: 'x-mod-stash',
+    },
+    {
+        does: 'tells a sender its held message went in',
+        example:
+            "delivered: your message joined 🔧 codie's first turn after its compact",
+        kind: 'joined',
+        lands: 'logged',
+        reads: 'sent by x-mod-stash, never by a member, its whole text one of its lines',
+        who: 'x-mod-stash',
+    },
+    {
+        does: "dima's own words: join the thread's next turn or tool step, never start one; a slash command only pushes",
+        example: 'use the second one',
+        kind: 'herdr-join',
+        lands: 'waits',
+        reads: "a row herdr's chatter wrote to `~/.claude/shelf/herdr-joins/<sid>.jsonl`",
+        who: 'dima',
+    },
+] as const satisfies readonly MessageRow[];
+export type MessageKind = (typeof MESSAGE_KINDS)[number]['kind'];
+const ROWS: readonly MessageRow[] = MESSAGE_KINDS;
+
 // flags are regional indicators and a keycap is a digit with its mark: neither is Extended_Pictographic
 const EMOJI_RUN = String.raw`^(?:[\s\p{Extended_Pictographic}\p{Regional_Indicator}\p{Emoji_Modifier}\u{E0020}-\u{E007F}\uFE0F\u200D]|[0-9#*]\uFE0F?\u20E3)*`;
 const PUSH_TAG = new RegExp(
-    String.raw`${EMOJI_RUN}\[(ask|done|escalate|🪜 ?escalate)\]`,
+    String.raw`${EMOJI_RUN}\[(${ROWS.flatMap((r) => (r.isTag ? [r.kind] : [])).join('|')}|🪜 ?escalate)\]`,
     'u',
 );
-const PROGRESS_TAG = new RegExp(String.raw`${EMOJI_RUN}\[progress\]`, 'u');
+const FENCE = /^[ \t]*```[\s\S]*?(?:^[ \t]*```|(?![\s\S]))/gm;
+const ASK_LINE = new RegExp(String.raw`${EMOJI_RUN}\[ask\]`, 'mu');
+// crow's notes open with her badge and name; the rest of what she writes waits
+const CROW = /^\s*🐦\u200D⬛/u;
+const CROW_ESCALATE = /^\s*🐦\u200D⬛[ \t]*crow\b[^\n[]*\[(?:🪜 ?)?escalate\]/u;
 const CODE_SPAN = /`[^`]*`/g;
 // the fleet's 🔭 line prints him bold, his badge glued on
 const DIMA = String.raw`(?:\*\*)?(?:[\p{Extended_Pictographic}\u200D\uFE0F]+\s*)?dima`;
@@ -18,98 +118,106 @@ const FOR_DIMA = new RegExp(
     String.raw`(?<![\w/.-])(?:(?<!\bnothing(?:[ \t]+\w+)?[ \t]+)for ${DIMA}(?![\w/-]|\.\w|['’]s tick\b)|(?<!(?:\bnot|n['’]t|\bno longer|\bnothing(?:[ \t]+else)?)[ \t]+)(?:needs|waiting on) ${DIMA}(?![\w/-]|\.\w))`,
     'iu',
 );
+const DECISION =
+    /(?<!\bno(?:[ \t]+\w+)?[ \t]+)\b(?:decisions?|rulings?|calls?)(?:[ \t]+(?:for you|is yours|are yours)|,[ \t]+yours)\b/iu;
+const SW_DONE = new RegExp(String.raw`${EMOJI_RUN}sw done\b.*$`, 'iu');
+const SW_DONE_REAL = /\?|\bask\b|\bfor you\b/iu;
+// the mod's own lines to a sender, written here alone, so a reworded one is still known
+export const MOD_LINES = {
+    compacting: (name: string) =>
+        `held: ${name} is compacting; your message joins its next turn`,
+    delivered: (name: string) =>
+        `delivered: your message joined ${name}'s first turn after its compact`,
+    unwound: (name: string, fill: string) =>
+        `your message to ${name} is held: it is ${fill} and has not wound`,
+    waiting: (name: string) =>
+        `held, waiting: ${name} has taken no turn since its compact; your message joins its next turn`,
+} as const;
+const isModLine = (shape: string, line: string) =>
+    new RegExp(
+        `^${shape.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replaceAll('NAME', '.+')}$`,
+        'u',
+    ).test(line);
 // a sw done line stays held by its words, the lines after it are read
 const SW_DONE_LINE = new RegExp(
-    String.raw`${EMOJI_RUN}(?:\[progress\]\s*)?sw done\b.*$`,
+    String.raw`${EMOJI_RUN}(?:\[[^\]\n]*\]\s*)?sw done\b.*$`,
     'gimu',
 );
-const RULE =
-    'send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan; sw done is the one progress line you still send, held; a receipt or a line needing nothing from clio goes untagged';
 
-const SLIPSTREAMED = "slipstreamed: joins clio's next turn.";
-export const QUIET_SLIPSTREAMED = `${SLIPSTREAMED} ${RULE}`;
-export const QUIET_PUSHED = `pushed: starts clio's turn. ${RULE}`;
+export const QUIET_LOGGED_LINE = 'logged, the coordinator never reads it';
+const VERDICTS = {
+    logged: `${QUIET_LOGGED_LINE}.`,
+    pushed: "pushed: starts clio's turn.",
+    slipstreamed: "slipstreamed: joins clio's next turn.",
+} as const;
 export const QUIET_HELD_LINE = "held, delivered at clio's next turn";
+// the line a sender reads after its result, every word past its verdict from the table's rows
+export function quietSenderLine(
+    verdict: keyof typeof VERDICTS,
+    rows: readonly MessageRow[] = ROWS,
+) {
+    const tags = rows.flatMap((r) =>
+        r.isTag ? [`[${r.kind}] (${r.does})`] : [],
+    );
+    if (!tags.length) return VERDICTS[verdict];
+    const list = [tags.slice(0, -1).join(', '), tags.at(-1)]
+        .filter(Boolean)
+        .join(' or ');
+    const doors = rows.flatMap((r) =>
+        r.door && verdict !== 'pushed'
+            ? [`; ${r.door}, resend it opening [${r.kind}]`]
+            : [],
+    );
+    return `${VERDICTS[verdict]} send only ${list}, the tag first${doors.join('')}`;
+}
 // advising the tag that just held would send them round again
 export const quietKindHeld = (kind: string) =>
-    `${SLIPSTREAMED} [${kind}] is switched off, so resending changes nothing`;
+    `${VERDICTS.slipstreamed} [${kind}] is switched off, so resending changes nothing`;
 const REPLY_MS = 30 * 60_000;
 
-// the one list of slipstream message kinds (FRM-583, FRM-564:W22): every hold names a held message by its kind from here,
-// and a kind not on it is no kind; `reads` is how a message is classified as it, `does` what it does
-export const MESSAGE_KINDS = [
-    {
-        does: "a question for the receiver: starts clio's turn",
-        kind: 'ask',
-        reads: 'opens with [ask], an emoji before it allowed',
-    },
-    {
-        does: "a finished chunk or job: starts clio's turn",
-        kind: 'done',
-        reads: 'opens with [done]',
-    },
-    {
-        does: "a block that climbs a rung: starts clio's turn",
-        kind: 'escalate',
-        reads: 'opens with [escalate] or [🪜 escalate]',
-    },
-    {
-        does: "a step landed: waits for clio's next turn",
-        kind: 'progress',
-        reads: 'opens with [progress]',
-    },
-    {
-        does: "needs dima: starts clio's turn, whatever its tag",
-        kind: 'for-dima',
-        reads: 'no push tag, names dima in words: «for dima», «waiting on dima»',
-    },
-    {
-        does: "a receipt, a steer or an answer: waits for clio's next turn, unless it answers her",
-        kind: 'untagged',
-        reads: 'none of the above',
-    },
-    {
-        does: "the mod's own line to a sender: its message waits for the receiver's next turn",
-        kind: 'held',
-        reads: 'sent by x-mod-stash, never by a member',
-    },
-    {
-        does: "the mod's own line to a sender: its held message went in",
-        kind: 'joined',
-        reads: 'sent by x-mod-stash, never by a member',
-    },
-    {
-        does: "dima's own words: join the thread's next turn or tool step, never start one; a slash command only pushes",
-        kind: 'herdr-join',
-        reads: "a row herdr's chatter wrote to `~/.claude/shelf/herdr-joins/<sid>.jsonl`",
-    },
-] as const;
-export type MessageKind = (typeof MESSAGE_KINDS)[number]['kind'];
-
-// a held message's kind: its quiet tag when quiet comms read one (a [progress] tag leaves its text), else its words
+// a held message's kind: its quiet tag when quiet comms read one, else its words
 export function messageKind(body: string, tag?: string): MessageKind {
     const read = tag ?? quietTag(body);
     if (read === 'ask' || read === 'done' || read === 'escalate') return read;
-    if (read === 'progress') return 'progress';
-    return quietPush(body) === 'for-dima' ? 'for-dima' : 'untagged';
+    const words = quietPush(body);
+    return words === 'for-dima' || words === 'decision'
+        ? words
+        : (quietLogged(body) ?? 'untagged');
+}
+
+// the kind of a line clio's thread logs and never reads
+export function quietLogged(body: string) {
+    const line = body.trim();
+    if (isModLine(MOD_LINES.delivered('NAME'), line)) return 'joined';
+    const held = [
+        MOD_LINES.compacting('NAME'),
+        MOD_LINES.waiting('NAME'),
+        MOD_LINES.unwound('NAME', 'NAME'),
+    ];
+    if (held.some((shape) => isModLine(shape, line))) return 'held';
+    return SW_DONE.test(line) &&
+        !line.includes('\n') &&
+        !SW_DONE_REAL.test(line) &&
+        !FOR_DIMA.test(line)
+        ? 'sw-done'
+        : undefined;
 }
 
 export function quietTag(body: string) {
-    if (PROGRESS_TAG.test(body)) return 'progress';
     const tag = body.match(PUSH_TAG)?.[1];
-    if (!tag) return 'none';
-    return tag.endsWith('escalate') ? 'escalate' : tag;
+    if (tag) return tag.endsWith('escalate') ? 'escalate' : tag;
+    if (CROW.test(body)) return CROW_ESCALATE.test(body) ? 'escalate' : 'none';
+    return ASK_LINE.test(body.replace(FENCE, '')) ? 'ask' : 'none';
 }
 
 // why a message starts a turn by its own words; undefined holds it, unless it answers clio. a kind switched off holds like
 // an untagged line, «for dima» still pushes
 export function quietPush(body: string, kindsOff: readonly string[] = []) {
     const tag = quietTag(body);
-    if (tag !== 'none' && tag !== 'progress' && !kindsOff.includes(tag))
-        return 'tag';
-    return FOR_DIMA.test(body.replace(SW_DONE_LINE, '').replace(CODE_SPAN, ''))
-        ? 'for-dima'
-        : undefined;
+    if (tag !== 'none' && !kindsOff.includes(tag)) return 'tag';
+    const words = body.replace(SW_DONE_LINE, '').replace(CODE_SPAN, '');
+    if (FOR_DIMA.test(words)) return 'for-dima';
+    return !CROW.test(body) && DECISION.test(words) ? 'decision' : undefined;
 }
 
 // clio's checkpoint words to the whole fleet, every clause of a real send (her transcripts, 2026-11-07): no work in them,
@@ -229,10 +337,18 @@ export const isAppPrompt = (text: string) => {
     return !!glued && (glued.heads.length > 0 || !!glued.unread);
 };
 
-export const quietHeldText = (body: string) =>
-    body.replace(PROGRESS_TAG, '').trim();
-
 /* Types */
+
+export type MessageRow = {
+    does: string;
+    door?: string;
+    example: string;
+    isTag?: true;
+    kind: string;
+    lands: 'logged' | 'pushes' | 'waits';
+    reads: string;
+    who: 'any member' | 'dima' | 'x-mod-stash';
+};
 
 type QuietNote = {
     from: string;
@@ -243,8 +359,7 @@ type QuietNote = {
 // a log line of the desktop's own note: no member sent it, so the ledger and the sender's «held» read past it
 export const QUIET_NOTICE = 'notice';
 
-export const QUIET_DELIVERY_TEST =
-    /^\s*\[progress\]\s*quiet delivery test ([\w-]+)/i;
+export const QUIET_DELIVERY_TEST = /^\s*quiet delivery test ([\w-]+):/i;
 
 // every way a member addresses clio in a SendMessage `to`: her name (any ref after it), the socket a reply copies from
 // her envelope's `from`, her session ids — as one grep -E alternation, read wherever `to` sits in the input

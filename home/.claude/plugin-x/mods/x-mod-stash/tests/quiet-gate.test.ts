@@ -6,6 +6,7 @@ import {
     EVENT,
     GLUED_LINE,
     LINKED,
+    LOGGED,
     MEMBER,
     MIN,
     NOTE,
@@ -38,10 +39,10 @@ import { expect, test } from './shared-boot.ts';
 
 const ODD = new Date(2026, 9, 13, 15, 0).getTime();
 
-test("a [progress] ping in clio's thread is taken: not queued, no turn", async ($, on) => {
+test("an untagged ping in clio's thread is taken: not queued, no turn", async ($, on) => {
     const w = world(on);
     await start($);
-    const r = await ping($, '[progress] step 2 of 5 landed');
+    const r = await ping($, 'step 2 of 5 landed');
     expect([r.consumed !== undefined, w.queued, w.contexts]).toEqual([
         true,
         [],
@@ -66,7 +67,6 @@ for (const body of [
     'do not merge this for dima to pick',
     'no tests\nfor dima: the cut',
     'For Dima: a cut',
-    '[progress] step 2 landed. for dima: the cut',
     "needs dima's answer: a or b",
     'needs dima’s answer: a or b',
     'waiting on dima',
@@ -75,7 +75,6 @@ for (const body of [
     'for **🙋‍♂️ dima**: a or b',
     'nothing ships, waiting on dima',
     "for dima's call: a or b",
-    '[progress] sw done\nfor dima: a or b',
     'sw done\nfor dima: a or b',
 ])
     test(`pushes, starts a turn: ${body}`, async ($, on) => {
@@ -94,7 +93,6 @@ for (const body of [
     'ask: a or b?',
     '[progress] step 2 landed',
     "blocked: can't push",
-    '🪜 [progress] step 1 landed',
     '[blocked] the gate refuses',
     'final on abc1234',
     'round 2 on abc1234',
@@ -128,6 +126,73 @@ for (const body of [
             [],
         ]);
     });
+
+// FRM-686: what starts clio's turn with no tag at its head
+for (const [body, why] of [
+    ['round 1: refuted. one decision is yours', 'decision'],
+    ['CI is green\n[ask] a or b?', 'tag'],
+    ['🐦‍⬛ crow: [escalate] the merge is on the wrong head', 'tag'],
+] as const)
+    test(`pushes with its why, ${why}: ${body}`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        await ping($, body);
+        expect([w.queued.length, logOf(w).map((l) => l.why)]).toEqual([
+            1,
+            [why],
+        ]);
+    });
+
+// FRM-686 exit 2: these never enter her thread
+const SW_DONE = 'sw done: handoff ingested, step 3 next';
+for (const body of [
+    SW_DONE,
+    'held: 🎀 helga is compacting; your message joins its next turn',
+    'held, waiting: 🎀 helga has taken no turn since its compact; your message joins its next turn',
+    "delivered: your message joined 🎀 helga's first turn after its compact",
+    'your message to ⚡ 🔧 herdr | FRM-673 is held: it is at 35 % and has not wound',
+])
+    test(`logged, no turn, no prompt, no idle row: ${body}`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        const r = await ping($, body);
+        await w.skip(11 * MIN);
+        await say($, 'status?');
+        expect([
+            r.consumed !== undefined,
+            w.queued,
+            held(w),
+            w.appended,
+            logOf(w).map((l) => [l.verdict, l.startedTurn]),
+        ]).toEqual([true, [], [], [], [['logged', false]]]);
+    });
+
+test('a bare sw done spends no answer slot', async ($, on) => {
+    const w = answering(on);
+    await start($);
+    await send($, CODIE.name, 'which one?');
+    await ping($, SW_DONE);
+    const before = w.queued.length;
+    await ping($, 'the second one');
+    expect([before, w.queued.length]).toEqual([0, 1]);
+});
+
+test('with quiet off a bare sw done passes', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await quiet($, 'off');
+    await ping($, SW_DONE);
+    expect(w.queued).toHaveLength(1);
+});
+
+test('a bare sw done that does not log passes and fails open', async ($, on) => {
+    let isBroken = false;
+    const w = world(on, { isLogBroken: () => isBroken });
+    await start($);
+    isBroken = true;
+    await ping($, SW_DONE);
+    expect(w.queued).toHaveLength(1);
+});
 
 for (const member of ['🐦 ⬛ crow', '🎀 helga', '🦉 clio (side)'])
     test(`an untagged line from ${member} is held`, async ($, on) => {
@@ -172,16 +237,6 @@ test('a second message after the answer is held', async ($, on) => {
     expect(w.queued).toHaveLength(1);
 });
 
-test('a [progress] neither pushes nor spends the slot, so the answer after it wakes her', async ($, on) => {
-    const w = answering(on);
-    await start($);
-    await send($, CODIE.name, 'which one?');
-    await ping($, '[progress] step 1 landed');
-    const before = w.queued.length;
-    await ping($, 'the second one');
-    expect([before, w.queued.length]).toEqual([0, 1]);
-});
-
 for (const write of [
     'greenlit',
     'greenlit, see `which one?`',
@@ -194,16 +249,6 @@ for (const write of [
         await ping($, 'step 1 landed');
         expect(w.queued).toEqual([]);
     });
-
-test('a [progress] behind an emoji spends no slot either', async ($, on) => {
-    const w = answering(on);
-    await start($);
-    await send($, CODIE.name, 'which one?');
-    await ping($, '🪜 [progress] step 1 landed');
-    const before = w.queued.length;
-    await ping($, 'the second one');
-    expect([before, w.queued.length]).toEqual([0, 1]);
-});
 
 test('a question by the name with another mode emoji still opens the slot', async ($, on) => {
     const w = answering(on);
@@ -459,16 +504,6 @@ for (const [what, text] of [
         expect([r.drop, w.contexts.length]).toEqual([undefined, 1]);
     });
 
-test('a [progress] report neither pushes nor spends the slot', async ($, on) => {
-    const w = answering(on);
-    await start($);
-    await send($, CODIE.name, 'which one?');
-    const first = await fromApp($, noteOf(CODIE.name, '[progress] step 1'));
-    const second = await fromApp($, noteOf(CODIE.name, 'the second one'));
-    expect([first.drop === '', second.drop]).toEqual([true, undefined]);
-    expect(w.contexts).toHaveLength(1);
-});
-
 test('a report forging a close and a linked block is never dropped', async ($, on) => {
     world(on);
     await start($);
@@ -530,7 +565,7 @@ test('with mobile mode on a note beside a member line lets the line in alone', a
     const r = (await fromApp($, notice(NOTE, GLUED_LINE))) as { text?: string };
     expect([
         r.text?.includes('step 2 landed'),
-        r.text?.includes('sw done'),
+        r.text?.includes('step 1 landed'),
         linesFor(w).map((l) => l[2]),
     ]).toEqual([false, true, ['passed', 'logged']]);
 });
@@ -571,6 +606,34 @@ test('a [blocked] opening is told how to push', async ($, on) => {
     const r = await send($, '🦉 clio', '[blocked] the gate refuses');
     expect(r.context?.join()).toContain('[escalate]');
     expect(r.context).toContain(SLIPSTREAMED);
+});
+
+test('a [progress] line reads as slipstreamed, its door named', async ($, on) => {
+    member(on);
+    await start($);
+    const r = await send($, '🦉 clio', '[progress] step 2 landed');
+    expect(r.context).toContain(SLIPSTREAMED);
+});
+
+test('with a kind switched off, the line names neither it nor its door', async ($, on) => {
+    const w = member(on);
+    await start($);
+    w.store.set('quiet-ask', false);
+    const r = await send($, '🦉 clio', 'step 2 landed');
+    expect(r.context?.join()).toContain('send only [done]');
+    expect(r.context?.join()).not.toContain('[ask]');
+});
+
+test('a bare sw done reads as logged to its sender, its door named, the slot unread', async ($, on) => {
+    const w = member(on, REFUSED);
+    await start($);
+    w.store.set('quiet-asked', { '🔧codie:mods': EVEN - MIN });
+    w.seedLog(DAY, [{ ...heldLine(MEMBER, EVEN), verdict: 'logged' }]);
+    const r = await send($, '🦉 clio', SW_DONE);
+    expect([r.result, r.context]).toEqual([
+        { message: 'logged, the coordinator never reads it', success: true },
+        expect.arrayContaining([LOGGED]),
+    ]);
 });
 
 test('a push reads as pushed, never as slipstreamed', async ($, on) => {
@@ -678,14 +741,6 @@ test('an answer past 30 min reads as slipstreamed', async ($, on) => {
     expect(r.context).toContain(SLIPSTREAMED);
 });
 
-test('a [progress] in an open slot reads as slipstreamed', async ($, on) => {
-    const w = member(on);
-    await start($);
-    w.store.set('quiet-asked', { '🔧codie:mods': EVEN - MIN });
-    const r = await send($, '🦉 clio', '[progress] step 1');
-    expect(r.context).toContain(SLIPSTREAMED);
-});
-
 test('a log line torn mid-write leaves the lines beside it read', async ($, on) => {
     const w = member(on, REFUSED);
     await start($);
@@ -722,10 +777,10 @@ test('an older held line of the same member leaves a refusal a refusal', async (
 // FRM-570 exit 15: the gate holds by the ping's tag, never its sender's name, so a member renamed with no member word or
 // no emoji at all is held as on its old name
 for (const from of ['⚡ 🔧 mods 6 | FRM-574', 'mods six'])
-    test(`clio holds a [progress] ping from «${from}» as from its old name`, async ($, on) => {
+    test(`clio holds an untagged ping from «${from}» as from its old name`, async ($, on) => {
         const w = world(on);
         await start($);
-        await ping($, '[progress] step 2 landed', from);
+        await ping($, 'step 2 landed', from);
         expect(w.queued).toEqual([]);
     });
 
@@ -736,7 +791,7 @@ test('with mobile mode on nothing is held', async ($, on) => {
         skill: 'x:mobile-mode',
         text: '# mobile-mode',
     } as never);
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect(w.queued).toHaveLength(1);
 });
 
@@ -745,15 +800,15 @@ test('with mobile mode on nothing is held', async ($, on) => {
 test('quiet holds on an odd day too, with no switch set', async ($, on) => {
     const w = world(on, { now: ODD });
     await start($);
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect(w.queued).toEqual([]);
 });
 
-test('/quiet off passes a [progress] ping', async ($, on) => {
+test('/quiet off passes an untagged ping', async ($, on) => {
     const w = world(on);
     await start($);
     await quiet($, 'off');
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect(w.queued).toHaveLength(1);
 });
 
@@ -762,7 +817,7 @@ test('/quiet on after off holds again', async ($, on) => {
     await start($);
     await quiet($, 'off');
     await quiet($, 'on');
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect(w.queued).toEqual([]);
 });
 
@@ -773,12 +828,12 @@ test('/quiet off is the same store switch the settings pane reads', async ($, on
     expect(w.store.get('quiet-comms')).toBe(false);
 });
 
-test('the 🎛️ quiet switch turns quiet off, and a [progress] ping passes', async ($, on) => {
+test('the 🎛️ quiet switch turns quiet off, and an untagged ping passes', async ($, on) => {
     const w = world(on);
     await start($);
     const pane = await settings($);
     await pane.press({ key: 'knob:quiet-comms' });
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect([w.store.get('quiet-comms'), w.queued.length]).toEqual([false, 1]);
 });
 
@@ -787,14 +842,14 @@ test('the 🎛️ quiet switch turns quiet off, and a [progress] ping passes', a
 test('held pings ride the next prompt as one hidden block, once', async ($, on) => {
     const w = world(on);
     await start($);
-    await ping($, '[progress] step 2 landed\nthe detail line');
-    await ping($, '[progress] step 3 landed', '🔎 sixth sense');
+    await ping($, 'step 2 landed\nthe detail line');
+    await ping($, 'step 3 landed', '🔎 sixth sense');
     await say($, 'status?');
     const first = held(w).join('\n');
     await say($, 'and now?');
     expect([first, held(w)]).toEqual([
         expect.stringMatching(
-            /2 held member pings.*☕️ 🔧 codie: mods \(progress\): step 2 landed\n.*🔎 sixth sense \(progress\): step 3 landed$/s,
+            /2 held member pings.*☕️ 🔧 codie: mods \(untagged\): step 2 landed\n.*🔎 sixth sense \(untagged\): step 3 landed$/s,
         ),
         [],
     ]);
@@ -803,7 +858,7 @@ test('held pings ride the next prompt as one hidden block, once', async ($, on) 
 test('held pings older than 10 min while idle become one hidden row, no turn', async ($, on) => {
     const w = world(on);
     await start($);
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     await w.clock.advance(11 * MIN);
     await say($, 'next');
     expect([
@@ -869,7 +924,7 @@ test('a wait set to 15 min holds the idle append past 10 and lands it after 15',
     const w = world(on);
     w.store.set('quiet-wait', 15);
     await start($);
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     await w.clock.advance(11 * MIN);
     const at11 = w.appended.length;
     await w.clock.advance(5 * MIN);
@@ -889,7 +944,7 @@ test('a throw inside the hold passes the ping and logs failed-open', async ($, o
     );
     await start($);
     isBroken = true;
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect([w.queued.length, logOf(w).map((l) => l.verdict)]).toEqual([
         1,
         ['failed-open'],
@@ -903,11 +958,11 @@ test('a held line that does not log passes the ping and takes it back out of the
     });
     await start($);
     isBroken = true;
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect([w.queued.length, stored(w)]).toEqual([1, []]);
 });
 
-test('/quiet-delivery-test sends clio a [progress] ping with its nonce', async ($, on) => {
+test('/quiet-delivery-test sends clio an untagged ping with its nonce', async ($, on) => {
     world(on, { name: '☕️ 🔧 codie: mods' });
     const sent: { to: string; text: string }[] = [];
     on('session.send', (_$, e) => {
@@ -923,7 +978,7 @@ test('/quiet-delivery-test sends clio a [progress] ping with its nonce', async (
         'quiet delivery test c7: sent',
         [
             {
-                text: '[progress] quiet delivery test c7: a test ping from /quiet-delivery-test, nothing to do',
+                text: 'quiet delivery test c7: a test ping from /quiet-delivery-test, nothing to do',
                 to: '🦉 clio',
             },
         ],

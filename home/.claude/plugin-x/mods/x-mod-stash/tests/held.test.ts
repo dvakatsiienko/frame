@@ -9,25 +9,25 @@ import {
 } from './quiet-helpers.ts';
 import { expect, test } from './shared-boot.ts';
 
-test("clio cd'd out of ~/frame/_clio still holds a [progress] ping", async ($, on) => {
+test("clio cd'd out of ~/frame/_clio still holds an untagged ping", async ($, on) => {
     const w = world(on, { cwd: '/home/frame/home/.claude/plugin-x/mods' });
     await start($);
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect(w.queued).toEqual([]);
 });
 
-test('a session the registry names other than clio passes a [progress] ping, even in her dir', async ($, on) => {
+test('a session the registry names other than clio passes an untagged ping, even in her dir', async ($, on) => {
     const w = world(on, { name: '☕️ 🔧 codie: mods' });
     await start($);
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect(w.queued).toHaveLength(1);
 });
 
 test("the held pings reach the store for clio's sessions row", async ($, on) => {
     const w = world(on);
     await start($);
-    await ping($, '[progress] a');
-    await ping($, '[progress] b');
+    await ping($, 'a');
+    await ping($, 'b');
     expect(stored(w).map((p) => [p.from, p.text])).toEqual([
         ['☕️ 🔧 codie: mods', 'a'],
         ['☕️ 🔧 codie: mods', 'b'],
@@ -43,7 +43,7 @@ test('a held list that does not save passes the ping, failed-open, nothing held'
     });
     await start($);
     isBroken = true;
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect([w.queued.length, logOf(w).map((l) => l.verdict)]).toEqual([
         1,
         ['failed-open'],

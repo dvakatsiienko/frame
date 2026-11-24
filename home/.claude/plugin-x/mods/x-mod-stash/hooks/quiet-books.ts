@@ -124,8 +124,13 @@ export async function quietLogAll($: EngineInterface, lines: QuietLogLine[]) {
         .catch(() => undefined);
     return r?.exitCode === 0;
 }
-// a member's newest tagged line, and its last [done] under a later one
-type Line = { at: number; doneAt?: number; tag: string };
+type Ping = { at: number; tag: string };
+// a member's newest tagged line, its last [done] under a later one, and its newest [ask] or [done] under an [escalate]
+type Line = Ping & { doneAt?: number; ping?: Ping };
+const isPingTag = (tag: string) => tag === 'ask' || tag === 'done';
+// an [escalate] pushes by itself, so it answers no [ask] and no [done] before it (clio, FRM-698)
+const pingOf = (line: Line | undefined): Ping | undefined =>
+    line && isPingTag(line.tag) ? line : line?.ping;
 const lineDoneAt = (line: Line | undefined) =>
     line?.tag === 'done' ? line.at : line?.doneAt;
 // a member's newest tagged line, per sid: a parked member's [done] outlives the day's log
@@ -147,7 +152,17 @@ export async function quietKeepTagged(
     for (const { at, sid, tag } of tagged) {
         if (!sid) continue;
         const doneAt = tag === 'done' ? at : lineDoneAt(kept[sid]);
-        kept[sid] = { at, ...(doneAt ? { doneAt } : {}), tag };
+        const under = pingOf(kept[sid]);
+        const ping =
+            under && !isPingTag(tag)
+                ? { at: under.at, tag: under.tag }
+                : undefined;
+        kept[sid] = {
+            at,
+            ...(doneAt ? { doneAt } : {}),
+            ...(ping ? { ping } : {}),
+            tag,
+        };
     }
     await $.store.set(key, kept);
 }
@@ -325,8 +340,8 @@ export async function lastTurnAt(
         : await transcriptTime($, MADE, home, sid);
     return at === undefined ? undefined : Math.max(at, startedAt);
 }
-// the books of a clio's pings, hers and those of the clio a member's record names, dead or not: `open`, a member's newest tagged
-// line, a week back at most, while no send came after it; `doneAt`, when that line is its [done], an untagged receipt or a
+// the books of a clio's pings, hers and those of the clio a member's record names, dead or not: `open`, a member's newest [ask]
+// or [done], a week back at most, while no send came after it; `doneAt`, when that line is its [done], an untagged receipt or a
 // turn-end note after it changing nothing; `settledAt`, the [done] of a codie's reviewer, its card's work done
 // (FRM-698, dima's a): until its clio sends it any line, it is dispatched again, or another card names it
 type Book = { sends: Record<string, unknown>; tagged: Record<string, unknown> };
@@ -358,11 +373,15 @@ export async function quietBooksOf(
             (owner) => books.get(owner) ?? [],
         );
     // a member whose session ended has no record: its line is looked for where a live one's is kept, `by` its card's codie
-    const last = (sid: string, by = sid) =>
-        [...new Set([...booksOf(sid), ...booksOf(by)])]
-            .flatMap(({ tagged }) => (tagged[sid] as Line | undefined) ?? [])
+    const linesOf = (sid: string, by = sid) =>
+        [...new Set([...booksOf(sid), ...booksOf(by)])].flatMap(
+            ({ tagged }) => (tagged[sid] as Line | undefined) ?? [],
+        );
+    const newest = <T extends Ping>(lines: T[]) =>
+        lines
             .filter((line) => now - line.at <= QUIET_PARK_MS)
             .sort((a, b) => b.at - a.at)[0];
+    const last = (sid: string, by = sid) => newest(linesOf(sid, by));
     const sentAt = (sid: string) =>
         Math.max(...booksOf(sid).map(({ sends }) => Number(sends[sid] ?? 0)));
     return {
@@ -371,8 +390,8 @@ export async function quietBooksOf(
             return line?.tag === 'done' ? line.at : undefined;
         },
         open: (sid: string) => {
-            const line = last(sid);
-            return line && sentAt(sid) <= line.at ? line : undefined;
+            const ping = newest(linesOf(sid).flatMap((l) => pingOf(l) ?? []));
+            return ping && sentAt(sid) <= ping.at ? ping : undefined;
         },
         sentAt,
         settledAt: (lane: StashLane, codie: string, reviewer?: string) => {

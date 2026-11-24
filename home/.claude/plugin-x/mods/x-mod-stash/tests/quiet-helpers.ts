@@ -322,11 +322,14 @@ export const CLIO = {
 
 export const MEMBER = '⚡ 🔧 codie: mods';
 
-export const SLIPSTREAMED =
-    "slipstreamed: joins clio's next turn. send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan; sw done is the one progress line you still send, held; a receipt or a line needing nothing from clio goes untagged";
+const ONLY =
+    'send only [ask] (a question for the receiver), [done] (a finished chunk or job) or [escalate] (a block that climbs a rung), the tag first';
 
-export const PUSHED =
-    "pushed: starts clio's turn. send only a question, a finished chunk or a block, led by [ask], [done] or [escalate]; progress stays in your own plan; sw done is the one progress line you still send, held; a receipt or a line needing nothing from clio goes untagged";
+export const SLIPSTREAMED = `slipstreamed: joins clio's next turn. ${ONLY}; if the coordinator must decide, resend it opening [ask]`;
+
+export const LOGGED = `logged, the coordinator never reads it. ${ONLY}; if the coordinator must decide, resend it opening [ask]`;
+
+export const PUSHED = `pushed: starts clio's turn. ${ONLY}`;
 
 export const REFUSED = {
     message:
@@ -393,7 +396,7 @@ export const linesFor = (w: ReturnType<typeof world>, tag?: string) =>
 
 export const IDLE_MEMBER = MEMBER;
 
-export const GLUED_LINE = `<cross-session-message from="local_a" from-name="${IDLE_MEMBER}">\nsw done\n</cross-session-message>`;
+export const GLUED_LINE = `<cross-session-message from="local_a" from-name="${IDLE_MEMBER}">\nstep 1 landed\n</cross-session-message>`;
 
 // x's thread record for this session (`x thread list` writes it): role, lane and ticket by session id
 export const thread = (role: string, over: Record<string, unknown> = {}) => ({

@@ -105,12 +105,27 @@ test('the missed 16:04 send joins the idle flush with no turn', async ($, on) =>
     ]);
 });
 
-test('a glued [progress] message reads without its tag once held', async ($, on) => {
+test('a glued bare sw done is logged, held nowhere', async ($, on) => {
     const w = world(on);
     await start($);
-    await fromAppText($, gluedPrompt(message('[progress] step 2 landed')));
-    await say($, 'status?');
-    expect(held(w).join('\n')).toContain(`${MEMBER} (progress): step 2 landed`);
+    const r = await fromAppText(
+        $,
+        gluedPrompt(message('sw done: step 3 next')),
+    );
+    expect([
+        r.drop === '',
+        w.contexts,
+        stored(w),
+        logOf(w).map((l) => [l.tag, l.verdict]),
+    ]).toEqual([
+        true,
+        [],
+        [],
+        [
+            ['none', 'logged'],
+            ['notice', 'logged'],
+        ],
+    ]);
 });
 
 test('a push and an untagged message at once: the push stays in the prompt', async ($, on) => {
@@ -885,7 +900,7 @@ test('a send the gate held reads held, its kind back on by the end', async ($, o
 test('a side-sessions notice beside a pushing message leaves that turn', async ($, on) => {
     const w = world(on);
     await start($);
-    const push = GLUED_LINE.replace('sw done', '[done] step 2');
+    const push = GLUED_LINE.replace('step 1 landed', '[done] step 2');
     const r = await fromAppText($, notice(push, EVENT));
     expect([
         r.drop,
@@ -900,7 +915,7 @@ test('a member named the app beside a push is judged as a member', async ($, on)
     const r = await fromAppText(
         $,
         notice(
-            GLUED_LINE.replace('sw done', '[done] step 2'),
+            GLUED_LINE.replace('step 1 landed', '[done] step 2'),
             noteOf('the app', 'step 2 landed'),
         ),
     );

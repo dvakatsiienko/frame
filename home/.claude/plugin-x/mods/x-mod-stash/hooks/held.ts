@@ -6,6 +6,7 @@ import type { EngineInterface } from 'claude-code';
 import type { QuietPing, StashWind } from '../types/stash.d.ts';
 import { type ViewDoors, prepareTurn } from './keep-warm.ts';
 import {
+    MOD_LINES,
     QUIET_NOTICE,
     isQuietPause,
     messageKind,
@@ -189,7 +190,12 @@ function holdMessage(
 // a message held this long for a codie that has not wound tells its sender once; the hold stays (dima's o62)
 const STEER_TELL_MS = 10 * 60_000;
 const steerTellLine = (name: string, context: unknown) =>
-    `your message to ${name} is held: it is at ${typeof context === 'number' ? `${Math.round(context)} %` : `past ${STEER_HOLD_AT} %`} and has not wound`;
+    MOD_LINES.unwound(
+        name,
+        typeof context === 'number'
+            ? `at ${Math.round(context)} %`
+            : `past ${STEER_HOLD_AT} %`,
+    );
 const steerHoldNote = (from: string, context: number) =>
     `🐦‍🔥 ${from}'s message is held for your second wind: your context reads ${Math.round(context)} %, past ${STEER_HOLD_AT} %. ${WIND_WORDS} finish the step you are on, then ${WIND_HOW} the held message joins your first turn after the pickup.`;
 // each held message names its kind from the one list (FRM-583), after its sender
@@ -200,12 +206,8 @@ const steerLine = (s: HeldMessage) => {
         ? `🌀 held while this thread compacted, delivered now — ${who}`
         : `🐦‍🔥 held for your second wind, delivered now — ${who}`;
 };
-const heldWaitingLine = (name: string) =>
-    `held, waiting: ${name} has taken no turn since its compact; your message joins its next turn`;
 const heldWaitingText = (since: number) =>
     `waiting: held messages for this thread's next turn, since ${new Date(since).toTimeString().slice(0, 5)}`;
-const steerDeliveredLine = (name: string) =>
-    `delivered: your message joined ${name}'s first turn after its compact`;
 // the turn's end lets the engine settle before the compact runs
 export const WIND_DELAY_MS = 1_000;
 const QUIET_STUCK_MS = 2 * 60_000;
@@ -273,7 +275,7 @@ async function holdForCompact(
     if (reply)
         await $.session
             .send({
-                text: `held: ${name} is compacting; your message joins its next turn`,
+                text: MOD_LINES.compacting(name),
                 to: reply,
             })
             .catch(() => undefined);
@@ -425,7 +427,7 @@ async function tellDelivered($: EngineInterface, steers: HeldMessage[]) {
         ),
     );
     if (!told.size) return;
-    const line = steerDeliveredLine((await sessionName($)) ?? 'this session');
+    const line = MOD_LINES.delivered((await sessionName($)) ?? 'this session');
     for (const to of told)
         await $.session.send({ text: line, to }).catch(() => undefined);
 }
@@ -491,7 +493,7 @@ async function tellWaiting($: EngineInterface, view: ViewDoors) {
         return isSaved ? late : [];
     });
     if (!due.length) return;
-    const line = heldWaitingLine((await sessionName($)) ?? 'this session');
+    const line = MOD_LINES.waiting((await sessionName($)) ?? 'this session');
     for (const to of new Set(due.flatMap((m) => (m.reply ? [m.reply] : []))))
         await $.session.send({ text: line, to }).catch(() => undefined);
     // the 🔭 line the band and every board read, until the next reply writes its own

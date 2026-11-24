@@ -450,7 +450,7 @@ test("the old stores are read at the land: a compact's and quiet's held lists ea
 });
 
 // exit 2: a member ping quiet comms holds while clio's thread compacts goes in once, by quiet's own release
-const QUIET_PING = '[progress] step 2 landed';
+const QUIET_PING = 'step 2 landed';
 const quietSeen = (w: ReturnType<typeof receiveWorld>) =>
     [...w.lines, ...w.prompts, ...w.appended].join('\n').split('step 2 landed')
         .length - 1;
@@ -567,7 +567,7 @@ const kindsIn = (text: string) =>
     [...text.matchAll(/ \(([\w-]+)\): /g)].map((m) => m[1] ?? '');
 const TWINS = [
     ['round 9 on abc1234', 'untagged'],
-    ['[progress] step 2 landed', 'progress'],
+    ['step 2 landed', 'untagged'],
     ['for dima: a or b', 'for-dima'],
     ['[ask] a or b?', 'ask'],
 ] as const;
@@ -577,12 +577,12 @@ for (const [body, kind] of [
     ['[ask]', 'ask'],
     ['🪜 [escalate] stuck', 'escalate'],
     ['[🪜 escalate] stuck', 'escalate'],
-    ['[progress] sw done\nfor dima: a or b', 'progress'],
+    ['sw done\nfor dima: a or b', 'for-dima'],
     ['`for dima` in code', 'untagged'],
     ['[Ask] a?', 'untagged'],
     ['[done', 'untagged'],
     ['waiting on dima', 'for-dima'],
-    ['[progress]', 'progress'],
+    ['[progress]', 'untagged'],
 ] as const)
     test(`a message reads as its kind from the list: ${JSON.stringify(body)} is ${kind}`, () => {
         expect([messageKind(body), KINDS.includes(kind)]).toEqual([kind, true]);
@@ -608,13 +608,10 @@ test("a wind's held message names its kind from the list", async ($, on) => {
     w.store.set(`context:${SID}`, 62);
     await start($);
     await fromPeer($, 'next: r6');
-    await fromPeer($, '[progress] the gate is green');
+    await fromPeer($, '[ask] a or b?');
     w.store.set('shown', { 'stash.second-wind': false });
     await say($, 'his prompt');
-    expect(kindsIn(delivered(w.lines).join('\n'))).toEqual([
-        'untagged',
-        'progress',
-    ]);
+    expect(kindsIn(delivered(w.lines).join('\n'))).toEqual(['untagged', 'ask']);
 });
 
 test('quiet comms name each held ping by its kind, a push kind switched off kept as its kind', async ($, on) => {
@@ -630,7 +627,7 @@ test('quiet comms name each held ping by its kind, a push kind switched off kept
                 .join('\n')
                 .replaceAll(/^- \d\d:\d\d /gm, ' '),
         ),
-    ).toEqual(['untagged', 'progress', 'ask']);
+    ).toEqual(['untagged', 'untagged', 'ask']);
 });
 
 // FRM-583 exit 4: a compact's held message no turn takes inside the deadline never ends in silence

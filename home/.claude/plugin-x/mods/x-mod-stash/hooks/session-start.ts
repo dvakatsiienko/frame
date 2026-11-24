@@ -143,7 +143,7 @@ export async function startSession(
         await $.command
             .register({
                 description:
-                    'quiet comms delivery test: send clio a test [progress] ping, no model; `pnpm mods:quiet-delivery-test` reads held → delivered',
+                    'quiet comms delivery test: send clio a test ping, no model; `pnpm mods:quiet-delivery-test` reads held → delivered',
                 name: 'quiet-delivery-test',
             })
             .catch(() =>

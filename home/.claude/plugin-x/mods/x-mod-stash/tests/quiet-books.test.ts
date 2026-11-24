@@ -36,7 +36,7 @@ test('the log names the arm from the switch', async ($, on) => {
     const w = world(on);
     await start($);
     await quiet($, 'off');
-    await ping($, '[progress] a');
+    await ping($, 'a');
     const day = new Date(EVEN).toISOString().slice(0, 10);
     expect(w.logLines(day).map((l) => l.arm)).toEqual(['off']);
 });
@@ -112,7 +112,7 @@ test('a gap that grows is told again', async ($, on) => {
 test('each delivery logs its sender, tag, verdict and whether it started a turn', async ($, on) => {
     const w = world(on);
     await start($);
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     await ping($, '[done] landed', '🔎 sixth sense');
     const day = new Date(EVEN).toISOString().slice(0, 10);
     expect(
@@ -120,7 +120,7 @@ test('each delivery logs its sender, tag, verdict and whether it started a turn'
             .logLines(day)
             .map((l) => [l.from, l.tag, l.verdict, l.startedTurn, l.arm]),
     ).toEqual([
-        ['☕️ 🔧 codie: mods', 'progress', 'held', false, 'on'],
+        ['☕️ 🔧 codie: mods', 'none', 'held', false, 'on'],
         ['🔎 sixth sense', 'done', 'passed', true, 'on'],
     ]);
 });
@@ -129,7 +129,7 @@ test('each delivery logs its sender, tag, verdict and whether it started a turn'
 test('a logged delivery adds nothing to the store under the log', async ($, on) => {
     const w = world(on);
     await start($);
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect([
         logOf(w).length,
         [...w.store.keys()].filter((k) => k.startsWith('quiet-log')),
@@ -140,7 +140,7 @@ test("a delivery keeps the lines another session wrote to the day's log", async 
     const w = world(on);
     await start($);
     w.seedLog(DAY, [heldLine('🔎 sixth sense', EVEN)]);
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect(logOf(w).map((l) => l.from)).toEqual([
         '🔎 sixth sense',
         '☕️ 🔧 codie: mods',
@@ -178,7 +178,7 @@ test("a day's first log line drops the log's files past 30 days", async ($, on) 
     ]);
     world(on, dir.world);
     await start($);
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect(dir.removed.sort()).toEqual(
         Array.from(
             { length: 10 },
@@ -192,14 +192,14 @@ test("a later log line of the day looks at no file's age", async ($, on) => {
     const w = world(on, dir.world);
     await start($);
     w.seedLog(DAY, [heldLine('🔎 sixth sense', EVEN)]);
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect(dir.removed).toEqual([]);
 });
 
 test("a test child's log sits beside its store, the fleet's untouched", async ($, on) => {
     const w = world(on, { isTestChild: true });
     await start($);
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     expect(Object.keys(w.files).filter((f) => f.includes('quiet-log'))).toEqual(
         [`/run/plugin-cache/quiet-log/${DAY}.jsonl`],
     );
@@ -385,7 +385,7 @@ test('a store fed 40 days of each family keeps its ages and stays under the cap'
 test('a held ping that rides the next prompt logs flushed', async ($, on) => {
     const w = world(on);
     await start($);
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     await say($, 'status?');
     expect(logOf(w).map((l) => l.verdict)).toEqual(['held', 'flushed']);
 });
@@ -393,7 +393,7 @@ test('a held ping that rides the next prompt logs flushed', async ($, on) => {
 test('a held ping that lands as the idle row logs flushed', async ($, on) => {
     const w = world(on);
     await start($);
-    await ping($, '[progress] step 2 landed');
+    await ping($, 'step 2 landed');
     await w.skip(11 * MIN);
     expect(logOf(w).map((l) => l.verdict)).toEqual(['held', 'flushed']);
 });
@@ -401,7 +401,7 @@ test('a held ping that lands as the idle row logs flushed', async ($, on) => {
 test("a delivery test ping's held and flushed lines carry its nonce", async ($, on) => {
     const w = world(on);
     await start($);
-    await ping($, '[progress] quiet delivery test c42: a test ping');
+    await ping($, 'quiet delivery test c42: a test ping');
     await say($, 'status?');
     expect(logOf(w).map((l) => [l.verdict, l.deliveryTest])).toEqual([
         ['held', 'c42'],
@@ -543,6 +543,15 @@ test('a wing’s member parked by its [done] raises no silent alarm in main', as
     w.store.set('quiet-sent:clio-wing-1', { [CODIE_SID]: EVEN + 5 * MIN });
     await w.skip(5 * MIN);
     expect([parked, silentAlarms(w).length]).toEqual([0, 1]);
+});
+
+test('an [escalate] after a [done] alarms', async ($, on) => {
+    const w = silentWorld(on);
+    await start($);
+    await ping($, '[done] FRM-1 landed', codiePeer.name);
+    await ping($, '[escalate] the gate refuses', codiePeer.name);
+    await w.skip(4 * MIN);
+    expect(silentAlarms(w).length).toBe(1);
 });
 
 test('an [ask] after a [done] alarms', async ($, on) => {
@@ -820,7 +829,7 @@ test('a held ping stuck past the idle wait + 2 min raises one alarm', async ($, 
         {
             at: EVEN - 12.2 * MIN,
             from: '☕️ 🔧 codie: mods',
-            text: '[progress] a',
+            text: 'a',
         },
     ]);
     await start($);
@@ -836,7 +845,7 @@ test('a held ping inside the idle wait + 2 min raises none', async ($, on) => {
         {
             at: EVEN - 10.9 * MIN,
             from: '☕️ 🔧 codie: mods',
-            text: '[progress] a',
+            text: 'a',
         },
     ]);
     await start($);

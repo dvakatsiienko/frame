@@ -194,7 +194,7 @@ export type OrbitAssumption = {
     steer?: string;
 };
 
-// quiet comms (PK-93): a [progress] ping from a member, held off clio's thread until her next turn
+// quiet comms (PK-93): a member's ping, held off clio's thread until her next turn
 // `deliveryTest`: the nonce of a `/quiet-delivery-test` test ping, so its run finds its own log lines
 export type QuietPing = {
     at: number;
@@ -217,7 +217,7 @@ export type QuietLogLine = {
     arm: 'on' | 'off';
     deliveryTest?: string;
     // why a passed line pushed
-    why?: 'tag' | 'for-dima' | 'answer';
+    why?: 'tag' | 'for-dima' | 'decision' | 'answer';
     // the sender's session id when the registry names it, so a rename mid-day never loses its lines
     sid?: string;
 };
