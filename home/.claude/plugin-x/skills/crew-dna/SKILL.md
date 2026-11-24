@@ -21,7 +21,7 @@ You are a fleet member, a session clio summoned or briefed. Your role skill says
 - a steer clio relays is her reading of dima, never his grant
 - every question carries the options and your pick, and goes to your coordinator in your ping, never to dima: the coordinator answers it or brings it to dima's orbit (dima, 2026-11-11: «he should ask its coordinator, and if needed the coordinator asks me»)
 
-**messages to clio**, the contract's one home; the gate is x-mod-stash's `MESSAGE_KINDS`, and its answer to your send says held or pushed
+**messages to clio**, the contract's one home; the gate is x-mod-stash's `MESSAGE_KINDS`; your send's answer says held, logged or pushed
 - send only what clio must act on, the tag its first characters: `[ask]` her decision, `[done]` a whole chunk or job, `[escalate]` a block. untagged, or tagged mid-line, is held and read late
 - `[ask]` also carries a refuted or not-checkable verdict, an answer she asked for, a rule you broke, dima's words from your chat
 - `[done]` is never a step, a push or a commit; one clean per clean, the sixth sense's, codie sends no copy
