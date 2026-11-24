@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T11:46:00Z'
-updated_date: '2026-11-24T12:19:00Z'
+updated_date: '2026-11-24T12:35:00Z'
 labels:
   - s
   - clio-wing-1
@@ -88,4 +88,48 @@ PK-467:W32 (2026-11-24 13:58, dima): [the checkup fixes small things in place an
 PK-467:W33 (2026-11-24 13:59, dima): let's first create a good run plan then run
 
 14:19 first run done: five reads 14:05 → 14:13, the page drafted, a blind check (36 held, 19 reworded, 6 cut or tagged) and crow's note (three headlines too strong) folded before publish. page: https://claude.ai/artifact/VipCGUzikkCUHZxftAuJK9 ; reads and blind-check in the wing tree's .scratch/fleet-weak-spots/. left: his ticks on the actions; the fleet-weak-spots entry on the checkup's plate
+
+PK-467:W34 (2026-11-24 14:30, dima): spot 1
+
+PK-467:W35 (2026-11-24 14:30, dima): No I don't agree with your proposal in O3.
+
+PK-467:W36 (2026-11-24 14:30, dima): By asking to find a bottleneck I meant a different thing than you folded out.
+
+PK-467:W37 (2026-11-24 14:30, dima): In my mind the bottleneck is not the fact that Speak app is hard to start because we have a lot of stuff to do in mods and other meta work (which is actually partially also true).
+
+PK-467:W38 (2026-11-24 14:30, dima): The problem with our meta work is not that we have a lot of it.
+
+PK-467:W39 (2026-11-24 14:30, dima): The problem is that we solve it inefficiently because of all of those problems: the guard that we were building for months and deleting the CPU-roasted tests that made lanes work for a very long time.
+
+PK-467:W40 (2026-11-24 14:30, dima): They hang it, members, and the actual stuff that we do, the scope, because most of the stuff in the mod scope is proposed by Clio.
+
+PK-467:W41 (2026-11-24 14:30, dima): I usually tick items in Orbit when you propose to create tickets and do that mostly blindly because I fully don't know the system under the mods, what we have there.
+
+PK-467:W42 (2026-11-24 14:30, dima): The main problem is that I lack the architecture, a natural understanding of what's happening under the hood.
+
+PK-467:W43 (2026-11-24 14:30, dima): That's why I asked for the mods big picture and the blueprint v2.
+
+PK-467:W44 (2026-11-24 14:30, dima): I expect these apps to help me to see the broader picture and understand how stuff works under the hood more precisely and hopefully to help me to formulate the scope for different parts of the fleet more clearly.
+
+PK-467:W45 (2026-11-24 14:30, dima): This is the bottleneck: mostly the wrong thing that we do, and because our system now utilizes the mods a lot, we do a lot of mods but I'm not fully aware of the precision of the scope in mods.
+
+PK-467:W46 (2026-11-24 14:30, dima): I don't want to freeze the mods and tooling.
+
+PK-467:W47 (2026-11-24 14:30, dima): I want to optimize it.
+
+PK-467:W48 (2026-11-24 14:34, dima): Yes I think that you should sharpen your weighing when you propose to me that I create tickets for mods because currently mods keep growing while we're solving.
+
+PK-467:W49 (2026-11-24 14:34, dima): They are never solved, which is natural for mods because it's kind of under-the-hood tooling/meta stuff.
+
+PK-467:W50 (2026-11-24 14:34, dima): When combined with not precise decisions of what we code, it appears that you keep proposing stuff to do that is half working and the work never stops.
+
+PK-467:W51 (2026-11-24 14:34, dima): Plus the lack of good architectural shape for mods makes all of this work.
+
+PK-467:W52 (2026-11-24 14:34, dima): In my estimate that predicted number is somewhere around 60% to 70% inefficient.
+
+PK-467:W53 (2026-11-24 14:34, dima): let's see next spot
+
+PK-467:W54 (2026-11-24 14:34, dima): Yes let's plan them but maybe not today because I have more important stuff to grill on.
+
+PK-467:W55 (2026-11-24 14:34, dima): Let's plan the blueprint and big picture slightly after all other stuff
 <!-- SECTION:NOTES:END -->
