@@ -6,6 +6,7 @@ import {
     FORGED,
     MEMBER,
     MIN,
+    PID,
     POLL,
     SENT_1604,
     SID,
@@ -29,6 +30,7 @@ import {
     world,
 } from './quiet-helpers.ts';
 import { expect, test } from './shared-boot.ts';
+import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 test('the log names the arm from the switch', async ($, on) => {
     const w = world(on);
@@ -517,6 +519,31 @@ for (const [why, tagged, sent, count] of [
             silentAlarms(w).filter((t) => t.startsWith(codiePeer.name)).length,
         ).toBe(count);
     });
+
+test('a wing’s member parked by its [done] raises no silent alarm in main', async ($, on) => {
+    const w = silentWorld(on, {
+        files: {
+            [THREADS_FILE]: threadsFile([
+                { pid: PID, sessionId: SID, ...recordOf('🦉 clio') },
+                {
+                    coordinator: 'clio-wing-1',
+                    pid: codiePeer.pid,
+                    role: 'codie',
+                    sessionId: CODIE_SID,
+                },
+            ]),
+        },
+    });
+    await start($);
+    w.store.set('quiet-tagged:clio-wing-1', {
+        [CODIE_SID]: { at: EVEN, tag: 'done' },
+    });
+    await w.skip(5 * MIN);
+    const parked = silentAlarms(w).length;
+    w.store.set('quiet-sent:clio-wing-1', { [CODIE_SID]: EVEN + 5 * MIN });
+    await w.skip(5 * MIN);
+    expect([parked, silentAlarms(w).length]).toEqual([0, 1]);
+});
 
 test('an [ask] after a [done] alarms', async ($, on) => {
     const w = silentWorld(on);
