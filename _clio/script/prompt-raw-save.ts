@@ -3,6 +3,7 @@
 import { spawn } from 'node:child_process';
 import {
     appendFileSync,
+    copyFileSync,
     existsSync,
     mkdirSync,
     readFileSync,
@@ -168,6 +169,25 @@ export function newJoins(joinsText: string, seen: ReadonlySet<string>) {
     return fresh;
 }
 
+// herdr writes a message's files as its last lines, one backslash before each special character (attach.js `promptPath`);
+// each still there is copied beside the day file and its line names the copy, since a shot's own folder is cleaned
+export function keptFiles(text: string, id: string, dir: string) {
+    const lines = text.split('\n');
+    for (let i = lines.length - 1; i >= 0; i--) {
+        const source = (lines[i] ?? '').replace(/\\(.)/gu, '$1');
+        if (!path.isAbsolute(source) || !existsSync(source)) break;
+        const copy = path.join(dir, `${id}-${i}-${path.basename(source)}`);
+        try {
+            mkdirSync(dir, { recursive: true });
+            copyFileSync(source, copy);
+            lines[i] = copy;
+        } catch {
+            // a folder or an unreadable file keeps its own path
+        }
+    }
+    return lines.join('\n');
+}
+
 // the first run of a session only marks the old lines seen, so a backfill never lands in today's file; never throws
 function saveHerdrJoins(
     sessionId: string | undefined,
@@ -199,7 +219,14 @@ function saveHerdrJoins(
             appendFileSync(
                 file,
                 fresh
-                    .map((j) => entryFor(`(herdr-typed)\n${j.text}`, now))
+                    .map(({ id, text }) => {
+                        const kept = keptFiles(
+                            text,
+                            id,
+                            file.replace(/\.md$/, '-files'),
+                        );
+                        return entryFor(`(herdr-typed)\n${kept}`, now);
+                    })
                     .join(''),
             );
         }

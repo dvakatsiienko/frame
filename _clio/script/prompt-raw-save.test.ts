@@ -4,6 +4,7 @@ import {
     mkdirSync,
     mkdtempSync,
     readFileSync,
+    unlinkSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -329,6 +330,37 @@ describe('the hook saves herdr-typed joins', () => {
         expect(day).toMatch(
             /^## \d\d:\d\d\n\n\(herdr-typed\)\ntyped in herdr\n\n$/,
         );
+    });
+
+    test('a file a message carries is copied beside the day file', () => {
+        const { dayFile, joinsFile, run } = fixture();
+        writeFileSync(joinsFile, '');
+        run();
+        const shots = mkdtempSync(join(tmpdir(), 'shots-'));
+        const shot = join(shots, 'Shot 1 (2).png');
+        writeFileSync(shot, 'pixels');
+        const line = shot.replace(/([\s()])/g, '\\$1');
+        writeFileSync(
+            joinsFile,
+            `${JSON.stringify({ id: 'a', text: `look at this\n${line}` })}\n`,
+        );
+        run();
+        unlinkSync(shot);
+        const copy = readFileSync(dayFile, 'utf8').trim().split('\n').at(-1);
+        expect(copy).toContain('-files/a-1-Shot 1 (2).png');
+        expect(readFileSync(copy ?? '', 'utf8')).toBe('pixels');
+    });
+
+    test('a file already gone keeps the text as typed, the lines above it too', () => {
+        const { dayFile, joinsFile, run } = fixture();
+        writeFileSync(joinsFile, '');
+        run();
+        const real = join(mkdtempSync(join(tmpdir(), 'shots-')), 'real.png');
+        writeFileSync(real, 'pixels');
+        const text = `look at this\n${real}\n/nowhere/Shot\\ 1.png`;
+        writeFileSync(joinsFile, `${JSON.stringify({ id: 'a', text })}\n`);
+        expect(run().status).toBe(0);
+        expect(readFileSync(dayFile, 'utf8')).toContain(text);
     });
 
     test('a torn line is skipped, the next whole one saved', () => {
