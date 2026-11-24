@@ -15,7 +15,7 @@ one problem's arc over days, told so the next session does not walk it again: wh
 ## the shape
 
 - one dir per story: `<name>/story.md` is its entry, every other file of that story sits beside it
-- a story past five files sorts them into `research/<question>/` (its `verdict.md` on top, the raw lanes under `raw/`), `measures/` and `scripts/`
+- a story past five files sorts them into `research/<question>/` (its `verdict.md` or measured rows on top, the raw lanes under `raw/`), `measures/` and `scripts/`
 - `story.md` opens with frontmatter: `status: open | sealed`, `dates: <first> → <last>`, `tickets: [FRM-N, …]`, `tags: [<words>]`, `fed-by: incidents`
 - a fact an agent needs before acting goes to a shelf file in `docs/knowledge/` (`x knowledge read <name>`), linked from the story; the story keeps the arc
 - not here: the day's raw flaws (the flawlog), the day's news (the gazette), one answered question (`docs/research/`), a tool on trial (`docs/test-drive/`)

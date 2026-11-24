@@ -11,7 +11,7 @@ the three researches, distilled to what we picked. each line names where it was 
 - [ways to more fast lanes](research/ways-to-more-fast-lanes/verdict.md): no git beats a custom minimal build, and a git start is no longer the big cost; the largest door left is running fewer heavy suites
 - [why git starts cost so much](research/why-git-starts-cost-so-much/verdict.md): no single trick frees the mac; `LANG` and a slim git paid, the rest is what the fixtures make git do and `x` running as a real child
 - [why agents saturate the mac](research/why-agents-saturate-the-mac/verdict.md): the cause of the sys time is unproven, and no public source measures it
-- [go tests in a linux vm](research/go-tests-in-a-linux-vm/rounds.md): the go suite costs about 3× less cpu there, vitest wins nothing
+- [go tests in a linux vm](research/go-tests-in-a-linux-vm/measured-rounds.md): the go suite costs about 3× less cpu there, vitest wins nothing
 
 ## applied
 
