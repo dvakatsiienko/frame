@@ -4,12 +4,14 @@ import {
     AREAS,
     addLinked,
     assume,
+    bgWorld,
     partOff,
     texts,
     tickLog,
     ticked,
 } from './orbit-helpers.ts';
 import {
+    SID,
     add,
     asksShown,
     board,
@@ -528,6 +530,25 @@ test('with 🌔 phases switched off, op plan is refused in one line naming the s
     expect([r.deny?.includes('\n'), r.deny]).toEqual([
         false,
         expect.stringContaining('🌔 phases is switched off in 🎛️ settings'),
+    ]);
+});
+
+test("a --bg session's plan op answers that phases are off there and stores none, its add lands", async ($, on) => {
+    const w = bgWorld(on);
+    await start($);
+    const r = await orbit($, { lines: ['now: a'], op: 'plan', step: 2 });
+    const kept = [...w.store.keys()];
+    await add($, ['push FRM-1', 'yes']);
+    await endTurn($);
+    const asks = w.store.get(`asks:${SID}`) as { items?: { id: string }[] };
+    expect([
+        r,
+        kept.filter((k) => /^(?:kept|lane-step):/.test(k)),
+        asks?.items?.map((a) => a.id),
+    ]).toEqual([
+        expect.objectContaining({ result: 'phases are off in --bg' }),
+        [],
+        ['o1'],
     ]);
 });
 

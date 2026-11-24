@@ -38,6 +38,7 @@ import {
     MAIN_ROLE,
     WING_ROLE,
     currentId,
+    isBgSelf,
     runnerOf,
     selfRecord,
     sessionName,
@@ -261,6 +262,8 @@ export async function orbitCall(
 ): Promise<{ result: string } | { deny: string }> {
     const hidden = await partRefusal($, input.op);
     if (hidden) return { deny: hidden };
+    if (input.op === 'plan' && (await isBgSelf($).catch(() => false)))
+        return { result: 'phases are off in --bg' };
     if (input.op === 'second-wind') {
         const r = await windReady($, input);
         return 'deny' in r ? r : { result: r.result };

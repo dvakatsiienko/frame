@@ -19,11 +19,14 @@ export function world(
     on: On,
     {
         files = {},
+        kind,
         name = CLIO,
         record = recordOf(name),
         peers = [],
     }: {
         files?: Record<string, string>;
+        // the registry's word for a `claude --bg` session
+        kind?: 'bg';
         name?: string;
         // x's record for this session: its role and display, none for a session x never recorded
         record?: Omit<ThreadRow, 'sessionId'>;
@@ -40,6 +43,7 @@ export function world(
     const shows: Record<string, unknown> = {};
     const showRuns: string[] = [];
     files[`/home/.claude/sessions/${PID}.json`] = JSON.stringify({
+        ...(kind ? { kind } : {}),
         name,
         pid: PID,
         sessionId: SID,

@@ -24,7 +24,7 @@ import { WRAP_UP_TOOL } from './reply-fix.ts';
 import { laneRoundLine } from './rounds.ts';
 import { isLaneOwner } from './session-identity.ts';
 import { keepShelf } from './session-record.ts';
-import { partsShown } from './settings-store.ts';
+import { turnParts } from './settings-store.ts';
 import {
     countTool,
     markNudged,
@@ -96,7 +96,7 @@ export async function onToolCall(
     if (sent?.line) notes.push(sent.line);
     // a fresh answer: core's `text` and `ref` still name the refusal
     const answer = sent?.held ? ({ result: sent.held } as never) : r;
-    const isOn = await partsShown($);
+    const isOn = await turnParts($);
     if ((e.tool as string) === SEND_TOOL && isOn('stash.rounds')) {
         const round = await laneRoundLine(
             $,

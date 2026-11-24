@@ -40,7 +40,7 @@ import { quietHoldPrompt, quietNote, quietTake } from './quiet-gate.ts';
 import { settleTask } from './reply-fix.ts';
 import { currentId, isLaneOwner } from './session-identity.ts';
 import { keepShelf } from './session-record.ts';
-import { partsShown } from './settings-store.ts';
+import { turnParts } from './settings-store.ts';
 import { markActive, setPrimed, startTurn, turn } from './turn.ts';
 import {
     LANE_STALE_TEXT,
@@ -139,7 +139,7 @@ export async function composePrompt(
         await $.store.set(DIMA_AT, await $.clock.now()).catch(() => undefined);
     await absorbMarks($, () => keepShelf($), isTypedHere);
     await currentOrbit($);
-    const isOn = await partsShown($);
+    const isOn = await turnParts($);
     const marked =
         turn.isUserTurn && isOn('stash.orbit')
             ? await takeMarks($, (o) => o.asks.filter(isFresh))

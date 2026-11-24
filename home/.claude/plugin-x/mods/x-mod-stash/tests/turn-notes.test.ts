@@ -1,9 +1,11 @@
 import {
     SETTINGS,
+    bgWorld,
     lastContext,
     lines,
     mobile,
     nextPrompt,
+    oldPlan,
     orbitNote,
     partOff,
     typed,
@@ -216,6 +218,21 @@ test("a session's first prompt says phases are its live plan", async ($, on) => 
     );
 });
 
+test("a --bg session's first prompt names no phases", async ($, on) => {
+    const w = bgWorld(on);
+    await start($);
+    await say($, 'hi');
+    expect(lines(w)).not.toContain('phases');
+});
+
+test("a --bg session's asks are told with no word of a plan", async ($, on) => {
+    const w = bgWorld(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'hi');
+    expect(orbitNote(w)).toEqual(['orbit holds 1 open ask (o1).']);
+});
+
 test('after a /clear the first prompt says phases are its live plan again', async ($, on) => {
     const w = world(on);
     on('command.run', () => ({ text: '' }));
@@ -268,6 +285,14 @@ test('a plan untouched for three turns reads stale', async ($, on) => {
         expect.stringContaining('stale'),
         expect.stringMatching(/plan set 3 turns ago, stale/),
     ]);
+});
+
+test('a --bg session is never told its old plan is stale', async ($, on) => {
+    const w = bgWorld(on);
+    oldPlan(on);
+    await start($);
+    await say($, 'go');
+    expect(orbitNote(w)).toEqual(['orbit holds 1 open ask (o1).']);
 });
 
 test('after /mobile-mode the next prompt asks for the asks fence with the ids', async ($, on) => {
@@ -333,6 +358,18 @@ test('on mobile a stale plan is still named', async ($, on) => {
     await mobile($);
     await say($, 'hi');
     expect(lastContext(w.contexts)).toMatch(/plan is stale/);
+});
+
+test("a --bg session's no-board reminder asks for no moves and names no stale plan", async ($, on) => {
+    const w = bgWorld(on);
+    oldPlan(on);
+    await start($);
+    await mobile($);
+    await say($, 'go');
+    expect([
+        lines(w).includes('asks fence'),
+        /🌔|plan/u.test(lines(w)),
+    ]).toEqual([true, false]);
 });
 
 test('with 🌔 phases switched off, no prompt names phases or the plan', async ($, on) => {

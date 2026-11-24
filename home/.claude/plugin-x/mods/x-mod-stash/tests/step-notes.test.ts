@@ -1,4 +1,4 @@
-import { partOff } from './orbit-helpers.ts';
+import { bgWorld, oldPlan, partOff } from './orbit-helpers.ts';
 import {
     add,
     asksShown,
@@ -126,6 +126,21 @@ test('the third tool call of a working turn with no phases set carries the nudge
         true,
         false,
     ]);
+});
+
+test('a working --bg turn gets no phases nudge', async ($, on) => {
+    bgWorld(on);
+    await start($);
+    await say($, 'go');
+    expect((await edits($, 4)).join('\n')).not.toContain('phases');
+});
+
+test('a working --bg turn over phases it set long ago gets no nudge', async ($, on) => {
+    bgWorld(on);
+    oldPlan(on);
+    await start($);
+    await say($, 'go');
+    expect((await edits($, 4)).join('\n')).not.toContain('phases');
 });
 
 test('a q&a turn of reads gets no phases nudge', async ($, on) => {

@@ -593,7 +593,7 @@
   - then its description fits in 4096 (3,409 chars with ten areas) and names every op — add, resolve, follow, assume, plan, glide — with its rule; glide stays whole
   - and it holds every how-to rule of an ask, which left `rules/fleet-mods.md` § orbit for it (FRM-640): when an ask goes up, who a member asks, what a pick names, how a reply names an ask, a guard-refused command; with the mod off no orbit rule is left in memory beyond the reply shape
   - and the tool loads up front (`isDeferred: false`), never behind ToolSearch
-  - 📌 a session already running keeps the description it loaded until it restarts; a `--bg` session draws no board and is unchanged
+  - 📌 a session already running keeps the description it loaded until it restarts; a `--bg` session draws no board, and its asks reach dima through its coordinator and the glide subcard
   - proof: tests/orbit.test.ts::orbit's description fits the 4096 chars cc shows the model, every op named; orbit registers loaded up front, never behind ToolSearch
 the session's asks to dima, ticked instead of copy-pasted; one orbit per session, in the board's lower half. it replaced the reply-parsed, cross-thread asks list in the row (dima, 2026-10-10: «the current stash asks implementation doesn't work for me»).
 - makes: one `asks:<session>` key in x-mod-stash's `$.store` holding the session's open asks, so every board's `🪐 n` counts them; orbit itself lives in the session's `$.state`
@@ -1125,6 +1125,7 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - decision: the now line's text stays plain, only its lead word stands out, green and bold (dima, 21:08)
 - ✅ the phases guard: a start line and one nudge, never an extra turn
   - given `🌔 phases` switched off in settings, then no start line, no nudge, no plan in the orbit reminder, no phases tick joins a prompt or a tool result, and `op plan` is refused in one line naming the switch
+  - given a `--bg` session, which draws no board, then it carries none of those lines either, nor the no-board reminder's next moves and stale plan, and `op plan` answers «phases are off in --bg» and writes nothing, its `step` included; a foreground session keeps every line, and one whose registry entry does not read counts as foreground (FRM-677)
   - given a session's first prompt
   - then it carries one model-only line: phases are the live plan, set them with orbit's plan op and keep them current
   - given a `/clear` or a resume, then the next conversation's first prompt carries the line again — the process outlives the conversation (o59)
@@ -1135,7 +1136,7 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - decision: phases set in the last 2 turns still hold, so a working turn that did not move them stays quiet (clio's brief 8, 2026-10-12)
   - decision: never a Stop block, never an extra turn (dima's o14, 2026-10-11 11:27)
   - decision: a q&a turn of reads gets no nudge — the 3-turn stale mark covers it; the nudge on every turn drove 235 plan calls in one session (PK-70, dima 00:28: «fewer redundant tool calls, phases still real-time»)
-  - proof: tests/orbit.test.ts::a session's first prompt says phases are its live plan; ::after a /clear the first prompt says phases are its live plan again; ::the third tool call of a working turn with no phases set carries the nudge, o… — not asserted: each tool kind that counts as working not separately asserted
+  - proof: tests/orbit.test.ts::a session's first prompt says phases are its live plan; ::after a /clear the first prompt says phases are its live plan again; ::the third tool call of a working turn with no phases set carries the nudge, o… ; the --bg rows: tests/step-notes.test.ts::a working --bg turn gets no phases nudge (+ over phases it set long ago); tests/turn-notes.test.ts::a --bg session's first prompt names no phases (+ asks told with no word of a plan, old plan never told stale, no-board reminder); tests/orbit-tool.test.ts::a --bg session's plan op answers that phases are off there…; tests/lane-board.test.ts::a bg member publishes its open asks whole… — not asserted: each tool kind that counts as working not separately asserted
 - ✅ dima reorders, ticks and steers the phases on the board (o84)
   - given the session's 🌔 phases card shows its plan
   - then each line ends in `↑` `↓` at its right edge, the same two buttons on every line, so the column never drifts; the first line's ↑ and the last's ↓ do nothing on a press (dima, 21:20–21:24: missing arrows read as confusing, dim text drifted and looked ugly, a disabled button would change size), and one `🛎️ tick` with a `steer` field sits in the card's head row, right of the title and left of 📂, every part centered on that row (dima, 21:26: a row of its own looked off and took a line)
@@ -1220,7 +1221,7 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - proof: tests/lane.test.ts::a lane that moved nothing for 8 of clio's turns reads stale; a step that moves nothing keeps the count; ::with no lane the reminder carries no lane text; tests/lane-switch.test.ts::with 🛼 glide switched off, a stale lane reaches no…
 - decision: no reorder arrows on a glide step — a glide card reads as a status, not a control panel, and a reorder lands in clio's own turn through act `edit` (dima's o138, 2026-10-12 21:51; the o84 arrows lived 20:25–22:05); a `lane-order:` key a board wrote before that is dropped by clio's stash, never applied
 - ✅ a lane follows codie's plan step (todo 6, dima's 18:55 shot: «I want to see the coder's future progress»)
-  - makes: a `lane-step:<registry name>` key in the store, `{ at, step }`, written only by that session's plan op
+  - makes: a `lane-step:<registry name>` key in the store, `{ at, step }`, written only by that session's plan op, never from a `--bg` session
   - given a lane with codie linked, when codie's orbit `plan` op carries `step: 3` (the numbering act `step` uses) and clio is idle, then within one poll the lanes file's pointer is 3, the steps before it done, one history entry `by` codie, and clio's next tool call or prompt carries «lane <id> «<title>» moved to step 3 by <codie>» once
   - given the pointer at 3, when codie names 2, or the step count, or sixth sense, an unlinked session or an ended lane names any step, or 🛼 glide is off, then the pointer stays and the file gains nothing; the finish stays clio's act
   - and clio's step back holds until codie names a step again; a move counts as movement for the stale nag, and drops dima's steer on the step it left

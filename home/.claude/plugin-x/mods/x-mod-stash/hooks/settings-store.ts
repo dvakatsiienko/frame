@@ -2,6 +2,7 @@ import type { EngineInterface } from 'claude-code';
 
 import { PLAN_MAX } from './orbit.ts';
 import { PACE_SETTINGS, windPairRefusal } from './pace.ts';
+import { isBgSelf } from './session-identity.ts';
 import { markActive } from './turn.ts';
 import { resetObject } from './util.ts';
 import { WIND_ROWS, WIND_TEXT_EDITS } from './wind-store.ts';
@@ -222,6 +223,14 @@ export function shownOf(v: unknown): Record<string, boolean> {
 export async function partsShown($: EngineInterface): Promise<IsPartOn> {
     const now = shownOf(await $.store.get(SHOWN).catch(() => undefined));
     return (key) => now[key] !== false;
+}
+
+// the parts whose notes this session's own turns carry: a --bg session draws no board, so 🌔 phases is off in it (FRM-540)
+export async function turnParts($: EngineInterface): Promise<IsPartOn> {
+    const isOn = await partsShown($);
+    const isPhasesOff =
+        isOn('stash.phases') && (await isBgSelf($).catch(() => false));
+    return (key) => !(isPhasesOff && key === 'stash.phases') && isOn(key);
 }
 
 // the orbit ops a settings switch owns: hidden, the op is refused, so no session writes what nobody sees

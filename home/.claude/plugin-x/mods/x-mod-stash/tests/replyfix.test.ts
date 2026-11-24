@@ -6,6 +6,7 @@ import {
     linkTickets,
     numberCircled,
 } from '../hooks/parse.ts';
+import { bgWorld } from './orbit-helpers.ts';
 import { SID, add, orbit, say, start, world } from './orbit-world.ts';
 import { type Engine, expect, mock, test } from './shared-boot.ts';
 
@@ -163,22 +164,7 @@ test('the turn right after its own red passes: no loop', async ($, on) => {
 });
 
 test('a --bg session passes: its asks go to its coordinator', async ($, on) => {
-    world(on, {
-        '/home/.claude/sessions/4242.json': JSON.stringify({
-            kind: 'bg',
-            name: 'probe',
-            pid: 4242,
-        }),
-    });
-    on('process.run', () => ({
-        value: {
-            exitCode: 0,
-            isStderrTruncated: false,
-            isStdoutTruncated: false,
-            stderr: '',
-            stdout: '4242\nMon Oct 12 15:00:00 2026\n',
-        },
-    }));
+    bgWorld(on);
     await start($);
     await add($, ['push FRM-1', 'yes']);
     await say($, 'go');

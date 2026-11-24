@@ -10,7 +10,7 @@ import {
     orbit,
     say,
     start,
-    type world,
+    world,
 } from './orbit-world.ts';
 
 // the steer as the session's published asks hold it, the store mirror every board reads
@@ -41,6 +41,37 @@ export const lastContext = (contexts: string[][]) =>
 
 export const assume = ($: Engine, ...texts: string[]) =>
     orbit($, { op: 'assume', texts });
+
+// this session as cc's registry lists a `claude --bg` one; it draws no board
+export function bgWorld(on: On) {
+    on('process.run', () => ({
+        value: {
+            exitCode: 0,
+            isStderrTruncated: false,
+            isStdoutTruncated: false,
+            stderr: '',
+            stdout: '4242\nMon Oct 12 15:00:00 2026\n',
+        },
+    }));
+    return world(on, {
+        '/home/.claude/sessions/4242.json': JSON.stringify({
+            kind: 'bg',
+            name: 'probe',
+            pid: 4242,
+        }),
+    });
+}
+
+// an orbit whose plan stood 8 turns, as a session holds one set before its notes were off
+export const oldPlan = (on: On) =>
+    keptState(on, {
+        orbit: {
+            asks: [{ id: 'o1', pick: 'yes', text: 'kept' }],
+            next: 2,
+            plan: { at: 1, lines: ['now: a'] },
+            turns: 9,
+        },
+    });
 
 export const press = (p: Record<string, unknown>) => `${JSON.stringify(p)}\n`;
 
