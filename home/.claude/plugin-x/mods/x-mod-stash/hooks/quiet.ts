@@ -100,17 +100,17 @@ export type MessageKind = (typeof MESSAGE_KINDS)[number]['kind'];
 const ROWS: readonly MessageRow[] = MESSAGE_KINDS;
 
 // flags are regional indicators and a keycap is a digit with its mark: neither is Extended_Pictographic
-const EMOJIS = String.raw`(?:[\s\p{Extended_Pictographic}\p{Regional_Indicator}\p{Emoji_Modifier}\u{E0020}-\u{E007F}\uFE0F\u200D]|[0-9#*]\uFE0F?\u20E3)*`;
-const EMOJI_RUN = `^${EMOJIS}`;
+const EMOJI = String.raw`[\p{Extended_Pictographic}\p{Regional_Indicator}\p{Emoji_Modifier}\u{E0020}-\u{E007F}\uFE0F\u200D]|[0-9#*]\uFE0F?\u20E3`;
+const EMOJI_RUN = String.raw`^(?:\s|${EMOJI})*`;
 const PUSH_TAG = new RegExp(
     String.raw`${EMOJI_RUN}\[(${ROWS.flatMap((r) => (r.isTag ? [r.kind] : [])).join('|')}|🪜 ?escalate)\]`,
     'u',
 );
 const FENCE =
     /^[ \t]*(`{3,}|~{3,})[^`\n]*\n[\s\S]*?(?:^[ \t]*\1[`~]*[ \t]*$|(?![\s\S]))/gm;
-// a list's mark, a heading's or a bold's may stand before it
+// a list's mark, a heading's or a bold's may stand before it; a line's own blanks alone, so a run of blank lines is read once
 const ASK_LINE = new RegExp(
-    String.raw`^\s*(?:(?:[-*+•]|#+|(?:\d+|[a-z])[.)])[ \t]+)*(?:\*\*|__)?${EMOJIS}\[ask\]`,
+    String.raw`^(?:[^\S\n]|${EMOJI}|\*\*|__|(?:[-*+•]|#+|(?:\d+|[a-z])[.)])(?=[ \t]))*\[ask\]`,
     'mu',
 );
 // crow's notes open with her badge and name; the rest of what she writes waits
@@ -162,7 +162,7 @@ const isModLine = (shape: string, line: string) =>
     ).test(line);
 // a sw done line stays held by its words, the lines after it are read
 const SW_DONE_LINE = new RegExp(
-    String.raw`${EMOJI_RUN}(?:\[progress\]\s*)?sw done\b.*$`,
+    String.raw`^(?:[^\S\n]|${EMOJI})*(?:\[progress\]\s*)?sw done\b.*$`,
     'gimu',
 );
 

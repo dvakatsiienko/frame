@@ -95,6 +95,7 @@ for (const [why, body, tag] of [
     ['in a list item', 'step done\n- [ask] a or b?', 'ask'],
     ['in a numbered item', 'step done\n1. 🚨 [ask] a or b?', 'ask'],
     ['in a lettered item', 'step done\nb) [ask] a or b?', 'ask'],
+    ['in a checked item', 'step done\n- 🚨 **[ask]** a or b?', 'ask'],
     ['in bold', 'step done\n**[ask]** a or b?', 'ask'],
     ['mid-line', 'green, then [ask] a or b?', 'none'],
     ['in a fence', 'the form:\n```\n[ask] a or b?\n```\nlanded', 'none'],
