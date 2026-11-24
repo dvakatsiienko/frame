@@ -704,15 +704,19 @@ test('a plain ask never hides, whatever its why or his 🔁', async ($, on) => {
     await orbit($, { asks: [ASK], op: 'add' });
     await followed($, { text: 'push it', why: 'fixing the wrap' });
     await ui.press({ key: 'orbit:rejected:o1' });
+    await say($, 'go');
     expect([items(w)?.length, await asksShown(ui)]).toEqual([1, ['o1']]);
 });
 
-test('his 🔁 hides a test ask once a turn takes it and past that turn, his till then to take back, and the follow shows it', async ($, on) => {
+test('his 🔁 hides a test ask once a turn takes it and past that turn, his till then to take back, its follow shows it, a 🛎️ hides none', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
     await orbit($, {
-        asks: [{ ...ASK, text: 'test: press it' }, ASK],
+        asks: [
+            { ...ASK, text: 'test: press it' },
+            { ...ASK, text: 'look: the card' },
+        ],
         op: 'add',
     });
     for (let i = 0; i < 3; i++) await ui.press({ key: 'orbit:rejected:o1' });
@@ -734,7 +738,7 @@ test('his 🔁 hides a test ask once a turn takes it and past that turn, his til
         fence.includes('(o2)'),
         fence.includes('o1'),
     ]).toEqual([
-        [['o1', 'o2'], ['o2'], ['o2'], ['o1', 'o2']],
+        [['o2', 'o1'], ['o2'], ['o2'], ['o2', 'o1']],
         true,
         true,
         false,
