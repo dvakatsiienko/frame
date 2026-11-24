@@ -6,7 +6,7 @@ dima, PK-387:W28–W33 (2026-11-12): the planned chunks build in a logical, natu
 
 - a checkup prints the order as it stands; a reorder runs on his ask: «prio X», «analyze tickets closely and propose an efficiently optimized order», a review of the planned chunks
 - every sign regroups its lane the same turn (`shape-lane` § 4)
-- a new chunk in a hot area (cli, mods) joins the queue, never its tail (dima, 2026-11-01: «it should be your default behavior»): first merged into a signed chunk of its area it truly fits, re-signed; a new chunk only when none fits or the fit is already too big, shaped at birth and proposed for his sign
+- a new chunk in a hot area (cli, mods) joins the queue, never its tail (dima, 2026-11-01: «it should be your default behavior»): first merged into a signed chunk of its area it truly fits, re-signed; a new chunk only when none fits or the fit is already too big, shaped at birth, groomed and signed
 
 ## the weights, in order
 

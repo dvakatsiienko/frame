@@ -25,7 +25,7 @@ his word «ready» or «healthcheck» after the lanes: peek shows, ready ensures
 
 1. print each lane's verdict line as the script gives it
 2. walk the 🔴 moves in slot order, mine without asking: `seal (clio)` → `clio:shape-lane-dispatch` § 2–4 on that chunk (the draft to an Opus card, the critic, the preflight); `unblock (clio)` → read the blocker: done → the relation goes; real → the queue is reordered by `chunk-order.md` so the blocker runs first; `queue one (clio)` → the area's next signed chunk joins the chain
-3. his moves go to orbit, one ask each: `sign (dima)`, `re-sign (dima)`; a chunk he postpones leaves the lane's first two slots
+3. a sign or re-sign is mine, done silently (PK-468); a chunk he postpones leaves the lane's first two slots
 4. re-run the script; done when every named lane is 🟢, or each red left names his open ask
 - the halt runs the same script as its gate (`halt/main.md`), the boot reads its line per lane before the first dispatch
 

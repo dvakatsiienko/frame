@@ -2,9 +2,9 @@
 description: load on dima's «prep», «sign», «re-sign», «grill <ticket>», «next chunk», «shape-lane», «fast» — a ticket to grill and sign before a lane, one chunk at a time, or many at once in fast mode.
 ---
 
-# /clio:shape-lane — dima's ✍️ sign on a chunk
+# /clio:shape-lane — a chunk grilled, groomed and ✍️ signed
 
-dima, 2026-10-09: «each time we prep a lane chunk, our flow is fixed for this part, and we then solve chunk-prep issues in the scope of that skill». this is his part of lane init: a grill that ends in his ✍️ sign. the machine part — the spec, the exit lines, the summon — is `clio:shape-lane-dispatch`; the contract is `craft-fleet-flow` § lane init.
+dima, 2026-10-09: «each time we prep a lane chunk, our flow is fixed for this part, and we then solve chunk-prep issues in the scope of that skill». the grill is his part of lane init, the ✍️ sign is mine: no sign or re-sign ask reaches him (his tick, 2026-11-24, PK-468). the machine part — the spec, the exit lines, the summon — is `clio:shape-lane-dispatch`; the contract is `craft-fleet-flow` § lane init.
 
 it runs over any ticket: a safety-net re-grill after `clio:shape-idea`, the real shaping for a ticket born without it.
 
@@ -35,24 +35,25 @@ load `mattpocock-skills:grilling` and run its ❓ round as written — the front
 
 ## 3 · what the sign carries
 
-dispatch runs without dima, a shift included, so before the sign the ticket holds: the 🎯 done test; the milestone («which milestone?» — a lane walks its area's milestones one after another, `craft-fleet-flow` § lane init); the `lane:` kind; the repo; its order among its siblings (a `blocks` relation, `sortOrder` rewritten to match); on new surface its `## ⚖️ worth it` section with its `🔌 fleet wired:` caller (root invariant 3), read by crow (`pnpm crow:plan-critique <body file>`) before the sign ask, so the author never grades its own pitch; and, when the chunk edits the guards, the review workflows or merge-auto, his merge pre-approval as a `## signed` line. a missing field is a question in the round, never a guess; a pick that moves a rule from warn to enforce names the flip in its own words («opaque-head → enforced»).
+dispatch runs without dima, a shift included, so before the sign the ticket holds: the 🎯 done test; the milestone («which milestone?» — a lane walks its area's milestones one after another, `craft-fleet-flow` § lane init); the `lane:` kind; the repo; its order among its siblings (a `blocks` relation, `sortOrder` rewritten to match); on new surface its `## ⚖️ worth it` section with its `🔌 fleet wired:` caller (root invariant 3), read by crow (`pnpm crow:plan-critique <body file>`) before the sign, so the author never grades its own pitch; and each research linked with its verdict and the part that matters. `merge: pre-approved` is his word, never written by me: with his operator override off, a merge that edits the guards, the review workflows or merge-auto asks him. a missing field is a question in the round, never a guess; a pick that moves a rule from warn to enforce names the flip in its own words («opaque-head → enforced»).
 
 ## 4 · the sign
 
-the grill and the groom come first: the chunk is healthy — good content, a good size, every question settled, the ticket groomed and reading well (dima, o108).
+a sign says a lane could start from this ticket alone (dima, PK-468:W43–W49). the groom comes first: the ticket read whole, its small folds tidied, stale lines cut, its claims checked against today's code and its neighbours; good content, a good size, every question settled (dima, o108).
 
-- **a grill he answers whole is the sign** (dima, o64): the round asks the § 3 fields too, no separate sign ask follows, and a steer on any question opens the next round. a fast chunk, self-grilled, still gets one `✍️ sign FRM-N: <title>` ask with its costs
-- on the sign: `x linear set FRM-N --add-label signed --state Todo` (out of Triage; a re-sign keeps a started state); then `sortOrder` (a move resets it); the sign ask resolves only after this write lands
+- **a grill he answers whole closes the questions** (dima, o64): the round asks the § 3 fields too, a steer on any question opens the next round, then i groom and sign
+- on the sign: `x linear set FRM-N --add-label signed --state Todo` (out of Triage; a re-sign keeps a started state); then `sortOrder` (a move resets it)
 - **every sign regroups the execution order, the same turn** (dima, 2026-11-04), by [chunk-order.md](../lowtide/references/chunk-order.md); the `blocks` chain and `sortOrder` are rewritten, and the new order is printed
 - and a line appended to the ticket's `## signed` block, `✍️ signed <YYYY-MM-DD> · body <hash>` (the block's format: `clio:pm` `references/body.md`)
   - `node script/ticket-sign.ts <id> signed|re-signed|changed '<what>'` stamps a fresh fetch, prints the write; a dry `x lane dispatch` proves it
   - a line in the block is never edited: history is how a lane gets debugged
 
-- **every body write to a signed ticket appends its `## signed` line in the same write** (o109), a wish re-fold and a moved want included: a re-sign line, or `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny · body <hash>`; an edit no line covers (his own edit in the linear app) shows at dispatch, where the body's hash no longer matches the last line's; a guard in `x linear body --set` that enforces it rides FRM-384
+- **every body write to a signed ticket appends its `## signed` line in the same write** (o109), a wish re-fold and a moved want included: a re-sign line, or, on a ticket further back, `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny · body <hash>`; an edit no line covers (his own edit in the linear app) shows at dispatch, where the body's hash no longer matches the last line's; a guard in `x linear body --set` that enforces it rides FRM-384
 
 - **a lasting part is born a trial** (the guard story, his 22:56): a new mod, verb, hook, skill or app feature signs with `trial: <kill date, 14 days>, size: <lines with tests>`, and its date brings his verdict: adopt, shrink or delete
-- **re-sign**: a signed ticket that would change — his new wish, my extend, merge or split — gets a proposed re-sign in orbit, the ask printing the part's first want in his typed words beside the change, and whose words the change rests on (his typed line, or his tick on my ask); the re-sign is this skill again over the new scope, appending `✍️ re-signed <YYYY-MM-DD> — <what changed> · body <hash>`; a tiny change may skip the grill, never the line; a re-sign of a chunk that carried `merge: pre-approved` repeats that line, since merge-auto reads only the newest sign's; after 🚀 his word in the thread on the change is the re-sign, quoted in its line, the `signed` label stays off and dispatch § 6 re-seals with the change's tests as exit lines, unless a ↩️ follows the 🚀 (dispatch § 6)
+- **re-sign**: any body edit to the running chunk or the next one, in the same turn: the groom, `✍️ re-signed <YYYY-MM-DD> — <what changed> · body <hash>`, then the reseal (dispatch § 6); never a ✏️ line there, since the seal check reads the newest ✍️ alone. a ticket further back takes edits under a ✏️ line and is groomed and signed when it enters the two. a running chunk's `signed` label stays off, unless a ↩️ follows the 🚀 (dispatch § 6)
+  - a change that is a choice of his goes up as that question, the part's first want in his typed words beside it and whose words the change rests on; never as a sign ask
   - a re-sign that grows a running chunk carries five lines: the new size, its new exit lines, misuse rows when it adds a role, a stamp, a guard door or a trusted store (a session not entitled is refused, a row per door), its review reach (files, areas, the security reread or not), and crow's read before codie hears the steer (dima o79)
-- **one birth door, the fold**: shape-lane runs over a ticket. a wish he wants signed on the spot folds into its ticket, and the grill and sign follow in the same turn, a few calls in a row, never a second turn
+- **one birth door, the fold**: shape-lane runs over a ticket. a wish he wants in a lane now folds into its ticket, and the grill and sign follow in the same turn, a few calls in a row, never a second turn
 
 **done** = every chunk of the session carries the `signed` label and a dated `## signed` line, with every § 3 field present. «grilled» without the sign is reported as not signed. what follows is dima's «what can we dispatch?» — `clio:shape-lane-dispatch`.

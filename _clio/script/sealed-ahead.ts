@@ -14,7 +14,7 @@ const CLOSED_STATES = ['Canceled', 'Done', 'Duplicate'];
 const RUN_TIMEOUT_MS = 60_000;
 // siesta-checks' NOT_CHECKED: a read that failed, never «ready»
 const NOT_CHECKED = 2;
-const MOVE_RESIGN = 're-sign (dima)';
+const MOVE_RESIGN = 're-sign (clio)';
 const MOVE_SUMMON = 'summon (clio)';
 // a ticket's `repo:` line names where its brief preflight runs, under home; no line means frame
 const AHEAD_REPOS: Record<string, string | undefined> = {
@@ -154,7 +154,7 @@ function slotMoves(ticket: Ahead | null) {
     if (ticket.blockedBy) moves.push('unblock (clio)');
     if (ticket.signed && ticket.drifted) moves.push(MOVE_RESIGN);
     else if (!ticket.preflightOk)
-        moves.push(ticket.signed ? 'seal (clio)' : 'sign (dima)');
+        moves.push(ticket.signed ? 'seal (clio)' : 'sign (clio)');
     return moves;
 }
 

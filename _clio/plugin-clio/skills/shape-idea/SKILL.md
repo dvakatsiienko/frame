@@ -45,4 +45,4 @@ word. skipping a step happens only on his word, named out loud.
 7. **the ticket** — one shaped ticket, written through `clio:pm` (its `references/body.md` owns the sections): the wish, why, stories, decided, the cut as `out` and the polish tier, the 🎯 done test, prior art and libs under `refs`; a pocket item behind it dies that turn, `ticket: FRM-N` and a `close:` line. no files: `PRODUCT.md` is born at dispatch, the FTR lines and glossary words in the build (`craft-fleet-flow` § lane init). an app wish then goes to the designer before its sign (`x:crew-designer-interview` reads the ticket; a trial, tested on speak v2).
 
 **completion criterion:** the ticket exists with every section step 7 names, and dima said «shaped»; it
-goes to `clio:shape-lane` for his sign, and nothing is designed or built from the original ask.
+goes to `clio:shape-lane` for its groom and sign, and nothing is designed or built from the original ask.

@@ -141,14 +141,14 @@ describe('sealedAhead, a row per state', () => {
         ).toContain('1 FRM-692 reseal');
     });
 
-    test('a body off its last sign reads drifted and asks dima to re-sign', () => {
+    test('a body off its last sign reads drifted and owes clio a re-sign', () => {
         expect(
             sealedAhead([lane('speak', [drifted('FRM-694'), sealed('FRM-3')])])
                 .lines[0],
-        ).toMatch(/1 FRM-694 drifted .* — re-sign \(dima\)$/);
+        ).toMatch(/1 FRM-694 drifted .* — re-sign \(clio\)$/);
     });
 
-    test('an unsigned chunk asks dima to sign', () => {
+    test('an unsigned chunk owes clio its sign', () => {
         expect(
             sealedAhead([
                 lane('mods', [
@@ -156,7 +156,7 @@ describe('sealedAhead, a row per state', () => {
                     sealed('FRM-3'),
                 ]),
             ]).lines[0],
-        ).toMatch(/1 FRM-2 unsigned .* — sign \(dima\)$/);
+        ).toMatch(/1 FRM-2 unsigned .* — sign \(clio\)$/);
     });
 
     test('a chunk behind an open ticket reads blocked by it and asks clio to unblock', () => {
@@ -231,13 +231,13 @@ describe('sealedAhead, the moves a lane owes', () => {
             ]),
         ]);
         expect(out.lanes[0]).toMatchObject({
-            moves: ['unblock (clio)', 're-sign (dima)'],
+            moves: ['unblock (clio)', 're-sign (clio)'],
             slots: [
-                { id: 'FRM-289', moves: ['unblock (clio)', 're-sign (dima)'] },
+                { id: 'FRM-289', moves: ['unblock (clio)', 're-sign (clio)'] },
                 { id: 'FRM-2', moves: [] },
             ],
         });
-        expect(out.lines[0]).toMatch(/ — unblock \(clio\), re-sign \(dima\)$/);
+        expect(out.lines[0]).toMatch(/ — unblock \(clio\), re-sign \(clio\)$/);
     });
 
     test('a blocked chunk that is also unsealed owes the unblock and the seal', () => {
@@ -262,7 +262,7 @@ describe('sealedAhead, the moves a lane owes', () => {
                     sealed('FRM-3'),
                 ]),
             ]).lanes[0]?.moves,
-        ).toEqual(['re-sign (dima)']);
+        ).toEqual(['re-sign (clio)']);
     });
 
     test('an unsigned chunk owes the sign, not the seal', () => {
@@ -273,7 +273,7 @@ describe('sealedAhead, the moves a lane owes', () => {
                     sealed('FRM-3'),
                 ]),
             ]).lanes[0]?.moves,
-        ).toEqual(['sign (dima)']);
+        ).toEqual(['sign (clio)']);
     });
 
     test('two empty slots owe a queue each', () => {
@@ -355,7 +355,7 @@ describe('sealedAhead, a lane that could not be read', () => {
 });
 
 describe('sealedAhead, signs that trail their body', () => {
-    test('read under the lanes, red, asking dima to re-sign or write a changed line', () => {
+    test('read under the lanes, red, owing clio a re-sign or write a changed line', () => {
         const out = sealedAhead(
             [lane('speak', [sealed('FRM-1'), sealed('FRM-2')])],
             [
@@ -366,12 +366,12 @@ describe('sealedAhead, signs that trail their body', () => {
         expect(out.exit).toBe(1);
         expect(out.lines).toEqual([
             '🟢 speak — 1 FRM-1 sealed · 2 FRM-2 sealed · member live speak-hunt',
-            '🔴 FRM-645 (drifted) — re-sign (dima), or a ✏️ changed line before dispatch',
-            '🔴 FRM-9 (none) — re-sign (dima), or a ✏️ changed line before dispatch',
+            '🔴 FRM-645 (drifted) — re-sign (clio), or a ✏️ changed line before dispatch',
+            '🔴 FRM-9 (none) — re-sign (clio), or a ✏️ changed line before dispatch',
         ]);
         expect(out.signs).toEqual([
-            { id: 'FRM-645', move: 're-sign (dima)', sign: 'drifted' },
-            { id: 'FRM-9', move: 're-sign (dima)', sign: 'none' },
+            { id: 'FRM-645', move: 're-sign (clio)', sign: 'drifted' },
+            { id: 'FRM-9', move: 're-sign (clio)', sign: 'none' },
         ]);
     });
 

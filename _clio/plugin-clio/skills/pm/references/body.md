@@ -19,7 +19,7 @@ read before a ticket create, a body rewrite, or a comment clio writes (`clio:pm`
 - **out** — out of scope and «decided against», so nobody re-proposes it
 - **refs** — research, designs, prior art
 - **closing word** — at close
-- **`## signed`** — the last section, appended to, never edited: `✍️ signed <YYYY-MM-DD> · body <hash>` at his sign (`clio:shape-lane` § 4 owns the hash), `✍️ re-signed <YYYY-MM-DD> — <what changed> · body <hash>`, `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny · body <hash>`, `merge: pre-approved` when his sign covers the merge, `🚀 dispatched <YYYY-MM-DD>` or `🚫 cancelled <YYYY-MM-DD> — <why>` (`clio:shape-lane-dispatch`), `↩️ back to Todo <YYYY-MM-DD> — <why> · left: <asks>` (`clio:halt`), `✍️ re-sign pending <YYYY-MM-DD> — <what changed>` when a scope moved after his sign: the chunk is blocked until his re-sign, asked in orbit the same turn (dima o66)
+- **`## signed`** — the last section, appended to, never edited: `✍️ signed <YYYY-MM-DD> · body <hash>` at my sign (`clio:shape-lane` § 4 owns the hash), `✍️ re-signed <YYYY-MM-DD> — <what changed> · body <hash>`, `✏️ changed <YYYY-MM-DD> — <what>, no re-sign: tiny · body <hash>`, `merge: pre-approved` only in his word, `🚀 dispatched <YYYY-MM-DD>` or `🚫 cancelled <YYYY-MM-DD> — <why>` (`clio:shape-lane-dispatch`), `↩️ back to Todo <YYYY-MM-DD> — <why> · left: <asks>` (`clio:halt`)
 
 **the ticket ↔ spec rule, its one home** (dima, 2026-10-10: «i still worry that it is somewhat scattered across places»):
 - want in the ticket: the want lives in the ticket's wish block, always — a moved want is edited there, before and after dispatch — on a signed ticket with its `## signed` line in the same write (`clio:shape-lane` § 4)
