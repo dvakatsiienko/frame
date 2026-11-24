@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-24T10:34:00Z'
+updated_date: '2026-11-24T11:01:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,10 +16,10 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f49 speak v2 prep with dima: his two remaining parts; every speak v2 ticket signed and chained (18:10)
-- [ ] #2 f50 system checkup, due since 12 Nov: run clio:system-checkup whole, reds only reach dima (his o3 steer)
-- [ ] #3 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
-- [ ] #4 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-27
+- [ ] #1 f50 system checkup, due since 12 Nov: run clio:system-checkup whole, reds only reach dima (his o3 steer)
+- [ ] #2 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
+- [ ] #3 f53 ⏳ FRM-585 annotate reply text: the copy-then-find probe, then Q1 to dima — waits for: the speak lane
+- [ ] #4 f52 📅 FRM-465 exit 5, the minors half: both repos get a minors pr at the 07:00 window — on: 2026-11-25
 - [ ] #5 f48 📅 wishkeeper card verdict: highs real ≥ 4 in 5 on the 5 min cache, then close the trial — on: 2026-11-28
 - [ ] #6 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-29
 - [ ] #7 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
@@ -757,4 +757,12 @@ done 2026-11-20 17:26: f47 designer W49 tail: answer how to search and how to qu
 done 2026-11-20 17:32: f46 design-loupe probe: a cheap summon tests artifact comments on dima's account, then keep or retire (o13)
 
 done 2026-11-20 18:09: f25 speak v2 with dima: bytes move → mess hunt (FRM-629:W26–W27) → wisps → design; FRM-497 rides it (FRM-629 Todo, FRM-497 Todo)
+
+done 2026-11-24 13:01: f49 speak v2 prep with dima: his two remaining parts; every speak v2 ticket signed and chained (18:10)
+
+done 2026-11-24 13:01: f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-27 (FRM-465 Todo)
+
+13:01 FRM-465 exit 5, patches half read: 8 of 8 bytes patch prs merged by x-renovate landed 07:49–18:32 Kyiv (gh pr list: bytes 135, 140, 150, 151, 157, 161, 163, 164); the minors half waits for the 25 Nov 07:00 window. his 12:59 order: fleet stories, blueprint v2, emoji reactions, cpu roast, hang-heal; checkup later today; FRM-585 to wing 1 with the herdr lane after speak; f49 closed on his word
+
+done 2026-11-24 13:01: f51 ⏳ FRM-585 annotate reply text: the copy-then-find probe, then Q1 to dima, with the herdr lane — waits for: speak lane done (FRM-585 Todo)
 <!-- SECTION:NOTES:END -->
