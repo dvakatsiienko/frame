@@ -44,6 +44,7 @@ var outsideReadShapes = map[outsideReadShape]string{
 	{"x_go_reads_test.go", `readHookGates("../..",`}:               "lefthook.yaml",
 	{"x_go_reads_test.go", `filepath.Join("../..", xGoReadsFile)`}: xGoReadsFile,
 	{"as_test.go", `filepath.Abs("../..")`}:                        "",
+	{"gate_turn_red_test.go", `filepath.Abs("../..")`}:             gateQueueScript,
 	{"replaces_test.go", `filepath.Abs("../..")`}:                  "",
 	{"merge_cited_test.go", `filepath.Abs("../..")`}:               "",
 	{"gates_test.go", `filepath.Join("../..", xGoReadsFile)`}:      xGoReadsFile,

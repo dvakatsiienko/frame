@@ -502,6 +502,191 @@ describe('gate-queue --long', () => {
         expect(readFileSync(log, 'utf8')).toBe('holder\nfirst\nsecond\n');
     });
 
+    // a held turn, the runs lined up behind it in their order of arrival, then the order they ran in
+    async function orderOf(queued: [string, string[]][]) {
+        const { state, turn } = fixture();
+        const log = join(state, 'log');
+        const go = join(state, 'go');
+        const bin = join(state, 'bin');
+        mkdirSync(bin);
+        // claude, pnpm and go only say their run's name, the RUN of its own env
+        for (const name of ['claude', 'pnpm', 'go', 'batch'])
+            writeFileSync(
+                join(bin, name),
+                `#!/bin/sh\necho "$RUN" >>${log}\n`,
+                { mode: 0o755 },
+            );
+        // a calm mac, whatever this one's load: a mods suite waits for it
+        writeFileSync(
+            join(bin, 'uptime'),
+            '#!/bin/sh\necho "12:27  up 1 day, load averages: 1.00 1.00 1.00"\n',
+            { mode: 0o755 },
+        );
+        const run = (name: string, args: string[]) =>
+            new Promise<void>((done) => {
+                spawn(script, ['--long', ...args], {
+                    env: {
+                        ...queueEnv(state),
+                        PATH: `${bin}:${process.env.PATH}`,
+                        RUN: name,
+                    },
+                }).on('exit', () => done());
+            });
+        const holder = run('holder', [
+            'sh',
+            '-c',
+            `i=0; until [ -e ${go} ] || [ $i -ge 600 ]; do sleep 0.1; i=$((i+1)); done; echo holder >>${log}`,
+        ]);
+        while (!existsSync(turn)) await sleep(50);
+        const runs: Promise<void>[] = [];
+        for (const [name, args] of queued) {
+            runs.push(run(name, args));
+            while (readdirSync(`${turn}.tickets`).length !== runs.length)
+                await sleep(50);
+            await sleep(1100);
+        }
+        writeFileSync(go, '');
+        await Promise.all([holder, ...runs]);
+        return readFileSync(log, 'utf8').trim().split('\n');
+    }
+    const BATCH = ['batch', 'mut.py'];
+
+    test.each([
+        ['a whole mods suite', ['pnpm', 'mods:test', 'x-mod-stash']],
+        ['x’s own suite', ['claude', 'plugin', 'test', 'mod']],
+        ['a suite run by its file', ['pnpm', 'node', 'mods/test.ts', 'm']],
+        ['a go suite', ['pnpm', 'x-go:test']],
+        ['a whole go test', ['go', 'test', '-count=1', './...']],
+        ['a go suite of a dir', ['go', '-C', 'x/go', 'test', '-count=1', '.']],
+        ['a package’s own suite', ['pnpm', '--filter', 'speak', 'test']],
+    ])(
+        '%s takes the turn before a batch queued ahead of it',
+        { timeout: 30_000 },
+        async (_name, args) => {
+            expect(
+                await orderOf([
+                    ['batch', BATCH],
+                    ['suite', args],
+                ]),
+            ).toEqual(['holder', 'suite', 'batch']);
+        },
+    );
+
+    test('one file of a suite, a red round and a go test by name keep their order', {
+        timeout: 30_000,
+    }, async () => {
+        expect(
+            await orderOf([
+                ['batch', BATCH],
+                ['only', ['pnpm', 'mods:test', '--only', 'a.test.ts']],
+                ['red', ['batch', 'verify', 'red', '--pairs', 'mods:test']],
+                ['named', ['go', 'test', '-run=TestX', './...']],
+                ['proof', ['batch', 'red-proof', 'plugin test mod']],
+                ['extra', ['pnpm', 'mods:test', 'm', '--extra', 'f']],
+            ]),
+        ).toEqual([
+            'holder',
+            'batch',
+            'only',
+            'red',
+            'named',
+            'proof',
+            'extra',
+        ]);
+    });
+
+    test('two suites keep their order, and a batch behind both waits', {
+        timeout: 30_000,
+    }, async () => {
+        expect(
+            await orderOf([
+                ['batch', BATCH],
+                ['first', ['pnpm', 'mods:test', 'x-mod-stash']],
+                ['second', ['pnpm', 'mods:test', 'x-mod-guard']],
+            ]),
+        ).toEqual(['holder', 'first', 'second', 'batch']);
+    });
+
+    test.each([
+        [
+            'a batch past its bound says to run in groups',
+            '1',
+            ['sleep', '2'],
+            1,
+        ],
+        ['a short batch says nothing', '60', ['true'], 0],
+        [
+            'a long suite says nothing',
+            '1',
+            ['sh', '-c', 'sleep 2 # x-go:test'],
+            0,
+        ],
+    ])('%s', (_name, bound, args, says) => {
+        const { state } = fixture();
+        const got = queue(state, ['--long', ...args], '20', {
+            GATE_QUEUE_BATCH_MAX: String(Number(bound) - 1),
+        });
+        expect(got.stderr.split('run it in groups').length - 1).toBe(says);
+    });
+
+    test.each([
+        ['30.00', 0],
+        ['3.00', 75],
+    ])(
+        'a batch takes a free turn past a mods suite waiting on the load (%s: exit %d)',
+        (load, status) => {
+            const { state, turn } = fixture();
+            plantTicket(turn, `0.1.m.${process.pid}`, liveSince());
+            const bin = join(state, 'bin');
+            mkdirSync(bin);
+            writeFileSync(
+                join(bin, 'uptime'),
+                `#!/bin/sh\necho "1 day, load averages: ${load} 1.00 1.00"\n`,
+                { mode: 0o755 },
+            );
+            expect(
+                queue(state, ['--long', 'true'], '1', {
+                    PATH: `${bin}:${process.env.PATH}`,
+                }).status,
+            ).toBe(status);
+        },
+    );
+
+    test('a ticket of the old form still holds its place', () => {
+        const { state, turn } = fixture();
+        plantTicket(turn, `1.${process.pid}`, liveSince());
+        const marker = join(state, 'ran');
+        expect(long(state, ['touch', marker], '1').status).toBe(75);
+        expect(existsSync(marker)).toBe(false);
+    });
+
+    test("a dead suite's ticket leaves the line", () => {
+        const { state, turn } = fixture();
+        plantTicket(turn, '0.1.999999', 'Fri Nov  6 10:00:00 2026');
+        expect(long(state, ['sh', '-c', 'exit 6']).status).toBe(6);
+        expect(readdirSync(`${turn}.tickets`)).toEqual([]);
+    });
+
+    test('--hold-long holds the long turn until it is told, its gate twin free', () => {
+        const { state, turn } = fixture();
+        plantHolder(turn, String(process.pid), liveSince());
+        const held = queue(state, ['--hold-long', 'x', 'verify'], '1');
+        expect(held.status).toBe(75);
+        const free = fixture();
+        const got = spawnSync(script, ['--hold-long', 'x', 'verify'], {
+            encoding: 'utf8',
+            env: queueEnv(free.state),
+            input: '0\n',
+            timeout: 10_000,
+        });
+        expect([got.status, got.stdout, existsSync(free.turn)]).toEqual([
+            0,
+            'turn\n',
+            false,
+        ]);
+        expect(logRows(free.state)[0]?.[2]).toBe('long');
+    });
+
     test('two runs never overlap', { timeout: 15_000 }, async () => {
         const { state } = fixture();
         const log = join(state, 'log');

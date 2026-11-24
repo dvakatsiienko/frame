@@ -63,11 +63,13 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	turn := &redTurn{}
 	if pairsFile, _ := flags["pairs"].(string); pairsFile != "" {
-		if err := inLongTurn(); err != nil {
+		if turn, err = newRedTurn(); err != nil {
 			return nil, err
 		}
 	}
+	defer turn.close(nil)
 	original, err := os.ReadFile(file)
 	if err != nil {
 		return nil, usageFail("no file "+file, verifyRedHelp)
@@ -140,6 +142,9 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 			if ahead != nil {
 				first, ahead = <-ahead, nil
 			} else {
+				if err := turn.next(); err != nil {
+					return "", err
+				}
 				started := time.Now()
 				first.got, first.err = harness.run(mutantOf(pair))
 				first.took = time.Since(started)
@@ -173,20 +178,6 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 	}
 	r.Done(pairsLine(rows)+"; "+file+" never written", "")
 	return data, nil
-}
-
-// a pairs round is a long round: the verb runs again inside the gate queue's long slot, one turn for every pair, so a commit
-// never waits behind it; inside the slot the queue says so, and a test stays off the real slot unless it plants a queue
-func inLongTurn() error {
-	if os.Getenv("GATE_QUEUE_HELD") == "long" || os.Getenv("X_TEST") != "" && os.Getenv("X_FRAME_ROOT") == "" {
-		return nil
-	}
-	exe, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	queue := filepath.Join(frameRoot(), "script/gate-queue.sh")
-	return syscall.Exec(queue, append([]string{queue, "--long", exe}, os.Args[1:]...), os.Environ())
 }
 
 // a cut run's finished pairs, keyed by every input a verdict reads, so a resume never replays a pair onto changed ones

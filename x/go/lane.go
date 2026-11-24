@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"cmp"
 	"encoding/json"
@@ -453,58 +452,6 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	reload := reloadLine(bumped.name, bumped.to, older)
 	r.Done(short(sha)+" on "+branch.out+", "+reload, "/reload-plugins")
 	return append(data, kv{"cache", cache}, kv{"reload", "/reload-plugins"}, kv{"older", older}, kv{"message", reload}), nil
-}
-
-// takeGateTurn waits for the machine-wide gate turn through frame's script, so one script keeps the queue's rules; the
-// returned func leaves it with the run's exit code, and a dead x's closed pipe frees it. a go test takes no turn unless it
-// asks: the suite must not serialize, and a test inside a commit's own hook must not wait on that commit
-func takeGateTurn(label, again string) (func(error), error) {
-	stay := func(error) {}
-	script := filepath.Join(frameRoot(), gateQueueScript)
-	if (os.Getenv("X_TEST") != "" && os.Getenv("X_GATE_TURN") == "") || !exists(script) {
-		return stay, nil
-	}
-	c := exec.Command(script, "--hold", label)
-	c.Stderr = os.Stderr
-	to, err := c.StdinPipe()
-	if err != nil {
-		return stay, err
-	}
-	from, err := c.StdoutPipe()
-	if err != nil {
-		return stay, err
-	}
-	if err := c.Start(); err != nil {
-		fmt.Fprintf(os.Stderr, "gate turn: %v, running with no turn\n", err)
-		return stay, nil
-	}
-	ready, _ := bufio.NewReader(from).ReadString('\n')
-	if strings.TrimSpace(ready) != gateQueueReady {
-		_ = c.Wait()
-		code := c.ProcessState.ExitCode()
-		if code == gateQueueDeadline {
-			return stay, &Fail{Msg: "the gate turn's wait passed its deadline, nothing ran; the holder is named above", Next: again}
-		}
-		// a broken queue never blocks a commit
-		fmt.Fprintf(os.Stderr, "gate turn: the queue exited %d, running with no turn\n", code)
-		return stay, nil
-	}
-	before, had := os.LookupEnv(gateQueueHeld)
-	_ = os.Setenv(gateQueueHeld, "gate")
-	return func(stopped error) {
-		if had {
-			_ = os.Setenv(gateQueueHeld, before)
-		} else {
-			_ = os.Unsetenv(gateQueueHeld)
-		}
-		code := 0
-		if stopped != nil {
-			code = 1
-		}
-		fmt.Fprintf(to, "%d\n", code)
-		_ = to.Close()
-		_ = c.Wait()
-	}, nil
 }
 
 // lockedGit runs a git that takes the index lock: it waits out a lock a peer holds, and once more when the lock

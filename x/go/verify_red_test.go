@@ -480,25 +480,6 @@ func TestVerifyRedReachesATestMainsChildBuild(t *testing.T) {
 	}
 }
 
-// exit line 10: a pairs round takes the gate queue's long slot itself, once for the whole round
-func TestVerifyRedPairsTakeTheLongSlot(t *testing.T) {
-	t.Parallel()
-	f := goRedFixture(t)
-	root := t.TempDir()
-	calls := filepath.Join(t.TempDir(), "calls")
-	write(t, filepath.Join(root, "script/gate-queue.sh"), "#!/bin/sh\necho \"$1\" >> "+calls+"\nshift\nGATE_QUEUE_HELD=long exec \"$@\"\n")
-	pairs := pairsFile(t, "Limit = 3\tLimit = 4", "Limit = 3\tLimit = 5")
-
-	got, _ := verifyRedIn(t, f, []string{"X_FRAME_ROOT=" + root}, f.file, "--pairs", pairs, f.test)
-
-	if got.code != 0 || len(pairRows(t, got)) != 2 {
-		t.Fatalf("exit %d, want both pairs red inside the slot:\n%s", got.code, got.stdout)
-	}
-	if read := readOr(calls, ""); read != "--long\n" {
-		t.Fatalf("the queue heard %q, want one turn on the long slot", read)
-	}
-}
-
 // review round: a link into the repo, a workspace package's in node_modules or an absolute one, reads the copy's mutant
 func TestVerifyRedFollowsLinksIntoTheCopy(t *testing.T) {
 	t.Parallel()

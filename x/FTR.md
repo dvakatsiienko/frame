@@ -328,7 +328,9 @@
   - limit: the argv check reads words, so a package manager's name as a plain argument, `-- pnpm exec vitest run -t npm`, refuses too, the safe side of a word read
   - given `X_VERIFY=1`, then `script/research-lanes.sh` makes no exa or parallel call and says it skipped, so a test whose code runs it is proved for free, and a typo beside it reads broken
   - given a go mutant in code only a `TestMain`'s child build runs, then it reads red through `GOFLAGS=-overlay`, where an `-overlay` flag on `go test` alone reads still green; a run stops at its first failure, go `-failfast`, vitest `--bail=1`
-  - given `--pairs`, then the round takes the gate queue's long slot itself, one turn for every pair
+  - given `--pairs`, then the round takes the gate queue's long turn itself, a group of pairs at a time, about 2 min, and gives it back between groups; inside a held long turn it takes none
+  - given a whole suite in the long line, then it goes ahead of every batch (mutants, a red round, one file, a `-run`), never past a run already holding the turn; two suites keep their order
+  - decision: four suites waited 7 to 16 min on 23 and 24 nov, each behind one batch holding the turn 21 min (dima's o13, 2026-11-24)
   - given a mod's test, then only that test file runs on the mod's overlay, each pair's seconds in its row; the clean run and the first mutant run side by side, since a mod's runs share no file, so a one-pair proof costs about one run's wall time (FRM-560), and the runner's own load error reads broken whatever it reddened; an assertion whose message quotes a load word, a go `t.Fatalf` line included, reads red
   - decision: a throw from the mutated code reads red, since the mutant is the run's only change (dima, o82); `--revert` keeps any throw broken
   - given a file a go test opens at runtime, not one go builds, then its mutant runs in the copy, a `-- go …` command included, since an overlay never reaches it; the test runs from its own dir, so a root file a module below reads, `lefthook.yaml` for `x/go`, reads its clean run green (FRM-560)
