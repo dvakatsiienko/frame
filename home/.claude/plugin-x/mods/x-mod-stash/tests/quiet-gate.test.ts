@@ -600,6 +600,13 @@ for (const to of ['⚡ 🔧 codie: clio-lean', '🦉 clio (side)', 'local_other'
         expect(r.context ?? []).not.toContain(SLIPSTREAMED);
     });
 
+test('a send of no words to clio carries no contract', async ($, on) => {
+    member(on);
+    await start($);
+    const r = await send($, '🦉 clio', '');
+    expect(r.context ?? []).toEqual([]);
+});
+
 test('a [blocked] opening is told how to push', async ($, on) => {
     member(on);
     await start($);

@@ -363,7 +363,9 @@ export async function quietSendStart(
 ): Promise<QuietSend | undefined> {
     const to = text(e.to);
     const message = text(e.message) ?? '';
-    if (!to || !(await readSwitch($, 'quiet'))) return undefined;
+    // a bare subscribe (`notify_when_idle`, no words) says nothing, so it answers no ping and sends none
+    if (!to || !message.trim() || !(await readSwitch($, 'quiet')))
+        return undefined;
     if (await isLaneOwner($))
         return {
             isAsking: isQuietQuestion(message),

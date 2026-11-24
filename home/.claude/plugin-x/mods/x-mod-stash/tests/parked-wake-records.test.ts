@@ -215,6 +215,34 @@ for (const [why, last] of [
         expect(w.wakes().at(-1)).toContain('sent its [ask]');
     });
 
+// FRM-698: a bare subscribe (`notify_when_idle`, no words) is a SendMessage that says nothing
+for (const [tag, who, message, wakes] of [
+    ['done', 'main', undefined, 1],
+    ['done', 'main', '  \n', 1],
+    ['ask', 'main', undefined, 1],
+    ['done', 'a wing', undefined, 1],
+    ['done', 'main', 'heard', 0],
+] as const)
+    test(`an open [${tag}], then ${JSON.stringify(message) ?? 'a bare subscribe'} from ${who}: ${wakes} wake`, async ($, on) => {
+        const isWing = who === 'a wing';
+        const w = parkedWorld(on, [isWing ? ofWing : codie()], {
+            card: ENDED,
+            store: said(C, 'waiting on 🦉 clio', 0),
+            ...(isWing ? { name: WING_1.display } : {}),
+        });
+        await start($);
+        await ping($, `[${tag}] FRM-1`, codie().name);
+        await pass($, w, 1);
+        await $.tool.call({
+            message,
+            notify_when_idle: true,
+            to: codie().name,
+            tool: 'SendMessage',
+        } as never);
+        await pass($, w, 11);
+        expect(w.wakes().length).toBe(wakes);
+    });
+
 test('a wing’s send closes no ping of main’s', async ($, on) => {
     const w = parkedWorld(on, [codie()], {
         card: ENDED,
