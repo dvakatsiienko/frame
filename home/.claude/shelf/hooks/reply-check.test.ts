@@ -783,13 +783,13 @@ describe('a queue-run reply with no next item (dima, 2026-11-20)', () => {
         return { CLIO_QUEUE_RUN: dir };
     };
 
-    it('logs a done report with no «next item:» in a turn dima started', () => {
+    it('logs a done report with no «next catch:» in a turn dima started', () => {
         expect(loggedAfter(done, turnOpenedBy('go on'), queueDir())).toContain('no-next-item');
-        expect(nextPrompt()).toContain('a queue-run reply with no «next item:»');
+        expect(nextPrompt()).toContain('a queue-run reply with no «next catch:»');
     });
 
     it('passes a done report that ends with the next item', () => {
-        expect(loggedAfter(`${done}\n\nnext item: FRM-2, the flyway fix.\nmy take: rename it.`, turnOpenedBy('go on'), queueDir())).not.toContain('no-next-item');
+        expect(loggedAfter(`${done}\n\nnext catch: FRM-2, the flyway fix.\nmy take: rename it.`, turnOpenedBy('go on'), queueDir())).not.toContain('no-next-item');
     });
 
     it('passes a turn a task-notification opened', () => {

@@ -560,7 +560,7 @@ def quiet_wake(path: str, reply: str) -> bool:
 
 QUEUE_DIR = os.environ.get("CLIO_QUEUE_RUN", os.path.expanduser("~/.local/state/clio/queue-run"))
 QUEUE_TTL_S = 12 * 3600
-NEXT_ITEM = re.compile(r"next item:", re.I)
+NEXT_ITEM = re.compile(r"next catch:", re.I)
 MEMBER_OPENERS = ("Another Claude session sent", "<task-notification", "[SYSTEM NOTIFICATION", "<cross-session-message")
 
 
@@ -728,7 +728,7 @@ def main() -> None:
     if by_rule("note-only"):
         reminds.append("the reply pointed at the board while the proposal sat only in an ask's hidden note — print the proposal in the thread")
     if by_rule("no-next-item"):
-        reminds.append("a queue-run reply with no «next item:» — end every done report with the next item and «my take:» (clio:lowtide), its pick an orbit ask")
+        reminds.append("a queue-run reply with no «next catch:» — end every done report with the next catch and «my take:» (clio:lowtide), its pick an orbit ask")
     if by_rule("quiet-wake"):
         reminds.append("a wake that only reports a commit or push prints nothing; it rides the next reply")
     if by_rule("plain-verdict"):
