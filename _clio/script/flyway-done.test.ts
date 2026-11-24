@@ -21,6 +21,7 @@ import {
     similarLines,
 } from './flyway-done.ts';
 
+const today = new Date().toLocaleDateString('sv');
 const script = path.join(import.meta.dirname, 'flyway-done.ts');
 const config = path.join(import.meta.dirname, '..', 'backlog.config.yml');
 // ci has no backlog cli; every local commit runs these through its gate
@@ -92,7 +93,7 @@ describe('flyway-done', () => {
             run('--add', 'two');
             expect(read()).toEqual([
                 'f1 one',
-                'f3 two',
+                `f3 two — parked: ${today}`,
                 'f2 🦥 c — later: dima 1',
             ]);
         },
@@ -104,7 +105,11 @@ describe('flyway-done', () => {
             const { read, run } = pocketWith(['f1 one', 'f2 two', 'f3 three']);
             expect(run('f3')).toContain('PK-1 f3 → done note');
             run('--add', 'four');
-            expect(read()).toEqual(['f1 one', 'f2 two', 'f4 four']);
+            expect(read()).toEqual([
+                'f1 one',
+                'f2 two',
+                `f4 four — parked: ${today}`,
+            ]);
         },
     );
 

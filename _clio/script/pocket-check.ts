@@ -10,11 +10,13 @@ import { dirname, join } from 'node:path';
 
 import {
     FLYWAY_SLOTS,
+    PARKED,
     flywayDate,
     flywayKind,
     flywayLines,
     flywayOrdinal,
     flywaySorted,
+    isTail,
 } from './flyway-done.ts';
 import {
     type Groomed,
@@ -157,6 +159,14 @@ export function checkPocket(
                         report(
                             `${line.ref} points at ${named}, closed: ${leave(line.ref)}`,
                         );
+            }
+            // dima, 2026-11-24: a check reds a tail left parked, never only its label
+            for (const line of lines.filter((l) => !l.done && isTail(l.text))) {
+                const parked = line.text.match(PARKED)?.[1];
+                if (parked && parked < today)
+                    report(
+                        `${line.ref} is a tail parked since ${parked}: close it now, then ${leave(line.ref)}`,
+                    );
             }
             for (const line of lines.filter((l) => l.done))
                 report(

@@ -44,6 +44,8 @@ const HIS = /\b(?:dima|grill)\b/i;
 export function isTail(text: string): boolean {
     return flywayKind(text) === 'open' && !HIS.test(text);
 }
+// a tail carries the day it was parked, so the pocket check can red one left past that day
+export const PARKED = / — parked: (\d{4}-\d{2}-\d{2})$/;
 export function parkedTails(lines: FlywayLine[]): FlywayLine[] {
     return lines.filter((line) => !line.done && isTail(line.text));
 }
@@ -138,7 +140,11 @@ if (import.meta.main) {
             .filter(({ text }) => /^title: ['"]?flyway: /m.test(text));
         for (const similar of similarLines(value, flyways))
             console.log(similar);
-        rewrite(id, [value]);
+        rewrite(id, [
+            isTail(value) && !PARKED.test(value)
+                ? `${value} — parked: ${stamp().slice(0, 10)}`
+                : value,
+        ]);
     } else if (mode === '--sort') {
         rewrite(id, []);
     } else if (mode === '--check') {
