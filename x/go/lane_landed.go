@@ -557,7 +557,7 @@ func quickMerged(repo, id, base string, issue landedRead) ([]string, landedLine)
 		return nil, merged
 	}
 	got, _ := gitIn(repo, "log", base+".."+tip, "--format=%h %s")
-	named, _ := gitIn(repo, "log", base+".."+tip, "-E", "--grep=^step [0-9]+ of "+id+"([^0-9]|$)", "--format=%h %s")
+	named, _ := gitIn(repo, "log", base+".."+tip, "-E", "--grep=^"+stepLinePrefix+id+"([^0-9]|$)", "--format=%h %s")
 	var commits []string
 	others := 0
 	if got.ok && got.out != "" {

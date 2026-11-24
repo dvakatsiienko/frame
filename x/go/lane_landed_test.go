@@ -647,6 +647,66 @@ func TestLandedCountsOnlyTheLanesCommitsInsideTheRange(t *testing.T) {
 	}
 }
 
+// the step lines a quick lane really writes: a letter after the number, a range of steps, a line with its own words after the id
+var stepLineCases = []struct {
+	name, line, id string
+	want           bool
+}{
+	{"a plain step", "step 2 of FRM-698: ours", "FRM-698", true},
+	{"a step with a letter", "step 53a of FRM-698, the sixth sense's round 1", "FRM-698", true},
+	{"a range of steps", "steps 51 to 52g of FRM-698", "FRM-698", true},
+	{"a letter and a colon", "step 53a of FRM-698: the two lines its red proofs left green", "FRM-698", true},
+	{"another ticket whose id the id opens", "step 2 of FRM-698: theirs", "FRM-69", false},
+	{"a ticket whose id opens the id asked", "step 2 of FRM-69: theirs", "FRM-698", false},
+}
+
+// stepCommit adds a commit whose body holds a line, and makes it origin/main's head
+func stepCommit(t *testing.T, repo, file, line string) string {
+	t.Helper()
+	write(t, filepath.Join(repo, file), file+"\n")
+	gitT(t, repo, "add", file)
+	gitT(t, repo, "commit", "-q", "-m", "🔧 a lane's change", "-m", line+"\n\nAgent: codie · Claude Sonnet 5.5")
+	gitT(t, repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+	return short(gitT(t, repo, "rev-parse", "HEAD"))
+}
+
+func TestTicketCommitsReadsEveryStepLineShape(t *testing.T) {
+	t.Parallel()
+	for _, c := range stepLineCases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newLandedWorld(t)
+			sha := stepCommit(t, w.repo, "s.txt", c.line)
+
+			got := strings.Join(ticketCommits(w.repo, c.id), "\n")
+
+			if strings.Contains(got, sha) != c.want {
+				t.Errorf("%q for %s: want counted %v, got:\n%s", c.line, c.id, c.want, got)
+			}
+		})
+	}
+}
+
+func TestLandedCountsEveryStepLineShapeInsideTheRange(t *testing.T) {
+	t.Parallel()
+	for _, c := range stepLineCases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w, _ := quickWorld(t)
+			sha := stepCommit(t, w.repo, "s.txt", c.line)
+			tip := stepCommit(t, w.repo, "tip.txt", "no step here")
+			var issue landedRead
+			issue.Comments.Nodes = append(issue.Comments.Nodes, struct{ Body string }{"verified: " + tip})
+
+			commits, _ := quickMerged(w.repo, c.id, dispatchOf(*w.body).base, issue)
+
+			if strings.Contains(strings.Join(commits, "\n"), sha) != c.want {
+				t.Errorf("%q for %s: want counted %v, got:\n%s", c.line, c.id, c.want, strings.Join(commits, "\n"))
+			}
+		})
+	}
+}
+
 func TestLandedPrintsNoWiredLineWhenNoNewVerbIsNamed(t *testing.T) {
 	t.Parallel()
 	for _, line := range []string{"new surface: none — a fix, `x stats`", "new surface: one verb, `x lane landed`", "the prose names `x lane landed` as new", "a new verb: `x lane landed`, in a sentence", "new verb: none", "new verb: none — a fix"} {

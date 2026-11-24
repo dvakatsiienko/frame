@@ -557,7 +557,10 @@ func lineOrLast(f finding) int {
 	return f.Line
 }
 
-func ticketLine(id string) string { return `(ticket: |step [0-9]+ of )` + id + `([^0-9]|$)` }
+// stepLinePrefix opens a quick lane's step line: «step 3 of», «step 53a of», «steps 51 to 52g of»; the id and its not-a-digit end follow
+const stepLinePrefix = `steps? [0-9]+[a-z]?( to [0-9]+[a-z]?)? of `
+
+func ticketLine(id string) string { return `(ticket: |` + stepLinePrefix + `)` + id + `([^0-9]|$)` }
 
 // ticketCommits lists origin/main's commits for id: a squashed pr's body carries «ticket: <id>», a quick lane's
 // body «step 3 of <id>» (x:cmt § 4), an older one its subject's parenthetical, «(FRM-459 step 20)»
