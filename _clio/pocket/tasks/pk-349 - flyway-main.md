@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T17:10:00Z'
+updated_date: '2026-11-24T17:18:00Z'
 labels:
   - s
   - clio-main
@@ -2701,4 +2701,12 @@ PK-349:W2365 (2026-11-24 19:07, dima): So for example, if mod chunk finishes at 
 PK-349:W2366 (2026-11-24 19:07, dima): We then each window need to pick a stop target.
 PK-349:W2367 (2026-11-24 19:07, dima): We wait for the lane that is selected to be a stop target (e.g., to finish its part to park) and then everyone else parks wherever they are.
 PK-349:W2368 (2026-11-24 19:07, dima): Will it work? ❓
+
+19:18 tomorrow, his plan (raw 19:12):
+PK-349:W2369 (2026-11-24 19:12, dima): let's make a lanes healthcheck for tmrw meanehile.
+PK-349:W2370 (2026-11-24 19:12, dima): my plan:
+PK-349:W2371 (2026-11-24 19:12, dima): you — herdr + cc mods + speak.
+PK-349:W2372 (2026-11-24 19:12, dima): (today load with two lanes was ok so let's try to add herdr)
+PK-349:W2373 (2026-11-24 19:12, dima): at some point I ask for wing 1 and solve grills and researches with it.
+PK-349:W2374 (2026-11-24 19:12, dima): let's do /clio:lowtide-peek-lanes herdr first
 <!-- SECTION:NOTES:END -->
