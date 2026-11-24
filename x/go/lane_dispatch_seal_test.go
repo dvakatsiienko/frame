@@ -50,6 +50,8 @@ func TestDispatchRefusesAChunkThatIsNotSealed(t *testing.T) {
 		{"two unsealed tickets in one call", undispatched, nil, append([]string{"FRM-1", "FRM-2"}, sealLane...), []string{"FRM-1", "FRM-2", "no spec section"}},
 		{"a quick ticket edited under a ✏️ line after its seal", dispatchState{body: staleVoices, state: "Todo", labels: []string{"agent"}}, map[string]string{"FRM-1": sealedSection(wishOf("FRM-1", "lane: quick\nrepo: frame\n\n"))}, append([]string{"--quick", "FRM-1"}, sealLane...), []string{"FRM-1", "moved since the seal"}},
 		{"a start for another lane than the 🚀 line's", dispatchState{body: signedBody(dispatchAbove, "🚀 dispatched 2026-11-24 — l, codie s1, main:abc1234\n", dispatchAbove) + "\n⸻ 🪪 stamp", state: "In Progress", delegate: "codie"}, nil, []string{"FRM-1", "--session", "s2", "--area", "cli", "--lane", "other"}, []string{"FRM-1", "no spec section"}},
+		{"a first line that only starts with lane: main", dispatchState{body: signedBody("lane: mainstream\n\n"+dispatchAbove, "", "lane: mainstream\n\n"+dispatchAbove) + "\n⸻ 🪪 stamp", state: "Todo", labels: []string{"agent", "signed"}}, nil, append([]string{"FRM-1"}, sealLane...), []string{"FRM-1", "no spec section"}},
+		{"a 🚀 inside a sentence is no start to repeat", dispatchState{body: signedBody(dispatchAbove, "see the note: 🚀 dispatched 2026-11-24 — feat, codie s1, main:abc1234\n", dispatchAbove) + "\n⸻ 🪪 stamp", state: "In Progress", delegate: "codie"}, nil, append([]string{"FRM-1"}, sealLane...), []string{"FRM-1", "no spec section"}},
 		{"a start after a ↩️ line", dispatchState{body: signedBody(dispatchAbove, "🚀 dispatched 2026-11-24 — l, codie s1, main:abc1234\n↩️ taken back 2026-11-24, the lane moved\n", dispatchAbove) + "\n⸻ 🪪 stamp", state: "In Progress", delegate: "codie", labels: []string{"signed"}}, nil, []string{"FRM-1", "--session", "s1", "--area", "cli", "--lane", "l"}, []string{"FRM-1", "no spec section"}},
 	} {
 		t.Run(c.name, func(t *testing.T) {
@@ -69,8 +71,13 @@ func TestDispatchRefusesAChunkThatIsNotSealed(t *testing.T) {
 					t.Errorf("the refusal does not name %q:\n%s", want, text)
 				}
 			}
-			if next := envelope["next"]; next != "x brief preflight FRM-1" {
-				t.Errorf("next %q, want the preflight of the first ticket refused", next)
+			// a preflight reds on a moved text and prints ok for no section or no hash, so those name the command that prints the hash
+			wantNext := "x linear sign-check FRM-1 --body-file <the ticket's text, above its ## signed>"
+			if strings.Contains(strings.Join(c.want, " "), "moved since the seal") {
+				wantNext = "x brief preflight FRM-1"
+			}
+			if next := envelope["next"]; next != wantNext {
+				t.Errorf("next %q, want %q", next, wantNext)
 			}
 			if n := len(mutations(server)); n != 0 {
 				t.Errorf("%d mutations behind a refusal", n)
@@ -237,5 +244,35 @@ func TestDispatchReadsASectionHeadingRepeatedInOneSpec(t *testing.T) {
 
 	if text := got.stdout + jsonOf(envelope["error"]); got.code != 1 || !strings.Contains(text, "no seal hash") {
 		t.Fatalf("exit %d, want the later section's missing hash refused:\n%s", got.code, got.stdout)
+	}
+}
+
+// FRM-700 review: the seal is read before the lane-mismatch refusal, and a repo lookup that fails is a warning
+func TestDispatchRefusesAnUnsealedChunkBeforeTheOneLaneCheck(t *testing.T) {
+	t.Parallel()
+	frame, _ := frameAtBase(t)
+	write(t, filepath.Join(frame, ".scratch/feat-a/spec.md"), "# feat a\n\n## FRM-1 — one\n\n"+sealedSection("wish: FRM-1"))
+	write(t, filepath.Join(frame, ".scratch/feat-b/spec.md"), "# feat b\n\n## FRM-2 — two\n\n"+sealedSection("wish: FRM-2"))
+	server := dispatchServer(t, undispatched)
+
+	envelope, got := runDispatchUnsealed(t, server, frame, append([]string{"FRM-1", "FRM-2"}, sealLane...)...)
+
+	if text := got.stdout + jsonOf(envelope["error"]); got.code != 1 || !strings.Contains(text, "no seal hash") || strings.Contains(text, "one dispatch is one lane") {
+		t.Fatalf("exit %d, want the seal refusal first:\n%s", got.code, got.stdout)
+	}
+}
+
+func TestDispatchWarnsWhenTheTicketsRepoHasNoCheckout(t *testing.T) {
+	t.Parallel()
+	frame, _ := frameAtBase(t)
+	above := "lane: side\nrepo: nowhere-here\n\n## 🎯 done test\n\ngiven a ticket, when it runs, then it holds\n\n"
+	body := signedBody(above, "", above) + "\n⸻ 🪪 stamp — please keep 🙏"
+	specWith(t, frame, map[string]string{"FRM-1": sealedSection(wishOf("FRM-1", body))})
+	server := dispatchServer(t, dispatchState{body: body, state: "Todo", labels: []string{"agent", "signed"}})
+
+	envelope, got := runDispatchUnsealed(t, server, frame, append([]string{"FRM-1"}, sealLane...)...)
+
+	if plan := jsonOf(envelope["plan"]); got.code != 4 || !strings.Contains(plan, "nowhere-here") || !strings.Contains(plan, "warnings") {
+		t.Fatalf("exit %d, want 4 with the missing checkout as a warning:\n%s", got.code, got.stdout)
 	}
 }

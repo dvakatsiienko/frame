@@ -109,8 +109,8 @@ func runDispatchWith(t *testing.T, server *fakeLinear, frame string, run func(*t
 func TestDispatchRefusesTicketsFromTwoLaneSpecs(t *testing.T) {
 	t.Parallel()
 	frame := repo(t)
-	write(t, filepath.Join(frame, ".scratch/feat-a/spec.md"), "# feat a\n\n## FRM-1 — one\n")
-	write(t, filepath.Join(frame, ".scratch/feat-b/spec.md"), "# feat b\n\n## FRM-2 — two\n")
+	write(t, filepath.Join(frame, ".scratch/feat-a/spec.md"), "# feat a\n\n## FRM-1 — one\n\n"+sealedSection(wishOf("FRM-1", signedTicket)))
+	write(t, filepath.Join(frame, ".scratch/feat-b/spec.md"), "# feat b\n\n## FRM-2 — two\n\n"+sealedSection(wishOf("FRM-2", signedTicket)))
 	server := dispatchServer(t, dispatchState{body: signedTicket, state: "Todo", labels: []string{"agent", "signed"}})
 
 	envelope, got := runDispatchIn(t, server, frame, "FRM-1", "FRM-2", "--session", "s1", "--area", "cli", "--lane", "cli-9")
@@ -903,7 +903,9 @@ func TestDispatchRefusesTicketsWhoseLaneLinesDisagree(t *testing.T) {
 					`"labels":{"nodes":[{"id":"l-signed","name":"signed"}]},"team":{"states":{"nodes":[{"id":"s-ip","name":"In Progress"}]}}},"users":{"nodes":[{"id":"u-codie","name":"codie"}]}}}`
 			})
 
-			envelope, got := runDispatch(t, server, "FRM-1", "FRM-2", "--session", "s1", "--area", "stray", "--lane", "chores")
+			frame := t.TempDir()
+			write(t, filepath.Join(frame, ".scratch/chores/spec.md"), "# chores\n\n## FRM-1 — one\n\n"+sealedSection(wishOf("FRM-1", signed(c.first)))+"\n## FRM-2 — two\n\n"+sealedSection(wishOf("FRM-2", signed(c.second))))
+			envelope, got := runDispatchIn(t, server, frame, "FRM-1", "FRM-2", "--session", "s1", "--area", "stray", "--lane", "chores")
 
 			said := jsonOf(envelope["error"])
 			if c.isRefused != (got.code == 2) || (c.isRefused && !(strings.Contains(said, "FRM-1: side") && strings.Contains(said, "FRM-2: quick"))) {

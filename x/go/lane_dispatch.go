@@ -117,6 +117,9 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 		}
 		plan.Tickets = append(plan.Tickets, ticket)
 	}
+	if err := sealChecks(&plan); err != nil {
+		return nil, err
+	}
 	if flags["quick"] != true {
 		if err := agreeingLaneKinds(plan.Tickets); err != nil {
 			return nil, err
@@ -138,9 +141,6 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 			return nil, usageFail(args[0]+" sits in lane spec "+feature+", "+id+" in "+of+": one dispatch is one lane", "x lane dispatch <one lane's ids> --session <sid> --lane <name>")
 		}
 		feature = of
-	}
-	if err := sealChecks(&plan); err != nil {
-		return nil, err
 	}
 	if feature != "" {
 		plan.Slices = home(filepath.Join(stateDir(), "lanes", feature, "issues")) + "/ — codie's to-tickets slices"
@@ -167,17 +167,23 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 func sealChecks(plan *dispatchPlan) error {
 	frame := mainCheckout(frameRoot())
 	var refused []string
-	first := ""
+	first, drifted := "", false
 	for _, ticket := range plan.Tickets {
-		if ticket.rerun || strings.HasPrefix(ticket.body, "lane: main") {
+		if first, _, _ := strings.Cut(ticket.body, "\n"); ticket.rerun || strings.TrimRight(first, " \r") == "lane: main" {
 			continue
 		}
 		paths, sections := ticketSpecs(ticket.ID)
-		if why := unsealed(ticket.ID, ticket.body, sections); why != "" {
-			refused, first = append(refused, why), cmp.Or(first, ticket.ID)
+		if why, moved := unsealed(ticket.ID, ticket.body, sections); why != "" {
+			if first == "" {
+				first, drifted = ticket.ID, moved
+			}
+			refused = append(refused, why)
 			continue
 		}
 		repo, err := ticketRepo(ticket.ID, ticket.body)
+		if err != nil {
+			plan.Warnings = append(plan.Warnings, ticket.ID+": "+err.Error()+"; its checks read frame's checkout")
+		}
 		if err != nil || repo == "" {
 			repo = frame
 		}
@@ -201,8 +207,13 @@ func sealChecks(plan *dispatchPlan) error {
 		}
 	}
 	if len(refused) > 0 {
-		return &Fail{Refused: true, Msg: "a lane starts from a sealed chunk: " + strings.Join(refused, "; ") + " — write the section, or read what changed, fold it in and set the hash",
-			Next: "x brief preflight " + first}
+		// a preflight reds on a moved text and names both hashes; it prints ok for a ticket with no section or no hash, so those
+		// are sent to the command that prints the hash to set
+		next := "x linear sign-check " + first + " --body-file <the ticket's text, above its ## signed>"
+		if drifted {
+			next = "x brief preflight " + first
+		}
+		return &Fail{Refused: true, Msg: "a lane starts from a sealed chunk: " + strings.Join(refused, "; ") + " — write the section, or read what changed, fold it in and set the hash", Next: next}
 	}
 	return nil
 }
@@ -238,24 +249,24 @@ func ticketSpecs(id string) (paths, sections []string) {
 
 // how a ticket's spec sections fail to seal its text, "" when they seal it: the newest must hold a seal hash, and the text must
 // hash to the hash of some section, an older match never standing in for a newer section with none
-func unsealed(id, body string, sections []string) string {
+func unsealed(id, body string, sections []string) (why string, moved bool) {
 	if len(sections) == 0 {
-		return id + " has no spec section"
+		return id + " has no spec section", false
 	}
 	newest := sections[len(sections)-1]
 	if _, recorded := sealRecorded(newest); recorded == "" {
-		return id + "'s newest spec section has no seal hash"
+		return id + "'s newest spec section has no seal hash", false
 	}
 	for _, section := range sections {
 		if _, recorded := sealRecorded(section); recorded == "" {
 			continue
 		}
 		if _, drifted, _ := sealDrift(section, body); drifted == "" {
-			return ""
+			return "", false
 		}
 	}
 	_, recorded, signed := sealDrift(newest, body)
-	return fmt.Sprintf("%s's text moved since the seal (the spec records body %s, the ticket's text hashes to body %s)", id, recorded, signed)
+	return fmt.Sprintf("%s's text moved since the seal (the spec records body %s, the ticket's text hashes to body %s)", id, recorded, signed), true
 }
 
 // what the 🚀 line records past its lane and session, x lane landed reads them back
@@ -331,7 +342,9 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 	}
 	newLane, newSession := cmp.Or(lane, was[1]), cmp.Or(session, was[2])
 	ticket.lane = newLane
-	ticket.body, ticket.rerun = body, dispatched && newLane == was[1]
+	ticket.body = body
+	// a 🚀 mentioned inside a sentence is no start to repeat: only a line that opens with it exempts
+	ticket.rerun = dispatched && newLane == was[1] && strings.Contains("\n"+block, "\n"+held)
 	base, sixthSense := "", note.sixthSense
 	// the same lane under a new session keeps the range and the verifier its line names; another lane starts fresh
 	if newLane == was[1] {
