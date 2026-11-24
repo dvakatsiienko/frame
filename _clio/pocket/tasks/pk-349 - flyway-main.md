@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T17:38:00Z'
+updated_date: '2026-11-24T18:06:00Z'
 labels:
   - s
   - clio-main
@@ -17,16 +17,17 @@ ordinal: 1000
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 f113 the plan over all herdr work (FRM-616), parked on his word — later: dima 19:32 («tomorrow or the day after») — parked: 2026-11-24
-- [ ] #2 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #3 f104 ⏳ herdr wisp: the slash list misses his skill, in chat's commands() — waits for: FRM-620
-- [ ] #4 f105 ⏳ herdr wisps: the phases steer text empties; a Read picture says «gone» on click — waits for: FRM-620
-- [ ] #5 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
-- [ ] #6 f107 ⏳ herdr wisp: a triple click selects one visual run, not the bullet (shot 24 Nov) — waits for: FRM-620
-- [ ] #7 f108 ⏳ herdr wisp: a click on a file path or dir link does nothing (his o6) — waits for: FRM-620
-- [ ] #8 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
-- [ ] #9 f112 ⏳ FRM-585 annotate (F6) seal, right after FRM-699 — waits for: FRM-699
-- [ ] #10 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
-- [ ] #11 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #2 f114 FRM-678: the queue's free-CPU number, read from two days of rows, then one number to dima — on: 2026-11-26 — parked: 2026-11-24
+- [ ] #3 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #4 f104 ⏳ herdr wisp: the slash list misses his skill, in chat's commands() — waits for: FRM-620
+- [ ] #5 f105 ⏳ herdr wisps: the phases steer text empties; a Read picture says «gone» on click — waits for: FRM-620
+- [ ] #6 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
+- [ ] #7 f107 ⏳ herdr wisp: a triple click selects one visual run, not the bullet (shot 24 Nov) — waits for: FRM-620
+- [ ] #8 f108 ⏳ herdr wisp: a click on a file path or dir link does nothing (his o6) — waits for: FRM-620
+- [ ] #9 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
+- [ ] #10 f112 ⏳ FRM-585 annotate (F6) seal, right after FRM-699 — waits for: FRM-699
+- [ ] #11 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
+- [ ] #12 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2729,4 +2730,28 @@ PK-349:W2386 (2026-11-24 19:35, dima): [one-click: waits on mods' settings rows,
 PK-349:W2387 (2026-11-24 19:35, dima): [relay bubbles:] if it truly needs more grilling, add into wing 1 flyway.
 PK-349:W2388 (2026-11-24 19:35, dima): I am generally fine with Herdr list but I don't like the way you represented it because before answering you could solve those mechanical parts.
 PK-349:W2389 (2026-11-24 19:35, dima): Did you solve them already? ❓
+
+PK-349:W2390 (2026-11-24 19:42, dima): mods codie waits for you, unblock him pls.
+
+PK-349:W2391 (2026-11-24 19:45, dima): Yes and we still need to solve operational stuff, like plan Herdr scope for tomorrow, until it's finished because you're still processing.
+
+PK-349:W2392 (2026-11-24 19:45, dima): Then do the same for mods and for speak and only after that everyone stops.
+
+PK-349:W2393 (2026-11-24 19:48, dima): Also I spotted a thing: you're pretty busy with a lot of stuff, maintaining lanes, solving all the asks, and planning tomorrow via Tik lanes is quite lengthy.
+
+PK-349:W2394 (2026-11-24 19:48, dima): I waited for your reply for about 10 minutes already, even more maybe.
+
+PK-349:W2395 (2026-11-24 19:48, dima): How do you think? ❓
+
+PK-349:W2396 (2026-11-24 19:48, dima): If a wing is up can we do the lanes preps with your wing or is it still better with you because you have the context? ❓
+
+PK-349:W2397 (2026-11-24 19:48, dima): Maybe instead I could do the planning with a wing and it would just consult with you on the hot topics since you run the lanes and you are aware of the current state? ❓
+
+PK-349:W2398 (2026-11-24 19:48, dima): I'm thinking how to balance the load on you and do stuff faster.
+
+PK-349:W2399 (2026-11-24 19:50, dima): let's try.
+
+PK-349:W2400 (2026-11-24 19:50, dima): it is not a habit.
+
+PK-349:W2401 (2026-11-24 19:50, dima): I just ask you to wind down with rough estimate when, then plan lanes with wing one, and once we fuly done I ask you to stop everyone and we halt.
 <!-- SECTION:NOTES:END -->
