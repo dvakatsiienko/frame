@@ -28,7 +28,7 @@ dima, 2026-11-23, the goal:
 
 ## the run
 
-- suggest a run when: the Monday boot (it replaces the bare `weekly-empty-wakes` count), or dima says the thread feels noisy
+- suggest a run when: the Monday boot, as `weekly-crew-comms-audit` (it replaces the bare `weekly-empty-wakes` count), or dima says the thread feels noisy
 - the scope is every wake of clio's: members, crow, helga, her own background jobs and watches, stop hooks
 - no outside research unless a run meets a problem we cannot solve ourselves
 - a run opens with `clio:shape-recipe`'s step 0, the grill, like every recipe

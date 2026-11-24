@@ -556,6 +556,70 @@ describe('readLaneAhead, the chain', () => {
     });
 });
 
+describe('readLaneAhead, a chunk placed ahead of the started one', () => {
+    test('the started chunk its area sibling blocks reads that sibling first, then its own next chunk', () => {
+        const home = homeWith();
+        const lanes = readLaneAhead(
+            home,
+            ['mods'],
+            world(home, {
+                running: modsRunning,
+                tickets: {
+                    'FRM-1': {
+                        ...running,
+                        relations: [
+                            rel('blocked by', 'FRM-9'),
+                            rel('blocks', 'FRM-2'),
+                        ],
+                    },
+                    'FRM-2': { relations: [rel('blocked by', 'FRM-1')] },
+                    'FRM-9': { project: 'mods: cc', relations: [] },
+                },
+            }),
+        );
+        expect(sealedAhead(lanes).lanes[0]?.slots?.map((s) => s?.id)).toEqual([
+            'FRM-9',
+            'FRM-2',
+        ]);
+    });
+});
+
+describe('readLaneAhead, a chunk whose first step already landed', () => {
+    const landed =
+        'main commit 0ac1690 x — main already carries a commit for FRM-2';
+
+    test.each([
+        ['its own commit alone', `1 problem in spec\n${landed}`, 'sealed'],
+        [
+            'its own commit beside a real problem',
+            `2 problems in spec\n${landed}\nno numbered exit lines`,
+            'signed, not sealed',
+        ],
+        ['an error with no problem list', landed, 'signed, not sealed'],
+    ])('%s', (_name, error, state) => {
+        const home = homeWith();
+        const lanes = readLaneAhead(
+            home,
+            ['mods'],
+            world(home, {
+                preflight: { 'FRM-2': error },
+                running: modsRunning,
+                tickets: {
+                    'FRM-1': {
+                        ...running,
+                        relations: [rel('blocks', 'FRM-2')],
+                    },
+                    'FRM-2': { relations: [] },
+                },
+            }),
+        );
+        expect(sealedAhead(lanes).lanes[0]?.slots?.[0]).toMatchObject({
+            id: 'FRM-2',
+            state,
+        });
+    });
+});
+
 describe('readLaneAhead, a running chunk that blocks two chunks of one chain', () => {
     // FRM-1 runs and blocks FRM-3 and FRM-2; FRM-3 waits on FRM-2 and is the sealed one
     const chain = (home: string) =>
