@@ -10,6 +10,7 @@ import { gitEnv } from '../../../script/lib/git-fixture.ts';
 
 const LINT = join(import.meta.dirname, 'memory-lint.ts');
 const LEAF = '_clio/memory/leaf.md';
+const PAD = '_clio/memory/pad.md';
 const BUDGETS = 'recipes/nurture-memory/scripts/memory-budgets.tsv';
 // a hook run exports GIT_INDEX_FILE and friends; without this the fixture writes the real index
 const env = gitEnv();
@@ -28,7 +29,14 @@ function repo(leaf: string, budget: number) {
     mkdirSync(join(dir, '_clio/memory'), { recursive: true });
     mkdirSync(join(dir, 'recipes/nurture-memory/scripts'), { recursive: true });
     writeFileSync(join(dir, LEAF), leaf);
-    writeFileSync(join(dir, BUDGETS), `${LEAF}\t${budget}\tseed\n`);
+    writeFileSync(
+        join(dir, PAD),
+        `${'- padding a test trims to pay for its growth\n'.repeat(12)}`,
+    );
+    writeFileSync(
+        join(dir, BUDGETS),
+        `${LEAF}\t${budget}\tseed\n${PAD}\t900\tseed\n`,
+    );
     git('add', '-A');
     git('commit', '-qm', 'seed');
     const stage = (path: string, text: string) => {
@@ -42,7 +50,7 @@ function repo(leaf: string, budget: number) {
         writeFileSync(runEnv.MEMORY_LINT_STATES, JSON.stringify(table));
     states({});
     const lint = (...files: string[]) =>
-        spawnSync('node', [LINT, ...(files.length ? files : [LEAF])], {
+        spawnSync('node', [LINT, ...(files.length ? files : [LEAF, PAD])], {
             cwd: dir,
             encoding: 'utf8',
             env: runEnv,
@@ -57,8 +65,9 @@ function repo(leaf: string, budget: number) {
         });
     const read = (path: string) => readFileSync(join(dir, path), 'utf8');
     const drop = (path: string) => git('rm', '-q', path);
-    const commit = () => git('commit', '-qm', 'next');
-    return { commit, drop, lint, read, seed, stage, states };
+    // memory stays at net zero: a test that grows the leaf trims the pad in the same commit
+    const pay = () => stage(PAD, '- padding\n');
+    return { drop, lint, pay, read, seed, stage, states };
 }
 
 describe('memory-lint', () => {
@@ -79,7 +88,7 @@ describe('memory-lint', () => {
         r.stage(LEAF, '- one line\n- a second line that pushes it over\n');
         r.stage(
             BUDGETS,
-            `${LEAF}\t200\tthe second line carries his new rule (dima 2026-11-24)\n`,
+            `${LEAF}\t200\tthe second line carries his new rule (dima 2026-11-24)\n${PAD}\t900\tseed\n`,
         );
         expect(r.lint().status).toBe(0);
     });
@@ -87,24 +96,24 @@ describe('memory-lint', () => {
     it('refuses a raise with a new reason and no cut elsewhere: memory stays at net zero', () => {
         const r = repo('- one line\n', 20);
         r.stage(LEAF, '- one line\n- a second line that pushes it over\n');
-        r.stage(BUDGETS, `${LEAF}\t200\tthe second line is useful\n`);
+        r.stage(
+            BUDGETS,
+            `${LEAF}\t200\tthe second line is useful\n${PAD}\t900\tseed\n`,
+        );
         const out = r.lint();
         expect(out.status).toBe(1);
         expect(out.stderr).toContain('memory stays at net zero');
     });
 
-    it('lets a raise through when another row is cut by as much', () => {
-        const other = '_clio/memory/habit-other.md';
+    it('lets a raise through when another memory file is cut by as much', () => {
         const r = repo('- one line\n', 20);
-        r.stage(other, '- a\n');
-        r.stage(BUDGETS, `${LEAF}\t20\tseed\n${other}\t300\tseed\n`);
-        r.commit();
         r.stage(LEAF, '- one line\n- a second line that pushes it over\n');
         r.stage(
             BUDGETS,
-            `${LEAF}\t200\tthe second line is useful\n${other}\t120\ttrimmed to pay for it\n`,
+            `${LEAF}\t200\tthe second line is useful\n${PAD}\t900\tseed\n`,
         );
-        expect(r.lint(LEAF, other).status).toBe(0);
+        r.pay();
+        expect(r.lint(LEAF, PAD).status).toBe(0);
     });
 
     it('refuses a raise that keeps the old reason', () => {
@@ -128,6 +137,7 @@ describe('memory-lint', () => {
 
     it('warns on a backticked repo path that is not on disk, naming file:line, and still passes', () => {
         const r = repo('- one line\n', 500);
+        r.pay();
         r.stage(LEAF, '- one line\n- see `_clio/memory/gone.md` for it\n');
         const out = r.lint();
         expect(out.status).toBe(0);
@@ -146,6 +156,7 @@ describe('memory-lint', () => {
 
     it('passes a backticked path that exists, and one outside the path shape', () => {
         const r = repo('- one line\n', 500);
+        r.pay();
         r.stage(
             LEAF,
             '- see `_clio/memory/leaf.md:1`, `_clio/memory/<name>.md`, `_clio/*.md`, `a/b`, `not/real.md` and `_clio/memory/x y`\n',
@@ -164,6 +175,7 @@ describe('memory-lint', () => {
 
     it('stays silent on a quote that moved lines but is still there', () => {
         const r = repo('- he said «never fold this» once\n', 500);
+        r.pay();
         r.stage(LEAF, '- a new line\n- he said «never   fold\nthis» once\n');
         expect(r.lint().stderr).toBe('');
     });
@@ -187,6 +199,7 @@ describe('memory-lint', () => {
 
     it('warns, never fails, on a closed ticket beside «waiting on»', () => {
         const r = repo('- one line\n', 500);
+        r.pay();
         r.states({ 'FRM-219': 'completed' });
         r.stage(LEAF, '- one line\n- waiting on FRM-219\n');
         const out = r.lint();
@@ -196,6 +209,7 @@ describe('memory-lint', () => {
 
     it('stays silent on an open ticket beside «waiting on»', () => {
         const r = repo('- one line\n', 500);
+        r.pay();
         r.states({ 'FRM-219': 'unstarted' });
         r.stage(LEAF, '- one line\n- waiting on FRM-219\n');
         expect(r.lint().stderr).toBe('');
@@ -203,6 +217,7 @@ describe('memory-lint', () => {
 
     it('stays silent on a closed ticket with no open-state word within 2 lines', () => {
         const r = repo('- one line\n', 500);
+        r.pay();
         r.states({ 'FRM-219': 'completed' });
         r.stage(LEAF, '- waiting on it\n- b\n- c\n- shipped in FRM-219\n');
         expect(r.lint().stderr).toBe('');

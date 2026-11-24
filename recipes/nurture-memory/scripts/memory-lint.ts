@@ -278,20 +278,23 @@ function lint(stagedFiles: string[]) {
                 `${path}: its budget moved ${was.budget} → ${row.budget} with the old reason — name why this add earned it`,
             );
     }
-    // memory at net zero (dima's o7, 2026-11-24): a raise is paid by a cut in another row, or carries his word
-    const moved = [...budgets].flatMap(([path, row]) => {
-        const was = before.get(path);
-        return was && !Number.isNaN(row.budget)
-            ? [{ by: row.budget - was.budget, path, reason: row.reason }]
-            : [];
+    // memory at net zero (dima's o7, 2026-11-24): the staged memory files together never grow, unless a grown file's row names his word in this commit
+    const grown = files.flatMap((file) => {
+        const now = indexed(file);
+        if (now === undefined) return [];
+        const was = git('show', `HEAD:${file}`) ?? '';
+        return [{ by: Buffer.byteLength(now) - Buffer.byteLength(was), file }];
     });
-    const net = moved.reduce((sum, row) => sum + row.by, 0);
+    const net = grown.reduce((sum, row) => sum + row.by, 0);
     if (net > 0)
-        for (const row of moved)
-            if (row.by > 0 && !HIS_WORD.test(row.reason))
+        for (const row of grown) {
+            const reason = budgets.get(row.file)?.reason ?? '';
+            const isFresh = reason !== (before.get(row.file)?.reason ?? '');
+            if (row.by > 0 && !(isFresh && HIS_WORD.test(reason)))
                 problems.push(
-                    `${row.path}: its budget rose ${row.by} B and the rows together rose ${net} B — memory stays at net zero: cut another row by as much in this commit, or name his word in the reason («dima YYYY-MM-DD» or his orbit id)`,
+                    `${row.file}: it grew ${row.by} B and the staged memory files together grew ${net} B — memory stays at net zero: cut as many bytes in this commit, or name his word in its row's reason in ${BUDGETS} («dima YYYY-MM-DD» or his orbit id)`,
                 );
+        }
     for (const path of budgets.keys())
         if (!memory.has(path))
             problems.push(
