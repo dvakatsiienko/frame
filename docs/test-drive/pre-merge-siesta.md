@@ -208,3 +208,4 @@ Ticket: none
 - 2026-11-23 21:10 · checkpoint mode · 36k tokens · 3 high, 3 medium, 2 low · highs real: y · acted: y
 - 2026-11-24 13:48 wing 1 · 126k tokens · 0 high, 6 medium, 5 low · highs real: none · mediums real 6 of 6 · acted: 5 fixed (flyway lines for his four grills, PK-466 close line, the vm folder under raw/, the joined stray-lane rows, the patch count note), 1 asked (zoo story origin)
 - 2026-11-24 14:53 wing 1 · 106k tokens · 1 high, 3 medium, 4 low · highs real: y (the net-zero check counted budget rows, not bytes, and its own commit grew memory 247 B) · acted: high fixed (the check now counts staged bytes), 3 mediums fixed (his words whole on the page, the cut baseline restored, the mods line asks first)
+- 2026-11-24 14:47 · 159k tokens · 0 high, 3 medium, 4 low · highs real: none · mediums real 3 of 3 · acted: 1 fixed (the two dialog cases on FRM-696), 1 asked (the stale hazard guard clause), 1 in a fix round (the roast row and exited workers)
