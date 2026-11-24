@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T17:24:00Z'
+updated_date: '2026-11-24T17:28:00Z'
 labels:
   - s
   - clio-main
@@ -2716,4 +2716,6 @@ PK-349:W2376 (2026-11-24 19:23, dima): the plan over all herdr work: what is thi
 PK-349:W2377 (2026-11-24 19:23, dima): reactions wait for your grill with wing 1, ten questions: unsnooze it in wing 1's flyway and move it to be the first item in the list.
 PK-349:W2378 (2026-11-24 19:23, dima): the rest of orbit and the one-click chunk wait for mods' look and test asks chunk: can we optimize mods scope (do sooner if possible) so herdr is unblocked? ❓
 PK-349:W2379 (2026-11-24 19:23, dima): print fresh herdr peek lanes again (after the order update and answers), then we do peek lanes for mods when the herdr part is solved.
+
+19:28 PK-349:W2380 (2026-11-24 19:27, dima): system notes: can you remind me if we changed the system notes scope into something different? ❓ → answered 19:28
 <!-- SECTION:NOTES:END -->
