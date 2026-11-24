@@ -24,10 +24,17 @@ DELETES = re.compile(
 HARMLESS_REDIRECT = re.compile(r"\d*>>|&>>|\d*>&\d*-?|&?\d*>\s*/dev/null(?![\w./-])")
 
 
-DOOR = (
-    "cc could not parse this Bash call, and its text holds a delete or truncation shape, so it is refused "
+# a truncation may move to a script file; a delete may not, since x-mod-guard does not read a script run by path
+SCRIPT_DOOR = (
+    "cc could not parse this Bash call, and its text holds a `>` that can truncate a file, so it is refused "
     "instead of waiting on a dialog nobody watches. Write the lines to a script file in your scratchpad "
     "(the Write tool) and run it by path; nothing else changes."
+)
+DELETE_DOOR = (
+    "cc could not parse this Bash call, and its text holds a delete, kill or git reset/clean shape, so it is "
+    "refused instead of waiting on a dialog nobody watches. Not through a script file either: run that one "
+    "step as its own plain command (`trash <path>`, a kill of a pid you captured), so the guard reads it, or "
+    "ask your coordinator with the target named. The rest of the lines may go in a script file run by path."
 )
 
 
@@ -38,18 +45,19 @@ def answer(payload: dict) -> str | None:
     command = payload.get("tool_input", {}).get("command", "")
     if not command:
         return None
-    risky = DELETES.search(command) or ">" in HARMLESS_REDIRECT.sub("", command)
-    return "deny" if risky else "allow"
+    if DELETES.search(command):
+        return DELETE_DOOR
+    return SCRIPT_DOOR if ">" in HARMLESS_REDIRECT.sub("", command) else "allow"
 
 
 payload = json.load(sys.stdin)
 behavior = answer(payload)
-if behavior == "deny":
+if behavior not in (None, "allow"):
     json.dump(
         {
             "hookSpecificOutput": {
                 "hookEventName": "PermissionRequest",
-                "decision": {"behavior": "deny", "message": DOOR, "interrupt": False},
+                "decision": {"behavior": "deny", "message": behavior, "interrupt": False},
             }
         },
         sys.stdout,

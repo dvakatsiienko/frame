@@ -103,6 +103,16 @@ describe('denies with the script-file door, so no dialog stands', () => {
         ['git reset', 'git reset --hard HEAD~1'],
         ['git reset behind a -C flag', 'git -C repo reset --hard'],
         ['git clean', 'git clean -fd'],
+    ])('on %s, with the plain-command door and never a script', (_name, command) => {
+        const { logged, stdout } = ask(command);
+        const { decision } = JSON.parse(stdout).hookSpecificOutput;
+
+        expect(decision).toMatchObject({ behavior: 'deny', interrupt: false });
+        expect(decision.message).toContain('Not through a script file either');
+        expect(logged).toEqual([]);
+    });
+
+    it.each([
         ['a truncating redirect', 'echo hi > file'],
         ['a truncating redirect with no space', `${zshJoin} >file`],
         ['a stderr truncation', 'cmd 2> err.log'],
@@ -114,7 +124,7 @@ describe('denies with the script-file door, so no dialog stands', () => {
         const { decision } = JSON.parse(stdout).hookSpecificOutput;
 
         expect(decision).toMatchObject({ behavior: 'deny', interrupt: false });
-        expect(decision.message).toContain('script file');
+        expect(decision.message).toContain('Write the lines to a script file');
         expect(logged).toEqual([]);
     });
 });
