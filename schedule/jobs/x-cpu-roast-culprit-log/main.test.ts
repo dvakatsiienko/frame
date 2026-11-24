@@ -296,8 +296,13 @@ describe('the plist', () => {
         expect(plist.slice(0, plist.indexOf('<plist'))).toContain('vm-go-test');
     });
 
-    it('passes plutil -lint', () => {
-        const lint = spawnSync('plutil', ['-lint', file], { encoding: 'utf8' });
+    // plutil is this mac's: ci's runner has none
+    const macLint = 'plutil';
+    it.runIf(process.platform === 'darwin')('passes plutil -lint', () => {
+        const lint = spawnSync(macLint, ['-lint', file], {
+            encoding: 'utf8',
+            timeout: 10_000,
+        });
 
         expect(lint.stdout + lint.stderr).toContain('OK');
     });
@@ -339,6 +344,7 @@ describe('main.ts as a real process', () => {
                 X_ROAST_SECONDS: '0',
                 X_STATE: state,
             },
+            timeout: 10_000,
         });
 
         expect(run.status, run.stderr).toBe(0);

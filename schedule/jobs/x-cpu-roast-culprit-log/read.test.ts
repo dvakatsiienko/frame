@@ -30,6 +30,7 @@ const read = (dir: string, since: string) =>
     spawnSync(process.execPath, [READ, '--since', since], {
         encoding: 'utf8',
         env: { ...process.env, X_STATE: dir },
+        timeout: 10_000,
     });
 
 describe('read.ts, the one reader of the roast log', () => {
