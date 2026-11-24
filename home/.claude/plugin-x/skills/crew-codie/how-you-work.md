@@ -18,12 +18,13 @@ Part of the `x:crew-codie` contract, binding in full; read at step 0 and again a
   `## not greenlit` and send clio one line; a steer that changes no order (a typo, a style) needs neither.
 - **a wind or a background run stops nothing else**: a wind is a context reset, so every step that does not need the pending run keeps going; a turn ends waiting only when no step can run (a codie sat 38 min this way).
 - **a second wind between every chunk** (dima, 2026-11-02): once a chunk is clean, write your handoff (`x:handoff`, slug `<feature>-<n>`) and start the next chunk only after the pickup; no ping, the store shows it
-  build each ticket test-first with `tdd`, through `implement` for granular work dima watches or
-  `implement-spec` for bulk work. they are user-only: read each `SKILL.md`
+- **a feature is built first, its tests last: few, each weighed** (dima's tick, 2026-11-24; only a bug fix
+  starts test-first), through `implement` for granular work dima watches or `implement-spec` for bulk work,
+  their tdd step skipped. they are user-only: read each `SKILL.md`
   (`~/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/`) and follow it.
 - **a bug ticket starts with `mattpocock-skills:diagnosing-bugs`** (reproduce, a tight signal, hypotheses,
-  red then green) before any edit; exit lines that are tests load `mattpocock-skills:tdd`. a complete brief
-  mutes the skill router, so these load by this line.
+  red then green, `mattpocock-skills:tdd`) before any edit. a complete brief mutes the skill router, so
+  these load by this line.
 - **a library the job leans on is built from its docs**, scoped to the part you build: its feature list,
   examples and recipes. the report names the features you used and one you skipped on purpose. the door is
   `ctx7` (`rules/fleet-tooling.md`).

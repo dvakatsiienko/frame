@@ -1,5 +1,5 @@
 ---
-status: live
+status: closed
 until: 2026-11-25
 fits: codie
 ---
@@ -53,3 +53,7 @@ one line per ticket: date · ticket · tdd loaded? · verifier findings · round
 ## the reminder, moved here (2026-10-11, o139)
 
 ⏰ 🔬 tdd test drive, two weeks to 2026-10-20 — `mattpocock-skills:tdd`, named in `x:crew-coder` for test-shaped exit lines; one log line per ticket in `docs/test-drive/tdd.md` (loaded or not, verifier findings, rounds, tests proven red). on 10-20: a default for every coder, for some tickets, or drop. dima 2026-10-06: «it changes a coder's approach a lot … deserves a test drive and measure» — set 2026-10-06
+
+## verdict
+
+- 2026-11-24 · **closed, not proven** (dima's tick) — the comparison without tdd never ran, so no pair exists; the 5 last «keep» lines are the coders' own words. only a bug fix starts test-first now; a feature gets a few weighed tests at its end
