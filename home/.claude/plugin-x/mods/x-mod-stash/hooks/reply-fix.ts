@@ -5,6 +5,7 @@ import type { Args, EngineInterface, Next, RenderInput } from 'claude-code';
 
 import { closeBoot } from './boot.ts';
 import type { ViewDoors } from './keep-warm.ts';
+import { isShown } from './orbit-ask-kind.ts';
 import { currentOrbit } from './orbit-store.ts';
 import {
     type BackgroundTask,
@@ -32,7 +33,9 @@ export const WRAP_UP_TOOL = 'mcp__ccd_turn__wrap_up';
 export async function stopRed($: EngineInterface, reply: string) {
     if (!(await partsShown($))('stash.orbit') || (await isBgSelf($)))
         return undefined;
-    const open = (await currentOrbit($)).asks.filter((a) => !a.isResolved);
+    const open = (await currentOrbit($)).asks.filter(
+        (a) => !a.isResolved && isShown(a),
+    );
     // a title inside the bold still printed the round; a false red here makes the model print it twice (PK-351:W54)
     const lost = turn.gridQs.filter(
         (n) => !new RegExp(`❓ \\*\\*Q${n}\\b`).test(reply),

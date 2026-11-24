@@ -179,7 +179,13 @@ test('an ask answered this turn leads its line with 👀 until the turn ends', a
 
 // FRM-645: an ask that needs his eyes or hands sits on top, led by its kind's emoji
 test('look asks draw first, then test asks, then the rest, each led by its emoji, his row over the built-in one', async ($, on) => {
-    const w = world(on, typed({ 'stash.orbit.look.emoji': '🔭' }));
+    const w = world(
+        on,
+        typed({
+            'stash.orbit.look.emoji': ' ',
+            'stash.orbit.test.emoji': '🔭',
+        }),
+    );
     await start($);
     const ui = await board($);
     await add(
@@ -199,8 +205,8 @@ test('look asks draw first, then test asks, then the rest, each led by its emoji
         ),
     );
     expect(rows).toEqual([
-        '🔭 o4 mods: the card',
-        '🧪 o2 mods: press it',
+        '👀 o4 mods: the card',
+        '🔭 o2 mods: press it',
         'o1 mods: a plain one',
         'o3 mods: a plain two',
     ]);

@@ -36,7 +36,7 @@ import {
 } from './session-identity.ts';
 import { keepShelf } from './session-record.ts';
 import { partsShown } from './settings-store.ts';
-import { isTurnBusy, selfSubmit, turn } from './turn.ts';
+import { idleTurn, isTurnBusy, selfSubmit, turn } from './turn.ts';
 import { orbitTexts, tickSentence } from './turn-notes.ts';
 
 // the running turn, so a mid-turn reload still knows it is busy
@@ -79,48 +79,53 @@ export async function tellStranded($: EngineInterface, view: ViewDoors) {
     const now = await $.clock.now();
     const sid = await currentId($);
     if (!sid || !(await partsShown($))('stash.orbit')) return;
-    for (const a of (await currentOrbit($)).asks) {
-        if (!isStranded(a, now)) continue;
-        const threads = await threadRecords($);
-        const self = threads.find((t) => t.sessionId === sid);
-        const line = strandedLine(
-            a,
-            (await sessionName($)) ?? self?.display ?? sid,
-        );
-        const live = threads.filter(
-            (t) => t.pid !== undefined && t.sessionId !== sid,
-        );
-        const lead =
-            live.find(
-                (t) => ownerOf(t) !== '' && ownerOf(t) === self?.coordinator,
-            ) ?? live.find((t) => ownerOf(t) === MAIN_OWNER);
-        if (ownerOf(self) === MAIN_OWNER) {
-            if (await isTurnBusy($)) return;
-            await selfSubmit($, line, false, () => prepareTurn(view));
-        } else {
-            if (!lead) return;
-            const sent = await $.session.send({
-                text: line,
-                to: { sessionId: lead.sessionId },
-            });
-            if (!sent.isDelivered) return;
+    // one a poll, read fresh each time: a follow that lands meanwhile is never escalated
+    const a = (await currentOrbit($)).asks.find((x) => isStranded(x, now));
+    if (!a) return;
+    const threads = await threadRecords($);
+    const self = threads.find((t) => t.sessionId === sid);
+    const line = strandedLine(
+        a,
+        (await sessionName($)) ?? self?.display ?? sid,
+        self?.ticket,
+    );
+    const live = threads.filter(
+        (t) => t.pid !== undefined && t.sessionId !== sid,
+    );
+    const lead =
+        live.find(
+            (t) => ownerOf(t) !== '' && ownerOf(t) === self?.coordinator,
+        ) ?? live.find((t) => ownerOf(t) === MAIN_OWNER);
+    if (ownerOf(self) === MAIN_OWNER) {
+        if (await isTurnBusy($)) return;
+        const r = await selfSubmit($, line, false, () => prepareTurn(view));
+        if (r.drop !== undefined) {
+            await idleTurn($);
+            return;
         }
-        await inMarking(async () => {
-            const o = await currentOrbit($);
-            await saveOrbit(
-                $,
-                {
-                    ...o,
-                    asks: o.asks.map((x) =>
-                        x.id === a.id && x.hidden
-                            ? { ...x, hidden: { ...x.hidden, isTold: true } }
-                            : x,
-                    ),
-                },
-                () => keepShelf($),
-            );
+    } else {
+        if (!lead) return;
+        const sent = await $.session.send({
+            text: line,
+            to: { sessionId: lead.sessionId },
         });
+        if (!sent.isDelivered) return;
     }
+    await inMarking(async () => {
+        const o = await currentOrbit($);
+        await saveOrbit(
+            $,
+            {
+                ...o,
+                asks: o.asks.map((x) =>
+                    x.id === a.id && x.hidden
+                        ? { ...x, hidden: { ...x.hidden, isTold: true } }
+                        : x,
+                ),
+            },
+            () => keepShelf($),
+        );
+    });
 }
 // a turn takes his marks in the marking queue: a press lands wholly before or after the lock, never inside it
 export function takeMarks(

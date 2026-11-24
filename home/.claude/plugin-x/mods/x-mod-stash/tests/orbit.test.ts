@@ -1074,6 +1074,7 @@ test("an ask's origin rides its store item, and a follow keeps each field it lea
 // FRM-645: herdr pins an ask by its text's lead, so the stored text opens with the kind's word, once and with no emoji
 for (const [text, kind, kept] of [
     ['the new card', 'look', ['look', 'look: the new card']],
+    ['👀 the new card', 'look', ['look', 'look: the new card']],
     ['Look: the new card', 'look', ['look', 'look: the new card']],
     ['🧪 test: press it twice', 'test', ['test', 'test: press it twice']],
     ['👀 look: the new card', undefined, ['look', 'look: the new card']],

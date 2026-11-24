@@ -45,7 +45,7 @@ export const isAllAsksMarkable = (a: OrbitAsk) =>
     !a.mark &&
     !a.isLocked &&
     !a.isResolved &&
-    !/⚠️|^\s*(?:merge|land)\b/iu.test(a.text);
+    !/⚠️|^\s*(?:(?:look|test):\s*)?(?:merge|land)\b/iu.test(a.text);
 
 // the record x-mod-guard reads as dima's word, one per ask his press marks: what its text and its pick quote, as they
 // stand at the press; the pick carries a command of any length (FRM-661)
@@ -258,7 +258,7 @@ export function joinText(asks: OrbitAsk[], sentence = TICK_SENTENCE) {
 // an ask whose tick x-mod-guard reads as dima's word — a sign, a ⚠️ or merge ask, one quoting a command; published as
 // `isGated` beside the ask, so x-herdr-deck draws the mark instead of keeping its own copy of the pattern (FRM-544 slice 1)
 export const isGuardGated = (text: string) =>
-    /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|^\s*(?:merge|land)\b|`[^`]+`/iu.test(
+    /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|^\s*(?:(?:look|test):\s*)?(?:merge|land)\b|`[^`]+`/iu.test(
         text,
     );
 const overCapText = (x: string) =>
@@ -416,19 +416,20 @@ export function orbitOp(
                 return {
                     deny: `orbit follow: needs a known id and a text, got «${id}»`,
                 };
-            const told = askOrigin(input, read, true);
-            if ('deny' in told)
-                return { deny: `orbit follow: ${id}: ${told.deny}` };
             const typed = askKind(text, '', was.kind);
             if ('deny' in typed)
                 return { deny: `orbit follow: ${id}: ${typed.deny}` };
+            const isHide = isFixing(typed.kind, oneLine(input.why));
+            // «fixing …» says why it hides, never why the ask exists, so it is no why to check or keep
+            const told = askOrigin(
+                isHide ? { ...input, why: undefined } : input,
+                read,
+                true,
+            );
+            if ('deny' in told)
+                return { deny: `orbit follow: ${id}: ${told.deny}` };
             const tooLong = overCap('follow', [typed.text]);
             if (tooLong) return tooLong;
-            const isHide = isFixing(typed.kind, oneLine(input.why));
-            // «fixing …» says why it hides, never why the ask exists
-            const { why, ...rest } = told.origin;
-            const origin =
-                isHide || why === undefined ? rest : { ...rest, why };
             return {
                 orbit: {
                     ...o,
@@ -436,7 +437,7 @@ export function orbitOp(
                         a.id === id
                             ? {
                                   ...a,
-                                  ...origin,
+                                  ...told.origin,
                                   hidden: isHide ? {} : undefined,
                                   isChanged: true,
                                   isClosed: undefined,

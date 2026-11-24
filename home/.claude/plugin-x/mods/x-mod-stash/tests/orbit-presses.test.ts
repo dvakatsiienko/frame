@@ -677,7 +677,7 @@ test("a look ask its poster is fixing leaves the board and the published asks, i
     await ui.press({ key: 'orbit:all' });
     await followed($, {});
     await read();
-    await followed($, { why: 'Fixing it again' });
+    await followed($, { why: 'Fixing' });
     await followed($, { why: 'prefixing holds now' });
     await read();
     const other = 'o2 it rang twice';
@@ -730,7 +730,7 @@ test('his 🔁 hides a test ask at once and past its turn, its turn still hears 
     expect([
         seen,
         /o1 ↩️ rejected/u.test(heard),
-        /o2 🛎️ accepted/u.test(fence) || fence.includes('(o2)'),
+        fence.includes('(o2)'),
         fence.includes('o1'),
     ]).toEqual([[['o2'], ['o2'], ['o1', 'o2']], true, true, false]);
 });
@@ -743,10 +743,10 @@ test("herdr's 🔁 hides a look ask, its untick shows it again", async ($, on) =
     const at = await w.clock.now();
     herdrPress(w, 'o1', { at: at + 1, verdict: 'replay' });
     await w.clock.advance(5_000);
-    const hidden = await asksShown(ui);
+    const hidden = [await asksShown(ui), await ui.find({ key: 'orbit:all' })];
     herdrPress(w, 'o1', { at: at + 2, verdict: 'untick' });
     await w.clock.advance(5_000);
-    expect([hidden, await asksShown(ui)]).toEqual([[], ['o1']]);
+    expect([hidden, await asksShown(ui)]).toEqual([[[], undefined], ['o1']]);
 });
 
 test('a look ask hidden 60 min with no follow is told to its coordinator once the send goes, and stays hidden', async ($, on) => {
@@ -755,7 +755,12 @@ test('a look ask hidden 60 min with no follow is told to its coordinator once th
     }));
     const w = world(on, {
         [THREADS_FILE]: threadsFile([
-            { coordinator: 'clio-wing-2', role: 'codie', sessionId: SID },
+            {
+                coordinator: 'clio-wing-2',
+                role: 'codie',
+                sessionId: SID,
+                ticket: 'FRM-9',
+            },
             { pid: 7, role: 'coordinator', sessionId: 'main' },
             { pid: 8, role: 'wing', sessionId: 'wing2', wing: 2 },
         ]),
@@ -770,11 +775,11 @@ test('a look ask hidden 60 min with no follow is told to its coordinator once th
     await start($);
     const ui = await board($);
     await orbit($, {
-        asks: [{ ...ASK, text: 'look: FRM-9, the card' }],
+        asks: [{ ...ASK, text: 'look: the card' }],
         op: 'add',
     });
     await followed($, {
-        text: 'look: FRM-9, the card',
+        text: 'look: the card',
         why: 'fixing the wrap',
     });
     await w.clock.advance(55 * 60_000);
@@ -785,7 +790,7 @@ test('a look ask hidden 60 min with no follow is told to its coordinator once th
         Array(2).fill([
             'wing2',
             expect.stringMatching(
-                /^\[escalate\] a look ask stands hidden 60 min with no follow: o1 «look: FRM-9, the card» \(FRM-9\)/,
+                /^\[escalate\] a look ask stands hidden 60 min with no follow: o1 «look: the card» \(FRM-9\)/,
             ),
         ]),
         [],

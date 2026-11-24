@@ -23,9 +23,10 @@ export type AskFrom = {
     who: string;
 };
 
-// `from.line`: the starter as this mod draws it, badge and all, so another surface copies no badge table
 export type AskKind = 'look' | 'test';
 export type KindEmoji = Record<AskKind, string>;
+
+// `from.line`: the starter as this mod draws it, badge and all, so another surface copies no badge table
 export type PublishedAsk = Omit<AskOrigin, 'from'> & {
     from?: AskFrom & { line: string };
     id: string;

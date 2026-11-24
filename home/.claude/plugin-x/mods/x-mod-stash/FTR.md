@@ -592,11 +592,11 @@
   - and a typed ask answered this turn leads with ✅ until the turn ends, a plain one with 👀 as before, so one 👀 never means two things
   - proof: tests/board-orbit.test.ts::look asks draw first, then test asks, then the rest… ; ::a look ask answered this turn leads with ✅, never 👀; ::an ask answered this turn leads its line with 👀…; a live frame, 24 Nov (`~/.local/state/looks/FRM-645/`)
 - ✅ a look or a test is on his boards only while it is ready (FRM-645)
-  - given a look or test ask, when its poster's `follow` carries a `why` opening with «fixing», then it leaves the board's orbit, its check-all, the no-board fence, every count, the glide subcard and the `asks` of `herdr-state/<sid>.json`; the orbit keeps it, and the poster's next `follow` without that word shows it with its id
+  - given a look or test ask, when its poster's `follow` carries a `why` opening with «fixing», then it leaves the board's orbit, its check-all, the no-board fence, the board's counts, the glide subcard and the `asks` of `herdr-state/<sid>.json`; the orbit keeps it, and the poster's next `follow` without that word shows it with its id
   - and the «fixing …» why is never kept: the ask's own why is drawn again
   - given he marks it 🔁, on the board or in herdr, then it hides at once and stays hidden past the turn that hears the mark, until the poster's `follow`; a 🔁 he takes back before that shows it
   - and a plain ask never hides; no round line and no timer hides or shows one
-  - given one hidden for 60 min with no `follow`, then it stays hidden and its coordinator (the poster's, by its thread record; main clio's own ask wakes her once idle) gets one `[escalate]` line naming the ask and its ticket, told once it went
+  - given one hidden for 60 min with no `follow`, then it stays hidden and its coordinator (the poster's, by its thread record; main clio's own ask wakes her once idle) gets one `[escalate]` line naming the ask and its ticket (its text's, its starter's, or the poster's record's), told once it went
   - and a hidden ask still holds the fleet's counter, so no thread mints its id
   - decision: the poster's own word, not a codie's round line: that goes out when the fix is ready (clio, 24 Nov, on his 23 Nov 20:41 words)
   - proof: tests/orbit-presses.test.ts::a look ask its poster is fixing leaves the board and the published asks… ; ::a plain ask never hides… ; ::his 🔁 hides a test ask at once… ; ::herdr's 🔁 hides a look ask, its untick shows it again; ::a look ask hidden 60 min with no follow is told…; tests/orbit-tool.test.ts::orbit's text says a fixing follow hides a look or a test — not asserted: main clio's own stranded ask, the kept counter

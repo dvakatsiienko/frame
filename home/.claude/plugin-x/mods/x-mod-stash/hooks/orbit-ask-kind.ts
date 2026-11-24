@@ -6,6 +6,7 @@ const KINDS = ['look', 'test'] as const satisfies readonly AskKind[];
 // herdr reads the kind off the text (x-herdr-deck `cardKind`: the colon form past a 👀 or 🧪), so the text a typed ask is
 // stored with opens «look: » or «test: » with no emoji, and the two boards never disagree
 const LEAD = /^(?:👀|🧪)?\s*(look|test):\s*/iu;
+const EMOJI = /^(?:👀|🧪)\s*/u;
 
 export const KIND_EMOJI: Readonly<KindEmoji> = { look: '👀', test: '🧪' };
 
@@ -34,8 +35,12 @@ export const isStranded = (a: OrbitAsk, now: number) =>
     !a.isResolved &&
     !a.hidden?.isTold &&
     now - (a.hidden?.at ?? now) >= STRANDED_MS;
-export const strandedLine = (a: OrbitAsk, poster: string) =>
-    `[escalate] a ${a.kind} ask stands hidden 60 min with no follow: ${a.id} «${a.text}» (${a.text.match(/\b(?:FRM|BYT)-\d+\b/u)?.[0] ?? 'no ticket'}) from ${poster}; ask whether it is ready, its follow shows it to dima`;
+export const strandedLine = (
+    a: OrbitAsk,
+    poster: string,
+    ticket: string | undefined,
+) =>
+    `[escalate] a ${a.kind} ask stands hidden 60 min with no follow: ${a.id} «${a.text}» (${a.text.match(/\b(?:FRM|BYT)-\d+\b/u)?.[0] ?? a.from?.ticket ?? ticket ?? 'no ticket'}) from ${poster}; ask whether it is ready, its follow shows it to dima`;
 
 // what leads an ask's line: its kind's emoji, or the mark of one answered this turn, never 👀 on a typed ask (FRM-645)
 export const askLead = (
@@ -70,7 +75,7 @@ export function askKind(
         return { deny: `its text opens «${led}:» while its kind is ${asked}` };
     const kind = asked ?? led ?? kept;
     if (!kind) return { text };
-    const words = text.slice(lead?.[0].length ?? 0);
+    const words = text.slice(lead?.[0].length ?? 0).replace(EMOJI, '');
     return words
         ? { kind, text: `${kind}: ${words}` }
         : { deny: `its text says nothing past «${kind}:»` };

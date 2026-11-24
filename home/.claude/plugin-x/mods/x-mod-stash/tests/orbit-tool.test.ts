@@ -355,7 +355,7 @@ test('a gated ask carries isGated in the store, a plain ask none', async ($, on)
         {
             area: 'mods',
             pick: 'merge it',
-            text: 'merge https://github.com/x/y/pull/7 at abc1234',
+            text: 'test: merge https://github.com/x/y/pull/7 at abc1234',
             why: 'a test ask',
         },
         {

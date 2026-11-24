@@ -189,7 +189,10 @@ const hows = (w: { contexts: string[][] }) =>
     w.contexts.map((c) => c.filter((x) => x.startsWith('a look ask: ')));
 
 test('how a look and a test ask are written is told once, and again when his row changes', async ($, on) => {
-    const w = world(on, typed({ [LOOK_ROW]: 'heron one' }));
+    const w = world(
+        on,
+        typed({ [LOOK_ROW]: 'heron one', 'stash.orbit.test.how': 'press' }),
+    );
     await start($);
     await say($, 'hi');
     await nextPrompt($);
@@ -197,7 +200,7 @@ test('how a look and a test ask are written is told once, and again when his row
     await nextPrompt($);
     await nextPrompt($);
     expect(hows(w)).toEqual([
-        [expect.stringMatching(/^a look ask: heron one; a test ask: say what/)],
+        ['a look ask: heron one; a test ask: press.'],
         [],
         [expect.stringMatching(/^a look ask: heron two; a test ask: say what/)],
         [],
