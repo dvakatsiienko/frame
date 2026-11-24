@@ -8,7 +8,7 @@
   - engines — elevenlabs (Sarah) leads; kokoro renders the first chunk in parallel so a cloud miss costs nothing; fish and gemini only with --engine
   - keys — fetched once at start through frame's script/op-run.sh, handed in as --keys-run, held in memory only
   - kokoro — starts mlx_audio.server on 127.0.0.1:7385 and keeps it warm (~620 MB)
-  - output — ~/.local/share/x-speak/daemon.err.log: one line per press with grab, normalize and first-audio times
+  - output — ~/.local/share/x-speak/daemon.err.log: a line per press and per spoken piece, the grabbed words in it
   - source — ~/projects/bytes/apps/speak/daemon (main.swift, config.swift, normalize.swift); golden.json is the normalizer's contract; this plist stays in frame, the one home for every launchd job
   - gotcha — needs Accessibility for the selection grab; signed with «x-speak local signing» the grant survives rebuilds, ad-hoc it pins to the cdhash
 -->

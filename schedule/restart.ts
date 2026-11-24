@@ -51,5 +51,6 @@ const isUp = after.state === 'running' && after.pid !== before.pid;
 console.log(
     `${isUp ? '🟢' : '🔴'} ${name} — ${after.state ?? 'unknown'}, pid ${before.pid ?? '–'} → ${after.pid ?? '–'}`,
 );
-if (lastLine) console.log(`   ${lastLine}`);
+// a running daemon's last line can hold the words dima selected, so only a failed start prints it
+if (lastLine && !isUp) console.log(`   ${lastLine}`);
 process.exit(isUp ? 0 : 1);
