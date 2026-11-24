@@ -41,3 +41,9 @@ one line per check per run: `YYYY-MM-DD · <id> · 🟢 | 🔴 <what> · fixed: 
 - 2026-11-24 · boot-digest · 🟢 all checks green, read from its own output · —
 - 2026-11-24 · pocket · 🟢 7 tasks, all checks green · —
 - 2026-11-24 · go-vulns · 🟢 no vulnerabilities found · —
+- 2026-11-24 · evergreen · 🟢 no update pr open in frame or bytes (one speak lane pr only), last report 18 Nov, next turn Wed 25 Nov; 47 brew formulae behind, the turn's own upgrade · —
+- 2026-11-24 · test-drives · 🔴 8 of 13 live trials end by 27 Nov, 5 of them with no round since 4–7 Nov (set-pace-watch, unbash, worktrunk, tdd, rex) · asked: orbit
+- 2026-11-24 · recipe-candidates · 🔴 refresh-browser-headless never ran and its trigger fired (agent-browser 0.44.0 out) · asked: orbit; the new-subject scan left the check on his word
+- 2026-11-24 · naming-family-first · 🔴 367 names, 4 scatter a family: empty-wakes-count, helper-count, rename-asks-count, tails-check · asked: orbit
+- 2026-11-24 · memory-lint · 🟢 the full run, 0 errors, 0 warnings · —
+- 2026-11-24 · skill-shape · 🔴 one strength-3 split: boot's mini mode and weekday lines (about 3,500 chars) load on every full boot · asked: orbit

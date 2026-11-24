@@ -48,7 +48,7 @@ it for 2 days … it should also propose action items, not just tell numbers».
 
 - **test-drives** — overdue or undated trials · `pnpm test-drive:check`
 
-- **recipe-candidates** — subjects that want a recipe, and stale recipes (dima, 2026-10-20, FRM-270) · a `helper`: research docs and trials that will be refreshed again, areas with a moving outside world, each recipe's last log date · list in `~/frame/.scratch/recipe-candidates.md`, each pick an orbit ask
+- **recipe-candidates** — stale recipes: each recipe's last log date against its own «suggest a run when» line; a subject for a new recipe is not hunted here (dima, 2026-11-24: «remove it from system checkup») · each pick an orbit ask
 
 ## sitting 3 · shaped right — is anything built the wrong way
 

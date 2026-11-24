@@ -1,6 +1,6 @@
 // clio's UserPromptSubmit hook: every prompt dima types lands raw in a day file outside every repo (frame is public),
 // so a wish folded from it is groomed from his exact words (pm revamp grill 8, dima's W59, o88, o93)
-import { execFileSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import {
     appendFileSync,
     existsSync,
@@ -71,12 +71,23 @@ export function flywayNudge(check: () => string): string[] {
     }
 }
 
-const checkFlyways = () =>
-    execFileSync(
-        'node',
-        [path.join(import.meta.dirname, 'pocket-check.ts'), '--flyway'],
-        { encoding: 'utf8', timeout: 5000 },
-    );
+// the check costs 2.3 s, so a prompt reads the last run's answer and leaves a fresh run going behind it:
+// a red shows one prompt late, and no prompt waits for it
+const LEAVE_A_RUN =
+    'node "$1" --flyway > "$2.$$" 2>/dev/null || echo "🔴 $3 not checked: the last background run failed" >> "$2.$$"; mv "$2.$$" "$2"';
+export function lastFlywayCheck(
+    file: string,
+    own: string,
+    script = path.join(import.meta.dirname, 'pocket-check.ts'),
+) {
+    const last = existsSync(file) ? readFileSync(file, 'utf8') : '';
+    mkdirSync(path.dirname(file), { recursive: true });
+    spawn('sh', ['-c', LEAVE_A_RUN, 'sh', script, file, own], {
+        detached: true,
+        stdio: 'ignore',
+    }).unref();
+    return last;
+}
 
 // measured over his raw prompts 10-30 → 11-03: these hit only personal chores; «order», «card», «subscription»,
 // «anthropic», «plan» and «billing» hit fleet prompts too, so they stay out
@@ -220,9 +231,13 @@ export function groomBlock(
         : undefined;
 }
 
+const dayFile = (thread: string, now: Date) =>
+    path.join(rawRoot, thread, `${now.toLocaleDateString('sv')}.md`);
+
+// reads the whole transcript for the day's steers, so one call a prompt; the file alone is dayFile
 function threadDay(thread: string, now: Date, transcriptPath?: string) {
     const day = now.toLocaleDateString('sv');
-    const file = path.join(rawRoot, thread, `${day}.md`);
+    const file = dayFile(thread, now);
     const noWish = path.join(
         process.env.PROMPT_GROOM_DIR ??
             path.join(process.env.HOME ?? '', '.local/state/clio/grooms'),
@@ -251,7 +266,7 @@ if (import.meta.main && process.argv[2] === '--stop') {
     const thread = threadOf();
     if (thread !== undefined) {
         const now = new Date();
-        saveHerdrJoins(input.session_id, threadDay(thread, now).file, now);
+        saveHerdrJoins(input.session_id, dayFile(thread, now), now);
     }
     if (!input.stop_hook_active && thread !== undefined) {
         const d = threadDay(thread, new Date(), input.transcript_path);
@@ -279,11 +294,11 @@ if (import.meta.main && process.argv[2] === '--stop') {
     const thread = threadOf();
     if (thread !== undefined) {
         const now = new Date();
-        saveHerdrJoins(session_id, threadDay(thread, now).file, now);
+        saveHerdrJoins(session_id, dayFile(thread, now), now);
     }
     if (text && thread !== undefined) {
         const now = new Date();
-        const { file } = threadDay(thread, now);
+        const file = dayFile(thread, now);
         mkdirSync(path.dirname(file), { recursive: true });
         const line = existsSync(file)
             ? readFileSync(file, 'utf8').split('\n').length
@@ -304,7 +319,17 @@ if (import.meta.main && process.argv[2] === '--stop') {
             ? `flyway: wing ${thread.replace('wing-', '')}`
             : 'flyway: main';
         for (const line of flywayNudge(() =>
-            checkFlyways()
+            lastFlywayCheck(
+                path.join(
+                    process.env.FLYWAY_CHECK_DIR ??
+                        path.join(
+                            process.env.HOME ?? '',
+                            '.local/state/clio/flyway-check',
+                        ),
+                    `${thread || 'main'}.txt`,
+                ),
+                own,
+            )
                 .split('\n')
                 .filter((red) => red.includes(own))
                 .join('\n'),

@@ -79,7 +79,7 @@ describe('flyway-done', () => {
         ]);
         run('--sort');
         expect(read()).toEqual([
-            'f3 one',
+            `f3 one — parked: ${today}`,
             'f2 ⏳ a — waits for: x',
             'f4 📅 d — on: 2026-11-14',
             'f1 🦥 c — later: dima 1',
@@ -92,7 +92,7 @@ describe('flyway-done', () => {
             const { read, run } = pocketWith(['one', '🦥 c — later: dima 1']);
             run('--add', 'two');
             expect(read()).toEqual([
-                'f1 one',
+                `f1 one — parked: ${today}`,
                 `f3 two — parked: ${today}`,
                 'f2 🦥 c — later: dima 1',
             ]);
@@ -106,8 +106,8 @@ describe('flyway-done', () => {
             expect(run('f3')).toContain('PK-1 f3 → done note');
             run('--add', 'four');
             expect(read()).toEqual([
-                'f1 one',
-                'f2 two',
+                `f1 one — parked: ${today}`,
+                `f2 two — parked: ${today}`,
                 `f4 four — parked: ${today}`,
             ]);
         },
@@ -122,21 +122,21 @@ describe('flyway-done', () => {
     });
 
     describe('the tail cap', () => {
-        test('a tail is an open line that names neither dima nor a grill', () => {
+        test('a tail is an open line that is not marked as his', () => {
             expect(isTail('f1 fix the false red in the sealed check')).toBe(
                 true,
             );
-            expect(isTail('f2 weak spot 5 with dima, one at a time')).toBe(
+            expect(isTail('f2 weak spot 5, one at a time — with: dima')).toBe(
                 false,
             );
-            expect(isTail('f3 FRM-582 emoji reactions: the grill')).toBe(false);
+            expect(isTail('f3 fix the grill opener (dima, 15:27)')).toBe(true);
             expect(isTail('f4 ⏳ a trial round — waits for: that pr')).toBe(
                 false,
             );
         });
         test('only unticked tails count toward the cap', () => {
             const lines = flywayLines(
-                '- [ ] #1 f1 fix a\n- [x] #2 f2 fix b\n- [ ] #3 f3 a talk with dima\n- [ ] #4 f4 fix c',
+                '- [ ] #1 f1 fix a\n- [x] #2 f2 fix b\n- [ ] #3 f3 a talk — with: dima\n- [ ] #4 f4 fix c',
             );
             expect(parkedTails(lines).map((line) => line.ref)).toEqual([
                 'f1',

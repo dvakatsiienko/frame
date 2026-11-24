@@ -62,6 +62,8 @@ set up from scratch, migration selective: gruvbox is the one thing carried over 
 - 2026-11-06 · the blocked marker, a staged permission prompt in a `dot-check` tab · dima's two shots: a blue dot on the tab's icon, an orange Claude icon, a blue dot on the eye (Activity) button · seen by his eye, nothing like it in warp
 - 2026-11-07 · one thread live in Rex and in the desktop app, Haiku 5.5 born in a Rex tab with Remote Control, about $0.02 · Rex: terminal view, the mods drawn terminal-style, board and glide included; desktop: a row in the thread list, seen by dima, with none of the app's native mods UI; `list_sessions` printed no row for it, so its null says nothing about the sidebar. A desktop-born thread has no door into a terminal: `claude attach` takes background sessions, its Remote Control reaches claude.ai and the phone · 📌 the migration's blocker: dima prefers the native mods UI, and the mods are sharpened against it; that UI draws only for a thread the app hosts (inference)
 
+- 2026-11-24 · agent use counted over the transcripts since 11-08 (a regex on `rex <verb>` Bash calls) · 98 calls on 9 of 17 days, 89 of them by 11-15, then 6, 1, 2 · fading since herdr; his own use not counted
+
 ## for the verdict
 
 - a nudge when a reply prints a copy fence, if a session skips the Rex door

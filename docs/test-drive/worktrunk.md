@@ -1,5 +1,5 @@
 ---
-status: live
+status: dropped
 until: 2026-11-27
 dies-when: the verdict line below is written
 ---
@@ -34,3 +34,5 @@ Not on trial, on dima's tick: `wt merge` (it lands on main past our pr flow), `w
 - 2026-11-07 · `wt list` on frame, 7 trees, load about 50 · 0.32 s wall, 1.09 cpu-s; `git worktree list` 0.01 s · it shows each tree's changes and distance from main, which git's list lacks: better view, costs 100× the cpu
 
 ## verdict
+
+- 2026-11-24 · **dropped** (dima's tick and his 15:53 word) — 0 agent calls of `wt list` or `wt step` since 11-08 and none typed in his zsh history, 1 round; the binary stays installed until his word

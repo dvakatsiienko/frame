@@ -38,9 +38,10 @@ export function flywayLines(text: string): FlywayLine[] {
     );
 }
 
-// a tail is an open line clio can close alone: no wait, no date, and it does not name dima or a grill with him
+// a tail is an open line clio can close alone: no wait, no date, and not marked «— with: dima» (a grill, a walk with him);
+// the marker is explicit, since a word match let any line naming him slip the cap
 export const TAIL_CAP = 5;
-const HIS = /\b(?:dima|grill)\b/i;
+const HIS = / — with: dima\b/;
 export function isTail(text: string): boolean {
     return flywayKind(text) === 'open' && !HIS.test(text);
 }
@@ -140,11 +141,7 @@ if (import.meta.main) {
             .filter(({ text }) => /^title: ['"]?flyway: /m.test(text));
         for (const similar of similarLines(value, flyways))
             console.log(similar);
-        rewrite(id, [
-            isTail(value) && !PARKED.test(value)
-                ? `${value} — parked: ${stamp().slice(0, 10)}`
-                : value,
-        ]);
+        rewrite(id, [value]);
     } else if (mode === '--sort') {
         rewrite(id, []);
     } else if (mode === '--check') {
@@ -194,7 +191,12 @@ function rewrite(id: string, added: string[]) {
     let next = nextLineId(item);
     const withId = (line: string) =>
         LINE_ID.test(line) ? line : `f${next++} ${line}`;
-    const sorted = flywaySorted([...open, ...added].map(withId));
+    // a tail parked before the stamp existed gets today's at the first write, so none stays unseen
+    const withDay = (line: string) =>
+        isTail(line) && !PARKED.test(line)
+            ? `${line} — parked: ${stamp().slice(0, 10)}`
+            : line;
+    const sorted = flywaySorted([...open, ...added].map(withId).map(withDay));
     if (!added.length && sorted.every((line, i) => line === open[i])) return;
     edit(id, [
         ...lines.flatMap((l) => ['--remove-ac', String(l.n)]),

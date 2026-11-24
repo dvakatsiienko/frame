@@ -1,5 +1,5 @@
 ---
-status: live
+status: dropped
 until: 2026-11-27
 dies-when: the verdict line below is written
 fits: codie (mods)
@@ -31,3 +31,5 @@ Ticket: FRM-472
   - **the new shape, clio's weighed call on his steer o45**: no vendoring under the guard; a test-side oracle in FRM-472, unbash as a dev dependency compared with `commandsDeep` over the escape table and a fuzz of quote shapes, so a disagreement names a reader bug by itself. verdict at FRM-472's close
 
 ## verdict
+
+- 2026-11-24 · **dropped** (dima's tick and his 15:53 word) — never wired under the guard's walker: no trace in frame's `package.json` or in plugin-x, 2 rounds, the last 11-07; round 1 closed 0 escapes over 15,780 real calls; round 2's open hole is now a row in the guard's own escape tests; FRM-472, its oracle's home, was canceled; reopen by a new card when the guard's reader misses again

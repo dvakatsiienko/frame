@@ -1,5 +1,5 @@
 ---
-status: live
+status: parked
 until: 2026-11-24
 dies-when: the verdict line below is written
 ---
@@ -31,3 +31,5 @@ at adopt: propose cutting the window reads from `habit-ctx-load-balancing` (dima
 - 2026-11-04 · FRM-500 closed on dima's word · open at close: a real shift with everyone parked (exit 12) rides this trial, and `clio:shift`'s start calling the pace watch makes its first real call there · the split (W150): `_crow/lib.ts` `isParked` hard-codes 55, 97, 90 and 5, so a `mods:set` retune moves the mod and leaves crow's cadence behind until that line moves too; at the adopt it reads one source; the window reads in `habit-ctx-load-balancing` go then too (W110)
 
 ## verdict
+
+- 2026-11-24 · **parked** (dima's tick) — its habit is paused since 11-05 («the 5h window is removed until i leave it, after a month i probably switch back to $100»), 3 rounds, all 11-04; condition: he is back on a plan with a 5h window that matters

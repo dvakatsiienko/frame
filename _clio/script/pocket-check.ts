@@ -191,9 +191,11 @@ export function checkPocket(
                     report(
                         `${line.ref}: its day came (${day}): move it up, drop 📅 and «— on:»`,
                     );
-                if (line.text.length > FLYWAY_LINE_MAX)
+                // the day stamp is the script's, so it never counts against the line
+                const length = line.text.replace(PARKED, '').length;
+                if (length > FLYWAY_LINE_MAX)
                     report(
-                        `${line.ref} is ${line.text.length} chars: keep it ≤${FLYWAY_LINE_MAX}, the detail goes to the item's notes`,
+                        `${line.ref} is ${length} chars: keep it ≤${FLYWAY_LINE_MAX}, the detail goes to the item's notes`,
                     );
                 const waitsFor =
                     kind === 'waits'

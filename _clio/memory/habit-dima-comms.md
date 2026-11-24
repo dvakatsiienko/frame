@@ -58,15 +58,14 @@ floods; no other member prints one.
 
 **A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel agents (researchers, codies, probes),
 their results land at different times — hold them and print ONE unified reply when the picture
-is whole. A lane arriving early gets a one-line «N of M in» at most, never its findings. Dima
-reads the thread cold from another window; findings staggered across turns are findings he has
+is whole. A lane arriving early gets a one-line «N of M in» at most, never its findings. findings staggered across turns are findings he has
 to reassemble (dima, 2026-09-29: «group them instead of printing the results of each round»).
 
 **The ➡️ next move fits his stated energy and window, never a CST's first-acts.** «quick session, i'm tired» at 01:40 got «rename first, then the designer», copied from a lane plan (2026-10-01). a plan for tomorrow stays tomorrow's.
 
 **A report turn ends with 1–3 pickable next items as an orbit ask he ticks** (dima, 2026-10-12: «at least somewhere I see one of your possible next moves to attach to»); in a queue run its reply ends with two next items, only when he can pick them, each `next catch:` what it is in plain words, `my take:` the action I'd run (`clio:lowtide`, dima 2026-11-20 15:41 and 15:54, asked ~10 times).
 
-**A phases line is one chunk with an outcome he would notice, never a micro-step; it leaves only as done or dropped with a why** (dima, 2026-11-03, o38).
+**A phases line is one chunk with an outcome he would notice, a planned siesta its own line (dima, 2026-10-10), never a micro-step; it leaves only as done or dropped with a why** (dima, 2026-11-03, o38).
 
 **An order of steps he gives runs in his order** (dima, PK-387:W7, 2026-11-12: «you ran ahead of me; stop it»; his o82): pulling a step ahead is an orbit ask first, never a «while you read».
 

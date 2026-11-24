@@ -15,6 +15,7 @@ import {
     flywayNudge,
     groomBlock,
     groomNudge,
+    lastFlywayCheck,
     newJoins,
     wingNudge,
 } from './prompt-raw-save.ts';
@@ -199,6 +200,35 @@ describe('flywayNudge', () => {
                 throw new Error('spawnSync node ETIMEDOUT\nmore');
             }),
         ).toEqual(['🟡 flyway not checked: spawnSync node ETIMEDOUT']);
+    });
+});
+
+describe('lastFlywayCheck', () => {
+    const setup = (source: string) => {
+        const dir = mkdtempSync(join(tmpdir(), 'flyway-check-'));
+        const script = join(dir, 'check.mjs');
+        writeFileSync(script, source);
+        return { file: join(dir, 'state', 'main.txt'), script };
+    };
+    const settled = async (file: string) => {
+        for (let i = 0; i < 100 && !existsSync(file); i++)
+            await new Promise((done) => setTimeout(done, 50));
+        return readFileSync(file, 'utf8');
+    };
+    test('the first call answers nothing at once, and the next holds its run', async () => {
+        const { file, script } = setup("console.log('🔴 flyway: main f1')");
+        expect(lastFlywayCheck(file, 'flyway: main', script)).toBe('');
+        expect(await settled(file)).toBe('🔴 flyway: main f1\n');
+        expect(lastFlywayCheck(file, 'flyway: main', script)).toBe(
+            '🔴 flyway: main f1\n',
+        );
+    });
+    test('a run that fails is told, never read as green', async () => {
+        const { file, script } = setup('process.exit(3)');
+        lastFlywayCheck(file, 'flyway: main', script);
+        expect(await settled(file)).toBe(
+            '🔴 flyway: main not checked: the last background run failed\n',
+        );
     });
 });
 
