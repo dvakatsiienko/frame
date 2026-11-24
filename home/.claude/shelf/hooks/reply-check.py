@@ -35,7 +35,8 @@ WAIT_LINE = re.compile(r"^\s*🔭.*$", re.M)
 # an internal id dima cannot read cold: an orbit ask, a pocket item, a letter-digit label (o54: o56, PK-50, I7); a grill's
 # `Q1` is its own label, printed with its question in the same reply
 INTERNAL_ID = re.compile(r"(?<![\w/.#-])(o\d{1,4}|[Pp][Kk]-\d{1,4}|[A-PR-Z]\d{1,2})(?![\w/-])")
-# glossed: words right after it in brackets, after a colon or a dash, or a comma appositive («PK-219, the cli wish»), at least two of them
+# glossed: words right after it in brackets, after a colon or a dash, or a comma appositive («PK-219, the cli wish»), at least two of them;
+# or the id itself in brackets after its meaning («the cli wish (PK-219)»), the shape a reply to dima takes
 GLOSS_AFTER = re.compile(r"^\s*(?:\(|:\s|[—–-]\s|=\s|,\s+(?:the|your|my|our|a|an)\s)\s*[^\s)]+\s+[^\s)]+")
 MD_LINK_LABEL = re.compile(r"\[[^\]]*\]\([^)]*\)")
 # a can't with no command beside it is an inference dressed as a fact (two unproven can'ts on 10-13: PK-98, the hook claim)
@@ -62,7 +63,7 @@ def unglossed(prose: str) -> list[str]:
         if token.lower() in seen:
             continue
         seen.add(token.lower())
-        if not GLOSS_AFTER.match(text[m.end():]):
+        if not GLOSS_AFTER.match(text[m.end():]) and not text[: m.start()].rstrip().endswith("("):
             bare.append(token)
     return bare
 
@@ -118,9 +119,11 @@ def sentences(prose: str) -> list[str]:
     return [s.replace("\x01", " ") for u in units for s in SENTENCE_END.split(u) if s.strip()]
 
 
-# a claim is cleared by a check inside its own sentence only: a source in another sentence never covers it (crow, 2026-11-02)
+# a claim is cleared by a check inside its own sentence only: a source in another sentence never covers it (crow, 2026-11-02).
+# the check may be told in plain words («I ran it», «I tried»); `unevidenced` then asks for the call behind «I checked»
+PLAIN_CHECK = re.compile(r"\b(?:i|we)(?:'ve| have)?\s+(?:just\s+)?(?:ran|run|tried|checked|tested|read|opened)\b|\(inference\)", re.I)
 def unproven_cants(prose: str) -> list[str]:
-    return [m.group(0) for s in sentences(prose) if not SOURCE.search(s) for m in [CANT.search(s)] if m]
+    return [m.group(0) for s in sentences(prose) if not SOURCE.search(s) and not PLAIN_CHECK.search(s) for m in [CANT.search(s)] if m]
 
 
 # an absolute dead end stated with no try behind it (FRM-487: «only path», «every form is down, one door left», both wrong)
@@ -135,7 +138,7 @@ TRIED = re.compile(r"\b(?:i|we) (?:just )?tried\b|(?<!not )(?<!never )\btested\b
 
 def dead_ends(prose: str) -> list[str]:
     # a «quoted» claim is named, not made
-    return [m.group(0) for s in sentences(prose) if not TRIED.search(s) for m in [DEAD_END.search(GUILLEMETS.sub("", s))] if m]
+    return [m.group(0) for s in sentences(prose) if not TRIED.search(s) and not PLAIN_CHECK.search(s) for m in [DEAD_END.search(GUILLEMETS.sub("", s))] if m]
 
 
 GUILLEMETS = re.compile(r"«[^»\n]*»")
@@ -161,7 +164,7 @@ SOURCE = re.compile(r"https?://|\]\(|`(?:x|pnpm|node|go|git|gh|rg|jq|claude|pyth
 
 
 def door_claims(prose: str) -> list[str]:
-    return [m.group(0)[:40] for s in sentences(prose) if not SOURCE.search(s) for m in [DOOR_CLAIM.search(s)] if m]
+    return [m.group(0)[:40] for s in sentences(prose) if not SOURCE.search(s) and not PLAIN_CHECK.search(s) for m in [DOOR_CLAIM.search(s)] if m]
 
 
 # a claim stated as checked needs a command or read in the turn (the top #dima-caught type, flat at 10 vs 10, 2026-10-28).
@@ -596,19 +599,6 @@ def plain_verdicts(prose: str) -> list[str]:
     return found[:1]
 
 
-MEASURE_TOPIC = re.compile(r"\b(?:trials?|test drives?|measures?|measured|rounds?|verdicts?|baseline|kill rule)\b", re.I)
-MEASURE_NUMBER = re.compile(r"\b\d+(?:\.\d+)?\s?(?:%|of \d+|/\d+)|\b\d+(?:\.\d+)?\s?(?:k|%)?\s?→\s?\d")
-GAIN_LEAD = re.compile(r"^\s*(?:[-*]\s+)?(?:🟢|🟡|🔴)", re.M)
-
-
-def bare_measures(prose: str) -> list[str]:
-    # a measure reaches dima as its gain, never as bare numbers (fleet-output-format § shapes; dima, 2026-11-22 14:17)
-    if GAIN_LEAD.search(prose) or not MEASURE_TOPIC.search(prose):
-        return []
-    hit = MEASURE_NUMBER.search(prose)
-    return [hit.group(0).strip()] if hit else []
-
-
 # a step pushed to a later time with no why on its line: run it now or name the blocker or his word (craft-pm § the freebie rule)
 POSTPONE = re.compile(r"\b(?:at (?:the )?boot|tomorrow(?!['’]s)|next (?:session|boot))\b", re.I)
 # the why: a blocker word, dima's word, or a «quote» of him
@@ -643,7 +633,6 @@ def findings(reply: str) -> list[tuple[str, str]]:
     found += [("door-claim", claim) for claim in door_claims(prose)]
     found += [("dead-end", claim) for claim in dead_ends(prose)]
     found += [("plain-verdict", word) for word in plain_verdicts(prose)]
-    found += [("bare-measure", number) for number in bare_measures(INLINE_CODE.sub("", prose))]
     found += [("postponed-no-blocker", words) for words in postponed_unblocked(prose)]
     # a reply that is only the 📄 stamp and the 🔭 line hid its answer in a mid-turn block dima never sees (crow, 2026-10-12: three in one evening)
     body = [l for l in reply.splitlines() if l.strip()]
@@ -733,12 +722,10 @@ def main() -> None:
         reminds.append("a wake that only reports a commit or push prints nothing; it rides the next reply")
     if by_rule("plain-verdict"):
         reminds.append(f"a verdict word printed plain («{by_rule('plain-verdict')[0]}») — bold with its badge: **🌼 clean**, **🩹 fix**, **🪜 escalate**")
-    if by_rule("bare-measure"):
-        reminds.append(f"a measure printed bare («{by_rule('bare-measure')[0]}») — each deciding number a 🟢🟡🔴 gain line, signed change, before → after, then your verdict (keep or drop) and the action")
     if by_rule("postponed-no-blocker"):
         reminds.append(f"a step postponed with no blocker named («{by_rule('postponed-no-blocker')[0]}») — run it now, or name the blocker or his word on that line (craft-pm § the freebie rule)")
     if by_rule("dead-end"):
-        reminds.append(f"«{by_rule('dead-end')[0]}» with no check in its sentence — name the try or the command beside it, or mark it (inference)")
+        reminds.append(f"«{by_rule('dead-end')[0]}» with no check in its sentence — say in plain words what you tried or ran, or mark it (inference)")
     if by_rule("table"):
         reminds.append("a markdown table — `- key — value` bullets")
     late, stale = by_rule("future-stamp"), by_rule("stale-stamp")
@@ -751,7 +738,7 @@ def main() -> None:
     if by_rule("grill-drift"):
         reminds.append(f"the grill drifted from orbit ({by_rule('grill-drift')[0]}) — write the grill once, each ask copies its number")
     if by_rule("unglossed-id"):
-        reminds.append(f"unglossed ids ({', '.join(by_rule('unglossed-id'))}) — a three-word gloss at first use")
+        reminds.append(f"unglossed ids ({', '.join(by_rule('unglossed-id'))}) — say what each is in plain words, the id after it in brackets, or leave the id out")
     if by_rule("dead-link"):
         reminds.append(f"a dead relative link ({by_rule('dead-link')[0]}) — path from the session folder")
     if reminds:

@@ -7,6 +7,15 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 
 <!-- boundary: swap the voice and this file still binds — a tone test parks fleet-voice.md only. -->
 
+## to dima, first
+
+- **write to dima as you would say it aloud to a colleague who was not in the room.** a file, a command, a function, a ticket number or a count is named only when he must open it, run it or decide by it; otherwise say what it does or what happened. tech language is his to ask for, never the default; his vibe words (`fleet-vibe.md`) are his shortcuts and stay whole
+- **before writing to him, ask «does this change something he uses, or need his decision?»** neither → write nothing: a turn woken by a member, a job or a hook stays silent, and so do an agent's own chores (a save refused and retried, a commit landed, a file trimmed). progress on a lane he follows is one sentence, the outcome first
+- a thread he is not talking to sends him at most one short message until he answers it
+- this section binds text meant for him; member traffic, tickets, commits and files keep their shapes
+
+<!-- why: dima, 2026-11-24: «I am essentially fresh eyes for everything that's happening under the hood»; of an agent's chores told to him: «you spend effort to write your replies, and I spend effort to filter them out, which is double inefficient. They only hurt.» the cases: his comms log -->
+
 ## 🚫 bans — the shapes that keep breaking
 
 - **md tables, everywhere** — replies, tickets, docs. a table renders broken in his terminals and
@@ -15,35 +24,26 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
   sits inside a sentence. the reply-check hook logs every recidive.
 - **commit hashes in a reply to dima.** he reads none; a reply names what landed in words. member
   traffic keeps them — codie's «push <branch> <sha>» is what the coordinator verifies.
-- **trailing emoji** — an emoji leads its line, see emoji below.
 - **glyph run-ons** like ①②③ in one line — next steps are plain separate lines.
 
 ## shapes
 
 - **answer first.** open with the verdict. never build up to it.
-- **a reply budget: ≤800 characters; a report ≤1,500, every thread.** longer: risk, decision and his part stay, the rest is linked.
-- **the one number that decides**, then «proven» or «not checked: X». <!-- cc -->
-- **a measure reaches dima as its gain**: one line per deciding number, led 🟢 better, 🟡 no real change, 🔴 worse, then the signed change (`+14 pts`, `−13 pts`, `±0`) and `before → after` (or `vs target`); one verdict line for him; the rest linked (PK-349:W1288+)
-- **every claim of state says «verified» with its command, or «not checked»**, in every seat's reply and report (dima, PK-363:W955, made fleet-wide 2026-11-12). <!-- cc -->
+- **one item of his per reply, one decision asked**, in as many plain sentences as it needs, to about ten lines; the rest is linked.
+- **a measure is one sentence**: what got better or worse and roughly how much, in everyday terms («about a third cheaper», «19 in 20»); the exact numbers linked.
+- **a claim of state is checked first and says so in plain words** («I ran the tests and they pass»), or says «not checked», in every seat's reply and report (dima, PK-363:W955). <!-- cc -->
 - **no progress chatter (no «N of M done»), but a heartbeat**: one short human line when a turn runs long or something moves to the board. <!-- cc -->
-- **lists over prose.** prose is the exception, never more than three lines.
-  - a list item is one sentence. more than that, and it nests: the item becomes a label, each fact
-    a sub-item.
+- **short whole sentences by default; a list only for three or more parallel things.**
 - **a list's marker by its lines** (dima, 2026-10-22: «a bullet point plus an emoji that leads a line reads poorly»; reversed 11-10):
   - lines with no leading emoji → `-` bullets
   - an order that matters (steps, a ranked top 10) → numbers
   - every line led by an emoji → a `-` bullet too
-- **operations get list shape.** one op per line, `FRM-N → what happened`, grouped by kind;
-  reasoning stays prose.
-
-<!-- failure: dima, 2026-10-10: the median reply ran 1,361 chars, 4× his prompts -->
-
 ## typography
 
 emphasis is semantic and stable — same entity type, same treatment, every time. this substitutes
 for colour, which the terminal cannot render.
 
-- `backticks` — system entities: files, paths, skills, commands, stores, code identifiers. also
+- `backticks` — system entities: files, paths, skills, commands, stores, code identifiers; in text for dima only the name he must act on, any other replaced by what it does. also
   brand and product names (`linear`, `github`, `notion`), which stay lowercase; the backticks do the
   standing-out a capital used to do.
 - **bold** — key assertions, outcomes, decisions, numbers that matter, and fleet names (§ emoji).
@@ -89,8 +89,8 @@ a page you named, never navigates from a site root to the page you meant.
 - **strictest when you ask him to do something** — grab an api key, flip a setting, re-grant a
   permission: deep-link the exact page or pane so the click IS the action, never «go find X».
   before asking at all, look for the door that does it for him (a `defaults write`, a script).
-- **ticket ids are always an https link plus a short tldr**, never bare — including inside
-  lists: `[FRM-N](https://linear.app/x-com/issue/FRM-N): <tldr> — in progress`. https is the
+- **a ticket reaches dima as its meaning in plain words, its id an https link at the end**, never bare,
+  never leading: `<what it is>, in progress ([FRM-N](https://linear.app/x-com/issue/FRM-N))`. https is the
   one form every surface renders (cloud chat strips custom schemes); dima opens a
   ticket in the app with his Hyper+G raycast command.
 - **an issue or pr from another repo is a full link** — `[vhs#787](https://github.com/charmbracelet/vhs/issues/787)`.
@@ -172,7 +172,6 @@ file he names.
 
 - every question round ends with a ➡️ recommendation.
 - **one home for the next move**: an orbit ask holds it and its pick, one he ticks; never both. <!-- cc -->
-- nothing to ask → a ➡️ line only for a take; quick answers and status carry neither.
 - **the ➡️ line carries the take or the need** — an insight, an opinion, a proposal, or what the thread needs from him; pure status gets none, never a second closer.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.
@@ -200,36 +199,14 @@ file he names.
 
 ## reply skeletons
 
-- **default report** — anything non-trivial:
-  - bolded verdict line
-  - bullets carrying the substance
-  - the next move: an orbit ask, or one ➡️ line
-- **plan report** — you wrote a plan file and are summarising it. the reply is the trailer, not
-  the movie:
-  - bare path to the file
-  - bolded verdict, the one decision it turns on
-  - 🔎 **findings**, including the surprising ones — this section earns its length
-  - 📋 **plan**, numbered, one line each, no code
-  - 📌 risks and what you left out
-  - ➡️ next step
+- **plan report** — you wrote a plan file: its link, the one decision it turns on, the surprising findings and the risks, in plain sentences; the plan stays in the file
 - **quick answer** — a factual question with a short answer: just answer it. no skeleton, no
   verdict line, no next step. never inflate a one-line answer into a report.
 
-## boards — status reports have ONE shape
+## boards — only on dima's ask
 
-- bold section header per topic, then one fact per line, nested bullets.
-- 🟢🟡🔴 group by state, never inline lists of ids in prose.
-- a section «no action needed» — everything informational parks under it.
-- an id never shares a line with a second id's story.
-
-## the output kit
-
-📊 mini scoreboard for session wrap-ups (created / done / touched / routed) — bullet lines, not a table
-
-🚦 fleet reports as one line per session, in fixed order — 🟢 done-idle, then 🟡 working, then 🔴 blocked;
-each named by its registry name («🌗 🔧 cli | FRM-399») <!-- cc -->
-
-🧾 diff-shaped state changes: `field: old → new`
+- a bold header per topic, one fact per line, 🟢🟡🔴 grouping by state; what needs no action parks under «no action needed»; an id never shares a line with a second id's story
+- 🚦 a fleet report is one line per session, 🟢 done-idle, then 🟡 working, then 🔴 blocked, each by its registry name («🌗 🔧 cli | FRM-399») <!-- cc -->
 
 🏷️ incremental art or product work (a diorama set, an mvp growing round by round) → every
 report ends with its version label — `mvp`, `mvp v1`, `mvp v2`, `prod`, or a number like

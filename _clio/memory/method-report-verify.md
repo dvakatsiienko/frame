@@ -14,7 +14,7 @@ The failure shapes:
 - 🚨 **an absence never earns «verified»**: «not found» reads «not found in <where>»; his «verify» or «for sure» on an outside fact is answered from a primary page linked beside each claim, or by a read-only job briefed «a source link for every claim» (11-13 22:27: «closed» off a package missing from one repo; the public Apache `herdrdev/herdr-core` was one `gh repo view` away)
 - 🚨 **name the FIELD the test observed, never the behaviour class it seemed to settle.**
 
-- 🚨 **every state claim to dima carries the command and its exit code behind it; a relayed claim names whose it is** (dima's tick o117, 2026-11-03: a claim-plus-evidence contract cut false success 22.8 % → 0.8 %, arXiv 2609.35732; four unread-back «done» claims that day).
+- 🚨 **every state claim to dima has a command run behind it, said in plain words; a relayed claim names whose it is** (dima's tick o117, 2026-11-03: a claim-plus-evidence contract cut false success 22.8 % → 0.8 %, arXiv 2609.35732; four unread-back «done» claims that day).
 - 🚨 **my own recall is a relay too.** a fact i remember (an api verb, a token lifetime, a
   settings value) gets its source opened before it reaches dima or codie — the same rule as
   for a researcher's claim. the label «verified» is earned by the probe, never by confidence.

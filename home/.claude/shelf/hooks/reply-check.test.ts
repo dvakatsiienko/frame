@@ -66,13 +66,13 @@ describe('the · rule', () => {
         expect(stop('done.\n\n🔭 waiting on ci for the pushed head')).toBe('');
     });
 
-    it('reminds of a trial measure printed with no gain line', () => {
+    it('passes a measure told as a plain sentence', () => {
         expect(stop('the trial: 61 of 68 rounds found a high.')).toBe('');
-        expect(nextPrompt()).toContain('a measure printed bare');
+        expect(nextPrompt()).toBe('');
     });
 
-    it('passes a trial measure led by a gain line', () => {
-        expect(stop('the trial:\n- 🟢 rounds with a high: 61 of 68')).toBe('');
+    it('passes a claim whose check is told in plain words, and an id in brackets after its meaning', () => {
+        expect(stop('I tried it twice and the fetch cannot reach the page. the trash ask (o56) is closed.')).toBe('');
         expect(nextPrompt()).toBe('');
     });
 
