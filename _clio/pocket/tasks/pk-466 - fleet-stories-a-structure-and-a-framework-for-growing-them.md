@@ -4,7 +4,7 @@ title: 'fleet stories: a structure and a framework for growing them'
 status: open
 assignee: []
 created_date: '2026-11-23T16:53:00Z'
-updated_date: '2026-11-24T11:26:00Z'
+updated_date: '2026-11-24T11:34:00Z'
 labels:
   - s
   - clio-wing-1
@@ -98,4 +98,16 @@ PK-466:W35 (2026-11-24 13:25, dima): Overall the structure is not so bad in my v
 PK-466:W36 (2026-11-24 13:25, dima): Either way propose your own ideas for how to improve the structure.
 
 PK-466:W37 (2026-11-24 13:25, dima): If you agree with my naming fixes, tell me how to name other stuff that I forgot what it does.
+
+PK-466:W38 (2026-11-24 13:31, dima): [herdr-band-drift] drop? ❓
+
+PK-466:W39 (2026-11-24 13:31, dima): [herdr-band-drift] can you remember if i asked for it or you created? ❓
+
+PK-466:W40 (2026-11-24 13:31, dima): [x-live-on-commit] i also cannot recall i asked for this.
+
+PK-466:W41 (2026-11-24 13:31, dima): drop both? ❓
+
+PK-466:W42 (2026-11-24 13:31, dima): I want these incidents to be only created on my requests because I want these fleet stories to be hand-picked by me (because I evaluate differently than you).
+
+PK-466:W43 (2026-11-24 13:31, dima): (your name proposals are OK but i want only to keep ones created by my request)
 <!-- SECTION:NOTES:END -->
