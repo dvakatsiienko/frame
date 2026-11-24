@@ -41,6 +41,8 @@ type growthCrossing struct {
 	// the date it was first reported, empty for one a baseline from before this field named; Calmed: reported before, under its limit now
 	First  string `json:"first,omitempty"`
 	Calmed bool   `json:"calmed,omitempty"`
+	// First is the day a run dated a kind a baseline from before the date had already reported, not the day it was first reported
+	ReportedBefore bool `json:"reportedBefore,omitempty"`
 	// a fixes crossing names both its counts: Count since the part's seed or last keep (Since, its date), Week all in 7 days
 	Since string `json:"since,omitempty"`
 	Week  int    `json:"week,omitempty"`
@@ -65,6 +67,8 @@ type growthEntry struct {
 	Reported []string `json:"reported,omitempty"`
 	// the date each reported kind was first named, for the kinds named since the field exists
 	First map[string]string `json:"first,omitempty"`
+	// the kinds reported before the date existed, dated by a later run: their First says when x first saw them, not when they crossed
+	Before []string `json:"before,omitempty"`
 }
 
 type growthBaseline struct {
@@ -140,18 +144,25 @@ func fleetGrowth(r *Run, _ []string, flags Flags) (any, error) {
 			if named && c.Trigger == "turns (rough)" {
 				continue
 			}
+			written := !named
 			if !named {
 				entry.Reported = append(entry.Reported, c.Trigger)
-				if c.Trigger != "turns (rough)" {
-					entry.First = maps.Clone(entry.First)
-					if entry.First == nil {
-						entry.First = map[string]string{}
-					}
-					entry.First[c.Trigger] = now.Format(time.DateOnly)
+			}
+			// a kind reported before its date existed is dated by this run, and says so
+			if (!named || entry.First[c.Trigger] == "") && c.Trigger != "turns (rough)" {
+				entry.First = maps.Clone(entry.First)
+				if entry.First == nil {
+					entry.First = map[string]string{}
 				}
+				entry.First[c.Trigger] = now.Format(time.DateOnly)
+				if named {
+					entry.Before, written = append(slices.Clone(entry.Before), c.Trigger), true
+				}
+			}
+			if written {
 				baseline.Parts[c.Part], changed = entry, true
 			}
-			c.First = entry.First[c.Trigger]
+			c.First, c.ReportedBefore = entry.First[c.Trigger], slices.Contains(entry.Before, c.Trigger)
 			shown = append(shown, c)
 		}
 		// a kind reported before and under its limit now stays in the report, saying so, until the keep
@@ -215,7 +226,9 @@ func growthLines(data growthData) []string {
 	}
 	var lines []string
 	for _, c := range data.Crossings {
-		if c.First != "" {
+		if c.ReportedBefore {
+			lines = append(lines, c.Ask+" first seen "+c.First+", reported before")
+		} else if c.First != "" {
 			lines = append(lines, c.Ask+" first: "+c.First)
 		} else {
 			lines = append(lines, c.Ask)

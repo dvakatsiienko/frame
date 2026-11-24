@@ -59,7 +59,7 @@ func growthAt(t *testing.T, root string, env []string, now string) growthData {
 
 // a crossing without its ask text, its first date and its dated counts, for the tests that compare what crossed
 func bare(c growthCrossing) growthCrossing {
-	c.Ask, c.First, c.Since, c.Week = "", "", "", 0
+	c.Ask, c.First, c.Since, c.Week, c.ReportedBefore = "", "", "", 0, false
 	return c
 }
 
@@ -375,8 +375,8 @@ func TestFleetGrowthPrintsTheRoughTurnsCrossingOnce(t *testing.T) {
 	root, env := growthWorld(t)
 	growthAt(t, root, env, "2026-11-20T09:00:00Z")
 	promptsDay(t, env, "2026-11-20", "22:00 x-mod-alpha is slow", "22:05 the X-MOD-ALPHA band", "22:10 x-mod-alpha again")
-	if first := growth(t, root, env); len(first.Crossings) != 1 || first.Crossings[0].Trigger != "turns (rough)" {
-		t.Fatalf("first run %+v, want the turns crossing", first.Crossings)
+	if first := growth(t, root, env); len(first.Crossings) != 1 || first.Crossings[0].Trigger != "turns (rough)" || first.Crossings[0].First != "" {
+		t.Fatalf("first run %+v, want the turns crossing with no first date", first.Crossings)
 	}
 
 	if again := growth(t, root, env); len(again.Crossings) != 0 {
@@ -384,9 +384,9 @@ func TestFleetGrowthPrintsTheRoughTurnsCrossingOnce(t *testing.T) {
 	}
 }
 
-// a baseline written before the first date existed: read whole, the run writes it back (a second part crosses new) and the old kinds keep
-// their place with no date; a new crossing gets one
-func TestFleetGrowthReadsABaselineWithNoFirstDate(t *testing.T) {
+// a baseline written before the first date existed: read whole and written back (a second part crosses new); a kind it reported
+// before gets this run's day and says it was reported before, on every later run too; a new crossing is simply first
+func TestFleetGrowthDatesAKindReportedBeforeTheFirstDateExisted(t *testing.T) {
 	t.Parallel()
 	root, env := growthWorld(t)
 	growthAt(t, root, env, "2026-11-20T09:00:00Z")
@@ -410,14 +410,14 @@ func TestFleetGrowthReadsABaselineWithNoFirstDate(t *testing.T) {
 	if len(got.Crossings) != 3 {
 		t.Fatalf("crossings %+v, want the old fixes, the old size and the new size of x-mod-alpha", got.Crossings)
 	}
-	if c := byKind["x-mod-alpha fixes"]; c.First != "" || c.Calmed {
-		t.Errorf("old fixes crossing %+v, want no first date", c)
+	if c := byKind["x-mod-alpha fixes"]; c.First != "2026-11-20" || !c.ReportedBefore || c.Calmed {
+		t.Errorf("old fixes crossing %+v, want first 2026-11-20, reported before", c)
 	}
-	if c := byKind["x-herdr-gamma size"]; c.First != "" || c.Calmed || c.Now != 120 {
-		t.Errorf("old size crossing %+v, want no first date, at 120", c)
+	if c := byKind["x-herdr-gamma size"]; c.First != "2026-11-20" || !c.ReportedBefore || c.Calmed || c.Now != 120 {
+		t.Errorf("old size crossing %+v, want first 2026-11-20, reported before, at 120", c)
 	}
-	if c := byKind["x-mod-alpha size"]; c.First != "2026-11-20" {
-		t.Errorf("new size crossing %+v, want first 2026-11-20", c)
+	if c := byKind["x-mod-alpha size"]; c.First != "2026-11-20" || c.ReportedBefore {
+		t.Errorf("new size crossing %+v, want first 2026-11-20 and not reported before", c)
 	}
 	raw, err := os.ReadFile(filepath.Join(strings.TrimPrefix(env[1], "X_STATE="), "fleet-growth", "baseline.json"))
 	if err != nil {
@@ -427,6 +427,7 @@ func TestFleetGrowthReadsABaselineWithNoFirstDate(t *testing.T) {
 		Parts map[string]struct {
 			Reported []string          `json:"reported"`
 			First    map[string]string `json:"first"`
+			Before   []string          `json:"before"`
 		} `json:"parts"`
 	}
 	if err := json.Unmarshal(raw, &file); err != nil {
@@ -435,11 +436,21 @@ func TestFleetGrowthReadsABaselineWithNoFirstDate(t *testing.T) {
 	if after := len(file.Parts); after != before {
 		t.Errorf("%d parts in the rewritten baseline, want the %d it held", after, before)
 	}
-	if old := file.Parts["x-herdr-gamma"]; !slices.Equal(old.Reported, []string{"size"}) || len(old.First) != 0 {
-		t.Errorf("x-herdr-gamma written back as %+v, want reported [size] and no first date", old)
+	if old := file.Parts["x-herdr-gamma"]; !slices.Equal(old.Reported, []string{"size"}) || old.First["size"] != "2026-11-20" || !slices.Equal(old.Before, []string{"size"}) {
+		t.Errorf("x-herdr-gamma written back as %+v, want reported [size], first 2026-11-20, before [size]", old)
 	}
-	if mixed := file.Parts["x-mod-alpha"]; !slices.Equal(mixed.Reported, []string{"fixes", "size"}) || mixed.First["size"] != "2026-11-20" || mixed.First["fixes"] != "" {
-		t.Errorf("x-mod-alpha written back as %+v, want reported [fixes size], first only for size", mixed)
+	if mixed := file.Parts["x-mod-alpha"]; !slices.Equal(mixed.Reported, []string{"fixes", "size"}) || mixed.First["size"] != "2026-11-20" || !slices.Equal(mixed.Before, []string{"fixes"}) {
+		t.Errorf("x-mod-alpha written back as %+v, want reported [fixes size], both dated, before [fixes] only", mixed)
+	}
+
+	later := growthAt(t, root, env, "2026-11-22T12:00:00Z")
+	for _, c := range later.Crossings {
+		if c.First != "2026-11-20" || c.ReportedBefore != (c.Part+" "+c.Trigger != "x-mod-alpha size") {
+			t.Errorf("two days on: %+v, want the first date kept and «reported before» kept for the old kinds only", c)
+		}
+	}
+	if text := xIn(t, root, append(env, "X_NOW=2026-11-22T12:00:00Z"), "fleet", "growth", "--board"); strings.Count(text.stdout, "first seen 2026-11-20, reported") != 2 || strings.Count(text.stdout, "first: 2026-11-20") != 1 {
+		t.Errorf("text %q, want «first seen 2026-11-20, reported before» twice (the board wraps its last word) and «first: 2026-11-20» once", text.stdout)
 	}
 }
 
