@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T11:46:00Z'
-updated_date: '2026-11-24T11:48:00Z'
+updated_date: '2026-11-24T11:50:00Z'
 labels:
   - s
   - clio-wing-1
@@ -52,4 +52,14 @@ PK-467:W15 (2026-11-24 13:44, dima): How would you do that? ❓
 PK-467:W16 (2026-11-24 13:44, dima): plus: is system checkup helps with my query or it is something different? ❓
 
 PK-467:W17 (2026-11-24 13:44, dima): (i initially wanted system checkup to answer that query i just asked)
+
+PK-467:W18 (2026-11-24 13:50, dima): any recipes applicable with my ask? ❓
+
+PK-467:W19 (2026-11-24 13:50, dima): and also: how to automate my ask? ❓
+
+PK-467:W20 (2026-11-24 13:50, dima): so i don't repeat it next time? ❓
+
+PK-467:W21 (2026-11-24 13:50, dima): (answer before starting)
+
+PK-467:W22 (2026-11-24 13:50, dima): fold as a part of system-checkup? ❓
 <!-- SECTION:NOTES:END -->
