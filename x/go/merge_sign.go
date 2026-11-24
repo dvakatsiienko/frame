@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"slices"
 	"strings"
 )
 
@@ -205,13 +206,27 @@ func asSigned(above string) string {
 	return folded
 }
 
+// dispatchMarkLine is a line a dispatch writes into a body: the 🚀 line, or a ↩️ one that takes it back, with the blank line after it
+var dispatchMarkLine = regexp.MustCompile(`(?m)^(?:🚀 dispatched |↩️)[^\n]*(?:\n\n?|\z)`)
+
+// stripDispatchMarks takes those lines out: a quick dispatch writes its 🚀 line above `## signed`, so it would move the hash of a
+// text that did not change in scope
+func stripDispatchMarks(text string) string { return dispatchMarkLine.ReplaceAllString(text, "") }
+
+// signForms are the hashes a text may carry in a sign or a seal: raw, normalized, the legacy stamp's, and each of the first two
+// again with the dispatch marks taken out; bodySignHash is the one new stamps write
+func signForms(above string) []string {
+	stripped := stripDispatchMarks(above)
+	return []string{shortHash(above), shortHash(asSigned(above)), shortHash(unescaped(above)), shortHash(stripped), shortHash(asSigned(stripped))}
+}
+
 // bodySignHash is the hash x's sign reader compares for a text: the normalized form of what sits above its closing
 // ## signed heading, or of the whole text when it has none
 func bodySignHash(text string) string {
 	if above, _, ok := signedBlock(text); ok {
 		text = above
 	}
-	return shortHash(asSigned(text))
+	return shortHash(asSigned(stripDispatchMarks(text)))
 }
 
 func shortHash(text string) string { return fmt.Sprintf("%x", sha256.Sum256([]byte(text)))[:8] }
@@ -232,7 +247,7 @@ func bodySign(body string) (state, stored, now string) {
 	switch {
 	case stored == "":
 		return signNoHash, "", now
-	case stored == now || stored == shortHash(asSigned(above)) || stored == shortHash(unescaped(above)):
+	case slices.Contains(signForms(above), stored):
 		return signMatch, stored, now
 	}
 	return signDrifted, stored, now
