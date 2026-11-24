@@ -6,7 +6,7 @@ fed-by: incidents
 
 Ticket: FRM-525
 
-Asked 2026-11-07: exa, parallel, an opus source lane, and a local measure on this mac. The local cases live in [cases.md](cases.md). Raw lanes, read for depth: [mac-agent-cpu-overload/](mac-agent-cpu-overload/).
+Asked 2026-11-07: exa, parallel, an opus source lane, and a local measure on this mac. The local cases live in [measured-cases.md](../../measures/measured-cases.md). Raw lanes, read for depth: [raw/](raw/).
 
 ## the verdict
 

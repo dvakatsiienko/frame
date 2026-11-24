@@ -28,7 +28,7 @@ All times are local (EET), read 2026-11-07 02:05 to 02:25. Everything here is a 
 - M: `~/.local/state/x/mods-test.log`, from 11-05
 - G: `git log --all --no-merges` for frame and bytes, read 11-07
 - P: `gh pr list` and `pulls/N/commits` for frame and bytes; bot prs dropped; 80 chunks merged since 09-26
-- W1: `cpu-load.md`, `cases.md` beside this file, `~/frame/docs/test-drive/gate-speed/proposal-superseded.md`
+- W1: `what-loads-the-cpu.md`, `measured-cases.md` beside this file, `~/frame/docs/test-drive/gate-speed/proposal-superseded.md`
 
 ## what changed the work, not the load
 
@@ -37,7 +37,7 @@ All times are local (EET), read 2026-11-07 02:05 to 02:25. Everything here is a 
 - Same zero-lane hours, 10-19 to 10-31 against 11-01 to 11-05: commit step 8.0 → 12.7, push step 22.8 → 28.7. So ×1.6 and ×1.26 is workload, with no lane running. [m] n=311 and 125; n=161 and 69. T. Commit figures are from the no-mods probe, with tiny steps kept
 - **11-06 19:25, `4739e4ed`: commit step jumps from about 15 s to about 27 s.** It adds `gate-queue.test.ts` with 6 `sleep` matches and sets vitest's timeout to 30 s. [m] the jump, T, per-commit rows. [i] the cause
 - Proof it is not load: test step at load under 16 still takes 28/33, n=14, and 26-28 at load 7-11. [m] C, 11-06 22:12 to 22:37. A bench about 19:00, before the change, took vitest 14.7 s at load 20-37, one run. [m] W1 `proposal-superseded.md`; the time is from its first mention in R, session `2e3b8126`, 11-06 19:00
-- **This disagrees with W1:** `cases.md` (11-07) reads a commit's test step as 13 s alone, 35 s at load, about 2.5×. My read: most of that gap is the 19:25 change, and the load share is about ×1.15 [i]
+- **This disagrees with W1:** `measured-cases.md` (11-07) reads a commit's test step as 13 s alone, 35 s at load, about 2.5×. My read: most of that gap is the 19:25 change, and the load share is about ×1.15 [i]
 - Other gate changes: 11-06 20:35 `cc5a87ca` a push tests what it pushes; 21:01 `c002618c` a codie branch commits with related tests only; 22:02 `566ec310` biome reads `.mjs`. [m] G
 - Marks: frame#132 merged 11-07 00:13. Leaked hooks ran to 01:40 per the coordinator's note and W1. frame#139 was still open at 02:06, so **no after-#139 number exists**. [m] `gh pr view`
 - On purpose tonight: a 16-run go protocol, mutant rounds, sixth sense proofs. Coordinator note, 11-07, not checked separately?
@@ -75,7 +75,7 @@ Corrected to the same workload:
 
 ## vector 2: the dose
 
-Lanes are coder-role sessions with 5+ tool calls that hour. Sessions drop probes. Wing 1's point holds: heavy runs load the cpu, idle sessions do not. W1 `cases.md`, 11-07: with a go run, git took 3.6 cores; with none, 0.3 cpu-s in 10 s; a mods suite took 8.7 cores; about 15 sessions, the app and the os about 4. Two 10 s windows, one each. W1 `cpu-load.md`, 11-06: load 51 with only a go run (n=24), 21 with nothing queued (n=8).
+Lanes are coder-role sessions with 5+ tool calls that hour. Sessions drop probes. Wing 1's point holds: heavy runs load the cpu, idle sessions do not. W1 `measured-cases.md`, 11-07: with a go run, git took 3.6 cores; with none, 0.3 cpu-s in 10 s; a mods suite took 8.7 cores; about 15 sessions, the app and the os about 4. Two 10 s windows, one each. W1 `what-loads-the-cpu.md`, 11-06: load 51 with only a go run (n=24), 21 with nothing queued (n=8).
 
 Hour by hour, commit step p50 (no mods), push step p50, load p50:
 
@@ -184,7 +184,7 @@ Log starts 11-06 19:39, so there is **no logged usual-days baseline**.
 - Mods wait: 240/598 (17), 100/283.6 (7), 2 (1). [m] Q
 - All rows: 892 min waited against 605 min run in 6.6 h, about **2.25 sessions stuck at any moment**. [m] Q. If it all fell on 4.5 lanes, up to 30 min per lane-hour, the same size as the lost pace. [i] An upper bound: wings and wrapped proofs share it
 - Before the log, "calm" 11-06 hours already had long waits: clio 1,116, 1,084 and about 690 s, lane 6 874 s, ci 948 s, lane 5 268 and 248 s, wing 1 1,500 s; a holder was usually a mutant round. W1 `proposal-superseded.md`, 11-06. Single cases, not a rate. This may explain why calm and hot 4-5 lanes read alike [i]
-- W1's 20:00 to 22:05 budget agrees in shape: commits ran 16 min, waited 76 min, n=34. W1 `cpu-load.md`, 11-06
+- W1's 20:00 to 22:05 budget agrees in shape: commits ran 16 min, waited 76 min, n=34. W1 `what-loads-the-cpu.md`, 11-06
 - The zero waits after 01:40 fall with the leak's end and the lanes finishing, so the cause is not separable. Hour 02 had 1 busy lane. [m] R
 
 ## what would make this causal
@@ -195,7 +195,7 @@ A planned ramp, after #139 merges:
 - The same work: a fixed set of replayed chunks from one sha, scored by chunks finished and median chunk wall, not commits
 - Wings, mutant rounds and bench runs off; reviewers paired as usual; clio's steering scripted so her attention is not the limit
 - Each step logs load and top every 10 s, every go and mods run with its cpu-seconds, queue wait, and the trace steps
-- Two passes per dose at least. The A/B already listed in W1 `cases.md` (the same go run with all sessions stopped) settles the suite's own cost
+- Two passes per dose at least. The A/B already listed in W1 `measured-cases.md` (the same go run with all sessions stopped) settles the suite's own cost
 
 ## what could not be measured
 

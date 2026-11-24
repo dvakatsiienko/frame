@@ -14,13 +14,13 @@ Append a day when a round ends. Labels: seen, checked, assumed, verdict, tried, 
 
 first sighting: 2026-08-26, a spinning fan and sticky typing in warp, one 86 min session; the cause of the WindowServer part stayed open (session-meta f12cf6d2, facets f12cf6d2:22).
 turning point: 2026-11-06, a kernel freeze at 15:22, then load 126 to 140 at 18:02 with four lanes' gates at once; from there it became a measured problem (pk-328:35, gazette 2026-11-06-two-lanes-to-merge.md:73).
-wrong turns: 240 hz (08-26), «red for seconds is normal» (11-05), finder as the cause (11-03 to 11-06), the commit gate as the main load (11-06), «fixed» (11-06), 2.5× at load (11-07), fewer lanes (11-07) (facets f12cf6d2:20, tr 9939ff19, pk-310:33, cpu-load.md:5, pk-328:76, cpu-cases.md:7, :53).
-proven: go test runs spawn the git that fills the kernel, on two windows, one each; the mods suite fills user cpu; one go suite alone reads 96 % busy on a quiet mac, one dose run (cpu-cases.md:40-43, doses.tsv:2).
-open: why a go suite costs what it costs at the kernel, whose sandbox profile hits git, spotlight, what wedged the kernel on 11-06, and whether 16 lanes can run (cpu-cases.md:32, :73-79, firelink AGENTS.md:7, FRM-525 done test).
+wrong turns: 240 hz (08-26), «red for seconds is normal» (11-05), finder as the cause (11-03 to 11-06), the commit gate as the main load (11-06), «fixed» (11-06), 2.5× at load (11-07), fewer lanes (11-07) (facets f12cf6d2:20, tr 9939ff19, pk-310:33, what-loads-the-cpu.md:5, pk-328:76, measured-cases.md:7, :53).
+proven: go test runs spawn the git that fills the kernel, on two windows, one each; the mods suite fills user cpu; one go suite alone reads 96 % busy on a quiet mac, one dose run (measured-cases.md:40-43, doses.tsv:2).
+open: why a go suite costs what it costs at the kernel, whose sandbox profile hits git, spotlight, what wedged the kernel on 11-06, and whether 16 lanes can run (measured-cases.md:32, :73-79, firelink AGENTS.md:7, FRM-525 done test).
 
 key to short sources, all read 2026-11-07. clock is local, UTC+2, except a time marked Z; a day is the local day.
-- `cpu-cases.md` is now `cases.md`, `cpu-load.md` sits beside it; `proposal-superseded.md`, `slow-commits.md`: `/Users/dima/frame/docs/test-drive/gate-speed/`; `gate-speed.md`: `/Users/dima/frame/docs/test-drive/gate-speed.md`
-- `research`: `mac-agent-cpu-overload.md`; `pace`: `fleet-pace-under-load.md`, both beside this file
+- `measured-cases.md` is now `measured-cases.md`, `what-loads-the-cpu.md` sits beside it; `proposal-superseded.md`, `slow-commits.md`: `/Users/dima/frame/docs/test-drive/gate-speed/`; `gate-speed.md`: `/Users/dima/frame/docs/test-drive/gate-speed.md`
+- `research`: `why-agents-saturate-the-mac/verdict.md`; `pace`: `fleet-pace-under-load.md`, both beside this file
 - `pk-N`: the item's file in `/Users/dima/frame/_clio/pocket/tasks/`, or `pocket/archive/tasks/` for pk-321 and pk-325
 - `gazette`: `/Users/dima/frame/_clio/gazette/`; `flawlog`: `/Users/dima/frame/home/.claude/shelf/flawlog/`
 - `session-meta` and `facets`: `/Users/dima/.claude/usage-data/`; `tr <id>`: a transcript under `/Users/dima/.claude/projects/`, in `-Users-dima-frame-cclio` before 10-30, `-Users-dima-frame--clio` after, read by `rg` only
@@ -100,62 +100,62 @@ key to short sources, all read 2026-11-07. clock is local, UTC+2, except a time 
 - seen [read]: four lanes at once by the 18:20 gazette update (gazette 2026-11-06-two-lanes-to-merge.md:72)
 - tried [read]: 18:03 stagger line to all four lanes, wait under load 18 before a gate, mutants last; its effect was not measured (pk-328:35; tr 0f9b420c, 2026-11-06T16:03:20Z)
 - tried [read]: 18:16 `script/gate-queue.sh`, one heavy run at a time machine-wide; a commit then waited behind mutant rounds, 590 s and died (commit 6db891df; pk-328:44)
-- assumed [read]: his words, 18:32, «i assume this CPU overloading was only partially related to the finder issues, most likely caused by gate commits». partly corrected at 19:43, then by the 22:09 sample (pk-328:49; proposal-superseded.md:36; cpu-load.md:5)
+- assumed [read]: his words, 18:32, «i assume this CPU overloading was only partially related to the finder issues, most likely caused by gate commits». partly corrected at 19:43, then by the 22:09 sample (pk-328:49; proposal-superseded.md:36; what-loads-the-cpu.md:5)
 - assumed [read]: his words, 18:32, «i thought our tests via Go and vitest are fast tools. why do they overload my CPU?» his worry of a bad config came back no: vitest about 5 cores, go about 7, capping doubles the wall (pk-328:47; proposal-superseded.md:33)
 - checked [read]: a one-run bench at load 20-37: go 45 s, 308 cpu-s, sys 190 over user 117; vitest 14.7 s, 76 cpu-s; a ram disk `TMPDIR` changes nothing; about 5,940 git lookups over 539 tests (proposal-superseded.md:23, :24, :26)
 - assumed [read]: go's test cache misses on an unchanged tree. retracted, it was the prober's own env (proposal-superseded.md:25, :1)
 - assumed [read]: «capping saves no cpu». corrected: go saved 15 % at more than twice the wall, and he called it a poor tradeoff, no cap built (proposal-superseded.md:33, :1; pk-328:79)
 - verdict [read]: 19:43 «the wait is the real cost» and «fixed». both retracted by 20:33: the queue is younger than his complaint, waits of 989 and 1,011 s came at 20:08 after the fix (proposal-superseded.md:14, :1; pk-328:76)
-- tried [read]: 19:25 commit 4739e4ed, a long slot and higher test timeouts. side effect found 11-07: its sleeping `gate-queue.test.ts` took the commit's test step from about 13 s to 26-28 s, even at load 7 to 11 (commit 4739e4ed; cpu-cases.md:53; pace:39)
+- tried [read]: 19:25 commit 4739e4ed, a long slot and higher test timeouts. side effect found 11-07: its sleeping `gate-queue.test.ts` took the commit's test step from about 13 s to 26-28 s, even at load 7 to 11 (commit 4739e4ed; measured-cases.md:53; pace:39)
 - tried [read]: 21:01 related tests at commit on `codie/*`, 8 commits replayed at 0 to 23 s against about 13 s; catch rate unmeasured (commit c002618c; gate-speed.md:97)
 - seen [read]: 20:14 his words, «clicking a SW (band) is lagged», «maybe 100 % cpu load, maybe not» (pk-325:72)
-- assumed [read]: his words, 22:03, «the commit gate seems the main reason for cpu overload and fleet hangs», with at least 14 lanes seen; corrected the same evening (pk-328:100; cpu-load.md:3, :5)
-- seen [read]: 22:03 his words, «your commit just took 8 minutes»; his screenshot 7m57s, 201 s by the transcript, the rest unexplained (pk-328:103; cpu-cases.md:54)
-- checked [read]: 22:09 to 22:36, n=136, 14 worktrees: load p50 24, p90 73, max 100; user 41 %, sys 33 %; `ps` sums 557 of about 1,020 busy; only a go run load 51 with sys 52 %, only a commit 19, nothing queued 21 (cpu-load.md:11-17, :23-28)
-- verdict [read]: «the commit gate's own run is not the overload; its wait is the commit's pain, and the go suite is the cpu's», one window, a correlation (cpu-load.md:5, commit 6673076e)
+- assumed [read]: his words, 22:03, «the commit gate seems the main reason for cpu overload and fleet hangs», with at least 14 lanes seen; corrected the same evening (pk-328:100; what-loads-the-cpu.md:3, :5)
+- seen [read]: 22:03 his words, «your commit just took 8 minutes»; his screenshot 7m57s, 201 s by the transcript, the rest unexplained (pk-328:103; measured-cases.md:54)
+- checked [read]: 22:09 to 22:36, n=136, 14 worktrees: load p50 24, p90 73, max 100; user 41 %, sys 33 %; `ps` sums 557 of about 1,020 busy; only a go run load 51 with sys 52 %, only a commit 19, nothing queued 21 (what-loads-the-cpu.md:11-17, :23-28)
+- verdict [read]: «the commit gate's own run is not the overload; its wait is the commit's pain, and the go suite is the cpu's», one window, a correlation (what-loads-the-cpu.md:5, commit 6673076e)
 - seen [read]: load 133.66 at 23:28:40 and 152.97 at 23:28:51, the highest logged rows that day; the logs start 19:38, so 18:02 has no row (queue log, 2026-11-06T23:28:40; `/Users/dima/.local/state/x/gate-steps.log`, 2026-11-06T23:28:51)
 - seen [recalled]: «peaks of 126 to 172» written at 21:01; no log row reads 172, its source unknown (gate-speed.md:61, commit c002618c; rg of the three logs)
 - assumed [read]: 23:36 his words, «i thought go is fast, and my mac is pretty strong. why then the bottleneck?» owed an answer on 11-07 (pk-328:117; pk-346:26)
-- cost [read]: 20:00 to 22:05, commits ran 16 min and waited 76, n=34 (cpu-load.md:43)
-- cost [read]: from 19:39 for 6.6 h, 892 min waited against 605 run, about 2.25 sessions stuck at any moment (cpu-cases.md:9)
+- cost [read]: 20:00 to 22:05, commits ran 16 min and waited 76, n=34 (what-loads-the-cpu.md:43)
+- cost [read]: from 19:39 for 6.6 h, 892 min waited against 605 run, about 2.25 sessions stuck at any moment (measured-cases.md:9)
 - cost [read]: 4 lanes 24 sessions at 20:00, 5 lanes 25 at 21:00, load p50 30 to 36 per hour (pace:89, :90)
 
 ## 2026-11-07
 
-- seen [read]: 00:02 load 213.76, 00:12 load 247.81 while `measure.sh` ran; `cpu-cases.md` lists 247 under 11-06, the log's row is 11-07 (`gate-steps.log`, 2026-11-07T00:02:36; queue log, 2026-11-07T00:12:06; cpu-cases.md:52)
-- tried [read]: 00:13 pr 132, the gate owns its turn; 00:46 to 01:16, n=154: peak load 100 → 49, sys share 33 → 35 %, so not the cpu's fix, one window (commit 4afa0cd0; cpu-cases.md:83)
-- seen [read]: 01:08 load 47, 40.6 % user, 59.4 % sys, 0 % idle, `ps` about 6 of 14 cores, 106 °C on his screen (cpu-cases.md:51)
+- seen [read]: 00:02 load 213.76, 00:12 load 247.81 while `measure.sh` ran; `measured-cases.md` lists 247 under 11-06, the log's row is 11-07 (`gate-steps.log`, 2026-11-07T00:02:36; queue log, 2026-11-07T00:12:06; measured-cases.md:52)
+- tried [read]: 00:13 pr 132, the gate owns its turn; 00:46 to 01:16, n=154: peak load 100 → 49, sys share 33 → 35 %, so not the cpu's fix, one window (commit 4afa0cd0; measured-cases.md:83)
+- seen [read]: 01:08 load 47, 40.6 % user, 59.4 % sys, 0 % idle, `ps` about 6 of 14 cores, 106 °C on his screen (measured-cases.md:51)
 - verdict [read]: 01:15 his words, «i did not see any surely proven verdict about the real cause of the cpu overload»; FRM-525 opened (pk-328:112; FRM-525 W1)
 - assumed [read]: 01:15 his words, «using fewer threads is not a solution», 14 against others' 64; 01:38 the 64 was the bun migration's author, how he balanced gear unknown. no first-hand report of 64 local sessions found (pk-328:113, :118; research:25)
 - seen [read]: 01:29 his words, «cpu bottleneck slows down fleet very a lot», and «the most lanes at once during all fleet history» (tr 89a213e9, 2026-11-06T23:29:46Z)
-- checked [read]: 01:32 a leak of ours: 24 fixture pre-commit hooks from pr 132, alive 1.5 to 3.2 h, about 240 of the 290 spawns/s floor, about 0.5 core direct (cpu-cases.md:58)
-- checked [read]: first exec of a fresh binary 30× slower, 200 → 5.5 ms, waiting more than cpu; per spawn `true` 1.2 ms, `git --version` 6.6, `node -e 0` 25 (cpu-cases.md:61, :62)
-- checked [read]: ruled out as the main cost, one window each: memory, fseventsd, 1password, gatekeeper as cpu, edr, otel, idle claude spin, 7 fsmonitor daemons (cpu-cases.md:34, :66-71)
+- checked [read]: 01:32 a leak of ours: 24 fixture pre-commit hooks from pr 132, alive 1.5 to 3.2 h, about 240 of the 290 spawns/s floor, about 0.5 core direct (measured-cases.md:58)
+- checked [read]: first exec of a fresh binary 30× slower, 200 → 5.5 ms, waiting more than cpu; per spawn `true` 1.2 ms, `git --version` 6.6, `node -e 0` 25 (measured-cases.md:61, :62)
+- checked [read]: ruled out as the main cost, one window each: memory, fseventsd, 1password, gatekeeper as cpu, edr, otel, idle claude spin, 7 fsmonitor daemons (measured-cases.md:34, :66-71)
 - checked [read]: research, exa, parallel, a source lane and a local measure: cause of the sys time unproven and no public source measures it; pelton, same machine, load 172 with two test runs overlapping, solved by a queue, a 45 % cap and module-scoped tests; linux and mac mini no evidence (research:13, :17, :25-27; commit 777abdb3, 01:36)
-- checked [read]: 01:43:54 spindump, 10 s, load about 30, go run live: 6,612 processes in 10 s; git 3,773, 36.2 cpu-s, 3.6 cores, 65 % kernel; sandbox 26 % of git's kernel samples (cpu-cases.md:28-32; commit 0100babf)
+- checked [read]: 01:43:54 spindump, 10 s, load about 30, go run live: 6,612 processes in 10 s; git 3,773, 36.2 cpu-s, 3.6 cores, 65 % kernel; sandbox 26 % of git's kernel samples (measured-cases.md:28-32; commit 0100babf)
 - seen [read]: 01:52 his words, «if git is guilty, how is that even possible?» and a target of at least 16 lanes (FRM-525 W4, W5)
 - seen [read]: 02:04 his words, «cpu roasting», on 14-15 threads with 4 lanes, and he asks how much slower the fleet is (tr 89a213e9, 2026-11-07T00:04:31Z; FRM-525 W6)
-- checked [read]: 02:04:57 second spindump, no go test: git 3,773 → 35, kernel samples 5,965 → 1,603; `2.1.319` workers took 8.7 cores, read as the mods suite, inference; about 15 sessions at rest fit about 4 of 14 cores (cpu-cases.md:40-44; commit 594f703e)
-- verdict [read]: «proven, two 10 s windows» go tests fill the kernel through git, the mods suite fills user cpu; the same file calls it «strong but not repeated», and the research doc's «unproven» was written before these windows and still stands in it (cpu-cases.md:5, :38; research:13)
-- assumed [read]: a commit's test step 13 s alone, 35 s at load, about 2.5×. corrected at 02:28: mostly `4739e4ed`; same suite ×1.14 p50, ×1.43 p90 at load 16+ (cpu-cases.md:53; commit 72e0be7a; pace:40, :69)
+- checked [read]: 02:04:57 second spindump, no go test: git 3,773 → 35, kernel samples 5,965 → 1,603; `2.1.319` workers took 8.7 cores, read as the mods suite, inference; about 15 sessions at rest fit about 4 of 14 cores (measured-cases.md:40-44; commit 594f703e)
+- verdict [read]: «proven, two 10 s windows» go tests fill the kernel through git, the mods suite fills user cpu; the same file calls it «strong but not repeated», and the research doc's «unproven» was written before these windows and still stands in it (measured-cases.md:5, :38; research:13)
+- assumed [read]: a commit's test step 13 s alone, 35 s at load, about 2.5×. corrected at 02:28: mostly `4739e4ed`; same suite ×1.14 p50, ×1.43 p90 at load 16+ (measured-cases.md:53; commit 72e0be7a; pace:40, :69)
 - tried [read]: 02:13 pr 139, go fixtures from a template, pocket-only commits skip the test step; pr rows user + sys median 385.1 → 277.7 cpu-s, 27.9 %, wall 62.8 → 44.3 s; effect on machine load not checked (commit 6243007a; FRM-521 comments)
 - tried [read]: 01:36 fixture hook wait bounded, `markerWait`; 02:15 test-cost rules in `x/go/AGENTS.md`; the 24 live hooks left alone (commit 69803346; commit f9b26989; `/Users/dima/frame/x/go/AGENTS.md:28-35`; FRM-521 comment)
-- verdict [read]: 02:24 a lane ran about 1.8× slower at 4-5 lanes than at 2, 121 → 71 tool calls per lane-hour; the same command only ×1.15 p50, ×1.75 p90; queue wait the main suspect; one unplanned window, a correlation (pace:12, :14, :19; cpu-cases.md:7-10; commit e01226a5)
-- assumed [read]: pace recommended 2 lanes as default. out by his words, 02:27, «simply using fewer lanes does not work. i want more lanes at once, and all of them fast» (pace:18; FRM-525 W7; cpu-cases.md:7)
-- seen [read]: 03:54 his words, «i just saw another 100 % cpu load while only one lane is left active»; 99 % on 14 cores, 109 °C, gpu 57 %, app list sums about 15 % (pk-328:121, :123; cpu-cases.md:18)
-- checked [read]: ci's lane ran the whole go gate 03:50:14 for 69 s and 03:51:43 for 116 s, load 24; 03:54:59 after it, 15 % user, 9 % sys, 75 % idle, load 11; another leaked fixture, pid 91919, about 10 spawns/s. the spike's own clock is unread (cpu-cases.md:19, :20, :22; `/Users/dima/.local/state/x/lanes/frm-525/snapshot-1-lane-20261107-0355.txt`)
-- assumed [read]: his words, «i thought the load came from lots of threads at once». corrected by this case and by the 14:06 dose: a heavy run fills the mac alone (pk-328:121; cpu-cases.md:21; doses.tsv:2)
+- verdict [read]: 02:24 a lane ran about 1.8× slower at 4-5 lanes than at 2, 121 → 71 tool calls per lane-hour; the same command only ×1.15 p50, ×1.75 p90; queue wait the main suspect; one unplanned window, a correlation (pace:12, :14, :19; measured-cases.md:7-10; commit e01226a5)
+- assumed [read]: pace recommended 2 lanes as default. out by his words, 02:27, «simply using fewer lanes does not work. i want more lanes at once, and all of them fast» (pace:18; FRM-525 W7; measured-cases.md:7)
+- seen [read]: 03:54 his words, «i just saw another 100 % cpu load while only one lane is left active»; 99 % on 14 cores, 109 °C, gpu 57 %, app list sums about 15 % (pk-328:121, :123; measured-cases.md:18)
+- checked [read]: ci's lane ran the whole go gate 03:50:14 for 69 s and 03:51:43 for 116 s, load 24; 03:54:59 after it, 15 % user, 9 % sys, 75 % idle, load 11; another leaked fixture, pid 91919, about 10 spawns/s. the spike's own clock is unread (measured-cases.md:19, :20, :22; `/Users/dima/.local/state/x/lanes/frm-525/snapshot-1-lane-20261107-0355.txt`)
+- assumed [read]: his words, «i thought the load came from lots of threads at once». corrected by this case and by the 14:06 dose: a heavy run fills the mac alone (pk-328:121; measured-cases.md:21; doses.tsv:2)
 - seen [read]: 04:46 his words, «i don't like bad git stuff in our setup, especially given lots of cpu issues», core.bare is to be rethought; no cost measured yet (pk-328:125; FRM-525 W10)
 - tried [read]: about 04:55 a reboot, 59 s from pressing reboot, his stopwatch; FRM-517's own clock, kernel line to WindowServer, was not read, and 147 s included sign-in, so the two do not compare yet (pk-347:19; FRM-517 description)
 - checked [read]: 14:06 to 14:25 dose run on a quiet mac, raw, no reading written yet: rest busy 25 %, load 6; one go suite busy 95-96 %, sys 51-53 %, at or over 95 % in 47 of 55 samples, load up to 107; 4 at once busy 99 %, load 109; vitest alone 94 %; mods alone 76 % (doses.tsv:1-3, :6, :7, :10)
-- verdict [read]: my arithmetic on those rows: go copies run nearly in series, 66 s alone → 219 s at 4, and cpu per copy barely rises, about 422 → 441 cpu-s, sys about 255 → 274. this reads as the suite's own cost, not contention, one run per dose, inference; `cpu-cases.md`:79 still lists it open (`/Users/dima/.local/state/x/lanes/frm-525/dose-20261107/rows.tsv`)
+- verdict [read]: my arithmetic on those rows: go copies run nearly in series, 66 s alone → 219 s at 4, and cpu per copy barely rises, about 422 → 441 cpu-s, sys about 255 → 274. this reads as the suite's own cost, not contention, one run per dose, inference; `measured-cases.md`:79 still lists it open (`/Users/dima/.local/state/x/lanes/frm-525/dose-20261107/rows.tsv`)
 - seen [read]: my arithmetic: one suite's own rows are about 6 cores, 421 cpu-s in 69 s, rest about 3.5, while `top` reads about 13.4 busy. the gap is unread (go1a time row in `dose-20261107`; doses.tsv:1, :2)
 - seen [read]: the quiet runs cost 391 to 441 cpu-s on a tree holding pr 139, against the 278 pr 139 and `x/go/AGENTS.md` report. the cause is unknown; `dose.sh` sets `GIT_CONFIG_GLOBAL=/dev/null` and no other difference was read (ab-ram rows; rows.tsv; `/Users/dima/frame/x/go/AGENTS.md:30`; `/Users/dima/frame/.claude/worktrees/fork-483eb11c/.scratch/frm-525/dose.sh:10`)
 - tried [read]: to 14:31 ram disk against apfs, abba: wall 69.2, 54.6 against 66.7, 53.0 s; sys 233, 234 against 248, 244. no wall gain, about 5 % less sys, one run each (ab-ram rows)
 - tried [read]: 14:08 twin and wish-cover keep their dirs out of temp and trash (commit 65f2c51c)
 - cost [read]: exit 5 of FRM-521, 16 runs at about 390 cpu-s, about 6,240 cpu-s on a saturated mac and up to 3.2 h of queue wait, a spec miss by wing 1 (pk-345:49)
 - cost [read]: lane retros: `gate-queue.test.ts` red twice on unrelated pushes under load, commit gates load-red twice at load 40+ (FRM-525 comment, 2026-11-07)
-- verdict [read]: stays open: FRM-525 is Todo at 12:18Z, its text still asks who spawns the 377 git/s, which the 02:04 window answers; done means 16 lanes with the mac usable and commit wait p90 under one run (FRM-525 description, updatedAt 2026-11-07T12:18:22Z; cpu-cases.md:40)
+- verdict [read]: stays open: FRM-525 is Todo at 12:18Z, its text still asks who spawns the 377 git/s, which the 02:04 window answers; done means 16 lanes with the mac usable and commit wait p90 under one run (FRM-525 description, updatedAt 2026-11-07T12:18:22Z; measured-cases.md:40)
 
 - checked [read]: 14:33 to 14:38 the same go suite from a rex tab against the bash tool, abba: rex 42.5 and 43.1 s, 330 and 337 cpu-s; tool 51.0 and 52.2 s, 389 and 391 cpu-s. 500 `git --version`: rex 2.25 s, tool 4.13 s, while a pure compute loop reads 2.29 s in both (`spawn-bench.tsv`, `lineage-rex.txt`, `lineage-tool.txt` in `~/.local/state/x/lanes/frm-525/`)
 - assumed [read]: cwd, env, `PATH`, limits, the sandbox flag and cpu speed ruled out, so the process tree under the desktop app was blamed. wrong within minutes: `env -i` had hidden the cause, since a clean env has no `LANG` either, and a launchd job read as slow as the tool
@@ -172,14 +172,14 @@ key to short sources, all read 2026-11-07. clock is local, UTC+2, except a time 
 - seen [read]: siesta's catch, 15:58: the go number sent to him as landed, 385 → 278, is unreproduced; the real start is about 350 cpu-s
 - tried [read]: 16:22 FRM-528 summoned, his word 16:21, «i wanted wing 1 lane to finish today it is the prio, cpu roasting issue»
 - tried [read]: 18:34 FRM-528 merged, frame#147: the go suite 385.9 → 307.8 cpu-s the same hour, a budget of 385 at its go doors. 200 missed and closed on his tick: the rest is `x` running as a real child, kept real on purpose
-- verdict [read]: a third spindump proves the `LANG` cause, frame by frame: `git-process-cost.md`. the sandbox share did not move, and `sandbox_check` reads 0 for every lane's shell, so it is no profile of ours
+- verdict [read]: a third spindump proves the `LANG` cause, frame by frame: `why-git-starts-cost-so-much/verdict.md`. the sandbox share did not move, and `sandbox_check` reads 0 for every lane's shell, so it is no profile of ours
 - tried [read]: a git with no gettext and no CoreServices, 85 libraries against 706: the go suite 394 → 322 cpu-s, abba, on main before the fixture cut. FRM-532, signed 18:24, wires it into every agent shell
 - tried [read]: `posix_spawn` against Go's fork, one small program: 23 % less cpu per spawn. no suite number yet
 - verdict [read]: lane rows to 18:35: 3 lanes 12.8 and 13.5 cores, 2 lanes 8.0 to 13.8, 1 lane 6.7 to 9.4; the 13.8 held my own slim git suites. what runs moves the cores more than the count, still
 
 ## 2026-11-20
 
-- the whole mods incident, its silence first: [mods-tests-cpu](../mods-tests-cpu/story.md)
+- the whole mods incident, its silence first: [mods-tests-cpu](../cpu-overload-freezes-the-fleet-tests-cc-mods/story.md)
 - seen [read]: 19:20 to 20:12 load 34 to 44 (`uptime`), the mods codie waited 40 min and its sixth sense 20 min on one review; dima, 20:09: «no one can do anything useful because of the test CPU roasting bottleneck»
 - verdict [read]: `x mods edit test --range` (397cd908, built that day for FRM-662's split) ran the whole mods suite at each of 22 commits; `claude plugin test` starts one Claude Code process per test file, 76 files, ~15 at once (`ps`), so ~1,700 launches in a row, beside every mods push's own whole suite and the other lanes' tests; nothing capped heavy suites machine-wide
 - cost [read]: the sixth sense got through 19 of 22 commits in ~40 min and started a rerun; the gate budget section read typecheck p90 13 s against 3 s at median load 47 (siesta-checks, 20:12)

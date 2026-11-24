@@ -6,7 +6,7 @@ fed-by: incidents
 
 Ticket: FRM-525
 
-Asked 2026-11-07: exa, parallel, an opus source lane. Raw lanes, read for depth: [git-process-cost/](git-process-cost/). Probed by hand after the lanes: the image counts, the sandbox read with its control, the gnulib report, fastexec.
+Asked 2026-11-07: exa, parallel, an opus source lane. Raw lanes, read for depth: [raw/](raw/). Probed by hand after the lanes: the image counts, the sandbox read with its control, the gnulib report, fastexec.
 
 ## the verdict
 

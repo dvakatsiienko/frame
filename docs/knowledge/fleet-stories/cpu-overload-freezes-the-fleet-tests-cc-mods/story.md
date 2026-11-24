@@ -8,7 +8,7 @@ fed-by: incidents
 
 # the mods tests that roasted the cpu, silently — 2026-11-05 → 11-20
 
-the cli twin of this, the go suite and git's start cost, is [cpu-overload](../cpu-overload/story.md); this one is the cc mods tests.
+the cli twin of this, the go suite and git's start cost, is [cpu-overload](../cpu-overload-freezes-the-fleet-tests-cli-go/story.md); this one is the cc mods tests.
 
 ## the biggest problem: silence
 

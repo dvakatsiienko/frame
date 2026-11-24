@@ -6,7 +6,7 @@ fed-by: incidents
 
 Ticket: FRM-525
 
-Asked 2026-11-07: exa, parallel, an opus source lane, on our own rows. Raw lanes: [doors-left/](doors-left/). Marks: measured, reported, inference.
+Asked 2026-11-07: exa, parallel, an opus source lane, on our own rows. Raw lanes: [raw/](raw/). Marks: measured, reported, inference.
 
 ## the verdict
 
@@ -27,7 +27,7 @@ Asked 2026-11-07: exa, parallel, an opus source lane, on our own rows. Raw lanes
    - go suite: 74 to 85 cpu-s against 235 to 242, wall 27 to 29 s against 82 to 89; sys 30 against 147. about 3× less
    - vitest: 133 cpu-s against 123 to 128, the same 2,102 tests (30 skipped in the VM); wall 20 s against 31 to 37 under load. no cpu win
    - so the win is go's spawn-heavy suite only. costs: 8 GiB held, a code sync per run, a toolchain kept matched; nothing that needs macOS (Keychain, launchd, 1Password, git-crypt, claude) moves. reported: bind mounts about 2.5× slower than the VM's disk (Mainardi, 2025). It adds no cores
-   - raw rows, the scripts and the three research lanes: [linux-vm/](linux-vm/); its shaping is PK-373
+   - raw rows, the scripts and the three research lanes: [linux-vm/](../go-tests-in-a-linux-vm); its shaping is PK-373
    - landed 2026-11-09 (FRM-551, frame#153): `script/test-vm-go.sh` runs every go suite door in `vm-go-test` (4 vcpus, 7 workers), the mac when it is down; a warm go commit ~101 to 124 cpu-s against 235 to 242, measured; the idle vm costs about 288 cpu-s a day; it starts at clio's boot and stops at her halt
 4. **A remote Linux box.** The cleanest added capacity, the one door that adds cores. Hetzner AX102, 16 cores, from €159 a month, reported, no suite measured there
 5. **The `nostacks` pass at merge.** landed 2026-11-09 (FRM-535): 235 cpu-s a run, as much as the whole suite, measured; it now runs on ci only

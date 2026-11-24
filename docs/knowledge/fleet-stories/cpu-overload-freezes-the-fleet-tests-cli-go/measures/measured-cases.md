@@ -1,6 +1,6 @@
 # cpu cases — every cpu overload case measured so far, and what each proves
 
-Read this first on reopening the problem. Mac16,7, M4 Pro, 14 cores, 48 GB, macOS 27.2, about 15 sessions, cc 2.1.317. The prior art: [mac-agent-cpu-overload](mac-agent-cpu-overload.md). The raw sample: [cpu-load.md](cpu-load.md). The dated history: [story.md](story.md).
+Read this first on reopening the problem. Mac16,7, M4 Pro, 14 cores, 48 GB, macOS 27.2, about 15 sessions, cc 2.1.317. The prior art: [mac-agent-cpu-overload](../research/why-agents-saturate-the-mac/verdict.md). The raw sample: [what-loads-the-cpu.md](what-loads-the-cpu.md). The dated history: [story.md](../story.md).
 
 📌 **proven, two 10 s windows: go test runs spawn the git that fills the kernel; the mods suite fills user cpu; sessions at rest are cheap.** Every line below says what it proves.
 
@@ -140,7 +140,7 @@ Peak load halved, 100 → 49; sys share unchanged, 33 → 35 %. Not the cpu's fi
 
 0. running: FRM-528, fewer git ops per fixture and a cpu budget; its first step tags each git spawn as setup, scenario or `x` child
 0. a planned ramp replays one fixed chunk set per dose, its design in the research doc § what would make this causal, doses raised to 16; the 1.8× at 4-5 lanes stays unproven until then
-1. the git cost research landed, [git-process-cost.md](git-process-cost.md); its cheap trials, each measured: fixtures on a git with no gettext and no CoreServices, then `GIT_TRACE2` to count what each fixture op spawns, then Go's spawn through `posix_spawn`
+1. the git cost research landed, [why-git-starts-cost-so-much/verdict.md](../research/why-git-starts-cost-so-much/verdict.md); its cheap trials, each measured: fixtures on a git with no gettext and no CoreServices, then `GIT_TRACE2` to count what each fixture op spawns, then Go's spawn through `posix_spawn`
 2. hide the desktop window: `top` WindowServer, 2 min
 3. a Developer Tools A/B only with the gates run from a shell outside claude, since #104173 says the Bash tool is not covered
 4. a Linux VM with the checkout on its own disk: one go suite against native, when the machine is quiet. Only then think of hardware

@@ -31,7 +31,7 @@ Pids move by what was spawned: 51 spawned, pid moved 60, so the control holds. R
 
 - no go run live: 282 to 302/s, 6 rows, very flat. The leak is 240 of it
 - go run, by `gate-queue.log` or `x.test` seen: 762 to 938/s
-- 📌 rows at 01:23:54 to 01:24:59 read «nothing queued» yet ran 870 to 890/s: **a go run outside the queue**. So «nothing queued» in `cpu-load.md` is not nothing; pr 1's no-turn wrap (`pnpm x-go:gate` logs slot `none`) makes this more common. Its read of load 21 is weaker than it looks
+- 📌 rows at 01:23:54 to 01:24:59 read «nothing queued» yet ran 870 to 890/s: **a go run outside the queue**. So «nothing queued» in `what-loads-the-cpu.md` is not nothing; pr 1's no-turn wrap (`pnpm x-go:gate` logs slot `none`) makes this more common. Its read of load 21 is weaker than it looks
 
 ## 3. cpu per spawn, children's rusage at load 11, 50 serial and 48 at 8 parallel
 
@@ -89,7 +89,7 @@ Sustained over 10 min all assessment daemons took **0.15 core**. So this costs w
 
 ## 7. after pr 1, 30 min sample, 00:46 to 01:16, n=154, with codie's go A/B inside it
 
-Against the baseline in `cpu-load.md`, 22:09 to 22:36, n=136, where **24 leaked hooks were mostly not yet born**. Fleet: load p50 26.7 vs 24, p90 37.8 vs 73, max 48.8 vs 100. user 43 vs 41, sys 35 vs 33, idle 21 vs 27.
+Against the baseline in `what-loads-the-cpu.md`, 22:09 to 22:36, n=136, where **24 leaked hooks were mostly not yet born**. Fleet: load p50 26.7 vs 24, p90 37.8 vs 73, max 48.8 vs 100. user 43 vs 41, sys 35 vs 33, idle 21 vs 27.
 
 - only go: load 29 vs 51, sys 54 vs 52, idle 4 vs 7, n=32 vs 24
 - only mutant: 29 vs 27, sys 43 vs 35, idle 16 vs 30, n=21

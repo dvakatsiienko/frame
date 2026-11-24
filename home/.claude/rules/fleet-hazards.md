@@ -5,7 +5,7 @@ that bites 2+ repos or every session — a hazard that bites one repo goes to th
 every hazard names its guard — `guard: <hook | x verb>` or `guard: none`; a line dies when its guard
 makes the failure impossible, a partial guard is named beside the line, so the file shrinks as the `x` cli grows. cc-only, deliberately not mirrored; the vault hazards
 live in `x:notes`, copied by hand into the cloud chat leaf `/topics/obsidian.md`.
-📌 **a hazard stays a line here, or a hint; `x-mod-guard` refuses only destroyed work, the floor** (dima's o163, 2026-11-12, after the guard grew from this line into a lockout: `docs/knowledge/fleet-stories/guard-lockout/story.md`).
+📌 **a hazard stays a line here, or a hint; `x-mod-guard` refuses only destroyed work, the floor** (dima's o163, 2026-11-12, after the guard grew from this line into a lockout: `docs/knowledge/fleet-stories/guard-locks-out-the-fleet/story.md`).
 
 📌 hazards that bite one subject live beside it: frame `AGENTS.md` (git-crypt), `schedule/AGENTS.md` (launchd + tcc), frame
 `.claude/rules/scripts.md` (lefthook, the toolchain), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x:github-contrib`
@@ -22,7 +22,7 @@ live in `x:notes`, copied by hand into the cloud chat leaf `/topics/obsidian.md`
 ## the shared working tree
 
 - **a parallel agent in a repo with a repo-wide commit gate writes to scratch until it compiles, then moves in** — per-path ownership does not hold against a per-repo typecheck hook: a coder's own subagent dropped a half-compiled `.ts` into the tree and blocked the coder's commits for two rounds (2026-09-22). guard: `script/index-run.sh` in frame (the gates run on a private copy that sees only the commit, so a peer's staged file never reds yours — FRM-367, PK-97) and `x lane commit` waits out a peer's index lock; none in bytes until its index copy lands
-- **an x/go edit in main's checkout was live for every session at its save**: the shim built the working tree, so it landed before any commit, read or push (FRM-621 moved the mods-edit scratch under a working codie, 2026-11-13: `docs/knowledge/fleet-stories/x-live-on-commit/story.md`); now a dirty main checkout runs the pushed build, and only the session with `X_DEV=1` runs its own edit. guard: the shim's pushed route (FRM-624)
+- **an x/go edit in main's checkout was live for every session at its save**: the shim built the working tree, so it landed before any commit, read or push (FRM-621 moved the mods-edit scratch under a working codie, 2026-11-13); now a dirty main checkout runs the pushed build, and only the session with `X_DEV=1` runs its own edit. guard: the shim's pushed route (FRM-624)
 
 ## the bash sandbox
 
