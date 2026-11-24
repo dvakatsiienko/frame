@@ -588,6 +588,18 @@ retro (14:43 on):
 - 2026-11-23 · prompt-groom · yes · 0 · 2026-11-22-1950 -> PK-349:W2227-W2235, 9 sentences, [Image #44] marker no line
 - 2026-11-23 · prompt-groom · yes · 0 · 2026-11-23-1150 -> PK-349:W2236-W2237, halt
 - 2026-11-23 · pocket-write · yes · 0 · PK-349 +12 lines W2226-W2237, pocket-check green
+- 2026-11-23 · prompt-groom · no · 1 · 2026-11-23-2052: 7 lines PK-349 W2238-W2244; FRM-585 lines pulled out to clio as text; guard rule cut to its questions
+- 2026-11-23 · prompt-groom · yes · 0 · 2026-11-23-2053: 2 lines PK-349 W2245-W2246
+- 2026-11-23 · prompt-groom · no · 1 · 2026-11-23-2058: 13 lines PK-349 W2247-W2259; rdy kept verbatim after first draft said ready
+- 2026-11-23 · prompt-groom · no · 1 · 2026-11-23-2103: 6 lines PK-349 W2260-W2265; bare yes added as W2265 after first draft missed it
+- 2026-11-23 · pocket-write · yes · 0 · PK-349 W2238-W2265 appended; pocket-check green; prompt-groom --day exit 0
+- 2026-11-24 · prompt-groom · 1 · 0 · PK-349 groom 1208: map: raw line 1 (/clio:boot pm-revamp-1123-halt) is a slash command, no wish, no W-line; raw line 2 sentence 1 -> PK-349:W2266, sentence 2 -> PK-349:W2267; no questions, no #standing; written to /Users/dima/.local/state/clio/grooms/2026-11-24-1208.groomed.md
+- 2026-11-24 · prompt-groom · 1 · 0 · PK-349 groom 1228: 5 marked-or-plain lines, 4 with ← plus 1 unmarked (codeberg) groomed as own W-line; herdr-typed tag skipped; W2268-W2274 written to 2026-11-24-1228.groomed.md and appended to PK-349 notes (7 append-notes, verified); judgment: audie->audit, 'i though'->'i thought', 'no one can't even commit'->'no one can even commit' (read as typo)
+- 2026-11-24 · prompt-groom · 1 · 0 · PK-349 groom 1239: W2275-W2285 (11 lines) written to 2026-11-24-1239.groomed.md and appended to PK-349 notes (11 append-notes, verified 11 present, earlier notes kept); segmentation of line 4 (two ← comments) is a judgment call: quoted line = sentence before each ←
+- 2026-11-24 · prompt-groom · 1 · 0 · PK-349 groom 1245: W2286-W2294 (9 lines) written to 2026-11-24-1245.groomed.md and appended to PK-349 notes (9 append-notes, verified 9 present, earlier notes kept); raw holds no herdr-typed lines (look: 40m, o6 print path), not groomed; ← 2 follows his own sentence, so no clio lead-in on W2294
+- 2026-11-24 · prompt-groom · no · 0 · chore 1304 W2295-W2307 flags image4 unviewed rethape kept resorted unnoted about dropped Essentially dropped
+- 2026-11-24 · prompt-groom · yes · 0 · chore 1249 W2308-W2311 want-to-die kept verbatim flagged
+- 2026-11-24 · prompt-groom · yes · 0 · chore 1253 W2312-W2314 so-how-it-have-it kept verbatim grammar flagged herdr-typed tag left out
 
 ## rounds
 

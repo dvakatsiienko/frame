@@ -137,3 +137,17 @@ fed-by: incidents
 - **fix:** an agent's own chores (a save refused and retried, a commit landed, a file trimmed) are never told to him; progress on a lane he follows is one sentence, the outcome first
 - **home:** undefined
 - **source:** undefined
+
+## c10 · orbit · - · siesta · undefined
+
+- **what:** an ask on his board read «dialog hook, what I left unsaid: your press was the last stop on an unparseable delete»: it did not say which area it belongs to (speak, mods, the board itself), so he could not place it
+- **how:** the ask opened with an internal name and a tech phrase
+- **why:** nothing makes an ask name its area; his earlier wish for themed asks is not built
+- **when:** 11-24 15:09
+- **where:** an orbit ask from the main thread
+- **who:** clio main
+- **his words:** «I do not understand this honestly but what is it related to? Is it about speak or mods? Comms log, Wisp: you write me and ask. That doesn't describe an area where it relates. It is Orbit-related. Previously I asked that I want Orbit asks to be themed (e.g. to tell what they are about). Verify if my wish is in so we build it at some point»
+- **shape:** an ask with no area
+- **fix:** folded as FRM-670:W13, an ask names its area
+- **home:** undefined
+- **source:** undefined
