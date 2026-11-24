@@ -70,7 +70,6 @@ describe('stays silent, so the dialog stands', () => {
         ['default mode', zshJoin, { permission_mode: 'default' }],
         ['acceptEdits mode', zshJoin, { permission_mode: 'acceptEdits' }],
         ['a non-Bash tool', zshJoin, { tool_name: 'Write' }],
-        ['an empty command', '', {}],
     ])('on %s', (_name, command, over) => {
         const { logged, stdout } = ask(command, over);
 
@@ -78,6 +77,15 @@ describe('stays silent, so the dialog stands', () => {
         expect(logged).toEqual([]);
     });
 
+    it('on an empty command', () => {
+        const { logged, stdout } = ask('');
+
+        expect(stdout).toBe('');
+        expect(logged).toEqual([]);
+    });
+});
+
+describe('denies with the script-file door, so no dialog stands', () => {
     it.each([
         ['rm', 'rm -rf build'],
         ['rm behind the zsh flag that asks', `${zshJoin}; rm out`],
@@ -103,8 +111,10 @@ describe('stays silent, so the dialog stands', () => {
         ['a process substitution output', 'tee >(cat)'],
     ])('on %s', (_name, command) => {
         const { logged, stdout } = ask(command);
+        const { decision } = JSON.parse(stdout).hookSpecificOutput;
 
-        expect(stdout).toBe('');
+        expect(decision).toMatchObject({ behavior: 'deny', interrupt: false });
+        expect(decision.message).toContain('script file');
         expect(logged).toEqual([]);
     });
 });
