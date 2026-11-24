@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -383,24 +384,114 @@ func TestFleetGrowthPrintsTheRoughTurnsCrossingOnce(t *testing.T) {
 	}
 }
 
-// a baseline written before the first date existed: read whole, no entry dropped, the crossing prints with no date
+// a baseline written before the first date existed: read whole, the run writes it back (a second part crosses new) and the old kinds keep
+// their place with no date; a new crossing gets one
 func TestFleetGrowthReadsABaselineWithNoFirstDate(t *testing.T) {
 	t.Parallel()
 	root, env := growthWorld(t)
 	growthAt(t, root, env, "2026-11-20T09:00:00Z")
 	reportedAs(t, env, "x-mod-alpha", "fixes")
+	reportedAs(t, env, "x-herdr-gamma", "size")
+	write(t, filepath.Join(root, growthHerdr), strings.Repeat("x\n", 120))
+	gitT(t, root, "add", "-A")
 	for range 3 {
 		fixCommit(t, root, growthAlphaDir, growthFix, 1)
 	}
+	write(t, filepath.Join(root, growthMod), strings.Repeat("x\n", 200))
+	gitT(t, root, "add", "-A")
 	before := len(seededLines(t, env))
 
 	got := growth(t, root, env)
 
-	if len(got.Crossings) != 1 || got.Crossings[0].Trigger != "fixes" || got.Crossings[0].First != "" || got.Crossings[0].Calmed {
-		t.Errorf("crossings %+v, want the fixes crossing with no first date", got.Crossings)
+	byKind := map[string]growthCrossing{}
+	for _, c := range got.Crossings {
+		byKind[c.Part+" "+c.Trigger] = c
 	}
-	if after := len(seededLines(t, env)); after != before {
-		t.Errorf("%d parts in the baseline after the run, want the %d it held", after, before)
+	if len(got.Crossings) != 3 {
+		t.Fatalf("crossings %+v, want the old fixes, the old size and the new size of x-mod-alpha", got.Crossings)
+	}
+	if c := byKind["x-mod-alpha fixes"]; c.First != "" || c.Calmed {
+		t.Errorf("old fixes crossing %+v, want no first date", c)
+	}
+	if c := byKind["x-herdr-gamma size"]; c.First != "" || c.Calmed || c.Now != 120 {
+		t.Errorf("old size crossing %+v, want no first date, at 120", c)
+	}
+	if c := byKind["x-mod-alpha size"]; c.First != "2026-11-20" {
+		t.Errorf("new size crossing %+v, want first 2026-11-20", c)
+	}
+	raw, err := os.ReadFile(filepath.Join(strings.TrimPrefix(env[1], "X_STATE="), "fleet-growth", "baseline.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var file struct {
+		Parts map[string]struct {
+			Reported []string          `json:"reported"`
+			First    map[string]string `json:"first"`
+		} `json:"parts"`
+	}
+	if err := json.Unmarshal(raw, &file); err != nil {
+		t.Fatal(err)
+	}
+	if after := len(file.Parts); after != before {
+		t.Errorf("%d parts in the rewritten baseline, want the %d it held", after, before)
+	}
+	if old := file.Parts["x-herdr-gamma"]; !slices.Equal(old.Reported, []string{"size"}) || len(old.First) != 0 {
+		t.Errorf("x-herdr-gamma written back as %+v, want reported [size] and no first date", old)
+	}
+	if mixed := file.Parts["x-mod-alpha"]; !slices.Equal(mixed.Reported, []string{"fixes", "size"}) || mixed.First["size"] != "2026-11-20" || mixed.First["fixes"] != "" {
+		t.Errorf("x-mod-alpha written back as %+v, want reported [fixes size], first only for size", mixed)
+	}
+}
+
+// a seed older than the week the git read covers: the since count says the date it really counts from
+func TestFleetGrowthDatesTheSinceCountFromTheWeekWhenTheSeedIsOlder(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	growthAt(t, root, env, "2026-11-01T09:00:00Z")
+	for range 3 {
+		fixCommit(t, root, growthAlphaDir, growthFix, 1)
+	}
+
+	got := growthAt(t, root, env, "2026-11-20T12:00:00Z")
+
+	if len(got.Crossings) != 1 || got.Crossings[0].Since != "2026-11-13" {
+		t.Fatalf("crossings %+v, want the fixes crossing counted since 2026-11-13", got.Crossings)
+	}
+	if ask := got.Crossings[0].Ask; !strings.Contains(ask, "fixes since 2026-11-13: 3, in 7 days: 3") {
+		t.Errorf("ask %q, want «fixes since 2026-11-13: 3, in 7 days: 3»", ask)
+	}
+}
+
+// a fixes read that fails says so and invents no calmed row: «now 0» would be a count nobody took
+func TestFleetGrowthNamesNoCalmedFixesRowWhenItsGitReadFailed(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	growthAt(t, root, env, "2026-11-20T09:00:00Z")
+	reportedAs(t, env, "x-mod-alpha", "fixes")
+	write(t, filepath.Join(root, ".git/HEAD"), "ref: refs/heads/no-such-branch\n")
+
+	got := growthAt(t, root, env, "2026-11-28T12:00:00Z")
+
+	if len(got.Crossings) != 0 || !strings.Contains(got.Error, "git log failed") {
+		t.Errorf("crossings %+v, error %q, want no row and the failed read said", got.Crossings, got.Error)
+	}
+}
+
+// the calmed text names both counts
+func TestFleetGrowthCalmedTextNamesBothCounts(t *testing.T) {
+	t.Parallel()
+	root, env := growthWorld(t)
+	growthAt(t, root, env, "2026-11-20T09:00:00Z")
+	for range 3 {
+		fixCommit(t, root, growthAlphaDir, growthFix, 1)
+	}
+	growth(t, root, env)
+	fixCommit(t, root, growthAlphaDir, growthFix, 1)
+
+	got := growthAt(t, root, env, "2026-11-29T12:00:00Z")
+
+	if len(got.Crossings) != 1 || !got.Crossings[0].Calmed || !strings.Contains(got.Crossings[0].Ask, "now 0 fixes since 2026-11-22, 0 in 7 days") {
+		t.Errorf("crossings %+v, want the calmed row naming 0 since 2026-11-22 and 0 in 7 days", got.Crossings)
 	}
 }
 
