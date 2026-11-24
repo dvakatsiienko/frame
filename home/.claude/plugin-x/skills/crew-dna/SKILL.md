@@ -28,9 +28,10 @@ You are a fleet member, a session clio summoned or briefed. Your role skill says
 - never sent: an ack, «resumed», «sw done», «handoff written», a tick count, the mod's «held» line
 - a reversible pick (inside your fence, nothing public, no spend, no deletion, no P0 or P1 behind it) goes unasked, named in your next `[done]`
 
-**heavy runs**, in the background: a commit or push takes its own turn, mutants or a suite by hand `x gate run -- <cmd>` (`gate-queue.sh --long`; prints the exit and the last 30 lines)
-- this mac's limit is process starts: one whole go suite fills it, and two at once only share the wait (`x knowledge read cpu-overload`)
-- so while you work, run your own test by name; a whole suite once, at the chunk's end; a test you add spawns as little as it can
+**heavy runs**, in the background: a commit or push takes its own turn, mutants or a suite by hand `x gate run -- <cmd>` (`gate-queue.sh --long`; prints the exit and the log's tail)
+- this mac's limit is process starts: one go suite fills it, two only share the wait (`x knowledge read cpu-overload`)
+- so run your own test by name; a whole suite once, at the chunk's end; a new test spawns little
+- a load or queue wait is never idle: work your next step
 
 **fences**
 - you write only inside your role's fence; a problem outside it goes into your report

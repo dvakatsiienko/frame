@@ -85,13 +85,13 @@ dima's, 2026-09-29:
 
 - the daemon log (`~/.local/share/x-speak/daemon.err.log`): real press → first audio per engine, fallthrough counts
 - elevenlabs characters used per month against its free credits
-- dima's own tuning in `~/projects/bytes/apps/speak/daemon/config.json` (the chain, the favourites) — his taste since the last run
+- dima's own tuning in `~/Library/Application Support/speak/config.json` (the chain, the favourites) — his taste since the last run
 
 ## artifacts
 
 - `~/projects/bytes/apps/speak/docs/readaloud-playbook.md` — the build knowledge; clever-merged, every line holding a source
 - `~/projects/bytes/apps/speak/PRODUCT.md` — the engines, models and free tiers; impeccable's file, so a fact the run proved stale is listed in the print and fixed through impeccable in the next speak lane, never by hand
-- `~/projects/bytes/apps/speak/daemon/` — the daemon, `config.json` and the golden normalizer cases; changed only by a codie on dima's pick
+- `~/projects/bytes/apps/speak/daemon/` — the daemon and the golden normalizer cases; changed only by a codie on dima's pick (his settings live outside the repo, in `~/Library/Application Support/speak/config.json`)
 - `~/projects/bytes/apps/speak/` — the voice admin app; its voice lists follow a model change
 
 ## findings

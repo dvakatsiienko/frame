@@ -4,7 +4,7 @@
   🔊 x-speak — F4: read the selection aloud (cutting off what plays), nothing selected: pause / resume; ⇧F4: pause / resume; F5: stop.
 
   - schedule — always on: RunAtLoad plus KeepAlive, relaunch throttled to one start per 30s
-  - config — ~/projects/bytes/apps/speak/daemon/config.json, handed in as --config: chain per language, voice, speed and gain per engine, the first-audio budget; re-read on the next F5 after a save, a bad edit keeps the last good one
+  - config — ~/Library/Application Support/speak/config.json, outside every repo, handed in as --config: chain per language, voice, speed and gain per engine, the first-audio budget; re-read on the next F5 after a save, a bad edit keeps the last good one
   - engines — elevenlabs (Sarah) leads; kokoro renders the first chunk in parallel so a cloud miss costs nothing; fish and gemini only with --engine
   - keys — fetched once at start through frame's script/op-run.sh, handed in as --keys-run, held in memory only
   - kokoro — starts mlx_audio.server on 127.0.0.1:7385 and keeps it warm (~620 MB)
@@ -24,7 +24,7 @@
              Build it first: pnpm -C ~/projects/bytes --filter speak daemon:build -->
         <string>/Users/dima/.local/libexec/x-speak/x-speak</string>
         <string>--config</string>
-        <string>/Users/dima/projects/bytes/apps/speak/daemon/config.json</string>
+        <string>/Users/dima/Library/Application Support/speak/config.json</string>
         <string>--keys-run</string>
         <string>/Users/dima/frame/script/op-run.sh</string>
     </array>

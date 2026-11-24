@@ -1,6 +1,6 @@
 ---
 status: open
-dates: 2026-11-23 → 2026-11-23
+dates: 2026-11-23 → 2026-11-24
 tickets: [FRM-683, FRM-288, FRM-692, FRM-693]
 tags: [idle, lane, coordinator, park, wrong-call, hang-heal, second-wind, keep-hot]
 fed-by: incidents
@@ -73,6 +73,17 @@ dima, 2026-11-23 18:43: another case of a hung crew member. it starts to appear 
 
 an idle member is a cost someone must be told about. the coordinator's own work (a hunt, a spec, a reset) never counts as a reason for a member to wait: the member gets prep, or the wait is named with what it waits for.
 
+## the fifth case, the next morning (24 Nov): two codies behind one test queue
+
+- 12:18 the speak codie starts its 28 planted faults (it breaks its code in 28 places, one at a time, and reruns the daemon's swap test each time, about 45 s a fault) as ONE turn of the mac's shared long test queue (`script/gate-queue.sh --long`, one long job at a time)
+- 12:20 the mods codie has its seven review fixes written and queues FRM-692's whole run; it sits behind the speak batch, and its own waiter also wants the 1-minute load under 7 while the load is 10 to 16
+- 12:22 clio hands the stray a go chore; its tests in the vm push the load to 14
+- 12:34 dima asks why the mods codie has been parked 11 min; clio's first answer names the load, the second read (12:41, `ps`) finds the queue
+- 12:45 dima: «we just lost 40m cumulative time for 2 codies because of those waits», «so mods codie is parked for an hour just because of miscoordination. you could spot this and tell mods codie to do something else»
+- the cost: about 40 min of two Opus 5.5 codies waiting, and five turns of dima's attention
+- the wrong calls, all clio's: no read of the queue after the summons; a go chore given to the stray beside a lane about to need a calm mac; no «work on while you wait» line in either brief
+- what the fault run was worth: it found one survivor, a hole in the swap test, fixed with one test row before the merge
+
 ## still open
 
 - the wake's condition, widened to all four cases, is FRM-692, re-signed 23 Nov 19:00 and re-sealed that night, first in the mods lane on 24 Nov: a member of a running lane idle 10 min with no named wait wakes its coordinator, whatever the reason
@@ -82,3 +93,7 @@ an idle member is a cost someone must be told about. the coordinator's own work 
 
 - a hunt run by `x:review-messhunt` has no step for the lane's codie; whether the codie should read along from the start is a line for that skill
 - a context reset at 55 % has no check for «is a member waiting on me»
+- the shared long queue has no cap on one turn and no word to the lanes waiting behind it; a member's own load bar (7) is stricter than the queue's (14). dima's steer on the cap, 24 Nov: «are you sure it is a true solution for the root of a problem»: not decided, he has no time for it now
+- a fault batch runs once a slice, before its merge (seven slices in the speak hunt): how often, and whether it runs beside the codie's next slice by default, is not decided
+- since 24 Nov, by message, not yet a skill line: a member never sits on a load or queue wait, it works its next step; a fault batch takes one queue turn per fault
+
