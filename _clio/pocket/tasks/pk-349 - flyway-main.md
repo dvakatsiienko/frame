@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T10:48:00Z'
+updated_date: '2026-11-24T11:06:00Z'
 labels:
   - s
   - clio-main
@@ -22,17 +22,16 @@ ordinal: 1000
 - [ ] #4 f86 mods rider: the guard treats a branch with no `+` line in git cherry as merged, so its delete needs no tick (his o4)
 - [ ] #5 f93 seal drafts with open questions for dima: FRM-582 (9), FRM-691 (7), in ~/frame/.scratch/seal-drafts/
 - [ ] #6 f95 herdr wisp: a triple click in chat selects one visual run, not the whole bullet (his shot 24 Nov 12:29); joins f69
-- [ ] #7 f96 FRM-585 annotate reply text: herdr-app#691 done upstream, not in 0.1.17; unblocks at the next herdr release
-- [ ] #8 f97 rex skill names REX_SESSION, which rex dropped (use REX_BLOCK); also --no-open is now --url-only: fix the skill
-- [ ] #9 f98 prompt-groom.ts --linear crashes for helga: no codie linear token in the keychain; run it from my thread or fix
-- [ ] #10 f99 sealed-ahead.ts: read a chunk placed ahead of a lane running one (herdr prints red though its spec is ready)
-- [ ] #11 f100 mods wisp: the review-rounds counter booked my «next: slice 3» on a slice-less key and escalated round 4 falsely
-- [ ] #12 f101 herdr wisp: a click on a file path or a dir link in chat does nothing, with or without Cmd (his o6)
-- [ ] #13 f94 FRM-582 emoji reactions: its ten questions to dima, three a batch, after boot — on: 2026-11-24
-- [ ] #14 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #15 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #16 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #17 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #7 f97 rex skill names REX_SESSION, which rex dropped (use REX_BLOCK); also --no-open is now --url-only: fix the skill
+- [ ] #8 f98 prompt-groom.ts --linear crashes for helga: no codie linear token in the keychain; run it from my thread or fix
+- [ ] #9 f99 sealed-ahead.ts: read a chunk placed ahead of a lane running one (herdr prints red though its spec is ready)
+- [ ] #10 f100 mods wisp: the review-rounds counter booked my «next: slice 3» on a slice-less key and escalated round 4 falsely
+- [ ] #11 f101 herdr wisp: a click on a file path or a dir link in chat does nothing, with or without Cmd (his o6)
+- [ ] #12 f94 FRM-582 emoji reactions: its ten questions to dima, three a batch, after boot — on: 2026-11-24
+- [ ] #13 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #14 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #15 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #16 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2561,4 +2560,32 @@ PK-349:W2292 (2026-11-24 12:45, dima): [what are the 28 planted faults? The 🔧
 PK-349:W2293 (2026-11-24 12:45, dima): [what are the 28 planted faults? The 🔧 codie breaks its own code on purpose in 28 places, one at a time, and checks that a test goes red each time. A fault no test notices is a hole in the tests. Each one reruns the daemon's swap test, about 45 s, so 28 take 20–40 min.] you could spot this and tell mods codie to do something else while speak codie does his inefficient 28 tests stuff.
 
 PK-349:W2294 (2026-11-24 12:45, dima): i think it is another fleet story. coordination gap. which i do not have time to solve atm.
+
+done 2026-11-24 13:02: f96 FRM-585 annotate reply text: herdr-app#691 done upstream, not in 0.1.17; unblocks at the next herdr release (FRM-585 Todo)
+
+PK-349:W2295 (2026-11-24 13:04, dima): glide wisp: it does not show progress and speak slices are unnamed.
+
+PK-349:W2296 (2026-11-24 13:04, dima): i think we did something wrong with glide, architecturally.
+
+PK-349:W2297 (2026-11-24 13:04, dima): it does not work as i want.
+
+PK-349:W2298 (2026-11-24 13:04, dima): create a mods glide ticket (shape-idea first (rethape/rethink approach)).
+
+PK-349:W2299 (2026-11-24 13:04, dima): Something is flawed.
+
+PK-349:W2300 (2026-11-24 13:04, dima): I think the problem is that Glide is based on my skills spec because Glide reads from a file, which is a convenient and potentially good door to automate Glide (because previously you were editing it by hand and you were forgetting to keep it updated too).
+
+PK-349:W2301 (2026-11-24 13:04, dima): It definitely needs to be automated but the way it currently works is wrong so it needs to be resorted.
+
+PK-349:W2302 (2026-11-24 13:04, dima): Also I consider researching this for prior art, to search for what I actually want out of Glide in Herdr and search for an easier door for this.
+
+PK-349:W2303 (2026-11-24 13:04, dima): Maybe there is some kind of web app or already working app that solves what I want.
+
+PK-349:W2304 (2026-11-24 13:04, dima): I want to keep progress of the lanes' scope to see the list of their steps, where they are, what's done, and what's left.
+
+PK-349:W2305 (2026-11-24 13:04, dima): Create this ticket and it needs a shape idea, grill, and prior art search to properly rethink how this ticket works.
+
+PK-349:W2306 (2026-11-24 13:04, dima): Tell yourself in the ticket that before we solve this ticket you should first fully describe to me how current Glide works and what it depends on (e.g., Matt's tickets, Matt's skills, specs, and tickets), so I understand how current Glide works and can think of a solution.
+
+PK-349:W2307 (2026-11-24 13:04, dima): Tell yourself as well to help me understand how Glide works in simple words so don't use too much technical language.
 <!-- SECTION:NOTES:END -->

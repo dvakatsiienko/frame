@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-24T11:01:00Z'
+updated_date: '2026-11-24T11:07:00Z'
 labels:
   - s
   - clio-wing-1
@@ -20,13 +20,11 @@ ordinal: 1001
 - [ ] #2 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
 - [ ] #3 f53 ⏳ FRM-585 annotate reply text: the copy-then-find probe, then Q1 to dima — waits for: the speak lane
 - [ ] #4 f52 📅 FRM-465 exit 5, the minors half: both repos get a minors pr at the 07:00 window — on: 2026-11-25
-- [ ] #5 f48 📅 wishkeeper card verdict: highs real ≥ 4 in 5 on the 5 min cache, then close the trial — on: 2026-11-28
-- [ ] #6 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-29
-- [ ] #7 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
-- [ ] #8 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #9 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #10 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #11 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #5 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
+- [ ] #6 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #7 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #8 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #9 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -765,4 +763,10 @@ done 2026-11-24 13:01: f26 📅 FRM-465 exit 5 read: bytes patches automerge ins
 13:01 FRM-465 exit 5, patches half read: 8 of 8 bytes patch prs merged by x-renovate landed 07:49–18:32 Kyiv (gh pr list: bytes 135, 140, 150, 151, 157, 161, 163, 164); the minors half waits for the 25 Nov 07:00 window. his 12:59 order: fleet stories, blueprint v2, emoji reactions, cpu roast, hang-heal; checkup later today; FRM-585 to wing 1 with the herdr lane after speak; f49 closed on his word
 
 done 2026-11-24 13:01: f51 ⏳ FRM-585 annotate reply text: the copy-then-find probe, then Q1 to dima, with the herdr lane — waits for: speak lane done (FRM-585 Todo)
+
+done 2026-11-24 13:07: f48 📅 wishkeeper card verdict: highs real ≥ 4 in 5 on the 5 min cache, then close the trial — on: 2026-11-28
+
+done 2026-11-24 13:07: f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-29
+
+13:07 the 30-day read, on his 12:59 word, 5 days early: x stats over 29 days (27 Oct → 24 Nov) reads knowledge 34 calls (18 read, 16 list; 19 at the last read), probe bare 66 (0 at the last read): both kept, no ask. wishkeeper card adopted on his o3 tick, the verdict line in docs/test-drive/wishkeeper-cache.md
 <!-- SECTION:NOTES:END -->
