@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T11:46:00Z'
-updated_date: '2026-11-24T12:56:00Z'
+updated_date: '2026-11-24T13:18:00Z'
 labels:
   - s
   - clio-wing-1
@@ -222,4 +222,58 @@ PK-467:W98 (2026-11-24 14:52, dima): The overload on me scales along with how mu
 PK-467:W99 (2026-11-24 14:52, dima): Go find everything you have about my complaints on comms and propose fixes.
 
 PK-467:W100 (2026-11-24 14:52, dima): How to fix output format? ❓
+
+PK-467:W101 (2026-11-24 15:02, dima): [What exists today: when a coder or a helper sends the coordinator a message, a part called quiet comms decides whether to wake her right away or let the message wait for her next turn. That part works. What it never touches is what she then writes in your thread. So you still see her replies to messages you never asked about.] Can this be solved by habit? ❓
+
+PK-467:W102 (2026-11-24 15:02, dima): Can you just not print me output when you receive some spam relays that are technical and simply related to some basic information that is related to natural ticket flow and doesn't contain any useful info for me? ❓
+
+PK-467:W103 (2026-11-24 15:02, dima): Or it indeed needs to be solved via CC mods? ❓
+
+PK-467:W104 (2026-11-24 15:02, dima): I think it is a good change but I look for the simplest possible solution of it.
+
+PK-467:W105 (2026-11-24 15:02, dima): That's why I'm clarifying if you can just not print me certain messages.
+
+PK-467:W106 (2026-11-24 15:02, dima): Also on the Herdr level, I suppose I already asked for this wish.
+
+PK-467:W107 (2026-11-24 15:02, dima): I asked to change how related messages are working.
+
+PK-467:W108 (2026-11-24 15:02, dima): When a message is related, I want a special representation of those messages, inbound and outbound, but that's unheard.
+
+PK-467:W109 (2026-11-24 15:02, dima): The root of the problem should be fixed somewhere on the lower level, like on the base way that you build your output and decide what you print me or what not.
+
+PK-467:W110 (2026-11-24 15:02, dima): [What I propose: in the chat window where you read, any reply that you did not start yourself folds down to one line. You click it to open. Questions for you are never folded, and they still show on your board.] No I don't like folding because folding is the most inefficient way to kill this problem.
+
+PK-467:W111 (2026-11-24 15:02, dima): Folding is the last step where the problem is killed.
+
+PK-467:W112 (2026-11-24 15:02, dima): You first think about writing something, then write that in my output, and only then it gets folded.
+
+PK-467:W113 (2026-11-24 15:02, dima): Instead I want you to not write redundant stuff initially so we don't have to build this folding at all.
+
+PK-467:W114 (2026-11-24 15:02, dima): [The heart of it is one new default: write to you the way I would say it aloud to a colleague who was not in the room] Something like this, yes.
+
+PK-467:W115 (2026-11-24 15:02, dima): I like it because, essentially, it is true.
+
+PK-467:W116 (2026-11-24 15:02, dima): I ask you to build a lot of stuff and you do but you do too much stuff under the hood and build a lot of sophisticated and complicated systems that I, in the output, don't see for already described reasons.
+
+PK-467:W117 (2026-11-24 15:02, dima): First of all there are too many of everything and also I don't have a simple door to see everything under the hood except for the cursor.
+
+PK-467:W118 (2026-11-24 15:02, dima): Of course I have a cursor but the volume of code is too large.
+
+PK-467:W119 (2026-11-24 15:02, dima): That's why I've asked for Blueprint V2.
+
+PK-467:W120 (2026-11-24 15:02, dima): As for your output style, which is what we currently discuss, it is, yes, true.
+
+PK-467:W121 (2026-11-24 15:02, dima): Essentially I'm fresh eyes.
+
+PK-467:W122 (2026-11-24 15:02, dima): Remember a subagent that we plan to probe without knowledge of what we have under the hood.
+
+PK-467:W123 (2026-11-24 15:02, dima): I am essentially fresh eyes for everything that's happening under the hood.
+
+PK-467:W124 (2026-11-24 15:02, dima): That's why I previously asked you to create a skill dima-intervenes (or something like this) — So it would help me to dig deeper into this stuff and learn how it works but currently it doesn't help too much (because I still get overloaded before I even can approach digging into a certain area).
+
+PK-467:W125 (2026-11-24 15:02, dima): so the problem should be fixed earlier - at your output style level.
+
+PK-467:W126 (2026-11-24 15:02, dima): [the folding ask] not sure yet.
+
+15:18: W107 and W108 heard «related» where he said «relay»: W107 reads «I asked to change how relay messages are working.», W108 «When a message is a relay, I want a special representation of those messages, inbound and outbound, but that's unheard.» his wish itself: 23 Nov, on FRM-580.
 <!-- SECTION:NOTES:END -->
