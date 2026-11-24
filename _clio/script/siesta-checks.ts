@@ -449,7 +449,7 @@ function orbitDrift(home: string) {
     };
 }
 
-// every lane's next two chunks, sealed or not, and its member (FRM-693, PK-349:W2046): a lane parks into a chunk nobody sealed,
+// every lane's current chunk and one ahead, sealed or not, and its member (FRM-693, PK-349:W2046): a lane parks into a chunk nobody sealed,
 // and a drifted sign is a state of its slot. a command that fails or times out reads «not checked» in one 🟡 line, never red
 function sealedAheadSection(home: string) {
     const name = 'sealed ahead';

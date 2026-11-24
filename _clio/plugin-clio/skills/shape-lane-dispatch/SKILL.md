@@ -53,7 +53,7 @@ an exit line whose check reads shared state (a live session, `~/.local/state`, t
 - **a re-sign after 🚀** never puts the `signed` label back (the chunk is running), unless a ↩️ follows the 🚀 (the line above): that turn `to-spec` runs over its section alone, the spec's top following, its `wish:` line records `body <hash>`, § 3–4 re-run, codie is steered to the changed lines
 - **a re-seal** lands on disk before its ping and re-reads its sibling lines
 - **a park** — his weekly window out, the 5h pace, his pause, a decision only he can make — writes its reason into the spec; a shift then takes the next signed chunk, and a merge his override covers never stops it; the next siesta back on pace resumes a pace park
-- **two sealed ahead** (dima, 2026-11-23: «seal two ahead, just in case. if the scope changes, reseal»): a running lane's next two chunks are sealed while the current one builds; a member behind an unsealed one gets read-only prep that turn, the seal my next act
+- **two sealed ahead** (dima, 2026-11-23: «seal two ahead, just in case. if the scope changes, reseal»), since 24 Nov the current and one up front (PK-468:W91); a member behind an unsealed one gets read-only prep that turn, the seal my next act
 - **no unsigned ticket at a halt**: i sign each before it, or it carries his word that its grill waits (FRM-693)
 - **a member that parks after its chunk gets the next signed chunk the same turn**, after `clio:lowtide-peek-chunk` and its gate, or a wait with its date; late evening it goes to orbit first, and a wind-down takes none (his o181 steer, 2026-11-12)
 

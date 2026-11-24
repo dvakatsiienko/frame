@@ -1,5 +1,6 @@
 // PostToolUse (Bash): a move of the queue (a dispatch, a landing, a state, a link, a body) leaves clio a seal to forget, so the
 // lanes are read again once the moves settle, and a lane with a member that owes a move is named to her, silent chore
+// not seen: a move made inside a script, python's subprocess too; siesta and lane peek catch those
 // usage: hook on stdin; prints one additionalContext json line, or nothing
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -13,13 +14,13 @@ const SETTLE_MS = 20_000;
 const READ_TIMEOUT_MS = 100_000;
 // where a command starts: the text or a line, after `&&`, `;` or `|`, or a loop's `do` / `then`; then env words, a timeout, an x path
 const START =
-    '(?:^|[;&|]|\\b(?:do|then)\\b)\\s*(?:[A-Za-z_]\\w*=\\S*\\s+)*(?:timeout\\s+\\d+\\s+)?(?:\\S*/)?x\\s+';
+    '(?:^|[;&|({]|\\b(?:do|then|else)\\b)\\s*(?:[A-Za-z_]\\w*=\\S*\\s+)*(?:timeout\\s+\\d+[smh]?\\s+)?(?:\\S*/)?x\\s+';
 // the rest of one command: a flag is a word of its own, so a quoted one (its spaces masked) never counts
 const REST = '[^;&|\\n]*\\s';
 // an allow-list: only these runs move the queue
 const QUEUE_MOVES = [
     `lane\\s+(?:dispatch|landed)\\b${REST}--apply\\b`,
-    `linear\\s+set\\b${REST}(?:--(?:state|milestone|order|sort-order)\\b|--add-label[ =]["']?signed\\b)`,
+    `linear\\s+set\\b${REST}(?:--(?:state|milestone|after|before|remove-label)\\b|--add-label[ =]["']?signed\\b)`,
     'linear\\s+link\\b',
     `linear\\s+body\\b${REST}--set\\b`,
 ].map((move) => new RegExp(START + move, 'm'));
