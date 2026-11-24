@@ -938,8 +938,8 @@ func TestDispatchRecordsTheDispatchingClioOnTheCodie(t *testing.T) {
 
 			written, _ := readThreadStore(store)
 			i := slices.IndexFunc(written.Threads, func(th thread) bool { return th.SessionID == "s1" })
-			if got.code != 0 || i < 0 || written.Threads[i].Coordinator != c.want {
-				t.Fatalf("exit %d, records %+v, want s1's coordinator %q:\n%s", got.code, written.Threads, c.want, got.stdout)
+			if got.code != 0 || i < 0 || written.Threads[i].Coordinator != c.want || written.Threads[i].DispatchedBy != c.want {
+				t.Fatalf("exit %d, records %+v, want s1's coordinator and dispatchedBy %q:\n%s", got.code, written.Threads, c.want, got.stdout)
 			}
 		})
 	}
@@ -951,7 +951,7 @@ func TestThreadRecordWithNoLaneKeepsItsDispatchingClio(t *testing.T) {
 	store := filepath.Join(t.TempDir(), "threads.json")
 	t.Setenv("X_THREADS", store)
 	now := time.Now()
-	if err := writeThreadRecord(thread{SessionID: "s1", Role: "codie", Lane: "cli-3", Coordinator: "clio-wing-1"}, now, true); err != nil {
+	if err := writeThreadRecord(thread{SessionID: "s1", Role: "codie", Lane: "cli-3", Coordinator: "clio-wing-1", DispatchedBy: "clio-wing-1"}, now, true); err != nil {
 		t.Fatal(err)
 	}
 
@@ -960,7 +960,7 @@ func TestThreadRecordWithNoLaneKeepsItsDispatchingClio(t *testing.T) {
 	}
 
 	written, _ := readThreadStore(store)
-	if len(written.Threads) != 1 || written.Threads[0].Coordinator != "clio-wing-1" || written.Threads[0].Lane != "cli-3" {
+	if len(written.Threads) != 1 || written.Threads[0].Coordinator != "clio-wing-1" || written.Threads[0].DispatchedBy != "clio-wing-1" || written.Threads[0].Lane != "cli-3" {
 		t.Fatalf("records %+v, want s1 kept in cli-3 by clio-wing-1", written.Threads)
 	}
 }

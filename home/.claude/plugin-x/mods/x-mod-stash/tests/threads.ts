@@ -10,6 +10,8 @@ export type ThreadRow = {
     wing?: number;
     lane?: string;
     coordinator?: string;
+    dispatchedBy?: string;
+    dispatchedAt?: number;
     at?: number;
 };
 

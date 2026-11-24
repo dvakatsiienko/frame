@@ -120,8 +120,10 @@ export type ThreadRecord = {
     pid?: number;
     role?: string;
     lane?: string;
-    // the clio that dispatched a lane member, by x's owner label: clio-main or clio-wing-<n>
+    // the clio that summoned or dispatched a member, by x's owner label: clio-main or clio-wing-<n>; she hears its idle alarm
     coordinator?: string;
+    // the one that dispatched it into its lane, whose session opens the lane's card
+    dispatchedBy?: string;
     wing?: number;
     at?: number;
     // when a summon or dispatch last wrote the record; `at` moves at every x sync, so it never dates a dispatch

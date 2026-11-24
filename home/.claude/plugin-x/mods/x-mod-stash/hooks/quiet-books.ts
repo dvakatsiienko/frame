@@ -3,7 +3,13 @@
 
 import type { EngineInterface } from 'claude-code';
 
-import type { QuietGap, QuietLogLine, QuietPing } from '../types/stash.d.ts';
+import type {
+    LaneRole,
+    QuietGap,
+    QuietLogLine,
+    QuietPing,
+    StashLane,
+} from '../types/stash.d.ts';
 import {
     PACE,
     type ViewDoors,
@@ -14,8 +20,18 @@ import {
 import { readLanes } from './lanes.ts';
 import { LEDGER_SENDS, QUIET_LOG_APPEND } from './parse.ts';
 import { QUIET_NOTICE, clioAddress } from './quiet.ts';
-import { memberOf, registry } from './roster.ts';
-import { currentId, procNow, successorOf } from './session-identity.ts';
+import {
+    type Registered,
+    laneMemberRow,
+    memberOf,
+    registry,
+} from './roster.ts';
+import {
+    currentId,
+    procNow,
+    successorOf,
+    threadRecords,
+} from './session-identity.ts';
 import { QUIET_KINDS, readNumber } from './settings-store.ts';
 import { REPLY, type Reply } from './store-keys.ts';
 import { idleTurn, isTurnBusy, selfSubmit } from './turn.ts';
@@ -103,7 +119,10 @@ export async function quietLogAll($: EngineInterface, lines: QuietLogLine[]) {
     return r?.exitCode === 0;
 }
 // a member's newest tagged line, per sid: a parked member's [done] outlives the day's log
-async function quietKeepTagged($: EngineInterface, lines: QuietLogLine[]) {
+export async function quietKeepTagged(
+    $: EngineInterface,
+    lines: Pick<QuietLogLine, 'at' | 'sid' | 'tag'>[],
+) {
     const tagged = lines.filter(
         (l) => l.sid && QUIET_KINDS.some((k) => k.kind === l.tag),
     );
@@ -308,8 +327,14 @@ async function quietDoneAt($: EngineInterface, sid: string, now: number) {
         ? last.at
         : undefined;
 }
-// each member's newest tagged line to clio while no send of hers came after it: an [ask] or a [done] still open
-export async function openTags($: EngineInterface, now: number) {
+// the books of a clio's pings: `last`, a member's newest tagged line to her, a week back at most; `open`, the same while no
+// send of hers came after it; `isSettled`, a codie whose lane's reviewer sent its [done], that card's work done (FRM-698, dima's
+// a): until its clio sends it any line, it is dispatched again, or another open card names it
+export async function quietBooksOf(
+    $: EngineInterface,
+    now: number,
+    lanes: readonly StashLane[],
+) {
     const read = async (key: string) =>
         ((await $.store.get(key).catch(() => undefined)) ?? {}) as Record<
             string,
@@ -317,15 +342,57 @@ export async function openTags($: EngineInterface, now: number) {
         >;
     const tagged = await read(QUIET_TAGGED);
     const sends = await read(QUIET_SENT);
-    return (sid: string) => {
-        const last = tagged[sid] as { at: number; tag: string } | undefined;
-        return last &&
-            now - last.at <= QUIET_PARK_MS &&
-            Number(sends[sid] ?? 0) <= last.at
-            ? last
-            : undefined;
+    const threads = await threadRecords($);
+    const last = (sid: string) => {
+        const line = tagged[sid] as { at: number; tag: string } | undefined;
+        return line && now - line.at <= QUIET_PARK_MS ? line : undefined;
+    };
+    const sentAt = (sid: string) => Number(sends[sid] ?? 0);
+    return {
+        isSettled: (lane: StashLane, codie: string, reviewer?: string) => {
+            const done = reviewer ? last(reviewer) : undefined;
+            if (done?.tag !== 'done') return false;
+            const record = threads.find((t) => t.sessionId === codie);
+            const names = [codie, lane.members.codie];
+            const isElsewhere = lanes.some(
+                (l) =>
+                    l.id !== lane.id &&
+                    !l.endedAt &&
+                    openSteps(l).length > 0 &&
+                    [l.linkedIds?.codie, l.members.codie].some(
+                        (x) => x && names.includes(x),
+                    ),
+            );
+            return (
+                !isElsewhere &&
+                sentAt(codie) <= done.at &&
+                (record?.dispatchedAt ?? 0) <= done.at
+            );
+        },
+        last,
+        open: (sid: string) => {
+            const line = last(sid);
+            return line && sentAt(sid) <= line.at ? line : undefined;
+        },
     };
 }
+// the live session of a card's role, through a /clear
+export async function laneSid(
+    $: EngineInterface,
+    rows: Registered[],
+    lane: StashLane,
+    role: LaneRole,
+) {
+    const name = lane.members[role];
+    const id = lane.linkedIds?.[role];
+    return laneMemberRow(
+        rows,
+        name && (await successorOf($, name)),
+        id && (await successorOf($, id)),
+    )?.base.sid;
+}
+export const openSteps = (lane: StashLane) =>
+    lane.items.slice(lane.current).filter((x) => !x.isDone);
 // a hung member sends nothing, so an open lane's member past three waits raises one alarm per silence, under a shift also one
 // turn of clio's; a refused or a busy turn asks again at the next poll; a member whose last word was its [done] is parked
 // until clio sends it a line, any line, since the mod can't tell work from a chat, and counts from that send
@@ -345,13 +412,21 @@ export async function quietSilentMembers(
         ? ((await $.store.get(PACE + me)) as { since?: number } | undefined)
         : undefined;
     const isShift = await isShiftOn($, pace);
-    for (const lane of await readLanes($)) {
+    const lanes = await readLanes($);
+    const books = await quietBooksOf($, now, lanes);
+    for (const lane of lanes) {
         // a finished card stays on the board until the siesta's end, its members parked
         if (lane.endedAt || lane.current >= lane.items.length) continue;
-        for (const name of Object.values(lane.members)) {
+        const reviewer = await laneSid($, rows, lane, 'sixth-sense');
+        for (const [role, name] of Object.entries(lane.members)) {
             if (!name) continue;
             const row = memberOf(rows, await successorOf($, name));
             if (!row || row.base.sid === me) continue;
+            if (
+                role === 'codie' &&
+                books.isSettled(lane, row.base.sid, reviewer)
+            )
+                continue;
             const spokeAt = await lastSpokeAt($, home, row.base.sid);
             if (spokeAt === undefined || now - spokeAt < waitMs) continue;
             const doneAt = await quietDoneAt($, row.base.sid, now);

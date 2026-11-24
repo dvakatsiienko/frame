@@ -347,6 +347,33 @@ func envOf(env []string, name string) string {
 	return value
 }
 
+// FRM-698 exit 2: a summon's record names the clio that hears the member's idle alarm and when it was summoned, the stray's too;
+// it is no dispatch, so it opens no card
+func TestBriefSummonRecordsItsCoordinatorAndTime(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ caller, area, name, want string }{
+		{"coordinator", "cli", "⚡ 🔧 cli | FRM-1", "clio-main"},
+		{"wing", "cli", "⚡ 🔧 cli | FRM-1", "clio-wing-1"},
+		{"coordinator", "stray", "⚡ 🐕 stray | chores", "clio-main"},
+	} {
+		t.Run(c.caller+" "+c.area, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			store := filepath.Join(t.TempDir(), "threads.json")
+			env := []string{"X_THREADS=" + store, "X_SESSIONS=" + filepath.Join(t.TempDir(), "caller-set")}
+			argv := strings.Replace(codieArgv(w.repo, w.brief(t, goodBrief, true)), "🌗 🔧 cli | FRM-1", c.name, 1)
+			before := time.Now().UnixMilli()
+
+			got := w.summonStanding(t, c.caller, env, "--area", c.area, "--lane-kind", "quick", argv)
+
+			written, _ := readThreadStore(store)
+			if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Coordinator != c.want || written.Threads[0].DispatchedAt < before || written.Threads[0].DispatchedBy != "" {
+				t.Fatalf("exit %d, records %+v, want coordinator %q, dispatchedAt now, no dispatchedBy:\n%s", got.code, written.Threads, c.want, got.stdout)
+			}
+		})
+	}
+}
+
 // FRM-570 round 3, exit 17: a codie's own summon is refused before any record, so it never mints itself a sixth sense
 func TestBriefSummonFromACodieIsRefused(t *testing.T) {
 	t.Parallel()

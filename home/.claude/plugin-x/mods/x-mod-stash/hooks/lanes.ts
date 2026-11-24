@@ -408,7 +408,7 @@ export async function openDispatchedLanes(
         (t): t is ThreadRecord & { lane: string } =>
             t.role === 'codie' &&
             /^[\w.-]+$/.test(t.lane ?? '') &&
-            t.coordinator === label,
+            t.dispatchedBy === label,
     );
     if (!dispatched.length) return;
     const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';

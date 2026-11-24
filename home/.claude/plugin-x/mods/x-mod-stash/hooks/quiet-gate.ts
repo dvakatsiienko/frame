@@ -50,6 +50,7 @@ import {
     QUIET_SENT,
     quietAlarm,
     quietFlushed,
+    quietKeepTagged,
     quietLedger,
     quietLog,
     quietLogAll,
@@ -60,8 +61,10 @@ import { settleTask } from './reply-fix.ts';
 import { memberOf, registry } from './roster.ts';
 import {
     MAIN_ROLE,
+    WING_ROLE,
     currentId,
     isLaneOwner,
+    selfRecord,
     sessionName,
     threadRecords,
 } from './session-identity.ts';
@@ -357,7 +360,16 @@ export async function quietSendStart(
             isPause: isQuietPause(message),
             to,
         };
-    if (!(await isToCoordinator($, to))) return undefined;
+    if (!(await isToCoordinator($, to)))
+        // a wing's send closes its member's open ping; it opens no answer slot, main's alone
+        return (await selfRecord($))?.role === WING_ROLE
+            ? {
+                  isAsking: false,
+                  isOwner: true,
+                  isPause: isQuietPause(message),
+                  to,
+              }
+            : undefined;
     const at = await $.clock.now();
     const name = await sessionName($);
     const asked = name ? (await askedOf($))[memberKey(name)] : undefined;
@@ -550,6 +562,15 @@ export async function quietBooks($: EngineInterface, view: ViewDoors) {
         );
 }
 
+// a wing holds nothing, yet its members' pings are booked as main's are, so one left open wakes it
+async function bookWingPing($: EngineInterface, from: string, tag: string) {
+    const isWing = (await selfRecord($))?.role === WING_ROLE;
+    if (!isWing || !(await readSwitch($, 'quiet'))) return;
+    const sid = memberOf(await registry($), from)?.base.sid;
+    if (!sid) return;
+    const at = await $.clock.now();
+    await quietLocked(() => quietKeepTagged($, [{ at, sid, tag }]));
+}
 // a message from outside the turn: a task's notice settles its wait, a steer is held, and in clio's thread quiet
 // comms holds a ping that does not push; every delivery is logged, and a broken hold fails open
 export async function receiveMessage(
@@ -572,8 +593,11 @@ export async function receiveMessage(
     });
     if (steer && 'consumed' in steer) return steer;
     if (steer) return next({ ...e, text: steer.text });
-    if (!(await isQuietHome($).catch(() => false))) return next(e);
     const { body, deliveryTest, from, tag } = peerPing(e.text);
+    if (!(await isQuietHome($).catch(() => false))) {
+        await bookWingPing($, from, tag).catch(() => undefined);
+        return next(e);
+    }
     const marks = deliveryTest ? { deliveryTest } : {};
     let arm: QuietLogLine['arm'] = 'on';
     // fail open: a throw anywhere below passes the delivery unjudged and logs it, so a broken hold never loses a ping

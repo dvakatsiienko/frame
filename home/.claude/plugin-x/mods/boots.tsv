@@ -60,6 +60,7 @@ x-mod-stash	tests/orbit-tool.test.ts	1
 x-mod-stash	tests/orbit.test.ts	1	
 x-mod-stash	tests/pace-waker.test.ts	1	
 x-mod-stash	tests/pace.test.ts	1	
+x-mod-stash	tests/parked-wake-records.test.ts	1
 x-mod-stash	tests/parked-wake-replay.test.ts	1
 x-mod-stash	tests/parked-wake.test.ts	1
 x-mod-stash	tests/parse.test.ts	0	

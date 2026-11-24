@@ -27,13 +27,15 @@ type thread struct {
 	ProcStart string `json:"procStart,omitempty"`
 	Role      string `json:"role,omitempty"`
 	Lane      string `json:"lane,omitempty"`
-	// the clio that dispatched a lane member (its owner label, clio-main or clio-wing-<n>), whose session opens the lane's card
+	// the clio that summoned or dispatched a member (its owner label, clio-main or clio-wing-<n>), which hears its idle alarm
 	Coordinator string `json:"coordinator,omitempty"`
-	LaneKind    string `json:"laneKind,omitempty"`
-	Ticket      string `json:"ticket,omitempty"`
-	Wing        int    `json:"wing,omitempty"`
-	Area        string `json:"area,omitempty"`
-	Title       string `json:"title,omitempty"`
+	// the clio that dispatched it into its lane, whose session opens the lane's card; a summon names none
+	DispatchedBy string `json:"dispatchedBy,omitempty"`
+	LaneKind     string `json:"laneKind,omitempty"`
+	Ticket       string `json:"ticket,omitempty"`
+	Wing         int    `json:"wing,omitempty"`
+	Area         string `json:"area,omitempty"`
+	Title        string `json:"title,omitempty"`
 	// what the dispatched ticket builds: its title past the scope prefix, the glide card's «<scope> — <what>»
 	What     string `json:"what,omitempty"`
 	Fallback bool   `json:"fallback,omitempty"`
@@ -463,11 +465,12 @@ func writeThreadRecord(record thread, now time.Time, isMinted bool) error {
 		live := store.Threads[i]
 		record.Pid, record.ProcStart, record.Name, record.Cwd = live.Pid, live.ProcStart, live.Name, live.Cwd
 		record.DispatchedAt = live.DispatchedAt
+		record.Coordinator = cmp.Or(record.Coordinator, live.Coordinator)
 		if record.Role == live.Role {
 			record.SeatTakenFrom, record.SeatTakenAt = live.SeatTakenFrom, live.SeatTakenAt
 		}
 		if record.Lane == "" {
-			record.Lane, record.Coordinator = live.Lane, cmp.Or(record.Coordinator, live.Coordinator)
+			record.Lane, record.DispatchedBy = live.Lane, live.DispatchedBy
 		}
 		// a kind the call named (a dispatch reads it off the ticket) outranks the record's old one
 		record.LaneKind = cmp.Or(record.LaneKind, live.LaneKind)
@@ -479,8 +482,8 @@ func writeThreadRecord(record thread, now time.Time, isMinted bool) error {
 	}
 	record.At = now.UnixMilli()
 	ownBatchOnly(&record)
-	// a lane swapped for the stray's own batch is no dispatch into that batch: its ended card stays ended
-	if named != "" && record.Lane == named {
+	// a lane swapped for the stray's own batch is no dispatch into that batch; a fresh summon is the member's own start
+	if isMinted || named != "" && record.Lane == named {
 		record.DispatchedAt = now.UnixMilli()
 	}
 	drawNames(&record)

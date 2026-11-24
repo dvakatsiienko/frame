@@ -484,6 +484,40 @@ test('an untagged receipt after a [done] re-arms nothing', async ($, on) => {
     expect(silentAlarms(w)).toEqual([]);
 });
 
+// FRM-698 exit 4: a codie whose lane's reviewer is done raises no silent alarm on that card
+const REVIEWER = {
+    ...codiePeer,
+    name: '🔎 sixth sense',
+    pid: 779,
+    sessionId: 's1x7s1x7-sixth',
+};
+for (const [why, tagged, sent, count] of [
+    ['its reviewer’s [done] is in', true, false, 0],
+    ['its reviewer sent none', false, false, 1],
+    ['its clio sent it a line after the [done]', true, true, 1],
+] as const)
+    test(`a silent codie, ${why}: ${count} alarm`, async ($, on) => {
+        const w = silentWorld(on, {
+            also: [REVIEWER],
+            card: {
+                members: {
+                    codie: codiePeer.name,
+                    'sixth-sense': REVIEWER.name,
+                },
+            },
+        });
+        await start($);
+        if (tagged)
+            w.store.set('quiet-tagged', {
+                [REVIEWER.sessionId]: { at: EVEN, tag: 'done' },
+            });
+        if (sent) w.store.set('quiet-sent', { [CODIE_SID]: EVEN + 1 });
+        await w.skip(5 * MIN);
+        expect(
+            silentAlarms(w).filter((t) => t.startsWith(codiePeer.name)).length,
+        ).toBe(count);
+    });
+
 test('an [ask] after a [done] alarms', async ($, on) => {
     const w = silentWorld(on);
     await start($);

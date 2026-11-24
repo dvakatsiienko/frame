@@ -813,9 +813,13 @@ for (const tag of ['ask', 'done'])
     });
 
 test('with quiet comms off no ping is booked, so none reads as open', async ($, on) => {
-    const w = parkedWorld(on, [sixth()], {
+    const w = parkedWorld(on, [codie()], {
         card: FOUR,
-        store: { ...tagged(R, 'done'), 'quiet-comms': false },
+        store: {
+            ...said(C, 'waiting on 🔎 sixth sense'),
+            ...tagged(C, 'done'),
+            'quiet-comms': false,
+        },
     });
     expect(await parked($, w, 2, 5)).toEqual([]);
 });
@@ -855,11 +859,11 @@ for (const [wait, runner, wakes, name = runner] of [
     });
 
 test('a [done] under the row since its member spoke is no open one yet', async ($, on) => {
-    const w = parkedWorld(on, [sixth()], {
+    const w = parkedWorld(on, [codie()], {
         card: FOUR,
         store: {
-            [`reply:${R}`]: { at: EVEN - 5 * MIN },
-            ...tagged(R, 'done', EVEN - 12 * MIN),
+            [`reply:${C}`]: { at: EVEN - 5 * MIN },
+            ...tagged(C, 'done', EVEN - 12 * MIN),
         },
     });
     expect(await parked($, w, 2, 2)).toEqual([]);
@@ -877,11 +881,11 @@ test('an [ask] under the row leaves its wait on another standing', async ($, on)
 });
 
 test('a [done] its member worked on after is no parked one', async ($, on) => {
-    const w = parkedWorld(on, [sixth()], {
+    const w = parkedWorld(on, [codie()], {
         card: FOUR,
         store: {
-            ...said(R, 'waiting on 🔧 codie'),
-            ...tagged(R, 'done', EVEN - 60 * MIN),
+            ...said(C, 'waiting on 🔎 sixth sense'),
+            ...tagged(C, 'done', EVEN - 60 * MIN),
         },
     });
     expect(await parked($, w, 2, 5)).toEqual([]);

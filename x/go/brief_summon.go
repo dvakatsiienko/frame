@@ -254,7 +254,7 @@ func briefSummonPlan(r *Run, args []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	record := thread{Role: role, Area: area}
+	record := thread{Role: role, Area: area, Coordinator: callerOwnerLabel()}
 	if words := strings.Fields(first); len(words) > 1 && ticketArg.MatchString(words[1]) {
 		record.Ticket = words[1]
 	}

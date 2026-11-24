@@ -28,6 +28,7 @@ const dispatched = (
         pid: number;
         lane?: string;
         coordinator?: string;
+        dispatchedBy?: string;
         at?: number;
         dispatchedAt?: number;
         ticket?: string;
@@ -38,7 +39,7 @@ const dispatched = (
         [THREADS_FILE]: threadsFile([
             { pid: PID, sessionId: SID, ...self },
             ...codies.map((c) => ({
-                coordinator: 'clio-main',
+                dispatchedBy: 'clio-main',
                 ...c,
                 role: 'codie',
             })),
@@ -258,7 +259,7 @@ test('a sixth sense x records after the dispatch joins the card on a later poll'
     w.files[THREADS_FILE] = threadsFile([
         { pid: PID, sessionId: SID, ...recordOf(CLIO) },
         {
-            coordinator: 'clio-main',
+            dispatchedBy: 'clio-main',
             lane: 'mods-lane-9',
             pid: 5001,
             role: 'codie',
@@ -376,7 +377,7 @@ test('a second dispatch into the lane keeps one card and links its codie', async
         { pid: PID, sessionId: SID, ...recordOf(CLIO) },
         {
             at: 2,
-            coordinator: 'clio-main',
+            dispatchedBy: 'clio-main',
             lane: 'mods-lane-9',
             pid: 5002,
             role: 'codie',
@@ -384,7 +385,7 @@ test('a second dispatch into the lane keeps one card and links its codie', async
         },
         {
             at: 1,
-            coordinator: 'clio-main',
+            dispatchedBy: 'clio-main',
             lane: 'mods-lane-9',
             pid: 5001,
             role: 'codie',
@@ -435,7 +436,7 @@ test('a lane whose card clio ended opens no new card while its codie lives on', 
 
 test("a lane a wing dispatched opens in that wing's session as its card, never in main's", async ($, on) => {
     const codie = {
-        coordinator: 'clio-wing-2',
+        dispatchedBy: 'clio-wing-2',
         lane: 'mods-lane-9',
         pid: 5001,
         sessionId: CODIE,
@@ -453,7 +454,7 @@ test('a wing opens the card of a lane it dispatched, its runner set', async ($, 
         ...dispatched(
             [
                 {
-                    coordinator: 'clio-wing-2',
+                    dispatchedBy: 'clio-wing-2',
                     lane: 'mods-lane-9',
                     pid: 5001,
                     sessionId: CODIE,
@@ -476,7 +477,8 @@ test('a codie a summon recorded with a lane but no dispatching clio opens no car
         on,
         dispatched([
             {
-                coordinator: undefined,
+                coordinator: 'clio-main',
+                dispatchedBy: undefined,
                 lane: 'mods-lane-9',
                 pid: 5001,
                 sessionId: CODIE,

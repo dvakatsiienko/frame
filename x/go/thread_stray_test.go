@@ -62,7 +62,7 @@ func TestThreadListDropsAStraysOtherLane(t *testing.T) {
 	t.Parallel()
 	env, store, _, _ := threadWorld(t)
 	was, _ := readThreadStore(store)
-	was.Threads = append(was.Threads, thread{SessionID: "sid-plain", Role: "codie", Area: "stray", Lane: "mods-lane-8", Ticket: "FRM-662", Coordinator: "clio-main", At: time.Now().UnixMilli()})
+	was.Threads = append(was.Threads, thread{SessionID: "sid-plain", Role: "codie", Area: "stray", Lane: "mods-lane-8", Ticket: "FRM-662", Coordinator: "clio-main", DispatchedBy: "clio-main", At: time.Now().UnixMilli()})
 	raw, _ := json.Marshal(was)
 	write(t, store, string(raw))
 	if got := xIn(t, t.TempDir(), env, "thread", "list"); got.code != 0 {
@@ -70,8 +70,8 @@ func TestThreadListDropsAStraysOtherLane(t *testing.T) {
 	}
 	written, _ := readThreadStore(store)
 	for _, th := range written.Threads {
-		if th.SessionID == "sid-plain" && (th.Lane != "" || th.Ticket != "" || th.Coordinator != "") {
-			t.Fatalf("sid-plain %+v, want the stray's lane, ticket and coordinator dropped", th)
+		if th.SessionID == "sid-plain" && (th.Lane != "" || th.Ticket != "" || th.DispatchedBy != "" || th.Coordinator != "clio-main") {
+			t.Fatalf("sid-plain %+v, want the stray's lane, ticket and dispatch dropped, its coordinator kept", th)
 		}
 		if th.SessionID == "sid-codie" && th.Lane != "cli lane 8" {
 			t.Fatalf("sid-codie lane %q, want a cli codie's lane kept", th.Lane)

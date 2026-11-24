@@ -15,12 +15,12 @@ const strayLanePrefix = "stray"
 var strayBatch = regexp.MustCompile(`^stray-batch-(\d+)$`)
 
 // ownBatchOnly gives a scope drawing its own unit (the stray's «chores») the lane of its newest batch, in place of a ticket's
-// lane it took from a brief; the ticket and coordinator that came with that lane go too, and no batch plan yet leaves no lane
+// lane it took from a brief; the ticket and dispatch that came with that lane go too, and no batch plan yet leaves no lane
 func ownBatchOnly(t *thread) {
 	if scopeOf(t.Area).Unit == "" || strings.HasPrefix(t.Lane, strayLanePrefix) {
 		return
 	}
-	t.Lane, t.Ticket, t.Coordinator = newestStrayBatch(), "", ""
+	t.Lane, t.Ticket, t.DispatchedBy = newestStrayBatch(), "", ""
 }
 
 // newestStrayBatch is the highest `stray-batch-<n>` dir under the state's lanes: the plan of the batch in hand

@@ -383,7 +383,7 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 		}
 		record := thread{SessionID: sid, Role: role, Lane: plan.Tickets[0].lane, LaneKind: recordLaneKind(kind, sid, area), Ticket: plan.Tickets[0].ID, Area: area, What: plan.Tickets[0].what}
 		if record.Lane != "" {
-			record.Coordinator = dispatcher
+			record.Coordinator, record.DispatchedBy = dispatcher, dispatcher
 		}
 		if err := writeThreadRecord(record, time.Now(), false); err != nil {
 			if fail, isFail := errors.AsType[*Fail](err); isFail {

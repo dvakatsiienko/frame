@@ -2,7 +2,22 @@ import type { On } from 'claude-code';
 import type { Engine } from 'claude-code/testing';
 
 import type { StashLane } from '../types/stash.d.ts';
-import { EVEN, LANES, MIN, laneCard, start, world } from './quiet-helpers.ts';
+import {
+    EVEN,
+    LANES,
+    MIN,
+    PID,
+    SID,
+    laneCard,
+    start,
+    world,
+} from './quiet-helpers.ts';
+import {
+    THREADS_FILE,
+    type ThreadRow,
+    recordOf,
+    threadsFile,
+} from './threads.ts';
 
 // clio's session running one lane card: each member's registry row, its last word and what its session keeps in the store
 export type ParkedMember = {
@@ -13,9 +28,14 @@ export type ParkedMember = {
     pid: number;
     role: 'codie' | 'sixth-sense';
     sid: string;
+    // what x wrote on its thread record past its role
+    record?: { coordinator?: string; dispatchedAt?: number; lane?: string };
     // when its process started, in the registry
     startedAt?: number;
     status?: string;
+    // what cc's registry says the session stands on, and since when
+    statusUpdatedAt?: number;
+    waitingFor?: string;
 };
 export const codie = (over: Partial<ParkedMember> = {}): ParkedMember => ({
     name: '⚡ 🔧 mods | FRM-1',
@@ -32,6 +52,55 @@ export const sixth = (over: Partial<ParkedMember> = {}): ParkedMember => ({
     ...over,
 });
 export const WORKING = { status: 'busy' } as const;
+export const onDialog = (
+    statusUpdatedAt: number,
+    waitingFor = 'permission prompt',
+) => ({ status: 'waiting', statusUpdatedAt, waitingFor });
+
+const rowOf = ({ sid, status = 'idle', ...m }: ParkedMember) => ({
+    name: m.name,
+    pid: m.pid,
+    sessionId: sid,
+    startedAt: m.startedAt,
+    status,
+    statusUpdatedAt: m.statusUpdatedAt,
+    waitingFor: m.waitingFor,
+});
+// `hc ls` names no pid, so each blocked terminal is asked for; t1 is somebody's own shell, at work
+function herdrSays(
+    herdr: Record<number, string> | null,
+    argv: readonly string[],
+) {
+    if (!herdr) return 1;
+    const pids = Object.keys(herdr).map(Number);
+    if (argv[1] === 'ls')
+        return JSON.stringify({
+            hidden_finished: 0,
+            terminals: [
+                { address: 't1', agent: 'zsh', state: 'live', turn: 0 },
+                ...pids.map((pid) => ({
+                    address: `t${pid}`,
+                    agent: 'claude-code',
+                    state: 'live',
+                    status: 'blocked',
+                })),
+            ],
+        });
+    const pid = pids.find((p) => `t${p}` === argv[2]);
+    return pid === undefined
+        ? 1
+        : JSON.stringify({
+              address: argv[2],
+              foreground: { pid },
+              pid: 1,
+              status: {
+                  app: 'claude-code',
+                  kind: 'permission',
+                  msg: herdr[pid],
+                  state: 'blocked',
+              },
+          });
+}
 
 type Ticket = { description?: string; labels: string[] };
 export function parkedWorld(
@@ -43,18 +112,27 @@ export function parkedWorld(
         card = {} as Partial<StashLane> | object,
         extraFiles = {} as Record<string, string>,
         handoffs = [] as string[],
+        // what herdr answers for a blocked terminal, by the pid in it; null is a herdr that does not answer
+        herdr = {} as Record<number, string> | null,
         // the clio's own name, a wing's too
         name = '🦉 clio',
         now = EVEN,
+        // the read of who lives exits non-zero
+        isPsDown = (): boolean => false,
         // peeks of the handoff that fail before one answers
         peeksDown = 0,
         // what a peek that finds no one handoff prints
         peekSays = 'no pending handoff matches',
+        // live sessions in cc's registry beside the members: a wing
+        sessions = [] as Record<string, unknown>[],
         store = {} as Record<string, unknown>,
+        // thread records beside the members' and her own: a live wing
+        threads = [] as ThreadRow[],
         tickets = {} as Record<string, Ticket>,
     } = {},
 ) {
     const peeks: string[] = [];
+    const asked: string[] = [];
     const wrote = new Map(
         members.map((m) => [m.sid, m.at ?? now - (m.ago ?? 9) * MIN]),
     );
@@ -64,6 +142,16 @@ export function parkedWorld(
         members: Object.fromEntries(members.map((m) => [m.role, m.name])),
     };
     const files: Record<string, string> = {
+        [THREADS_FILE]: threadsFile([
+            { pid: PID, sessionId: SID, ...recordOf(name) },
+            ...members.map(({ pid, record, role, sid }) => ({
+                pid,
+                role,
+                sessionId: sid,
+                ...record,
+            })),
+            ...threads,
+        ]),
         ...extraFiles,
         [LANES]: JSON.stringify({
             lanes: [
@@ -78,16 +166,13 @@ export function parkedWorld(
         files,
         name,
         now,
-        peers: members.map(
-            ({ name, pid, sid, startedAt, status = 'idle' }) => ({
-                name,
-                pid,
-                sessionId: sid,
-                startedAt,
-                status,
-            }),
-        ),
+        peers: [...members.map(rowOf), ...sessions],
         run: (argv) => {
+            if (argv[0] === 'ps' && isPsDown()) return 1;
+            if (argv[0] === 'hc') {
+                asked.push(argv.slice(1).join(' '));
+                return herdrSays(herdr, argv);
+            }
             if (argv[1] === 'handoff') {
                 peeks.push(String(argv[3]));
                 if (peeks.length <= peeksDown) throw new Error('timed out');
@@ -121,7 +206,23 @@ export function parkedWorld(
             ...(w.store.get(`reply:${sid}`) as object | undefined),
             at,
         });
-    return { ...w, handoffs, peeks, spoke, tickets, wakes, wrote };
+    // the registry's word for a member from now on
+    const reads = (m: ParkedMember, over: Partial<ParkedMember>) => {
+        files[`/home/.claude/sessions/${m.pid}.json`] = JSON.stringify(
+            rowOf({ ...m, ...over }),
+        );
+    };
+    return {
+        ...w,
+        asked,
+        handoffs,
+        peeks,
+        reads,
+        spoke,
+        tickets,
+        wakes,
+        wrote,
+    };
 }
 type World = ReturnType<typeof parkedWorld>;
 

@@ -38,6 +38,8 @@ export type Registered = {
     hostId?: string;
     // remote control holds the session: the registry names its bridge
     isBridged?: boolean;
+    // what a `waiting` session stands on, in cc's own words
+    waitingFor?: string;
     base: Pick<Member, 'sid' | 'name' | 'status' | 'statusSince'>;
 };
 
@@ -113,6 +115,7 @@ export async function registry($: EngineInterface): Promise<Registered[]> {
                 pid: v.pid,
                 startedAt:
                     typeof v.startedAt === 'number' ? v.startedAt : undefined,
+                waitingFor: text(v.waitingFor),
             });
         } catch {}
     }
