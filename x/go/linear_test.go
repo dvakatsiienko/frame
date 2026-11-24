@@ -65,6 +65,11 @@ func linearKeys(t *testing.T) string {
 
 func runLinear(t *testing.T, server *fakeLinear, env []string, argv ...string) (map[string]any, asRun) {
 	t.Helper()
+	return runLinearUnsealed(t, server, sealedDispatchEnv(t, server, env, argv), argv...)
+}
+
+func runLinearUnsealed(t *testing.T, server *fakeLinear, env []string, argv ...string) (map[string]any, asRun) {
+	t.Helper()
 	if !slices.ContainsFunc(env, func(kv string) bool {
 		return strings.HasPrefix(kv, "X_SESSIONS=") && strings.Contains(kv, "caller-set")
 	}) {

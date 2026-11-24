@@ -36,6 +36,9 @@ type dispatchTicket struct {
 	lane string
 	// its title past the scope prefix
 	what string
+	// the body the marks were read from, and whether this start repeats its newest 🚀 line's lane
+	body  string
+	rerun bool
 }
 
 type dispatchPlan struct {
@@ -45,6 +48,8 @@ type dispatchPlan struct {
 	Window  string           `json:"window"`
 	// the names the threads it names will draw, so a dry run shows the mode and the scope before any write
 	Threads []string `json:"threads,omitempty"`
+	// what preflight found on a sealed chunk: none of it refuses a start
+	Warnings []string `json:"warnings,omitempty"`
 }
 
 // an applied dispatch: its plan, and what became of each named thread's live name
@@ -134,6 +139,9 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 		}
 		feature = of
 	}
+	if err := sealChecks(&plan); err != nil {
+		return nil, err
+	}
 	if feature != "" {
 		plan.Slices = home(filepath.Join(stateDir(), "lanes", feature, "issues")) + "/ — codie's to-tickets slices"
 	}
@@ -151,6 +159,65 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	}
 	plan.Window = fiveHourWindow()
 	return plan, nil
+}
+
+// sealChecks refuses a start whose chunk is not sealed, and prints every other preflight finding as a warning. three kinds refuse, all
+// of them one ticket's own: no spec section, no seal hash on it, a hash that is not the ticket's text. a clio step (a first line
+// `lane: main`) has no spec, and a re-run for the lane of the newest 🚀 line refuses nothing: its drift came after the start
+func sealChecks(plan *dispatchPlan) error {
+	frame := mainCheckout(frameRoot())
+	var refused []string
+	first := ""
+	for _, ticket := range plan.Tickets {
+		if ticket.rerun || strings.HasPrefix(ticket.body, "lane: main") {
+			continue
+		}
+		paths, section := laneSpecSection(frame, ticket.ID)
+		if why := unsealed(ticket.ID, ticket.body, section); why != "" {
+			refused, first = append(refused, why), cmp.Or(first, ticket.ID)
+			continue
+		}
+		repo, err := ticketRepo(ticket.ID, ticket.body)
+		if err != nil || repo == "" {
+			repo = frame
+		}
+		read, err := preflightFindings(repo, ticket.ID, ticket.body, paths, section, func(_, _ string, work func() (string, error)) error {
+			_, err := work()
+			return err
+		})
+		if err != nil {
+			return err
+		}
+		if len(paths) > 1 {
+			plan.Warnings = append(plan.Warnings, ticket.ID+" has a section in "+specList(paths)+" — one spec binds a ticket")
+		}
+		for _, f := range read.found {
+			// a commit on main for the ticket says nothing against a chunk that starts on landed ground
+			if f.Line == 0 && f.Kind == "main" {
+				continue
+			}
+			plan.Warnings = append(plan.Warnings, fmt.Sprintf("%s line %d: %s %s — %s", ticket.ID, f.Line, f.Kind, f.What, f.Why))
+		}
+	}
+	if len(refused) > 0 {
+		return &Fail{Refused: true, Msg: "a lane starts from a sealed chunk: " + strings.Join(refused, "; ") + " — write the section, or read what changed, fold it in and set the hash",
+			Next: "x brief preflight " + first}
+	}
+	return nil
+}
+
+// how a ticket's spec section fails to seal its text, "" when it seals it
+func unsealed(id, body, section string) string {
+	if section == "" {
+		return id + " has no spec section"
+	}
+	if _, recorded := sealRecorded(section); recorded == "" {
+		return id + "'s spec section has no seal hash"
+	}
+	if _, recorded, signed := sealDrift(section, body); recorded != "" {
+		return fmt.Sprintf("%s's text moved since the seal (the spec records body %s, the ticket's text hashes to body %s)", id, recorded, signed)
+	}
+	return ""
 }
 
 // what the 🚀 line records past its lane and session, x lane landed reads them back
@@ -226,6 +293,7 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 	}
 	newLane, newSession := cmp.Or(lane, was[1]), cmp.Or(session, was[2])
 	ticket.lane = newLane
+	ticket.body, ticket.rerun = body, dispatched && newLane == was[1]
 	base, sixthSense := "", note.sixthSense
 	// the same lane under a new session keeps the range and the verifier its line names; another lane starts fresh
 	if newLane == was[1] {

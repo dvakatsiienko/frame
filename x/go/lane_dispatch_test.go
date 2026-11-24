@@ -1,12 +1,14 @@
 package main
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -27,7 +29,7 @@ type dispatchState struct {
 // dispatchServer answers the lookup with one ticket in the given state and records every mutation
 func dispatchServer(t *testing.T, s dispatchState) *fakeLinear {
 	t.Helper()
-	return newFakeLinear(t, func(call gqlCall) string {
+	server := newFakeLinear(t, func(call gqlCall) string {
 		if strings.Contains(call.Query, "mutation") {
 			return `{"data":{"issueUpdate":{"success":true}}}`
 		}
@@ -44,6 +46,8 @@ func dispatchServer(t *testing.T, s dispatchState) *fakeLinear {
 			`,"labels":{"nodes":[` + strings.Join(labels, ",") + `]},"team":{"states":{"nodes":[{"id":"s-todo","name":"Todo"},{"id":"s-ip","name":"In Progress"}]}}},` +
 			`"users":{"nodes":[{"id":"u-codie","name":"codie"}]}}}`
 	})
+	dispatchBodies.Store(server.URL, s.body)
+	return server
 }
 
 // runDispatch runs against an empty frame root: the slices dir falls back to the lane, never a real ~/frame spec
@@ -52,11 +56,54 @@ func runDispatch(t *testing.T, server *fakeLinear, args ...string) (map[string]a
 	return runDispatchIn(t, server, t.TempDir(), args...)
 }
 
+// the body each dispatchServer answers with, by its url: a dispatch run through runLinear is sealed on it
+var dispatchBodies sync.Map
+
+// sealedDispatchEnv seals the chunks of a `lane dispatch` call: each ticket id in argv that its frame holds no spec section
+// for gets one, in a spec named after the lane, so the start passes the seal check; the frame is X_FRAME_ROOT in env, else a new
+// one. any other call, and a server that is not a dispatchServer, comes back as it was
+func sealedDispatchEnv(t *testing.T, server *fakeLinear, env, argv []string) []string {
+	t.Helper()
+	body, ok := dispatchBodies.Load(server.URL)
+	if !ok || len(argv) < 2 || argv[0] != "lane" || argv[1] != "dispatch" {
+		return env
+	}
+	at := slices.IndexFunc(env, func(kv string) bool { return strings.HasPrefix(kv, "X_FRAME_ROOT=") })
+	if at < 0 {
+		env = append(slices.Clone(env), "X_FRAME_ROOT="+t.TempDir())
+		at = len(env) - 1
+	}
+	frame := strings.TrimPrefix(env[at], "X_FRAME_ROOT=")
+	feature := "sealed"
+	if lane := slices.Index(argv, "--lane"); lane >= 0 && lane+1 < len(argv) {
+		feature = argv[lane+1]
+	}
+	for _, id := range argv[2:] {
+		if paths, _ := laneSpecSection(frame, id); ticketShape.MatchString(id) && len(paths) == 0 {
+			spec := filepath.Join(frame, ".scratch", feature, "spec.md")
+			held, _ := os.ReadFile(spec)
+			write(t, spec, cmp.Or(string(held), "# "+feature+"\n\n")+"\n## "+id+" — the chunk\n\n"+sealedSection(wishOf(id, body.(string))))
+		}
+	}
+	return env
+}
+
 func runDispatchIn(t *testing.T, server *fakeLinear, frame string, args ...string) (map[string]any, asRun) {
+	t.Helper()
+	return runDispatchWith(t, server, frame, runLinear, args...)
+}
+
+// runDispatchUnsealed runs a dispatch with no spec sealed for it
+func runDispatchUnsealed(t *testing.T, server *fakeLinear, frame string, args ...string) (map[string]any, asRun) {
+	t.Helper()
+	return runDispatchWith(t, server, frame, runLinearUnsealed, args...)
+}
+
+func runDispatchWith(t *testing.T, server *fakeLinear, frame string, run func(*testing.T, *fakeLinear, []string, ...string) (map[string]any, asRun), args ...string) (map[string]any, asRun) {
 	t.Helper()
 	home := t.TempDir()
 	write(t, filepath.Join(home, ".claude/shelf/cc-usage-window.json"), `{"rate_limits":{"five_hour":{"resets_at":1793389800,"used_percentage":20}}}`)
-	return runLinear(t, server, []string{"HOME=" + home, "X_FRAME_ROOT=" + frame}, append([]string{"lane", "dispatch"}, args...)...)
+	return run(t, server, []string{"HOME=" + home, "X_FRAME_ROOT=" + frame}, append([]string{"lane", "dispatch"}, args...)...)
 }
 
 func TestDispatchRefusesTicketsFromTwoLaneSpecs(t *testing.T) {
@@ -76,7 +123,7 @@ func TestDispatchRefusesTicketsFromTwoLaneSpecs(t *testing.T) {
 func TestDispatchNamesTheSlicesDirAfterTheSpecsFeature(t *testing.T) {
 	t.Parallel()
 	frame := repo(t)
-	write(t, filepath.Join(frame, ".scratch/feat-a/spec.md"), "# feat a\n\n## FRM-1 — the chunk\n")
+	write(t, filepath.Join(frame, ".scratch/feat-a/spec.md"), "# feat a\n\n## FRM-1 — the chunk\n\n"+sealedSection(wishOf("FRM-1", signedTicket)))
 	server := dispatchServer(t, dispatchState{body: signedTicket, state: "Todo", labels: []string{"agent", "signed"}})
 
 	envelope, _ := runDispatchIn(t, server, frame, "FRM-1", "--session", "s1", "--area", "cli", "--lane", "cli-9")
