@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-24T13:33:00Z'
+updated_date: '2026-11-24T13:35:00Z'
 labels:
   - s
   - clio-wing-1
@@ -20,17 +20,16 @@ ordinal: 1001
 - [ ] #2 f59 FRM-696 hang-heal: the full shape-idea grill with dima
 - [ ] #3 f66 system checkup in four sittings: the shape-idea round with dima, his tick given, after the weak spots
 - [ ] #4 f67 writing rules, second pass: the deletion list written for his tick, so the files end smaller
-- [ ] #5 f68 FRM-696 hang-heal gets weak spot 5: the page numbers and his 15:32 words join its wish block
-- [ ] #6 f69 my tail checks: red on a small item parked past its day, quiet on labels
-- [ ] #7 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
-- [ ] #8 f53 ⏳ FRM-585 annotate reply text: the copy-then-find probe, then Q1 to dima — waits for: the speak lane
-- [ ] #9 f52 📅 FRM-465 exit 5, the minors half: both repos get a minors pr at the 07:00 window — on: 2026-11-25
-- [ ] #10 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
-- [ ] #11 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #12 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #13 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #14 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
-- [ ] #15 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
+- [ ] #5 f69 my tail checks: red on a small item parked past its day, quiet on labels
+- [ ] #6 f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr
+- [ ] #7 f53 ⏳ FRM-585 annotate reply text: the copy-then-find probe, then Q1 to dima — waits for: the speak lane
+- [ ] #8 f52 📅 FRM-465 exit 5, the minors half: both repos get a minors pr at the 07:00 window — on: 2026-11-25
+- [ ] #9 f39 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
+- [ ] #10 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #11 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #12 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #13 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #14 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -797,4 +796,6 @@ done 2026-11-24 15:23: f65 ⏳ writing rules, second pass: a deletion list so th
 done 2026-11-24 15:23: f63 ⏳ comms check recipe: starts from his comms log, tests his two questions — waits for: dima o5
 
 done 2026-11-24 15:33: f61 PK-467 fleet weak spots 4 and 5: walked with dima one at a time, the page is with him (PK-467 open)
+
+done 2026-11-24 15:35: f68 FRM-696 hang-heal gets weak spot 5: the page numbers and his 15:32 words join its wish block (FRM-696 Todo)
 <!-- SECTION:NOTES:END -->

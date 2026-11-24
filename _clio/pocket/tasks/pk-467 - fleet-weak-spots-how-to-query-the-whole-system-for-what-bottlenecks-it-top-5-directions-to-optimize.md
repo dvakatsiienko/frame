@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T11:46:00Z'
-updated_date: '2026-11-24T13:33:00Z'
+updated_date: '2026-11-24T13:36:00Z'
 labels:
   - s
   - clio-wing-1
@@ -323,4 +323,22 @@ PK-467:W148 (2026-11-24 15:32, dima): I'm not sure if it will fix so I plan to c
 
 PK-467:W149 (2026-11-24 15:32, dima): [on the measures lever, his orbit steer] yes but themed. When you tell me about measures I want them to be easy to read, and measures are easier to read when they are themed. For example: positive gains, negative gains, red, green, yellow if not much changed, something like this.
 PK-467:W150 (2026-11-24 15:32, dima): I also want your grade, so it is good or not good for us, and action items also: what to do with it if it is relevant.
+
+PK-467:W151 (2026-11-24 15:23, dima): [spot 4] From the artifact, from what I read, I definitely agree with the tail-hunting request repetition.
+
+PK-467:W152 (2026-11-24 15:23, dima): This one is truly a very big problem.
+
+PK-467:W153 (2026-11-24 15:23, dima): I essentially every day ask you to close all your tails about 10 times per day, maybe even more sometimes.
+
+PK-467:W154 (2026-11-24 15:23, dima): I don't know why but something looks like it encourages you to create tails for yourself.
+
+PK-467:W155 (2026-11-24 15:23, dima): Your pocket becomes cluttered very fast, which I think I try to solve by forcing you to hunt your tails on your own.
+
+PK-467:W156 (2026-11-24 15:23, dima): What I want is for you to close your tails yourself.
+
+PK-467:W157 (2026-11-24 15:23, dima): How to fix that? ❓
+
+PK-467:W158 (2026-11-24 15:23, dima): Why are you not closing your tails in place when possible? ❓
+
+PK-467:W159 (2026-11-24 15:23, dima): You keep postponing and folding everything until later.
 <!-- SECTION:NOTES:END -->
