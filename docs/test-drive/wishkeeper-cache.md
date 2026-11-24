@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-30
 dies-when: the verdict line below is written
 ---
@@ -53,3 +53,4 @@ the regression set: `wishkeeper-cache/regression-set.md`, seven real highs, repl
 ## verdict
 
 - 2026-11-20 · **the 1 h arm: dropped, by the kill rule** — it warmed the starts but cost 19 % more a run (the 11-20 round); the card's own verdict, its highs real against the ≥ 4 in 5 bar, is read on 2026-11-26
+- 2026-11-24 · **the card: adopted, on the 5 min cache** (dima's tick, 13:06) — highs real 99 of 105 (94 %) against the old card's 33 of 42 (79 %), over the ≥ 4 in 5 bar (`docs/research/wishkeeper-cadence/remeasure.md`, the 18 Nov outside grade); cost $2.34 a run against $3.35 (−30 %, the 11-19 round), over the ≥ 25 % bar; the regression set 4 of 7 at their own spot and severity, 6 graded leniently, case 2 missed once, not replayed since 2026-11-11
