@@ -294,17 +294,24 @@ function memberHold(
               }
             : undefined;
     const ask = isAsking ? ', its [ask] unanswered' : '';
+    const ping = isAsking ? tag?.at : undefined;
     const on = ask || (wait.said ? `, ${wait.said}` : '');
     if (m.role === 'codie')
         return idle >= wakeAfter
             ? {
                   about: [m],
+                  ping,
                   reason: `${laneId}:builder`,
                   text: `${sat} with ${left} step${left === 1 ? '' : 's'} left${on}`,
               }
             : undefined;
     return idle >= REVIEWER_WAKE_MS
-        ? { about: [m], reason: `${laneId}:reviewer`, text: `${sat}${on}` }
+        ? {
+              about: [m],
+              ping,
+              reason: `${laneId}:reviewer`,
+              text: `${sat}${on}`,
+          }
         : undefined;
 }
 

@@ -11,6 +11,7 @@ import {
 } from './parked-world.ts';
 import {
     EVEN,
+    LANES,
     MIN,
     PID,
     SID,
@@ -78,6 +79,27 @@ for (const [why, at, over] of [
         });
         const first = await parked($, w, 2, 30);
         w.spoke(C, EVEN + 33 * MIN);
+        await pass($, w, 30);
+        expect([first.length, w.wakes().length]).toEqual([1, 1]);
+    });
+
+for (const [what, tag, members] of [
+    ['a builder’s [done]', 'done', [codie(), sixth(WORKING)]],
+    ['a builder’s [ask]', 'ask', [codie(), sixth(WORKING)]],
+    ['a reviewer’s [ask]', 'ask', [sixth()]],
+] as const)
+    test(`${what} told on its card is not told again when the card ends`, async ($, on) => {
+        const by = members[0].sid;
+        const w = parkedWorld(on, [...members], {
+            card: FOUR,
+            store: tagged(by, tag),
+            tickets: { 'FRM-2': DISPATCHED },
+        });
+        const first = await parked($, w, by === R ? 32 : 2);
+        const { lanes } = JSON.parse(w.files[LANES] ?? '');
+        w.files[LANES] = JSON.stringify({
+            lanes: lanes.map((l: object) => ({ ...l, endedAt: EVEN })),
+        });
         await pass($, w, 30);
         expect([first.length, w.wakes().length]).toEqual([1, 1]);
     });
@@ -465,6 +487,100 @@ for (const [why, text] of [
             [WAKE, WAKE.replace(APPROVE, text)],
         ]);
     });
+
+test('a busy clio’s polls ask herdr nothing, her turn’s end does', async ($, on) => {
+    const w = parkedWorld(on, [stuck], { ...asks, card: ENDED });
+    await start($);
+    await say($, 'look at the board');
+    await w.skip(4 * MIN);
+    await w.skip(4 * MIN);
+    const busy = [w.asked.length, w.wakes().length];
+    await turnEnd($);
+    await pass($, w, 2);
+    expect([busy, w.wakes().length]).toEqual([[0, 0], 1]);
+});
+
+test('a registry with no stamp counts from the first read, a clear one ends it', async ($, on) => {
+    const bare = codie({ status: 'waiting', waitingFor: 'input needed' });
+    const w = parkedWorld(on, [bare], { ...asks, card: ENDED });
+    await parked($, w, 1, 3);
+    const first = w.wakes().length;
+    w.reads(bare, WORKING);
+    await pass($, w, 1);
+    w.reads(bare, {});
+    await pass($, w, 1, 4);
+    expect([first, w.wakes().length]).toEqual([1, 2]);
+});
+
+for (const [why, after, stamps, wakes] of [
+    ['a dialog drawn again', 0, [1, 2, 3, 4, 5, 6], 1],
+    ['a dialog still up after an unread hour', 60, [], 1],
+    ['another after an unread hour', 60, [58], 2],
+] as const)
+    test(`${why}: ${wakes} wake`, async ($, on) => {
+        let isDown = false;
+        const w = parkedWorld(on, [stuck], {
+            ...asks,
+            card: ENDED,
+            isPsDown: () => isDown,
+        });
+        await parked($, w, 3);
+        isDown = after > 0;
+        if (after) await pass($, w, after - 1);
+        for (const m of stamps) {
+            w.reads(stuck, onDialog(EVEN + (3 + m) * MIN - 1));
+            if (!after) await pass($, w, 1);
+        }
+        isDown = false;
+        await pass($, w, 1, 5);
+        expect(w.wakes().length).toBe(wakes);
+    });
+
+test('a dialog drawn again every minute still wakes at 3 min', async ($, on) => {
+    const w = parkedWorld(on, [stuck], { ...asks, card: ENDED });
+    await start($);
+    for (const m of [1, 2, 3, 4]) {
+        w.reads(stuck, onDialog(EVEN + m * MIN - 1));
+        await pass($, w, 1);
+    }
+    expect(w.wakes().length).toBe(1);
+});
+
+test('a member resumed onto a new dialog starts a new one', async ($, on) => {
+    const w = parkedWorld(on, [stuck], { ...asks, card: ENDED });
+    await parked($, w, 3);
+    w.reads(stuck, {
+        ...onDialog(EVEN + 4 * MIN),
+        startedAt: EVEN + 3.5 * MIN,
+    });
+    await pass($, w, 1, 4);
+    expect(w.wakes().length).toBe(2);
+});
+
+for (const word of ['sandbox request', 'worker request', 'goal proposal'])
+    test(`cc’s «${word}» is a permission dialog`, async ($, on) => {
+        const w = parkedWorld(on, [codie(onDialog(EVEN, word))], {
+            ...asks,
+            card: ENDED,
+        });
+        expect(await parked($, w, 3)).toEqual([WAKE]);
+    });
+
+test('a dialog told to main is not told again by the wing that came back', async ($, on) => {
+    const w = parkedWorld(on, [codie({ ...stuck, record: ofWing.record })], {
+        card: ENDED,
+        name: WING_1.display,
+        store: {
+            [`parked-dialog:${C}`]: {
+                readAt: EVEN,
+                saidTo: 'clio-main',
+                since: EVEN - 9 * MIN,
+                stamp: EVEN,
+            },
+        },
+    });
+    expect(await parked($, w, 1, 5)).toEqual([]);
+});
 
 test('a busy clio’s polls ask herdr nothing, her turn’s end does', async ($, on) => {
     const w = parkedWorld(on, [stuck], { ...asks, card: ENDED });
