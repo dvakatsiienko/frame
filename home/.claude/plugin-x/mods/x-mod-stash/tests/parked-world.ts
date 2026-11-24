@@ -29,7 +29,12 @@ export type ParkedMember = {
     role: 'codie' | 'sixth-sense';
     sid: string;
     // what x wrote on its thread record past its role
-    record?: { coordinator?: string; dispatchedAt?: number; lane?: string };
+    record?: {
+        coordinator?: string;
+        dispatchedAt?: number;
+        lane?: string;
+        role?: string;
+    };
     // when its process started, in the registry
     startedAt?: number;
     status?: string;

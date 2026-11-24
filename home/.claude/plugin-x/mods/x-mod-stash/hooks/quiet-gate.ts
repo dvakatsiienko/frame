@@ -48,6 +48,7 @@ import {
     QUIET_GAP,
     QUIET_PARK_MS,
     QUIET_SENT,
+    bookKey,
     quietAlarm,
     quietFlushed,
     quietKeepTagged,
@@ -64,6 +65,7 @@ import {
     WING_ROLE,
     currentId,
     isLaneOwner,
+    ownerOf,
     selfRecord,
     sessionName,
     threadRecords,
@@ -449,9 +451,10 @@ async function quietSentTo($: EngineInterface, to: string) {
     const sid = rowOfTo(await registry($), to)?.base.sid;
     if (!sid) return;
     const now = await $.clock.now();
-    const was = ((await $.store.get(QUIET_SENT).catch(() => undefined)) ??
+    const key = bookKey(QUIET_SENT, ownerOf(await selfRecord($)));
+    const was = ((await $.store.get(key).catch(() => undefined)) ??
         {}) as Record<string, number>;
-    await $.store.set(QUIET_SENT, {
+    await $.store.set(key, {
         ...Object.fromEntries(
             Object.entries(was).filter(([, at]) => now - at < QUIET_PARK_MS),
         ),
@@ -564,12 +567,14 @@ export async function quietBooks($: EngineInterface, view: ViewDoors) {
 
 // a wing holds nothing, yet its members' pings are booked as main's are, so one left open wakes it
 async function bookWingPing($: EngineInterface, from: string, tag: string) {
-    const isWing = (await selfRecord($))?.role === WING_ROLE;
-    if (!isWing || !(await readSwitch($, 'quiet'))) return;
+    const self = await selfRecord($);
+    if (self?.role !== WING_ROLE || !(await readSwitch($, 'quiet'))) return;
     const sid = memberOf(await registry($), from)?.base.sid;
     if (!sid) return;
     const at = await $.clock.now();
-    await quietLocked(() => quietKeepTagged($, [{ at, sid, tag }]));
+    await quietLocked(() =>
+        quietKeepTagged($, [{ at, sid, tag }], ownerOf(self)),
+    );
 }
 // a message from outside the turn: a task's notice settles its wait, a steer is held, and in clio's thread quiet
 // comms holds a ping that does not push; every delivery is logged, and a broken hold fails open

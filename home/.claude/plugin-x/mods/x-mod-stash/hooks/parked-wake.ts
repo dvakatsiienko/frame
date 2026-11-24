@@ -22,11 +22,13 @@ import {
 import { type Registered, laneMemberRow, registry } from './roster.ts';
 import {
     ADVISER_ROLE,
+    MAIN_OWNER,
     MAIN_ROLE,
     type ThreadRecord,
     WING_ROLE,
     currentId,
     isLaneOwner,
+    ownerOf,
     runnerOf,
     successorOf,
     threadRecords,
@@ -149,11 +151,16 @@ const CHUNK_SAYS = {
     unsigned: 'is unsigned',
 } as const satisfies Record<Exclude<NextChunk, 'dispatched'>, string>;
 
+// the roles x summons, never a clio's, crow's or helga's
+const MEMBER_ROLES = ['codie', 'designer', 'sixth-sense'] as const;
+type MemberRole = (typeof MEMBER_ROLES)[number];
+const isMember = (role: string | undefined): role is MemberRole =>
+    MEMBER_ROLES.some((r) => r === role);
 type Parked = {
     at: number;
     isIdle: boolean;
     name: string;
-    role: LaneRole;
+    role: MemberRole;
     sid: string;
 };
 // what a rule says of one member or of the lane: `reason` keys «said already», `about` the members whose word re-arms it,
@@ -168,6 +175,9 @@ type Hold = {
 type Woke = { at: number; reasons: string[] };
 // one key a member: a ping said on its card is not said again when the card ends; a card's own reasons carry its id
 const wokeKey = (sid: string) => `${PARKED_WOKE}${sid}`;
+// the reviewer's [done] a settled codie's finished card was said under: no word of its own says it again
+const overKey = (sid: string, lane: StashLane) =>
+    `parked-over:${lane.id}:${sid}`;
 const minutesOf = (ms: number) => Math.round(ms / 60_000);
 const wingsIn = (text: string) =>
     [...text.matchAll(/wing (\d+)/giu)].map((m) => m[1]);
@@ -258,7 +268,11 @@ function memberHold(
             reason: 'done',
             text: openPing(m, tag, now),
         };
-    if (!left || (isSettled && !isAsking)) return undefined;
+    if (!left)
+        return tag && isAsking && idle >= wakeAfter
+            ? { about: [m], reason: 'ask', text: openPing(m, tag, now) }
+            : undefined;
+    if (isSettled && !isAsking) return undefined;
     const sat = `${m.name} idle ${minutesOf(idle)} min`;
     if (wait.onOther)
         return idle >= REVIEWER_WAKE_MS
@@ -359,7 +373,7 @@ const isSaidOf = (was: Woke | undefined, m: Parked, reason: string) =>
 async function parkedOf(
     $: EngineInterface,
     row: Pick<Registered, 'base' | 'startedAt'>,
-    role: LaneRole,
+    role: MemberRole,
     home: string,
     now: number,
 ): Promise<Parked> {
@@ -399,26 +413,25 @@ async function sayParked(
     members: Parked[],
     woke: Map<string, Woke | undefined>,
     view: ViewDoors,
-    keepsReasons: (m: Parked) => boolean,
 ) {
-    if (!(await sayLine($, fresh, view))) return;
+    if (!(await sayLine($, fresh, view))) return false;
     for (const m of members) {
         const said = fresh
             .filter((h) => (h.also ?? h.about).includes(m))
             .map((h) => h.reason);
         if (!said.length) continue;
         const was = woke.get(m.sid);
-        const kept =
-            was && (was.at >= m.at || keepsReasons(m)) ? was : undefined;
+        const kept = was && was.at >= m.at ? was : undefined;
         await $.store.set(wokeKey(m.sid), {
-            at: Math.max(kept?.at ?? m.at, m.at),
+            at: kept?.at ?? m.at,
             reasons: [...(kept?.reasons ?? []), ...said],
         } satisfies Woke);
     }
+    return true;
 }
 
-// a member on a dialog (FRM-698, dima's o8): cc's registry says whether, herdr says what it asks. one unbroken stretch of the
-// read is one dialog, kept in the store, so a reload says it no second time
+// a member on a dialog (FRM-698, dima's o8): cc's registry says whether, herdr says what it asks. cc's own stamp of
+// the read tells one dialog from the next, kept in the store, so a reload says it no second time
 const DIALOG = 'parked-dialog:';
 const DIALOG_WAKE_MS = 3 * 60_000;
 const DIALOGS = {
@@ -492,7 +505,6 @@ async function logUnknown(
         `x-mod-stash: ${name} reads «${word}», a status the dialog wake does not know`,
     );
 }
-const DIALOG_ROLES = ['codie', 'sixth-sense', 'designer', WING_ROLE] as const;
 // every live record of a summoned member or a wing, card or no card, and the clio a dialog of its wakes: a wing's is main, and
 // a member's whose wing stands on one too
 async function wakeForDialogs(
@@ -506,7 +518,7 @@ async function wakeForDialogs(
     view: ViewDoors,
 ) {
     const reads = threads
-        .filter((t) => DIALOG_ROLES.some((role) => role === t.role))
+        .filter((t) => isMember(t.role) || t.role === WING_ROLE)
         .flatMap((t) => {
             const row = rows.find(
                 (r) => r.isAlive && r.base.sid === t.sessionId,
@@ -539,10 +551,12 @@ async function wakeForDialogs(
             if (was) await $.store.delete(key);
             continue;
         }
-        const kept = was ?? { isSaid: false, since: statusSince ?? now };
-        if (!was) await $.store.set(key, kept);
+        const isSame = was && (statusSince ?? was.since) === was.since;
+        const kept = isSame
+            ? was
+            : { isSaid: false, since: statusSince ?? now };
+        if (!isSame) await $.store.set(key, kept);
         if (kept.isSaid || now - kept.since < DIALOG_WAKE_MS) continue;
-        if (await isTurnBusy($)) continue;
         const words = await dialogWords($, name, row.pid);
         due.push({
             kept,
@@ -550,7 +564,9 @@ async function wakeForDialogs(
             text: `${name} stands on a ${dialog} dialog ${minutesOf(now - kept.since)} min${words ? `: «${words}»` : ''}`,
         });
     }
-    if (!due.length || !(await sayLine($, due, view))) return;
+    // herdr's answer took its time
+    if (!due.length || (await isTurnBusy($))) return;
+    if (!(await sayLine($, due, view))) return;
     for (const { kept, key } of due)
         await $.store.set(key, { ...kept, isSaid: true } satisfies Dialog);
 }
@@ -574,12 +590,14 @@ async function wakeForUncarded(
 ) {
     const mine = ownerOf(self);
     const owners = new Set(
-        threads.filter((t) => t.pid !== undefined).map(ownerOf),
+        threads
+            .filter((t) => rows.some((r) => r.base.sid === t.sessionId))
+            .map(ownerOf),
     );
     const members: Parked[] = [];
     const holds: Hold[] = [];
     for (const t of threads) {
-        if (t.role !== 'codie' && t.role !== 'sixth-sense') continue;
+        if (!isMember(t.role)) continue;
         const row = rows.find((r) => r.isAlive && r.base.sid === t.sessionId);
         if (!row || onCard.has(t.sessionId)) continue;
         // a dead wing's member falls to main, as its card does
@@ -608,17 +626,8 @@ async function wakeForUncarded(
     const fresh = holds.filter((h) =>
         h.about.some((m) => !isSaidOf(woke.get(m.sid), m, h.reason)),
     );
-    if (fresh.length)
-        await sayParked($, fresh, members, woke, view, () => false);
+    if (fresh.length) await sayParked($, fresh, members, woke, view);
 }
-const MAIN_OWNER = 'clio-main';
-// a clio by the label x writes on a record it dispatched or summoned
-const ownerOf = (t: ThreadRecord) =>
-    t.role === MAIN_ROLE
-        ? MAIN_OWNER
-        : t.role === WING_ROLE
-          ? `clio-wing-${t.wing}`
-          : '';
 
 // the one idle alarm of a lane (PK-351:W44, FRM-692): its members are read one by one, and one turn of the clio running it
 // names every rule that holds, each once per silence, shift or not; a busy turn or a refused wake asks again at the next read
@@ -723,11 +732,14 @@ export async function wakeForParkedLanes($: EngineInterface, view: ViewDoors) {
         const woke = await wokeOf($, members);
         const isSaid = (m: Parked, reason: string) =>
             isSaidOf(woke.get(m.sid), m, reason);
-        const reviewer = members.find((m) => m.role === 'sixth-sense')?.sid;
-        const isSettled = (m: Parked) =>
-            m.role === 'codie' &&
-            isBooked &&
-            books.isSettled(lane, m.sid, reviewer);
+        const reviewer = await laneSid($, rows, lane, 'sixth-sense');
+        const settledAt = (m: Parked) =>
+            m.role === 'codie' && isBooked
+                ? books.settledAt(lane, m.sid, reviewer)
+                : undefined;
+        const over = new Map<string, unknown>();
+        for (const m of members)
+            over.set(m.sid, await $.store.get(overKey(m.sid, lane)));
         const holds: Hold[] = [];
         let isParked = true;
         for (const m of members) {
@@ -758,7 +770,7 @@ export async function wakeForParkedLanes($: EngineInterface, view: ViewDoors) {
                     tag,
                     wait,
                     isAsking,
-                    isSettled(m),
+                    settledAt(m) !== undefined,
                     lane.id,
                 );
             if (hold) holds.push(hold);
@@ -772,16 +784,19 @@ export async function wakeForParkedLanes($: EngineInterface, view: ViewDoors) {
             isParked,
             (reason) => members.every((m) => isSaid(m, reason)),
             (m) =>
-                isSettled(m) &&
-                woke.get(m.sid)?.reasons?.includes(`${lane.id}:${FINISHED}`) ===
-                    true,
+                settledAt(m) !== undefined && over.get(m.sid) === settledAt(m),
         );
         if (ofLane) holds.unshift(ofLane);
         const fresh = holds.filter((h) =>
             h.about.some((m) => !isSaid(m, h.reason)),
         );
         if (!fresh.length) continue;
-        await sayParked($, fresh, members, woke, view, isSettled);
+        const isSayingOver = ofLane && !left && fresh.includes(ofLane);
+        if (!(await sayParked($, fresh, members, woke, view))) continue;
+        if (isSayingOver)
+            for (const m of members)
+                if (settledAt(m) !== undefined)
+                    await $.store.set(overKey(m.sid, lane), settledAt(m));
     }
 }
 

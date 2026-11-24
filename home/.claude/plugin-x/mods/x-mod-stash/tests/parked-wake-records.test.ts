@@ -74,6 +74,14 @@ const WING_1 = {
     sessionId: 'w1w1w1w1-wing',
     wing: 1,
 };
+const liveWing = { threads: [{ ...WING_1, pid: 90 }] };
+const wingRow = (over: object) => ({
+    name: WING_1.display,
+    pid: 90,
+    sessionId: WING_1.sessionId,
+    status: 'idle',
+    ...over,
+});
 const ofWing = codie({ record: { coordinator: 'clio-wing-1' } });
 for (const [who, name, threads, wakes] of [
     ['a wing wakes for its own member', WING_1.display, [], 1],
@@ -95,27 +103,66 @@ for (const [who, name, threads, wakes] of [
         const w = parkedWorld(on, [ofWing], {
             card: ENDED,
             name,
-            store: OPEN_DONE,
+            sessions: threads.some((th) => 'pid' in th) ? [wingRow({})] : [],
+            store: {
+                ...OPEN_DONE,
+                'quiet-tagged:clio-wing-1': OPEN_DONE['quiet-tagged'],
+            },
             threads: [...threads],
         });
         expect((await parked($, w, 2)).length).toBe(wakes);
     });
 
-test('a wing’s own lines are booked: a [done] it got wakes it, its answer closes it', async ($, on) => {
+for (const [why, isAnswered, wakes] of [
+    ['a second one left open wakes it again', false, 2],
+    ['its answer closes the second', true, 1],
+] as const)
+    test(`a wing’s own lines are booked: ${why}`, async ($, on) => {
+        const w = parkedWorld(on, [ofWing], {
+            card: ENDED,
+            name: WING_1.display,
+            store: said(C, 'waiting on 🪽 wing 1', 0),
+        });
+        await start($);
+        await ping($, '[done] FRM-1 landed', codie().name);
+        expect(w.queued.length).toBe(1);
+        await pass($, w, 11);
+        w.spoke(C, EVEN + 11 * MIN);
+        await ping($, '[done] FRM-2 landed', codie().name);
+        await pass($, w, 1);
+        if (isAnswered) await send($, codie().name, 'heard');
+        await pass($, w, 12);
+        expect(w.wakes().length).toBe(wakes);
+    });
+
+test('a wing’s send closes no ping of main’s', async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        card: ENDED,
+        store: {
+            ...OPEN_DONE,
+            'quiet-sent:clio-wing-1': { [C]: EVEN - 8 * MIN },
+        },
+    });
+    expect((await parked($, w, 2)).length).toBe(1);
+});
+
+test('main reads a dead wing’s books for its member', async ($, on) => {
     const w = parkedWorld(on, [ofWing], {
         card: ENDED,
-        name: WING_1.display,
-        store: said(C, 'waiting on 🪽 wing 1', 0),
+        store: {
+            ...said(C, 'waiting on 🪽 wing 1'),
+            'quiet-tagged:clio-wing-1': tagged(C, 'done')['quiet-tagged'],
+        },
     });
-    await start($);
-    await ping($, '[done] FRM-1 landed', codie().name);
-    expect(w.queued.length).toBe(1);
-    await pass($, w, 11);
-    const woken = w.wakes().length;
-    await ping($, '[done] FRM-2 landed', codie().name);
-    await send($, codie().name, 'heard');
-    await pass($, w, 12);
-    expect([woken, w.wakes().length]).toEqual([1, 1]);
+    expect((await parked($, w, 2)).length).toBe(1);
+});
+
+test('a designer’s open [done] wakes its clio', async ($, on) => {
+    const w = parkedWorld(on, [codie({ record: { role: 'designer' } })], {
+        card: ENDED,
+        store: OPEN_DONE,
+    });
+    expect((await parked($, w, 2)).length).toBe(1);
 });
 
 /* FRM-698 exit 3: a reviewer's [done] is its clean, never unanswered */
@@ -204,6 +251,51 @@ for (const [end, over, record] of [
         );
     });
 
+for (const [why, act, wakes] of [
+    ['made', 'create', 1],
+    ['linked to it', 'link codie', 1],
+    ['ticked', 'step', 0],
+] as const)
+    test(`a card ${why} after its reviewer’s [done]: ${wakes} builder wake`, async ($, on) => {
+        const w = parkedWorld(on, both, {
+            card: {
+                ...FOUR,
+                history: [{ act, at: EVEN - 8 * MIN, current: 0, done: 0 }],
+            },
+            store: SETTLED,
+            tickets: { 'FRM-2': DISPATCHED },
+        });
+        expect((await parked($, w, 2)).length).toBe(wakes);
+    });
+
+test('a settled codie stays so once its reviewer’s session ended', async ($, on) => {
+    const w = parkedWorld(on, [codie()], {
+        card: {
+            ...FOUR,
+            linkedIds: { codie: C, 'sixth-sense': R },
+            members: { codie: codie().name, 'sixth-sense': sixth().name },
+        },
+        store: SETTLED,
+        tickets: { 'FRM-2': DISPATCHED },
+    });
+    expect(await parked($, w, 2, 35)).toEqual([]);
+});
+
+test('an open [ask] on a finished card wakes after the finished wake', async ($, on) => {
+    const w = parkedWorld(on, both, { card: FINISHED, store: SETTLED });
+    const first = await parked($, w, 2);
+    w.spoke(C, EVEN + 3 * MIN);
+    w.store.set('quiet-tagged', {
+        ...SETTLED['quiet-tagged'],
+        [C]: { at: EVEN + 3 * MIN, tag: 'ask' },
+    });
+    await pass($, w, 12);
+    expect([first.length, w.wakes().slice(1)]).toEqual([
+        1,
+        [builder('sent its [ask] 11 min ago, unanswered')],
+    ]);
+});
+
 test('a settled codie’s own open [ask] still wakes', async ($, on) => {
     const w = parkedWorld(on, both, {
         card: FOUR,
@@ -281,6 +373,16 @@ for (const [why, text] of [
         ]);
     });
 
+test('a second dialog with no read between is a new wake, by its stamp', async ($, on) => {
+    const w = parkedWorld(on, [stuck], { ...asks, card: ENDED });
+    await parked($, w, 3);
+    w.reads(stuck, onDialog(EVEN + 3.5 * MIN));
+    await pass($, w, 2);
+    const early = w.wakes().length;
+    await pass($, w, 2, 10);
+    expect([early, w.wakes().length]).toEqual([1, 2]);
+});
+
 for (const [why, over] of [
     ['an idle member', {}],
     ['a member at work', WORKING],
@@ -291,14 +393,6 @@ for (const [why, over] of [
         expect([await parked($, w, 3, 10), alarmLog(w)]).toEqual([[], []]);
     });
 
-const wingRow = (over: object) => ({
-    name: WING_1.display,
-    pid: 90,
-    sessionId: WING_1.sessionId,
-    status: 'idle',
-    ...over,
-});
-const live = { threads: [{ ...WING_1, pid: 90 }] };
 for (const [who, members, world, wakes] of [
     [
         'main wakes for a wing',
@@ -322,7 +416,7 @@ for (const [who, members, world, wakes] of [
     test(`on a dialog: ${who}`, async ($, on) => {
         const w = parkedWorld(on, [...members], {
             card: ENDED,
-            ...live,
+            ...liveWing,
             sessions: [...world.sessions],
         });
         const [text = ''] = await parked($, w, 3, 10);

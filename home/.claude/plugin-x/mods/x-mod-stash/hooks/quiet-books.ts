@@ -27,8 +27,11 @@ import {
     registry,
 } from './roster.ts';
 import {
+    MAIN_OWNER,
     currentId,
+    ownerOf,
     procNow,
+    selfRecord,
     successorOf,
     threadRecords,
 } from './session-identity.ts';
@@ -53,6 +56,9 @@ const QUIET_SILENT_WAITS = 3;
 // when clio last sent each member a line, by session id: past its [done], that re-arms its silent alarm
 export const QUIET_SENT = 'quiet-sent';
 const QUIET_TAGGED = 'quiet-tagged';
+// each clio books her own lines, main under the bare key, a wing under its label, so no two threads write one map
+export const bookKey = (key: string, owner: string) =>
+    !owner || owner === MAIN_OWNER ? key : `${key}:${owner}`;
 export const QUIET_PARK_MS = 7 * 24 * 60 * 60_000;
 // a transcript's last write in epoch seconds, by its session id under any project folder
 // a ping's reply ends a moment before its last transcript write
@@ -122,17 +128,19 @@ export async function quietLogAll($: EngineInterface, lines: QuietLogLine[]) {
 export async function quietKeepTagged(
     $: EngineInterface,
     lines: Pick<QuietLogLine, 'at' | 'sid' | 'tag'>[],
+    owner = MAIN_OWNER,
 ) {
+    const key = bookKey(QUIET_TAGGED, owner);
     const tagged = lines.filter(
         (l) => l.sid && QUIET_KINDS.some((k) => k.kind === l.tag),
     );
     const now = tagged[0]?.at;
     if (now === undefined) return;
-    const was = ((await $.store.get(QUIET_TAGGED)) ?? {}) as Record<
+    const was = ((await $.store.get(key)) ?? {}) as Record<
         string,
         { at: number; tag: string }
     >;
-    await $.store.set(QUIET_TAGGED, {
+    await $.store.set(key, {
         ...Object.fromEntries(
             Object.entries(was).filter(([, l]) => now - l.at < QUIET_PARK_MS),
         ),
@@ -327,9 +335,11 @@ async function quietDoneAt($: EngineInterface, sid: string, now: number) {
         ? last.at
         : undefined;
 }
-// the books of a clio's pings: `last`, a member's newest tagged line to her, a week back at most; `open`, the same while no
-// send of hers came after it; `isSettled`, a codie whose lane's reviewer sent its [done], that card's work done (FRM-698, dima's
-// a): until its clio sends it any line, it is dispatched again, or another open card names it
+// the books of a clio's pings, hers and those of the clio a member's record names, dead or not: `open`, a member's newest tagged
+// line, a week back at most, while no send came after it; `settledAt`, the [done] of a codie's reviewer, its card's work done
+// (FRM-698, dima's a): until its clio sends it any line, it is dispatched again, or another card names it
+type Line = { at: number; tag: string };
+type Book = { sends: Record<string, unknown>; tagged: Record<string, unknown> };
 export async function quietBooksOf(
     $: EngineInterface,
     now: number,
@@ -340,19 +350,42 @@ export async function quietBooksOf(
             string,
             unknown
         >;
-    const tagged = await read(QUIET_TAGGED);
-    const sends = await read(QUIET_SENT);
     const threads = await threadRecords($);
-    const last = (sid: string) => {
-        const line = tagged[sid] as { at: number; tag: string } | undefined;
-        return line && now - line.at <= QUIET_PARK_MS ? line : undefined;
-    };
-    const sentAt = (sid: string) => Number(sends[sid] ?? 0);
+    const mine = ownerOf(await selfRecord($)) || MAIN_OWNER;
+    const owners = new Set([
+        mine,
+        ...threads.map((t) => t.coordinator || mine),
+    ]);
+    const books = new Map<string, Book>();
+    for (const owner of owners)
+        books.set(owner, {
+            sends: await read(bookKey(QUIET_SENT, owner)),
+            tagged: await read(bookKey(QUIET_TAGGED, owner)),
+        });
+    const recordOf = (sid: string) => threads.find((t) => t.sessionId === sid);
+    const booksOf = (sid: string) =>
+        [...new Set([mine, recordOf(sid)?.coordinator || mine])].flatMap(
+            (owner) => books.get(owner) ?? [],
+        );
+    const last = (sid: string) =>
+        booksOf(sid)
+            .flatMap(({ tagged }) => (tagged[sid] as Line | undefined) ?? [])
+            .filter((line) => now - line.at <= QUIET_PARK_MS)
+            .sort((a, b) => b.at - a.at)[0];
+    const sentAt = (sid: string) =>
+        Math.max(...booksOf(sid).map(({ sends }) => Number(sends[sid] ?? 0)));
     return {
-        isSettled: (lane: StashLane, codie: string, reviewer?: string) => {
+        open: (sid: string) => {
+            const line = last(sid);
+            return line && sentAt(sid) <= line.at ? line : undefined;
+        },
+        settledAt: (lane: StashLane, codie: string, reviewer?: string) => {
             const done = reviewer ? last(reviewer) : undefined;
-            if (done?.tag !== 'done') return false;
-            const record = threads.find((t) => t.sessionId === codie);
+            if (done?.tag !== 'done') return undefined;
+            // the card named this codie after the [done]: the [done] was another card's
+            const named = lane.history.findLast(
+                (h) => h.act === 'create' || h.act === 'link codie',
+            )?.at;
             const names = [codie, lane.members.codie];
             const isElsewhere = lanes.some(
                 (l) =>
@@ -363,20 +396,16 @@ export async function quietBooksOf(
                         (x) => x && names.includes(x),
                     ),
             );
-            return (
-                !isElsewhere &&
+            return !isElsewhere &&
+                (named ?? 0) <= done.at &&
                 sentAt(codie) <= done.at &&
-                (record?.dispatchedAt ?? 0) <= done.at
-            );
-        },
-        last,
-        open: (sid: string) => {
-            const line = last(sid);
-            return line && sentAt(sid) <= line.at ? line : undefined;
+                (recordOf(codie)?.dispatchedAt ?? 0) <= done.at
+                ? done.at
+                : undefined;
         },
     };
 }
-// the live session of a card's role, through a /clear
+// the session of a card's role, through a /clear; one that ended keeps the id its link was given
 export async function laneSid(
     $: EngineInterface,
     rows: Registered[],
@@ -384,12 +413,10 @@ export async function laneSid(
     role: LaneRole,
 ) {
     const name = lane.members[role];
-    const id = lane.linkedIds?.[role];
-    return laneMemberRow(
-        rows,
-        name && (await successorOf($, name)),
-        id && (await successorOf($, id)),
-    )?.base.sid;
+    const linked = lane.linkedIds?.[role];
+    const id = linked && (await successorOf($, linked));
+    const row = laneMemberRow(rows, name && (await successorOf($, name)), id);
+    return row?.base.sid ?? id;
 }
 export const openSteps = (lane: StashLane) =>
     lane.items.slice(lane.current).filter((x) => !x.isDone);
@@ -424,7 +451,7 @@ export async function quietSilentMembers(
             if (!row || row.base.sid === me) continue;
             if (
                 role === 'codie' &&
-                books.isSettled(lane, row.base.sid, reviewer)
+                books.settledAt(lane, row.base.sid, reviewer)
             )
                 continue;
             const spokeAt = await lastSpokeAt($, home, row.base.sid);

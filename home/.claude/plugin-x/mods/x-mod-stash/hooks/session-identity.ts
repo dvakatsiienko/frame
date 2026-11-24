@@ -136,6 +136,14 @@ export const MAIN_ROLE = 'coordinator';
 export const runnerOf = (t: ThreadRecord) => t.roleName ?? t.display ?? '';
 export const WING_ROLE = 'wing';
 export const ADVISER_ROLE = 'adviser';
+export const MAIN_OWNER = 'clio-main';
+// a clio by the label x writes on a record it dispatched or summoned
+export const ownerOf = (t: ThreadRecord | undefined) =>
+    t?.role === MAIN_ROLE
+        ? MAIN_OWNER
+        : t?.role === WING_ROLE
+          ? `clio-wing-${t.wing}`
+          : '';
 
 // a power read (a lane's owner, the glide door, a coordinator's message) reads the record x wrote, never a name; x alone
 // writes the store and x-mod-guard refuses every session's write to it
