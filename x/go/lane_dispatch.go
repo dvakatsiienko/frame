@@ -131,7 +131,7 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	feature := ""
 	for _, id := range args {
 		of := lane
-		if paths, _ := laneSpecSection(mainCheckout(frameRoot()), id); len(paths) > 0 {
+		if paths, _ := ticketSpecs(id); len(paths) > 0 {
 			of = filepath.Base(filepath.Dir(paths[0]))
 		}
 		if feature != "" && of != feature {
@@ -172,7 +172,7 @@ func sealChecks(plan *dispatchPlan) error {
 		if ticket.rerun || strings.HasPrefix(ticket.body, "lane: main") {
 			continue
 		}
-		paths, section := laneSpecSection(frame, ticket.ID)
+		paths, section := ticketSpecs(ticket.ID)
 		if why := unsealed(ticket.ID, ticket.body, section); why != "" {
 			refused, first = append(refused, why), cmp.Or(first, ticket.ID)
 			continue
@@ -204,6 +204,26 @@ func sealChecks(plan *dispatchPlan) error {
 			Next: "x brief preflight " + first}
 	}
 	return nil
+}
+
+// ticketSpecs looks for a ticket's spec section where a lane's spec may live: frame, then every checkout under ~/projects (a bytes
+// chunk's spec sits in bytes, and a ticket's repo: line is not always one a reader finds, so none is read); paths names every spec
+// holding one, section is the first found
+func ticketSpecs(id string) (paths []string, section string) {
+	roots := []string{mainCheckout(frameRoot())}
+	userHome, _ := os.UserHomeDir()
+	checkouts, _ := filepath.Glob(filepath.Join(userHome, "projects", "*"))
+	roots = append(roots, checkouts...)
+	seen := map[string]bool{}
+	for _, root := range roots {
+		if seen[root] {
+			continue
+		}
+		seen[root] = true
+		found, text := laneSpecSection(root, id)
+		paths, section = append(paths, found...), cmp.Or(section, text)
+	}
+	return paths, section
 }
 
 // how a ticket's spec section fails to seal its text, "" when it seals it

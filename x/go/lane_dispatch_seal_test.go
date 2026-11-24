@@ -155,3 +155,28 @@ func TestDispatchSaysPlainlyWhenLinearIsUnreachable(t *testing.T) {
 		t.Fatalf("exit %d, want linear's own words and no write:\n%s", got.code, got.stdout)
 	}
 }
+
+// FRM-700 review: a bytes chunk's spec sits in bytes' .scratch, which frame's search never read
+func TestDispatchFindsASpecInAnotherCheckoutUnderProjects(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ name, above string }{
+		{"the ticket names no repo", dispatchAbove},
+		{"a repo: bytes line", "lane: side\nrepo: bytes\n\n## 🎯 done test\n\ngiven a ticket, when it runs, then it holds\n\n"},
+		{"a repo line a bullet and a clause hide", "lane: side\n\n* repo: bytes, after the engine chunk\n\n## 🎯 done test\n\ngiven a ticket, when it runs, then it holds\n\n"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			frame, _ := frameAtBase(t)
+			home := t.TempDir()
+			body := signedBody(c.above, "", c.above) + "\n⸻ 🪪 stamp — please keep 🙏"
+			write(t, filepath.Join(home, "projects/bytes/.scratch/speak/spec.md"), "# speak\n\n## FRM-1 — the chunk\n\n"+sealedSection(wishOf("FRM-1", body)))
+			server := dispatchServer(t, dispatchState{body: body, state: "Todo", labels: []string{"agent", "signed"}})
+
+			envelope, got := runLinearUnsealed(t, server, []string{"HOME=" + home, "X_FRAME_ROOT=" + frame}, append([]string{"lane", "dispatch", "FRM-1"}, sealLane...)...)
+
+			if plan := jsonOf(envelope["plan"]); got.code != 4 || !strings.Contains(plan, "lanes/speak/issues/") {
+				t.Fatalf("exit %d, want 4 naming the bytes spec's feature as the slices dir:\n%s", got.code, got.stdout)
+			}
+		})
+	}
+}
