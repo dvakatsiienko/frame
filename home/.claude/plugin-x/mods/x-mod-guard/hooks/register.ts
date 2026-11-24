@@ -31,7 +31,14 @@ import {
 } from './rules/raw-merge.ts';
 import { rewrite } from './rules/rewrite.ts';
 import { seatMove } from './rules/seat-move.ts';
-import { message, refusals, removedTrees, tmpDirs } from './rules.ts';
+import {
+    branchDeletePlan,
+    branchKey,
+    message,
+    refusals,
+    removedTrees,
+    tmpDirs,
+} from './rules.ts';
 import {
     type Tick,
     guardedOf,
@@ -277,6 +284,27 @@ async function isCleanTree($: EngineInterface, tree: string) {
     return !!orphans && orphans.exitCode === 0 && orphans.stdout.trim() === '';
 }
 
+// a local branch whose exact ref exists and whose every commit is on main by content: `git cherry` over the full ref names (a
+// tag or `heads/x` can shadow a short one) exits 0, is not cut short and prints no `+` line. A lookup that fails, times out, or
+// prints more than the read holds counts as not merged, so the delete asks
+async function isMergedBranch($: EngineInterface, dir: string, branch: string) {
+    const ref = `refs/heads/${branch}`;
+    // for-each-ref matches names exactly, where a case-insensitive disk would resolve `MAIN` to `main`
+    const named = await $.process
+        .run(['git', '-C', dir, 'for-each-ref', '--format=%(refname)', ref])
+        .catch(() => null);
+    if (!named?.stdout.split('\n').includes(ref)) return false;
+    const cherry = await $.process
+        .run(['git', '-C', dir, 'cherry', 'refs/heads/main', ref])
+        .catch(() => null);
+    return (
+        !!cherry &&
+        cherry.exitCode === 0 &&
+        !cherry.isStdoutTruncated &&
+        !cherry.stdout.split('\n').some((line) => line.startsWith('+'))
+    );
+}
+
 // a job-tmp dir whose real path, or whose repo's git dir, lies outside the real job tmp: a symlink at frame, a worktree
 // of frame. A dir not yet made is judged by its nearest ancestor; a lookup that fails counts as outside
 async function isTmpEscape($: EngineInterface, dir: string, jobDir: string) {
@@ -330,6 +358,12 @@ async function lookUp(
     const cleanTrees = new Set<string>();
     for (const tree of removedTrees(command, cwd, ctx))
         if (await isCleanTree($, tree)) cleanTrees.add(tree);
+    const mergedBranches = new Set<string>();
+    const plan = branchDeletePlan(command, cwd);
+    if (plan)
+        for (const branch of plan.branches)
+            if (await isMergedBranch($, plan.dir, branch))
+                mergedBranches.add(branchKey(plan.dir, branch));
     const helpless = new Set<string>();
     for (const path of helpScripts(command, cwd, ctx)) {
         const source = await $.fs.read(path).catch(() => undefined);
@@ -350,6 +384,7 @@ async function lookUp(
         herdrSafe: await herdrSafeOf($, command, cwd).catch(
             () => new Set<string>(),
         ),
+        mergedBranches,
         unsafeTmp,
     };
 }

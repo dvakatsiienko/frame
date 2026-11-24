@@ -28,6 +28,8 @@ export type Context = {
     helped?: Set<string>;
     // the herdr closes (herdr-close.ts's herdrCloseKey) whose terminals herdr named, none of them a live seat
     herdrSafe?: Set<string>;
+    // the branches (rules.ts's branchKey) looked up and found on main by content: `git cherry main <branch>` exits 0, no `+` line
+    mergedBranches?: Set<string>;
 };
 // wrappers: the peeled heads (`sudo`, `env`); writes: the targets of its `>` redirects; reads: of its `<`
 // envArgs: the words env and exec took for themselves (`-i`, `-u NAME`, `-c`); envSplit: env -S's string; bodies: its heredocs

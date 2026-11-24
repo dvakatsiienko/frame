@@ -256,6 +256,66 @@ export function removedTrees(command: string, cwd: string, ctx: Context = {}) {
             .filter((t) => SCRATCH_TREE.test(t));
     });
 }
+// a plain local branch name: letters, digits, `.`, `_`, `/`, `-`, led by a letter or digit; main and master are never one
+const PLAIN_BRANCH = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/;
+// compared in lower case: on a case-insensitive disk `MAIN` is the trunk
+const TRUNKS = new Set(['main', 'master']);
+// the only flags a delete with no tick may carry: `-d`, `-D`, `-f` and their long spellings
+const DELETE_FLAGS = /^(?:-[dDf]+|--delete|--force)$/;
+// a `-C` dir is spelled out in full, so the lookup and the delete run in the same repo
+const ABSOLUTE_DIR = /^\/[A-Za-z0-9._/-]+$/;
+// the key a looked-up branch sits under in `ctx.mergedBranches`
+export const branchKey = (dir: string, branch: string) => `${dir}\0${branch}`;
+// the one line a branch delete may run on with no tick: nothing but `git [-C /abs/dir] branch <delete flags> <plain names>`, in
+// the session's own dir or a spelled-out one (the walker splits a substitution into a second segment, so one segment is one
+// plain command; `env` or an assignment ahead of `git` leaves a word other than `branch` where `branch` must stand). A chain, a
+// pipe, a subshell, a `cd`, an assignment, an `env`, a `GIT_DIR` or a `--git-dir`, a substitution, a name a shell expands and a trunk name are not it, so a lookup made for this line is the delete
+// that runs: nothing earlier on the line can move the dir or write the ref. The lookup and the allow both read this
+export function branchDeletePlan(command: string, cwd: string) {
+    const [seg, ...more] = parse(command).segments;
+    if (!seg || more.length || seg.sep !== ';') return;
+    const text = seg.words.map((w) => w.text);
+    if (text[0] !== 'git') return;
+    let at = 1;
+    let dir = cwd;
+    if (text[at] === '-C') {
+        dir = text[at + 1] ?? '';
+        if (!ABSOLUTE_DIR.test(dir)) return;
+        at += 2;
+    }
+    if (text[at] !== 'branch') return;
+    const rest = text.slice(at + 1);
+    const flags = rest.filter(isFlag);
+    const branches = rest.filter((w) => !isFlag(w));
+    if (
+        !flags.length ||
+        !flags.every((f) => DELETE_FLAGS.test(f)) ||
+        !branches.length ||
+        !branches.every(
+            (b) => PLAIN_BRANCH.test(b) && !TRUNKS.has(b.toLowerCase()),
+        )
+    )
+        return;
+    return { branches, dir };
+}
+// a branch delete whose every branch the caller found on main by content (`git cherry` printing no `+`), on a line that is
+// nothing else
+function isMergedDelete(
+    command: string,
+    cwd: string,
+    c: Command,
+    r: Refusal,
+    ctx: Context,
+) {
+    if (c.name !== 'git' || r.rule !== 'git-rewrite') return false;
+    const plan = branchDeletePlan(command, cwd);
+    return (
+        !!plan &&
+        plan.branches.every((b) =>
+            ctx.mergedBranches?.has(branchKey(plan.dir, b)),
+        )
+    );
+}
 function isCleanup(c: Command, r: Refusal, ctx: Context) {
     if (!ctx.isClio || c.name !== 'git' || r.rule !== 'git-rewrite')
         return false;
@@ -321,7 +381,12 @@ export function refusals(
             rest = stripped;
             found = isSame ? undefined : judge(rest);
         }
-        if (found && !isScratchGit(c, found, ctx) && !isCleanup(c, found, ctx))
+        if (
+            found &&
+            !isScratchGit(c, found, ctx) &&
+            !isCleanup(c, found, ctx) &&
+            !isMergedDelete(command, cwd, c, found, ctx)
+        )
             out.push(found);
         const hooks = hooksBypass(c);
         if (hooks) out.push(hooks);
