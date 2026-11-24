@@ -31,7 +31,7 @@ load `x:guide-code` and `x:guide-typescript` before the first edit.
 
 ## the rules
 
-- x-mod-guard refuses only the destructive floor (its `FTR.md`): a new refusal needs a real incident, dima's signed word and a kill date; anything else lands as a hint, a line the call runs with (FRM-581, dima's o34: «floor, and keep other functionality»)
+- x-mod-guard refuses only the destructive floor (its `FTR.md`): a new refusal needs a real incident, dima's word and a kill date; anything else lands as a hint, a line the call runs with (FRM-581, dima's o34: «floor, and keep other functionality»)
 - a new injecting hook in another mod ships as a hint first: mods load from main, so a commit reaches every session at its next turn end
 - no guard locks dima out: a refusal ships with his tick through it, and `operator-override all` turns the floor to warnings, plain rm and the brake aside, test-proven from its first commit
 - a parser's test row copies a real transcript line: a habit, nothing reds it

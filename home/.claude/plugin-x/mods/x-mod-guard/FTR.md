@@ -11,7 +11,7 @@
 - decision: it refuses only work lost for good; a refusal never stops the session: the agent gets its door and carries on
 - 🧭 his words always override it (his 16:01: «my words always override the guard»): today one orbit tick runs a refused command once and `operator override all|prs|off` lifts the floor; under his own `prs` override, by typed word or band press, merge-auto's brake is a warning line (FRM-631, his 16:43: «i want my operator override to override the brake»), while a shift's grant and `all` alone still stop at it, and the guard's own raw-merge brake still stops
 - decision: it never guards a process (a sign, a merge, proof of his word) and never fences clio's own slips; its one carried tick is the seat switch's, handed to x with no refusal of its own (FRM-596, dima, 2026-11-23 15:12)
-- decision: a new refusal needs a real incident, his signed word and a kill date; a hint is free
+- decision: a new refusal needs a real incident, his word and a kill date; a hint is free
 
 ## every Bash call
 
