@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T11:46:00Z'
-updated_date: '2026-11-24T13:18:00Z'
+updated_date: '2026-11-24T13:33:00Z'
 labels:
   - s
   - clio-wing-1
@@ -276,4 +276,51 @@ PK-467:W125 (2026-11-24 15:02, dima): so the problem should be fixed earlier - a
 PK-467:W126 (2026-11-24 15:02, dima): [the folding ask] not sure yet.
 
 15:18: W107 and W108 heard «related» where he said «relay»: W107 reads «I asked to change how relay messages are working.», W108 «When a message is a relay, I want a special representation of those messages, inbound and outbound, but that's unheard.» his wish itself: 23 Nov, on FRM-580.
+
+PK-467:W127 (2026-11-24 15:15, dima): [Do you propose to replace our vibe words with some more verbose descriptions or what? glide → the lane's progress card] Do you propose to get rid of Glide or what? ❓
+
+PK-467:W128 (2026-11-24 15:15, dima): If yes then no, it is a bad idea.
+
+PK-467:W129 (2026-11-24 15:15, dima): I specifically invented vibe words to serve as shortcuts for more verbal stuff.
+
+PK-467:W130 (2026-11-24 15:15, dima): I know what Glide is.
+
+PK-467:W131 (2026-11-24 15:15, dima): It is my vibe word.
+
+PK-467:W132 (2026-11-24 15:15, dima): I invented it specifically to have a short and clear name for stuff.
+
+PK-467:W133 (2026-11-24 15:15, dima): All vibe words are useful and they are not allowed to be replaced with longer lines or deleted.
+
+PK-467:W134 (2026-11-24 15:27, dima): [parking is the cheapest move i have.] You are radically wrong here because, by parking your stuff that you can solve in a few (two) calls, maybe more (two) calls, but still, by parking and postponing, you create a pile of tails that I then need to force you to solve.
+
+PK-467:W135 (2026-11-24 15:27, dima): It costs me a lot of effort and time.
+
+PK-467:W136 (2026-11-24 15:27, dima): I often spend 1 or 2 hours to solve a pile of tails that you create.
+
+PK-467:W137 (2026-11-24 15:27, dima): You are wrong on the cheaper mode here.
+
+PK-467:W138 (2026-11-24 15:27, dima): You instead make overflow more expensive because you create work for me: the work that you intended to solve yourself instead.
+
+PK-467:W139 (2026-11-24 15:27, dima): [my checks reward the parking.] then they should instead encourage parking in right place when needed, not reward.
+
+PK-467:W140 (2026-11-24 15:27, dima): and reward solving instead.
+
+PK-467:W141 (2026-11-24 15:27, dima): Yes you close yourself, prefer batches, and solve mechanical stuff yourself when you can.
+
+PK-467:W142 (2026-11-24 15:27, dima): For everything else you raise Orbit and ask me if you need to close something but you need me for that.
+
+PK-467:W143 (2026-11-24 15:19, dima): vibe*
+
+PK-467:W144 (2026-11-24 15:20, dima): go, let's see how output will be after updates.
+
+PK-467:W145 (2026-11-24 15:20, dima): now what spot 4? ❓
+
+PK-467:W146 (2026-11-24 15:32, dima): For spot 5 I think we already do some attempts to fix it on the mod side.
+
+PK-467:W147 (2026-11-24 15:32, dima): Also I created a ticket to grill on the hang heal solution later because I feel that we are currently doing some back and forth.
+
+PK-467:W148 (2026-11-24 15:32, dima): I'm not sure if it will fix so I plan to create some higher-level solution on this problem.
+
+PK-467:W149 (2026-11-24 15:32, dima): [on the measures lever, his orbit steer] yes but themed. When you tell me about measures I want them to be easy to read, and measures are easier to read when they are themed. For example: positive gains, negative gains, red, green, yellow if not much changed, something like this.
+PK-467:W150 (2026-11-24 15:32, dima): I also want your grade, so it is good or not good for us, and action items also: what to do with it if it is relevant.
 <!-- SECTION:NOTES:END -->
