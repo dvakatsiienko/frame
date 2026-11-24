@@ -73,8 +73,9 @@ export function flywayNudge(check: () => string): string[] {
 
 // the check costs 2.3 s, so a prompt reads the last run's answer and leaves a fresh run going behind it:
 // a red shows one prompt late, and no prompt waits for it
+// one run at a time, 20 s at most: a hung check is told, never read as green, and never piles up
 const LEAVE_A_RUN =
-    'node "$1" --flyway > "$2.$$" 2>/dev/null || echo "🔴 $3 not checked: the last background run failed" >> "$2.$$"; mv "$2.$$" "$2"';
+    'find "$2.lock" -maxdepth 0 -mmin +1 -exec rmdir {} + 2>/dev/null; mkdir "$2.lock" 2>/dev/null || exit 0; timeout 20 node "$1" --flyway > "$2.$$" 2>/dev/null || echo "🔴 $3 not checked: the last background run failed" >> "$2.$$"; mv "$2.$$" "$2"; rmdir "$2.lock"';
 export function lastFlywayCheck(
     file: string,
     own: string,

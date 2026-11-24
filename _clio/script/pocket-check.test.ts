@@ -273,7 +273,7 @@ describe('checkPocket', () => {
 
     test('a clean flyway from any earlier day stays, past the stale check', () => {
         expect(
-            flyway({ updated_date: '2026-01-01 10:00' }, '- [ ] #1 cpu'),
+            flyway({ updated_date: '2026-01-01' }, '- [ ] #1 c — with: dima'),
         ).toBe('');
     });
 
@@ -430,7 +430,7 @@ describe('checkPocket', () => {
         expect(flywayWith(`- [ ] #1 ${'a'.repeat(121)}`)).toContain(
             '#1 is 121 chars',
         );
-        expect(flywayWith(`- [ ] #1 ${'a'.repeat(120)}`)).toBe('');
+        expect(flywayWith(`- [ ] #1 ${'a'.repeat(107)} — with: dima`)).toBe('');
     });
 
     test('an orbit store answers the resolved asks no session holds open', () => {

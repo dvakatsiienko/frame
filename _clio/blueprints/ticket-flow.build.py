@@ -211,7 +211,7 @@ BANDS = [
             ("kinds", 0, 0, "file", "🛼 three kinds of work", "freebie: in place · quick: on main, no pr, signed · side and shift: worktree, pr, sixth sense", "craft-fleet-flow"),
             ("cut", 1, 0, "member", "🔧 codie cuts the spec", "matt's to-tickets after reading the code, so the slices follow real seams", "how-you-work.md · dispatch § 5"),
             ("slices", 2, 0, "file", "📄 the slices", "~/.local/state/x/lanes/<feature>/issues/, never linear; each exit line in one checklist", "how-you-work.md · body.md"),
-            ("build", 3, 0, "member", "🔧 build, test-first", "tdd per ticket, [x] at its commit; his steers land under ## not greenlit", "how-you-work.md"),
+            ("build", 3, 0, "member", "🔧 build, tests last", "a bug: tdd first, [x] at its commit; his steers land under ## not greenlit", "how-you-work.md"),
             ("verify", 4, 0, "member", "🔎 the pr and sixth sense", "one of each review per chunk, the ci review last; sixth sense seals the head, or its round-3 stop goes to clio", "fleet-flow stages 6–7"),
             ("land", 5, 0, "clio", "🔀 land", "clio merges by the pr-flow gate, after wishkeeper's read; a self-edit waits for dima unless his sign pre-approved it", "fleet-flow stage 8"),
             ("w-merge", 5, 1, "clio", "🔀 a self-edit's door", "his sign pre-approved → x lane merge-auto --apply; his typed word → --dima-ok added; the brake is his word each time", "fleet-flow stage 8"),

@@ -146,7 +146,7 @@ export function checkPocket(
             const leave = (ref: string) =>
                 `node script/flyway-done.ts ${id} ${ref.replace(/^#/, '')}`;
             const reword = (n: number) =>
-                `backlog task edit ${id} --remove-ac ${n}, then node script/flyway-done.ts ${id} --add '<line>'`;
+                `backlog task edit ${id} --remove-ac ${n}, then node script/flyway-done.ts ${id} --add '<line>', its «— parked:» day kept`;
             for (const line of lines.filter((l) => !l.done)) {
                 for (const named of line.text.match(POCKET_ID) ?? [])
                     if (!openIds.has(named))
@@ -163,6 +163,10 @@ export function checkPocket(
             // dima, 2026-11-24: a check reds a tail left parked, never only its label
             for (const line of lines.filter((l) => !l.done && isTail(l.text))) {
                 const parked = line.text.match(PARKED)?.[1];
+                if (!parked)
+                    report(
+                        `${line.ref} is a tail with no parked day: node script/flyway-done.ts ${id} --sort stamps it; one that needs dima ends «— with: dima»`,
+                    );
                 if (parked && parked < today)
                     report(
                         `${line.ref} is a tail parked since ${parked}: close it now, then ${leave(line.ref)}`,
