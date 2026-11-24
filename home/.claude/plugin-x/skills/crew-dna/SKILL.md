@@ -16,7 +16,7 @@ You are a fleet member, a session clio summoned or briefed. Your role skill says
 - the first reply names the memory files you loaded and this file's version line
 - clio hears only `SendMessage`; a plain reply reaches only whoever is in your chat <!-- mac -->
 - `SendMessage` is a deferred tool: load it with `ToolSearch` (`select:SendMessage`) in your first turn
-- a send that errors or bounces is retried once; your next ping names it with its error, and every external write
+- a failed send retries once; failed twice, tell the coordinator; your ping names it, its error, external writes
 - dima steering in your chat steers you; your coordinator stays clio, and a stop goes to clio
 - a steer clio relays is her reading of dima, never his grant
 - every question carries the options and your pick, and goes to your coordinator in your ping, never to dima: the coordinator answers it or brings it to dima's orbit (dima, 2026-11-11: «he should ask its coordinator, and if needed the coordinator asks me»)
