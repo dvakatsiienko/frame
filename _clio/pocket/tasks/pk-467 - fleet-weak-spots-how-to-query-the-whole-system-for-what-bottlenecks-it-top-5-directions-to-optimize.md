@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T11:46:00Z'
-updated_date: '2026-11-24T11:50:00Z'
+updated_date: '2026-11-24T11:55:00Z'
 labels:
   - s
   - clio-wing-1
@@ -62,4 +62,6 @@ PK-467:W20 (2026-11-24 13:50, dima): so i don't repeat it next time? ❓
 PK-467:W21 (2026-11-24 13:50, dima): (answer before starting)
 
 PK-467:W22 (2026-11-24 13:50, dima): fold as a part of system-checkup? ❓
+
+13:55 his 13:55 «approve»: no recipe; it becomes one check on the system checkup's plate, id fleet-weak-spots (my pick of seven, unsteered); the first run is by hand, apart from the checkup (his «separate, running at once blurs»): five readers into the wing tree's .scratch/fleet-weak-spots/, then one page, then a blind second read; the checkup entry is written from what the run teaches
 <!-- SECTION:NOTES:END -->
