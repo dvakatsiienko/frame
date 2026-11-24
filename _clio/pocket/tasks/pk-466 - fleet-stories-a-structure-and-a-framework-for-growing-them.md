@@ -4,7 +4,7 @@ title: 'fleet stories: a structure and a framework for growing them'
 status: open
 assignee: []
 created_date: '2026-11-23T16:53:00Z'
-updated_date: '2026-11-23T17:01:00Z'
+updated_date: '2026-11-24T11:26:00Z'
 labels:
   - s
   - clio-wing-1
@@ -24,4 +24,78 @@ dima, 2026-11-23 18:53: create a pocket item for wing 1: reorg fleet stories, cr
 
 <!-- SECTION:NOTES:BEGIN -->
 19:01 his tick (o2, 19:00): cpu-overload → cpu-roast-go-tests, mods-tests-cpu → cpu-roast-mods-tests, done in wing 1's reorg
+
+PK-466:W1 (2026-11-24 13:14, dima): Let's go Fleet Stories and quickly note what I want out of it.
+
+PK-466:W2 (2026-11-24 13:14, dima): We recently started to fold incidents that happen in our flows: the bad ones, the CPU roasting when Codie gets hung for 40 min, for example, and wastes time by staying parked for no reason or something like this.
+
+PK-466:W3 (2026-11-24 13:14, dima): We also have a comms log with communications issues.
+
+PK-466:W4 (2026-11-24 13:14, dima): Currently everything is scattered around and I want to collocate everything similar into one area so all our incidents are folded into a well-organized place that can scale.
+
+PK-466:W5 (2026-11-24 13:14, dima): It is easy to query, read, analyze, and act on because, essentially, I save those incidents for us to process, solve them.
+
+PK-466:W6 (2026-11-24 13:14, dima): If we don't save those stories, they just happen, continue happening, and are not getting solved.
+
+PK-466:W7 (2026-11-24 13:14, dima): I want a good structure for Fleet Stories.
+
+PK-466:W8 (2026-11-24 13:14, dima): I also spotted that file names and story names are messy.
+
+PK-466:W9 (2026-11-24 13:14, dima): I want good clear file names and story names.
+
+PK-466:W10 (2026-11-24 13:14, dima): You should have a proposal pending to rename a few of the CPU roasting stories.
+
+PK-466:W11 (2026-11-24 13:14, dima): What I want from you now: list me all areas that are currently getting their stories, like CPU roasting, comms log, and other stuff, what we already load, what we already folded there? ❓
+
+PK-466:W12 (2026-11-24 13:14, dima): Tell where all of that stuff is parked on the FS.
+
+PK-466:W13 (2026-11-24 13:14, dima): I will pick with Cursor and propose a good structure for how to make them well organized.
+
+PK-466:W14 (2026-11-24 13:14, dima): Note: no big builds now.
+
+PK-466:W15 (2026-11-24 13:14, dima): I just want good organization and easy querying with DuckDB maybe or just by reads, and for this shape to be scalable.
+
+PK-466:W16 (2026-11-24 13:14, dima): so it can grow.
+
+PK-466:W17 (2026-11-24 13:14, dima): Optionally add agents.md with the naming convention asks.
+
+PK-466:W18 (2026-11-24 13:14, dima): I will read a file after you print me the path and tell you what renames I want.
+
+PK-466:W19 (2026-11-24 13:14, dima): Based on their names you should update agents.md with the naming convention I want for these files.
+
+PK-466:W20 (2026-11-24 13:24, dima): [cpu-overload] can you organize it? ❓
+
+PK-466:W21 (2026-11-24 13:24, dima): [cpu-overload] i think three full researches can be distilled into the verdict we picked? ❓
+
+PK-466:W22 (2026-11-24 13:24, dima): [cpu-overload] it is currently being fixed on mods lane or already applied (consult with main).
+
+PK-466:W23 (2026-11-24 13:24, dima): [cpu-overload] name «cpu-overload» → «cpu-overload-ftonze-the-fleet»
+
+PK-466:W24 (2026-11-24 13:24, dima): [guard-lockout] «guard-lockout» → «guard-locksout-fleet»
+
+PK-466:W25 (2026-11-24 13:24, dima): [herdr-band-drift] remind what was the story? ❓
+
+PK-466:W26 (2026-11-24 13:24, dima): [lane-member-idle] «lane-member-idle» → «lane-member-idles-wastes-time»
+
+PK-466:W27 (2026-11-24 13:24, dima): [mods-tests-cpu] i already proposed rename? ❓
+
+PK-466:W28 (2026-11-24 13:24, dima): [x-live-on-commit] remind what is it? ❓
+
+PK-466:W29 (2026-11-24 13:24, dima): [zoo-base] «herdr-zoo-layout-poor-pick» or something like this.
+
+PK-466:W30 (2026-11-24 13:25, dima): I think the structure is not so bad.
+
+PK-466:W31 (2026-11-24 13:25, dima): I just want clearer names for files because I can forget what they do and that's why I want clearer file names on the top level.
+
+PK-466:W32 (2026-11-24 13:25, dima): When I open the FS in Cursor, for the files I see, I know what they are about.
+
+PK-466:W33 (2026-11-24 13:25, dima): As for comms log, if you can propose a better clearer way to store them currently, then propose.
+
+PK-466:W34 (2026-11-24 13:25, dima): From what I remember previously we agreed to keep it like this because I asked to make comms log entries queryable with DuckDB so they probably duped slightly because of that.
+
+PK-466:W35 (2026-11-24 13:25, dima): Overall the structure is not so bad in my view because everything is collocated in Fleet Stories so maybe it is not so bad.
+
+PK-466:W36 (2026-11-24 13:25, dima): Either way propose your own ideas for how to improve the structure.
+
+PK-466:W37 (2026-11-24 13:25, dima): If you agree with my naming fixes, tell me how to name other stuff that I forgot what it does.
 <!-- SECTION:NOTES:END -->
