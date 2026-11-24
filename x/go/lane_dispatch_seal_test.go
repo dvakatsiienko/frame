@@ -1,9 +1,11 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 // FRM-700: a lane starts only from a chunk whose spec section is sealed on the ticket's current text
@@ -139,8 +141,8 @@ func TestDispatchWarnsOfAChunkWhoseSpecSitsInTwoFiles(t *testing.T) {
 
 	envelope, got := runDispatchUnsealed(t, server, frame, append([]string{"FRM-1"}, sealLane...)...)
 
-	if plan := jsonOf(envelope["plan"]); got.code != 4 || !strings.Contains(plan, "one spec binds a ticket") {
-		t.Fatalf("exit %d, want 4 with the two-spec finding as a warning:\n%s", got.code, got.stdout)
+	if plan := jsonOf(envelope["plan"]); got.code != 4 || !strings.Contains(plan, "2 spec sections") {
+		t.Fatalf("exit %d, want 4 with the two sections as a warning:\n%s", got.code, got.stdout)
 	}
 }
 
@@ -178,5 +180,62 @@ func TestDispatchFindsASpecInAnotherCheckoutUnderProjects(t *testing.T) {
 				t.Fatalf("exit %d, want 4 naming the bytes spec's feature as the slices dir:\n%s", got.code, got.stdout)
 			}
 		})
+	}
+}
+
+// FRM-700 review: a re-sign writes a newer section beside the old one; every section is read, the newest binds
+func TestDispatchReadsEverySectionOfATicketAndTheNewestBinds(t *testing.T) {
+	t.Parallel()
+	good, stale := sealedSection(wishOf("FRM-1", dispatchAbove)), sealedSection("wish: FRM-1 · body 00000000")
+	noHash := sealedSection("wish: FRM-1")
+	for _, c := range []struct {
+		name, older, newer string
+		refused            string
+	}{
+		{"an older match and a newer other hash", good, stale, ""},
+		{"a newer match and an older other hash", stale, good, ""},
+		{"an older match never passes a newer section with no hash", good, noHash, "no seal hash"},
+		{"no section matches", stale, sealedSection("wish: FRM-1 · body 11111111"), "moved since the seal"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			frame, _ := frameAtBase(t)
+			for i, section := range []string{c.older, c.newer} {
+				path := filepath.Join(frame, ".scratch", []string{"older", "newer"}[i], "spec.md")
+				write(t, path, "# spec\n\n## FRM-1 — the chunk\n\n"+section)
+				when := time.Now().Add(time.Duration(i-2) * time.Hour)
+				if err := os.Chtimes(path, when, when); err != nil {
+					t.Fatal(err)
+				}
+			}
+			server := dispatchServer(t, undispatched)
+
+			envelope, got := runDispatchUnsealed(t, server, frame, append([]string{"FRM-1"}, sealLane...)...)
+
+			text := got.stdout + jsonOf(envelope["error"])
+			if c.refused == "" {
+				plan := jsonOf(envelope["plan"])
+				if got.code != 4 || !strings.Contains(plan, "2 spec sections") {
+					t.Fatalf("exit %d, want 4 with the two sections as a warning:\n%s", got.code, got.stdout)
+				}
+				return
+			}
+			if got.code != 1 || !strings.Contains(text, c.refused) {
+				t.Fatalf("exit %d, want a refusal naming %q:\n%s", got.code, c.refused, got.stdout)
+			}
+		})
+	}
+}
+
+func TestDispatchReadsASectionHeadingRepeatedInOneSpec(t *testing.T) {
+	t.Parallel()
+	frame, _ := frameAtBase(t)
+	write(t, filepath.Join(frame, ".scratch/feat/spec.md"), "# spec\n\n## FRM-1 — the chunk\n\n"+sealedSection(wishOf("FRM-1", dispatchAbove))+"\n## FRM-1 — the chunk again\n\n"+sealedSection("wish: FRM-1"))
+	server := dispatchServer(t, undispatched)
+
+	envelope, got := runDispatchUnsealed(t, server, frame, append([]string{"FRM-1"}, sealLane...)...)
+
+	if text := got.stdout + jsonOf(envelope["error"]); got.code != 1 || !strings.Contains(text, "no seal hash") {
+		t.Fatalf("exit %d, want the later section's missing hash refused:\n%s", got.code, got.stdout)
 	}
 }

@@ -242,43 +242,58 @@ func sealDrift(section, ticket string) (line int, recorded, signed string) {
 // the section of a lane spec, `.scratch/<feature>/spec.md`, headed by the ticket's id, blank lines standing in
 // for the file above it so a finding's line is the spec's own; paths names every spec holding one
 func laneSpecSection(repo, id string) (paths []string, section string) {
+	hits := specSections(repo, id)
+	for _, hit := range hits {
+		if !slices.Contains(paths, hit.path) {
+			paths = append(paths, hit.path)
+		}
+	}
+	if len(hits) > 0 {
+		section = hits[0].section
+	}
+	return paths, section
+}
+
+// one section of a spec, and when its file last changed
+type specHit struct {
+	path, section string
+	modified      int64
+}
+
+// specSections is every section a repo's lane specs hold for id, in file order: an h2 of the id wins over an h1 in one file, and a
+// repeated heading counts again; a worktree reads the main checkout's specs beside its own, since .scratch/ is gitignored
+func specSections(repo, id string) []specHit {
 	specs, _ := filepath.Glob(filepath.Join(repo, ".scratch", "*", "spec.md"))
-	// .scratch/ is gitignored, so a linked worktree's own holds no seal: the main checkout's specs are read beside
-	// it, and a stale copy of the same section in both refuses as two specs
+	// a stale copy of the same section in both refuses as two specs
 	if common, linked, err := worktreeOf(repo); err == nil && linked {
 		main, _ := filepath.Glob(filepath.Join(filepath.Dir(common), ".scratch", "*", "spec.md"))
 		specs = append(specs, main...)
 	}
-	// an h2 of the id wins: a spec titled «# FRM-N — …» keeps its chunk under «## FRM-N …»
 	h2, h1 := specHeadAt("##", id), specHeadAt("#", id)
+	var hits []specHit
 	for _, spec := range specs {
 		raw, err := os.ReadFile(spec)
 		if err != nil {
 			continue
 		}
 		text := string(raw)
-		at := h2.FindStringIndex(text)
-		if at == nil {
-			at = h1.FindStringIndex(text)
+		heads, next := h2.FindAllStringIndex(text, -1), nextH1OrH2
+		if heads == nil {
+			heads, next = h1.FindAllStringIndex(text, -1), nextH1
 		}
-		if at == nil {
-			continue
+		var modified int64
+		if info, err := os.Stat(spec); err == nil {
+			modified = info.ModTime().UnixNano()
 		}
-		paths = append(paths, spec)
-		if section != "" {
-			continue
+		for _, at := range heads {
+			rest := text[at[1]:]
+			if end := next.FindStringIndex(rest); end != nil {
+				rest = rest[:end[0]]
+			}
+			hits = append(hits, specHit{spec, strings.Repeat("\n", strings.Count(text[:at[0]], "\n")) + text[at[0]:at[1]] + rest, modified})
 		}
-		rest := text[at[1]:]
-		next := nextH1OrH2
-		if strings.HasPrefix(text[at[0]:], "# ") {
-			next = nextH1
-		}
-		if next := next.FindStringIndex(rest); next != nil {
-			rest = rest[:next[0]]
-		}
-		section = strings.Repeat("\n", strings.Count(text[:at[0]], "\n")) + text[at[0]:at[1]] + rest
 	}
-	return paths, section
+	return hits
 }
 
 // a spec heading of id, an h1 or an h2, a joint one included: `## FRM-436 + FRM-424 — …` heads both tickets' section

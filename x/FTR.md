@@ -206,6 +206,7 @@
   - want line: given a ticket whose text holds a line its spec lacks (FRM-694 on 24 Nov, «install few other best top rated speechify voices»), the newest ✍️ hash equal to the spec's, then it refuses naming both hashes
   - decision: three kinds refuse, no spec section, no seal hash on it, a hash that is not the text's; every other finding is a warning, and «main already carries a commit» is none (the guard lockout shape, critic 24 Nov); the refusal is clio's alone, no guard, no hook, nothing dima types
   - given a ticket whose spec section sits in another checkout (a bytes chunk's, in bytes' `.scratch/`), then the dispatch finds it there: frame first, then every checkout under `~/projects`, and the found spec's dir names the lane's slices (FRM-700 review)
+  - given a ticket with two sections in its specs (a re-sign writes a newer one beside the old), then every section is read and the newest binds: a start passes when some section's hash matches the text, refuses when none does, and never lets an older match stand for a newer section with no hash; the extra section is a warning (FRM-700 review)
 - ⬜ `x lane landed` reads a lane's close true (FRM-480)
   - given any chunk, then it prints no retros line: a siesta and the halt own retros
   - given only codie's look card, then 🔴 look until a `👀 look sent` line sits in the body; the wish line reads «close in this turn» once the look card's proof exists on a merged chunk

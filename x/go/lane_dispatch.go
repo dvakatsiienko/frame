@@ -172,8 +172,8 @@ func sealChecks(plan *dispatchPlan) error {
 		if ticket.rerun || strings.HasPrefix(ticket.body, "lane: main") {
 			continue
 		}
-		paths, section := ticketSpecs(ticket.ID)
-		if why := unsealed(ticket.ID, ticket.body, section); why != "" {
+		paths, sections := ticketSpecs(ticket.ID)
+		if why := unsealed(ticket.ID, ticket.body, sections); why != "" {
 			refused, first = append(refused, why), cmp.Or(first, ticket.ID)
 			continue
 		}
@@ -181,15 +181,16 @@ func sealChecks(plan *dispatchPlan) error {
 		if err != nil || repo == "" {
 			repo = frame
 		}
-		read, err := preflightFindings(repo, ticket.ID, ticket.body, paths, section, func(_, _ string, work func() (string, error)) error {
+		// the newest section binds: the older ones are the stale copies a re-sign leaves
+		read, err := preflightFindings(repo, ticket.ID, ticket.body, paths, sections[len(sections)-1], func(_, _ string, work func() (string, error)) error {
 			_, err := work()
 			return err
 		})
 		if err != nil {
 			return err
 		}
-		if len(paths) > 1 {
-			plan.Warnings = append(plan.Warnings, ticket.ID+" has a section in "+specList(paths)+" — one spec binds a ticket")
+		if len(sections) > 1 {
+			plan.Warnings = append(plan.Warnings, fmt.Sprintf("%s has %d spec sections in %s: the newest binds, so remove the stale ones", ticket.ID, len(sections), specList(paths)))
 		}
 		for _, f := range read.found {
 			// a commit on main for the ticket says nothing against a chunk that starts on landed ground
@@ -206,38 +207,55 @@ func sealChecks(plan *dispatchPlan) error {
 	return nil
 }
 
-// ticketSpecs looks for a ticket's spec section where a lane's spec may live: frame, then every checkout under ~/projects (a bytes
+// ticketSpecs looks for a ticket's spec sections where a lane's spec may live: frame, then every checkout under ~/projects (a bytes
 // chunk's spec sits in bytes, and a ticket's repo: line is not always one a reader finds, so none is read); paths names every spec
-// holding one, section is the first found
-func ticketSpecs(id string) (paths []string, section string) {
+// holding one, sections is every section found, the newest last (a re-sign writes a newer one beside the old)
+func ticketSpecs(id string) (paths, sections []string) {
 	roots := []string{mainCheckout(frameRoot())}
 	userHome, _ := os.UserHomeDir()
 	checkouts, _ := filepath.Glob(filepath.Join(userHome, "projects", "*"))
 	roots = append(roots, checkouts...)
 	seen := map[string]bool{}
+	var hits []specHit
 	for _, root := range roots {
 		if seen[root] {
 			continue
 		}
 		seen[root] = true
-		found, text := laneSpecSection(root, id)
-		paths, section = append(paths, found...), cmp.Or(section, text)
+		hits = append(hits, specSections(root, id)...)
 	}
-	return paths, section
+	for _, hit := range hits {
+		if !slices.Contains(paths, hit.path) {
+			paths = append(paths, hit.path)
+		}
+	}
+	slices.SortStableFunc(hits, func(a, b specHit) int { return cmp.Compare(a.modified, b.modified) })
+	for _, hit := range hits {
+		sections = append(sections, hit.section)
+	}
+	return paths, sections
 }
 
-// how a ticket's spec section fails to seal its text, "" when it seals it
-func unsealed(id, body, section string) string {
-	if section == "" {
+// how a ticket's spec sections fail to seal its text, "" when they seal it: the newest must hold a seal hash, and the text must
+// hash to the hash of some section, an older match never standing in for a newer section with none
+func unsealed(id, body string, sections []string) string {
+	if len(sections) == 0 {
 		return id + " has no spec section"
 	}
-	if _, recorded := sealRecorded(section); recorded == "" {
-		return id + "'s spec section has no seal hash"
+	newest := sections[len(sections)-1]
+	if _, recorded := sealRecorded(newest); recorded == "" {
+		return id + "'s newest spec section has no seal hash"
 	}
-	if _, recorded, signed := sealDrift(section, body); recorded != "" {
-		return fmt.Sprintf("%s's text moved since the seal (the spec records body %s, the ticket's text hashes to body %s)", id, recorded, signed)
+	for _, section := range sections {
+		if _, recorded := sealRecorded(section); recorded == "" {
+			continue
+		}
+		if _, drifted, _ := sealDrift(section, body); drifted == "" {
+			return ""
+		}
 	}
-	return ""
+	_, recorded, signed := sealDrift(newest, body)
+	return fmt.Sprintf("%s's text moved since the seal (the spec records body %s, the ticket's text hashes to body %s)", id, recorded, signed)
 }
 
 // what the 🚀 line records past its lane and session, x lane landed reads them back
