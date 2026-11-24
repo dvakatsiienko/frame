@@ -60,6 +60,10 @@ pre-commit:
       # a stumble becomes a guard, never a note (FRM-314): a hazard line added or reworded names its guard
       glob: "home/.claude/rules/fleet-hazards*.md"
       run: node script/fleet-hazards-check.ts
+    crew-contract:
+      # the crew's messaging contract is one table (FRM-686): a crew skill or rule naming a tag outside it, or asking a member
+      # for a receipt or a step line, and a `x:crew-dna` section that lost a pushing tag. no glob: the table's own edit counts too
+      run: git diff --cached --name-only --no-renames | grep -qE '^home/\.claude/(plugin-x/skills/crew-|rules|plugin-x/mods/x-mod-stash/hooks/quiet\.ts)|^script/(lib/)?crew-contract' || exit 0; script/index-run.sh node script/crew-contract-check.ts
     memory-lint:
       # memory rots at write time and a sweep cleans it months later: a size budget per memory file (a useful add
       # raises its row in recipes/nurture-memory/scripts/memory-budgets.tsv with a reason, in the same commit),

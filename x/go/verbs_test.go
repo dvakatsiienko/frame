@@ -326,7 +326,7 @@ func TestBriefLintRules(t *testing.T) {
 		{"the three tags", "messages to me open with [ask], [done] or [escalate]\n", false},
 		{"a report with its own receipts section", "the done report, its receipts named\n", false},
 		{"a helga brief asking for a done", "helga, batch 4\n\nsend [done] with the counts\n", true},
-		{"a helga brief by her skill, asking for a done", "use the crew-" + "helga skill\nreply `[done]` at the end\n", true},
+		{"a helga brief by her skill, asking for a done", "batch 4\n\nuse the crew-" + "helga skill\nreply `[done]` at the end\n", true},
 		{"a non-blocking helga brief asking for a done", "helga, batch 4, non-blocking\nsend [done]\n", true},
 		{"a blocking helga brief asking for a done", "helga, batch 4, blocking\nsend [done] with the counts\n", false},
 		{"a codie brief asking for a done", "/x:crew-designer\nhelga holds the file; send [done] at the end\n", false},

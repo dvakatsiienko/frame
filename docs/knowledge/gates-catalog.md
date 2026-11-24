@@ -25,6 +25,7 @@ Ticket: FRM-530. A ⛩️ gate is a check that refuses: it stops a commit, a pus
 - **mods-test**: a green read a changed mod's bytes, on the commit only; it runs no test (FRM-678)
 - **mods-vitest**: the vitest files beside the mods pass on any mod change (`twins.test.ts` holds every twin copy equal), 3 s
 - **surface-mirror**: the herdr and desktop surface leaves keep one heading list in one order
+- **crew-contract**: a crew skill or rule names only the message tags the mods know, and asks no member for receipts or step lines
 - **fleet-hazards**: a new hazard note names what guards it
 - **memory-lint**: memory files stay within their size, 2 s
 - **code-size**: no code file grows past 1,200 lines without a `size:` line, or past its giant's cap; on a month's trial (`docs/test-drive/size-cap.md`)
