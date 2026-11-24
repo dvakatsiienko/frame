@@ -169,3 +169,27 @@ json.dump(msgs, open(OUT + "/occurrences.json", "w"), ensure_ascii=False)
 json.dump(out, open(OUT + "/raw.json", "w"), ensure_ascii=False, indent=0)
 json.dump(notices, open(OUT + "/notices.json", "w"), ensure_ascii=False, indent=0)
 print("raw message occurrences in input entries:", len(msgs), "deduped:", len(out), "notices:", len(notices))
+
+
+def lost_count():
+    """held lines with no later delivery in the quiet log, paired in order per sender and tag (a delivery carries no message id)."""
+    waiting, held = {}, 0
+    for f in sorted(glob.glob(os.path.expanduser("~/.claude/shelf/quiet-log/*.jsonl"))):
+        if os.path.basename(f)[:10] < time.strftime("%Y-%m-%d", time.localtime(time.time() - DAYS * 86400)):
+            continue
+        for line in open(f):
+            try:
+                row = json.loads(line)
+            except ValueError:
+                continue
+            queue = waiting.setdefault((row.get("from"), row.get("tag")), [])
+            if row.get("verdict") == "held":
+                held += 1
+                queue.append(row.get("at"))
+            elif row.get("verdict") == "flushed" and queue:
+                queue.pop(0)
+    return held, [(k, at) for k, q in waiting.items() for at in q]
+
+
+held, lost = lost_count()
+print("held in the quiet log:", held, "never delivered:", len(lost), *(f"\n  {at} {k[0]} [{k[1]}]" for k, at in lost))
