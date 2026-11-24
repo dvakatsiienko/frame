@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T17:18:00Z'
+updated_date: '2026-11-24T17:24:00Z'
 labels:
   - s
   - clio-main
@@ -2709,4 +2709,11 @@ PK-349:W2371 (2026-11-24 19:12, dima): you — herdr + cc mods + speak.
 PK-349:W2372 (2026-11-24 19:12, dima): (today load with two lanes was ok so let's try to add herdr)
 PK-349:W2373 (2026-11-24 19:12, dima): at some point I ask for wing 1 and solve grills and researches with it.
 PK-349:W2374 (2026-11-24 19:12, dima): let's do /clio:lowtide-peek-lanes herdr first
+
+19:24 herdr peek answers (raw 19:23):
+PK-349:W2375 (2026-11-24 19:23, dima): the rebuilt chat, which waits for your hand: what's here? I thought it is done already? ❓
+PK-349:W2376 (2026-11-24 19:23, dima): the plan over all herdr work: what is this about? ❓
+PK-349:W2377 (2026-11-24 19:23, dima): reactions wait for your grill with wing 1, ten questions: unsnooze it in wing 1's flyway and move it to be the first item in the list.
+PK-349:W2378 (2026-11-24 19:23, dima): the rest of orbit and the one-click chunk wait for mods' look and test asks chunk: can we optimize mods scope (do sooner if possible) so herdr is unblocked? ❓
+PK-349:W2379 (2026-11-24 19:23, dima): print fresh herdr peek lanes again (after the order update and answers), then we do peek lanes for mods when the herdr part is solved.
 <!-- SECTION:NOTES:END -->
