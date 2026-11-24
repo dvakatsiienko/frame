@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -107,6 +108,52 @@ func TestThreadSyncNeverAsksABusyThreadToEndItsTurn(t *testing.T) {
 
 	if sent, _ := os.ReadFile(w.hcLog); got.code != 1 || len(sent) > 0 {
 		t.Errorf("exit %d, hc was told %q: want a quiet wait that fails once past it, no nudge and no send", got.code, sent)
+	}
+}
+
+// the lock file a sync holds sits beside the store, one per session: four were left untracked in frame's shelf (24 Nov)
+func TestThreadSyncRemovesItsLockFileWhenDone(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name string
+		busy int
+		env  []string
+		code int
+	}{
+		{"a sync that took", 2, nil, 0},
+		{"a sync that failed past its wait", 1000, []string{"X_SYNC_WAIT=0.3"}, 1},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, c.busy)
+
+			got := xIn(t, t.TempDir(), append(asCaller(t, w.env, "coordinator"), c.env...), "thread", "sync", "s1")
+
+			if lock := w.store + ".s1.sync"; got.code != c.code || exists(lock) {
+				t.Errorf("exit %d, %s there: %v, want exit %d and the lock file gone:\n%s", got.code, filepath.Base(lock), exists(lock), c.code, got.stdout)
+			}
+		})
+	}
+}
+
+func TestThreadSyncLeavesAnotherSyncsLockAlone(t *testing.T) {
+	t.Parallel()
+	w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, 2)
+	lock := w.store + ".s1.sync"
+	holder, err := os.OpenFile(lock, os.O_CREATE|os.O_RDWR, 0o644)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer holder.Close()
+	if err := syscall.Flock(int(holder.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		t.Fatal(err)
+	}
+
+	got := xIn(t, t.TempDir(), asCaller(t, w.env, "coordinator"), "thread", "sync", "s1")
+
+	if sent, _ := os.ReadFile(w.hcLog); !strings.Contains(got.stdout, "another sync holds it") || !exists(lock) || len(sent) > 0 {
+		t.Errorf("lock there: %v, hc was told %q: want the second sync to follow the first, send nothing and leave its lock file:\n%s", exists(lock), sent, got.stdout)
 	}
 }
 

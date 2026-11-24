@@ -268,6 +268,29 @@ func placeTook(row ordered) bool {
 	return false
 }
 
+// one sync a session: an exclusive lock on a file beside the store, which its holder removes before it lets go, so none is
+// left behind. a waiter that opened the file just before that removal holds a dead one, so each try checks the path still
+// names the file it locked, and tries again when it does not. a file that cannot open runs unlocked
+func lockThreadSync(path string) (held bool, release func()) {
+	for range 3 {
+		lock, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o644)
+		if err != nil {
+			return true, func() {}
+		}
+		if syscall.Flock(int(lock.Fd()), syscall.LOCK_EX|syscall.LOCK_NB) != nil {
+			_ = lock.Close()
+			return false, func() {}
+		}
+		locked, lockedErr := lock.Stat()
+		named, namedErr := os.Stat(path)
+		if lockedErr == nil && namedErr == nil && os.SameFile(locked, named) {
+			return true, func() { _ = os.Remove(path); _ = lock.Close() }
+		}
+		_ = lock.Close()
+	}
+	return false, func() {}
+}
+
 // the live places of a recorded thread take the name its record draws now: the herdr tab, then cc's own name once the
 // thread idles, re-read before each try; what a landing or a dispatch leaves behind runs here, detached. it writes no
 // record and asks no thread to end its turn, so it needs no caller gate: a detached child outlives the coordinator that
@@ -278,11 +301,10 @@ func threadSyncRun(r *Run, args []string, _ Flags) (any, error) {
 	if display == "" {
 		return nil, &Fail{Refused: true, Msg: sid + " has no record to sync from", Next: "x thread list"}
 	}
-	if lock, err := os.OpenFile(threadStorePath()+"."+sid+".sync", os.O_CREATE|os.O_RDWR, 0o644); err == nil {
-		defer lock.Close()
-		if syscall.Flock(int(lock.Fd()), syscall.LOCK_EX|syscall.LOCK_NB) != nil {
-			return ordered{{"session", sid}, {"display", display}, {"following", "another sync holds it"}}, nil
-		}
+	held, release := lockThreadSync(threadStorePath() + "." + sid + ".sync")
+	defer release()
+	if !held {
+		return ordered{{"session", sid}, {"display", display}, {"following", "another sync holds it"}}, nil
 	}
 	terminal, _ := herdrTerminalOf(sessionPid(sid))
 	wait := syncWait()
