@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T11:46:00Z'
-updated_date: '2026-11-24T13:36:00Z'
+updated_date: '2026-11-24T13:49:00Z'
 labels:
   - s
   - clio-wing-1
@@ -341,4 +341,16 @@ PK-467:W157 (2026-11-24 15:23, dima): How to fix that? ❓
 PK-467:W158 (2026-11-24 15:23, dima): Why are you not closing your tails in place when possible? ❓
 
 PK-467:W159 (2026-11-24 15:23, dima): You keep postponing and folding everything until later.
+
+PK-467:W160 (2026-11-24 15:40, dima): yes, and remove schedule for system checkup.
+
+PK-467:W161 (2026-11-24 15:48, dima): resume.
+
+PK-467:W162 (2026-11-24 15:48, dima): fyi: fable weekly 100% reached, weekly reset 2/3 is used.
+
+PK-467:W163 (2026-11-24 15:48, dima): now 1/3 left.
+
+PK-467:W164 (2026-11-24 15:48, dima): no fable until I say from now on.
+
+PK-467:W165 (2026-11-24 15:48, dima): (designer only)
 <!-- SECTION:NOTES:END -->
