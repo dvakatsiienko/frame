@@ -222,3 +222,4 @@ Ticket: none
 - 2026-11-24 18:19 wing 1 · 226k tokens · 1 high, 6 medium, 4 low · highs real: y (a built ticket told as an unsigned running chunk) · acted: high fixed with its cause, 6 mediums fixed or listed
 - 2026-11-24 18:31 · checkpoint mode · 72k tokens · 0 high, 5 medium, 1 low · highs real: none · acted: all folded into the handoff
 - 2026-11-24 18:45 · 189k tokens · 1 high, 3 medium, 5 low · highs real: y (a size ask with 3 fixes where git holds 62) · acted: high told and re-asked, its label joins FRM-701; 3 mediums fixed
+- 2026-11-24 18:51 wing 1 · 159k tokens · 1 high, 7 medium, 3 low · highs real: y (the queue trigger never fired on a reorder) · acted: high and 5 mediums fixed, 2 handed to main
