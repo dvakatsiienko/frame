@@ -211,7 +211,12 @@ test("a session's state file holds its asks, plan, wait, taken, ctx and model", 
     s.store.set(`context:${A}`, 54);
     s.store.set(`model:${A}`, 'opus 5.5 · medium');
     await orbit($, { lines: ['now: a', 'next: b'], op: 'plan' });
-    await orbit($, { asks: [{ pick: 'yes', text: 'ship it' }], op: 'add' });
+    await orbit($, {
+        asks: [
+            { area: 'mods', pick: 'yes', text: 'ship it', why: 'a test ask' },
+        ],
+        op: 'add',
+    });
     expect(s.read(A)).toMatchObject({
         asks: [{ id: 'o1', pick: 'yes', text: 'ship it' }],
         ctx: 54,
@@ -256,7 +261,12 @@ test('a precompute compact keeps the stored ctx', async ($, on) => {
 
 test('a reader beside a tight write loop never meets half a file', async ($, on) => {
     const s = await session($, on);
-    await orbit($, { asks: [{ pick: 'yes', text: 'ship it' }], op: 'add' });
+    await orbit($, {
+        asks: [
+            { area: 'mods', pick: 'yes', text: 'ship it', why: 'a test ask' },
+        ],
+        op: 'add',
+    });
     let errors = 0;
     for (let i = 0; i < 40; i++) {
         s.store.set(`context:${A}`, i);
@@ -276,10 +286,18 @@ test('a reader beside a tight write loop never meets half a file', async ($, on)
 
 test("a /clear drops the old id's file and the new id's names it as its succ", async ($, on) => {
     const s = await session($, on);
-    await orbit($, { asks: [{ pick: 'yes', text: 'ship it' }], op: 'add' });
+    await orbit($, {
+        asks: [
+            { area: 'mods', pick: 'yes', text: 'ship it', why: 'a test ask' },
+        ],
+        op: 'add',
+    });
     s.setSid(B);
     await $.session.end({ reason: 'clear', sessionId: A } as never);
-    await orbit($, { asks: [{ pick: 'yes', text: 'next' }], op: 'add' });
+    await orbit($, {
+        asks: [{ area: 'mods', pick: 'yes', text: 'next', why: 'a test ask' }],
+        op: 'add',
+    });
     expect([s.read(A), s.read(B)?.succ]).toEqual([undefined, A]);
 });
 
@@ -842,11 +860,13 @@ test("an ask's link rides its row in the state file beside its pick", async ($, 
     await orbit($, {
         asks: [
             {
+                area: 'mods',
                 link: 'https://linear.app/x-com/issue/FRM-1',
                 pick: 'yes',
                 text: 'ship it',
+                why: 'a test ask',
             },
-            { pick: 'no', text: 'hold it' },
+            { area: 'mods', pick: 'no', text: 'hold it', why: 'a test ask' },
         ],
         op: 'add',
     });

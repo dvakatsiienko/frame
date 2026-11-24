@@ -3,6 +3,7 @@ import type { On } from 'claude-code';
 import { addLinked, assume, hrefs } from './orbit-helpers.ts';
 import {
     type Board,
+    SID,
     add,
     asksShown,
     board,
@@ -12,6 +13,11 @@ import {
     world,
 } from './orbit-world.ts';
 import { expect, test } from './shared-boot.ts';
+
+const origin = (who: string, rest: Record<string, string> = {}) => ({
+    from: { who, ...rest },
+    why: 'it rang twice',
+});
 
 test('asks the tool adds list in orbit oldest first, each by its id', async ($, on) => {
     world(on);
@@ -168,7 +174,7 @@ test('an ask answered this turn leads its line with 👀 until the turn ends', a
     await say($, 'go');
     await orbit($, { ids: ['o1'], op: 'resolve' });
     const row = await ui.find({ key: 'orbit:ask:o1', type: 'Box' });
-    expect(row?.text?.startsWith('👀 o1:')).toBe(true);
+    expect(row?.text?.startsWith('👀 o1 mods:')).toBe(true);
 });
 
 test('a ticket id in an ask opens its linear page', async ($, on) => {
@@ -401,7 +407,15 @@ test("an ask's row puts its steer before its file link (dima, 20:57)", async ($,
     await start($);
     const ui = await board($);
     await orbit($, {
-        asks: [{ link: '/tmp/proposal.md', pick: 'apply', text: 'r34 groom' }],
+        asks: [
+            {
+                area: 'mods',
+                link: '/tmp/proposal.md',
+                pick: 'apply',
+                text: 'r34 groom',
+                why: 'a test ask',
+            },
+        ],
         op: 'add',
     });
     // the harness keeps no text or key on a row's children (mods/engine.md): the steer is the one Box, the link a Button
@@ -413,3 +427,78 @@ test("an ask's row puts its steer before its file link (dima, 20:57)", async ($,
 });
 
 /* o84: dima reorders, ticks and steers the phases on the board */
+
+/* FRM-670: ask origin, the area before the text and the muted line under the pick */
+
+test('an ask draws its area before its text and who started it and why under its pick', async ($, on) => {
+    const w = world(on);
+    const asks: [Record<string, unknown>, string, string][] = [
+        [
+            { area: 'speak', areaEmoji: '🎙️', why: 'it jumps' },
+            ' 🎙️ speak: ',
+            'it jumps',
+        ],
+        [{}, ': ', ''],
+        [
+            origin('codie', { lane: 'mods', ticket: 'FRM-662' }),
+            ': ',
+            '🔧 mods | FRM-662 · it rang twice',
+        ],
+        [
+            origin('codie', { topic: 'the pill' }),
+            ': ',
+            '🔧 the pill · it rang twice',
+        ],
+        [
+            origin('sixth sense', { lane: 'mods', ticket: 'FRM-662' }),
+            ': ',
+            '🔎 mods | FRM-662 · it rang twice',
+        ],
+        [origin('crow'), ': ', '🐦‍⬛ crow · it rang twice'],
+        [origin('wishkeeper'), ': ', '🐬 wishkeeper · it rang twice'],
+        [origin('wing 2'), ': ', '🪽 wing 2 · it rang twice'],
+        [origin('main clio'), ': ', '🦉 clio · it rang twice'],
+        [
+            origin('designer', { topic: 'the key map' }),
+            ': ',
+            '🎨 designer: the key map · it rang twice',
+        ],
+        [origin('helga'), ': ', '🎀 helga · it rang twice'],
+        [origin("dima's rule"), ': ', "🙋‍♂️ dima's rule · it rang twice"],
+        [origin('plain cc'), ': ', '💻 cc · it rang twice'],
+    ];
+    w.store.set(`kept:${SID}`, {
+        at: w.clock.now(),
+        orbit: {
+            asks: asks.map(([fields], i) => ({
+                id: `o${i}`,
+                pick: 'yes',
+                text: 'it',
+                ...fields,
+            })),
+            next: 20,
+            turns: 1,
+        },
+    });
+    await start($);
+    const ui = await board($);
+    const drawn = await Promise.all(
+        asks.map(
+            async (_, i) =>
+                (await ui.find({ key: `orbit:ask:o${i}`, type: 'Box' }))?.text,
+        ),
+    );
+    // the harness reads a link as its url, then its label
+    expect(
+        drawn.map(
+            (t) =>
+                t
+                    ?.replaceAll(/https:\S+\/issue\/FRM-\d+(?=FRM)/g, '')
+                    .split('🛎️')[0],
+        ),
+    ).toEqual(asks.map(([, head, line], i) => `o${i}${head}it➡️ yes${line}`));
+    const muted = (await ui.findAll({ type: 'Text' })).find((t) =>
+        t.text?.startsWith('🐦‍⬛'),
+    );
+    expect(muted?.props.dimColor).toBe(true);
+});

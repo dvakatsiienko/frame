@@ -16,6 +16,11 @@ export const STALE_MS = 24 * 60 * 60 * 1000;
 export const KEPT_MS = 7 * 24 * 60 * 60 * 1000;
 export const short = (sid: string) => sid.slice(0, 8);
 
+// an ask, its why, a follow-up or a phase reads at a glance in the narrow board (dima's o60, 22:13)
+export const ORBIT_TEXT_MAX = 90;
+export const oneLine = (v: unknown) =>
+    typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '';
+
 export const text = (v: unknown) =>
     typeof v === 'string' && v ? v : undefined;
 

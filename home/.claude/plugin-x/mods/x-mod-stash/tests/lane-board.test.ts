@@ -429,12 +429,22 @@ test('a /clear records the id the session goes on under', async ($, on) => {
 // FRM-643: a member's asks reach dima through its coordinator; the subcard only shows them
 test("unfolded, a subcard draws the member's asks as a view: line and pick, no tick, replay, sound or steer", async ($, on) => {
     const w = world(on, { files: linked() });
-    published(w, CODIE, [ASK]);
+    published(w, CODIE, [
+        {
+            ...ASK,
+            area: 'mods',
+            areaEmoji: '🧩',
+            from: { line: '🐦‍⬛ crow', who: 'crow' },
+            why: 'it rang twice',
+        },
+    ]);
     await start($);
     const ui = await board($);
     await ui.press({ key: 'fold:lane:l1:codie' });
     const text = (await subText(ui, 'codie')) ?? '';
-    expect(text).toMatch(/o3: cut the second probe\?.*➡️ cut it/su);
+    expect(text).toMatch(
+        /o3 🧩 mods: cut the second probe\?.*➡️ cut it.*🐦‍⬛ crow · it rang twice/su,
+    );
     expect([
         /tick|replay|🔊|steer/u.test(text),
         await ui.find({ key: 'lane:l1:codie:accepted:o3' }),
@@ -445,7 +455,14 @@ async function memberWithAsk($: Engine, on: On) {
     const w = world(on, { name: '☕️ 🔧 codie' });
     await start($);
     await $.tool.call({
-        asks: [{ pick: 'cut it', text: 'cut the second probe?' }],
+        asks: [
+            {
+                area: 'mods',
+                pick: 'cut it',
+                text: 'cut the second probe?',
+                why: 'a test ask',
+            },
+        ],
         op: 'add',
         tool: TOOL,
     } as never);
@@ -457,7 +474,15 @@ test('a member publishes its open asks whole, with ids, for the glide card', asy
     const w = await memberWithAsk($, on);
     expect(
         (w.store.get(`asks:${SID}`) as { items?: unknown[] })?.items,
-    ).toEqual([{ id: 'o1', pick: 'cut it', text: 'cut the second probe?' }]);
+    ).toEqual([
+        {
+            area: 'mods',
+            id: 'o1',
+            pick: 'cut it',
+            text: 'cut the second probe?',
+            why: 'a test ask',
+        },
+    ]);
 });
 
 test('an idle member with a herdr press wakes once, after dima prompts anywhere', async ($, on) => {
@@ -511,7 +536,14 @@ test("an ask's buttons sit on the line under its pick, never beside it", async (
     world(on);
     await start($);
     await $.tool.call({
-        asks: [{ pick: 'cut it', text: 'cut the second probe?' }],
+        asks: [
+            {
+                area: 'mods',
+                pick: 'cut it',
+                text: 'cut the second probe?',
+                why: 'a test ask',
+            },
+        ],
         op: 'add',
         tool: TOOL,
     } as never);

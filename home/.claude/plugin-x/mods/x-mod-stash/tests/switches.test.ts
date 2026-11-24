@@ -244,8 +244,20 @@ const SCENARIOS: Record<string, Scenario> = {
         arm: async ($, _w, ui) => {
             await orbit($, {
                 asks: [
-                    { hiddenNote: 'n', pick: 'yes', text: 'push it' },
-                    { hiddenNote: 'n', pick: 'no', text: 'cut it' },
+                    {
+                        area: 'mods',
+                        hiddenNote: 'n',
+                        pick: 'yes',
+                        text: 'push it',
+                        why: 'a test ask',
+                    },
+                    {
+                        area: 'mods',
+                        hiddenNote: 'n',
+                        pick: 'no',
+                        text: 'cut it',
+                        why: 'a test ask',
+                    },
                 ],
                 op: 'add',
             });
@@ -259,7 +271,15 @@ const SCENARIOS: Record<string, Scenario> = {
             await edit($, w);
         },
         op: {
-            asks: [{ hiddenNote: 'n', pick: 'yes', text: 'one more' }],
+            asks: [
+                {
+                    area: 'mods',
+                    hiddenNote: 'n',
+                    pick: 'yes',
+                    text: 'one more',
+                    why: 'a test ask',
+                },
+            ],
             op: 'add',
         },
         trace: /orbit holds|dima marked/,
@@ -469,7 +489,15 @@ async function idleWake($: Engine, on: On, isOn: boolean) {
         surface: 'desktop',
     });
     await orbit($, {
-        asks: [{ hiddenNote: 'n', pick: 'yes', text: 'push it' }],
+        asks: [
+            {
+                area: 'mods',
+                hiddenNote: 'n',
+                pick: 'yes',
+                text: 'push it',
+                why: 'a test ask',
+            },
+        ],
         op: 'add',
     });
     w.store.set('shown', { 'stash.orbit': isOn });

@@ -14,6 +14,7 @@ import {
 import { LANE_ROLES } from './lanes.ts';
 import { cardBorder } from './look.ts';
 import { CHANGED_MARK, linkLabel } from './orbit.ts';
+import { areaLine, originLine } from './orbit-ask-origin.ts';
 import { pressMark } from './orbit-presses.ts';
 import { changeAssumed, markAsks, orbitNow } from './orbit-store.ts';
 import { keepShelf } from './session-record.ts';
@@ -280,7 +281,7 @@ export async function boardKit($: EngineInterface, e: RenderInput<'Pane'>) {
                             {/* a joined ask's mark leads its line, so the row below holds only 🔊 and the steer (dima, 11:57) */}
                             {a.isChanged ? `${CHANGED_MARK} ` : ''}
                             <Text bold>{a.id}</Text>
-                            {': '}
+                            {a.area ? ` ${areaLine(a)}: ` : ': '}
                             {linkedJSX(a.text, `ask:${a.id}`)}
                         </Text>
                         {/* the pick on a line of its own, the mock's card shape (dima, 17:00) */}
@@ -290,6 +291,12 @@ export async function boardKit($: EngineInterface, e: RenderInput<'Pane'>) {
                                 {linkedJSX(a.pick, `pick:${a.id}`)}
                             </Text>
                         </Text>
+                        {/* who started it and why, always there (FRM-670) */}
+                        {originLine(a) ? (
+                            <Text dimColor>
+                                {linkedJSX(originLine(a), `origin:${a.id}`)}
+                            </Text>
+                        ) : null}
                     </Box>
                 </Box>
                 {/* the buttons lead, the steer follows them, on the line under the pick — never beside it (dima, 20:19; 20:23) */}

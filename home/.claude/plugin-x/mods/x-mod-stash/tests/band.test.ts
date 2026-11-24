@@ -53,7 +53,17 @@ for (const surface of ['terminal', 'desktop'] as const)
     test(`the band is its row and the two meters on ${surface}`, async ($, on) => {
         world(on);
         const ui = await band($, surface);
-        await orbit($, { asks: [{ pick: 'yes', text: 'ship it' }], op: 'add' });
+        await orbit($, {
+            asks: [
+                {
+                    area: 'mods',
+                    pick: 'yes',
+                    text: 'ship it',
+                    why: 'a test ask',
+                },
+            ],
+            op: 'add',
+        });
         const texts = (await ui.findAll({ type: 'Text' })).map((t) => t.text);
         const shown = [
             (await ui.find({ key: 'row', type: 'Box' }))?.text ?? '',
@@ -65,7 +75,12 @@ for (const surface of ['terminal', 'desktop'] as const)
 test('the band draws no asks or phases count', async ($, on) => {
     world(on);
     const ui = await band($);
-    await orbit($, { asks: [{ pick: 'yes', text: 'ship it' }], op: 'add' });
+    await orbit($, {
+        asks: [
+            { area: 'mods', pick: 'yes', text: 'ship it', why: 'a test ask' },
+        ],
+        op: 'add',
+    });
     await orbit($, { lines: ['now: a'], op: 'plan' });
     expect([
         await ui.find({ text: /^🪐/, type: 'Text' }),

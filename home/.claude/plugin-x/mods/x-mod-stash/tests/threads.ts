@@ -9,6 +9,8 @@ export type ThreadRow = {
     pid?: number;
     wing?: number;
     lane?: string;
+    area?: string;
+    ticket?: string;
     coordinator?: string;
     dispatchedBy?: string;
     dispatchedAt?: number;
