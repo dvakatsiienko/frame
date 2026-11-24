@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T18:08:00Z'
+updated_date: '2026-11-24T18:24:00Z'
 labels:
   - s
   - clio-main
@@ -2770,4 +2770,19 @@ PK-349:W2407 (2026-11-24 20:05, dima): anything else left? ❓
 PK-349:W2408 (2026-11-24 20:05, dima): you are tail free? ❓
 
 PK-349:W2409 (2026-11-24 20:05, dima): we an stop everyone? ❓
+
+PK-349:W2410 (2026-11-24 13:50, dima): o3 go ask 7 questions why they appeared? ❓
+
+PK-349:W2411 (2026-11-24 20:06, dima): what about stary? ❓
+
+PK-349:W2412 (2026-11-24 20:06, dima): finished? ❓
+
+PK-349:W2413 (2026-11-24 20:06, dima): it waits for you
+
+PK-349:W2414 (2026-11-24 20:07, dima): so mods left only few chunks from what's planned? ❓
+
+PK-349:W2415 (2026-11-24 20:11, dima): I then go cook. Once stray is fully solved and you verify that it is done, stop stray.
+PK-349:W2416 (2026-11-24 20:11, dima): Then, based on where everyone else is, stop speak and mods also gradually. Tell them to find a good point to commit and hand off, and stop them.
+PK-349:W2417 (2026-11-24 20:11, dima): and then do a halt, the wire, plus yourself.
+PK-349:W2418 (2026-11-24 20:11, dima): wire+
 <!-- SECTION:NOTES:END -->
