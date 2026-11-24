@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T18:54:00Z'
+updated_date: '2026-11-24T19:06:00Z'
 labels:
   - s
   - clio-main
@@ -2797,4 +2797,7 @@ done 2026-11-24 20:54: f117 stray: FRM-700's third read, one P1 and four small �
 
 PK-349:W2423 (2026-11-24 20:54, dima, on «the start check's tails to an Opus codie»): can you then start mods coding as usual, but add: ask him to do this as a writer, before continuing with his mods stuff?
 PK-349:W2424 (2026-11-24 20:54, dima, on the CPU log's small tail): and solve this tail too, since it is close to what the mods codie does anyways.
+
+PK-349:W2425 (2026-11-24 21:06, dima): why did it take so much time since my last message (20:54) until now? ❓
+PK-349:W2426 (2026-11-24 21:06, dima): do you agree for the mods codie to start with the riders/tails, then resume mods? (he still starts in the same workdir as usual) ❓
 <!-- SECTION:NOTES:END -->
