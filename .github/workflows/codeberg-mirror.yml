@@ -1,9 +1,11 @@
 name: codeberg mirror
 
 # pushes every branch and tag to codeberg.org/dvakatsiienko/<this repo>, the backup off github.
-# the nightly run catches pushes made by github's own token, which never trigger a workflow.
+# a push to main mirrors at once; the nightly run mirrors every other branch and catches pushes made by github's own token,
+# which never trigger a workflow. a pr branch push does not run it: two 504s from codeberg turned pr checks red.
 on:
   push:
+    branches: [main]
   schedule:
     - cron: '17 3 * * *'
   workflow_dispatch:
