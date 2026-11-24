@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T13:22:00Z'
+updated_date: '2026-11-24T13:59:00Z'
 labels:
   - s
   - clio-main
@@ -16,19 +16,17 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f67 herdr slash list misses his skill: the scan prints it, the miss is in chat's commands(); rider in herdr handoff
-- [ ] #2 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
-- [ ] #3 f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes
-- [ ] #4 f95 herdr wisp: a triple click in chat selects one visual run, not the whole bullet (his shot 24 Nov 12:29); joins f69
-- [ ] #5 f98 prompt-groom.ts --linear crashes for helga: no codie linear token in the keychain; run it from my thread or fix
-- [ ] #6 f99 sealed-ahead.ts: read a chunk placed ahead of a lane running one (herdr prints red though its spec is ready)
-- [ ] #7 f100 mods wisp: the review-rounds counter booked my «next: slice 3» on a slice-less key and escalated round 4 falsely
-- [ ] #8 f101 herdr wisp: a click on a file path or a dir link in chat does nothing, with or without Cmd (his o6)
-- [ ] #9 f103 x lane landed sees no quick-lane commit whose body lacks its «step N of» line; one ticket closed by hand
-- [ ] #10 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #11 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #12 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #13 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #1 f98 prompt-groom.ts --linear crashes for helga: no codie linear token in the keychain; run it from my thread or fix
+- [ ] #2 f99 sealed-ahead.ts: read a chunk placed ahead of a lane running one (herdr prints red though its spec is ready)
+- [ ] #3 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #4 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #5 f104 ⏳ herdr wisp: the slash list misses his skill, in chat's commands() — waits for: FRM-620
+- [ ] #6 f105 ⏳ herdr wisps: the phases steer text empties; a Read picture says «gone» on click — waits for: FRM-620
+- [ ] #7 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
+- [ ] #8 f107 ⏳ herdr wisp: a triple click selects one visual run, not the bullet (shot 24 Nov) — waits for: FRM-620
+- [ ] #9 f108 ⏳ herdr wisp: a click on a file path or dir link does nothing (his o6) — waits for: FRM-620
+- [ ] #10 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #11 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2623,4 +2621,20 @@ PK-349:W2318 (2026-11-24 13:53, dima): Honestly I'm not really into answering th
 PK-349:W2319 (2026-11-24 13:53, dima): But I think it works if I check up on your proposals so let's proceed with this mode
 
 done 2026-11-24 15:22: f102 x lane landed sees no commit of a quick lane whose bodies lack «step N of <ticket>»: FRM-691 closed by hand, its spec not archived (FRM-691 Done)
+
+done 2026-11-24 15:58: f67 herdr slash list misses his skill: the scan prints it, the miss is in chat's commands(); rider in herdr handoff
+
+done 2026-11-24 15:59: f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
+
+done 2026-11-24 15:59: f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes (FRM-620 In Progress)
+
+done 2026-11-24 15:59: f95 herdr wisp: a triple click in chat selects one visual run, not the whole bullet (his shot 24 Nov 12:29); joins f69
+
+done 2026-11-24 15:59: f101 herdr wisp: a click on a file path or a dir link in chat does nothing, with or without Cmd (his o6)
+
+done 2026-11-24 15:59: f100 mods wisp: the review-rounds counter booked my «next: slice 3» on a slice-less key and escalated round 4 falsely
+
+done 2026-11-24 15:59: f103 x lane landed sees no quick-lane commit whose body lacks its «step N of» line; one ticket closed by hand
+
+2026-11-24 15:59 flyway moves: f67→f104, f69→f105, f71→f106, f95→f107, f101→f108 (waits for the herdr lane). f100 closed: the speak codie names the slice in each next: line; no mods ticket, his 24 Nov bar. f103 closed: the tool reads x:cmt § 4's «step N of» line by design, the stray was told.
 <!-- SECTION:NOTES:END -->
