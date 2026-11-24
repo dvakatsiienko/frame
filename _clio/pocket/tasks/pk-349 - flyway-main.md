@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T10:22:00Z'
+updated_date: '2026-11-24T10:37:00Z'
 labels:
   - s
   - clio-main
@@ -21,11 +21,14 @@ ordinal: 1000
 - [ ] #3 f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes
 - [ ] #4 f86 mods rider: the guard treats a branch with no `+` line in git cherry as merged, so its delete needs no tick (his o4)
 - [ ] #5 f93 seal drafts with open questions for dima: FRM-582 (9), FRM-691 (7), in ~/frame/.scratch/seal-drafts/
-- [ ] #6 f94 FRM-582 emoji reactions: its ten questions to dima, three a batch, after boot — on: 2026-11-24
-- [ ] #7 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #8 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #9 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #10 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #6 f95 herdr wisp: a triple click in chat selects one visual run, not the whole bullet (his shot 24 Nov 12:29); joins f69
+- [ ] #7 f96 FRM-585 annotate reply text: herdr-app#691 closed, PR 1265 merged 23 Nov, not in 0.1.17; unblocks at herdr next release
+- [ ] #8 f97 rex skill names REX_SESSION, which rex dropped (use REX_BLOCK); also --no-open is now --url-only: fix the skill
+- [ ] #9 f94 FRM-582 emoji reactions: its ten questions to dima, three a batch, after boot — on: 2026-11-24
+- [ ] #10 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #11 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #12 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #13 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2500,4 +2503,18 @@ PK-349:W2266 (2026-11-24 12:08, dima): as planned, fable only for you for now, e
 PK-349:W2267 (2026-11-24 12:08, dima): your wing later - fable too.
 
 answered (12:22 24 Nov, crow's catch at the boot): W2226 was about 22 Nov's boot, answered that day; W2227–W2234 answered 22 Nov 19:50 (the vm file 251.5 → 47.6 GiB, 254 GB is the limit; re-measured 24 Nov: 278G apparent, 48G on disk), FRM-665 closed; W2235 carried 22 Nov; W2236–W2237 answered 23 Nov, his «glide fixed fyi»
+
+PK-349:W2268 (2026-11-24 12:28, dima): [⚠️ the 1Password ssh agent flaked twice] without me touching touchid for 1p, no one can even commit? ❓
+
+PK-349:W2269 (2026-11-24 12:28, dima): why codeberg fails all the time. everyone you mention it (nearly each day) - it's red.
+
+PK-349:W2270 (2026-11-24 12:28, dima): [🟡 signs drifted on FRM-694 and FRM-291 (speak v2): a re-sign before their turn] just resign.
+
+PK-349:W2271 (2026-11-24 12:28, dima): [📌 re-login to claude before 1 Dec] i did yesterday.
+
+PK-349:W2272 (2026-11-24 12:28, dima): [📌 re-login to claude before 1 Dec] why is this reminder present? ❓
+
+PK-349:W2273 (2026-11-24 12:28, dima): [🟢 wish-loss audit: 30 red → 1 red since 16 Nov (86 checked)] are you sure you should run this audit every day? ❓
+
+PK-349:W2274 (2026-11-24 12:28, dima): [🟢 wish-loss audit: 30 red → 1 red since 16 Nov (86 checked)] i thought it is only weekly? ❓
 <!-- SECTION:NOTES:END -->
