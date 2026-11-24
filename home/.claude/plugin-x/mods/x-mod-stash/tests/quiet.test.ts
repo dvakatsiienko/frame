@@ -120,6 +120,7 @@ for (const [body, push] of [
     ['«a decision for you» is the rule', undefined],
     ['you said\n> one decision for you\nand I did it', undefined],
     ['the form:\n```\none decision for you\n```', undefined],
+    ['the form:\n~~~\none decision for you\n~~~', undefined],
     ['not now. one decision for you', 'decision'],
     ['🐦‍⬛ crow: one decision for you', undefined],
     ['no decision for you', undefined],
