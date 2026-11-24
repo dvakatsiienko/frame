@@ -64,6 +64,9 @@ colocated — checks that live elsewhere, run or read from here:
 - **evergreen** — renovate prs, brew and the apps lane · `clio:evergreen`, its newest report read; a whole
   checkup runs its gather (`evergreen/references/read.md` § 1) without the full read
 
+apart — run by name only, never inside a whole run:
+- **fleet-weak-spots** — what bottlenecks the fleet, a top 5 (dima, 2026-11-24) · five reads by cards, plus the count of tickets born from his wish against clio's proposal · one page, an action and a proof number per spot; his reading of a spot replaces the page's · plan and last page: `.scratch/fleet-weak-spots/`
+
 not here, on purpose: the memory content groom, `doctor prompt-audit` and `/skill-doctor` stay in
 `recipes/nurture-memory` (dima, 2026-10-19: never duplicated).
 

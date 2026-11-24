@@ -22,6 +22,14 @@ keeps dima's talk with a many-thread fleet light, human and advisory: every thre
 
 born 2026-10-10 from the operator ledger and the reply analysis (pocket PK-50).
 
+## contents
+
+- the want
+- the run
+- vectors
+- artifacts
+- findings
+
 ## the want
 
 dima, 2026-10-10: «after we ran this recipe the first time, i got the most meaningful fleet/me comms upgrade i ever had … the comms chaos almost stopped.»
@@ -33,11 +41,17 @@ dima, 2026-11-09:
 - «leaner replies may hide important data. i still want the important bits, delivered in a leaner way. i ask for details when i am interested; detail gradually as i ask.» «keep updates very lean, with no technical details, or keep them only when it really matters.»
 - «our comms are built mostly around orbit»; --bg threads have no desktop orbit, so «what important thing do i not see there?» «the whole fleet follows the same comms model, so each comms fix is multiplied per thread.» «my comms steering is based on this recipe, so it must be pristine.»
 
+dima, 2026-11-24: «output for me should be less tech-flavored and more human-readable: instead of printing me function names, function calls and arguments, print the sentence-shaped description of what they do. prefer simple shapes and simple language.» «I am essentially fresh eyes for everything that's happening under the hood … the problem should be fixed earlier, at your output style level.» «you spend effort to write your replies, and I spend effort to filter them out, which is double inefficient. they only hurt.»
+
 ## the run
 
+- the test of a reply is his two questions: is it said as to a colleague who was not in the room, and does it change something he uses or need his decision; a shape count never stands in for them
+- every run opens by reading each case in his comms log (`~/.claude/shelf/comms-log.jsonl`), his marked screenshots included
+- the proof is one number, read the same way every run: how often he asks for plainer language, per 100 prompts
+- a run leaves the rule files no larger than it found them: a new line names the line it removes
 - thread and board are one comms surface: orbit, phases and glide are read with the replies, every run
 - every thread's transcript is read — main, each wing, members, `--bg` sessions; clio's prompt log holds main's prompts only
-- dima's trackers (🔭, the stat boards, the 📄 stamp) are info he reads, never cut as noise (dima, 2026-10-10)
+- dima's trackers (🔭, the 📄 stamp) are info he reads, never cut as noise (dima, 2026-10-10; the stamp kept again 2026-11-24)
 - cheap by default: `jq` + `duckdb` count, a model only labels or reads; labels persist in `~/.local/state/refresh-operator-agent-comms-optimization/labels.parquet` and are never re-bought; the cheapest model that agrees 85 % with the gold set labels (run 1: sonnet; haiku failed)
 - suggest a run when: a new thread kind joins the fleet (a wing, cap, tilde) or a month passes since the last line of `log.md`
 
@@ -64,7 +78,7 @@ dima, 2026-11-09:
 
 - **thread ↔ board drift**: an ask only in orbit, a grill only on the board, a reply and its ask telling different things
 - **overload per thread**: what he reads per hour across main, the wings and the members; shapes that differ by thread
-- **advice vs report**: the share of replies carrying an opinion, an insight or a proposal against pure status
+- **could he read it, did it matter**: a sample of replies per thread read against his two questions; chores told to him, tech names he had no use for
 - **his complaints and wishes**: what he complained about or asked for, and whether it got solved
 - **--bg on the board**: orbit and phases writes he never sees, asks answered only through glide or never
 - **what the mods cost**: tokens and chore calls for orbit, phases and glide, per thread
@@ -95,6 +109,7 @@ the print is cafe-chat (dima, 2026-11-09): the insight first («the fleet got fa
 this recipe's print adds the steer, at most a handful of lines each with its why, and what moved since the last run, in words.
 
 checklist, re-checked every run:
-- reply length and asks per reply, per thread, against `fleet-output-format.md`
-- the advice vs report share, thread ↔ board drift and unanswered `--bg` asks, counted
+- his plainer-language asks per 100 prompts against the last run's; every comms-log case fixed at its root, or still happening
+- thread ↔ board drift and unanswered `--bg` asks, counted
+- the rule files' size before and after the run
 - every lever from the last run: landed, moved, or still open
