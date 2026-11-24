@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-23T18:52:00Z'
+updated_date: '2026-11-24T10:22:00Z'
 labels:
   - s
   - clio-main
@@ -2453,4 +2453,51 @@ PK-349:W2222 (2026-11-23 20:42, dima): i plan stopping and halt soon.
 PK-349:W2223 (2026-11-23 20:42, dima): (after your health green state on lanes)
 PK-349:W2224 (2026-11-23 20:49, dima): how is your lanes health state is doing? ❓
 PK-349:W2225 (2026-11-23 20:49, dima): when we can stop? ❓
+
+PK-349:W2226 (2026-11-22 14:03, dima): tell if i still boot you in mini mode? or you already? ❓
+PK-349:W2227 (2026-11-22 19:50, dima): I've noticed a trick.
+PK-349:W2228 (2026-11-22 19:50, dima): I had actually a lot of games installed and they indeed were using almost all of the memory.
+PK-349:W2229 (2026-11-22 19:50, dima): After I uninstalled all the games and I kept only GTA 4 installed and pressed Reclaim.
+PK-349:W2230 (2026-11-22 19:50, dima): It now freed up lots of memory and it seems that now the VM takes about 70 GB.
+PK-349:W2231 (2026-11-22 19:50, dima): Go and test if it worked and if it is true space reclamation or only partial, because you confused me with your previous explanation.
+PK-349:W2232 (2026-11-22 19:50, dima): How much space does my VM take now? ❓
+PK-349:W2233 (2026-11-22 19:50, dima): 51 GB? ❓
+PK-349:W2234 (2026-11-22 19:50, dima): The Steam VM settings still say that the internal drive takes 254 GB
+PK-349:W2235 (2026-11-22 19:50, dima): tell herdr codie to proceed
+PK-349:W2236 (2026-11-23 11:50, dima): where are glides for both lanes? ❓
+PK-349:W2237 (2026-11-23 11:50, dima): i see none.
+
+PK-349:W2238 (2026-11-23 20:52, dima): I spotted that everyone stopped suddenly.
+PK-349:W2239 (2026-11-23 20:52, dima): I expected a smooth stop so everyone would go to their nearest convenient step or slice and stop there
+PK-349:W2240 (2026-11-23 20:52, dima): what is it? ❓
+PK-349:W2241 (2026-11-23 20:52, dima): few words? ❓
+PK-349:W2242 (2026-11-23 20:52, dima): why not landed? ❓
+PK-349:W2243 (2026-11-23 20:52, dima): then resume this tomorrow? ❓
+PK-349:W2244 (2026-11-23 20:52, dima): You can stop everyone if everyone properly stopped, committed, lost any work, and has handoffs properly also
+PK-349:W2245 (2026-11-23 20:53, dima): So stopping everyone is simpler than I thought? ❓
+PK-349:W2246 (2026-11-23 20:53, dima): Previously I was asking you to stop everyone at a good point, kind of with the completed chunk or something like this, but it appears that you can stop everyone nearly immediately, right? ❓
+PK-349:W2247 (2026-11-23 20:58, dima): During today's stop was anyone close to merging of their chunk? ❓
+PK-349:W2248 (2026-11-23 20:58, dima): rdy to halt? ❓
+PK-349:W2249 (2026-11-23 20:58, dima): if yes - halt wire+.
+PK-349:W2250 (2026-11-23 20:58, dima): tmrw.
+PK-349:W2251 (2026-11-23 20:58, dima): you boot and summon mods lane and speak lane + stray immediately during the boot - everyone continues
+PK-349:W2252 (2026-11-23 20:58, dima): we move like today.
+PK-349:W2253 (2026-11-23 20:58, dima): at some point i'll ask you to summon a wing.
+PK-349:W2254 (2026-11-23 20:58, dima): There is still too much noise in your main thread so I will leave you to operate the lanes while we'll solve other topics of discussion with your wing.
+PK-349:W2255 (2026-11-23 20:58, dima): I think it will be more efficient and I plan to do most of the grills with your wing so you will have to communicate.
+PK-349:W2256 (2026-11-23 20:58, dima): Maybe I will also solve the reactions with your wing instead of you so you will have to support your wing with all the context instructions or info.
+PK-349:W2257 (2026-11-23 20:58, dima): If new complicated topics arise, consider delegating them to be solved with wing as well.
+PK-349:W2258 (2026-11-23 20:58, dima): Your thread only solves mods lane and speak lane.
+PK-349:W2259 (2026-11-23 20:58, dima): I will peek into your window from time to time.
+PK-349:W2260 (2026-11-23 21:03, dima): Then fix up the wind-down skill.
+PK-349:W2261 (2026-11-23 21:03, dima): If I ask you to stop and some of the lanes are near the end of the chunk, you should let me know and propose to let them finish.
+PK-349:W2262 (2026-11-23 21:03, dima): This is because usually when we wind down, a lot of stuff is happening and I simply don't have the capacity to figure such details out.
+PK-349:W2263 (2026-11-23 21:03, dima): You see that so ensure you always suggest to me: "allow to finish a chunk."
+PK-349:W2264 (2026-11-23 21:03, dima): (if they are close to it)
+PK-349:W2265 (2026-11-23 21:03, dima): yes
+
+PK-349:W2266 (2026-11-24 12:08, dima): as planned, fable only for you for now, everyone else - opus.
+PK-349:W2267 (2026-11-24 12:08, dima): your wing later - fable too.
+
+answered (12:22 24 Nov, crow's catch at the boot): W2226 was about 22 Nov's boot, answered that day; W2227–W2234 answered 22 Nov 19:50 (the vm file 251.5 → 47.6 GiB, 254 GB is the limit; re-measured 24 Nov: 278G apparent, 48G on disk), FRM-665 closed; W2235 carried 22 Nov; W2236–W2237 answered 23 Nov, his «glide fixed fyi»
 <!-- SECTION:NOTES:END -->
