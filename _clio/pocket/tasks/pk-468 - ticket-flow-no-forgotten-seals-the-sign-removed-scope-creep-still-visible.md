@@ -6,10 +6,9 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T14:49:00Z'
-updated_date: '2026-11-24T16:52:00Z'
+updated_date: '2026-11-24T17:13:00Z'
 labels:
   - s
-  - clio-wing-1
 dependencies: []
 priority: now
 type: task
@@ -300,4 +299,6 @@ PK-468:W135 (2026-11-24 18:37, dima): Remind me that we removed or changed the s
 18:47 dima's 18:46 ticks, grill 2 as picked (o1 o2 o3): a fresh helper finds the additions at each seal; shown at the seal of the next chunk, mid-run ones joined and marked new; one quiet orbit ask per chunk, a press opens the list, silence keeps all. his words 18:46: «proceed, tell when everything is built and you can park.»
 
 18:52 stays open: the stray's two chunks, the trigger's first real line seen, his 1 Dec check; STATE.md is level
+
+19:13 kept: 2026-11-24 — his 17:56 ask to keep track of the ticket flow here until the 1 Dec check; handed back at wing 1's halt, the flyway f61 reads it tomorrow
 <!-- SECTION:NOTES:END -->
