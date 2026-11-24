@@ -45,10 +45,13 @@ import { markActive, setPrimed, startTurn, turn } from './turn.ts';
 import {
     LANE_STALE_TEXT,
     filled,
+    howNote,
     noBoardReminder,
     orbitReminder,
     orbitTexts,
     tickSentence,
+    toldHow,
+    toldHowAs,
     toldOrbit,
     toldOrbitAs,
     toldStaleAs,
@@ -171,6 +174,7 @@ export async function composePrompt(
         ? undefined
         : orbitReminder(orbitNow(), isOn, toldOrbit, texts.plan);
     const reminder = isNoBoard ? noBoardReminder(orbitNow(), isOn) : told?.line;
+    const how = isOn('stash.orbit') ? howNote(texts) : undefined;
     const isFirst =
         orbitNow().turns === 0 && !orbitNow().plan && !turn.isPrimed;
     setPrimed(true);
@@ -243,6 +247,7 @@ export async function composePrompt(
             ...(wrong.length ? [wrongText(wrong)] : []),
             ...(isFirst && isOn('stash.phases') ? [PHASES_START] : []),
             ...(reminder ? [reminder] : []),
+            ...(how && how !== toldHow ? [how] : []),
             ...laneStale,
             ...laneMoves,
             ...laneSteers,
@@ -261,6 +266,7 @@ export async function composePrompt(
     // told only once the prompt went on: one another hook dropped leaves the state to tell again
     if (sent.drop === undefined) {
         toldOrbitAs(told?.key);
+        toldHowAs(how);
         if (isOwner && isOn('stash.glide')) toldStaleAs(staleNow.map(staleKey));
     }
     return sent;

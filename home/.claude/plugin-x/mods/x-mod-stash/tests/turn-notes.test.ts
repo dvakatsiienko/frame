@@ -184,6 +184,47 @@ for (const [shape, files] of [
         ]);
     });
 
+const LOOK_ROW = 'stash.orbit.look.how';
+const hows = (w: { contexts: string[][] }) =>
+    w.contexts.map((c) => c.filter((x) => x.startsWith('a look ask: ')));
+
+test('how a look and a test ask are written is told once, and again when his row changes', async ($, on) => {
+    const w = world(on, typed({ [LOOK_ROW]: 'heron one' }));
+    await start($);
+    await say($, 'hi');
+    await nextPrompt($);
+    w.files[SETTINGS] = typed({ [LOOK_ROW]: 'heron two' })[SETTINGS] ?? '';
+    await nextPrompt($);
+    await nextPrompt($);
+    expect(hows(w)).toEqual([
+        [expect.stringMatching(/^a look ask: heron one; a test ask: say what/)],
+        [],
+        [expect.stringMatching(/^a look ask: heron two; a test ask: say what/)],
+        [],
+    ]);
+});
+
+for (const [shape, files] of [
+    ['an emptied box', typed({ [LOOK_ROW]: '  ' })],
+    ['a settings file that does not parse', { [SETTINGS]: '{ "rows": ' }],
+] as const)
+    test(`a look ask reads the built-in how with ${shape}`, async ($, on) => {
+        const w = world(on, { ...files });
+        await start($);
+        await say($, 'hi');
+        expect(hows(w)).toEqual([
+            [expect.stringMatching(/^a look ask: say where he looks/)],
+        ]);
+    });
+
+test('with 🪐 orbit switched off no prompt says how an ask is written', async ($, on) => {
+    const w = world(on);
+    await start($);
+    partOff(w, 'stash.orbit');
+    await say($, 'hi');
+    expect(hows(w)).toEqual([[]]);
+});
+
 test('his text for a tick replaces only the sentence after the fixed prefix', async ($, on) => {
     const w = world(
         on,

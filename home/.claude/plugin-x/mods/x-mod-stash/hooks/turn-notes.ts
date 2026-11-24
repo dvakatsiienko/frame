@@ -11,11 +11,13 @@ export const STALE_TURNS = 3;
 // a plan set this turn counts from the turn's end, so a prompt landing mid-turn would read it as -1
 export const planAge = (o: StashOrbit) =>
     o.plan === undefined ? undefined : Math.max(0, o.turns - o.plan.at);
-// dima's own words for three orbit lines, typed in herdr's settings and read at each nudge, no restart: a blank or
+// dima's own words for the orbit lines below, typed in herdr's settings and read at each nudge, no restart: a blank or
 // missing row, or a settings file that does not read, is the built-in text
 const ORBIT_TEXT_ROWS = {
     lane: 'stash.orbit.text.lane-stale',
+    lookHow: 'stash.orbit.look.how',
     plan: 'stash.orbit.text.plan-stale',
+    testHow: 'stash.orbit.test.how',
     tick: 'stash.orbit.text.tick',
 } as const;
 type OrbitTexts = Partial<Record<keyof typeof ORBIT_TEXT_ROWS, string>>;
@@ -32,7 +34,9 @@ export async function orbitTexts($: EngineInterface): Promise<OrbitTexts> {
     };
     return {
         lane: typed(ORBIT_TEXT_ROWS.lane),
+        lookHow: typed(ORBIT_TEXT_ROWS.lookHow),
         plan: typed(ORBIT_TEXT_ROWS.plan),
+        testHow: typed(ORBIT_TEXT_ROWS.testHow),
         tick: typed(ORBIT_TEXT_ROWS.tick),
     };
 }
@@ -48,16 +52,27 @@ export const filled = (text: string, values: Record<string, string | number>) =>
     );
 export const tickSentence = (texts: OrbitTexts, n: number) =>
     texts.tick === undefined ? undefined : filled(texts.tick, { n });
+// how a look ask and a test ask are written, in his words or these; the tool's text loads once a session, so they ride
+// the prompt's orbit note, told again only when they change (FRM-645)
+const LOOK_HOW = 'say where he looks and the one thing to judge';
+const TEST_HOW =
+    'say what he presses and what he should see, its plain numbered steps in the linked file';
+export const howNote = (texts: OrbitTexts) =>
+    `a look ask: ${texts.lookHow ?? LOOK_HOW}; a test ask: ${texts.testHow ?? TEST_HOW}.`;
 const PLAN_STALE_TEXT = 'stale: set it again';
 export const LANE_STALE_TEXT = `lane {id} «{title}» moved nothing for {n} of your turns, stale: step it or end it through ${ORBIT_TOOL} op glide.`;
 // what this session was last told of its orbit and its stale lanes, in process memory as `isPrimed` is: the same state
 // adds no line to the next prompt (FRM-640: a sentence on every prompt piled into the history). a compaction, a /clear
 // or a resume drops what was told, so the state prints once again; a value kept by session id would outlive all three
 export let toldOrbit: string | undefined;
+export let toldHow: string | undefined;
 export const toldStaleLanes = new Set<string>();
 // what the last prompt told: an orbit note told once stays quiet until it changes, a stale lane until it moves
 export function toldOrbitAs(key: string | undefined) {
     toldOrbit = key;
+}
+export function toldHowAs(note: string | undefined) {
+    toldHow = note;
 }
 export function toldStaleAs(keys: string[]) {
     toldStaleLanes.clear();
@@ -65,6 +80,7 @@ export function toldStaleAs(keys: string[]) {
 }
 export function forgetTold() {
     toldOrbit = undefined;
+    toldHow = undefined;
     toldStaleLanes.clear();
 }
 // the orbit note of a prompt, only when the state differs from `told`: the open ask ids and whether the plan is unset,
@@ -122,5 +138,6 @@ export function noBoardReminder(o: StashOrbit, isOn: IsPartOn) {
 
 export function resetTurnNotes() {
     toldOrbit = undefined;
+    toldHow = undefined;
     toldStaleLanes.clear();
 }

@@ -585,6 +585,12 @@
   - and a kind that is neither, a lead that is the other kind's, or a lead with nothing after it refuses the whole add in that ask's one line
   - and a `follow` keeps the kind, its new text led; a new text led by the other word changes it
   - proof: tests/orbit.test.ts::an ask «…» with kind … is kept by its lead or refused (11 rows); ::a kind rides the store item, and a follow keeps it or takes the new lead
+- ✅ how a look and a test ask are written is his to steer (FRM-645)
+  - given a text in `stash.orbit.look.how` or `stash.orbit.test.how` of `~/.claude/shelf/herdr-settings/settings.json` (herdr writes the file, this mod only reads it), when a session's next prompt goes, then it carries one line, «a look ask: <his>; a test ask: <his>», once; a changed row tells it again, as do a compaction, a `/clear` and a resume
+  - given a row blank, the file missing or not parsing, then the built-in words
+  - given 🪐 orbit switched off, then no prompt carries it
+  - decision: the prompt's note, not the tool's text: that loads at session start, so an edit of his would wait for a restart
+  - proof: tests/turn-notes.test.ts::how a look and a test ask are written is told once… (+ built-in words with an emptied box, a file that does not parse; orbit off)
 - ✅ a clio boot keeps going after a spawn (FRM-426, flawlog 2026-10-29 13:10)
   - given clio's session loaded `clio:boot` and has printed no reply as long as the board (300 characters or more) since
   - when `start_session` returns, whose own hint says «then end your turn»

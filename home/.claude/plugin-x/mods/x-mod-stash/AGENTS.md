@@ -10,7 +10,7 @@ dima's board, band and orbit in one cc mod: `hooks/register.tsx` is the hook wir
 - **the hook features** — `session-start.ts` (a start or a reload, the poll), `prompt-notes.ts` (what a prompt carries), `step-notes.ts` (what a tool step carries back), `session-end.ts` (what a conversation leaves behind), `session-reset.ts` (a quit gives every module variable its load value)
 - **the features over the owners** — `fields.ts`, `orbit-presses.ts`, `orbit-tool.ts`, `turn-notes.ts`, `wind-run.ts`, `quiet-gate.ts`, `parked-wake.ts`, `band-presses.ts`, `reply-fix.ts`, `rows.ts`
 - **the owners** — each holds one store or shelf file and the only code that writes it
-- **the pure rules** — no `$`: `orbit.ts`, `orbit-ask-origin.ts`, `parse.ts`, `pace.ts`, `quiet.ts`, `rounds.ts`' math, `look.ts`, `tree.ts`, `util.ts` (`serial()` for a read-change-write across awaits)
+- **the pure rules** — no `$`: `orbit.ts`, `orbit-ask-*.ts`, `parse.ts`, `pace.ts`, `quiet.ts`, `rounds.ts`' math, `look.ts`, `tree.ts`, `util.ts` (`serial()` for a read-change-write across awaits)
 - **the x door** — `x-cli.ts`: `xRead`, every `x … --json` read
 
 ## the rules a move or a change keeps
