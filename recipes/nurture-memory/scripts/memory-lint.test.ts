@@ -57,7 +57,8 @@ function repo(leaf: string, budget: number) {
         });
     const read = (path: string) => readFileSync(join(dir, path), 'utf8');
     const drop = (path: string) => git('rm', '-q', path);
-    return { drop, lint, read, seed, stage, states };
+    const commit = () => git('commit', '-qm', 'next');
+    return { commit, drop, lint, read, seed, stage, states };
 }
 
 describe('memory-lint', () => {
@@ -73,14 +74,37 @@ describe('memory-lint', () => {
         expect(out.stderr).toContain('regroom it first');
     });
 
-    it('lets a raise with its reason through, in the same commit', () => {
+    it('lets a raise that names his word through, in the same commit', () => {
         const r = repo('- one line\n', 20);
         r.stage(LEAF, '- one line\n- a second line that pushes it over\n');
         r.stage(
             BUDGETS,
-            `${LEAF}\t200\tthe second line carries dima's new rule\n`,
+            `${LEAF}\t200\tthe second line carries his new rule (dima 2026-11-24)\n`,
         );
         expect(r.lint().status).toBe(0);
+    });
+
+    it('refuses a raise with a new reason and no cut elsewhere: memory stays at net zero', () => {
+        const r = repo('- one line\n', 20);
+        r.stage(LEAF, '- one line\n- a second line that pushes it over\n');
+        r.stage(BUDGETS, `${LEAF}\t200\tthe second line is useful\n`);
+        const out = r.lint();
+        expect(out.status).toBe(1);
+        expect(out.stderr).toContain('memory stays at net zero');
+    });
+
+    it('lets a raise through when another row is cut by as much', () => {
+        const other = '_clio/memory/habit-other.md';
+        const r = repo('- one line\n', 20);
+        r.stage(other, '- a\n');
+        r.stage(BUDGETS, `${LEAF}\t20\tseed\n${other}\t300\tseed\n`);
+        r.commit();
+        r.stage(LEAF, '- one line\n- a second line that pushes it over\n');
+        r.stage(
+            BUDGETS,
+            `${LEAF}\t200\tthe second line is useful\n${other}\t120\ttrimmed to pay for it\n`,
+        );
+        expect(r.lint(LEAF, other).status).toBe(0);
     });
 
     it('refuses a raise that keeps the old reason', () => {

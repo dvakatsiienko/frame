@@ -62,7 +62,7 @@ the log is short by construction; it holds only unresolved items. cluster them, 
 batched proposal (memory / rules / tickets / drop), ONE approve from dima, then
 execute and commit. never ticketify catches one at a time.
 a hazard's home: `rules/fleet-hazards.md`'s header (one repo or 2+; a refusal only for destroyed work, the floor).
-when a flaw class repeats, reference past logs — a repeat is stronger evidence than a first sighting.
+a flaw class seen before (grep the past logs) never gets another rule line: its proposal is a mechanism (a script, a check, a hook) or a deletion (dima's o7, 2026-11-24).
 
 ## 4. the failure mode to watch
 several turns of visible friction with zero flags is itself the flaw — sweep backwards, flag what

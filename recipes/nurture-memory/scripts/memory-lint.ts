@@ -51,6 +51,7 @@ const LOOKUP_TIMEOUT_MS = 10_000;
 const squash = (text: string) => text.replace(/\s+/g, ' ');
 
 type Row = { budget: number; reason: string };
+const HIS_WORD = /\bdima\b[^;]*(\d{4}-\d{2}-\d{2}|\bo\d+\b)/i;
 type Cached = Record<string, { at: number; stateType: string }>;
 
 // the staged form when the file is staged, the disk form otherwise (a hand run before `git add`)
@@ -277,6 +278,20 @@ function lint(stagedFiles: string[]) {
                 `${path}: its budget moved ${was.budget} → ${row.budget} with the old reason — name why this add earned it`,
             );
     }
+    // memory at net zero (dima's o7, 2026-11-24): a raise is paid by a cut in another row, or carries his word
+    const moved = [...budgets].flatMap(([path, row]) => {
+        const was = before.get(path);
+        return was && !Number.isNaN(row.budget)
+            ? [{ by: row.budget - was.budget, path, reason: row.reason }]
+            : [];
+    });
+    const net = moved.reduce((sum, row) => sum + row.by, 0);
+    if (net > 0)
+        for (const row of moved)
+            if (row.by > 0 && !HIS_WORD.test(row.reason))
+                problems.push(
+                    `${row.path}: its budget rose ${row.by} B and the rows together rose ${net} B — memory stays at net zero: cut another row by as much in this commit, or name his word in the reason («dima YYYY-MM-DD» or his orbit id)`,
+                );
     for (const path of budgets.keys())
         if (!memory.has(path))
             problems.push(
