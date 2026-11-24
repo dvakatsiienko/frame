@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -57,6 +58,29 @@ func TestLinearSignCheckRefusesABodyAddingDimasWord(t *testing.T) {
 			}
 			if got.code != 1 || !strings.Contains(got.stdout, c.want) {
 				t.Fatalf("exit %d, want 1 naming %q:\n%s", got.code, c.want, got.stdout)
+			}
+		})
+	}
+}
+
+// FRM-700: signing is clio's, so a refusal sends an agent to her skill and never to dima
+func TestLinearSignCheckRefusalNamesTheShapeLaneSkillAndNeverAsksDima(t *testing.T) {
+	t.Parallel()
+	for name, file := range map[string]string{
+		"a new sign line":     signCheckBody + "✍️ re-signed 2026-11-11 · body 429c0cdb\n",
+		"a merge grant added": signCheckBody + "merge: pre-approved\n",
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(t.TempDir(), "body.md")
+			write(t, path, file)
+
+			envelope, got := runLinear(t, signServer(t, signCheckBody), nil, "linear", "sign-check", "FRM-1", "--body-file", path)
+
+			next := fmt.Sprint(envelope["next"])
+			words := strings.ToLower(fmt.Sprint(envelope["error"], " ", next))
+			if got.code != 1 || !strings.Contains(next, "clio:shape-lane") || strings.Contains(words, "dima") {
+				t.Errorf("exit %d, words %q: want 1, a next naming clio:shape-lane, and never dima", got.code, words)
 			}
 		})
 	}
