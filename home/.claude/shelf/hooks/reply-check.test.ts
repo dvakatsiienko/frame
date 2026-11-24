@@ -534,6 +534,21 @@ describe('a landed claim with no git read (o185)', () => {
     });
 });
 
+describe('an ask that points at a reply not written yet', () => {
+    const ask = (op: object) => turnWith({ calls: [{ input: op, name: 'mcp__x-mod-stash__orbit' }], id: 'm1' });
+
+    it.each([
+        { asks: [{ pick: 'a', text: 'close it?', why: 'its nine questions are printed now' }], op: 'add' },
+        { id: 'o2', op: 'follow', pick: 'a', text: 'close it, leftovers homed as in my reply?', why: 'asked' },
+    ])('logs the ask', (op) => {
+        expect(loggedAfter('asked.', ask(op))).toContain('printed-early\t');
+    });
+
+    it('passes an ask that points at nothing', () => {
+        expect(loggedAfter('asked.', ask({ asks: [{ pick: 'a', text: 'close it?', why: 'built and live' }], op: 'add' }))).toBe('');
+    });
+});
+
 describe('a grill ask with no printed question (dima o18)', () => {
     const grillAdd = (text: string) => turnWith({ calls: [{ input: { asks: [{ pick: 'a', text }], op: 'add' }, name: 'mcp__x-mod-stash__orbit' }], id: 'm1' });
 

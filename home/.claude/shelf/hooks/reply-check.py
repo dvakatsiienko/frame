@@ -229,6 +229,17 @@ def grill_asks_unprinted(reply: str, calls: list[tuple[str, dict]]) -> list[str]
     return [lost[0][:40]] if lost else []
 
 
+# an ask that points at a reply not written yet («printed now», «as in my reply»): his tick lands before he read it (24 Nov, FRM-638)
+PRINTED_CLAIM = re.compile(r"\bprinted\b(?! (?:tonight|on|to|by|apart))|\b(?:in|from) my reply\b", re.I)
+
+
+def asks_printed_early(calls: list[tuple[str, dict]]) -> list[str]:
+    ops = [op for name, args in calls if name == "mcp__x-mod-stash__orbit" for op in [args, *(args.get("ops") or [])] if isinstance(op, dict)]
+    asks = [a for op in ops for a in ([op] if op.get("op") == "follow" else op.get("asks") or [] if op.get("op") == "add" else []) if isinstance(a, dict)]
+    early = [a for a in asks if PRINTED_CLAIM.search(f"{a.get('text', '')} {a.get('title', '')} {a.get('body', '')} {a.get('why', '')}")]
+    return [str(early[0].get("text") or early[0].get("title") or "")[:40]] if early else []
+
+
 def grill_drift(prose: str, session: str) -> str:
     # the reply's grill and its orbit asks are one list: the numbers must match (dima, 2026-10-14: the reply held 5, orbit Q1–Q6)
     head = GRILL_HEAD.search(prose)
@@ -672,6 +683,7 @@ def main() -> None:
         hits += [("unevidenced", said) for said in unevidenced(path, reply)]
         hits += [("landed-unread", said) for said in landed_unread(path, reply)]
         hits += [("grill-unprinted", head) for head in grill_asks_unprinted(reply, turn_calls(path))]
+        hits += [("printed-early", head) for head in asks_printed_early(turn_calls(path))]
         lost = lost_round(path, reply)
         hits += [("round-lost", what) for what in lost]
         if buried_round(path, reply):
@@ -714,6 +726,8 @@ def main() -> None:
         reminds.append("an open orbit ask and no 🔭 line naming **🙋‍♂️ dima** — end on `🔭 waiting on **🙋‍♂️ dima**`")
     if by_rule("round-buried"):
         reminds.append("a round closed a turn dima did not start, the next wake buries it — reprint it whole in your reply to his next prompt")
+    if by_rule("printed-early"):
+        reminds.append("an ask said «printed» or «in my reply» before the reply went out, so his tick may land on nothing read — post such an ask after the reply, or drop the word")
     if by_rule("note-only"):
         reminds.append("the reply pointed at the board while the proposal sat only in an ask's hidden note — print the proposal in the thread")
     if by_rule("no-next-item"):

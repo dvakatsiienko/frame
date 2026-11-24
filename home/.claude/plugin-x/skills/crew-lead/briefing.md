@@ -8,7 +8,7 @@
 - **a sixth sense on a pr touching `x/` or `mods/`**: its summon prompt ends «read `x/.claude/skills/x-verify/SKILL.md` first» or «read `home/.claude/plugin-x/mods/.claude/skills/mods-verify/SKILL.md` first»; project skills load only once the tree is the cwd, past its first probes.
 - 🚧 **a `not yours: …` line** — what another member owns, written as a fence («crossing it is a stop and a question»), so codie never duplicates or crosses it; the exit lines are the termination half.
 - 🧭 **context pointers, never restatement** (dima's yes, 2026-10-07: «both are very useful ideas»): a brief or a `SendMessage` names the spec (`.scratch/<feature>/`), the pocket item, the commit or the research doc, and adds only what none of them holds. a restated ticket drifts from its source the moment either changes.
-- **a brief's rules carry the wait line**: «a wait on the load or the test queue runs in the background with a deadline; past 10 min of it, one `[ask]` naming what holds you» (dima's o14 keep, 2026-11-24; `crew-dna` had no room for it).
+- **a brief's rules carry the wait line**: «a wait on the test queue runs in the background with a deadline; past 10 min of it, one `[ask]` naming what holds you» (dima's o14 keep, 2026-11-24). a threshold in a brief names its measure or the tool that decides it.
 - **a brief whose proof needs dima's hands says so at the top** and asks up front.
 - **a research brief asks for a structured summary, never a file dump** — paths with line ranges, who owns what, footguns, «what is NOT in the area». a plan or stack pick runs `advise-project-approach`, an architecture question names `neuroarxiv` as a lane (`habit-research-lanes`). a research brief carries `decided against: …` lines for what dima already rejected, and a research pick is checked against the spec's rules and his past verdicts before it enters a ticket or a reply.
 - **a helga brief** (`x:crew-helga`) names only paths `git status` shows clean and no session holds, gives each anchor as one physical line that matches exactly once, and is read back from helga's receipt before any fix; `node ~/frame/home/.claude/plugin-x/skills/crew-helga/scripts/helga-brief-check.ts <brief>` checks it before the brief goes out.
@@ -44,6 +44,7 @@
 - **a steer to a running member is a message**; the brief file is frozen at summon, an edit to it reaches nobody. to a lane codie, every steer, ask or wisp also lands under its lane plan's `## not greenlit` the same turn, and the message names that line; a one-chunk lane has no lane plan, so the steer lands in the spec's section instead.
 - **a relay to a member names the source it was read from**; a claim about a repo's behaviour opens that repo's `AGENTS.md` first.
 - **a message stating a result goes after the command's output**, never in the same batch.
+- **a member's ask that touches dima's tick goes to his board before the answer**.
 - **a timeout is not proof of failure** — `ListAgents` before a re-summon; a blind retry double-runs the work.
 - **a `local_…` id send reports no refusal, so its success never proves a read**: a name send carries the delivery notice.
 
