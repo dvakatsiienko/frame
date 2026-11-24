@@ -2,7 +2,7 @@
 # PermissionRequest on Bash: cc asks even in bypassPermissions when its parser cannot read a command (a zsh
 # `${(j:,:)a}` flag), and an unattended session then waits ~2 min for a deny (FRM-684, probed 2026-11-22).
 # a Bash call in bypass is always answered: allowed when its text holds no deletion or truncation shape, else
-# denied with the script-file door, so no member waits on a press (the mods codie stood 9 min, 2026-11-24).
+# denied with its door (a script file for a truncation, a plain command for a delete), so no member waits (the mods codie stood 9 min, 2026-11-24).
 # any other mode or tool prints nothing, so cc's own dialog stands. x-mod-guard still refuses at PreToolUse.
 import json
 import os
