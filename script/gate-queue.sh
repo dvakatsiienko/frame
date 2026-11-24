@@ -78,7 +78,9 @@ kind_of() {
     for word in "$@"; do
         case $word in --only | --only=* | --extra | --extra=* | --pairs | --pairs=* | -run | -run=* | --run | --run=* | -*test.run*) return 0 ;; esac
     done
-    local cmd=${1##*/}
+    # past the wrappers nothing may be left, and bash 5 under -u refuses a cut of an unset $1
+    local cmd=${1-}
+    cmd=${cmd##*/}
     shift 2>/dev/null || return 0
     case $cmd in
     cd) echo neutral ;;
