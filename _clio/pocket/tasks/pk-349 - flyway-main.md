@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T11:37:00Z'
+updated_date: '2026-11-24T11:50:00Z'
 labels:
   - s
   - clio-main
@@ -20,17 +20,15 @@ ordinal: 1000
 - [ ] #2 f69 herdr wisps: phases steer text empties then returns; a chat picture from Read says «gone» on click
 - [ ] #3 f71 herdr-lane-3 spec (FRM-620): archives when FRM-620, its last open section, closes
 - [ ] #4 f86 mods rider: the guard treats a branch with no `+` line in git cherry as merged, so its delete needs no tick (his o4)
-- [ ] #5 f93 seal drafts with open questions for dima: FRM-582 (9), FRM-691 (7), in ~/frame/.scratch/seal-drafts/
-- [ ] #6 f95 herdr wisp: a triple click in chat selects one visual run, not the whole bullet (his shot 24 Nov 12:29); joins f69
-- [ ] #7 f98 prompt-groom.ts --linear crashes for helga: no codie linear token in the keychain; run it from my thread or fix
-- [ ] #8 f99 sealed-ahead.ts: read a chunk placed ahead of a lane running one (herdr prints red though its spec is ready)
-- [ ] #9 f100 mods wisp: the review-rounds counter booked my «next: slice 3» on a slice-less key and escalated round 4 falsely
-- [ ] #10 f101 herdr wisp: a click on a file path or a dir link in chat does nothing, with or without Cmd (his o6)
-- [ ] #11 f94 FRM-582 emoji reactions: its ten questions to dima, three a batch, after boot — on: 2026-11-24
-- [ ] #12 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #13 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #14 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #15 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #5 f95 herdr wisp: a triple click in chat selects one visual run, not the whole bullet (his shot 24 Nov 12:29); joins f69
+- [ ] #6 f98 prompt-groom.ts --linear crashes for helga: no codie linear token in the keychain; run it from my thread or fix
+- [ ] #7 f99 sealed-ahead.ts: read a chunk placed ahead of a lane running one (herdr prints red though its spec is ready)
+- [ ] #8 f100 mods wisp: the review-rounds counter booked my «next: slice 3» on a slice-less key and escalated round 4 falsely
+- [ ] #9 f101 herdr wisp: a click on a file path or a dir link in chat does nothing, with or without Cmd (his o6)
+- [ ] #10 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #11 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #12 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #13 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2605,4 +2603,10 @@ PK-349:W2314 (2026-11-24 12:53, dima): [Your order is the rule from now on: mods
 moved 13:09 24 Nov: W2295–W2307 (the glide rethink wish) live in FRM-697 as FRM-697:W1–W13
 
 done 2026-11-24 13:37: f97 rex skill names REX_SESSION, which rex dropped (use REX_BLOCK); also --no-open is now --url-only: fix the skill
+
+done 2026-11-24 13:50: f94 FRM-582 emoji reactions: its ten questions to dima, three a batch, after boot — on: 2026-11-24 (FRM-582 Todo)
+
+done 2026-11-24 13:50: f93 seal drafts with open questions for dima: FRM-582 (9), FRM-691 (7), in ~/frame/.scratch/seal-drafts/ (FRM-582 Todo, FRM-691 Todo)
+
+moved 13:50 24 Nov: f93 (seal drafts FRM-582, FRM-691) and f94 (FRM-582's ten questions) are wing 1's now, in PK-346, on dima's 12:59 order to the wing; labels clio-main → clio-wing-1 on FRM-614, FRM-582, FRM-691, FRM-696, FRM-585
 <!-- SECTION:NOTES:END -->
