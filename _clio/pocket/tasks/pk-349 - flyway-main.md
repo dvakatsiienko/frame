@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T16:02:00Z'
+updated_date: '2026-11-24T16:38:00Z'
 labels:
   - s
   - clio-main
@@ -26,7 +26,6 @@ ordinal: 1000
 - [ ] #8 f112 ⏳ FRM-585 annotate (F6) seal, right after FRM-699 — waits for: FRM-699
 - [ ] #9 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
 - [ ] #10 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #11 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2647,4 +2646,6 @@ done 2026-11-24 16:04: f98 prompt-groom.ts --linear crashes for helga: no codie 
 done 2026-11-24 16:14: f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29 (FRM-516 Todo)
 
 done 2026-11-24 18:02: f109 ⏳ FRM-585 annotate reply text: the copy-then-find probe, then Q1 to dima — waits for: FRM-683 (FRM-585 Todo, FRM-683 In Progress)
+
+done 2026-11-24 18:38: f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- SECTION:NOTES:END -->

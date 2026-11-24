@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T14:49:00Z'
-updated_date: '2026-11-24T16:26:00Z'
+updated_date: '2026-11-24T16:37:00Z'
 labels:
   - s
   - clio-wing-1
@@ -286,4 +286,14 @@ PK-468:W130 (2026-11-24 18:15, dima): What is the ticket about it and where is i
 18:20 PK-468:W150 (2026-11-24 18:09, dima's 🛎️ tick on clio's ask o5, accepted as picked): «signing moves to me: I groom and sign, you get no sign or re-sign asks, from now?» pick «yes, from now: near tickets re-signed at each edit, a guard edit's merge still asks you»
 
 18:26 dima 18:25: «go everthing at once then print short list of what's left, and when it can be done and by whom, keep short and easy to read im tired» — running: the groom, the trigger, research links (wing 1); the two cli fixes to the stray
+
+PK-468:W131 (2026-11-24 18:25, dima): go everthing at once then print short list of what's left, and when it can be done and by whom, keep short and easy to read im tired.
+
+PK-468:W132 (2026-11-24 18:37, dima): [any time, you: four short lines that still call a sign your word. I show them one by one.] now
+
+PK-468:W133 (2026-11-24 18:37, dima): [when you're fresh, you and me: one grill, how my additions show up at a chunk's start] now, when ur ready
+
+PK-468:W134 (2026-11-24 18:37, dima): [1 Dec, me: count parks, missed seals, coders hitting gaps and the critic's serious finds. then we decide on the sign as a script.] When we reach this date gate, ensure you remind me properly what we are up to doing on the 1st of December (e.g. link me to today's thread and remind me that that reminder is about fixing the ticket flow).
+
+PK-468:W135 (2026-11-24 18:37, dima): Remind me that we removed or changed the signing mechanism
 <!-- SECTION:NOTES:END -->
