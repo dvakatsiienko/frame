@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T14:49:00Z'
-updated_date: '2026-11-24T16:20:00Z'
+updated_date: '2026-11-24T16:26:00Z'
 labels:
   - s
   - clio-wing-1
@@ -284,4 +284,6 @@ PK-468:W129 (2026-11-24 18:15, dima): This grill [grip]? ❓
 PK-468:W130 (2026-11-24 18:15, dima): What is the ticket about it and where is it? ❓
 
 18:20 PK-468:W150 (2026-11-24 18:09, dima's 🛎️ tick on clio's ask o5, accepted as picked): «signing moves to me: I groom and sign, you get no sign or re-sign asks, from now?» pick «yes, from now: near tickets re-signed at each edit, a guard edit's merge still asks you»
+
+18:26 dima 18:25: «go everthing at once then print short list of what's left, and when it can be done and by whom, keep short and easy to read im tired» — running: the groom, the trigger, research links (wing 1); the two cli fixes to the stray
 <!-- SECTION:NOTES:END -->
