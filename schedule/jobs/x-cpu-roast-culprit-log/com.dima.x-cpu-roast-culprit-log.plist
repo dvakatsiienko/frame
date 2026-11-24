@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  🔥 x-cpu-roast-culprit-log — when the load stays high, one line names which lane burned the cpu and the processes behind it.
+
+  - schedule — every 60 s (StartInterval) and once at load: one poll per start, then it exits
+  - threshold — a 1-minute load of 20 or more that stays for 5 minutes of wall time writes one row per stretch; X_ROAST_LOAD and X_ROAST_SECONDS override both
+  - idle cost — one `uptime` a poll; while the load is over, one `ps` at the start of the stretch and one when the row is written, plus `x thread list` and an `lsof` per heavy process of no thread
+  - output — ~/.local/state/x/x-cpu-roast-culprit-log.log, one tsv line a roast: time, load, the cpu per lane, the top 5 processes; beside it .stamp (the stretch) and .last-poll (the job ran)
+  - launchd's own output — ~/.local/share/x-cpu-roast-culprit-log/run.log and run.err.log
+  - source — ~/frame/schedule/jobs/x-cpu-roast-culprit-log/main.ts, roast.ts
+  - read — node ~/frame/schedule/jobs/x-cpu-roast-culprit-log/read.ts --since HH:MM; exit 1 on a row after it, or when the job is not running
+  - setup — mkdir -p ~/.local/share/x-cpu-roast-culprit-log; launchd will not create a missing log dir
+  - gotcha — the vm's cpu is one process, named vm-go-test, lane «no lane»: the job cannot see inside the vm
+
+  node is fnm's `default` alias, as x-cc-otel's: a shell's node dies with that shell. PATH reaches `x`, which launchd's PATH lacks.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.dima.x-cpu-roast-culprit-log</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <!-- launchd does not expand ~, so every path is absolute by necessity. -->
+        <string>/Users/dima/.local/share/fnm/aliases/default/bin/node</string>
+        <string>/Users/dima/frame/schedule/jobs/x-cpu-roast-culprit-log/main.ts</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/dima/.local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StartInterval</key>
+    <integer>60</integer>
+
+    <key>StandardOutPath</key>
+    <string>/Users/dima/.local/share/x-cpu-roast-culprit-log/run.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/dima/.local/share/x-cpu-roast-culprit-log/run.err.log</string>
+</dict>
+</plist>

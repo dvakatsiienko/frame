@@ -26,7 +26,7 @@ the installer is idempotent, and it waits for a job to actually leave the domain
 rebootstrapping it. `bootout` returns before the teardown finishes, and a bootstrap that races
 it is refused.
 
-## the eight local jobs
+## the ten local jobs
 
 - `x-monitor-hotkey-stats` — always on, counts chord presses, never keystrokes
 - `x-monitor-hotkey-live` — always on, keeps the hotkey map's data current
@@ -36,6 +36,8 @@ it is refused.
 - `x-speak-admin` — always on, serves speak, the voice admin (bytes `apps/speak`), at 127.0.0.1:7386
 - `x-changedetector` — always on, changedetection.io at 127.0.0.1:7390, watching every upstream issue and release we follow
 - `x-cc-otel` — always on, takes every Claude Code session's OpenTelemetry export at 127.0.0.1:4318 into daily jsonl files; while the pm2 trial runs (`docs/test-drive/pm2.md`) pm2 runs it from `ecosystem.config.cjs` and the launchd job is disabled, so raycast shows it red
+- `x-n8n` — always on under pm2 (no plist, `ecosystem.config.cjs`), the local n8n at port 5678, the blueprints tool on trial (`docs/test-drive/blueprints.md`)
+- `x-cpu-roast-culprit-log` — every 60 s, one `uptime` a poll; a 1-minute load of 20 or more for 5 minutes writes one line to `~/.local/state/x/x-cpu-roast-culprit-log.log` naming the lane that burned the cpu and the processes behind it (`read.ts` shows it at the siesta; trial: `docs/test-drive/x-cpu-roast-culprit-log.md`)
 
 each plist opens with a comment describing itself; the raycast `schedule` command renders it.
 
