@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T16:38:00Z'
+updated_date: '2026-11-24T17:00:00Z'
 labels:
   - s
   - clio-main
@@ -2648,4 +2648,38 @@ done 2026-11-24 16:14: f59 crow week verdict FRM-516: caught-note log vs her pre
 done 2026-11-24 18:02: f109 ⏳ FRM-585 annotate reply text: the copy-then-find probe, then Q1 to dima — waits for: FRM-683 (FRM-585 Todo, FRM-683 In Progress)
 
 done 2026-11-24 18:38: f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+
+19:00 wind-down steer, folded into clio:wind-down steps 4–5:
+PK-349:W2320 (2026-11-24 18:59, dima): I think our wind down works in a non-optimal way.
+PK-349:W2321 (2026-11-24 18:59, dima): I think you treat wind down too hard because I actually expected that everyone will still keep working until the nearest 15 minutes (especially given the fact that Stray still finishes its tails because currently it is unoptimal).
+PK-349:W2322 (2026-11-24 18:59, dima): You stopped everyone immediately and Stray is still not ready.
+PK-349:W2323 (2026-11-24 18:59, dima): While everyone is parked we wait for Stray.
+PK-349:W2324 (2026-11-24 18:59, dima): Let's sharpen your wind down skill because each time that I ask for a wind down, I prefer efficiency as the first part so wind downs are still efficient.
+PK-349:W2325 (2026-11-24 18:59, dima): I already told you about this.
+PK-349:W2326 (2026-11-24 18:59, dima): Often we have multiple lanes at once and the situation that I want the least is when you, for example, park multiple lanes but one lane still finishes some stuff and everyone is parked already.
+PK-349:W2327 (2026-11-24 18:59, dima): While someone finishes everything planned, everyone else should still be active and ideally everyone stops synchronously.
+PK-349:W2328 (2026-11-24 18:59, dima): Another steer to this skill is the estimate.
+PK-349:W2329 (2026-11-24 18:59, dima): When I ask you to wind down, I want to see a short report in the reply.
+PK-349:W2330 (2026-11-24 18:59, dima): You just wrote one, which is good, and it is almost the shape I want: a short brief about each lane but also a brief estimate on how much time is left for already started work.
+PK-349:W2331 (2026-11-24 18:59, dima): What is currently in progress for each lane? ❓
+PK-349:W2332 (2026-11-24 18:59, dima): Why? ❓
+PK-349:W2333 (2026-11-24 18:59, dima): Because I like to stop lanes when a meaningful part of their progress is finished.
+PK-349:W2334 (2026-11-24 18:59, dima): Ideally a full chunk but full chunks usually take hours so it's kind of long.
+PK-349:W2335 (2026-11-24 18:59, dima): There are situations when I ask for a wind down when a lane is close to finishing a chunk.
+PK-349:W2336 (2026-11-24 18:59, dima): When it is the case, I ask you to always tell me about this and propose lanes to allow them to finish their chunks because I often can allocate more time for a wind down.
+PK-349:W2337 (2026-11-24 18:59, dima): For example today I could change a 15-minute wind down to half an hour of wind down or even 40 minutes just to finish a chunk.
+PK-349:W2338 (2026-11-24 18:59, dima): I prefer that so it's flexible.
+PK-349:W2339 (2026-11-24 18:59, dima): Anyways I can all the time tell you to finish soon as you just did.
+PK-349:W2340 (2026-11-24 18:59, dima): how I prefer lanes to finish:
+PK-349:W2341 (2026-11-24 18:59, dima): ideally chunk (if it +- close to target wind down time I told).
+PK-349:W2342 (2026-11-24 18:59, dima): if it is - your porpose like: a lane X is about to finish a chunk.
+PK-349:W2343 (2026-11-24 18:59, dima): it will take ~X amount if time.
+PK-349:W2344 (2026-11-24 18:59, dima): allow/agree? ❓
+PK-349:W2345 (2026-11-24 18:59, dima): you measure estimate based on today pace median
+PK-349:W2346 (2026-11-24 18:59, dima): then slice — finishing slice fully is also good
+PK-349:W2347 (2026-11-24 18:59, dima): or just finish step and commit.
+PK-349:W2348 (2026-11-24 18:59, dima): in any case: commit and handoff so everyone can sefaly resume tomorrow (pickup).
+PK-349:W2349 (2026-11-24 18:59, dima): Essentially when I ask for wind down, it is a wind down but I want efficiency.
+PK-349:W2350 (2026-11-24 18:59, dima): I don't like what's currently happening because you stopped everyone 6, 7 minutes ago roughly and stray is still active.
+PK-349:W2351 (2026-11-24 18:59, dima): If wind down worked more optimally, everyone could still be active and maybe someone even would finish a more meaningful part.
 <!-- SECTION:NOTES:END -->
