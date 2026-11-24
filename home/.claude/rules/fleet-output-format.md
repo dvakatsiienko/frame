@@ -27,7 +27,7 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 
 - **answer first.** open with the verdict. never build up to it.
 - **one item of his per reply, one decision asked**, in as many plain sentences as it needs, to about ten lines; the rest is linked.
-- **a measure is one sentence**: what got better or worse and roughly how much, in everyday terms («about a third cheaper»); the exact numbers linked.
+- **a measure is one plain sentence, led by its colour**: 🟢 better, 🔴 worse, 🟡 not much changed; what moved and roughly how much, in everyday terms («about a third cheaper»), then whether that is good for us and what to do about it; the exact numbers linked (dima, 2026-11-24: «measures are easier to read when they are themed»).
 - **a claim of state is checked first and says so in plain words** («I ran the tests and they pass»), or says «not checked»; the command is his on ask, in every seat's reply and report (dima, PK-363:W955). <!-- cc -->
 - **no progress chatter (no «N of M done»), but a heartbeat**: one short human line when a turn runs long or something moves to the board. <!-- cc -->
 - **short whole sentences by default; a list only for three or more parallel things.**
