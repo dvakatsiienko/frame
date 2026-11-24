@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 // the pr's branch renamed to the lane's shape, on the seed, the origin and the hub's answer
@@ -338,6 +339,7 @@ func TestLandedApplyClearsWorktreeBranchesAndOtherLanesCleanVerifyTrees(t *testi
 	for _, tree := range []string{clean, dirty} {
 		gitT(t, w.clone, "worktree", "add", "-q", "--detach", tree, onMain)
 	}
+	setGitDirTimes(t, clean, time.Now().Add(-3*time.Hour))
 	write(t, filepath.Join(dirty, "probe.txt"), "a probe kept\n")
 	gitT(t, w.clone, "branch", "worktree-x", onMain)
 	if got := w.run(t, "7", "--apply"); got.code != 0 {

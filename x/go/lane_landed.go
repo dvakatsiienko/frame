@@ -815,7 +815,7 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 		if stale != "" {
 			entry.locked = false
 		}
-		reason := treeStay(entry, main, selves, mergedHead)
+		reason := treeStayAged(entry, !ours && !verify, main, selves, mergedHead)
 		if stale != "" && reason != "" {
 			reason += ", its lock is stale, " + stale + ": git worktree unlock " + path
 			stale = ""
