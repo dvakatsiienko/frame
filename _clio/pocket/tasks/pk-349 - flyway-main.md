@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T13:59:00Z'
+updated_date: '2026-11-24T14:04:00Z'
 labels:
   - s
   - clio-main
@@ -16,17 +16,15 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f98 prompt-groom.ts --linear crashes for helga: no codie linear token in the keychain; run it from my thread or fix
-- [ ] #2 f99 sealed-ahead.ts: read a chunk placed ahead of a lane running one (herdr prints red though its spec is ready)
-- [ ] #3 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
-- [ ] #4 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #5 f104 ⏳ herdr wisp: the slash list misses his skill, in chat's commands() — waits for: FRM-620
-- [ ] #6 f105 ⏳ herdr wisps: the phases steer text empties; a Read picture says «gone» on click — waits for: FRM-620
-- [ ] #7 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
-- [ ] #8 f107 ⏳ herdr wisp: a triple click selects one visual run, not the bullet (shot 24 Nov) — waits for: FRM-620
-- [ ] #9 f108 ⏳ herdr wisp: a click on a file path or dir link does nothing (his o6) — waits for: FRM-620
-- [ ] #10 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #11 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #1 f59 crow week verdict FRM-516: caught-note log vs her precision — on: 2026-11-29
+- [ ] #2 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #3 f104 ⏳ herdr wisp: the slash list misses his skill, in chat's commands() — waits for: FRM-620
+- [ ] #4 f105 ⏳ herdr wisps: the phases steer text empties; a Read picture says «gone» on click — waits for: FRM-620
+- [ ] #5 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
+- [ ] #6 f107 ⏳ herdr wisp: a triple click selects one visual run, not the bullet (shot 24 Nov) — waits for: FRM-620
+- [ ] #7 f108 ⏳ herdr wisp: a click on a file path or dir link does nothing (his o6) — waits for: FRM-620
+- [ ] #8 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #9 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -2637,4 +2635,10 @@ done 2026-11-24 15:59: f100 mods wisp: the review-rounds counter booked my «nex
 done 2026-11-24 15:59: f103 x lane landed sees no quick-lane commit whose body lacks its «step N of» line; one ticket closed by hand
 
 2026-11-24 15:59 flyway moves: f67→f104, f69→f105, f71→f106, f95→f107, f101→f108 (waits for the herdr lane). f100 closed: the speak codie names the slice in each next: line; no mods ticket, his 24 Nov bar. f103 closed: the tool reads x:cmt § 4's «step N of» line by design, the stray was told.
+
+done 2026-11-24 16:04: f99 sealed-ahead.ts: read a chunk placed ahead of a lane running one (herdr prints red though its spec is ready)
+
+done 2026-11-24 16:04: f98 prompt-groom.ts --linear crashes for helga: no codie linear token in the keychain; run it from my thread or fix
+
+2026-11-24 16:04 f98 closed: helga writes groom files only, the linear read runs from main's thread.
 <!-- SECTION:NOTES:END -->
