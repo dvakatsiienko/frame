@@ -1,23 +1,25 @@
 // the crew's messaging contract is one table (`MESSAGE_KINDS` in x-mod-stash's hooks/quiet.ts, FRM-686): a crew skill, a rule
 // or a brief template names no tag outside it and asks no member for a receipt or a per-step line
-const NAMED_TAG = /`\[(?:🪜 ?)?([a-z][a-z-]{2,})\]/gu;
+const NAMED_TAG = /`\[(?:🪜 ?)?([a-z][a-z-]{2,})\](?=[ `])/gu;
 const SENT_TAG =
-    /\b(?:send|sends|ping|pings|message|messages|opens?|opening|tagged)(?: (?:clio|the coordinator|it|one|as|with|a|an))* \[(?:🪜 ?)?([a-z][a-z-]{2,})\](?!\()/giu;
+    /\b(?:send|sends|ping|pings|message|messages|opens?|opening|tagged|as|with|leads?|starts?)(?: (?:clio|the coordinator|it|one|as|with|a|an))* \[(?:🪜 ?)?([a-z][a-z-]{2,})\](?![([])/giu;
+// a bracketed word is a message tag only on a line about messages: `[slug]` in a route is none
+const ABOUT =
+    /\b(?:clio|coordinator|sends?|pings?|messages?|SendMessage|tag(?:s|ged)?)\b/u;
 const PROGRESS = /\[(progress)\]/gu;
-const SEND = String.raw`\b(?:send|sends|ping|pings|message|messages|report|reports|reply|replies|answer|answers)\b(?!,)`;
+// «message», «report», «reply» and «answer» are nouns too, so they count only with someone after them
+const SEND = String.raw`\b(?:(?:send|sends|ping|pings|tell|tells)\b(?!,)|(?:message|report|reply|answer)s? (?:to )?(?:me|us|clio|the coordinator|back|with)\b)`;
 const STEP = String.raw`(?:per|each|every) (?:step|commit|push|slice|edit)\b`;
 const ASKS = [
     [
         'a receipt or a status line',
-        String.raw`${SEND}[^.;\n]{0,50}\b(?:receipts?|acks?|progress|sw done|status (?:line|ping|update)s?)\b`,
+        String.raw`${SEND}[^.;\n]{0,50}\b(?:receipts?|acks?|(?<!in )progress|sw done|status (?:line|ping|update)s?)\b`,
     ],
     ['a per-step line', String.raw`${SEND}[^.;\n]{0,50}\b${STEP}`],
     ['a per-step line', String.raw`\b${STEP}[^.;\n]{0,50}${SEND}`],
 ] as const;
 const REFUSED =
     /\b(?:no|never|not|nothing|nobody|without|only|unless|drops?)\b|n['’]t\b/iu;
-// a helga brief marked blocking is the one that may ask a [done] receipt
-const BLOCKING = /\bblocking\b/iu;
 
 export const CREW_DNA = 'home/.claude/plugin-x/skills/crew-dna/SKILL.md';
 export const CONTRACT_HOME =
@@ -38,7 +40,10 @@ export function contractRefusals(
 ): ContractRefusal[] {
     const found: ContractRefusal[] = [];
     for (const [i, text] of body.split('\n').entries()) {
-        const named = [NAMED_TAG, SENT_TAG, PROGRESS].flatMap((re) =>
+        const shapes = ABOUT.test(text)
+            ? [NAMED_TAG, SENT_TAG, PROGRESS]
+            : [PROGRESS];
+        const named = shapes.flatMap((re) =>
             [...text.matchAll(re)].map((m) => m[1]?.toLowerCase() ?? ''),
         );
         for (const tag of new Set(named))
@@ -51,7 +56,7 @@ export function contractRefusals(
                 });
         for (const [what, source] of ASKS) {
             const asked = text.match(new RegExp(source, 'iu'));
-            if (!asked || BLOCKING.test(text)) continue;
+            if (!asked) continue;
             const from = text.slice(0, asked.index).search(/[^.;\n]{0,60}$/);
             const clause = text.slice(
                 Math.max(0, from),
@@ -94,14 +99,24 @@ function sectionRefusals(
     const section = lines
         .slice(first, rest < 0 ? undefined : first + 1 + rest)
         .join('\n');
-    return tags
-        .filter((tag) => !section.includes(`[${tag}]`))
-        .map((tag) => ({
-            line: first + 1,
-            path,
-            reason: `the section names no [${tag}], a pushing tag`,
-            text: lines[first] ?? '',
-        }));
+    const named = [
+        ...section.matchAll(/\[(?:🪜 ?)?([a-z][a-z-]{2,})\](?!\()/gu),
+    ].map((m) => m[1] ?? '');
+    const at = { line: first + 1, path, text: lines[first] ?? '' };
+    return [
+        ...tags
+            .filter((tag) => !named.includes(tag))
+            .map((tag) => ({
+                ...at,
+                reason: `the section names no [${tag}], a pushing tag`,
+            })),
+        ...named
+            .filter((tag) => !tags.includes(tag))
+            .map((tag) => ({
+                ...at,
+                reason: `the section names [${tag}], no tag of the contract`,
+            })),
+    ];
 }
 
 /* Types */

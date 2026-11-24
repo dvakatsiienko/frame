@@ -28,7 +28,12 @@ describe('a planted line is red, naming its line', () => {
         ['a landed step is [progress]', '[progress] is no tag of the contract'],
         ['send `[blocked]` when stuck', '[blocked] is no tag of the contract'],
         ['send clio [final] then', '[final] is no tag of the contract'],
-        ['`[🪜 climb] x`', '[climb] is no tag of the contract'],
+        ['send `[🪜 climb] x`', '[climb] is no tag of the contract'],
+        ['it goes to clio as [blocked]', '[blocked] is no tag of the contract'],
+        ['a message leads with [final]', '[final] is no tag of the contract'],
+        ['a non-blocking brief: send me a receipt', RECEIPT],
+        ['fix the blocking bug, then send clio progress', RECEIPT],
+        ['report back after each step', STEP],
     ])('%s', (line, reason) => {
         expect(read(line)).toEqual([[3, reason]]);
     });
@@ -41,7 +46,15 @@ describe('what the skills say today is green', () => {
         'never send a receipt',
         "don't ping clio after each step",
         'a batch sends no message; the receipt is a log line',
-        'a brief that marks itself `blocking`: send `[done]` with the receipt',
+        'every commit message names the ticket',
+        'the report lists every commit',
+        'the answer to each step is in the plan',
+        'the final report carries its receipts',
+        'reply in the thread with the receipt attached',
+        'a pr title opens with [wip]',
+        'send a [link][ref]',
+        'send his question on while the work is in progress',
+        'a route dir is `[slug]/page.tsx`, a table `[profile]`',
         'send only `[ask]`, `[done]` or `[escalate]`, `[🪜 escalate]` too',
         '- [ ] 03 · a step',
         'tick `[x]` at each commit',
@@ -71,8 +84,8 @@ test('crew-dna’s section without a pushing tag is red', () => {
 });
 
 test('crew-dna’s section naming a tag the table lacks is red', () => {
-    expect(dna('`[ask]`, `[done]`, `[escalate]`, `[wish]`')).toEqual([
-        [4, '[wish] is no tag of the contract'],
+    expect(dna('`[ask]`, `[done]`, `[escalate]`, [wish]')).toEqual([
+        [3, 'the section names [wish], no tag of the contract'],
     ]);
 });
 

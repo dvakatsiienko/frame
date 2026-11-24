@@ -33,6 +33,9 @@ type briefLine struct {
 	group string
 }
 
+// «message», «report», «reply» and «answer» are nouns too, so they count only with someone after them
+const sendWord = `\b(?:(?:send|ping|tell)s?\b|(?:message|report|reply|answer)s? (?:to )?(?:me|us|clio|the coordinator|back|with)\b)`
+
 var (
 	codeSpan   = regexp.MustCompile("`([^`\n]+)`")
 	ticketID   = regexp.MustCompile(`\b(?:FRM|BYT|DOT)-\d+\b`)
@@ -60,11 +63,16 @@ var (
 	keepWord    = regexp.MustCompile(`(?i)\bkeep(?:s|ing)?\b`)
 	// the fleet's messaging contract (FRM-686): a member sends a question, a finished chunk or a block, never a receipt or a
 	// per-step line; a line that says «never» or «no» states the rule
-	receiptAsk = regexp.MustCompile(`(?i)\b(?:send|ping|message|report|reply|answer)s?\b[^,.;\n][^.;\n]{0,50}?\b(?:receipts?|acks?|progress|sw done|status (?:line|ping|update)s?|(?:per|each|every) (?:step|commit|push))\b|\b(?:per|each|every) (?:step|commit|push)\b[^.;\n]{0,50}\b(?:send|ping|message|report|reply)\b`)
+	receiptAsk = regexp.MustCompile(`(?i)(?:` + sendWord + `)[^.;\n]{0,50}?\b(?:receipts?|acks?|progress|sw done|status (?:line|ping|update)s?|(?:per|each|every) (?:step|commit|push))\b|\b(?:per|each|every) (?:step|commit|push)\b[^.;\n]{0,50}(?:` + sendWord + `)`)
 	noAsk      = regexp.MustCompile(`(?i)\b(?:no|never|not|nothing|without|only|unless)\b|n['’]t\b`)
 	doneAsk    = regexp.MustCompile(`(?i)\b(?:send|ping|message|report|reply|answer)s?\b[^.;\n]{0,50}\[done\]`)
-	blocking   = regexp.MustCompile(`(?i)\bblocking\b`)
-	nonBlock   = regexp.MustCompile(`(?i)\b(?:non-?|not )blocking\b`)
+	inProgress = regexp.MustCompile(`(?i)\bin progress\b`)
+	helgaHead  = regexp.MustCompile(`(?i)^[^\pL\d]*helga(?:[^\pL\d'’]|$)|(?:use the (?:x:)?|/x:)crew-helga\b`)
+	clauseHead = regexp.MustCompile(`[^.;]{0,60}$`)
+	// the brief marks itself: on its first line, at a line's start or in backticks
+	blocking   = regexp.MustCompile("(?i)^\\W*blocking\\b|`blocking`")
+	firstBlock = regexp.MustCompile(`(?i)\bblocking\b`)
+	nonBlock   = regexp.MustCompile(`(?i)(?:\bnon[- ]?|\bnot |n['’]t )blocking\b`)
 	otherPush  = regexp.MustCompile(`(?i)\b(?:clio|the coordinator|dima)\s+(?:will\s+|then\s+)?push(?:es)?\b`)
 	// a skill however it is named: prefixed, a slash command, «the <name> skill», or any hyphenated word (`to-tickets`);
 	// a word naming no skill reads no file
@@ -396,6 +404,18 @@ func missingTickets(ids map[string]int) ([]string, error) {
 
 // each rule came from a brief that misled codie (FRM-311); a new miss adds a rule here. skill reads a
 // named skill's SKILL.md, "" when there is none
+// what a line asks, unless a refusing word stands in its clause before the ask's end
+func askedIn(ask *regexp.Regexp, line string) string {
+	at := ask.FindStringIndex(line)
+	if at == nil {
+		return ""
+	}
+	if noAsk.MatchString(clauseHead.FindString(line[:at[0]]) + line[at[0]:at[1]]) {
+		return ""
+	}
+	return line[at[0]:at[1]]
+}
+
 func lint(lines []briefLine, skill func(name string) string) []finding {
 	var found []finding
 	jevAt, pushAt, modAt, hasBudget, skipsQuiz, namesAuthoring := 0, 0, 0, false, false, false
@@ -411,14 +431,15 @@ func lint(lines []briefLine, skill func(name string) string) []finding {
 		}
 		if strings.TrimSpace(text) != "" {
 			// a helga brief opens on her name or names her skill
-			isHelga = isHelga || strings.Contains(text, "crew-helga") || (!hasText && strings.Contains(strings.ToLower(text), "helga"))
+			isHelga = isHelga || (helgaHead.MatchString(text) && (!hasText || strings.Contains(text, "crew-helga")))
+			own := nonBlock.ReplaceAllString(text, "")
+			isBlocking = isBlocking || blocking.MatchString(own) || (!hasText && firstBlock.MatchString(own))
 			hasText = true
 		}
-		isBlocking = isBlocking || blocking.MatchString(nonBlock.ReplaceAllString(text, ""))
-		if asked := receiptAsk.FindString(prose); asked != "" && !noAsk.MatchString(prose) {
+		if asked := askedIn(receiptAsk, inProgress.ReplaceAllString(prose, "")); asked != "" {
 			found = append(found, finding{line.n, "lint", strings.TrimSpace(asked), "a member sends no receipt and no step line: a question, a finished chunk or a block (x:crew-dna § messages to clio)"})
 		}
-		if doneAt == 0 && doneAsk.MatchString(text) && !noAsk.MatchString(prose) {
+		if doneAt == 0 && askedIn(doneAsk, text) != "" {
 			doneAt = line.n
 		}
 		if pushAt == 0 && otherPush.MatchString(prose) {

@@ -101,6 +101,7 @@
         "test:twin": "bash script/runner-twin.sh",
         "test:watch": "vitest",
         "check": "biome check --write",
+        "crew-contract:check": "node ./script/crew-contract-check.ts",
         "fleet-hazards:check": "node ./script/fleet-hazards-check.ts",
         "git-crypt-rename:check": "node ./script/git-crypt-rename-check.ts",
         "git-slim": "./script/git-slim.sh",
