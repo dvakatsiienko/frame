@@ -607,6 +607,94 @@ describe('gate-queue --long', () => {
         ]);
     });
 
+    // the class of a command alone, read by the script's own functions: no queue, no wait
+    test.each([
+        // what `pnpm mods:test` queues itself as
+        ['suite', ['/opt/x/bin/node', '/f/mods/test.ts', 'x-mod-stash']],
+        ['suite', ['claude', 'plugin', 'test', '/f/x-mod-stash']],
+        [
+            'suite',
+            [
+                '/usr/bin/time',
+                '-p',
+                '-o',
+                '/f',
+                'go',
+                '-C',
+                'x/go',
+                'test',
+                '.',
+            ],
+        ],
+        [
+            'suite',
+            [
+                'env',
+                'GIT_TRACE2_EVENT=/x',
+                '/usr/bin/time',
+                '-p',
+                'go',
+                'test',
+                './...',
+            ],
+        ],
+        ['suite', ['env', '-C', 'x/go', 'go', 'test', './...', '-count=1']],
+        [
+            'suite',
+            ['../../script/test-vm-go.sh', 'go', 'test', '-json', './...'],
+        ],
+        ['suite', ['/opt/homebrew/bin/pnpm', '-s', 'mods:test', 'x-mod-guard']],
+        ['suite', ['sh', '-c', 'pnpm --silent mods:test x-mod-guard']],
+        [
+            'suite',
+            ['zsh', '-c', 'pnpm daemon:test && pnpm test && pnpm typecheck'],
+        ],
+        ['suite', ['bash', '-c', 'pnpm typecheck && pnpm test']],
+        ['suite', ['bash', '-c', 'cd x/go && go test ./... -count=1']],
+        ['suite', ['sh', '-c', 'go -C x/go test -count=1 . >out 2>&1']],
+        [
+            'suite',
+            ['sh', '-c', 'cd x/go && ../../script/test-vm-go.sh go test ./...'],
+        ],
+        ['suite', ['sh', '-c', 'timeout 60 pnpm mods:test x']],
+        ['batch', ['sh', '-c', 'pnpm mods:test --only "$PWD/a.test.ts"']],
+        ['batch', ['sh', '-c', 'pnpm test && pnpm exec x verify red f a b']],
+        ['batch', ['sh', '-c', 'pnpm mods:test && node mut.mjs']],
+        ['batch', ['sh', '-c', 'pnpm test | tee out']],
+        ['batch', ['sh', '-c', 'pnpm test $(python3 mut.py)']],
+        ['batch', ['sh', '-c', 'cd x && pnpm typecheck']],
+        ['batch', ['go', 'test', '--run', 'TestX', './...']],
+        ['batch', ['go', 'test', '-test.run=X', './...']],
+        ['batch', ['timeout', '2400', 'python3', '/x/mut21b.py']],
+        ['batch', ['pnpm', 'vitest', 'run', 'script/lib/a.test.ts']],
+        [
+            'batch',
+            ['/x/bin/x', 'verify', 'red', '--pairs', 'f', 'a', 'mods:test'],
+        ],
+        ['batch', ['x', 'mods', 'edit', 'push']],
+        ['batch', ['mut', 'claude plugin test mod; pnpm test']],
+        ['batch', ['sh', 'run.sh']],
+        ['batch', ['env']],
+        ['batch', ['timeout']],
+    ])('%s: %j', (kind, args) => {
+        const text = readFileSync(script, 'utf8');
+        const read = text.slice(
+            text.indexOf('kind_of() {'),
+            text.indexOf('is_suite=\n[ "$slot'),
+        );
+        const got = spawnSync(
+            '/bin/bash',
+            [
+                '-c',
+                `set -u\n${read}\nis_suite_run "$@" && echo suite || echo batch`,
+                'q',
+                ...args,
+            ],
+            { encoding: 'utf8', timeout: 10_000 },
+        );
+        expect([got.stdout.trim(), got.stderr]).toEqual([kind, '']);
+    });
+
     test('two suites keep their order, and a batch behind both waits', {
         timeout: 30_000,
     }, async () => {
@@ -640,6 +728,19 @@ describe('gate-queue --long', () => {
         expect(got.stderr.split('run it in groups').length - 1).toBe(says);
     });
 
+    function onLoad(state: string, load: string, args: string[]) {
+        const bin = join(state, 'bin');
+        mkdirSync(bin);
+        writeFileSync(
+            join(bin, 'uptime'),
+            `#!/bin/sh\necho "1 day, load averages: ${load} 1.00 1.00"\n`,
+            { mode: 0o755 },
+        );
+        return queue(state, ['--long', ...args], '1', {
+            PATH: `${bin}:${process.env.PATH}`,
+        });
+    }
+
     // a mods suite first in line over the load, and a batch behind it at a free turn
     test.each([
         ['30.00', 600, 600, 0],
@@ -647,6 +748,9 @@ describe('gate-queue --long', () => {
         ['30.00', 5, 600, 75],
         ['30.00', 600, 5, 75],
         ['30.00', 600, undefined, 0],
+        ['30.00', 600, 'garbage', 0],
+        ['30.00', 600, '01795522718', 0],
+        ['30.00', 600, '9999999999', 0],
     ])(
         'a batch goes past a mods suite over the load once the turn stood free 2 min (load %s, in line %s s, free %s s: exit %d)',
         (load, inLine, free, status) => {
@@ -654,32 +758,46 @@ describe('gate-queue --long', () => {
             const ago = (s: number) => Math.floor(Date.now() / 1000) - s;
             plantTicket(turn, `0.${ago(inLine)}.m.${process.pid}`, liveSince());
             if (free !== undefined)
-                writeFileSync(`${turn}.freed`, `${ago(free)}\n`);
-            const bin = join(state, 'bin');
-            mkdirSync(bin);
-            writeFileSync(
-                join(bin, 'uptime'),
-                `#!/bin/sh\necho "1 day, load averages: ${load} 1.00 1.00"\n`,
-                { mode: 0o755 },
-            );
-            expect(
-                queue(state, ['--long', 'true'], '1', {
-                    PATH: `${bin}:${process.env.PATH}`,
-                }).status,
-            ).toBe(status);
+                writeFileSync(
+                    `${turn}.freed`,
+                    `${typeof free === 'string' ? free : ago(free)}\n`,
+                );
+            expect(onLoad(state, load, ['true']).status).toBe(status);
         },
     );
 
-    test('a run that ends, and a dead holder freed, say when the turn was free', () => {
-        const ran = fixture();
-        long(ran.state, ['true']);
-        const dead = fixture();
-        plantHolder(dead.turn, '999999', 'Fri Nov  6 10:00:00 2026');
-        long(dead.state, ['true']);
-        for (const { turn } of [ran, dead])
-            expect(
-                Date.now() / 1000 - Number(readFileSync(`${turn}.freed`)),
-            ).toBeLessThan(30);
+    test('a batch that the load gates lets the batch behind it past too', () => {
+        const { state, turn } = fixture();
+        const born = Math.floor(Date.now() / 1000) - 600;
+        plantTicket(turn, `${born}.m.${process.pid}`, liveSince());
+        const got = onLoad(state, '30.00', ['true']);
+        expect(got.status).toBe(0);
+    });
+
+    test('a batch passes no suite while the turn is held, whatever the last release says', () => {
+        const { state, turn } = fixture();
+        const born = Math.floor(Date.now() / 1000) - 600;
+        plantTicket(turn, `0.${born}.m.${process.pid}`, liveSince());
+        plantHolder(turn, String(process.pid), liveSince());
+        expect(onLoad(state, '30.00', ['true']).status).toBe(75);
+    });
+
+    test('a run that ends says when the turn was free, the gate slot writes nothing', () => {
+        const { gateTurn, state, turn } = fixture();
+        long(state, ['true']);
+        expect(
+            Date.now() / 1000 - Number(readFileSync(`${turn}.freed`)),
+        ).toBeLessThan(30);
+        hold(state);
+        expect(existsSync(`${gateTurn}.freed`)).toBe(false);
+    });
+
+    // the suite that frees it waits on the load, so no run of its own writes the time
+    test('a dead holder freed says when the turn was free', () => {
+        const { state, turn } = fixture();
+        plantHolder(turn, '999999', 'Fri Nov  6 10:00:00 2026');
+        const got = onLoad(state, '30.00', ['pnpm', 'mods:test']);
+        expect([got.status, existsSync(`${turn}.freed`)]).toEqual([75, true]);
     });
 
     test('a ticket of the old form still holds its place', () => {

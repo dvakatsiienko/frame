@@ -12,7 +12,7 @@
 # the load lets a batch past only once the turn has stood free 2 min: the load a batch made is gone by then.
 # a turn waits for the machine-wide slot and hands back the exit code; 75 means the wait passed its deadline.
 # a turn is a mkdir, atomic on any disk, holding the holder's pid and start time, so a dead holder or a reused pid frees it.
-# waiters line up first come, first served inside their class: one ticket file each, named <epoch>.<pid>, a suite's 0.<epoch>.<pid>, a mods suite's 0.<epoch>.m.<pid>.
+# waiters line up first come, first served inside their class: one ticket file each, named <epoch>.<pid>, a suite's 0.<epoch>.<pid>, a run the load gates <epoch>.m.<pid> after its class.
 set -u
 slot=none
 is_hold=
@@ -55,14 +55,86 @@ load_max=14
 load_now() { uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/'; }
 is_mods_suite=
 case "$slot$is_hold $*" in "long "*"plugin test"* | "long "*mods:test* | "long "*mods/test.ts*) is_mods_suite=1 ;; esac
-# a whole suite: mods, go or a package's own `pnpm test`, read from where the command starts, past its wrappers (time, env, a shell
-# line that chains such runs by && alone); a run narrowed to a file or a test, a red round, or any other command is a batch
+# a whole suite: mods, go or a package's own `pnpm test`, read word by word from where the command starts, past its wrappers; a run
+# narrowed to a file or a test, a red round, or any other command is a batch. prints suite, neutral (a cd, a typecheck) or nothing
+kind_of() {
+    local word
+    while :; do
+        case ${1-} in
+        [A-Za-z_]*=*) shift ;;
+        time | */time | timeout | */timeout | env | */env | nice | */nice | test-vm-go.sh | */test-vm-go.sh)
+            shift
+            while :; do
+                case ${1-} in
+                -[oCuSnks]) shift 2 2>/dev/null || return 0 ;;
+                -* | [0-9]* | [A-Za-z_]*=*) shift ;;
+                *) break ;;
+                esac
+            done
+            ;;
+        *) break ;;
+        esac
+    done
+    for word in "$@"; do
+        case $word in --only | --only=* | --extra | --extra=* | --pairs | --pairs=* | -run | -run=* | --run | --run=* | -*test.run*) return 0 ;; esac
+    done
+    local cmd=${1##*/}
+    shift 2>/dev/null || return 0
+    case $cmd in
+    cd) echo neutral ;;
+    claude) [ "${1-} ${2-}" = 'plugin test' ] && echo suite ;;
+    node) case ${1-} in mods/test.ts | */mods/test.ts) echo suite ;; esac ;;
+    go)
+        [ "${1-}" = -C ] && shift 2
+        [ "${1-}" = test ] || return 0
+        for word in "$@"; do
+            case $word in . | ./... | */...) echo suite && return 0 ;; esac
+        done
+        ;;
+    pnpm)
+        while :; do
+            case ${1-} in
+            -C | --filter) shift 2 2>/dev/null || return 0 ;;
+            -* | run) shift ;;
+            *) break ;;
+            esac
+        done
+        case ${1-} in
+        node) case ${2-} in mods/test.ts | */mods/test.ts) echo suite ;; esac ;;
+        mods:test | x-go:test | x-go:gate) echo suite ;;
+        typecheck | *:typecheck) echo neutral ;;
+        test | *:test)
+            shift
+            for word in "$@"; do
+                case $word in -* | [0-9]\>* | \>*) ;; *) return 0 ;; esac
+            done
+            echo suite
+            ;;
+        esac
+        ;;
+    esac
+}
+# a shell line counts when every link of its && chain does, one of them a suite
+is_suite_run() {
+    local line kind got=1
+    case ${1##*/} in
+    sh | bash | zsh) ;;
+    *) [ "$(kind_of "$@")" = suite ] && return 0 || return 1 ;;
+    esac
+    case ${2-} in -c | -lc) ;; *) return 1 ;; esac
+    line=${3-}
+    case $line in *[\;\|\`]* | *'$('* | *$'\n'*) return 1 ;; esac
+    while [ -n "$line" ]; do
+        # shellcheck disable=SC2086
+        kind=$(set -f && kind_of ${line%%&&*})
+        [ -n "$kind" ] || return 1
+        [ "$kind" = suite ] && got=0
+        case $line in *'&&'*) line=${line#*&&} ;; *) line= ;; esac
+    done
+    return $got
+}
 is_suite=
-narrowed='(^| )(--only|--extra|--pairs|-run)([ =]|$)'
-wraps='^(([^ ]*/)?(time|timeout|env|nice|test-vm-go[.]sh)( (-[^ ]+|[0-9.]+[smh]?|[A-Z_]+=[^ ]*))* )*(([^ ]*/)?(sh|bash|zsh) -l?c (cd [^ ]+ && )?)?([A-Z_]+=[^ ]* )*'
-suites='(([^ ]*/)?claude plugin test [^&]*|pnpm( (-s|--silent|run|-C [^ ]+|--filter[ =][^ ]+))* ((mods:test|x-go:test|x-go:gate)( [^&]*)?|([a-z-]+:)?test( -[^ &]+)*)|(pnpm )?node ([^ &]*/)?mods/test[.]ts( [^&]*)?|go( -C [^ ]+)? test [^&]*[.](/[.][.][.])?)'
-chain=' *(&& *(pnpm|claude|go|node) [^&]*)*$'
-[ "$slot$is_hold" = long ] && [[ "$*" != *[\;\|]* && "$*" != *$'\n'* && ! "$*" =~ $narrowed && "$*" =~ $wraps$suites$chain ]] && is_suite=1
+[ "$slot$is_hold" = long ] && is_suite_run "$@" && is_suite=1
 is_low_load() { awk -v now="$(load_now)" -v max="$load_max" 'BEGIN { exit !(now + 0 <= max + 0) }'; }
 is_calm() { [ -z "$is_mods_suite" ] || is_low_load; }
 # what a wait waits on
@@ -118,18 +190,23 @@ log_run() {
     printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$load" "$slot" "$waited" "$1" "$2" "${session:--}" "$(one_line "$cmd")" >>"$log"
 }
 
-freed() { date +%s >"$turn.freed"; }
+freed() { [ "$slot" != long ] || { date +%s >"$turn.freed.$$" && mv "$turn.freed.$$" "$turn.freed"; }; }
 # the turn stood free for the suite of this ticket, 2 min from its arrival or the last release, and the load kept it out
 is_load_outside() {
-    local born=${1#0.} last=0
+    local born=${1#0.} last=0 now
+    # a held turn first: its release writes the time before the turn goes
+    [ -d "$turn" ] && return 1
+    now=$(date +%s)
     born=${born%%.*}
     { read -r last; } 2>/dev/null <"$turn.freed"
-    [ "$born" -gt "${last:-0}" ] && last=$born
-    [ $(($(date +%s) - last)) -ge "${GATE_QUEUE_LOAD_GRACE:-120}" ] && ! is_low_load
+    case $last in '' | 0* | *[!0-9]*) last=0 ;; esac
+    [ "$last" -gt "$now" ] && last=0
+    [ "$born" -gt "$last" ] && last=$born
+    [ $((now - last)) -ge "${GATE_QUEUE_LOAD_GRACE:-120}" ] && ! is_low_load
 }
 
-# a ticket ahead whose owner is gone leaves the line; true when this run's ticket is the first, or, asked `past-load`, when only mods
-# suites the load keeps out stand ahead of it
+# a ticket ahead whose owner is gone leaves the line; true when this run's ticket is the first, or, asked `past-load`, when only runs
+# the load keeps out stand ahead of it
 first_in_line() {
     local ahead since now
     for ahead in $(ls "$tickets"); do
@@ -138,7 +215,7 @@ first_in_line() {
         { read -r since; } 2>/dev/null <"$tickets/$ahead"
         now=$(started_at "${ahead##*.}")
         if [ -n "$now" ] && [ "$now" = "$(one_line "$since")" ]; then
-            [ "${1-}" = past-load ] && [[ $ahead == 0.*.m.* ]] && is_load_outside "$ahead" && continue
+            [ "${1-}" = past-load ] && [[ $ahead == *.m.* ]] && is_load_outside "$ahead" && continue
             return 1
         fi
         rm -f "$tickets/$ahead"
@@ -163,7 +240,7 @@ if [ "$slot" = none ]; then
     GATE_QUEUE_HELD=none "$@"
     exit $?
 fi
-ticket=$tickets/${is_suite:+0.}$began.${is_suite:+${is_mods_suite:+m.}}$$
+ticket=$tickets/${is_suite:+0.}$began.${is_mods_suite:+m.}$$
 started_at $$ >"$tickets/.new.$$"
 mv "$tickets/.new.$$" "$ticket"
 leave() { rm -f "$ticket"; }
@@ -174,8 +251,8 @@ next_say=0
 until first_in_line past-load && is_calm && mkdir "$turn" 2>/dev/null; do
     # only the first in line frees a stale turn, so it never takes a turn a newer run just made
     if first_in_line && is_stale; then
+        freed
         if mv "$turn" "$turn.stale.$$" 2>/dev/null; then
-            freed
             echo "gate-queue: freed a dead holder's turn" >&2
             rm -rf "$turn.stale.$$"
         fi
