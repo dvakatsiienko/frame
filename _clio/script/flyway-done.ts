@@ -1,5 +1,5 @@
 // keeps a flyway readable: a finished line leaves into the done note, a new line lands in its kind's place.
-// usage: node flyway-done.ts <PK-N> <n> | <PK-N> --add '<line>' | <PK-N> --sort | <PK-N> --check
+// usage: node flyway-done.ts <PK-N> <n> | <PK-N> --add '<line>' [--his-word] | <PK-N> --sort | <PK-N> --check
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
@@ -36,6 +36,16 @@ export function flywayLines(text: string): FlywayLine[] {
             };
         },
     );
+}
+
+// a tail is an open line clio can close alone: no wait, no date, and it does not name dima or a grill with him
+export const TAIL_CAP = 5;
+const HIS = /\b(?:dima|grill)\b/i;
+export function isTail(text: string): boolean {
+    return flywayKind(text) === 'open' && !HIS.test(text);
+}
+export function parkedTails(lines: FlywayLine[]): FlywayLine[] {
+    return lines.filter((line) => !line.done && isTail(line.text));
 }
 
 // the next id: one past every id a line or a done note of this item ever carried
@@ -107,6 +117,18 @@ if (import.meta.main) {
     if (!/^PK-\d+$/.test(id) || !mode) fail(usage);
     if (mode === '--add') {
         if (!value) fail(usage);
+        // dima's tick, 2026-11-24: at the cap a tail is closed before another is parked; his word lifts it
+        const parked = parkedTails(flywayLines(read(id)));
+        if (
+            isTail(value) &&
+            parked.length >= TAIL_CAP &&
+            !process.argv.includes('--his-word')
+        )
+            fail(
+                `${id} holds ${parked.length} tails, the cap is ${TAIL_CAP}: close one first (${parked.map((line) => line.ref).join(', ')}); --his-word only when dima lifted the cap`,
+            );
+        if (isTail(value))
+            console.log(`tails parked: ${parked.length + 1} of ${TAIL_CAP}`);
         const dir = path.join(pocket, 'pocket', 'tasks');
         const flyways = readdirSync(dir)
             .map((f) => ({

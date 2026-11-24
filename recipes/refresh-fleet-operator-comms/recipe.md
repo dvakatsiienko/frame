@@ -41,6 +41,8 @@ dima, 2026-11-09:
 - «leaner replies may hide important data. i still want the important bits, delivered in a leaner way. i ask for details when i am interested; detail gradually as i ask.» «keep updates very lean, with no technical details, or keep them only when it really matters.»
 - «our comms are built mostly around orbit»; --bg threads have no desktop orbit, so «what important thing do i not see there?» «the whole fleet follows the same comms model, so each comms fix is multiplied per thread.» «my comms steering is based on this recipe, so it must be pristine.»
 
+dima, 2026-10-12, of a proposal reply: «too short … expand how it works, without technical details, as a human conversation»
+
 dima, 2026-11-24: «output for me should be less tech-flavored and more human-readable: instead of printing me function names, function calls and arguments, print the sentence-shaped description of what they do. prefer simple shapes and simple language.» «I am essentially fresh eyes for everything that's happening under the hood … the problem should be fixed earlier, at your output style level.» «you spend effort to write your replies, and I spend effort to filter them out, which is double inefficient. they only hurt.»
 
 ## the run

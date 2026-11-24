@@ -121,7 +121,7 @@ def sentences(prose: str) -> list[str]:
 
 # a claim is cleared by a check inside its own sentence only: a source in another sentence never covers it (crow, 2026-11-02).
 # the check may be told in plain words («I ran it», «I tried»); `unevidenced` then asks for the call behind «I checked»
-PLAIN_CHECK = re.compile(r"\b(?:i|we)(?:'ve| have)?\s+(?:just\s+)?(?:ran|run|tried|checked|tested|read|opened)\b|\(inference\)", re.I)
+PLAIN_CHECK = re.compile(r"\b(?:i|we)(?:'ve| have)?\s+(?:just\s+)?(?:ran|tried|checked|tested)\b|\(inference\)", re.I)
 def unproven_cants(prose: str) -> list[str]:
     return [m.group(0) for s in sentences(prose) if not SOURCE.search(s) and not PLAIN_CHECK.search(s) for m in [CANT.search(s)] if m]
 
@@ -171,7 +171,7 @@ def door_claims(prose: str) -> list[str]:
 # the claim forms: «copied whole», a first-person «I checked / verified / proved», a label line «proven: …», and «verified by …».
 # the bare word was tried first: a week of 3,276 Stop turns flagged 22 replies, most relaying a member's verdict or a promise
 CHECKED_CLAIM = re.compile(
-    r"\bcopied whole\b|\b(?:i|we)(?:'ve| have)?\s+(?:just\s+)?(?:checked|verified|(?:proven|proved)(?!\s+(?:nothing|none|little)\b))\b|^\W*proven\s*[:—-]|\bverified\s+by\b",
+    r"\bcopied whole\b|\b(?:i|we)(?:'ve| have)?\s+(?:just\s+)?(?:checked|ran|tried|tested|verified|(?:proven|proved)(?!\s+(?:nothing|none|little)\b))\b|^\W*proven\s*[:—-]|\bverified\s+by\b",
     re.I | re.M,
 )
 # «not checked», «never verified», «isn't proven»: the word negated is a disclosure, not a claim

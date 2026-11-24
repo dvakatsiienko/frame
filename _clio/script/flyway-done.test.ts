@@ -11,10 +11,13 @@ import path from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import {
+    TAIL_CAP,
     checkReport,
     flywayKind,
     flywayLines,
     flywaySorted,
+    isTail,
+    parkedTails,
     similarLines,
 } from './flyway-done.ts';
 
@@ -111,6 +114,31 @@ describe('flyway-done', () => {
             'f2 one',
             'f1 🦥 c',
         ]);
+    });
+
+    describe('the tail cap', () => {
+        test('a tail is an open line that names neither dima nor a grill', () => {
+            expect(isTail('f1 fix the false red in the sealed check')).toBe(
+                true,
+            );
+            expect(isTail('f2 weak spot 5 with dima, one at a time')).toBe(
+                false,
+            );
+            expect(isTail('f3 FRM-582 emoji reactions: the grill')).toBe(false);
+            expect(isTail('f4 ⏳ a trial round — waits for: that pr')).toBe(
+                false,
+            );
+        });
+        test('only unticked tails count toward the cap', () => {
+            const lines = flywayLines(
+                '- [ ] #1 f1 fix a\n- [x] #2 f2 fix b\n- [ ] #3 f3 a talk with dima\n- [ ] #4 f4 fix c',
+            );
+            expect(parkedTails(lines).map((line) => line.ref)).toEqual([
+                'f1',
+                'f4',
+            ]);
+            expect(TAIL_CAP).toBe(5);
+        });
     });
 
     describe('similarLines', () => {

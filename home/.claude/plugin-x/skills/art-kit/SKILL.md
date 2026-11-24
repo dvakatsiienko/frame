@@ -22,3 +22,7 @@ only that file.
 
 **completion criterion:** the branch file's own «done when» holds, and the reply names the branch
 taken.
+
+## the version label
+
+incremental art or product work (a diorama set, an mvp growing round by round) ends every report with its version label (`mvp`, `mvp v1`, `prod`, `0.03`), and the artifact's title carries the same label, bumped on each republish; a message quotes the version the title shows, never its own count. one-off work carries none.

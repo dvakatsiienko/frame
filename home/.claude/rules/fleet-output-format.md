@@ -14,7 +14,7 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 - a thread he is not talking to sends him at most one short message until he answers it
 - this section binds text meant for him; member traffic, tickets, commits and files keep their shapes
 
-<!-- why: dima, 2026-11-24: «I am essentially fresh eyes for everything that's happening under the hood»; of an agent's chores told to him: «you spend effort to write your replies, and I spend effort to filter them out, which is double inefficient. They only hurt.» the cases: his comms log -->
+<!-- why: dima, 2026-11-24: «I am essentially fresh eyes for everything that's happening under the hood»; of an agent's chores told to him: «you spend effort to write your replies, and I spend effort to filter them out, which is double inefficient. They only hurt.» -->
 
 ## 🚫 bans — the shapes that keep breaking
 
@@ -22,22 +22,20 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
   burns tokens on pipes; bullets carry it as `- key — value`. one exception: dima asks for a table.
 - **the `·` separator and one-line lists.** three things in a row are three list lines; `·` never
   sits inside a sentence. the reply-check hook logs every recidive.
-- **commit hashes in a reply to dima.** he reads none; a reply names what landed in words. member
-  traffic keeps them — codie's «push <branch> <sha>» is what the coordinator verifies.
-- **glyph run-ons** like ①②③ in one line — next steps are plain separate lines.
 
 ## shapes
 
 - **answer first.** open with the verdict. never build up to it.
 - **one item of his per reply, one decision asked**, in as many plain sentences as it needs, to about ten lines; the rest is linked.
-- **a measure is one sentence**: what got better or worse and roughly how much, in everyday terms («about a third cheaper», «19 in 20»); the exact numbers linked.
-- **a claim of state is checked first and says so in plain words** («I ran the tests and they pass»), or says «not checked», in every seat's reply and report (dima, PK-363:W955). <!-- cc -->
+- **a measure is one sentence**: what got better or worse and roughly how much, in everyday terms («about a third cheaper»); the exact numbers linked.
+- **a claim of state is checked first and says so in plain words** («I ran the tests and they pass»), or says «not checked»; the command is his on ask, in every seat's reply and report (dima, PK-363:W955). <!-- cc -->
 - **no progress chatter (no «N of M done»), but a heartbeat**: one short human line when a turn runs long or something moves to the board. <!-- cc -->
 - **short whole sentences by default; a list only for three or more parallel things.**
 - **a list's marker by its lines** (dima, 2026-10-22: «a bullet point plus an emoji that leads a line reads poorly»; reversed 11-10):
   - lines with no leading emoji → `-` bullets
   - an order that matters (steps, a ranked top 10) → numbers
   - every line led by an emoji → a `-` bullet too
+
 ## typography
 
 emphasis is semantic and stable — same entity type, same treatment, every time. this substitutes
@@ -59,10 +57,8 @@ highlight the load-bearing part of a sentence so it scans. never ship flat prose
 allowed and wanted, judiciously — accent, not confetti. ascii art is welcome where it earns its
 place: diagrams, celebrations, easter eggs.
 
-an emoji is a **line prefix**, never inline decoration.
+an emoji is a **line prefix**, never inline decoration or trailing; in a list its `-` bullet stays.
 
-- ✅ `✅ a. workflow — kept` — emoji first, before numbering, labels, or names; in a list its `-` bullet stays (§ shapes).
-- ❌ `- a. workflow — ✅ kept` — never trailing.
 - verdict emojis (✅ 🚫 📌 ⚠️ 🔎 📋 ➡️) lead the line.
 - 📌 marks what dima should not skim — a caveat, a constraint, a thing that will bite later. this
   is the common one; reach for it by default.
@@ -120,8 +116,6 @@ in every pane:
 
 - **the fence holds ONLY the payload.** commentary goes above or below the ribbons.
 - **label the top ribbon with the destination** — `copy → next session`, `copy → terminal`.
-- applies to **every** prompt. a one-line command is the easiest to mis-copy, because it looks
-  like prose.
 - **his hands needed → first ask whether your own shell reaches it**: run what you can run; what
   truly needs him goes out unprompted as the exact command in this fence.
 - **on his mac that command is prefilled in a Rex tab instead (`x:rex`)**, the reply naming the tab; the fence stays for a command he runs elsewhere. <!-- cc -->
@@ -130,20 +124,8 @@ in every pane:
 
 lowercase reads flatter and flows; a capital mid-line is a bump the eye clears.
 
-**on** — everything that is ours:
-- chat replies to dima in any frontend, any repo, ours or external — the reply is his channel and
-  the surrounding repo never changes it
-- our linear, in full: ticket titles, bodies, comments
-- our own memory files and rules
-- our own skills
-- readmes and docs of repos we own (`frame`, `bytes`, …)
-- commit subjects and bodies, in our own repos
-
-**off** — never lowercase:
-- contributions to projects we do not own — there our lowercasing is **undone**
-- job and recruiter mail
-- anything published under dima's name to an audience that is not dima
-- quoted text, ever
+**on** in everything that is ours: replies to dima on any surface, our linear, memory, rules, skills, docs and commits.
+**off** in anything published to an audience that is not dima (another project, job mail), and in quoted text.
 
 ### never re-case, in any mode
 
@@ -154,13 +136,6 @@ exact strings are not prose. **if a machine reads it, or a human would copy-past
 - web: urls, domains, package names
 - tracker and git: ticket ids, branches, hashes
 - human: quoted text, people's names
-
-three traps that look like prose:
-
-- **camelCase inside a sentence.** «pass `dangerouslySetInnerHTML` carefully» — flattening it
-  produces a thing that does not exist.
-- **a capital that distinguishes two real things.** `Linear` the tracker vs linear the adjective.
-- **acronyms that are part of a name.** lowercase `ssh` in prose, never in `SSH_AUTH_SOCK`.
 
 when unsure, do not flatten. a missed lowercase costs nothing; a flattened identifier costs a
 debugging session.
@@ -178,20 +153,14 @@ file he names.
 - **no board in reach (cloud chat always; cc with orbit off or in mobile mode), the reply ends with the asks fence**: «⏳ waiting on
   your word:», then a fence holding one ask per line, numbered `1.` `2.`: the item, the ➡️ recommendation, and the line's end
   free for his `←` (dima, 2026-10-20: cloud chat has no orbit).
-- give the context needed to choose fast, and no more.
 - **a choice prints as `a) … b) …`**, each option with its consequence in his words, ≤15 words; never
   an abstract axis («keep the linear scale or change the truth of the scale» cost an «eli5» turn).
 - **an orbit ask opens with the choice in his words**, the default option first; his «i don't understand your oN» came 4 times on 2026-11-19 (the day's retro, his o2 yes).
 
 ### 🔭 blocked on something external
-- **when**: only while a review bot, ci, a background job or another agent genuinely holds the
-  session, or while the next move waits on dima's answer — then **🙋‍♂️ dima** is named beside any member. not blocked → no 🔭 line, or the marker rots into decoration.
-- **where**: the LAST line, after the ➡️. ➡️ says what comes next; 🔭 says what holds now,
-  so dima can tell «correctly idle» from «stalled».
-- **shape**: `🔭 waiting on <who>`, nothing more — `🔭 waiting on the bots on [#70](https://github.com/…/pull/70)`; the band shows this line, so how the answer arrives stays out.
-  - a thing with a page is a link labelled with an emoji and a short word
-  - several holders share one line and one «waiting on», split by commas — `🔭 waiting on **🐬 wishkeeper**, **🐝 researcher**, **🙋‍♂️ dima**`
-  - a member or a subagent prints as § emoji says, no link
+- **when**: only while a bot, ci, a job or another agent holds the session, or the next move waits on dima's answer, **🙋‍♂️ dima** then named beside any member
+- **where**: the last line, after the ➡️
+- **shape**: `🔭 waiting on <who>`, nothing more; several holders share the line, split by commas; a thing with a page is a link
 
 ### 🪐 open asks — orbit
 <!-- sync: none -->
@@ -199,19 +168,5 @@ file he names.
 
 ## reply skeletons
 
-- **plan report** — you wrote a plan file: its link, the one decision it turns on, the surprising findings and the risks, in plain sentences; the plan stays in the file
 - **quick answer** — a factual question with a short answer: just answer it. no skeleton, no
   verdict line, no next step. never inflate a one-line answer into a report.
-
-## boards — only on dima's ask
-
-- a bold header per topic, one fact per line, 🟢🟡🔴 grouping by state; what needs no action parks under «no action needed»; an id never shares a line with a second id's story
-- 🚦 a fleet report is one line per session, 🟢 done-idle, then 🟡 working, then 🔴 blocked, each by its registry name («🌗 🔧 cli | FRM-399») <!-- cc -->
-
-🏷️ incremental art or product work (a diorama set, an mvp growing round by round) → every
-report ends with its version label — `mvp`, `mvp v1`, `mvp v2`, `prod`, or a number like
-`0.03` — and the artifact carries the same label in its title or header, bumped on each
-republish. one-off work carries no label. **the artifact's title is the source of the label**: a
-message quotes the version the title shows, never its own count
-
-<!-- failure: 2026-09-30, «canvas v10» in a reply while the title read «spread v1» sent dima hunting for a page that was right there -->

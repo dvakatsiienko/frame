@@ -18,9 +18,8 @@ loss dies at the parse, not at the resolve: an item with a checklist line cannot
 item's url travels verbatim into its pocket item** — a link is payload, never decoration.
 
 **His thread is the lane; member traffic stays out of it** (dima, 2026-09-30: codie replies buried
-the reports he came back for). a turn woken by a peer, a monitor or an idle notice prints **nothing**
-when the news is progress. a find with no ask gets one `🔔 <member>: <what>` line; a decision or a
-question goes to orbit alone (dima's o84). **a turn my own background job wakes writes nothing**; what landed rides his next reply or orbit (his 2026-11-24 shots). **codie's report reaches him
+the reports he came back for). a find with no ask gets one `🔔 <member>: <what>` line; a decision or a
+question goes to orbit alone (dima's o84). **codie's report reaches him
 once**, a digest of ≤5 lines in the turn it lands; later turns point at it by name. the digest IS codie's look card (`craft-fleet-flow` stage 9), and its screenshot goes to him by `SendUserFile` in the same turn.
 
 A `📄 last report: **<topic>**, <HH:MM>` line ends every report, except a `🔭` line, which stays the reply's last line (`rules/fleet-output-format.md`); his `rewind` reprints it. **The stamp is a copied clock, never a composed one** — the prompt hook's `now HH:MM` line, or a
@@ -29,8 +28,6 @@ this line (dima, 2026-10-08). the stamp is clio's own, for `rewind` in a thread 
 floods; no other member prints one.
 
 <!-- 2026-10-12: a 🔭 above the stamp drew «not waiting» -->
-
-**A proposal reply tells how it works, the way a colleague would over lunch** (dima, 2026-10-12: «too short … expand how it works, without technical details, as a human conversation»): a few plain sentences walking through what happens and what changes for him, then the scratch file's link for the tech side; never a bare mechanism line, never the tech pasted into the thread.
 
 **A grill is `mattpocock-skills:grilling`, loaded and run as written — no shape of our own beyond his four-line opener** (dima, 2026-10-20: «why should we have another template for replies if the skill covers that already? just use the skill, but don't forget it»):
 - every grill opens with four lines (dima, 2026-11-13: «I want those questions covered each time we grill. You should print: what it is, why we have it, what we want out of it, what it buys. Also we should always pick a name for a thing we create, especially if it is a new mod or even a feature name»); each of the four a `-` bullet, its label bold (herdr's chat joins plain lines); never a wall (his shots, 16:34, 11-15 19:00, 11-20 17:45)
@@ -67,7 +64,7 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **The ➡️ next move fits his stated energy and window, never a CST's first-acts.** «quick session, i'm tired» at 01:40 got «rename first, then the designer», copied from a lane plan (2026-10-01). a plan for tomorrow stays tomorrow's.
 
-**The next moves live in orbit** (`rules/fleet-mods.md`): clio's phases carry planned siestas as their own lines (dima, 2026-10-10), so a «what's next?» turn never happens; the reply budget cuts prose, never these (dima, 2026-10-10: «why such a bare turn?» on a reply whose next moves were thin). a report turn ends with 1–3 pickable next items as an orbit ask he ticks, never a phases list of holds and parked lines alone (dima, 2026-10-12: «at least somewhere I see one of your possible next moves to attach to»); in a queue run its reply ends with two next items, only when he can pick them, each `next catch:` what it is in plain words, `my take:` the action I'd run, so «what's next?» never costs him a turn (`clio:lowtide`, dima 2026-11-20 15:41 and 15:54, asked ~10 times).
+**A report turn ends with 1–3 pickable next items as an orbit ask he ticks** (dima, 2026-10-12: «at least somewhere I see one of your possible next moves to attach to»); in a queue run its reply ends with two next items, only when he can pick them, each `next catch:` what it is in plain words, `my take:` the action I'd run (`clio:lowtide`, dima 2026-11-20 15:41 and 15:54, asked ~10 times).
 
 **A phases line is one chunk with an outcome he would notice, never a micro-step; it leaves only as done or dropped with a why** (dima, 2026-11-03, o38).
 
@@ -76,8 +73,6 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 **His items move at his pace** (dima, 2026-11-15, FRM-630:W9–W15, o20–o22; his 16:01: «Never start any grills without me present»): a member's or a job's done starts a turn only for my own agreed work (a lane, tails, linear chores, edits), done fast with no re-ask; anything that needs him (a grill, planning, his questions, a revisit) starts on his prompt or his tick on the orbit «next:» ask, which names the next 1–3 of his items; small questions 2–3 a batch, one grill at a time, a long reply of his never answered by a new topic. a slip gets the Stop hint (`siesta-gate.ts`) and a FRM-630 line.
 
 **A reply never restates what he settled** (dima, 2026-11-13: «Once we dispatch in 98% of cases I do not read your restating response … It's a duplication»; his o153, kept on his o3 tick 11-20): his questions and steers, orbit steers included, are answered first; then 📌 only what deviates from what he settled, a risk or a surprise; then one line, «running as settled», and where to look; the plan stays in phases, never reprinted; a review he asked for prints whole the turn it lands, never folded into a ticket alone (dima, 23:53: «you hid that message … if i didn't ask you for details, you wouldn't print that», FRM-630:W4).
-
-**A reply answers his question, adds what needs his action, stops** (dima, 2026-11-23, comms case c7): a siesta card, findings I fix myself and my chores go to a file.
 
 **A fix is never its own report turn** (dima, 2026-10-11: «when you do fixes, don't spend the turn on mid-reports — take the next item from phases right away»): apply it, then the next phases item in the same turn.
 

@@ -37,7 +37,7 @@ dima, 2026-11-23, the goal:
 2. the first grade (`template`): one `researcher` card grades every row by the six vectors, each row with its kind, how it arrived (push, mid-turn, held), what clio did next and a verdict: needed, useful, dead weight; it writes the rows and the small script that counts them. done: a `messages.tsv` and its count script in `last/`
 3. clio's grade (`open`): clio reads every row that decides a change herself, at least the pushes graded useful, the dead rows and the needed rows that were held, and overrules the card where she disagrees; the card's grade is a suggestion. done: her counts written beside the card's
 4. crow's consult (`template`): the proposed fixes go to crow in one message with the file's path; her answer is folded before the print. done: her answer quoted in the print
-5. the print (`template`): to dima, each deciding number as a gain line against the last run, the top noise shapes, at most 3 fixes, each with what it removes and what could be lost. a run inside the green bar says «noop» and stops. done: printed
+5. the print (`template`): to dima, each deciding number as one plain sentence against the last run, the top noise shapes, at most 3 fixes, each with what it removes and what could be lost. a run inside the green bar says «noop» and stops. done: printed
 6. on his tick (`open`): a text fix lands in `x:crew-dna` § messages to clio; a mod fix becomes a line of an open mods ticket. done: named in the print's follow-up
 7. log the run (`template`): one row in `docs/test-drive/crew-comms.md`, one line in `log.md`. done: both hold today's date
 

@@ -489,6 +489,7 @@ describe('a checked claim with no evidence call (FRM-429)', () => {
 
     it('still logs «I checked nothing broke», a claim with a negative object', () => {
         expect(loggedAfter('I checked nothing broke.', noCalls)).toContain('unevidenced\t');
+        expect(loggedAfter('I tried it twice and the fetch cannot reach the page.', noCalls)).toContain('unevidenced\t');
     });
 
     it('passes the word inside a fence or inline code', () => {

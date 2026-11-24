@@ -85,7 +85,7 @@ home/.claude/plugin-x/mods/AGENTS.md	12100	seed 2026-10-16, today's size + 15 %;
 home/.claude/plugin-x/mods/x-mod-stash/AGENTS.md	6000	2026-11-23: +500 the one statement a module variable is given back by, read before an edit so a codie never meets the stash-resets red first (FRM-678); seed 2026-11-20, its size + 15 %
 home/.claude/plugin-x/skills/app-author-ftr/SKILL.md	8500	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/app-setup-essentials/SKILL.md	4200	seed 2026-10-16, today's size + 15 %
-home/.claude/plugin-x/skills/art-kit/SKILL.md	1800	seed 2026-10-16, today's size + 15 %
+home/.claude/plugin-x/skills/art-kit/SKILL.md	1900	+100 the version-label rule moved in from fleet-output-format (dima 2026-11-24, his deletion-list tick); seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/author-memory/references/memory-project.md	12400	seed 2026-10-16, its size + 15 %
 home/.claude/plugin-x/skills/author-memory/references/memory.md	16500	seed 2026-10-16, its size + 15 %
 home/.claude/plugin-x/skills/author-memory/references/skill-craft.md	14800	seed 2026-10-16, its size + 15 %
