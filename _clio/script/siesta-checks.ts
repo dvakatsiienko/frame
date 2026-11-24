@@ -47,6 +47,7 @@ function main(home: string, since: string) {
         auditCodie(home, since),
         gatesDrift(home),
         vmDown(home, since),
+        cpuRoast(home, since),
         fleetChromePages(home),
         gateBudget(home),
         retros(home),
@@ -254,6 +255,28 @@ function vmDown(home: string, since: string) {
         output: down.length
             ? `🔴 ${down.length} go run(s) on the mac since ${since}, the vm was down: limactl start --tty=false vm-go-test`
             : 'no go run fell back to the mac',
+    };
+}
+
+// a stretch of load the roast job logged, each row naming its processes and lanes, or the job found not running (FRM-691)
+function cpuRoast(home: string, since: string) {
+    const name = 'cpu roast';
+    const read = path.join(
+        home,
+        'frame/schedule/jobs/x-cpu-roast-culprit-log/read.ts',
+    );
+    if (!existsSync(read))
+        return { exit: 0, name, output: '', status: 'not checked' };
+    const out = spawnSync('node', [read, '--since', since], {
+        encoding: 'utf8',
+        env: { ...process.env, X_STATE: path.join(home, '.local/state/x') },
+        timeout: RUN_TIMEOUT_MS,
+    });
+    const rows = `${out.stdout ?? ''}${out.stderr ?? ''}`.trimEnd();
+    return {
+        exit: out.status === 0 ? 0 : 1,
+        name,
+        output: rows ? `🔴 since ${since}:\n${rows}` : 'no roast row',
     };
 }
 

@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import {
     chmodSync,
+    cpSync,
     mkdirSync,
     mkdtempSync,
     utimesSync,
@@ -46,6 +47,30 @@ function fixtureHome(exits: Partial<Record<string, number>> = {}) {
         'pre-commit:\n  commands:\n    format:\n      run: true\n',
         '- **format**: tidy\n',
     );
+    return home;
+}
+
+// a fixture HOME holding the roast job's own reader, a fresh last-poll stamp and the given log
+function roastHome(log: string) {
+    const home = fixtureHome();
+    const job = 'frame/schedule/jobs/x-cpu-roast-culprit-log';
+    cpSync(
+        join(
+            import.meta.dirname,
+            '../../schedule/jobs/x-cpu-roast-culprit-log',
+        ),
+        join(home, job),
+        {
+            recursive: true,
+        },
+    );
+    const state = join(home, '.local/state/x');
+    mkdirSync(state, { recursive: true });
+    writeFileSync(
+        join(state, 'x-cpu-roast-culprit-log.last-poll'),
+        String(Date.now()),
+    );
+    writeFileSync(join(state, 'x-cpu-roast-culprit-log.log'), log);
     return home;
 }
 
@@ -114,7 +139,7 @@ const section = (out: string, name: string) =>
 
 describe('siesta-checks', () => {
     test('prints one section per check, in order, each with its exit, and exits 0 when all pass', () => {
-        const home = fixtureHome();
+        const home = roastHome('');
         auditVerb(home, 0, []);
         const out = run(home);
         expect(out.status).toBe(0);
@@ -133,6 +158,7 @@ describe('siesta-checks', () => {
             '## audit-codie',
             '## gates drift',
             '## vm down',
+            '## cpu roast',
             '## fleet chrome',
             '## gate budget',
             '## retros',
@@ -422,6 +448,23 @@ describe('siesta-checks', () => {
         const out = section(run(home).stdout, 'vm down');
         expect(out).toMatch(/· exit 1\n/);
         expect(out).toContain('1 go run(s) on the mac');
+    });
+
+    test('cpu roast reds and names the one row logged after the stamp', () => {
+        const home = roastHome(
+            `2026-01-01T09:00:00.000Z\t31.0\told-row\n${new Date().toISOString()}\t44.2\tnew-row\n`,
+        );
+        const out = section(run(home).stdout, 'cpu roast');
+        expect(out).toMatch(/· exit 1\n/);
+        expect(out).toContain('new-row');
+        expect(out).not.toContain('old-row');
+    });
+
+    test('cpu roast passes when no row follows the stamp', () => {
+        const home = roastHome('2026-01-01T09:00:00.000Z\t31.0\told-row\n');
+        expect(section(run(home).stdout, 'cpu roast')).toMatch(
+            /· exit 0\nno roast row/,
+        );
     });
 
     test('gates drift with no catalog page reads not checked, never red', () => {
