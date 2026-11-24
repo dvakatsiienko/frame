@@ -544,6 +544,7 @@ export function createQuill({
             diskSkills = new Map();
         },
         focus: () => box?.focus(),
+        isFocused: () => isQuillFocused,
         learnSkills,
         quills,
         /** the skills of the plugins the shown thread's folder enables @param {Map<string, string>} found */

@@ -384,8 +384,11 @@ export default class Chat extends View {
             _cx.timer.after(50, () => {
                 if (!this.pickers.isOpen()) this.quill.focus();
             });
-        // the open viewer holds the keyboard: a click on the list or a later focus of the quill never keeps it
-        this.pictures.keepKeys(_cx);
+        // the open viewer holds the keyboard: a click on the list or a later focus of the quill never keeps it, a click into another pane or mod does
+        this.pictures.keepKeys(_cx, {
+            inQuill: this.quill.isFocused(),
+            onList: Boolean(this.chatKeys?.is_focused()),
+        });
         if (acts.isEffort)
             _cx.timer.after(0, (later) => {
                 const isOpening = !this.pickers.isOpen();

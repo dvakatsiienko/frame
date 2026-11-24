@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'vitest';
 
-import { openViewer, viewerAfter, viewerCount, viewerLevel } from './viewer.js';
+import {
+    openViewer,
+    viewerAfter,
+    viewerCount,
+    viewerLevel,
+    viewerTakesKeys,
+} from './viewer.js';
 
 const three = ['a', 'b', 'c'].map((n) => ({
     file: `/${n}.png`,
@@ -51,5 +57,35 @@ describe('the picture viewer steps through a message’s pictures (FRM-638 slice
 
     test('close ends it', () => {
         expect(viewerAfter(openViewer(three, 0), 'close')).toBeNull();
+    });
+});
+
+describe('the open viewer takes the keyboard back only from the chat’s own seats', () => {
+    const seats = {
+        hasKeys: false,
+        inQuill: false,
+        isOpen: true,
+        onList: false,
+    };
+
+    test('a click on the chat’s list, or the quill taking focus, hands the keyboard back', () => {
+        expect(viewerTakesKeys({ ...seats, onList: true })).toBe(true);
+        expect(viewerTakesKeys({ ...seats, inQuill: true })).toBe(true);
+    });
+
+    test('a click into another pane or mod (orbit’s steer, a terminal) keeps its focus', () => {
+        expect(viewerTakesKeys(seats)).toBe(false);
+    });
+
+    test('the viewer already holding the keyboard asks for nothing', () => {
+        expect(viewerTakesKeys({ ...seats, hasKeys: true, onList: true })).toBe(
+            false,
+        );
+    });
+
+    test('a closed viewer never takes it', () => {
+        expect(viewerTakesKeys({ ...seats, isOpen: false, onList: true })).toBe(
+            false,
+        );
     });
 });

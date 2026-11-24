@@ -55,5 +55,12 @@ export const viewerCount = (state) =>
         ? `${state.at + 1} / ${state.pictures.length}`
         : '';
 
+/**
+ * the open viewer takes the keyboard back from the chat's own seats, its list or its quill; focus that went to another pane or mod (orbit's steer, a terminal) stays there
+ * @param {{ isOpen: boolean, hasKeys: boolean, onList: boolean, inQuill: boolean }} seats
+ */
+export const viewerTakesKeys = ({ isOpen, hasKeys, onList, inQuill }) =>
+    isOpen && !hasKeys && (onList || inQuill);
+
 /** «100%» @param {ViewerState} state */
 export const viewerLevel = (state) => `${Math.round(state.zoom * 100)}%`;

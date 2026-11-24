@@ -8,7 +8,13 @@ import { exec } from 'herdr';
 import { pictureOpenArgs } from './attach.js';
 import { copyPicture, viewCopy } from './shots.js';
 import { tint } from './tint.js';
-import { openViewer, viewerAfter, viewerCount, viewerLevel } from './viewer.js';
+import {
+    openViewer,
+    viewerAfter,
+    viewerCount,
+    viewerLevel,
+    viewerTakesKeys,
+} from './viewer.js';
 
 /** @typedef {import('./chat-types.js').Context} Context */
 /** @typedef {import('./chat-types.js').Theme} Theme */
@@ -280,9 +286,18 @@ export function createPictureViewer({
             ask += 1;
         },
         isOpen: () => viewer !== null,
-        /** the open viewer holds the keyboard: a click on the list or a later focus of the quill never keeps it @param {Context} cx */
-        keepKeys(cx) {
-            if (viewer && !keys?.is_focused())
+        /**
+         * the open viewer holds the keyboard: a click on the chat's list or a later focus of its quill never keeps it; a focus that went to another pane or mod does
+         * @param {Context} cx @param {{ onList: boolean, inQuill: boolean }} seats where the keyboard is now
+         */
+        keepKeys(cx, seats) {
+            if (
+                viewerTakesKeys({
+                    ...seats,
+                    hasKeys: Boolean(keys?.is_focused()),
+                    isOpen: viewer !== null,
+                })
+            )
                 cx.timer.after(0, () => keys?.focus());
         },
         show,

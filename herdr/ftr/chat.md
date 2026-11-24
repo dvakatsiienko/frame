@@ -110,6 +110,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and a picture waiting over the quill is still there after the chat reloads
   - and a click on a picture's square, over the quill, under his message or in a reply's file row, opens the viewer over the chat on the whole picture: zoom out, its level (a click fits), zoom in, copy, open, Show in Finder, ← → with «n / N» among its siblings, ✕; keys ← → + − 0 ⌘C Esc (FRM-638 slice 5, W33/W35)
   - and the viewer's open, or a ⌘-click on any picture square, starts CleanShot X annotate on the file, or Preview, as «open pictures in» says in x-herdr-settings (FRM-587 W1, dima 16:59)
+  - and with the viewer open, a click into another pane or mod (orbit's steer box, phases' steer box, a terminal) keeps its focus: the viewer takes the keyboard back only from the chat's own list or quill, and ← → + − 0 ⌘C Esc work while it holds it (dima 18:14, a click into orbit's steer box lost its focus at once)
   - and every square is sharp and fills its frame: a 288 px cut of the picture's middle (dima 17:00, «too blurry»)
   - and a message he sent draws its pictures under his words as squares, and its other files as «📎 name» chips, never as their paths or «[Image #N]» tokens; a reload brings them back (FRM-638 slice 5, his 16:35 shot)
   - decision: an inline picture is written once as `~/.config/herdr-app/data/x-herdr-chat/sent/<row>-<n>.<ext>` from the transcript's bytes, a joined one by path gets a scaled copy; no «🖼 N images» caption, the squares say it
