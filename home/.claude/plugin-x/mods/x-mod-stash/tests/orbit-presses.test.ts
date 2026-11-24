@@ -707,7 +707,7 @@ test('a plain ask never hides, whatever its why or his 🔁', async ($, on) => {
     expect([items(w)?.length, await asksShown(ui)]).toEqual([1, ['o1']]);
 });
 
-test('his 🔁 hides a test ask at once and past its turn, its turn still hears it, and the follow shows it', async ($, on) => {
+test('his 🔁 hides a test ask once a turn takes it and past that turn, his till then to take back, and the follow shows it', async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -715,9 +715,10 @@ test('his 🔁 hides a test ask at once and past its turn, its turn still hears 
         asks: [{ ...ASK, text: 'test: press it' }, ASK],
         op: 'add',
     });
-    await ui.press({ key: 'orbit:rejected:o1' });
+    for (let i = 0; i < 3; i++) await ui.press({ key: 'orbit:rejected:o1' });
     const seen = [await asksShown(ui)];
     await say($, 'go');
+    seen.push(await asksShown(ui));
     const heard = joined(w.contexts).join('\n');
     await ui.press({ key: 'orbit:all' });
     await mobile($);
@@ -732,10 +733,15 @@ test('his 🔁 hides a test ask at once and past its turn, its turn still hears 
         /o1 ↩️ rejected/u.test(heard),
         fence.includes('(o2)'),
         fence.includes('o1'),
-    ]).toEqual([[['o2'], ['o2'], ['o1', 'o2']], true, true, false]);
+    ]).toEqual([
+        [['o1', 'o2'], ['o2'], ['o2'], ['o1', 'o2']],
+        true,
+        true,
+        false,
+    ]);
 });
 
-test("herdr's 🔁 hides a look ask, its untick shows it again", async ($, on) => {
+test("herdr's 🔁 hides a look ask once a turn takes it", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -743,10 +749,13 @@ test("herdr's 🔁 hides a look ask, its untick shows it again", async ($, on) =
     const at = await w.clock.now();
     herdrPress(w, 'o1', { at: at + 1, verdict: 'replay' });
     await w.clock.advance(5_000);
-    const hidden = [await asksShown(ui), await ui.find({ key: 'orbit:all' })];
-    herdrPress(w, 'o1', { at: at + 2, verdict: 'untick' });
-    await w.clock.advance(5_000);
-    expect([hidden, await asksShown(ui)]).toEqual([[[], undefined], ['o1']]);
+    const waits = await asksShown(ui);
+    await say($, 'go');
+    expect([
+        waits,
+        await asksShown(ui),
+        await ui.find({ key: 'orbit:all' }),
+    ]).toEqual([['o1'], [], undefined]);
 });
 
 test('a look ask hidden 60 min with no follow is told to its coordinator once the send goes, and stays hidden', async ($, on) => {

@@ -14,12 +14,7 @@ import {
     lockJoined,
     planTaken,
 } from './orbit.ts';
-import {
-    hiddenBy,
-    isShown,
-    isStranded,
-    strandedLine,
-} from './orbit-ask-kind.ts';
+import { isShown, isStranded, strandedLine } from './orbit-ask-kind.ts';
 import {
     currentOrbit,
     inMarking,
@@ -175,7 +170,6 @@ async function pressMarkNow(
             a.id === id
                 ? {
                       ...a,
-                      hidden: hiddenBy(a, next),
                       isChanged: false,
                       isHerdrMark: undefined,
                       mark: next,

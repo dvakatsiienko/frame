@@ -13,7 +13,7 @@ An open question a session put to dima through orbit's tool: one line, its pick,
 _Avoid_: question, todo, pending
 
 **Ask kind**:
-What an ask wants of dima: a look ask is ready and needs only his check, a test ask has him probe something; one with no kind is a plain ask. Its text opens with the kind's word. A look or test ask is hidden while its poster fixes it and after his 🔁.
+What an ask wants of dima: a look ask is ready and needs only his check, a test ask has him probe something; one with no kind is a plain ask. Its text opens with the kind's word. A look or test ask is hidden while its poster fixes it and once a turn takes his 🔁.
 _Avoid_: type, look card, test card
 
 **Ask origin**:

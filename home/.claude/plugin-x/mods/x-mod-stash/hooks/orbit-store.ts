@@ -16,7 +16,7 @@ import {
     planMarked,
     steeredOrbit,
 } from './orbit.ts';
-import { hiddenBy, isShown } from './orbit-ask-kind.ts';
+import { isShown } from './orbit-ask-kind.ts';
 import { fromLine } from './orbit-ask-origin.ts';
 import { currentId, identity, sessionName } from './session-identity.ts';
 import { HERDR_READ } from './store-keys.ts';
@@ -315,7 +315,6 @@ export async function absorbMarks(
                         accepted.push(a);
                     return {
                         ...a,
-                        hidden: hiddenBy(a, m.mark),
                         isChanged: false,
                         isHerdrMark: true,
                         mark: m.mark,

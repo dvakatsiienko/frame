@@ -8,7 +8,7 @@ import type {
     StashPlan,
     StashTick,
 } from '../types/stash.d.ts';
-import { askKind, isFixing } from './orbit-ask-kind.ts';
+import { askKind, hiddenAtTake, isFixing } from './orbit-ask-kind.ts';
 import { type OriginRead, askOrigin } from './orbit-ask-origin.ts';
 import { ORBIT_TEXT_MAX, oneLine } from './util.ts';
 
@@ -190,6 +190,7 @@ export function lockJoined(o: StashOrbit, asks: OrbitAsk[]): StashOrbit {
             ids.has(a.id)
                 ? {
                       ...a,
+                      hidden: hiddenAtTake(a),
                       isLocked: true,
                       markedAt: undefined,
                   }

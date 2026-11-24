@@ -16,19 +16,14 @@ export function pinned<T extends { kind?: AskKind }>(asks: readonly T[]) {
     return asks.toSorted((a, b) => rank(a) - rank(b));
 }
 
-// a look or test ask his 🔁 or its poster's «fixing …» follow hid: no surface of his shows it until the poster's next
+// a look or test ask his heard 🔁 or its poster's «fixing …» follow hid: no surface of his shows it until the poster's next
 // follow, never a timer (FRM-645:W13, W52); the orbit itself keeps it, its id with it
 export const isShown = (a: Pick<OrbitAsk, 'hidden'>) => !a.hidden;
 export const isFixing = (kind: AskKind | undefined, why: string) =>
     kind !== undefined && /^fixing\b/iu.test(why);
-// what his mark does to it: a 🔁 hides, the same 🔁 taken back shows it again
-export const hiddenBy = (
-    a: Pick<OrbitAsk, 'hidden' | 'kind' | 'mark'>,
-    mark: OrbitAsk['mark'],
-) => {
-    if (a.kind && mark === 'rejected') return a.hidden ?? {};
-    return a.mark === 'rejected' ? undefined : a.hidden;
-};
+// the turn that takes his 🔁 hides it; till then the mark and its steer stay on his board, his to change
+export const hiddenAtTake = ({ hidden, kind, mark }: OrbitAsk) =>
+    hidden ?? (kind && mark === 'rejected' ? {} : undefined);
 // hidden this long with no follow, its coordinator hears it once
 const STRANDED_MS = 60 * 60_000;
 export const isStranded = (a: OrbitAsk, now: number) =>
