@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-24T12:17:00Z'
+updated_date: '2026-11-24T12:51:00Z'
 labels:
   - s
   - clio-main
@@ -2610,4 +2610,14 @@ done 2026-11-24 13:50: f93 seal drafts with open questions for dima: FRM-582 (9)
 moved 13:50 24 Nov: f93 (seal drafts FRM-582, FRM-691) and f94 (FRM-582's ten questions) are wing 1's now, in PK-346, on dima's 12:59 order to the wing; labels clio-main → clio-wing-1 on FRM-614, FRM-582, FRM-691, FRM-696, FRM-585
 
 done 2026-11-24 14:17: f86 mods rider: the guard treats a branch with no `+` line in git cherry as merged, so its delete needs no tick (his o4)
+
+PK-349:W2315 (2026-11-24 13:53, dima): Well okay.
+
+PK-349:W2316 (2026-11-24 13:53, dima): Let's proceed with answers.
+
+PK-349:W2317 (2026-11-24 13:53, dima): Print 5 remaining at once.
+
+PK-349:W2318 (2026-11-24 13:53, dima): Honestly I'm not really into answering them precisely because I didn't dig into details too much to understand fully how it works.
+
+PK-349:W2319 (2026-11-24 13:53, dima): But I think it works if I check up on your proposals so let's proceed with this mode
 <!-- SECTION:NOTES:END -->

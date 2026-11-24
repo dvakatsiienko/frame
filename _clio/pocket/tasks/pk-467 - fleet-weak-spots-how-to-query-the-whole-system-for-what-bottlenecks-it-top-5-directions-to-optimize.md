@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T11:46:00Z'
-updated_date: '2026-11-24T12:35:00Z'
+updated_date: '2026-11-24T12:56:00Z'
 labels:
   - s
   - clio-wing-1
@@ -132,4 +132,94 @@ PK-467:W53 (2026-11-24 14:34, dima): let's see next spot
 PK-467:W54 (2026-11-24 14:34, dima): Yes let's plan them but maybe not today because I have more important stuff to grill on.
 
 PK-467:W55 (2026-11-24 14:34, dima): Let's plan the blueprint and big picture slightly after all other stuff
+
+PK-467:W56 (2026-11-24 14:39, dima): Let's make it in a way so you're able to create mods tickets for mods if I ask but you do not auto-create tickets for yourself because of the problem I've just described.
+
+PK-467:W57 (2026-11-24 14:39, dima): The scope for mods keeps growing and I don't know if all tickets are worth it.
+
+PK-467:W58 (2026-11-24 14:39, dima): Essentially there is currently a high risk of you creating unnecessary work that never ends.
+
+PK-467:W59 (2026-11-24 14:39, dima): What I want to change out of this is that mods receives useful tickets that solve problems but only the ones that truly solve the problem.
+
+PK-467:W60 (2026-11-24 14:39, dima): The tickets that don't truly solve the problem and create unnecessary work are not allowed.
+
+PK-467:W61 (2026-11-24 14:39, dima): I don't want to restrict you fully from creating tickets.
+
+PK-467:W62 (2026-11-24 14:39, dima): For now what I want is for you to judge even more harshly on the worth-it check.
+
+PK-467:W63 (2026-11-24 14:39, dima): I want only useful stuff in mods, no useless stuff.
+
+PK-467:W64 (2026-11-24 14:41, dima): [Your message ended at the arrow with no words after it,] Everything you propose today should be able to be overridden by me.
+
+PK-467:W65 (2026-11-24 14:41, dima): [Your message ended at the arrow with no words after it,] It works like this? ❓
+
+PK-467:W66 (2026-11-24 14:41, dima): [Your message ended at the arrow with no words after it,] The root memory file invariant should ask about that.
+
+PK-467:W67 (2026-11-24 14:41, dima): [Your message ended at the arrow with no words after it,] If Dima is in the room then any other role is overridden.
+
+PK-467:W68 (2026-11-24 14:41, dima): [Your message ended at the arrow with no words after it,] Is it still true? ❓
+
+PK-467:W69 (2026-11-24 14:45, dima): Can you shape your proposal on this as a clear line, or how many you propose to create a mod solution, or what? ❓
+
+PK-467:W70 (2026-11-24 14:45, dima): If yes tell how it's supposed to work.
+
+PK-467:W71 (2026-11-24 14:45, dima): As I see it you propose to make QuietComs work in a mode where clio will not print the message from me when she receives a relay that is potentially not interesting to me.
+
+PK-467:W72 (2026-11-24 14:45, dima): But what about, overall, your output? ❓
+
+PK-467:W73 (2026-11-24 14:45, dima): I think the root of the problem is in your actual writing style, the approach that you use to shape your text.
+
+PK-467:W74 (2026-11-24 14:45, dima): Because the mod solution is the mechanized solution, by solving this via mod, via the mechanized solution, you cut the problem that was sourced by "out of the memory."
+
+PK-467:W75 (2026-11-24 14:45, dima): Your often hard-to-read replies to me are like this because of the output style setup.
+
+PK-467:W76 (2026-11-24 14:45, dima): Maybe you would just add in, instead, propose how to trim or groom your output style so it's less cryptic for me? ❓
+
+PK-467:W77 (2026-11-24 14:45, dima): For example I already started to fold comms log incidents with a clear description of what I don't like.
+
+PK-467:W78 (2026-11-24 14:45, dima): Does it help? ❓
+
+PK-467:W79 (2026-11-24 14:52, dima): [You're right, and I drop the mod: zero new mods for this] No I asked you to describe to me the mod you propose because not showing certain messages that only create spam in the thread is also important and I want it.
+
+PK-467:W80 (2026-11-24 14:52, dima): [You're right, and I drop the mod: zero new mods for this] I just don't know how to query you to make it work because the system with mods became too large and I don't have a door to see how it works.
+
+PK-467:W81 (2026-11-24 14:52, dima): [You're right, and I drop the mod: zero new mods for this] I don't understand what we have currently and don't know which part of mods to query via you.
+
+PK-467:W82 (2026-11-24 14:52, dima): [You're right, and I drop the mod: zero new mods for this] Propose how to make silent quiet comms work better and I want this change to be flexible.
+
+PK-467:W83 (2026-11-24 14:52, dima): [You're right, and I drop the mod: zero new mods for this] If you propose to build something not very precise, we could still get use out of it.
+
+PK-467:W84 (2026-11-24 14:52, dima): As your proposal: let's try.
+
+PK-467:W85 (2026-11-24 14:52, dima): Yes it would be good if Commslog would have more entries.
+
+PK-467:W86 (2026-11-24 14:52, dima): The best steer that I can tell you now is the following: in my mind the most repeatable stuff I keep repeating for you every day a lot of times is a [describe in non-tech language pls] Something like this, and I ask because of this, not because I don't like technical language or cannot parse it.
+
+PK-467:W87 (2026-11-24 14:52, dima): I actually can but the problem is that it is a very large amount of text across all the threads.
+
+PK-467:W88 (2026-11-24 14:52, dima): For example now I run main clio and you, and both of you have some info for me.
+
+PK-467:W89 (2026-11-24 14:52, dima): I see a lot of text that contains a lot of tech language and when a certain threshold is approached with the amount of technical language text, I became overloaded and cannot parse anything at all.
+
+PK-467:W90 (2026-11-24 14:52, dima): That's why I often ask for less technical language.
+
+PK-467:W91 (2026-11-24 14:52, dima): I want to be precise on this because technical language is actually important because we do tech stuff so I do not ban it fully for now.
+
+PK-467:W92 (2026-11-24 14:52, dima): What I want is to change the default communication between Fleet and me.
+
+PK-467:W93 (2026-11-24 14:52, dima): Output for me should be less tech-flavored and more human-readable.
+
+PK-467:W94 (2026-11-24 14:52, dima): Instead of printing mere numbers or plain text stuff, you would rephrase it in natural language.
+
+PK-467:W95 (2026-11-24 14:52, dima): Instead of printing me function names, function calls, and arguments, you would print me the sentence-shaped description of what they do.
+
+PK-467:W96 (2026-11-24 14:52, dima): Prefer simple shapes and simple language and everything should be easy to read and clearly formatted.
+
+PK-467:W97 (2026-11-24 14:52, dima): The amount of text that I see and read grows and the overloaded, not clearly enough written text scales.
+
+PK-467:W98 (2026-11-24 14:52, dima): The overload on me scales along with how much text is improperly written.
+
+PK-467:W99 (2026-11-24 14:52, dima): Go find everything you have about my complaints on comms and propose fixes.
+
+PK-467:W100 (2026-11-24 14:52, dima): How to fix output format? ❓
 <!-- SECTION:NOTES:END -->
