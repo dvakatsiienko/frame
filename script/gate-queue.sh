@@ -123,7 +123,8 @@ is_suite_run() {
     esac
     case ${2-} in -c | -lc) ;; *) return 1 ;; esac
     line=${3-}
-    case $line in *[\;\|\`]* | *'$('* | *$'\n'*) return 1 ;; esac
+    # plain words and their redirects alone: a link, a job or a substitution the split does not know makes the line a batch
+    case $(printf %s "$line" | sed -E 's/&&/ /g; s/[0-9]*>&[0-9]//g') in *[!A-Za-z0-9_./=:@,+%*~\$\"\'\ \>-]*) return 1 ;; esac
     while [ -n "$line" ]; do
         # shellcheck disable=SC2086
         kind=$(set -f && kind_of ${line%%&&*})
