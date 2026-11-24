@@ -23,6 +23,7 @@ func TestBodySignHashLeavesTheDispatchMarksOut(t *testing.T) {
 		{"a bare ↩️ line with its date", "↩️ back to Todo 2026-11-24\n\n", true},
 		{"a 🚀 line with a sixth sense", "🚀 dispatched 2026-11-24 — l, codie s, main:abc1234, sixth sense t\n\n", true},
 		{"a 🚀 line with scope typed after its fields", "🚀 dispatched 2026-11-24 — l, codie s, and add the pill to the build\n\n", false},
+		{"a 🚀 line with scope typed before codie", "🚀 dispatched 2026-11-24 — l, and add the pill, codie s\n\n", false},
 		{"a 🚀 line with no date", "🚀 dispatched now — l, codie s\n\n", false},
 		{"a ↩️ line of no fixed shape", "↩️ taken back, drop the cleaner\n\n", false},
 		{"a ↩️ line with scope after its date", "↩️ back to Todo 2026-11-24 and add the pill\n\n", false},

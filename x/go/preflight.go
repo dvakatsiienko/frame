@@ -254,11 +254,8 @@ func laneSpecSection(repo, id string) (paths []string, section string) {
 	return paths, section
 }
 
-// one section of a spec, and when its file last changed
-type specHit struct {
-	path, section string
-	modified      int64
-}
+// one section of a spec, and the file it sits in
+type specHit struct{ path, section string }
 
 // specSections is every section a repo's lane specs hold for id, in file order: an h2 of the id wins over an h1 in one file, and a
 // repeated heading counts again; a worktree reads the main checkout's specs beside its own, since .scratch/ is gitignored
@@ -281,16 +278,12 @@ func specSections(repo, id string) []specHit {
 		if heads == nil {
 			heads, next = h1.FindAllStringIndex(text, -1), nextH1
 		}
-		var modified int64
-		if info, err := os.Stat(spec); err == nil {
-			modified = info.ModTime().UnixNano()
-		}
 		for _, at := range heads {
 			rest := text[at[1]:]
 			if end := next.FindStringIndex(rest); end != nil {
 				rest = rest[:end[0]]
 			}
-			hits = append(hits, specHit{spec, strings.Repeat("\n", strings.Count(text[:at[0]], "\n")) + text[at[0]:at[1]] + rest, modified})
+			hits = append(hits, specHit{spec, strings.Repeat("\n", strings.Count(text[:at[0]], "\n")) + text[at[0]:at[1]] + rest})
 		}
 	}
 	return hits

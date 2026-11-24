@@ -210,7 +210,7 @@ func asSigned(above string) string {
 // codie, then the base and the sixth sense when it has them), or the ↩️ one that takes it back to Todo (a date, then the why and the
 // left asks when it names them), with the blank line after it. a line carrying anything more, scope typed after its fields included,
 // is text, and moves the hash
-var dispatchMarkLine = regexp.MustCompile(`(?m)^(?:🚀 dispatched \d{4}-\d{2}-\d{2} — .+?, codie \S+?(?:, main:[0-9a-f]+)?(?:, sixth sense \S+)?|↩️ back to Todo \d{4}-\d{2}-\d{2}(?: — [^\n]* · left: [^\n]*)?)$(?:\n\n?|\z)`)
+var dispatchMarkLine = regexp.MustCompile(`(?m)^(?:🚀 dispatched \d{4}-\d{2}-\d{2} — [^,\n]+, codie \S+?(?:, main:[0-9a-f]+)?(?:, sixth sense \S+)?|↩️ back to Todo \d{4}-\d{2}-\d{2}(?: — [^\n]* · left: [^\n]*)?)$(?:\n\n?|\z)`)
 
 // stripDispatchMarks takes those lines out: a quick dispatch writes its 🚀 line above `## signed`, so it would move the hash of a
 // text that did not change in scope

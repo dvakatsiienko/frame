@@ -134,8 +134,8 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	feature := ""
 	for _, id := range args {
 		of := lane
-		if paths, _ := ticketSpecs(id); len(paths) > 0 {
-			of = filepath.Base(filepath.Dir(paths[0]))
+		if path := ticketSpecOf(id).path(); path != "" {
+			of = filepath.Base(filepath.Dir(path))
 		}
 		if feature != "" && of != feature {
 			return nil, usageFail(args[0]+" sits in lane spec "+feature+", "+id+" in "+of+": one dispatch is one lane", "x lane dispatch <one lane's ids> --session <sid> --lane <name>")
@@ -162,22 +162,28 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 }
 
 // sealChecks refuses a start whose chunk is not sealed, and prints every other preflight finding as a warning. three kinds refuse, all
-// of them one ticket's own: no spec section, no seal hash on it, a hash that is not the ticket's text. a clio step (a first line
-// `lane: main`) has no spec, and a re-run for the lane of the newest 🚀 line refuses nothing: its drift came after the start
+// of them one ticket's own: no spec section, no seal hash on one, a hash that is not the ticket's text (and a hash in two specs, since
+// one spec binds a ticket). a clio step (a first line `lane: main`) has no spec, and a re-run for the lane of the newest 🚀 line
+// refuses nothing: its drift came after the start
 func sealChecks(plan *dispatchPlan) error {
 	frame := mainCheckout(frameRoot())
 	var refused []string
-	first, drifted := "", false
+	next := ""
 	for _, ticket := range plan.Tickets {
 		if first, _, _ := strings.Cut(ticket.body, "\n"); ticket.rerun || strings.TrimRight(first, " \r") == "lane: main" {
 			continue
 		}
-		paths, sections := ticketSpecs(ticket.ID)
-		if why, moved := unsealed(ticket.ID, ticket.body, sections); why != "" {
-			if first == "" {
-				first, drifted = ticket.ID, moved
-			}
+		spec := ticketSpecOf(ticket.ID)
+		if why, preflight := spec.unsealed(ticket.ID, ticket.body); why != "" {
 			refused = append(refused, why)
+			if next == "" {
+				// a preflight reds on a moved text and on two specs, and names both; it prints ok for a ticket with no section or
+				// no hash, so those are sent to the command that prints the hash to set
+				next = "x linear sign-check " + ticket.ID + " --body-file <the ticket's text, above its ## signed>"
+				if preflight {
+					next = "x brief preflight " + ticket.ID + spec.repoFlag(frame)
+				}
+			}
 			continue
 		}
 		repo, err := ticketRepo(ticket.ID, ticket.body)
@@ -187,16 +193,15 @@ func sealChecks(plan *dispatchPlan) error {
 		if err != nil || repo == "" {
 			repo = frame
 		}
-		// the newest section binds: the older ones are the stale copies a re-sign leaves
-		read, err := preflightFindings(repo, ticket.ID, ticket.body, paths, sections[len(sections)-1], func(_, _ string, work func() (string, error)) error {
+		read, err := preflightFindings(repo, ticket.ID, ticket.body, []string{spec.bound.path}, spec.bound.section, func(_, _ string, work func() (string, error)) error {
 			_, err := work()
 			return err
 		})
 		if err != nil {
 			return err
 		}
-		if len(sections) > 1 {
-			plan.Warnings = append(plan.Warnings, fmt.Sprintf("%s has %d spec sections in %s: the newest binds, so remove the stale ones", ticket.ID, len(sections), specList(paths)))
+		if spec.hashed > 1 {
+			plan.Warnings = append(plan.Warnings, fmt.Sprintf("%s has %d sealed sections: the last in %s binds, so remove the stale ones", ticket.ID, spec.hashed, home(spec.bound.path)))
 		}
 		for _, f := range read.found {
 			// a commit on main for the ticket says nothing against a chunk that starts on landed ground
@@ -207,66 +212,88 @@ func sealChecks(plan *dispatchPlan) error {
 		}
 	}
 	if len(refused) > 0 {
-		// a preflight reds on a moved text and names both hashes; it prints ok for a ticket with no section or no hash, so those
-		// are sent to the command that prints the hash to set
-		next := "x linear sign-check " + first + " --body-file <the ticket's text, above its ## signed>"
-		if drifted {
-			next = "x brief preflight " + first
-		}
 		return &Fail{Refused: true, Msg: "a lane starts from a sealed chunk: " + strings.Join(refused, "; ") + " — write the section, or read what changed, fold it in and set the hash", Next: next}
 	}
 	return nil
 }
 
-// ticketSpecs looks for a ticket's spec sections where a lane's spec may live: frame, then every checkout under ~/projects (a bytes
-// chunk's spec sits in bytes, and a ticket's repo: line is not always one a reader finds, so none is read); paths names every spec
-// holding one, sections is every section found, the newest last (a re-sign writes a newer one beside the old)
-func ticketSpecs(id string) (paths, sections []string) {
+// a ticket's spec sections as a dispatch reads them: only a section whose wish: line records a hash can bind (a rider or a slice
+// heading with none cannot), the last such in its file does, and one spec binds a ticket
+type ticketSpec struct {
+	// every section found, and the one that binds, nil when none records a hash
+	sections []specHit
+	bound    *specHit
+	// the sections that record a hash, and the files they sit in
+	hashed int
+	files  []string
+}
+
+// ticketSpecOf looks for a ticket's spec sections where a lane's spec may live: frame, then every checkout under ~/projects (a bytes
+// chunk's spec sits in bytes, and a ticket's repo: line is not always one a reader finds, so none is read)
+func ticketSpecOf(id string) ticketSpec {
 	roots := []string{mainCheckout(frameRoot())}
 	userHome, _ := os.UserHomeDir()
 	checkouts, _ := filepath.Glob(filepath.Join(userHome, "projects", "*"))
 	roots = append(roots, checkouts...)
 	seen := map[string]bool{}
-	var hits []specHit
+	var spec ticketSpec
 	for _, root := range roots {
 		if seen[root] {
 			continue
 		}
 		seen[root] = true
-		hits = append(hits, specSections(root, id)...)
+		spec.sections = append(spec.sections, specSections(root, id)...)
 	}
-	for _, hit := range hits {
-		if !slices.Contains(paths, hit.path) {
-			paths = append(paths, hit.path)
-		}
-	}
-	slices.SortStableFunc(hits, func(a, b specHit) int { return cmp.Compare(a.modified, b.modified) })
-	for _, hit := range hits {
-		sections = append(sections, hit.section)
-	}
-	return paths, sections
-}
-
-// how a ticket's spec sections fail to seal its text, "" when they seal it: the newest must hold a seal hash, and the text must
-// hash to the hash of some section, an older match never standing in for a newer section with none
-func unsealed(id, body string, sections []string) (why string, moved bool) {
-	if len(sections) == 0 {
-		return id + " has no spec section", false
-	}
-	newest := sections[len(sections)-1]
-	if _, recorded := sealRecorded(newest); recorded == "" {
-		return id + "'s newest spec section has no seal hash", false
-	}
-	for _, section := range sections {
-		if _, recorded := sealRecorded(section); recorded == "" {
+	for i, hit := range spec.sections {
+		if _, recorded := sealRecorded(hit.section); recorded == "" {
 			continue
 		}
-		if _, drifted, _ := sealDrift(section, body); drifted == "" {
-			return "", false
+		spec.hashed++
+		spec.bound = &spec.sections[i]
+		if !slices.Contains(spec.files, hit.path) {
+			spec.files = append(spec.files, hit.path)
 		}
 	}
-	_, recorded, signed := sealDrift(newest, body)
-	return fmt.Sprintf("%s's text moved since the seal (the spec records body %s, the ticket's text hashes to body %s)", id, recorded, signed), true
+	return spec
+}
+
+// the file a lane's slices dir is named after: the binding section's, else the first spec holding one
+func (spec ticketSpec) path() string {
+	switch {
+	case spec.bound != nil:
+		return spec.bound.path
+	case len(spec.sections) > 0:
+		return spec.sections[0].path
+	}
+	return ""
+}
+
+// ` --repo <checkout>` for a spec that sits in another checkout than frame's, since a preflight reads one repo's specs
+func (spec ticketSpec) repoFlag(frame string) string {
+	if root := filepath.Dir(filepath.Dir(filepath.Dir(spec.path()))); spec.path() != "" && root != frame {
+		return " --repo " + root
+	}
+	return ""
+}
+
+// how the sections fail to seal the ticket's text, "" when they seal it; preflight says whether `x brief preflight` reds on it
+func (spec ticketSpec) unsealed(id, body string) (why string, preflight bool) {
+	switch {
+	case len(spec.sections) == 0:
+		return id + " has no spec section", false
+	case spec.bound == nil:
+		return id + "'s spec section has no seal hash (a section binds only when its wish: line records one)", false
+	case len(spec.files) > 1:
+		shown := make([]string, len(spec.files))
+		for i, file := range spec.files {
+			shown[i] = home(file)
+		}
+		return id + " has a sealed section in " + plural(len(spec.files), "lane spec") + ": " + strings.Join(shown, ", ") + " — one spec binds a ticket", true
+	}
+	if _, recorded, signed := sealDrift(spec.bound.section, body); recorded != "" {
+		return fmt.Sprintf("%s's text moved since the seal (the spec records body %s, the ticket's text hashes to body %s)", id, recorded, signed), true
+	}
+	return "", false
 }
 
 // what the 🚀 line records past its lane and session, x lane landed reads them back
@@ -438,8 +465,14 @@ func fiveHourWindow() string {
 	return fmt.Sprintf("5h window: %.0f%% used, resets %s", window.Limits.FiveHour.Used, resets)
 }
 
-func askDispatch(plan any) string {
-	return fmt.Sprintf("dispatch %d ticket(s): write their missing marks?", len(plan.(dispatchPlan).Tickets))
+func askDispatch(planned any) string {
+	plan := planned.(dispatchPlan)
+	ask := fmt.Sprintf("dispatch %d ticket(s): write their missing marks?", len(plan.Tickets))
+	// the warnings print on the terminal where the yes is asked, as they do in the json
+	for _, warning := range plan.Warnings {
+		ask += "\n  warning: " + warning
+	}
+	return ask
 }
 
 func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
