@@ -25,24 +25,32 @@ func preflightSpecOf(t *testing.T, section, ticket string) asRun {
 	return got
 }
 
-func TestPreflightReadsASpecSectionsRecordedSignHash(t *testing.T) {
+// FRM-700 exit 2: the seal is the spec's recorded hash against the hash of the ticket's current text; a ✍️ or ✏️ line decides nothing
+func TestPreflightReadsASpecSectionsRecordedSealAgainstTheTicketsText(t *testing.T) {
 	t.Parallel()
 	const exits = "\n### exit lines\n\n1. given a tree, when `x lane unlock` runs, then it prints ok\n"
 	section := func(wish string) string { return "## FRM-1 — this chunk\n\n" + wish + "\n" + exits }
-	signed := func(lines ...string) string {
-		return "## want\n\na thing\n\n## signed\n\n" + strings.Join(lines, "\n\n") + "\n"
+	ticket := func(want string, lines ...string) string {
+		return "## want\n\n" + want + "\n\n## signed\n\n" + strings.Join(lines, "\n\n") + "\n"
+	}
+	wish := func(hash string) string { return "wish: FRM-1 · body " + hash + " · the contract" }
+	old, moved := bodyHash("## want\n\na thing\n\n"), bodyHash("## want\n\na thing and more\n\n")
+	// a quick ticket as a dispatch leaves it: its 🚀 line above the stamp, sealed before it
+	quick := func(dispatched string) string {
+		return "lane: quick\n\n## want\n\na thing\n\n" + dispatched + "⸻ 🪪 stamp — please keep 🙏\n\n## signed\n\n✍️ signed · body 11111111\n"
 	}
 	cases := []struct {
 		name, wish, ticket string
 		red                bool
 	}{
-		{"a matching hash", "wish: FRM-1 · body abc12345 · the contract", signed("✍️ signed · body abc12345"), false},
-		{"a stale hash", "wish: FRM-1 · body abc12345 · the contract", signed("✍️ signed · body abc12345", "✍️ re-signed · body def67890"), true},
-		{"a newer tiny line", "wish: FRM-1 · body abc12345 · the contract", signed("✍️ signed · body abc12345", "✏️ changed · body def67890"), false},
-		{"no recorded hash", "wish: FRM-1 · the contract", signed("✍️ signed · body def67890"), false},
-		{"no hash on the ticket", "wish: FRM-1 · body abc12345", signed("✍️ signed"), false},
-		{"a newest sign line with no hash", "wish: FRM-1 · body def67890", signed("✍️ signed · body def67890", "✍️ re-signed"), false},
-		{"an older sign line's hash, stale, under a newest with none", "wish: FRM-1 · body abc12345", signed("✍️ signed · body def67890", "✍️ re-signed"), false},
+		{"the text it was sealed on", wish(old), ticket("a thing", "✍️ signed · body "+old), false},
+		{"edited under a ✏️ line after the seal", wish(old), ticket("a thing and more", "✍️ signed · body "+old, "✏️ changed · body "+moved), true},
+		{"the spec moved to the new hash", wish(moved), ticket("a thing and more", "✍️ signed · body "+old, "✏️ changed · body "+moved), false},
+		{"text moved and no sign line says so", wish(old), ticket("a thing and more", "✍️ signed · body "+old), true},
+		{"the raw hash of a text that is not normalized", wish(bodyHash("## want\n\na thing\n\n\n")), "## want\n\na thing\n\n\n## signed\n\n✍️ signed\n", false},
+		{"no recorded hash", "wish: FRM-1 · the contract", ticket("a thing", "✍️ signed · body def67890"), false},
+		{"sealed before its dispatch line was written", wish(bodyHash("lane: quick\n\n## want\n\na thing\n\n⸻ 🪪 stamp — please keep 🙏\n\n")), quick("🚀 dispatched 2026-11-24 — l, codie s, main:abc1234\n\n"), false},
+		{"sealed before a take-back line was written", wish(bodyHash("lane: quick\n\n## want\n\na thing\n\n⸻ 🪪 stamp — please keep 🙏\n\n")), quick("↩️ taken back 2026-11-24\n\n"), false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -51,8 +59,8 @@ func TestPreflightReadsASpecSectionsRecordedSignHash(t *testing.T) {
 			if red := got.code != 0; red != c.red {
 				t.Fatalf("exit %d, want red %v\n%s%s", got.code, c.red, got.stdout, got.stderr)
 			}
-			if c.red && !(strings.Contains(got.stdout, "abc12345") && strings.Contains(got.stdout, "def67890")) {
-				t.Errorf("the red names not both hashes:\n%s", got.stdout)
+			if c.red && !(strings.Contains(got.stdout, old) && strings.Contains(got.stdout, bodySignHash(c.ticket)) && strings.Contains(got.stdout, "text moved since the seal")) {
+				t.Errorf("the red names not both hashes and the moved text:\n%s", got.stdout)
 			}
 		})
 	}
