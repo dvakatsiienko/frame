@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T11:10:24Z'
+updated_date: '2026-11-25T11:18:29Z'
 labels:
   - s
   - clio-wing-1
@@ -822,4 +822,8 @@ PK-346:W93 (2026-11-25 12:46, dima, o3 steer): discuss with wing, after everythi
 13:02 f52: frame's only minor, @raycast/api 2.13.1, kept out of the evergreen landing (crow) so the window can be read; no renovate run inside the 07:00–23:59 window yet at 13:02; taken by hand at the window's end if it never wakes
 
 his o4 steer (2026-11-25 13:11, dima): me with wing 1 after evergreen, one topic at a time, not all at once.
+
+PK-346:W94 (2026-11-25 13:11, dima, o4 steer): me with wing 1 after evergreen, one topic at a time, not all at once.
+
+PK-346:W94 stamp corrected: his o4 steer was at 13:08 (the packet), not 13:11
 <!-- SECTION:NOTES:END -->

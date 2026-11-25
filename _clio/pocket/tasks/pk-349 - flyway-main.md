@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T11:09:32Z'
+updated_date: '2026-11-25T11:18:29Z'
 labels:
   - s
   - clio-main
@@ -2832,4 +2832,6 @@ done 2026-11-25 13:09: f113 the plan over all herdr work (FRM-616), parked on hi
 done 2026-11-25 13:09: f114 FRM-678: the queue's free-CPU number, read from two days of rows, then one number to dima — on: 2026-11-26 — parked: 2026-11-24 (FRM-678 Todo)
 
 his o6 tick (2026-11-25 13:13): the lanes file rider goes to the mods codie after FRM-645
+
+PK-349:W2441 corrected (helga's groom flipped it; his raw, 13:08): if a skill typed from the quill in herdr, that opens a message, expands - it is fine then. his 13:08 line's correct reading, the line above is superseded
 <!-- SECTION:NOTES:END -->
