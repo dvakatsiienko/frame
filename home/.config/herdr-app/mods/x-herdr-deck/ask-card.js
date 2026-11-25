@@ -5,7 +5,7 @@ import { cardKind, wordsOf } from './orbit.js';
 
 // the card's own padding, and where the id pill sits over its top right corner
 export const CARD_PAD = 12;
-export const PILL = { gap: 8, padX: 6, right: 10, top: 10 };
+export const PILL = { gap: 8, padX: 6, right: 10 };
 // how long a copied id's ✓ stays
 export const COPIED_MS = 1500;
 
@@ -23,6 +23,10 @@ export const askPick = (pick) => `➡️ ${pick.replace(/^\s*➡️?\s*/u, '')}`
 /** the room on a title's right that the pill takes, the card's padding counted @param {number} pillW */
 export const titleInset = (pillW) =>
     Math.max(0, pillW + PILL.right - CARD_PAD + PILL.gap);
+
+/** the pill's top in the card, its middle on the title's @param {{ pill: number, title: number }} heights as drawn, 0 until they are */
+export const pillTop = ({ pill, title }) =>
+    CARD_PAD + (pill && title ? (title - pill) / 2 : 0);
 
 /** the title's markdown: bold, every sign of it literal @param {string} title */
 export const titleMarkdown = (title) =>

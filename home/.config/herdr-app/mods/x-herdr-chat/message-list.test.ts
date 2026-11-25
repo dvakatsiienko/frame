@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 type Handler = (...args: never[]) => unknown;
 /** an element as the list builds it: its id, its children, its handlers and its opacity */
@@ -244,6 +244,7 @@ function createWindow(real: number[], first: (px: number) => number) {
     /** each mounted measuring row's own size handler */
     const sizeOf = new Map<string, Handler>();
     let scrollTop = 0;
+    let viewH = VIEW;
     /** the opacity of each frame drawn */
     const opacities: number[] = [];
 
@@ -258,7 +259,7 @@ function createWindow(real: number[], first: (px: number) => number) {
         };
         const start = past(scrollTop);
         return {
-            end: Math.min(past(scrollTop + VIEW) + 2, sizes.length),
+            end: Math.min(past(scrollTop + viewH) + 2, sizes.length),
             start,
         };
     };
@@ -268,6 +269,11 @@ function createWindow(real: number[], first: (px: number) => number) {
     /** the list draws the rows on screen: each frame, and each scrolled px with no other redraw */
     function drawRows() {
         const list = gpui.seen.list as NonNullable<typeof gpui.seen.list>;
+        const total = list.sizes.reduce((sum, px) => sum + px, 0);
+        scrollTop = Math.min(
+            Math.max(0, total - viewH),
+            Math.max(0, scrollTop),
+        );
         frame.clear();
         boxes = (list.draw(ranged(list.sizes)) as unknown[]).map(raw);
     }
@@ -279,7 +285,7 @@ function createWindow(real: number[], first: (px: number) => number) {
         opacities.push(root.opacity);
         const drawn = gpui.seen.list as NonNullable<typeof gpui.seen.list>;
         const total = drawn.sizes.reduce((sum, px) => sum + px, 0);
-        const max = Math.max(0, total - VIEW);
+        const max = Math.max(0, total - viewH);
         for (const ask of gpui.seen.asks) {
             if (ask === 'bottom') scrollTop = max;
             else {
@@ -288,7 +294,7 @@ function createWindow(real: number[], first: (px: number) => number) {
                     .reduce((sum, px) => sum + px, 0);
                 const bottom = top + (drawn.sizes[gpui.seen.seekAt] ?? 0);
                 if (top < scrollTop) scrollTop = top;
-                else if (bottom > scrollTop + VIEW) scrollTop = bottom - VIEW;
+                else if (bottom > scrollTop + viewH) scrollTop = bottom - viewH;
             }
         }
         scrollTop = Math.min(max, Math.max(0, scrollTop));
@@ -296,7 +302,7 @@ function createWindow(real: number[], first: (px: number) => number) {
         drawRows();
         if (opacities.length === 1)
             (root.handlers.get('on_size_change') as Handler)(
-                { height: VIEW, width: 900 } as never,
+                { height: viewH, width: 900 } as never,
                 cx as never,
             );
         const measurer = raw(raw(root.children[1]).children[0]);
@@ -378,6 +384,16 @@ function createWindow(real: number[], first: (px: number) => number) {
             return answered();
         },
         frame,
+        /** the list moved on with no wheel step: a flick's glide */
+        glide(px: number) {
+            scrollTop += px;
+            drawRows();
+        },
+        /** the ↓ that brings him to the newest is on screen */
+        isNewestShown: () =>
+            under(root).some(
+                (el) => typeof el !== 'string' && el.id === 'chat-newest',
+            ),
         /** somewhere else in the list at once, in one redraw */
         jump(px: number) {
             scrollTop = px;
@@ -428,6 +444,11 @@ function createWindow(real: number[], first: (px: number) => number) {
             fire(root, 'on_scroll_wheel', { delta: { y: -dy } }, cx);
             scrollTop += dy;
             drawRows();
+        },
+        /** the list's own height grows by `px`: the cards under it shrank */
+        tall(px: number) {
+            viewH += px;
+            fire(root, 'on_size_change', { height: viewH, width: 900 }, cx);
         },
         /** herdr tells the list its size: at a change, and once it is back on the screen */
         told: (height: number) =>
@@ -643,4 +664,80 @@ test('a link under the right-click menu or the viewer opens nothing', async () =
     w.bodies.isViewerOpen = false;
     w.rightDown('r1');
     expect(await w.follow('r1', 'path:1')).toEqual([]);
+});
+
+// dima, 2026-11-25 16:26: «when scrolled to the very bottom via scroll, it does not disappear»
+describe('the ↓ is there only off the very bottom', () => {
+    const read = () => {
+        const w = createWindow([...thread], (px) => px);
+        w.run(1_000);
+        w.scroll(-500);
+        w.run(1_000);
+        expect(w.isNewestShown()).toBe(true);
+        return w;
+    };
+
+    test.each([
+        ['one big step', [500]],
+        ['a step past the end', [4_000]],
+        ['many small ones', Array.from({ length: 50 }, () => 10)],
+        ['momentum that dies at the end', [300, 120, 50, 20, 8, 2, 1, 1]],
+    ])(
+        '%s to the bottom takes it away, with no further step',
+        (_how, steps) => {
+            const w = read();
+            for (const step of steps) {
+                w.scroll(step);
+                w.run(16);
+            }
+            w.run(1_000);
+            expect(w.isNewestShown()).toBe(false);
+        },
+    );
+
+    test('a glide that reaches the bottom after his last step takes it away', () => {
+        const w = read();
+        w.scroll(40);
+        for (let i = 0; i < 20; i++) {
+            w.run(16);
+            w.glide(23);
+        }
+        w.run(1_000);
+        expect(w.isNewestShown()).toBe(false);
+    });
+
+    test('one px up brings it back, and it stays', () => {
+        const w = read();
+        w.scroll(500);
+        w.run(1_000);
+        w.scroll(-1);
+        w.run(1_000);
+        expect(w.isNewestShown()).toBe(true);
+    });
+
+    test('the cards under the list shrink until its end is in view: it goes', () => {
+        const w = createWindow([...thread], (px) => px);
+        w.run(1_000);
+        w.scroll(-100);
+        w.run(1_000);
+        expect(w.isNewestShown()).toBe(true);
+        w.tall(150);
+        w.run(1_000);
+        expect(w.isNewestShown()).toBe(false);
+    });
+
+    test('a thread that fits the view never shows it', () => {
+        const w = createWindow([100, 100], (px) => px);
+        w.run(1_000);
+        w.scroll(-50);
+        w.run(1_000);
+        expect(w.isNewestShown()).toBe(false);
+    });
+
+    test('a step that stops short of the bottom keeps it', () => {
+        const w = read();
+        w.scroll(490);
+        w.run(1_000);
+        expect(w.isNewestShown()).toBe(true);
+    });
 });

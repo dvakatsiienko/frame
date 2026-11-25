@@ -146,6 +146,8 @@ function createSim(heights: number[], startH = 600, zoom = 1) {
             place.hold();
             frame();
         },
+        /** the view's look between frames */
+        rest: () => place.rested(),
         /** a saved place read back after a reload */
         restore(saved: { id: string; offset: number }) {
             place.restore(saved.id, saved.offset);
@@ -406,6 +408,59 @@ describe('nothing moves the view without him', () => {
         sim.append(120);
         expect(sim.isFollowing()).toBe(false);
         expect(sim.truth()).toEqual(before);
+    });
+
+    test('a row that shrinks until the end is in view: he is at the very bottom, and follows', () => {
+        const sim = createSim(thread());
+        sim.wheel(200);
+        sim.rest();
+        sim.measure(8, 60);
+        sim.rest();
+        expect(sim.isFollowing()).toBe(true);
+    });
+
+    test('a reply that grows while he reads above the end scrolls nothing', () => {
+        const sim = createSim(thread());
+        sim.wheel(200);
+        const before = sim.truth();
+        for (let i = 0; i < 5; i++) {
+            sim.append(80);
+            sim.rest();
+        }
+        expect(sim.isFollowing()).toBe(false);
+        expect(sim.truth()).toEqual(before);
+    });
+
+    test('a pixel up is off the end, whatever the list still draws', () => {
+        const sim = createSim(thread());
+        sim.wheel(1);
+        sim.rest();
+        sim.append();
+        sim.rest();
+        expect(sim.isFollowing()).toBe(false);
+    });
+
+    test('back at the end by his steps, then a pixel up: off the end again', () => {
+        const sim = createSim(thread());
+        sim.wheel(200);
+        sim.rest();
+        sim.wheel(-200);
+        expect(sim.isFollowing()).toBe(true);
+        sim.wheel(1);
+        sim.rest();
+        expect(sim.isFollowing()).toBe(false);
+    });
+
+    test('a look between a landing’s two frames, the list at its end, follows nothing', () => {
+        const place = createPlace();
+        const rows = thread().map((_, i) => ({ id: `r${i}` }));
+        const sizes = thread();
+        place.restore(`r${REPLY}`, 405);
+        const plan = place.plan(rows, sizes, 600);
+        place.rested();
+        place.drawn({ end: plan.itemSizes.length, start: 7 }, plan, 0);
+        place.rested();
+        expect(place.follow).toBe(false);
     });
 
     test('steps down that reach the end follow again', () => {

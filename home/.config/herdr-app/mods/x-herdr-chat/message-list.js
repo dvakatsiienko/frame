@@ -31,6 +31,9 @@ const PLACE_SAVE_MS = 600;
 // how long after a held place was last asked for the list stays unseen: its landing takes two frames, and a
 // reload asks again as each real height arrives
 const SETTLE_MS = 120;
+// the list's end is looked at this often, for this long after his last wheel step: a glide moves on without steps
+const END_LOOK_MS = 50;
+const END_GLIDE_MS = 700;
 // the right-click menu's size, one row
 const MENU_SIZE = { h: 34, w: 200 };
 // the rows past the view whose text views stand ready, so a row he scrolls to can report his selection at once
@@ -88,6 +91,10 @@ export function createMessageList(deps) {
     /** until then the list is not shown: a held place is still landing as real heights arrive */
     let settleUntil = 0;
     let lastWheelAt = 0;
+    /** the ↓ as the last view drew it, and how long the list is still watched for its end */
+    let isNewestShown = false;
+    let endWatchUntil = 0;
+    let isEndWatched = false;
 
     /** the widest a row or the quill draws: a readable column when narrow, the list's own width when full */
     const column = () =>
@@ -133,6 +140,8 @@ export function createMessageList(deps) {
             if (i === cutAt) return `${id}#above`;
             return i === cutAt + 1 && cutAt >= 0 ? `${id}#below` : id;
         });
+        isNewestShown = !at.follow;
+        watchEnd(cx, END_LOOK_MS);
         items = {
             keys,
             preOf,
@@ -148,7 +157,7 @@ export function createMessageList(deps) {
             itemSizes,
             (i) => keys[i] ?? `end-${i}`,
             (drawn) => {
-                // no redraw is asked for in here, herdr refuses one: a ↓ that should leave does so at the next draw
+                // no redraw is asked for in here, herdr refuses one: watchEnd looks after the frame
                 at.drawn(drawn, plan, Date.now());
                 if (items) items.range = drawn;
                 drawnKeys = keys.slice(drawn.start, drawn.end);
@@ -286,6 +295,7 @@ export function createMessageList(deps) {
                     viewH,
                     Date.now(),
                 );
+                watchEnd(cx, END_GLIDE_MS);
                 if (step.isIgnored) return;
                 savePlaceSoon(cx);
                 // within a screen of the first row: the next older page, one at a time
@@ -319,6 +329,23 @@ export function createMessageList(deps) {
                         }),
                 ),
             );
+    }
+
+    /**
+     * the list moves with no redraw of the view (his scroll, a glide after it): where it came to rest is looked at between
+     * frames, and the ↓ drawn anew when it changed
+     * @param {Context} cx @param {number} ms for how long
+     */
+    function watchEnd(cx, ms) {
+        endWatchUntil = Math.max(endWatchUntil, Date.now() + ms);
+        if (isEndWatched) return;
+        isEndWatched = true;
+        cx.timer.after(END_LOOK_MS, (later) => {
+            isEndWatched = false;
+            at.rested();
+            if (isNewestShown === at.follow) later.notify();
+            if (Date.now() < endWatchUntil) watchEnd(later, 0);
+        });
     }
 
     /** a message off the screen holds no selection */

@@ -65,6 +65,8 @@ export function createPlace() {
     let isLifted = false;
     let wheelUntil = 0;
     let isLastWheelDown = false;
+    /** the list drew off its end since his last step up: its end drawn again is an arrival, whatever brought it there */
+    let hasLeftEnd = false;
 
     /**
      * his place from the rows the list drew last. never inside the row callback (its extra call names row 0), and
@@ -260,6 +262,19 @@ export function createPlace() {
             isLifted = false;
             wheelUntil = 0;
             isLastWheelDown = false;
+            hasLeftEnd = false;
+        },
+        /**
+         * a look at where the list came to rest, between frames: at its very end he follows the newest again, however he
+         * got there; never in the row callback (its extra call names row 0), nor while a place is held
+         */
+        rested() {
+            if (follow || cut) return;
+            if (!isAtEnd) hasLeftEnd = true;
+            else if (hasLeftEnd) {
+                follow = true;
+                id = null;
+            }
         },
         /**
          * a saved place read back after a reload, or kept over a page landing: held until the list lands it
@@ -322,9 +337,12 @@ export function createPlace() {
                     isIgnored: true,
                 };
             const was = follow;
-            follow = followAfterWheel(was, dy, isAtEnd);
+            // a thread that fits the view is at its end wherever he scrolls
+            const isWhole = topOf(sizes, sizes.length) <= viewH;
+            follow = isWhole || followAfterWheel(was, dy, isAtEnd);
             wheelUntil = now + WHEEL_REST_MS;
             if (dy) isLastWheelDown = dy < 0;
+            if (dy > 0) hasLeftEnd = false;
             read(rows, sizes);
             // his own step ends a held place: the two halves are one row again, at the same height
             const hadCut = cut !== null;

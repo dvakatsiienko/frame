@@ -12,6 +12,7 @@ import {
     askMarkdown,
     askPick,
     askTitle,
+    pillTop,
     titleInset,
     titleMarkdown,
 } from './ask-card.js';
@@ -89,6 +90,17 @@ export function createOrbitView(deps) {
     const titleW = new Map();
     /** the id copied last, its ✓ shown for a moment; each copy its own record @type {{ key: string } | null} */
     let copied = null;
+    /** the title row's height and the id pill's, every card's the same; 0 until drawn */
+    const heights = { pill: 0, title: 0 };
+    /** a height herdr reports, kept as drawn @param {'pill' | 'title'} of */
+    const keepHeight =
+        (of) =>
+        (/** @type {{ height: number }} */ size, /** @type {Context} */ cx) => {
+            const height = drawnSize(size.height);
+            if (Math.abs(heights[of] - height) < 0.5) return;
+            heights[of] = height;
+            cx.notify();
+        };
     /** a width herdr reports, kept as drawn; one that moved draws again @param {Map<string, number>} widths @param {string} key */
     const keepWidth =
         (widths, key) =>
@@ -289,7 +301,10 @@ export function createOrbitView(deps) {
                 .id(`head-${key}`)
                 .relative()
                 .overflow_hidden()
-                .on_size_change(keepWidth(cardW, key))
+                .on_size_change((size, cx) => {
+                    keepWidth(cardW, key)(size, cx);
+                    keepHeight('title')(size, cx);
+                })
                 // unseen, it tells the title's width: one that fits is text he can select, which ends in no «…»
                 .child(
                     div()
@@ -351,7 +366,8 @@ export function createOrbitView(deps) {
                 .id(`id-${key}`)
                 .tab_stop(false)
                 .absolute()
-                .top(PILL.top)
+                // its middle on the title's
+                .top(pillTop(heights))
                 .right(PILL.right)
                 .px(PILL.padX)
                 .rounded(4)
@@ -370,7 +386,10 @@ export function createOrbitView(deps) {
                     el.w(pillWidth(key, label)).text_center(),
                 )
                 .when(!isCopied, (el) =>
-                    el.on_size_change(keepWidth(pillW, key)),
+                    el.on_size_change((size, cx) => {
+                        keepWidth(pillW, key)(size, cx);
+                        keepHeight('pill')(size, cx);
+                    }),
                 )
                 .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
                 .on_click((_e, cx) => {

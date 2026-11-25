@@ -171,7 +171,15 @@ const measure = (
                 ? widths.title
                 : null;
         if (width !== null && d.calls.has('on_size_change'))
-            fire(d, 'on_size_change', { width: width * at.zoom }, cx());
+            fire(
+                d,
+                'on_size_change',
+                {
+                    height: (id.startsWith('id-') ? 18 : 24) * at.zoom,
+                    width: width * at.zoom,
+                },
+                cx(),
+            );
     }
     return view.ask(theme, row, ask as never);
 };
@@ -313,6 +321,8 @@ describe.each([1, 0.8, 1.5])('at herdr’s zoom %f', (zoom) => {
             const titleEnd = card - 12 - padding;
             expect(card - right - pill - titleEnd).toBe(8);
             expect(ids(el).includes('title-cut-s1:o123')).toBe(isCut);
+            // the pill's middle on the title's
+            expect(find(el, 'id-s1:o123').calls.get('top')).toEqual([15]);
         },
     );
 });
