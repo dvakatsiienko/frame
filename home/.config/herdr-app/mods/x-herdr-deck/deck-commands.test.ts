@@ -56,6 +56,14 @@ describe("the deck's key commands", () => {
         ).toBe('a');
     });
 
+    // FRM-620:W61 (dima, 13:37): in clio's thread ⌘⇧K ticked wing 1's asks, whose card he had clicked before
+    test('with no hover it ticks the thread open on screen, whatever card he clicked before', () => {
+        const clicked = { hovered: null, isShown: true, picked: 'a' };
+        expect(tickAsker(askers, { ...clicked, pid: 2 })).toBe('b');
+        // the open thread has nothing left to take: nothing is ticked elsewhere
+        expect(tickAsker(askers, { ...clicked, pid: 3 })).toBe(null);
+    });
+
     test('a thread with nothing to take is passed over', () => {
         expect(tickAsker(askers, { ...nobody, isShown: true, pid: 3 })).toBe(
             null,

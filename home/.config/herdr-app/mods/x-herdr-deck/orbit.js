@@ -879,17 +879,14 @@ export function hotPresses(text) {
 }
 
 /**
- * the asker ⌘⇧K ticks: the one under the pointer, else the one he last clicked, else the thread the chat shows; one
- * whose asks all left is passed over (dima, 21:42: «tick all asks of an asker that the pointer currently hovers»)
+ * the asker ⌘⇧K ticks: the one under the pointer, else the thread open on screen (FRM-620:W61, W62); one whose asks all
+ * left is passed over (dima, 21:42: «tick all asks of an asker that the pointer currently hovers»)
  * @param {string[]} sids the askers with open asks
- * @param {{ hovered: string | null, picked: string | null, shown: string | null }} at
+ * @param {{ hovered: string | null, shown: string | null }} at
  * @returns {string | null}
  */
-export function tickAllThread(sids, { hovered, picked, shown }) {
-    return (
-        [hovered, picked, shown].find((sid) => sid && sids.includes(sid)) ??
-        null
-    );
+export function tickAllThread(sids, { hovered, shown }) {
+    return [hovered, shown].find((sid) => sid && sids.includes(sid)) ?? null;
 }
 
 /** @typedef {{ getItem: (key: string) => string | null, setItem: (key: string, value: string) => void, removeItem: (key: string) => void }} KeptStore */

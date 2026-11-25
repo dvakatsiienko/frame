@@ -51,8 +51,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ «🛎️ tick all» on a thread's asks, and ⌘⇧K
   - makes: one tick line per ask it takes in that thread's ticks file, the same as a plain tick
   - given a thread with open asks on the deck
-  - when dima clicks «🛎️ tick all ⌘⇧K» on its head, or presses ⌘⇧K with the pointer over that asker's asks; with the pointer elsewhere, ⌘⇧K takes the asker he clicked last (ringed), else the thread the Chat view shows
-  - decision: hover first, a click's pick second (dima, 21:42)
+  - when dima clicks «🛎️ tick all ⌘⇧K» on its head, or presses ⌘⇧K with the pointer over that asker's asks; with the pointer elsewhere, ⌘⇧K takes the thread open on screen
+  - decision: hover first, then the thread open on screen; a click picks nothing (dima, 25 Nov 13:37, over his 21:42 pick by click)
   - decision: ⌘⇧K is the deck's own key command (`x-herdr-deck.tickall`), from any focus, with no relay through the status bar; with the deck hidden it does nothing (FRM-618 slice C)
   - then every open plain ask of that thread reads 🍕 with its pick, each taken back by its own second click; another thread's asks stay open
   - and a guarded ask stays open and says «needs your own press»; a thread with nothing to take draws no button
