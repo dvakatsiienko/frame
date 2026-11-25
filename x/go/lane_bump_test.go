@@ -143,3 +143,65 @@ func TestCommitBumpUnderARedGateLeavesTheManifestAsItWas(t *testing.T) {
 		t.Fatalf("exit %d, manifest %s\n%s", green.code, read(t, manifest), green.stdout)
 	}
 }
+
+// the run leaves its turn last, so the next in line reads the manifest as it stood
+func TestCommitBumpIsTakenBackBeforeTheTurnIsLeft(t *testing.T) {
+	t.Parallel()
+	dir, _, _, env := pluginFixture(t)
+	manifest := filepath.Join(dir, "plug/.claude-plugin/plugin.json")
+	was := read(t, manifest)
+	write(t, filepath.Join(dir, ".git/hooks/pre-commit"), "#!/bin/sh\nexit 1\n")
+	write(t, filepath.Join(dir, "plug/skill.md"), "a changed skill\n")
+	root, left := t.TempDir(), filepath.Join(t.TempDir(), "left")
+	write(t, filepath.Join(root, gateQueueScript), "#!/bin/sh\necho "+gateQueueReady+"\nread code\ncp '"+manifest+"' '"+left+"'\n")
+
+	got := xIn(t, dir, append(env("1.2.4"), "X_FRAME_ROOT="+root, "X_GATE_TURN=1", "GATE_QUEUE_HELD="), "lane", "commit", "--bump", "demo", message(t), "--", "plug/skill.md")
+
+	if got.code == 0 || !exists(left) {
+		t.Fatalf("exit %d, the turn left: %v\n%s", got.code, exists(left), got.stdout)
+	}
+	if read(t, left) != was {
+		t.Errorf("the turn went while the manifest read %q", read(t, left))
+	}
+}
+
+// the bump is in HEAD once the commit lands, so a restore that fails after it takes nothing back
+func TestCommitBumpStandsWhenTheRestoreFailsAfterTheCommit(t *testing.T) {
+	t.Parallel()
+	dir, _, _, env := pluginFixture(t)
+	write(t, filepath.Join(dir, ".git/hooks/pre-commit"), "#!/bin/sh\necho peer > loose/note.txt\n")
+	write(t, filepath.Join(dir, "loose/note.txt"), "held\n")
+	write(t, filepath.Join(dir, "plug/skill.md"), "a changed skill\n")
+
+	got := xIn(t, dir, env("1.2.4"), "lane", "commit", "--hold-unstaged", "--bump", "demo", message(t), "--", "plug/skill.md")
+
+	if got.code != 1 || !strings.Contains(got.stdout, "changed during the hold") {
+		t.Fatalf("exit %d, want the restore to fail after the commit\n%s", got.code, got.stdout)
+	}
+	if status := gitT(t, dir, "status", "--porcelain", "--", "plug"); status != "" {
+		t.Errorf("the landed bump was taken back: %q", status)
+	}
+}
+
+// a dry run writes the bump so its gates read it, then puts the manifest back, the shared index never touched
+func TestCommitDryBumpLeavesNoTrace(t *testing.T) {
+	t.Parallel()
+	dir, _, _, env := pluginFixture(t)
+	write(t, filepath.Join(dir, gateCopyRun), "#!/bin/sh\nexec \"$@\"\n")
+	write(t, filepath.Join(dir, "lefthook.yaml"), "pre-commit:\n  commands:\n    bumped:\n      run: script/index-run.sh grep -q 1.2.4 plug/.claude-plugin/plugin.json\n")
+	gitT(t, dir, "add", gateCopyRun, "lefthook.yaml")
+	gitT(t, dir, "checkout", "-q", "-b", "codie/dry")
+	gitT(t, dir, "commit", "-q", "-m", "gates")
+	write(t, filepath.Join(dir, "plug/skill.md"), "a changed skill\n")
+	manifest := filepath.Join(dir, "plug/.claude-plugin/plugin.json")
+	was, index := read(t, manifest), gitT(t, dir, "ls-files", "-s")
+
+	got := xIn(t, dir, append(env("1.2.4"), "X_STATE="+t.TempDir()), "lane", "commit", "--dry", "--bump", "demo", message(t), "--", "plug/skill.md")
+
+	if got.code != 0 {
+		t.Fatalf("exit %d, want the gate to read the bump\n%s", got.code, got.stdout)
+	}
+	if read(t, manifest) != was || gitT(t, dir, "ls-files", "-s") != index {
+		t.Errorf("a dry run left the manifest %q, the index %q", read(t, manifest), gitT(t, dir, "ls-files", "-s"))
+	}
+}

@@ -11,6 +11,73 @@ import (
 	"strings"
 )
 
+// what the caller asked, and where from
+type commitCall struct {
+	msgFile, message, startCwd, repo, bumpName string
+	// the message taken on stdin, the caller's to remove, a refusal's too
+	piped     string
+	paths     []string
+	dry, hold bool
+}
+
+// with --repo it enters that repo, so top() after it reads that tree
+func readCommitCall(args []string, flags Flags) (call commitCall, err error) {
+	call = commitCall{msgFile: args[0], paths: args[1:], dry: flags["dry"] == true, hold: flags["hold-unstaged"] == true}
+	// `-` takes the message on stdin, so no message file is kept or reused (a reused one glued two messages, 2026-10-14)
+	if call.msgFile == "-" {
+		piped, err := stdinMessage()
+		if err != nil {
+			return call, err
+		}
+		call.piped, call.msgFile = piped, piped
+	}
+	if _, err := os.Stat(call.msgFile); err != nil {
+		return call, usageFail("no message file at "+call.msgFile, "x lane commit <msg-file> -- <paths…>")
+	}
+	call.bumpName, _ = flags["bump"].(string)
+	if len(call.paths) == 0 && call.bumpName == "" {
+		return call, usageFail("no paths — name what goes into the commit", "x lane commit "+call.msgFile+" -- <paths…>")
+	}
+	call.message, _ = filepath.Abs(call.msgFile)
+	call.startCwd, _ = os.Getwd()
+	call.repo, _ = flags["repo"].(string)
+	if call.repo != "" {
+		if call.dry {
+			return call, usageFail("--dry reads this tree's hook, never another repo's", "x lane commit --dry "+call.msgFile+" -- <paths…>")
+		}
+		if err := enterMain(call.repo); err != nil {
+			return call, err
+		}
+	}
+	return call, nil
+}
+
+// the gate turn's label, and what a retry this run names carries: the flag and the caller's own paths, never the manifest the
+// bump adds
+type commitRetry struct {
+	verb, head, paths string
+}
+
+func commitRetryLines(call commitCall) commitRetry {
+	bumpFlag := ""
+	if call.bumpName != "" {
+		bumpFlag = "--bump " + call.bumpName + " "
+	}
+	verb := "x lane commit "
+	switch {
+	case call.dry:
+		verb += "--dry "
+	case call.hold:
+		verb += "--hold-unstaged "
+	}
+	return commitRetry{verb: verb, head: bumpFlag + call.msgFile, paths: strings.Join(call.paths, " ")}
+}
+
+// all after the verb
+func (retry commitRetry) rest() string {
+	return strings.TrimSuffix(retry.head+" -- "+retry.paths, " -- ")
+}
+
 // a worktree codie's other-repo half lands on that repo's main and nowhere else
 func enterMain(repo string) error {
 	root, _ := gitIn(repo, "rev-parse", "--show-toplevel")
@@ -30,16 +97,6 @@ func enterMain(repo string) error {
 			Next: "finish the merge in " + root.out + ", then rerun"}
 	}
 	return os.Chdir(root.out)
-}
-
-func onDisk(paths []string) []string {
-	var found []string
-	for _, path := range paths {
-		if exists(path) {
-			found = append(found, path)
-		}
-	}
-	return found
 }
 
 // stdinMessage saves the message piped on stdin to a temp file the commit reads, refusing an empty one
@@ -62,46 +119,17 @@ func stdinMessage() (string, error) {
 	return file.Name(), nil
 }
 
-// prefixInside is where cwd sits under tree, ending in a slash, "" at the root or outside it: with --repo the run enters that
-// repo's root, so the caller's own cwd says whether a typed path reads from a subfolder of it
-func prefixInside(tree, cwd string) string {
-	realTree, errTree := filepath.EvalSymlinks(tree)
-	realCwd, errCwd := filepath.EvalSymlinks(cwd)
-	if errTree != nil || errCwd != nil {
-		return ""
-	}
-	rel, err := filepath.Rel(realTree, realCwd)
-	if err != nil || rel == "." || rel == ".." || strings.HasPrefix(rel, "../") {
-		return ""
-	}
-	return filepath.ToSlash(rel) + "/"
-}
-
-// rootPaths turns each path the caller typed from a subfolder (prefix, ending in a slash) into its repo-root form, as git
-// resolves a pathspec from the cwd. when the cwd reading carries no change and the root reading does, the call is refused
-// naming both: the caller wrote a root path from a subfolder, and neither reading is picked silently
-func rootPaths(tree, prefix string, paths []string) ([]string, error) {
-	changed := func(path string) bool {
-		status, _ := gitIn(tree, "status", "--porcelain", "--untracked-files=all", "--", path)
-		return status.out != ""
-	}
-	out := make([]string, len(paths))
-	for i, typed := range paths {
-		if filepath.IsAbs(typed) || strings.HasPrefix(typed, ":") {
-			out[i] = typed
-			continue
-		}
-		fromCwd, fromRoot := filepath.ToSlash(filepath.Join(prefix, typed)), filepath.ToSlash(filepath.Clean(typed))
-		if !changed(fromCwd) && fromRoot != fromCwd && changed(fromRoot) {
-			return nil, &Fail{Refused: true,
-				Msg:  typed + " run from " + strings.TrimSuffix(prefix, "/") + "/ reads " + fromCwd + ", which has no change; " + fromRoot + " from the repo root does. a path resolves from the cwd, like git",
-				Next: "x lane commit <msg-file> -- " + fromRoot + " from the repo root, or the path as the cwd sees it"}
-		}
-		out[i] = fromCwd
-	}
-	return out, nil
-}
-
 func midOperation() bool {
 	return slices.ContainsFunc(gitPaths("", "MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply"), exists)
+}
+
+// what stops a dry run before it waits for its turn
+func dryRefusal(tree string, call commitCall) error {
+	if call.dry && !exists(filepath.Join(tree, gateCopyRun)) {
+		return usageFail("--dry reads a frame-shaped hook: this tree has no "+gateCopyRun, "x lane commit "+call.msgFile+" -- <paths…>")
+	}
+	if call.dry && midOperation() {
+		return usageFail("--dry cannot mirror a commit mid-merge, mid-cherry-pick, mid-revert or mid-rebase", "x lane commit "+call.msgFile+" -- <paths…>")
+	}
+	return nil
 }

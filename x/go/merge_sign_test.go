@@ -92,9 +92,15 @@ func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 			"x/go/gate_queue.go",
 			"x/go/lane_branch_drop.go",
 			"x/go/lane_commit.go",
+			"x/go/lane_commit_bump.go",
 			"x/go/lane_commit_gates.go",
+			"x/go/lane_commit_hook.go",
 			"x/go/lane_commit_input.go",
+			"x/go/lane_commit_paths.go",
 			"x/go/lane_commit_refusal.go",
+			"x/go/lane_commit_report.go",
+			"x/go/lane_commit_stage.go",
+			"x/go/lane_commit_unstaged.go",
 			"x/go/lane_git.go",
 			"x/go/lane_index_lock.go",
 			"x/go/lane_landed_closing.go",
@@ -130,6 +136,7 @@ func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 			"x/go/merge_sixth_sense.go",
 			"x/go/merge_threads.go",
 			"x/go/merge_tier.go",
+			"x/go/merge_tree_stay.go",
 			"x/go/merge_wishkeeper.go",
 		)
 	})
