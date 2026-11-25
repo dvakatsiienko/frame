@@ -5,6 +5,7 @@ import { expect, test, vi } from 'vitest';
 // its answer runs there; but what `init` left queued runs inside the next call, whichever mod's
 const at = vi.hoisted(() => ({
     files: new Map<string, string>(),
+    psCodes: [] as number[],
     scope: 'deck',
     stores: { deck: {}, other: {} } as Record<string, Record<string, string>>,
 }));
@@ -25,7 +26,7 @@ vi.mock('herdr', () => ({
     appHome: () => '/app',
     exec: () =>
         native(() => ({
-            code: 0,
+            code: at.psCodes.shift() ?? 0,
             stderr: '',
             stdout: '7 Wed Nov 25 10:00:00 2026',
         })),
@@ -101,8 +102,8 @@ const cx: Record<string, unknown> = {
     },
 };
 
-// dima's board, 2026-11-25: after a deck landing a steer drew empty (13:44) and a 🆕 was gone (14:08), both still kept
-test('a deck landed again draws the steer and the 🆕 it kept, and keeps what he types next', async () => {
+/** a deck landed over what the last one kept */
+function landed() {
     const shelf = '/Users/me/.claude/shelf';
     at.files.set(
         `${shelf}/threads.json`,
@@ -119,6 +120,7 @@ test('a deck landed again draws the steer and the 🆕 it kept, and keeps what h
             sid: 'a',
         }),
     );
+    at.stores = { deck: {}, other: {} };
     at.stores.deck = {
         seen: JSON.stringify({ 'a:o1': 'look: the card\nyes' }),
         'steer:a:o1': 'my unsent words',
@@ -130,6 +132,12 @@ test('a deck landed again draws the steer and the 🆕 it kept, and keeps what h
         updated: Set<string> | null;
     };
     deck.init({}, cx);
+    return deck;
+}
+
+// dima's board, 2026-11-25: after a deck landing a steer drew empty (13:44) and a 🆕 was gone (14:08), both still kept
+test('a deck landed again draws the steer and the 🆕 it kept, and keeps what he types next', async () => {
+    const deck = landed();
     // init's own call is over: the next one to run is another mod's
     at.scope = 'other';
     await new Promise((done) => setTimeout(done, 100));
@@ -142,4 +150,24 @@ test('a deck landed again draws the steer and the 🆕 it kept, and keeps what h
     at.stores.deck['steer:a:o1'] = '';
     box?.on.get('change')?.({}, cx);
     expect(at.stores.deck['steer:a:o1']).toBe('my unsent words');
+});
+
+// sixth sense, round 1: a landing whose first ps failed wiped every 🆕
+test('a first read that fails wipes nothing the deck kept', async () => {
+    at.scope = 'deck';
+    at.psCodes = [2];
+    const deck = landed();
+    await new Promise((done) => setTimeout(done, 100));
+    expect(deck.updated).toBe(null);
+    expect(at.stores.deck).toMatchObject({
+        seen: JSON.stringify({ 'a:o1': 'look: the card\nyes' }),
+        'steer:a:o1': 'my unsent words',
+        updated: JSON.stringify(['a:o1']),
+    });
+
+    const again = deck as unknown as { reload: (c: unknown) => void };
+    again.reload(cx);
+    await new Promise((done) => setTimeout(done, 100));
+    expect([...(deck.updated ?? [])]).toEqual(['a:o1']);
+    expect(deck.steers.get('a:o1')?.value()).toBe('my unsent words');
 });

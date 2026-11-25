@@ -82,21 +82,26 @@ describe("the deck's key commands", () => {
 
     // dima, 2026-11-25 14:12: «from terminal view, cmd+shift+k does not work at all»
     test('the open thread is the focused one, never the one a hidden chat showed last', () => {
-        const chat = { address: 't3', isFindOpen: false, pid: 3 };
-        const at = { address: 't2', chat, isChatShown: false, pids: { t2: 2 } };
+        const pids = { t2: 2, t3: 3 };
+        const at = {
+            address: 't2' as string | null,
+            chatAddress: 't3',
+            isChatShown: false,
+            pids: pids as Record<string, number> | null,
+        };
         expect(openThreadPid(at)).toBe(2);
         // a shell holds the keyboard in Terminal view, or a thread antenna has not read yet: no thread is guessed
         expect(openThreadPid({ ...at, address: null })).toBe(null);
-        expect(openThreadPid({ ...at, pids: {} })).toBe(null);
-        expect(openThreadPid({ ...at, isChatShown: true, pids: {} })).toBe(
-            null,
-        );
-        // the Files panel holds the keyboard in Chat view: the one the chat shows
+        const unread = { ...at, isChatShown: true, pids: { t3: 3 } };
+        expect(openThreadPid(unread)).toBe(null);
+        expect(openThreadPid({ ...unread, pids: null })).toBe(null);
+        // the Files panel holds the keyboard in Chat view: the one the chat shows, by antenna's pid
         expect(openThreadPid({ ...at, address: null, isChatShown: true })).toBe(
             3,
         );
-        // the chat has read the focused thread before antenna did
-        expect(openThreadPid({ ...at, address: 't3', pids: null })).toBe(3);
+        expect(openThreadPid({ ...unread, address: null, pids: {} })).toBe(
+            null,
+        );
     });
 
     test('a hover outlives no asks group: one that left the screen is no hover when it comes back', () => {

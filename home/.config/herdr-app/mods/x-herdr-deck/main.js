@@ -462,6 +462,8 @@ export default class Deck extends View {
                     pending: null,
                     type: 'shelfRead',
                 });
+        // a read that failed knows of no ask that left: what is kept for one stays
+        if (!listed) return;
         for (const key of this.steers.keys()) {
             const s = this.rows.find((r) => r.sid === key.split(':')[0]);
             // the phases' box (`<sid>:plan`) lives while its thread has phases
@@ -690,7 +692,7 @@ export default class Deck extends View {
                 isShown: isDeckShown(tree),
                 openPid: openThreadPid({
                     address,
-                    chat: chatShownOf(shared(CHAT_SHOWN)),
+                    chatAddress: chatShownOf(shared(CHAT_SHOWN)).address,
                     isChatShown: isChatShown(tree),
                     pids,
                 }),

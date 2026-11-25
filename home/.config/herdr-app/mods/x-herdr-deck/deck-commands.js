@@ -20,13 +20,13 @@ export function tickAsker(rows, { hovered, isShown, openPid }) {
 
 /**
  * the open thread's pid: the focused one's; with no thread focused, the one the chat shows, while the chat is on screen,
- * since a hidden chat's word is kept from before he went to Terminal view
- * @param {{ address: string | null, chat: import('./chat-asks.js').ChatShown, isChatShown: boolean,
- *   pids: Record<string, number> | null }} at
+ * since a hidden chat's word is kept from before he went to Terminal view. the pid is antenna's alone: the chat names its
+ * new thread at once, its pid only once ps answers
+ * @param {{ address: string | null, chatAddress: string | null, isChatShown: boolean, pids: Record<string, number> | null }} at
  */
-export function openThreadPid({ address, chat, isChatShown, pids }) {
-    if (!address) return isChatShown ? chat.pid : null;
-    return pids?.[address] ?? (chat.address === address ? chat.pid : null);
+export function openThreadPid({ address, chatAddress, isChatShown, pids }) {
+    const open = address ?? (isChatShown ? chatAddress : null);
+    return open ? (pids?.[open] ?? null) : null;
 }
 
 /**
