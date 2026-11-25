@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-25T11:10:24Z'
+updated_date: '2026-11-25T12:38:58Z'
 labels:
   - m
   - clio-wing-2
@@ -22,8 +22,8 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f1 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58 — parked: 2026-11-24
-- [ ] #2 f2 💤 redraw the crew-pm board, ten sources changed since its version — later: dima 20:21 («i tell when») — parked: 2026-11-24
+- [ ] #1 f1 🦥 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
+- [ ] #2 f2 🦥 redraw the crew-pm board, ten sources changed since its version — later: dima 20:21 («i tell when»)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -187,6 +187,8 @@ done 2026-11-11 17:08: cli rider from main (dima 16:32): x lane gate maps herdr-
 done 2026-11-19 16:17: 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when») (PK-362 done)
 
 13:10 wing 1: the crew-pm redraw (f2) also routes the long straight arrow «his pick is the summon» (fx:e-spawn): it crosses 7 tiles, and 2 excalidraw tests stay red until it does
+
+14:38 wing 1's lowtide: f1 and f2 take 🦥, the prefix of his own «later» on each line (💤 read as a tail); nothing of theirs dropped
 <!-- SECTION:NOTES:END -->
 
 2026-11-09 23:12 wing 2 halts (dima 23:07 via main). handed to wing 1's PK-346: the FRM-548, FRM-549, FRM-553, FRM-509 closes at the next frame pr's merge-auto run, and cli lane 6's rest (FRM-384 with its gate riders and FRM-554, FRM-436, FRM-424). done tonight: frame#152 merged, FRM-546 closed, FRM-414 re-grilled and built (25d84100), the review contract notice sent. the 💤 lines wait here for the next wing 2.

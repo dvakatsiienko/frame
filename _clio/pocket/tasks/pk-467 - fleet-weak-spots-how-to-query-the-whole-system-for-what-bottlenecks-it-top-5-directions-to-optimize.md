@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-24T11:46:00Z'
-updated_date: '2026-11-24T18:24:00Z'
+updated_date: '2026-11-25T12:40:31Z'
 labels:
   - s
   - clio-wing-1
@@ -415,4 +415,12 @@ PK-467:W194 (2026-11-24 16:16, dima): [the jev compaction plugin] I asked you to
 19:14 handed back at wing 1's halt; open by two things of his: the weak-spots count owed (tickets from his wish against clio's proposals) and his 15:02 line on dima-intervenes (W124), both asked on his word
 
 20:24 (o6 tick, 24 Nov): x-mod-stash kept at 50,171 lines and 49 fixes in 7 days; wing 1's read looks at what to shrink in it
+
+14:38 the owed count, read off linear: 133 FRM and BYT tickets created since 11 Nov, 119 hold a dated line of his words, 14 hold none; of the 14: 8 closed or canceled or duplicate, FRM-704 and FRM-702 in Triage on his ticks, FRM-694 and FRM-592 open. «his words» is a matched line format, a clio idea he ticked counts as his: inference
+
+14:39 the count above corrected: of the 14, 10 are closed (8 done or canceled, 2 duplicates) and 4 open, FRM-704, FRM-702, FRM-694, FRM-592
+
+14:40 W124–W125 evidence, 25 Nov: his 13:32 and 14:29 «what is gate speed», 14:00 and 14:06 «what is 15:25»; the order that worked was 14:30: what it is, yes or no, then numbers
+
+14:40 his 14:42 tick «close it, reopen if it overloads again» came on a pick that missed today's evidence; not closed, asked again with it (o1)
 <!-- SECTION:NOTES:END -->
