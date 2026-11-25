@@ -4,7 +4,7 @@ title: how claude ship works, and could it be useful to us
 status: done
 assignee: []
 created_date: '2026-11-25T10:37:12Z'
-updated_date: '2026-11-25T10:59:19Z'
+updated_date: '2026-11-25T11:00:13Z'
 labels:
   - xs
 dependencies: []
@@ -26,4 +26,6 @@ PK-470:W2 (2026-11-25 inbox, dima) ❓ could it be useful?
 raw drop (2026-11-25 inbox, dima): how claude ship works? could it be useful?
 
 12:59 answered on the boot board: skip it, bypass mode starts no watch, its own pushes skip our hooks; watch added on the docs page
+
+close: PK-470:W1 done (answered on the boot board, 25 Nov), PK-470:W2 done (no: bypass mode starts no watch)
 <!-- SECTION:NOTES:END -->
