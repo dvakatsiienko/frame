@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T13:32:33Z'
+updated_date: '2026-11-25T13:53:40Z'
 labels:
   - s
   - clio-wing-1
@@ -18,22 +18,21 @@ ordinal: 1001
 <!-- AC:BEGIN -->
 - [ ] #1 f86 FRM-639 events piece 2: six questions, the draft in mods-lane-9/frm-639-section.md — with: dima
 - [ ] #2 f87 FRM-582 emoji reactions: its ten questions, three a batch — with: dima
-- [ ] #3 f88 FRM-690 three clio test files split to the map: a helper moves them, then the equality proof and the land — parked: 2026-11-25
-- [ ] #4 f89 trials: wisphunter, its verdict due 27 Nov (review-rounds adopted, gate-speed closed) — with: dima
-- [ ] #5 f90 FRM-704 the cited-docs check at commit: built after 15:25, main pulled first, timed before and after — parked: 2026-11-25
-- [ ] #6 f92 x-mod-stash shrink read: 50,171 lines, 49 fixes in 7 days, what to cut (his o6 tick, 24 Nov 20:24) — parked: 2026-11-25
-- [ ] #7 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
-- [ ] #8 f93 ⏳ bytes#176 github-actions pr: merge it once renovate stability-days goes green — waits for: bytes#176 release age
-- [ ] #9 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
-- [ ] #10 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
-- [ ] #11 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
-- [ ] #12 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #13 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #14 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #15 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
-- [ ] #16 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
-- [ ] #17 f84 🦥 FRM-696 hang-heal: the full shape-idea grill — later: dima 15:08
-- [ ] #18 f85 🦥 github event streams: is gh event listen worth it for our ci and pr watches — later: dima 15:08
+- [ ] #3 f89 trials: wisphunter, its verdict due 27 Nov (review-rounds adopted, gate-speed closed) — with: dima
+- [ ] #4 f92 x-mod-stash shrink read: 50,171 lines, 49 fixes in 7 days, what to cut (his o6 tick, 24 Nov 20:24) — parked: 2026-11-25
+- [ ] #5 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
+- [ ] #6 f93 ⏳ bytes#176 github-actions pr: merge it once renovate stability-days goes green — waits for: bytes#176 release age
+- [ ] #7 f94 ⏳ FRM-690 and FRM-704 close once the checks of their push are green — waits for: CI d5761785
+- [ ] #8 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
+- [ ] #9 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
+- [ ] #10 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
+- [ ] #11 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #12 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #13 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #14 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #15 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
+- [ ] #16 f84 🦥 FRM-696 hang-heal: the full shape-idea grill — later: dima 15:08
+- [ ] #17 f85 🦥 github event streams: is gh event listen worth it for our ci and pr watches — later: dima 15:08
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -898,4 +897,8 @@ done 2026-11-25 15:24: f91 x-mod-stash shrink read: 50,171 lines, 49 fixes in 7 
 done 2026-11-25 15:32: f80 ⏳ evergreen tail: PK-469 closes once bytes#176 merges — waits for: PK-469 (PK-469 open)
 
 done 2026-11-25 15:32: f74 ⏳ bytes prod: rerun the five failed deploys at 15:25, read every app Ready — waits for: pnpm 12.23 release age
+
+done 2026-11-25 15:53: f88 FRM-690 three clio test files split to the map: a helper moves them, then the equality proof and the land — parked: 2026-11-25 (FRM-690 In Progress)
+
+done 2026-11-25 15:53: f90 FRM-704 the cited-docs check at commit: built after 15:25, main pulled first, timed before and after — parked: 2026-11-25 (FRM-704 In Progress)
 <!-- SECTION:NOTES:END -->
