@@ -1,5 +1,5 @@
 ---
-status: live
+status: closed
 until: 2026-11-27
 dies-when: the verdict line below is written
 ---
@@ -108,3 +108,6 @@ dima explores how to balance the load across clio main and her wings; FRM-521 is
 - 2026-11-25 · the closing read (`gate-speed/closing-numbers-2026-11-25.md`) · gate wait p90 636 → 93 s since 11-18 (target 60), red-proof p90 391 → 95 s in queue-log seconds since 11-18, 141 since 11-12 (the transcript unit unmeasured), go suite 308 → 178 cpu-s p50, commit test step 13 → 1–2 s on `main`, 12–14.5 s on `clio-wing-*` rows that ran tests; commits per active hour p50 2.3 → 0.7, suite cpu vitest 76 → 118 and mods 446 → 578, foreground commits 69.7 % (target 20), 4 slot holds over 300 s, push twin p50 33 → 64 s, commit-call minutes per 10 commits for other sessions 5.2 → 17.9, load peak over 60 on 9 of 13 days; pushes to main red 1 per 45 · safety row «reds on main from `related`»: 32 runs opened by failing test: 14 are type errors in the herdr chat files (11-18, the typecheck step), 9 one go test that reads docs (`TestMergeAutoReadsEveryCitedDocAsMemory`, 11-11 and 11-18; 2 of them on a run with type errors too), 6 runs a go shim race (`TestShimFiveShellsAtOnceStartOneBuild`, one of them beside a retry test), 5 vitest (4 `gate-queue.test.ts` on Linux, 1 `flyway-done`), 2 install steps · the kill rule's row is not 0 at face value: the docs-reading go test is a path the commit's selection cannot see (inference), the rest do not point at it
 
 ## verdict
+
+- 2026-11-25 · **not met, kept on dima's waiver** (his o15 tick, 14:29; his 13:32 adopt tick, asked on half the rule, does not count): the safety row broke (32 red CI runs on `related` commits), and the rule's «that day» was missed for two weeks, the safety rows unread until today. kept because the whole suite at commit would likely have caught at most one of them (`flyway-done`, cause unread, an inference). «we're right if» missed too: queue p90 93 s over 60, commit test step met on `main` (13 → 1–2 s), missed on `clio-wing-*` (12–14.5 s); red-proof met; commit minutes per ten 5.1 → 15.7 like for like (`gate-speed/minutes-2026-11-25.md`), never an adopt by its own numbers
+- the hole: `TestMergeAutoReadsEveryCitedDocAsMemory` (9 of the 32), FRM-704; untried: `worktree-*` kind, vitest false reds, mods lanes' minutes
