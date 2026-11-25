@@ -5,7 +5,9 @@
 import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import {
+    constants,
     copyFileSync,
+    cpSync,
     existsSync,
     mkdirSync,
     mkdtempSync,
@@ -78,9 +80,11 @@ export function childEnv(
     };
 }
 
-// a child's HOME: every entry of the real one linked, `.claude/` a dir of links, and the two files cc writes its settings
-// to copied fresh each run, so a /model in the child never reaches the user's settings.json (FRM-622: one wrote
-// `"model": "haiku"` there). the login lives in the keychain, which reads no HOME (probed 2026-11-18)
+// a child's HOME: every entry of the real one linked, `.claude/` a dir of links, and copied fresh each run the two files cc
+// writes its settings to, so a /model in the child never reaches the user's settings.json (FRM-622: one wrote
+// `"model": "haiku"` there), and the shelf, so a mod's write there never reaches the fleet's lanes, asks or records. the
+// login lives in the keychain, which reads no HOME (probed 2026-11-18)
+const SANDBOX_SHELF = '.claude/shelf';
 const SANDBOX_COPIES = ['.claude/settings.json', '.claude.json'];
 export function sandboxHome(real: string, scratch: string) {
     const home = join(scratch, 'home');
@@ -89,7 +93,12 @@ export function sandboxHome(real: string, scratch: string) {
     const link = (from: string, to: string) => {
         for (const name of readdirSync(from)) {
             const rel = join(to, name);
-            if (rel === '.claude' || SANDBOX_COPIES.includes(rel)) continue;
+            if (
+                rel === '.claude' ||
+                rel === SANDBOX_SHELF ||
+                SANDBOX_COPIES.includes(rel)
+            )
+                continue;
             symlinkSync(join(from, name), join(home, rel));
         }
     };
@@ -98,6 +107,14 @@ export function sandboxHome(real: string, scratch: string) {
     for (const rel of SANDBOX_COPIES)
         if (existsSync(join(real, rel)))
             copyFileSync(join(real, rel), join(home, rel));
+    const shelf = join(real, SANDBOX_SHELF);
+    // the shelf is itself a link into frame; a peer's lock or half-written temp file stays behind
+    if (existsSync(shelf))
+        cpSync(realpathSync(shelf), join(home, SANDBOX_SHELF), {
+            filter: (from) => !/\.(?:lock|tmp)$/.test(from),
+            mode: constants.COPYFILE_FICLONE,
+            recursive: true,
+        });
     return home;
 }
 

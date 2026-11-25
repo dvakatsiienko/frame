@@ -4,6 +4,7 @@ import {
     mkdtempSync,
     readFileSync,
     readdirSync,
+    symlinkSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -131,7 +132,7 @@ describe('childEnv', () => {
 describe('sandboxHome', () => {
     const fixture = () => {
         const real = mkdtempSync(join(tmpdir(), 'sandbox-real-'));
-        mkdirSync(join(real, '.claude/shelf'), { recursive: true });
+        mkdirSync(join(real, '.claude/skills'), { recursive: true });
         writeFileSync(join(real, '.claude/settings.json'), '{"model":"opus"}');
         writeFileSync(join(real, '.claude.json'), '{"numStartups":1}');
         writeFileSync(join(real, '.gitconfig'), '[user]');
@@ -157,11 +158,31 @@ describe('sandboxHome', () => {
     it('everything else in the home reads and writes through to the real one', () => {
         const { real, run } = fixture();
         const home = sandboxHome(real, run);
-        writeFileSync(join(home, '.claude/shelf/state.json'), 'x');
+        writeFileSync(join(home, '.claude/skills/state.json'), 'x');
         expect([
             readFileSync(join(home, '.gitconfig'), 'utf8'),
-            readFileSync(join(real, '.claude/shelf/state.json'), 'utf8'),
+            readFileSync(join(real, '.claude/skills/state.json'), 'utf8'),
         ]).toEqual(['[user]', 'x']);
+    });
+
+    it('the shelf is a copy, read through a link: a write or a lock there never crosses', () => {
+        const { real, run } = fixture();
+        const shelf = join(real, 'frame-shelf');
+        mkdirSync(join(shelf, 'herdr-state'), { recursive: true });
+        writeFileSync(join(shelf, 'lanes.json'), 'real');
+        writeFileSync(join(shelf, 'threads.json.lock'), '');
+        symlinkSync(shelf, join(real, '.claude/shelf'));
+        const home = sandboxHome(real, run);
+        const child = join(home, '.claude/shelf');
+        const read = readFileSync(join(child, 'lanes.json'), 'utf8');
+        writeFileSync(join(child, 'lanes.json'), 'child');
+        writeFileSync(join(child, 'herdr-state/s.json'), 'child');
+        expect([
+            read,
+            readFileSync(join(shelf, 'lanes.json'), 'utf8'),
+            readdirSync(join(shelf, 'herdr-state')),
+            readdirSync(child).sort(),
+        ]).toEqual(['real', 'real', [], ['herdr-state', 'lanes.json']]);
     });
 
     it('a second run starts from the user settings as they are now', () => {
