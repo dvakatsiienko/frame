@@ -28,13 +28,13 @@ a wake line arrives as a peer message:
 
 0. a session that never ran the boot (dima cleared it) runs the boot first, from the charter path the wake line names;
    after a compaction since the last wake, re-read that charter, your passport `~/frame/_crow/AGENTS.md` and the dna.
-1. read the one `packet.md` the wake line names with a single `Read` call, never Bash (Bash persists output past ~30 KB and splits the read). it opens with that thread since its last wake
+   at your 55 % notice the second wind is your next act after this note (dima, 2026-11-25).
+1. read the one `packet.md` the wake line names with a single `Read` call, never Bash (it splits past ~30 KB). it opens with that thread since its last wake
    (dima's lines, member traffic, clio's replies, each block headed with its time), then `## receipts`, one line per tool call of hers since dima's last line (exit, first error), then
    clio's leaves that changed since your last read, each under a `## leaf ·` header (strategy, habits, the pm craft, the day's flawlog, the last handoff); the ones listed as unchanged you already hold.
    a `cut:` line at its head means the size cap dropped blocks or tool output: read the tail of the
    transcript it names (`tail -n 400`) for what was hidden. no `cut:` line, the packet is whole and the transcript stays unread.
-   a field you needed and the packet lacks (a timestamp, an image, the cwd, the diff since the
-   last wake) goes into the note as one `packet:` line — that is how the packet grows.
+   a field you needed and the packet lacks (a timestamp, the cwd) goes into the note as one `packet:` line.
 2. read `notes.jsonl` and `verdicts.jsonl` in your home (the current dir): your past notes and
    the verdicts on them. a topic already noted, or marked `miss`, is not raised again unless it
    got worse. a note you hold (step 6) is re-checked: no longer true → drop it, say so in one line.
