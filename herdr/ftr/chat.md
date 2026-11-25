@@ -30,6 +30,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and a reply, a tool line, a peer or plugin line, a turn end, a resize or a reload of the mod never moves the text he reads; only his scroll to the end or the «↓» brings him back to following
   - and a new line in the transcript changes only its own row; a long transcript opens at its last 4 MB
   - and after a reload of the mod the message he was reading is on screen again, read in from above when it must be
+  - and a thread reopened mid-thread comes to rest at his place, its list shown, never blinking while long replies lay out their text (dima, 2026-11-25 13:15: «chat goes crazy»)
   - and a resize while following (the tray or a panel opening) keeps the newest message in view
   - and while it finds the thread it says «Opening the thread…», then «Reading the thread…»; a transcript it cannot read shows why
   - decision: herdr's lazy list with each row's height measured out of sight (after shepherdr's chat): the zoo chat drew all 60 rows every frame; a list row may hold no handler (a link handler inside one blanks the whole list), so a press acts by the row it landed on

@@ -17,6 +17,7 @@ import {
     splitAtPlace,
     topAfterWheel,
     topOf,
+    viewRange,
 } from './follow.js';
 
 /** @typedef {import('./follow.js').Range} Range */
@@ -30,6 +31,7 @@ import {
  * @property {number[]} itemSizes the sizes to hand the list: the rows', a held message cut in two at the place, then
  *   END_MARKS
  * @property {number[]} sizes every row's height
+ * @property {Range | null} measured the rows to measure around: a held place's own view, whatever the landing draws
  * @property {number} cutAt the row cut in two, -1 with none
  * @property {number} cutOffset the px of that row in its upper item
  * @property {number} landTop how far the list is scrolled once the asked item drew where it was asked
@@ -223,12 +225,17 @@ export function createPlace() {
             /** @param {number} item */
             const rowAt = (item) =>
                 cutAt >= 0 && item > cutAt ? item - 1 : item;
+            const held = cut ? placeIndex(rows, cut.id) : -1;
             return {
                 ask,
                 cutAt,
                 cutOffset: split.cut?.offset ?? 0,
                 itemSizes: [...split.sizes, ...END_MARKS],
                 landTop,
+                // a landing draws the list's end for a frame: measured there, the rows around the place leave and come
+                // back, their text lays out short again, and that height would hold the place again, for good
+                measured:
+                    held < 0 ? range : viewRange(sizes, held, landTop + viewH),
                 rowAt,
                 seekAt: cut ? split.seekAt : -1,
                 sizes,
