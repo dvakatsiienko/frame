@@ -111,6 +111,8 @@ export function createThreadFeed(deps) {
         address: /** @type {string | null} */ (null),
         error: /** @type {string | null} */ (null),
         file: /** @type {string | null} */ (null),
+        /** a thread he switched to is not found, or not there to write to, yet */
+        isOpening: false,
         /** the open thread's transcript has been read once */
         isRead: false,
         /** the pid the open thread was opened for; undefined before the first */
@@ -159,11 +161,22 @@ export function createThreadFeed(deps) {
                     // a read that failed says nothing: the thread shown stays, the next look tries again
                     return;
                 }
-            if (address !== feed.shownAddress || pid === feed.pid) return;
+            if (address !== feed.shownAddress) return;
+            if (pid === feed.pid) {
+                opened(cx);
+                return;
+            }
             feed.pid = pid;
             wake();
             cx.notify();
         });
+    }
+
+    /** the thread he switched to is here to write to, or says why not @param {Context} cx */
+    function opened(cx) {
+        if (!feed.isOpening) return;
+        feed.isOpening = false;
+        cx.notify();
     }
 
     /**
@@ -188,7 +201,10 @@ export function createThreadFeed(deps) {
         // draft shown is the one of no thread
         deps.clearShown();
         cx.notify();
-        if (pid === null) return;
+        if (pid === null) {
+            opened(cx);
+            return;
+        }
         try {
             const session = await readTextFile(
                 `${home()}/.claude/sessions/${pid}.json`,
@@ -197,11 +213,13 @@ export function createThreadFeed(deps) {
             if (pid !== feed.pid) return;
             if (!file) {
                 feed.error = 'This thread has no session file yet';
+                opened(cx);
                 cx.notify();
                 return;
             }
             feed.file = file;
             deps.quill.showDraft();
+            opened(cx);
             cx.notify();
             const cwd = session && JSON.parse(session)?.cwd;
             if (typeof cwd === 'string')
@@ -258,6 +276,7 @@ export function createThreadFeed(deps) {
         } catch (error) {
             if (pid !== feed.pid) return;
             feed.error = readError(error);
+            opened(cx);
             cx.notify();
         }
     }
@@ -465,9 +484,11 @@ export function createThreadFeed(deps) {
         follow(address, cx) {
             if (address === feed.shownAddress) return false;
             feed.shownAddress = address;
+            feed.isOpening = true;
             cx.timer.after(0, (later) => showThread(address, later));
             return true;
         },
+        isOpening: () => feed.isOpening,
         isRead: () => feed.isRead,
         isStart: () => feed.pages?.isStart() ?? false,
         loadEarlier,

@@ -6,6 +6,7 @@ import {
     isFreshAsk,
     isShownIn,
     isViewAsked,
+    openingKeys,
     pidFor,
     shownThread,
 } from './shown.js';
@@ -171,6 +172,7 @@ describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () =
         effortAsk: null,
         escapeAsk: null,
         findAsk: null,
+        isKept: false,
         isShown: true,
         isSwitched: false,
         lastEffort: null,
@@ -199,8 +201,26 @@ describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () =
         ).toBe(false);
     });
 
-    test('the quill takes the keyboard when the chat comes on screen', () => {
-        expect(asksActedOn({ ...at, wasShown: false }).isFocus).toBe(true);
+    test.each([
+        ['the chat coming on screen', { wasShown: false }, true],
+        ['a thread switch', { isSwitched: true }, true],
+        ['nothing', {}, false],
+        [
+            'a switch under Terminal view',
+            { isShown: false, isSwitched: true },
+            false,
+        ],
+        [
+            'a reload while a steer box holds the keyboard',
+            { isKept: true, isSwitched: true, wasShown: false },
+            false,
+        ],
+    ])('a thread opens by %s', (_how, over, isOpened) => {
+        expect(asksActedOn({ ...at, ...over }).isOpened).toBe(isOpened);
+    });
+
+    test('a fresh ⌘K brings the keyboard to the quill', () => {
+        expect(asksActedOn({ ...at, quillAsk: 9_500 }).isFocus).toBe(true);
     });
 
     test('a hidden chat never takes the keyboard, ⌘K or not', () => {
@@ -236,6 +256,7 @@ describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () =
             isEscape: false,
             isFind: false,
             isFocus: false,
+            isOpened: false,
             lastEffort: null,
             lastEscape: null,
             lastFind: null,
@@ -249,6 +270,7 @@ describe('⌘F from anywhere in the window opens the chat on screen’s find (di
         effortAsk: null,
         escapeAsk: null,
         findAsk: 9_500,
+        isKept: false,
         isShown: true,
         isSwitched: false,
         lastEffort: null,
@@ -282,6 +304,7 @@ describe('Esc from anywhere in the window closes the chat’s viewer or find (di
         effortAsk: null,
         escapeAsk: 9_500,
         findAsk: null,
+        isKept: false,
         isShown: true,
         isSwitched: false,
         lastEffort: null,
@@ -339,5 +362,77 @@ describe('a drop on the header joins the quill once (FRM-620:W79)', () => {
         expect(isDropAsked(ask, null, { ...here, isShown: false })).toBe(false);
         expect(isDropAsked(ask, null, { ...here, address: 't2' })).toBe(false);
         expect(isDropAsked(ask, null, { ...here, now: 20_000 })).toBe(false);
+    });
+});
+
+// FRM-620:W84, dima 2026-11-25 17:32
+describe('a thread he opens gets the cursor in its quill', () => {
+    type Event = Parameters<typeof openingKeys>[1];
+    const landed = (isOpening: boolean): Event => ({
+        isOpening,
+        type: 'landed',
+    });
+    const drawn = (isOpening: boolean, isHere = true): Event => ({
+        isHere,
+        isOpening,
+        type: 'drawn',
+    });
+    const opened: Event = { type: 'opened' };
+    /** what each event focuses, in order */
+    const run = (...events: Event[]) => {
+        let keys: Parameters<typeof openingKeys>[0] = 'none';
+        return events.map((event) => {
+            const step = openingKeys(keys, event);
+            keys = step.keys;
+            return step.focus;
+        });
+    };
+
+    test.each<[string, Event[], (string | null)[]]>([
+        [
+            'one still opening: the chat holds it till its quill is drawn',
+            [opened, landed(true), drawn(true), drawn(false), drawn(false)],
+            [null, 'chat', null, 'quill', null],
+        ],
+        [
+            'one there at once',
+            [opened, landed(false), drawn(false)],
+            [null, 'quill', null],
+        ],
+        [
+            'one that opened before herdr’s focus landed',
+            [opened, drawn(false), landed(false)],
+            [null, null, 'quill'],
+        ],
+        [
+            'a keyboard he took elsewhere meanwhile stays there',
+            [opened, landed(true), drawn(false, false), drawn(false)],
+            [null, 'chat', null, null],
+        ],
+        [
+            'a second switch before the first is there',
+            [
+                opened,
+                landed(true),
+                opened,
+                drawn(false),
+                landed(true),
+                drawn(false),
+            ],
+            [null, 'chat', null, null, 'chat', 'quill'],
+        ],
+        [
+            'a late landing of an earlier switch',
+            [opened, landed(false), landed(true)],
+            [null, 'quill', null],
+        ],
+        [
+            'Terminal view meanwhile',
+            [opened, { type: 'left' }, landed(false), drawn(false)],
+            [null, null, null, null],
+        ],
+        ['no thread opened', [drawn(false), landed(false)], [null, null]],
+    ])('%s', (_what, events, focused) => {
+        expect(run(...events)).toEqual(focused);
     });
 });

@@ -54,9 +54,10 @@ import {
     isDropAsked,
     isShownIn,
     isViewAsked,
+    openingKeys,
     shownThread,
 } from './shown.js';
-import { createTabMember } from './tab-loop.js';
+import { TAB_HELD, createTabMember } from './tab-loop.js';
 import { START_ROW, createThreadFeed } from './thread-feed.js';
 
 /** @typedef {import('./chat-types.js').Color} Color */
@@ -113,6 +114,10 @@ export default class Chat extends View {
     effortAsk = null;
     /** what this chat last wrote in `chat.shown`, as json: its thread on screen and whether find is open @type {string} */
     namedShown = '';
+    /** the chat has drawn since this load */
+    isLoaded = false;
+    /** the keyboard on its way to a thread he opened @type {import('./shown.js').OpeningKeys} */
+    keys = 'none';
     /** whether the chat was on screen at the last draw */
     wasShown = false;
     /** his chat look (look.js), read each render */
@@ -349,6 +354,12 @@ export default class Chat extends View {
             effortAsk,
             escapeAsk,
             findAsk,
+            // a reload of the chat opens no thread: a steer box he types in keeps the keyboard
+            isKept:
+                !this.isLoaded &&
+                ![null, undefined, 'quill'].includes(
+                    /** @type {any} */ (shared(TAB_HELD)),
+                ),
             isShown,
             isSwitched,
             lastEffort: this.effortAsk,
@@ -364,6 +375,7 @@ export default class Chat extends View {
         this.findAsk = acts.lastFind;
         this.escapeAsk = acts.lastEscape;
         this.wasShown = isShown;
+        this.isLoaded = true;
         // Esc pressed anywhere in the window closes the viewer, or find when no viewer shows (dima, 18:18)
         if (
             acts.isEscape &&
@@ -413,6 +425,25 @@ export default class Chat extends View {
             _cx.timer.after(50, () => {
                 if (!this.pickers.isOpen()) this.quill.focus();
             });
+        if (!isShown || !address) this.tellKeys({ type: 'left' });
+        else if (acts.isOpened) {
+            this.tellKeys({ type: 'opened' });
+            // past herdr's own focus, which a tab switch gives that tab's hidden terminal
+            _cx.timer.after(50, (later) => {
+                this.tellKeys({
+                    isOpening: this.feed.isOpening(),
+                    type: 'landed',
+                });
+                later.notify();
+            });
+        } else if (this.keys === 'held')
+            _cx.timer.after(0, () =>
+                this.tellKeys({
+                    isHere: Boolean(this.chatKeys?.is_focused()),
+                    isOpening: this.feed.isOpening(),
+                    type: 'drawn',
+                }),
+            );
         // the open viewer holds the keyboard: a click on the list or a later focus of the quill never keeps it, a click into another pane or mod does
         this.pictures.keepKeys(_cx, {
             inQuill: this.quill.isFocused(),
@@ -612,6 +643,15 @@ export default class Chat extends View {
             cx.notify();
         });
         cx.notify();
+    }
+
+    /** @param {Parameters<typeof openingKeys>[1]} event */
+    tellKeys(event) {
+        const { focus, keys } = openingKeys(this.keys, event);
+        this.keys = keys;
+        if (this.pictures.isOpen() || this.pickers.isOpen()) return;
+        if (focus === 'quill') this.quill.focus();
+        else if (focus === 'chat') this.chatKeys?.focus();
     }
 
     /** the keyboard leaves the quill: find closes, else the chat takes it @param {Context} cx */

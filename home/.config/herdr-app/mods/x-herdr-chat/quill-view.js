@@ -92,6 +92,10 @@ export function createQuill({
     /** the quill's text, and its text one change earlier: Enter types its line break before it submits */
     let typedNow = '';
     let typedBefore = '';
+    /** the thread whose draft the box holds, and where he left the caret in each he went from @type {string | null} */
+    let drafted = null;
+    /** @type {Map<string, { start: number, end: number }>} */
+    const carets = new Map();
     /** Enter in the quill, one press at a time: a held key's repeats act once */
     const quillKeys = createKeyPress();
     /** the / menu over the quill (slice 6) */
@@ -529,11 +533,22 @@ export function createQuill({
             );
     }
 
-    /** the quill holds the shown thread's draft, the caret after it; no thread, an empty quill */
+    /** the quill holds the shown thread's draft, the caret where he left it, else after it; no thread, an empty quill */
     function showDraft() {
         if (!box) return;
-        const text = quills.show(shownFile(), box);
-        box.set_selected_range({ end: text.length, start: text.length });
+        const file = shownFile();
+        if (drafted !== null && drafted !== file)
+            carets.set(drafted, box.selected_range());
+        drafted = file;
+        const text = quills.show(file, box);
+        const { end, start } = (file && carets.get(file)) || {
+            end: text.length,
+            start: text.length,
+        };
+        box.set_selected_range({
+            end: Math.min(end, text.length),
+            start: Math.min(start, text.length),
+        });
     }
 
     return {

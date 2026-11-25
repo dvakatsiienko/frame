@@ -1,9 +1,10 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 // FRM-620:W79, dima 2026-11-25 16:27: a file dropped anywhere on the chat joins the quill. herdr gives a drop to one
 // handler, the innermost under the pointer (0.1.18 vendor/gpui-pre div.rs takes the drag), so each pane has one
 type Handler = (...args: unknown[]) => unknown;
 const at = vi.hoisted(() => ({
+    agents: [] as object[],
     made: [] as { handlers: Map<string, Handler>; kids: unknown[] }[],
     props: {} as Record<string, unknown>,
     shared: new Map<string, unknown>(),
@@ -72,10 +73,11 @@ vi.mock('gpui-base', () => ({
 }));
 vi.mock('fs/promises', () => ({}));
 vi.mock('herdr', () => ({
-    agents: () => [],
+    agents: () => at.agents,
     appHome: () => '/app',
     exec: vi.fn(),
-    focused: () => null,
+    focused: () =>
+        at.agents.length ? { agent: 't1', tab: 'tab', terminal: 't1' } : null,
     home: () => '/Users/me',
     layout: () => null,
     panes: () => [{ pane: 'p1', tab: 'tab', terminal: 't1' }],
@@ -335,6 +337,69 @@ describe('Esc in the quill', () => {
             .find((el) => el.handlers.has('x_herdr_chat_quill_escape'))
             ?.handlers.get('x_herdr_chat_quill_escape')?.({}, cx);
         expect(done).toEqual(closed);
+    });
+});
+
+// FRM-620:W84: the quill is not drawn while the thread opens, so a focus given at the switch was lost with it
+describe('a thread he switches to', () => {
+    const drawnSwitch = (isHere: boolean, isGone = false) => {
+        const focused: string[] = [];
+        let isOpening = true;
+        const isFresh = [true];
+        const view = chat({
+            chatKeys: {
+                focus: () => focused.push('chat'),
+                is_focused: () => isHere,
+            },
+            feed: quiet({
+                address: () => 't1',
+                error: () => null,
+                file: () => (isOpening ? null : '/t.jsonl'),
+                follow: () => isFresh.pop() ?? false,
+                isOpening: () => isOpening,
+                isRead: () => !isOpening,
+                isStart: () => false,
+                shownAddress: () => 't1',
+            }),
+            isLoaded: true,
+            keys: 'none',
+            quill: quiet({
+                box: () => ({}),
+                focus: () => focused.push('quill'),
+                isFocused: () => false,
+            }),
+            wasShown: true,
+        });
+        const draw = () => {
+            view.render(cx);
+            for (const run of at.timers.splice(0)) run();
+        };
+        if (isGone) {
+            view.render(cx);
+            at.agents.splice(0);
+        }
+        draw();
+        draw();
+        isOpening = false;
+        draw();
+        draw();
+        return focused;
+    };
+    beforeEach(() =>
+        at.agents.push({ address: 't1', app: 'claude-code', tab: 'tab' }),
+    );
+    afterEach(() => at.agents.splice(0));
+
+    test('has the cursor in its quill once it is drawn', () => {
+        expect(drawnSwitch(true)).toEqual(['chat', 'quill']);
+    });
+
+    test('left for a tab with no Claude before it landed, takes nothing', () => {
+        expect(drawnSwitch(true, true)).toEqual([]);
+    });
+
+    test('a box he clicked meanwhile keeps the cursor', () => {
+        expect(drawnSwitch(false)).toEqual(['chat']);
     });
 });
 

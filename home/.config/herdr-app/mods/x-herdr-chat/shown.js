@@ -112,13 +112,42 @@ export const isDropAsked = (ask, last, { address, isShown, now }) =>
     isFreshAsk(ask.time, now);
 
 /**
+ * where the keyboard is on its way to a thread he opened: `none`; `due`: herdr's own focus lands first; `held`: the chat
+ * holds it, since the quill is not drawn while the thread opens
+ * @typedef {'none' | 'due' | 'held'} OpeningKeys
+ */
+
+/**
+ * a thread he opened, by whatever way he went there, gets the cursor in its quill once it can be drawn. a keyboard he took
+ * elsewhere meanwhile stays there
+ * @param {OpeningKeys} keys
+ * @param {{ type: 'opened' } | { type: 'left' } | { type: 'landed', isOpening: boolean } | { type: 'drawn', isOpening: boolean, isHere: boolean }} event
+ *   `opened`: another thread, or the chat on screen again; `landed`: herdr's own focus is past; `drawn`: each draw,
+ *   `isHere` the chat holds the keyboard
+ * @returns {{ keys: OpeningKeys, focus: 'quill' | 'chat' | null }}
+ */
+export function openingKeys(keys, event) {
+    if (event.type === 'opened') return { focus: null, keys: 'due' };
+    if (event.type === 'left') return { focus: null, keys: 'none' };
+    if (event.type === 'landed') {
+        if (keys !== 'due') return { focus: null, keys };
+        return event.isOpening
+            ? { focus: 'chat', keys: 'held' }
+            : { focus: 'quill', keys: 'none' };
+    }
+    if (keys !== 'held' || event.isOpening) return { focus: null, keys };
+    return { focus: event.isHere ? 'quill' : null, keys: 'none' };
+}
+
+/**
  * what a draw does about the keyboard and the picker: only the chat on screen acts, so a hidden one never opens a
- * second picker on the same thread. the quill takes the keyboard when the chat comes on screen, on a thread switch
- * and on a fresh ⌘K; a fresh ⌘⇧E not acted on yet opens the picker on the effort, or applies it
+ * second picker on the same thread. a thread he opens, or the chat on screen again, gives its quill the keyboard
+ * (`openingKeys`); a fresh ⌘K does at once; a fresh ⌘⇧E not acted on yet opens the picker on the effort, or applies it
  * a fresh ⌘F opens the find bar, which takes the keyboard itself, and a fresh Esc closes the viewer or find
- * @param {{ isShown: boolean, wasShown: boolean, isSwitched: boolean, quillAsk: unknown, lastQuill: unknown,
+ * @param {{ isShown: boolean, wasShown: boolean, isSwitched: boolean, isKept: boolean, quillAsk: unknown, lastQuill: unknown,
  *   effortAsk: unknown, lastEffort: unknown, findAsk: unknown, lastFind: unknown, escapeAsk: unknown,
  *   lastEscape: unknown, now: number }} at
+ *   `isKept`: the mod just loaded, while another mod's box holds the keyboard
  */
 export function asksActedOn(at) {
     const isQuillAsked =
@@ -130,7 +159,8 @@ export function asksActedOn(at) {
         isEffort: isNew(at.effortAsk, at.lastEffort),
         isEscape: isNew(at.escapeAsk, at.lastEscape),
         isFind: isNew(at.findAsk, at.lastFind),
-        isFocus: at.isShown && (!at.wasShown || at.isSwitched || isQuillAsked),
+        isFocus: at.isShown && isQuillAsked,
+        isOpened: at.isShown && !at.isKept && (!at.wasShown || at.isSwitched),
         // a press counts as seen only on screen: the status bar shows the chat and writes the press in one tick, so a
         // draw can see the press while the chat is still hidden
         lastEffort: at.isShown ? at.effortAsk : at.lastEffort,

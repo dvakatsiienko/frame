@@ -300,6 +300,9 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
 - ✅ x-herdr's keys (FRM-577)
   - makes: our entries in herdr's `keys.json` `global`, told apart by an `x-herdr-*` action; the file before each change kept in `data/x-herdr-chat/keys-before/`
   - given herdr focused, when dima presses ⌘K, then the Chat view comes forward and the caret sits in the quill
+  - 🔎 and any way he goes to a thread (⌘1–9, a tab, antenna, a jump) leaves the cursor in its quill, its draft and caret as he left them; keys pressed while it opens reach nothing (FRM-620:W84 W85)
+  - and a box he clicked meanwhile, a steer box while the thread stays, or through a reload of the chat, keeps the cursor; Terminal view is as before
+  - and a program that brings its own tab forward counts as his switch: herdr tells a mod nothing of who switched (clio, 25 Nov 17:39)
   - given herdr focused, when he presses ⌘E, then the deck shows or hides
   - and with antenna and glide moved into the deck (`itrout-deck`), they show and hide with it, its whole column (FRM-618 slice F)
   - given a key of ours that herdr already binds, then the keys page marks ours refused and herdr's key keeps working
