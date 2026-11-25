@@ -514,6 +514,29 @@ describe('nothing moves the view without him', () => {
         expect(sim.isAtNewest()).toBe(true);
     });
 
+    test('a sideways swipe over a held place changes nothing', () => {
+        const sim = createSim(thread());
+        sim.restore({ id: 'r8', offset: 10 });
+        sim.rest();
+        expect(sim.wheel(0)).toMatchObject({ hadCut: false, isIgnored: true });
+        expect(sim.isAtNewest()).toBe(true);
+        expect(sim.saved()).toEqual({ id: 'r8', offset: 10 });
+    });
+
+    test('a row measured while a glide still runs: the end it reaches is followed', () => {
+        const sim = createSim(thread());
+        sim.wheel(900);
+        sim.rest();
+        sim.wheel(-50);
+        sim.look();
+        sim.idle(WHEEL_REST_MS);
+        expect(sim.measure(3, 60)).toBe(true);
+        sim.look();
+        sim.moveUnseen(2_000);
+        sim.rest();
+        expect(sim.isFollowing()).toBe(true);
+    });
+
     test('a held place resting at the end takes the ↓ away and stays his', () => {
         const sim = createSim(thread());
         sim.restore({ id: 'r8', offset: 10 });

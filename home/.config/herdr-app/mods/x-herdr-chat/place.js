@@ -43,6 +43,8 @@ export const WHEEL_REST_MS = 200;
 // how long the list's scroll room stays the same before its end is believed: a row laid out short for a few frames
 // brings the end under him and takes it away again
 export const END_QUIET_MS = 250;
+// how long a glide may move the list on after his last wheel step
+export const END_GLIDE_MS = 700;
 
 const END_PX = topOf(END_MARKS, END_MARKS.length);
 
@@ -69,6 +71,7 @@ export function createPlace() {
     /** the list was sent to its end, so the next frame can land the held place at the top */
     let isLifted = false;
     let wheelUntil = 0;
+    let glideUntil = 0;
     let isLastWheelDown = false;
     /** the list drew off its end since his last step up: its end drawn again is an arrival, whatever brought it there */
     let hasLeftEnd = false;
@@ -78,6 +81,8 @@ export function createPlace() {
     let room = 0;
     /** the room at the last look, and since when it has been that */
     let seen = { room: 0, since: 0 };
+    /** the room at his last step up */
+    let stepRoom = 0;
 
     /**
      * his place from the rows the list drew last. never inside the row callback (its extra call names row 0), and
@@ -147,6 +152,9 @@ export function createPlace() {
         get isHeld() {
             return cut !== null;
         },
+        /** the room has stood still long enough for the end to be believed @param {number} now */
+        isQuiet: (now) =>
+            room === seen.room && now - seen.since >= END_QUIET_MS,
         /**
          * a row got its real height: a place at or below it is held again, or the list, which keeps its px, would
          * slide it away. not during his own scroll: a landing would blink the list under his fingers
@@ -157,7 +165,12 @@ export function createPlace() {
          */
         measured(rows, index, now) {
             const at = placeIndex(rows, id);
-            return at >= 0 && index <= at && now >= wheelUntil && hold();
+            if (at < 0 || index > at || now < wheelUntil) return false;
+            const hadLeftEnd = hasLeftEnd;
+            const isHeld = hold();
+            // a glide still under way: the end it reaches is his
+            if (now < glideUntil) hasLeftEnd = hadLeftEnd;
+            return isHeld;
         },
         /** the ↓ pill, or a thread read again from its start: back to following the newest */
         newest() {
@@ -281,10 +294,12 @@ export function createPlace() {
             isSeekDue = false;
             isLifted = false;
             wheelUntil = 0;
+            glideUntil = 0;
             isLastWheelDown = false;
             hasLeftEnd = false;
             isHeldAtEnd = false;
             seen = { room: 0, since: 0 };
+            stepRoom = 0;
         },
         /**
          * a look at where the list came to rest, between frames: at its very end he follows the newest again, however he
@@ -294,13 +309,11 @@ export function createPlace() {
          * @returns {boolean} whether he follows from now on
          */
         rested(now) {
-            if (room !== seen.room) {
-                // a pixel off the end still draws its marks: a list that shrank past them brought the end under him
-                if (room + END_PX <= seen.room && !cut) hasLeftEnd = true;
-                seen = { room, since: now };
-            }
+            if (room !== seen.room) seen = { room, since: now };
+            // a pixel off the end still draws its marks: a list that shrank past them brought the end under him
+            if (room + END_PX <= stepRoom && !cut) hasLeftEnd = true;
             if (follow || isSeekDue || isLifted) return false;
-            const isQuiet = now - seen.since >= END_QUIET_MS;
+            const isQuiet = this.isQuiet(now);
             if (!isAtEnd) {
                 if (!cut || isQuiet) hasLeftEnd = true;
                 isHeldAtEnd = false;
@@ -375,12 +388,23 @@ export function createPlace() {
                     isIgnored: true,
                 };
             const was = follow;
+            // a sideways swipe is no step
+            if (!dy)
+                return {
+                    hadCut: false,
+                    isFollowChanged: false,
+                    isIgnored: true,
+                };
             // a thread that fits the view is at its end wherever he scrolls
             const isWhole = topOf(sizes, sizes.length) <= viewH;
             follow = isWhole || followAfterWheel(was, dy, isAtEnd);
             wheelUntil = now + WHEEL_REST_MS;
-            if (dy) isLastWheelDown = dy < 0;
-            if (dy > 0) hasLeftEnd = false;
+            glideUntil = now + END_GLIDE_MS;
+            isLastWheelDown = dy < 0;
+            if (dy > 0) {
+                hasLeftEnd = false;
+                stepRoom = room;
+            }
             read(rows, sizes);
             // his own step ends a held place: the two halves are one row again, at the same height
             const hadCut = cut !== null;

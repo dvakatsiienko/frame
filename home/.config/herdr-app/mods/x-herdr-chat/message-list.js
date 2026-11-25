@@ -16,7 +16,7 @@ import { copiedFrom, createMessageMenu, menuPlace } from './menu.js';
 import { createMessageBodies } from './message-body.js';
 import { openPath } from './open-path.js';
 import { pathOf } from './path-links.js';
-import { END_QUIET_MS, createPlace } from './place.js';
+import { END_GLIDE_MS, createPlace } from './place.js';
 import { createSelections } from './selection.js';
 import { missingNote } from './viewer.js';
 
@@ -31,9 +31,8 @@ const PLACE_SAVE_MS = 600;
 // how long after a held place was last asked for the list stays unseen: its landing takes two frames, and a
 // reload asks again as each real height arrives
 const SETTLE_MS = 120;
-// the list's end is looked at this often, for this long after his last wheel step: a glide moves on without steps
+// the list's end is looked at this often: after a draw till the list stands still, after his wheel step for a glide
 const END_LOOK_MS = 50;
-const END_GLIDE_MS = 700;
 // the right-click menu's size, one row
 const MENU_SIZE = { h: 34, w: 200 };
 // the rows past the view whose text views stand ready, so a row he scrolls to can report his selection at once
@@ -141,7 +140,7 @@ export function createMessageList(deps) {
             return i === cutAt + 1 && cutAt >= 0 ? `${id}#below` : id;
         });
         isNewestShown = !at.isAtNewest;
-        watchEnd(cx, END_QUIET_MS + END_LOOK_MS);
+        watchEnd(cx, END_LOOK_MS);
         items = {
             keys,
             preOf,
@@ -346,7 +345,8 @@ export function createMessageList(deps) {
             isEndWatched = false;
             if (at.rested(Date.now())) forgetPlace();
             if (isNewestShown === at.isAtNewest) later.notify();
-            if (Date.now() < endWatchUntil) watchEnd(later, 0);
+            if (Date.now() < endWatchUntil || !at.isQuiet(Date.now()))
+                watchEnd(later, 0);
         });
     }
 

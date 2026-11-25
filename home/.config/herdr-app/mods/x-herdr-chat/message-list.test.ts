@@ -121,6 +121,7 @@ function createWindow(
     real: number[],
     first: (px: number) => number,
     shortFrames = 1,
+    frameMs = FRAME_MS,
 ) {
     const rows = real.map((_, i) => ({
         id: `r${i}`,
@@ -459,7 +460,7 @@ function createWindow(
                     else timers.push(t);
                 if (isDirty) draw();
                 else settleText();
-                vi.setSystemTime(Date.now() + FRAME_MS);
+                vi.setSystemTime(Date.now() + frameMs);
             }
             return { drawn: opacities.length, opacities };
         },
@@ -814,15 +815,18 @@ describe('the ↓ is there only off the very bottom', () => {
         },
     );
 
-    test('a pixel up, then the cards under the list shrink: it goes', () => {
-        const w = createWindow([...thread], (px) => px);
-        w.run(1_000);
-        w.scroll(-1);
-        w.run(1_000);
-        w.tall(150);
-        w.run(1_000);
-        expect(w.isNewestShown()).toBe(false);
-    });
+    test.each([16, 60, 120])(
+        'a pixel up, then the cards under the list shrink, frames of %i ms: it goes',
+        (ms) => {
+            const w = createWindow([...thread], (px) => px, 1, ms);
+            w.run(1_000);
+            w.scroll(-1);
+            w.run(1_000);
+            w.tall(150);
+            w.run(1_000);
+            expect(w.isNewestShown()).toBe(false);
+        },
+    );
 
     test('a step that stops short of the bottom keeps it', () => {
         const w = read();
