@@ -582,9 +582,9 @@
   - makes: `kind` (`look` or `test`) on the ask and on its item under `asks:<sid>`, which rides whole to `herdr-state/<sid>.json`
   - given an `add` whose ask carries `kind: look` or `kind: test`, then it is stored with that kind and its text opens «look: » or «test: » once, with no emoji, so herdr pins it with no change of its own; the 90-char cap counts the lead
   - and a text already led so, past a 👀 or 🧪, takes that kind with no `kind` given; any other ask is as before
-  - and a kind that is neither, a lead that is the other kind's, or a lead with nothing after it refuses the whole add in that ask's one line
+  - and a kind that is neither (a list, a number and `true` too), a lead that is the other kind's, or a lead with nothing after it refuses the whole add in that ask's one line
   - and a `follow` keeps the kind, its new text led; a new text led by the other word changes it
-  - proof: tests/orbit.test.ts::an ask «…» with kind … is kept by its lead or refused (11 rows); ::a kind rides the store item, and a follow keeps it or takes the new lead
+  - proof: tests/orbit.test.ts::an ask «…» with kind … is kept by its lead or refused (14 rows); ::a kind rides the store item, and a follow keeps it or takes the new lead
 - ✅ look and test asks sit on top of the board's orbit, led by their emoji (FRM-645)
   - given asks of every kind, when the board draws, then look asks come first, then test asks, then the rest, each in the order they came, in orbit alone; a typed one is led by its kind's emoji there and in a glide subcard
   - and the drawn line leaves the text's own «look: » or «test: » out while the emoji shows; the stored text keeps it, so herdr's pin still reads it
@@ -595,17 +595,21 @@
   - given a look or test ask, when its poster's `follow` carries a `why` opening with «fixing», then it leaves the board's orbit, its check-all, the no-board fence, the board's counts, the glide subcard and the `asks` of `herdr-state/<sid>.json`; the orbit keeps it, and the poster's next `follow` without that word shows it with its id
   - and the «fixing …» why is never kept: the ask's own why is drawn again
   - given he marks it 🔁, on the board or in herdr, then it stays, his steer with it and the 🔁 his to take back, till the poster's turn takes the mark; that take hides it, past the turn, until the poster's `follow`
+  - and a mark and its steer reach the poster before any orbit op of its own lands: its very next orbit call carries them, a refused one too, so no «fixing» follow takes them unheard
+  - and a prompt or a wake that never went (another hook dropped it) gives the marks it took back, the ask shown, for the next prompt or tool call
+  - and a «fixing» follow is no new round: beside a «changed:» resolve it refuses that resolve
+  - makes: `hiddenAsks`, the hidden open asks' ids, in `herdr-state/<sid>.json` apart from `asks`; an id leaves it when the ask shows or is resolved (clio, 25 Nov: herdr keeps the steer he types on one)
   - and a plain ask never hides; no round line and no timer hides or shows one
-  - given one hidden for 60 min with no `follow`, then it stays hidden and its coordinator (the poster's, by its thread record; main clio's own ask wakes her once idle) gets one `[escalate]` line naming the ask and its ticket (its text's, its starter's, or the poster's record's), told once it went
+  - given one hidden for 60 min with no `follow`, then it stays hidden and its coordinator (the poster's, by its thread record; main clio's own ask wakes her once idle) gets one `[escalate]` line naming the ask and its ticket (its text's, its starter's, or the poster's record's), told once it went; a «fixing» follow landing while that line goes is owed its own
   - and a hidden ask still holds the fleet's counter, so no thread mints its id
   - decision: the poster's own word, not a codie's round line: that goes out when the fix is ready (clio, 24 Nov, on his 23 Nov 20:41 words)
-  - proof: tests/orbit-presses.test.ts::a look ask its poster is fixing leaves the board and the published asks… ; ::a plain ask never hides… ; ::his 🔁 hides a test ask once a turn takes it… ; ::herdr's 🔁 hides a look ask once a turn takes it; ::a look ask hidden 60 min with no follow is told…; tests/orbit-tool.test.ts::orbit's text says a fixing follow hides a look or a test — not asserted: main clio's own stranded ask, the kept counter
+  - proof: tests/orbit-presses.test.ts::a look ask its poster is fixing leaves the board and the published asks… ; ::a plain ask never hides… ; ::his 🔁 hides a test ask once a turn takes it… ; ::herdr's 🔁 hides a look ask once a turn takes it (a dropped prompt beside it); ::his mid-turn 🔁 and its steer reach the poster in its very next call… ; ::a look ask hidden 60 min with no follow is told…; tests/orbit-tool.test.ts::orbit's text says a fixing follow hides a look or a test; ::a «changed:» resolve beside a «fixing» follow is refused; tests/herdr-state.test.ts::a hidden ask leaves the file's asks and stays named in hiddenAsks…; tests/replyfix.test.ts::the Stop passes with no ask of his to see… — not asserted: main clio's own stranded ask, the kept counter
 - ✅ how a look and a test ask are written is his to steer (FRM-645)
   - given a text in `stash.orbit.look.how` or `stash.orbit.test.how` of `~/.claude/shelf/herdr-settings/settings.json` (herdr writes the file, this mod only reads it), when a session's next prompt goes, then it carries one line, «a look ask: <his>; a test ask: <his>», once; a changed row tells it again, as do a compaction, a `/clear` and a resume
   - given a row blank, the file missing or not parsing, then the built-in words
   - given 🪐 orbit switched off, then no prompt carries it
   - decision: the prompt's note, not the tool's text: that loads at session start, so an edit of his would wait for a restart
-  - proof: tests/turn-notes.test.ts::how a look and a test ask are written is told once… (+ built-in words with an emptied box, a file that does not parse; orbit off)
+  - proof: tests/turn-notes.test.ts::how a look and a test ask are written is told once…, a compact included (+ built-in words with an emptied box, a file that does not parse; orbit off)
 - ✅ a clio boot keeps going after a spawn (FRM-426, flawlog 2026-10-29 13:10)
   - given clio's session loaded `clio:boot` and has printed no reply as long as the board (300 characters or more) since
   - when `start_session` returns, whose own hint says «then end your turn»
@@ -801,7 +805,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given a turn that added an orbit ask opening «Q<n>» and a reply lacking «❓ **Q<n>**», then the Stop goes red naming the round; the add itself passes
   - then it passes with no open ask, a wrap_up with no ask, a reply printing the round, in a `--bg` session, with `🪐 orbit` switched off, and on the turn the red woke (`stop_hook_active`), even when it repeats the wrap_up ask
   - decision: both enforce from their commit, the signed decision (clio's greenlight, option a, 2026-10-28)
-  - proof: tests/orbit.test.ts::a wrap_up carrying an ask while an orbit ask is open reds the Stop / the Stop passes with no open orbit ask, a wrap_up with no ask, 🪐 orbit switched off, a --bg session, the turn after its own red / the grill-round cases
+  - proof: tests/orbit.test.ts::a wrap_up carrying an ask while an orbit ask is open reds the Stop / the Stop passes with no ask of his to see…, a wrap_up with no ask, 🪐 orbit switched off, a --bg session, the turn after its own red / the grill-round cases
 - ✅ one orbit call carries many ops (FRM-427, o83)
   - given one call with `ops: [{ op: 'add', … }, { op: 'resolve', … }, { op: 'plan', … }]`, then all three land in order and the result reads one line per op
   - given one op in it is refused, then the result names it «refused — <why>» and the others land; a call whose every op is refused is refused
@@ -832,7 +836,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given orbit's `add` or `follow` with a sign or merge verb in its pick, on any text, then it lands: the guard reads no ask's shape any more, so his tick needs none
   - proof: tests/orbit.test.ts::add takes …; ::follow takes a sign pick on a text without the shape; ::add passes …
 - ✅ every thread keeps its own state file on the shelf
-  - makes: `~/.claude/shelf/herdr-state/<sid>.json`: `v`, `sid`, `pid` (the `claude` process the registry file is named for), `at`, `name`, `label`, the open asks as `asks:<sid>` holds them (mark, lock, gated), the plan lines, the wait, taken (the herdr-read watermark), `succ` (the id a /clear continued from), ctx, model, hot, wind, assumed, `rounds` (null for now)
+  - makes: `~/.claude/shelf/herdr-state/<sid>.json`: `v`, `sid`, `pid` (the `claude` process the registry file is named for), `at`, `name`, `label`, the open asks as `asks:<sid>` holds them (mark, lock, gated), `hiddenAsks`, the plan lines, the wait, taken (the herdr-read watermark), `succ` (the id a /clear continued from), ctx, model, hot, wind, assumed, `rounds` (null for now)
   - given a running thread with an open ask and a plan, then its file holds them, written whole through a temp file and a rename, so a reader beside a tight write loop never meets half a file; it is rewritten when its asks change and every third poll, and an unchanged state costs no write
   - given a prompt queued behind a running turn, when its own turn begins, then the file reads working from that turn's start; a subagent's start changes nothing
   - given a thread ran `/clear` or ended, then its old id's file is gone and the new id's names the old one as `succ`; given a state file whose pid is dead, then the sweep (every 15th poll) removes it

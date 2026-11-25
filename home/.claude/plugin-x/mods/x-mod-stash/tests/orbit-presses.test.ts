@@ -483,13 +483,16 @@ test('✅ names every ask it left unticked', async ($, on) => {
         $,
         ['⚠️ merge bytes#104 at abc1234: the guard fix', 'merge it'],
         ['push `backup`', 'yes'],
+        ['look: merge bytes#105', 'merge it'],
     );
     await ui.press({ key: 'orbit:all' });
     expect([
         toasts,
         (await ui.find({ key: 'orbit:accepted:o1' }))?.text,
     ]).toEqual([
-        ['✅ left unticked: o1 ⚠️ merge bytes#104 at abc1234: the guard fix'],
+        [
+            '✅ left unticked: o1 ⚠️ merge bytes#104 at abc1234: the guard fix; o3 look: merge bytes#105',
+        ],
         '🛎️ tick',
     ]);
 });
@@ -538,6 +541,8 @@ test('a press landing right after a follow on that ask keeps its mark and its re
     const ui = await board($);
     await add($, ['push `origin`', 'yes']);
     await ui.press({ key: 'orbit:accepted:o1' });
+    // the turn took the old tick, so the write the press lands in is the follow's
+    await say($, 'go');
     race.onWrite = () => void ui.press({ key: 'orbit:accepted:o1' });
     await orbit($, { id: 'o1', op: 'follow', pick: 'yes', text: 'push `new`' });
     await ui.find({ key: 'orbit:accepted:o1' });
@@ -753,13 +758,55 @@ test("herdr's 🔁 hides a look ask once a turn takes it", async ($, on) => {
     const at = await w.clock.now();
     herdrPress(w, 'o1', { at: at + 1, verdict: 'replay' });
     await w.clock.advance(5_000);
-    const waits = await asksShown(ui);
+    const seen = [await asksShown(ui)];
+    // a prompt another hook drops carried nothing to the session, so it hides nothing and the next one carries the mark
+    w.prompts.isDropped = true;
+    await say($, 'lost');
+    w.prompts.isDropped = false;
+    seen.push(await asksShown(ui));
     await say($, 'go');
-    expect([
-        waits,
-        await asksShown(ui),
-        await ui.find({ key: 'orbit:all' }),
-    ]).toEqual([['o1'], [], undefined]);
+    seen.push(await asksShown(ui));
+    expect([seen, joined(w.contexts).length]).toEqual([
+        [['o1'], ['o1'], []],
+        1,
+    ]);
+});
+
+test("his mid-turn 🔁 and its steer reach the poster in its very next call, a «fixing» follow or a refused one, and a wake's refused prompt gives the mark back", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, {
+        asks: [{ ...ASK, text: 'look: the card' }, ASK, ASK],
+        op: 'add',
+    });
+    await endTurn($);
+    herdrPress(w, 'o2', { at: w.clock.now() + 1, verdict: 'replay' });
+    await w.clock.advance(5_000);
+    w.store.set('dima-at', w.clock.now() + 1);
+    w.prompts.isDropped = true;
+    await w.clock.advance(5_000);
+    w.prompts.isDropped = false;
+    await say($, 'go');
+    const again = joined(w.contexts).join('');
+    await ui.press({ key: 'orbit:rejected:o1' });
+    await ui.input({ key: 'orbit:steer:o1', text: 'the wrap is off' });
+    const heard = (await followed($, { why: 'fixing it' })) as {
+        context?: string[];
+    };
+    const shown = await asksShown(ui);
+    await ui.press({ key: 'orbit:accepted:o3' });
+    const refused = (await orbit($, { id: 'o9', op: 'follow', text: 'x' })) as {
+        deny?: string;
+    };
+    expect([again, heard.context?.join(''), shown, refused.deny]).toEqual([
+        expect.stringMatching(/o2 ↩️ rejected/u),
+        expect.stringMatching(
+            /o1 ↩️ rejected: look: the card .*the wrap is off/u,
+        ),
+        ['o2', 'o3'],
+        expect.stringMatching(/o3 🛎️ accepted.*needs a known id/su),
+    ]);
 });
 
 test('a look ask hidden 60 min with no follow is told to its coordinator once the send goes, and stays hidden', async ($, on) => {
@@ -779,11 +826,13 @@ test('a look ask hidden 60 min with no follow is told to its coordinator once th
         ]),
     });
     const sent: unknown[] = [];
-    on('session.send', (_$, e) => {
+    let onSent = async () => {};
+    on('session.send', async (_$, e) => {
         sent.push([e.to, e.text]);
-        return sent.length > 1
-            ? { isDelivered: true }
-            : { isDelivered: false, reason: 'not reachable' };
+        if (sent.length === 1)
+            return { isDelivered: false, reason: 'not reachable' };
+        await onSent();
+        return { isDelivered: true };
     });
     await start($);
     const ui = await board($);
@@ -795,17 +844,31 @@ test('a look ask hidden 60 min with no follow is told to its coordinator once th
         text: 'look: the card',
         why: 'fixing the wrap',
     });
-    await w.clock.advance(55 * 60_000);
-    const early = sent.length;
-    await w.clock.advance(50 * 60_000);
-    expect([early, sent, await asksShown(ui)]).toEqual([
-        0,
-        Array(2).fill([
+    const hide = () => followed($, { why: 'fixing the wrap again' });
+    onSent = async () => {
+        onSent = async () => {};
+        await hide();
+    };
+    const counts: number[] = [];
+    // the first send is refused, the second goes while a newer «fixing» lands: that hide is owed its own line
+    for (const min of [55, 10, 10, 50, 20, 50]) {
+        await w.clock.advance(min * 60_000);
+        counts.push(sent.length);
+    }
+    expect([
+        counts,
+        sent,
+        await asksShown(ui),
+        await ui.find({ key: 'orbit:all' }),
+    ]).toEqual([
+        [0, 1, 2, 2, 3, 3],
+        Array(3).fill([
             'wing2',
             expect.stringMatching(
                 /^\[escalate\] a look ask stands hidden 60 min with no follow: o1 «look: the card» \(FRM-9\)/,
             ),
         ]),
         [],
+        undefined,
     ]);
 });

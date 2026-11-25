@@ -199,6 +199,24 @@ export function lockJoined(o: StashOrbit, asks: OrbitAsk[]): StashOrbit {
     };
 }
 
+// a turn that never ran gives his marks back as it took them, unheard; with no wake time, so no poll tries again by itself
+export function marksGivenBack(o: StashOrbit, asks: OrbitAsk[]): StashOrbit {
+    return {
+        ...o,
+        asks: o.asks.map((a) => {
+            const was = asks.find((x) => x.id === a.id);
+            return was && a.isLocked
+                ? {
+                      ...a,
+                      hidden: was.hidden,
+                      isLocked: undefined,
+                      markedAt: undefined,
+                  }
+                : a;
+        }),
+    };
+}
+
 // the turn's answers leave, one with a closing word drawn dim one turn more; a marked ask it never resolved unlocks
 // with its mark spent, so the tick reached the model once and a re-tick arrives fresh (PK-262); an unmarked assumption leaves at its third turn end, the turn it was made in counted;
 // one sent back waits for his prompt
@@ -317,7 +335,7 @@ export function orbitOp(
                     );
                 const told = askOrigin(v, read, false);
                 if ('deny' in told) misses.push(told.deny);
-                const typed = askKind(text, oneLine(v.kind));
+                const typed = askKind(text, v.kind);
                 if ('deny' in typed) misses.push(typed.deny);
                 if (misses.length)
                     wrong.push(`«${text.slice(0, 40)}»: ${misses.join('; ')}`);

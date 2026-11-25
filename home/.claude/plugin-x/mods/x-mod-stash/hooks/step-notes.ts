@@ -24,7 +24,7 @@ import { WRAP_UP_TOOL } from './reply-fix.ts';
 import { laneRoundLine } from './rounds.ts';
 import { isLaneOwner } from './session-identity.ts';
 import { keepShelf } from './session-record.ts';
-import { turnParts } from './settings-store.ts';
+import { type IsPartOn, turnParts } from './settings-store.ts';
 import {
     countTool,
     markNudged,
@@ -54,6 +54,20 @@ const WORK_BASH =
     /\b(claude\s+(--bg|-n\s+\S+.*--bg|stop|respawn)|git\s+commit|x\s+lane\s+(commit|push|pr-open|merge-main|seed)|x\s+mods\s+edit\s+push)\b/;
 export const isWork = (tool: string, command?: string) =>
     WORK_TOOLS.has(tool) || (tool === 'Bash' && WORK_BASH.test(command ?? ''));
+// the turn is read from $.state, which a mid-turn reload keeps
+async function isPingTurn($: EngineInterface) {
+    return (await $.state.get(TURN)).value?.isPinged ?? turn.pinged;
+}
+// a mark dima made while any turn of this session runs joins it at its next tool call, model-only, and locks — a peer's
+// or a task's turn too, only the keep-hot ping never takes one (dima's o10, 2026-10-11)
+async function hearMarks($: EngineInterface, isOn: IsPartOn) {
+    await absorbMarks($, () => keepShelf($), isTypedHere);
+    if (!isOn('stash.orbit') || (await isPingTurn($))) return [];
+    const fresh = await takeMarks($, (o) => o.asks.filter(isFresh));
+    return fresh.length
+        ? [joinText(fresh, tickSentence(await orbitTexts($), fresh.length))]
+        : [];
+}
 // every tool call: orbit's own ops, then the notes a step carries back — afk flipped, a tick, a lane steer, the
 // fill, the phases nudge, the pace, herdr's joins
 export async function onToolCall(
@@ -63,8 +77,17 @@ export async function onToolCall(
     view: ViewDoors,
 ) {
     await flushFields($, view);
-    if ((e.tool as string) === ORBIT_TOOL)
-        return (await orbitToolCall($, e as Record<string, unknown>)) as never;
+    if ((e.tool as string) === ORBIT_TOOL) {
+        // his marks first: an op that lands over an unheard one would take it and its steer with nobody told
+        const heard = e.agentId ? [] : await hearMarks($, await turnParts($));
+        const r = await orbitToolCall($, e as Record<string, unknown>);
+        if (!heard.length) return r as never;
+        return (
+            'deny' in r
+                ? { deny: [...heard, r.deny].join('\n') }
+                : { ...r, context: heard }
+        ) as never;
+    }
     // a wind blocks on work that STARTS after «pending: none», so the check runs before the call does
     if (!e.agentId)
         await windBlock($, e as Record<string, unknown>).catch(() => undefined);
@@ -111,19 +134,8 @@ export async function onToolCall(
     }
     const boot = await bootNote($, e.tool as string, isOn);
     if (boot) notes.push(boot);
-    // a mark dima made while any turn of this session runs joins it here, model-only, and locks — a peer's or a task's
-    // turn too, only the keep-hot ping never takes one (dima's o10, 2026-10-11); the turn is read from $.state, which a
-    // mid-turn reload keeps
-    await absorbMarks($, () => keepShelf($), isTypedHere);
-    const isPing = (await $.state.get(TURN)).value?.isPinged ?? turn.pinged;
-    const fresh =
-        isPing || !isOn('stash.orbit')
-            ? []
-            : await takeMarks($, (o) => o.asks.filter(isFresh));
-    if (fresh.length)
-        notes.push(
-            joinText(fresh, tickSentence(await orbitTexts($), fresh.length)),
-        );
+    notes.push(...(await hearMarks($, isOn)));
+    const isPing = await isPingTurn($);
     // a lane steer dima took while clio's turn runs joins it here too, as an orbit mark does
     if (!isPing && isOn('stash.glide') && (await isLaneOwner($))) {
         notes.push(...(await takeLaneMoves($)));

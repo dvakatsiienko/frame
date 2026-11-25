@@ -18,6 +18,7 @@ import {
     writeLanes,
 } from './lanes.ts';
 import { ASSUMED_MAX, CHANGED_MARK, PLAN_MAX, orbitOp } from './orbit.ts';
+import { isShown } from './orbit-ask-kind.ts';
 import {
     AREAS_FILE,
     type AskArea,
@@ -491,11 +492,16 @@ export async function orbitToolCall(
               self: await selfRecord($).catch(() => undefined),
           }
         : undefined;
-    const isAmended = ops.some(
-        (x) =>
-            (x.op === 'follow' || x.op === 'add') &&
-            !('deny' in orbitOp(was, x, true, undefined, false, read)),
-    );
+    const isAmended = ops.some((x) => {
+        if (x.op !== 'follow' && x.op !== 'add') return false;
+        const made = orbitOp(was, x, true, undefined, false, read);
+        if ('deny' in made) return false;
+        // a «fixing» follow hides its ask, so he sees no new round
+        return (
+            x.op === 'add' ||
+            made.orbit.asks.some((a) => a.id === x.id && isShown(a))
+        );
+    });
     if (ops.length === 1)
         return orbitCall($, ops[0] as Record<string, unknown>, isAmended, read);
     const lines: string[] = [];
