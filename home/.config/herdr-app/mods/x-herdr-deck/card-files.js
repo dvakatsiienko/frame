@@ -8,7 +8,7 @@ import { div, image } from 'gpui-kit';
 import { appHome, exec, home, layout, run, setShared } from 'herdr';
 
 import { CHAT_VIEW, chatSelectArgs } from './chat-asks.js';
-import { SIZE } from './look.js';
+import { SIZE, drawnSize } from './look.js';
 import { openPath } from './open-path.js';
 import {
     attachmentsOf,
@@ -77,11 +77,11 @@ async function dropCopy(got) {
 }
 
 /**
- * each path's change time, by path; a path that does not exist is absent
+ * each path's change time, by path; a path that does not exist, or a link to none, is absent
  * @param {string[]} paths @returns {Promise<Map<string, string>>}
  */
 async function changeTimes(paths) {
-    const r = await exec('stat', ['-f', '%m\t%N', ...paths]).catch(
+    const r = await exec('stat', ['-L', '-f', '%m\t%N', ...paths]).catch(
         /** @returns {null} */ () => null,
     );
     const times = new Map();
@@ -256,7 +256,7 @@ export function createCardFiles(deps) {
                 .gap(8)
                 .w_full()
                 .on_size_change((size, cx) => {
-                    const next = Math.round(size.width);
+                    const next = Math.round(drawnSize(size.width));
                     if (next > 0 && next !== room) {
                         room = next;
                         cx.notify();

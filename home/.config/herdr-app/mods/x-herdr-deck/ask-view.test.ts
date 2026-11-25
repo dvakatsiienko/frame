@@ -5,6 +5,7 @@ import {
     mkdtempSync,
     realpathSync,
     symlinkSync,
+    unlinkSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -21,6 +22,7 @@ type Drawn = {
 const at = vi.hoisted(() => ({
     opened: [] as string[][],
     urls: [] as string[],
+    zoom: 1,
 }));
 const { element } = vi.hoisted(() => ({
     element: (kind: string, ...args: unknown[]) => {
@@ -77,7 +79,7 @@ vi.mock('herdr', () => ({
             return {
                 code: 0,
                 stdout: args
-                    .slice(2)
+                    .slice(3)
                     .filter((path) => existsSync(path))
                     .map((path) => `1\t${path}`)
                     .join('\n'),
@@ -92,6 +94,7 @@ vi.mock('herdr', () => ({
     layout: () => null,
     run: vi.fn(),
     setShared: vi.fn(),
+    settings: () => ({ zoom: at.zoom }),
     shared: () => null,
     theme: () => ({}),
 }));
@@ -151,7 +154,11 @@ const ids = (card: unknown) =>
     all(card).map((d) => d.calls.get('id')?.[0] ?? d.args[0]);
 const cx = () => ({
     notify: vi.fn(),
-    open_url: (url: string) => at.urls.push(url),
+    // herdr's own throws on any other scheme
+    open_url: (url: string) => {
+        if (!/^https?:/.test(url)) throw new TypeError(url);
+        at.urls.push(url);
+    },
     spawn: (job: (cx: unknown) => Promise<unknown>) => job(cx()),
     stop_propagation: vi.fn(),
     timer: { after: vi.fn() },
@@ -163,15 +170,31 @@ const fire = (d: Drawn, name: string, e: unknown, c: unknown) => {
     if (typeof handler !== 'function') throw new Error(`no ${name}`);
     return handler(e, c);
 };
-/** the card as it draws once its width is known */
-const drawn = (ask: unknown, width = 480) => {
-    for (const d of all(view.ask(theme, row, ask as never)))
-        if (d.kind === 'row' && d.calls.has('pr'))
-            fire(d, 'on_size_change', { width }, cx());
+/** every element that reports its width gets the one it would draw at, window pixels as herdr reports them */
+const measure = (
+    ask: unknown,
+    widths: { card: number; pill: number; title: number },
+) => {
+    for (const d of all(view.ask(theme, row, ask as never))) {
+        const id = String(d.calls.get('id')?.[0]);
+        const width = id.startsWith('head-')
+            ? widths.card - 24
+            : id.startsWith('id-')
+              ? widths.pill
+              : id.startsWith('title-width-')
+                ? widths.title
+                : null;
+        if (width !== null && d.calls.has('on_size_change'))
+            fire(d, 'on_size_change', { width: width * at.zoom }, cx());
+    }
     return view.ask(theme, row, ask as never);
 };
+/** the card as it draws once its widths are known */
+const drawn = (ask: unknown, card = 480) =>
+    measure(ask, { card, pill: 60, title: 110 });
 
 beforeEach(() => {
+    at.zoom = 1;
     at.opened.length = 0;
     at.urls.length = 0;
 });
@@ -184,9 +207,10 @@ describe('an ask in three parts', () => {
     });
 
     test('a title past the edge is one line ending in «…», whole in its tooltip', () => {
-        const cut = find(drawn(look, 120), 'title-cut-s1:o12');
+        const cut = find(drawn(look, 160), 'title-cut-s1:o12');
         expect(cut.calls.has('text_ellipsis')).toBe(true);
         expect(cut.calls.has('whitespace_nowrap')).toBe(true);
+        expect(cut.calls.has('font_bold')).toBe(true);
         expect(cut.calls.get('tooltip')).toEqual(['👀 🐑 path links']);
     });
 
@@ -233,8 +257,60 @@ describe('the id pill', () => {
         expect(down.stop_propagation).toHaveBeenCalled();
         expect(click.stop_propagation).toHaveBeenCalled();
         expect(press).not.toHaveBeenCalled();
-        expect(find(drawn(look), 'id-s1:o12').kids).toEqual(['✓ w1·o12']);
+        // the ✓ takes the id's own width
+        const ticked = find(view.ask(theme, row, look as never), 'id-s1:o12');
+        expect(ticked.kids).toEqual(['✓']);
+        expect(ticked.calls.get('w')).toEqual([60]);
     });
+});
+
+test('a second copy keeps its ✓ its own whole moment', () => {
+    const ends: (() => void)[] = [];
+    const clock = {
+        ...cx(),
+        timer: {
+            after: (_ms: number, end: (c: unknown) => void) =>
+                ends.push(() => end(cx())),
+        },
+    };
+    const pill = () => find(view.ask(theme, row, look as never), 'id-s1:o12');
+    fire(pill(), 'on_click', {}, clock);
+    fire(pill(), 'on_click', {}, clock);
+    ends[0]?.();
+    expect(pill().kids).toEqual(['✓']);
+    ends[1]?.();
+    expect(pill().kids).toEqual(['🆕 w1·o12']);
+});
+
+// exit 3: a 45-char title and a three-digit id at each width, zoomed or not
+describe.each([1, 0.8, 1.5])('at herdr’s zoom %f', (zoom) => {
+    const long = {
+        ...(look as object),
+        id: 'o123',
+        title: `🐑 ${'m'.repeat(43)}`,
+    };
+    test.each([
+        [240, 62, true],
+        [420, 62, true],
+        [504, 96, true],
+        [520, 62, false],
+        [640, 96, false],
+    ])(
+        'in a card %i wide the title ends before a pill of %i',
+        (card, pill, isCut) => {
+            at.zoom = zoom;
+            const el = measure(long, { card, pill, title: 420 });
+            const padding = find(el, 'head-s1:o123').calls.get(
+                'pr',
+            )?.[0] as number;
+            const right = find(el, 'id-s1:o123').calls.get(
+                'right',
+            )?.[0] as number;
+            const titleEnd = card - 12 - padding;
+            expect(card - right - pill - titleEnd).toBe(8);
+            expect(ids(el).includes('title-cut-s1:o123')).toBe(isCut);
+        },
+    );
 });
 
 // exit 5: the sixth sense's find, a bare `open` ran an app an ask named
@@ -263,12 +339,67 @@ describe('a file or link an ask names opens by the chat’s rule', () => {
         ]);
     });
 
-    test('a page opens in his browser', () => {
-        const card = drawn(linked('https://a.b/c'));
-        const link = find(card, 'link-s1:o9');
-        fire(link, 'on_click', {}, cx());
-        expect(at.urls).toEqual(['https://a.b/c']);
-        expect(at.opened).toEqual([]);
+    test.each([
+        ['a page opens in his browser', 'https://a.b/c', ['https://a.b/c'], []],
+        [
+            'a note opens in obsidian',
+            'obsidian://open?file=x',
+            [],
+            [['obsidian://open?file=x']],
+        ],
+        [
+            'a ticket opens in linear',
+            'linear://issue/FRM-1',
+            [],
+            [['linear://issue/FRM-1']],
+        ],
+    ])('%s', (_what, link, urls, opened) => {
+        fire(find(drawn(linked(link)), 'link-s1:o9'), 'on_click', {}, cx());
+        expect(at.urls).toEqual(urls);
+        expect(at.opened).toEqual(opened);
+    });
+
+    test('one gone since reads «not found», a link to none too', async () => {
+        symlinkSync(join(dir, 'gone.md'), join(dir, 'dangling.md'));
+        const ask = linked(`${dir}/dangling.md`);
+        await files.look([{ asks: [ask] }] as never);
+        expect(find(drawn(ask), 'chip-s1:o9-0').kids).toEqual([
+            'not found: dangling.md',
+        ]);
+    });
+
+    test('one gone between the look and his click reads «not found»', async () => {
+        writeFileSync(join(dir, 'brief.md'), '');
+        const ask = linked(`${dir}/brief.md`);
+        await files.look([{ asks: [ask] }] as never);
+        unlinkSync(join(dir, 'brief.md'));
+        const c = cx();
+        fire(
+            find(drawn(ask), 'chip-s1:o9-0'),
+            'on_click',
+            {},
+            {
+                ...c,
+                spawn: (job: (cx: unknown) => Promise<unknown>) => job(c),
+            },
+        );
+        await vi.waitFor(() => expect(c.notify).toHaveBeenCalled());
+        expect(find(drawn(ask), 'chip-s1:o9-0').kids).toEqual([
+            'not found: brief.md',
+        ]);
+    });
+
+    test('a link in its words that would run something opens nothing', () => {
+        const text = find(drawn(plain), 'ask-s1:o3');
+        fire(text, 'on_link_click', 'shortcuts://run-shortcut?name=x', cx());
+        expect([at.urls, at.opened]).toEqual([[], []]);
+    });
+
+    test('a link in an old-form ask’s words opens by it too', async () => {
+        const text = find(drawn(plain), 'ask-s1:o3');
+        fire(text, 'on_link_click', `file://${dir}/Calculator.app`, cx());
+        await vi.waitFor(() => expect(at.opened).toHaveLength(1));
+        expect(at.opened).toEqual([['-R', `${dir}/Calculator.app`]]);
     });
 
     test('a link that would run something draws none', () => {

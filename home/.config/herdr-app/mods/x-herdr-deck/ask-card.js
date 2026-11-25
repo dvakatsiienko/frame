@@ -24,20 +24,9 @@ export const askPick = (pick) => `➡️ ${pick.replace(/^\s*➡️?\s*/u, '')}`
 export const titleInset = (pillW) =>
     Math.max(0, pillW + PILL.right - CARD_PAD + PILL.gap);
 
-// a bold character's widest share of the text size: letters and signs, then anything wider (an emoji)
-const CHAR = { plain: 0.68, wide: 1.4 };
-
 /** the title's markdown: bold, every sign of it literal @param {string} title */
 export const titleMarkdown = (title) =>
     `**${[...title].map(literal).join('')}**`;
-
-/** whether a title surely fits its one line, so it may draw as text he can select; a longer one ends in «…» @param {string} title @param {number} room @param {number} size */
-export function titleFits(title, room, size) {
-    let ems = 0;
-    for (const c of title)
-        ems += /[\x20-\x7e]/.test(c) ? CHAR.plain : CHAR.wide;
-    return ems * size <= room;
-}
 
 const PUNCTUATION = /[!-/:-@[-`{-~]/;
 const literal = (/** @type {string} */ c) =>
@@ -45,7 +34,7 @@ const literal = (/** @type {string} */ c) =>
 const TOKEN = /(?<!`)`[^`]+`(?!`)|\*\*|[\s\S]/gu;
 // what markdown takes as the edge of a word, beside which a `**` opens or closes
 const isEdge = (/** @type {string | undefined} */ c) =>
-    c === undefined || /\s/.test(c) || PUNCTUATION.test(c);
+    c === undefined || /[\s\p{P}]/u.test(c) || PUNCTUATION.test(c);
 const isWord = (/** @type {string | undefined} */ c) =>
     c !== undefined && /[\p{L}\p{N}]/u.test(c);
 

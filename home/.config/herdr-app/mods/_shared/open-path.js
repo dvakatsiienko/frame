@@ -63,6 +63,17 @@ export function linkPath(link, home) {
     return filePath(text);
 }
 
+/**
+ * opens a page or a note; herdr's own `open_url` takes http alone
+ * @param {string} link @param {(url: string) => void} openUrl @param {(program: string, args: string[]) => Promise<unknown>} exec
+ */
+export function openWebLink(link, openUrl, exec) {
+    const url = link.trim();
+    if (!isWebLink(url)) return;
+    if (/^https?:/i.test(url)) openUrl(url);
+    else exec('open', [url]).catch(() => {});
+}
+
 /** the settings row that names the app audio opens in, and the app before he chose one */
 export const AUDIO_APP = { default: 'IINA', key: 'chatter.audio.app' };
 

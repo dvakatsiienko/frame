@@ -1,15 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import {
-    CARD_PAD,
-    PILL,
-    askMarkdown,
-    askPick,
-    askTitle,
-    titleFits,
-    titleInset,
-    titleMarkdown,
-} from './ask-card.js';
+import { askMarkdown, askPick, askTitle, titleMarkdown } from './ask-card.js';
 import { askRounds, asksOf, pressOf } from './orbit.js';
 
 // the stash's own row, 2026-11-25 15:41, its body cut
@@ -85,6 +76,11 @@ describe('a body as small markdown', () => {
             '**🔧 codie** runs `x *lane*`',
             '**🔧 codie** runs `x *lane*`',
         ],
+        [
+            'bold in «quotes», beside a dash',
+            '«**🐬 wishkeeper**» **a!**—b',
+            '«**🐬 wishkeeper**» **a\\!**—b',
+        ],
         ['a bullet list', '- one\n- **two**', '- one\n- **two**'],
         ['a numbered list, from its own number', '3. a\n4. b', '3. a\n4. b'],
         ['a line per line', 'one\ntwo', 'one\\\ntwo'],
@@ -148,21 +144,4 @@ describe('a title', () => {
 test('the pick leads with one ➡️', () => {
     expect(askPick('both work')).toBe('➡️ both work');
     expect(askPick('➡️ both work')).toBe('➡️ both work');
-});
-
-// exit 3: his own pane's card widths, a 45-char title, a three-digit id, with its thread's name and 🆕 or without
-describe.each([240, 320, 420, 504, 640])('in a card %i wide', (card) => {
-    test.each([40, 62, 96])('the title ends before a pill of %i', (pill) => {
-        const inner = card - 2 * CARD_PAD;
-        const titleEnd = CARD_PAD + inner - titleInset(pill);
-        const pillStart = card - PILL.right - pill;
-        expect(pillStart - titleEnd).toBeGreaterThanOrEqual(PILL.gap);
-    });
-});
-
-test('a title surely on one line is whole, one that may pass the edge is cut', () => {
-    const title = `🐑 ${'m'.repeat(43)}`;
-    expect(titleFits(title, 600, 15)).toBe(true);
-    expect(titleFits(title, 380, 15)).toBe(false);
-    expect(titleFits('🐑 a', 0, 15)).toBe(false);
 });

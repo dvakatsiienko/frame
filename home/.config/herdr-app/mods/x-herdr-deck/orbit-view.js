@@ -12,11 +12,18 @@ import {
     askMarkdown,
     askPick,
     askTitle,
-    titleFits,
     titleInset,
     titleMarkdown,
 } from './ask-card.js';
-import { SIZE, leadingRoom, line, markdownText, prose } from './look.js';
+import {
+    SIZE,
+    drawnSize,
+    followLink,
+    leadingRoom,
+    line,
+    markdownText,
+    prose,
+} from './look.js';
 import {
     askLabel,
     cardKind,
@@ -76,10 +83,21 @@ export function createOrbitView(deps) {
     const labelW = new Map();
     /** each id pill's drawn width @type {Map<string, number>} */
     const pillW = new Map();
-    /** a card's inner width, every card's the same; 0 until one is drawn */
-    let cardW = 0;
-    /** the id copied last, its ✓ shown for a moment @type {string | null} */
+    /** each card's inner width, by its ask: a look's border takes two pixels of it @type {Map<string, number>} */
+    const cardW = new Map();
+    /** each title's width on one line @type {Map<string, number>} */
+    const titleW = new Map();
+    /** the id copied last, its ✓ shown for a moment; each copy its own record @type {{ key: string } | null} */
     let copied = null;
+    /** a width herdr reports, kept as drawn; one that moved draws again @param {Map<string, number>} widths @param {string} key */
+    const keepWidth =
+        (widths, key) =>
+        (/** @type {{ width: number }} */ size, /** @type {Context} */ cx) => {
+            const width = drawnSize(size.width);
+            if (Math.abs((widths.get(key) ?? 0) - width) < 0.5) return;
+            widths.set(key, width);
+            cx.notify();
+        };
 
     // a gated ask (the stash marks it: a sign, a ⚠️, a merge, a quoted command) takes the same 🛎️: his click writes the
     // press only his click writes, and x-mod-guard reads it as his word for that ask, once (FRM-544). a click, never a key:
@@ -242,12 +260,13 @@ export function createOrbitView(deps) {
     }
 
     /** @param {Row} s @param {Ask} ask */
-    function pillLabel(s, ask) {
-        const key = `${s.sid}:${ask.id}`;
-        const lead =
-            copied === key ? '✓ ' : deps.updated()?.has(key) ? '🆕 ' : '';
-        return `${lead}${askLabel(s.name, ask.id ?? '')}`;
-    }
+    const pillLabel = (s, ask) =>
+        `${deps.updated()?.has(`${s.sid}:${ask.id}`) ? '🆕 ' : ''}${askLabel(s.name, ask.id ?? '')}`;
+
+    /** the id pill's width as drawn, guessed wide until it is @param {string} label */
+    const pillWidth = (label) =>
+        pillW.get(label) ??
+        label.length * 0.75 * SIZE.small + 2 * PILL.padX + 2;
 
     /**
      * an ask in its three parts (FRM-620 slice 7): the title, bold on one line that ends before the id, its body as
@@ -259,22 +278,33 @@ export function createOrbitView(deps) {
             ...ask,
             title: askText(ask.title ?? '', home()),
         });
-        const label = pillLabel(s, ask);
-        const inset = titleInset(
-            pillW.get(label) ??
-                label.length * 0.75 * SIZE.small + 2 * PILL.padX + 2,
-        );
-        const isWhole = titleFits(title, cardW - inset, LOOK.title);
+        const inset = titleInset(pillWidth(pillLabel(s, ask)));
+        const isWhole =
+            (titleW.get(title) ?? Number.POSITIVE_INFINITY) <=
+            (cardW.get(key) ?? 0) - inset;
         const body = ask.body ? askMarkdown(askText(ask.body, home())) : '';
         return [
             h_flex()
                 .w_full()
                 .pr(inset)
-                .on_size_change((size, cx) => {
-                    if (Math.abs(cardW - size.width) < 0.5) return;
-                    cardW = size.width;
-                    cx.notify();
-                })
+                .id(`head-${key}`)
+                .relative()
+                .overflow_hidden()
+                .on_size_change(keepWidth(cardW, key))
+                // unseen, it tells the title's width: one that fits is text he can select, which ends in no «…»
+                .child(
+                    div()
+                        .id(`title-width-${key}`)
+                        .absolute()
+                        .top(0)
+                        .left(0)
+                        .opacity(0)
+                        .whitespace_nowrap()
+                        .font_bold()
+                        .text_size(LOOK.title)
+                        .on_size_change(keepWidth(titleW, title))
+                        .child(title),
+                )
                 .child(
                     isWhole
                         ? div()
@@ -316,40 +346,46 @@ export function createOrbitView(deps) {
     function idPill(t, s, ask) {
         const key = `${s.sid}:${ask.id}`;
         const label = pillLabel(s, ask);
-        return div()
-            .id(`id-${key}`)
-            .tab_stop(false)
-            .absolute()
-            .top(PILL.top)
-            .right(PILL.right)
-            .px(PILL.padX)
-            .rounded(4)
-            .border_1()
-            .border_color(t.border)
-            .bg(t.background)
-            .text_size(SIZE.small)
-            .text_color(t.muted)
-            .cursor_pointer()
-            .hover((st) => st.text_color(t.foreground).border_color(t.accent))
-            .tooltip(`copy ${ask.id}`)
-            .on_size_change((size, cx) => {
-                if (Math.abs((pillW.get(label) ?? 0) - size.width) < 0.5)
-                    return;
-                pillW.set(label, size.width);
-                cx.notify();
-            })
-            .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
-            .on_click((_e, cx) => {
-                cx.stop_propagation();
-                cx.write_to_clipboard(ask.id ?? '');
-                copied = key;
-                cx.notify();
-                cx.timer.after(COPIED_MS, (cx) => {
-                    if (copied === key) copied = null;
+        const isCopied = copied?.key === key;
+        return (
+            div()
+                .id(`id-${key}`)
+                .tab_stop(false)
+                .absolute()
+                .top(PILL.top)
+                .right(PILL.right)
+                .px(PILL.padX)
+                .rounded(4)
+                .border_1()
+                .border_color(t.border)
+                .bg(t.background)
+                .text_size(SIZE.small)
+                .text_color(t.muted)
+                .cursor_pointer()
+                .hover((st) =>
+                    st.text_color(t.foreground).border_color(t.accent),
+                )
+                .tooltip(`copy ${ask.id}`)
+                // the ✓ takes the id's own room, so the title beside it does not move
+                .when(isCopied, (el) => el.w(pillWidth(label)).text_center())
+                .when(!isCopied, (el) =>
+                    el.on_size_change(keepWidth(pillW, label)),
+                )
+                .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
+                .on_click((_e, cx) => {
+                    cx.stop_propagation();
+                    cx.write_to_clipboard(ask.id ?? '');
+                    const made = { key };
+                    copied = made;
                     cx.notify();
-                });
-            })
-            .child(label);
+                    cx.timer.after(COPIED_MS, (cx) => {
+                        if (copied !== made) return;
+                        copied = null;
+                        cx.notify();
+                    });
+                })
+                .child(isCopied ? '✓' : label)
+        );
     }
 
     /**
@@ -367,7 +403,7 @@ export function createOrbitView(deps) {
             .text_color(t.accent)
             .cursor_pointer()
             .hover((st) => st.underline())
-            .on_click((_e, cx) => cx.open_url((ask.link ?? '').trim()))
+            .on_click((_e, cx) => followLink(ask.link ?? '', cx))
             .child('🔗')
             .child(shown?.label ?? '');
     }
@@ -405,15 +441,7 @@ export function createOrbitView(deps) {
                     .font_semibold()
                     .text_size(SIZE.main)
                     .text_color(t.foreground)
-                    .on_size_change((size, cx) => {
-                        if (
-                            Math.abs((labelW.get(label) ?? 0) - size.width) <
-                            0.5
-                        )
-                            return;
-                        labelW.set(label, size.width);
-                        cx.notify();
-                    })
+                    .on_size_change(keepWidth(labelW, label))
                     .child(label),
             );
     }

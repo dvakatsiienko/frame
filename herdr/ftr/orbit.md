@@ -27,7 +27,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given an ask naming an app, or a symlink to one, however its path is written, `file://` too
   - when dima clicks it
   - then Finder shows it, it never runs; a file he reads, looks at or hears opens, a folder too, audio in the app his settings name; one gone since reads «not found»
-  - and an https, linear or obsidian note link opens; a link of any other scheme draws nothing
+  - and an https, linear or obsidian note link opens, in an old-form ask's words too; a link of any other scheme opens nothing, and as the ask's link draws nothing
   - decision: one shared rule, `_shared/open-path.js`, no copy (the sixth sense's find, 25 Nov)
 - ✅ an ask sent the old way leads with its id, so dima can name it
   - given a thread has an open ask with an id and no title
