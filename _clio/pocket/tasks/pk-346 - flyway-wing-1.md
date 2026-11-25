@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T10:47:44Z'
+updated_date: '2026-11-25T10:57:02Z'
 labels:
   - s
   - clio-wing-1
@@ -815,4 +815,6 @@ done 2026-11-24 16:13: f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's f
 16:13: f53, f39 and f41 handed to main on his word, «f53 + f39 + f41: delegate to main clio»; not done here
 
 his o3 steer (2026-11-25 12:46, dima): discuss with wing, after everything pending solved
+
+PK-346:W93 (2026-11-25 12:46, dima, o3 steer): discuss with wing, after everything pending solved
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T10:47:43Z'
+updated_date: '2026-11-25T10:57:02Z'
 labels:
   - s
   - clio-main
@@ -2808,4 +2808,9 @@ raw drop (2026-11-25 12:32, dima): afk 1 min, brewing coffe
 
 PK-349:W2429 (2026-11-25 12:39, dima, herdr-typed): herdr codie too
 raw drop (2026-11-25 12:39, dima): herdr codie too
+
+PK-349:W2430 (2026-11-25 12:55, dima): summon wing 1 and ask to do evergreen
+PK-349:W2431 (2026-11-25 12:55, dima): you do this now
+PK-349:W2432 (2026-11-25 12:55, dima): yesterday i did it with wing (verify), and remove the schedule.
+PK-349:W2433 (2026-11-25 12:55, dima): system checkup is run on my word (we should've been set it with wing 1 yesterday)
 <!-- SECTION:NOTES:END -->
