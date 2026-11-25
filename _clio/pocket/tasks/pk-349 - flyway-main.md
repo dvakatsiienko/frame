@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T13:53:44Z'
+updated_date: '2026-11-25T14:02:29Z'
 labels:
   - s
   - clio-main
@@ -19,7 +19,7 @@ ordinal: 1000
 - [ ] #1 f120 the plan over all herdr work (FRM-616): talk it through — with: dima
 - [ ] #2 f121 FRM-678: the queue's free-CPU number from two days of rows, one number to dima — waits for: FRM-678 — parked: 2026-11-25
 - [ ] #3 f129 FRM-700 close: its 141 rider (12ad6787) is on main, one live refusal seen, then the close — parked: 2026-11-25
-- [ ] #4 f130 FRM-596 slice 09 hook half is mine now its x half landed (7f2d5c23), then the live-wing test by 27 Nov — parked: 2026-11-25
+- [ ] #4 f130 FRM-596: the seat switch tested with a live wing, by 27 Nov (both halves on main) — parked: 2026-11-25
 - [ ] #5 f133 FRM-689 starts in the mods lane: dispatch marks, steer to its spec — waits for: FRM-695 — parked: 2026-11-25
 - [ ] #6 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
 - [ ] #7 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
@@ -2900,4 +2900,9 @@ done 2026-11-25 15:52: f128 ⏳ the speak sixth sense leaves its old bytes verif
 PK-349:W2464 (2026-11-25 15:42, dima): your o1: how to probe? i do not see paths and two pictures; can you post them in a reply, so i probe? ❓
 PK-349:W2465 (2026-11-25 15:42, dima, herdr-typed): all worked.
 → answered 15:42 with samples in the reply; a look or test ask that needs a thing to press posts it
+
+PK-349:W2466 (2026-11-25 16:00, dima, on crow's rule written into its skill): do not rush the second wind; it is not immediately required, by design. i just wanted to make sure that it actually works.
+PK-349:W2467 (2026-11-25 16:00, dima): what i want: when nothing is planned at all and nothing is pending, a thread should auto second wind right away at 55 %.
+PK-349:W2468 (2026-11-25 16:00, dima): anyone else who has been working on something, a lane or you, with pending items, picks a good point, and has a wide context range for a second wind, up to 65 %.
+→ crew-adviser reworded; the 55 % notice's own words are a rider on the mods lane (mods-lane-9/lane-plan.md, not greenlit)
 <!-- SECTION:NOTES:END -->
