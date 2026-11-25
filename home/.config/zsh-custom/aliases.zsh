@@ -101,3 +101,6 @@ alias clio-list='~/frame/_clio/.claude/hooks/boot-prefetch.sh'
 alias clio-revive='~/frame/_clio/script/clio-revive.sh'   # a dead clio thread back in its own tab: clio-revive main | wing <N>
 alias hk='pnpm --dir ~/frame --silent hotkeys:top'   # which chords + apps i actually use
 alias pk='BACKLOG_CWD=~/frame/_clio backlog'   # clio's pocket (Backlog.md): pk board, pk search <word>
+
+# games
+alias fl-ats-peek-save='~/frame/home/.claude/plugin-x/skills/firelink/scripts/firelink-against-the-storm-peek-save.sh'  # against the storm: last autosave, clock + in-game time
