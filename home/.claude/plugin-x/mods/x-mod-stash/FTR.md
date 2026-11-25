@@ -636,7 +636,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - 📌 the desktop Code tab's look (the pane's lower half, the steer `Input`) is dima's eye
 
 - ✅ a gated ask is published with its mark, for x-herdr-deck to draw (FRM-544 slice 1)
-  - given an open ask whose tick x-mod-guard reads as dima's word — a `✍️ sign <id>` ask, a ⚠️ ask, a `merge`/`land` ask, one quoting a command in backticks
+  - given an open ask whose tick x-mod-guard reads as dima's word — a `✍️ sign <id>` ask, a ⚠️ ask, a `merge`/`land` ask, one quoting a command in backticks, in its text or its pick (a pick's one word is a name)
   - then its item under `asks:<sid>` in the store carries `isGated: true`, a plain ask none, so x-herdr-deck draws the mark instead of keeping its own copy of the pattern
   - and x-herdr-deck's presses in `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, which this mod reads as marks, x-mod-guard now reads as his tick too, its `ticks-write` rule keeping every thread's tool call out of that folder (reversing FRM-552's decision 4 on his word)
   - proof: tests/orbit.test.ts::a gated ask carries isGated in the store, a plain ask none

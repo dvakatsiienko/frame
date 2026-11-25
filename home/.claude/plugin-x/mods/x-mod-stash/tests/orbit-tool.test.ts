@@ -651,12 +651,8 @@ test('a gated ask carries isGated in the store, a plain ask none', async ($, on)
             text: 'test: merge https://github.com/x/y/pull/7 at abc1234',
             why: 'a test ask',
         },
-        {
-            area: 'mods',
-            pick: 'cut it',
-            text: 'cut the probe?',
-            why: 'a test ask',
-        },
+        // a name in the pick is no command
+        ...addOf({ pick: 'run `git push -n`' }, { pick: 'yes, `main`' }).asks,
     ];
     await orbit($, { asks, op: 'add' });
     const items = (
@@ -664,7 +660,7 @@ test('a gated ask carries isGated in the store, a plain ask none', async ($, on)
             items: { isGated?: boolean; text: string }[];
         }
     ).items;
-    expect(items.map((a) => a.isGated)).toEqual([true, true, undefined]);
+    expect(items.map((a) => a.isGated)).toEqual([true, true, true, undefined]);
 });
 
 test('orbit registers loaded up front, never behind ToolSearch', async ($, on) => {
