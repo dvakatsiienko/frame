@@ -25,12 +25,7 @@ import {
     planText,
     wrongText,
 } from './orbit.ts';
-import {
-    DIMA_AT,
-    giveBackMarks,
-    takeMarks,
-    takePlanMark,
-} from './orbit-presses.ts';
+import { giveBackMarks, takeMarks, takePlanMark } from './orbit-presses.ts';
 import {
     absorbMarks,
     currentOrbit,
@@ -143,8 +138,6 @@ export async function composePrompt(
     const offset = -at.getTimezoneOffset() / 60;
     const clock = `now ${at.toTimeString().slice(0, 5)} UTC${offset >= 0 ? '+' : ''}${offset}`;
     // only dima's own prompt carries his marks; each joins once and locks until the turn ends
-    if (turn.isUserTurn)
-        await $.store.set(DIMA_AT, await $.clock.now()).catch(() => undefined);
     await absorbMarks($, () => keepShelf($), isTypedHere);
     await currentOrbit($);
     const isOn = await turnParts($);

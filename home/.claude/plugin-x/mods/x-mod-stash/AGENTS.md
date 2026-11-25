@@ -34,7 +34,7 @@ dima's board, band and orbit in one cc mod: `hooks/register.tsx` is the hook wir
 - `roster.ts` — the registry rows, `memberOf`, `isOpen`, `openBoard`
 - `rows.ts` — the board's session rows (`members`), each clio's waiting asks
 - `orbit-store.ts` — `$.state` orbit and ticks, `saveOrbit`, dima's herdr marks (`absorbMarks`, `markAsks`)
-- `orbit-presses.ts` — a 🛎️/↩️/steer press, its marks, the wake for them
+- `orbit-presses.ts` — a 🛎️/↩️/steer press, its marks, a stranded line
 - `orbit-tool.ts` — the orbit tool's schema and every op (`orbitCall`), the fleet's ask counter
 - `turn-notes.ts` — the orbit notes a prompt carries, told once until they change
 - `fields.ts` — the steer boxes: drafts, saves, flushes, a thread switch's leave and return

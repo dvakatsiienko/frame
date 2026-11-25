@@ -237,11 +237,19 @@ export function world(
             .split('\n')
             .filter(Boolean)
             .map((l) => JSON.parse(l) as Record<string, unknown>);
+    // whether any turn here read as dima's own
+    let isHis = false;
+    on('state.set', (_$, e, next) => {
+        if (e.key === 'turn')
+            isHis ||= (e.value as { isUserTurn?: boolean }).isUserTurn === true;
+        return next(e);
+    });
     return {
         appended,
         clock,
         contexts,
         files,
+        isHisTurn: () => isHis,
         logLines,
         logged,
         queued,

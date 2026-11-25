@@ -489,7 +489,7 @@ test('a member publishes its open asks whole, with ids, for the glide card', asy
     ]);
 });
 
-test('an idle member with a herdr press wakes once, after dima prompts anywhere', async ($, on) => {
+test("a press from herdr's board starts no turn in an idle member, though dima prompts elsewhere", async ($, on) => {
     const w = await memberWithAsk($, on);
     const before = w.texts.length;
     w.files[`/home/.claude/shelf/orbit-ticks/${SID}.jsonl`] = `${JSON.stringify(
@@ -501,23 +501,10 @@ test('an idle member with a herdr press wakes once, after dima prompts anywhere'
         },
     )}\n`;
     await w.clock.advance(5_000);
-    const quiet = w.texts.length;
     w.store.set('dima-at', w.clock.now() + 1);
     await w.clock.advance(5_000);
     await w.clock.advance(5_000);
-    const woke = w.texts.slice(before);
-    expect([quiet - before, woke.length, woke[0]]).toEqual([
-        0,
-        1,
-        expect.stringMatching(/o1 ↩️ rejected.*cut the second probe.*«later»/su),
-    ]);
-});
-
-test("dima's own prompt records when he last prompted, for the members to read", async ($, on) => {
-    const w = world(on);
-    await start($);
-    await say($, 'go');
-    expect(w.store.get('dima-at')).toBe(w.clock.now());
+    expect(w.texts.length).toBe(before);
 });
 
 test("the lanes stick to the board's bottom, on top of the phases (dima, 20:12)", async ($, on) => {

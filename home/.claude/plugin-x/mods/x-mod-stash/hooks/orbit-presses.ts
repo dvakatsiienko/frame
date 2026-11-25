@@ -1,5 +1,5 @@
 // 🛎️ dima's presses on the orbit (FRM-662): a tick, a take-back or a steer pressed on the board or herdr's orbit, the
-// marks they leave for the running turn or the next prompt, and the wake that brings an idle session to them
+// marks they leave for the running turn or the next prompt: no press starts a turn of its own (dima, 2026-11-25)
 
 import type { EngineInterface } from 'claude-code';
 
@@ -9,8 +9,6 @@ import { type ViewDoors, armHot, prepareTurn } from './keep-warm.ts';
 import {
     hasPlanMark,
     isAllAsksMarkable,
-    isFresh,
-    joinText,
     lockJoined,
     marksGivenBack,
     planTaken,
@@ -32,48 +30,12 @@ import {
 } from './session-identity.ts';
 import { keepShelf } from './session-record.ts';
 import { partsShown } from './settings-store.ts';
-import { idleTurn, isTurnBusy, selfSubmit, turn } from './turn.ts';
-import { orbitTexts, tickSentence } from './turn-notes.ts';
+import { idleTurn, isTurnBusy, selfSubmit } from './turn.ts';
 import { onOneLine } from './util.ts';
 
-// the running turn, so a mid-turn reload still knows it is busy
-const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
 // mobile mode: mods draw nothing on the phone, so the session prints the open asks as the asks fence instead
 const MOBILE = { key: 'mobile', plugin: 'x-mod-stash' } as const;
 
-// when dima last prompted anywhere: an idle session's herdr press waits for it before it wakes
-export const DIMA_AT = 'dima-at';
-// an idle session whose asks were marked from another board wakes once dima prompts anywhere after the marks: one turn
-// carrying all of them. the submitted prompt skips this plugin's own prompt.submit hook, so the marks ride its text
-export async function wakeForMarks($: EngineInterface, view: ViewDoors) {
-    if (
-        (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
-        turn.isBusy
-    )
-        return;
-    if (!(await partsShown($))('stash.orbit')) return;
-    const dimaAt = Number(await $.store.get(DIMA_AT).catch(() => 0)) || 0;
-    const due = await takeMarks($, (o) => {
-        const held = o.asks
-            .filter(isFresh)
-            .filter((a) => a.markedAt !== undefined);
-        return held.length &&
-            dimaAt > Math.min(...held.map((a) => a.markedAt ?? 0))
-            ? held
-            : [];
-    });
-    if (due.length) void wakeWith($, due, view).catch(() => undefined);
-}
-async function wakeWith($: EngineInterface, due: OrbitAsk[], view: ViewDoors) {
-    const text = joinText(due, tickSentence(await orbitTexts($), due.length));
-    const r = await selfSubmit($, text, false, () => prepareTurn(view)).catch(
-        () => undefined,
-    );
-    if (r && r.drop === undefined) return;
-    await idleTurn($);
-    await armHot($, view);
-    await giveBackMarks($, due);
-}
 // a hide never strands a look (FRM-645:W29): 60 min with no follow is one line to the poster's coordinator, else main
 // clio; main clio's own ask wakes her instead, once idle. told only once it went, so a refused send goes at the next poll
 export async function tellStranded($: EngineInterface, view: ViewDoors) {

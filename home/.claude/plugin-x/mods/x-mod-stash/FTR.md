@@ -135,7 +135,7 @@
   - given the session's last reply ended on a 🔭 line
   - when a keep-hot ping fires and its one-character reply ends
   - then the board still shows that 🔭 wait
-  - decision: the mod's own prompts (the ping, the waker's resume, a wake for marks) skip its own `prompt.submit` hook, so each starts its turn where the mod submits it (FRM-400)
+  - decision: the mod's own prompts (the ping, the waker's resume) skip its own `prompt.submit` hook, so each starts its turn where the mod submits it (FRM-400)
 - ✅ 🔥 switched on while idle counts from the last turn end
   - given the session's last turn ended 17 minutes ago
   - when dima switches 🔥 on
@@ -208,7 +208,7 @@
   - given a board part's switch off (`🪐 orbit asks`, the `assumed` section, `🌔 phases`, the `🔊 ▶️ ⏹️` speak buttons, the session rows' model, effort and wait), then that part leaves the 🚦 board in every session within one poll (batch 3, 17:20)
   - given any part switched off, then the whole feature is off, for every model too: nothing drawn, no line of it in a prompt or a tool result, no turn it would start, and its orbit op refused in one line naming the switch; switched back on, all of it returns
     - the `assumed` section, `🌔 phases`, `🛼 glide`: their lines leave, ops `assume` `plan` `glide` refused
-    - `🪐 orbit asks`: no reminder, no tick joins a prompt or a tool call, no idle wake for marks; `add` `resolve` `follow` refused, and the reminder and the refusal tell the model an ask goes into the reply as one ➡️ line (o152)
+    - `🪐 orbit asks`: no reminder, no tick joins a prompt or a tool call; `add` `resolve` `follow` refused, and the reminder and the refusal tell the model an ask goes into the reply as one ➡️ line (o152)
     - `💨 afk`: no away or back note; `🔥 keep-hot`: no ping turn; `⏰ waker`: no resume turn, the reset still spent
     - every other part draws only, and `tests/switches.test.ts` names why for each
   - decision: a switch is the whole feature, every mod, future parts too (dima, 2026-10-13, `mods/AGENTS.md` § the rules); `tests/switches.test.ts` walks every registered part, so a new one without a scenario or a reason goes red
@@ -597,7 +597,7 @@
   - and the «fixing …» why is never kept: the ask's own why is drawn again
   - given he marks it 🔁, on the board or in herdr, then it stays, his steer with it and the 🔁 his to take back, till the poster's turn takes the mark; that take hides it, past the turn, until the poster's `follow`
   - and a mark and its steer reach the poster before any orbit op of its own lands: its very next orbit call carries them, and a `follow` or a `resolve` before the model's next request that names the marked ask changes nothing, its answer saying so, the same message's other calls included; a subagent's call, the keep-hot ping's and a second wind's hear nothing, so the mark waits, and an op of theirs that names it is refused the same
-  - and a prompt or a wake that never went (another hook dropped it) gives the marks it took back, the ask shown, for the next prompt or tool call
+  - and a prompt that never went (another hook dropped it) gives the marks it took back, the ask shown, for the next prompt or tool call
   - and a «fixing» follow is no new round: beside a «changed:» resolve it refuses that resolve
   - makes: `hiddenAsks`, the hidden open asks' ids, in `herdr-state/<sid>.json` apart from `asks`; an id leaves it when the ask shows or is resolved (clio, 25 Nov: herdr keeps the steer he types on one)
   - and a plain ask never hides; no round line and no timer hides or shows one
@@ -787,7 +787,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ a 🛎️ tick on this board is written as dima's word (FRM-427)
   - makes: the tick record in this mod's `$.state` `ticks`: the ask's id, text, backtick-quoted targets and the time of the press; x-mod-guard reads it
   - decision: a press is one step: a tick's record lands before its mark, an untick clears the mark first, and a record that cannot be written still marks, the guard then refusing (FRM-507)
-  - given a turn takes his marks while he presses, by his prompt, a tool call or the idle wake, then the press lands wholly before or after the lock, and a hook reading the orbit from before his press never puts that copy back: the ask stays marked and locked, its record and its mark agreeing (FRM-510)
+  - given a turn takes his marks while he presses, by his prompt or a tool call, then the press lands wholly before or after the lock, and a hook reading the orbit from before his press never puts that copy back: the ask stays marked and locked, its record and its mark agreeing (FRM-510)
+  - given his mark lands on an idle thread, from any board, then it starts no turn: it waits for that thread's own next turn, his prompt or its first tool step (dima, 2026-11-25: «drop that wake, ticks only join the thread's next turn»); proof: tests/lane-board.test.ts::a press from herdr's board starts no turn in an idle member …
   - given dima presses ✅, then each ask it marks gets its own record, as his 🛎️ on it would; a ⚠️ ask, an ask opening `merge` or `land`, or an ask added after the frame he pressed drew, stays unmarked with no record, its row still reading `🛎️ tick`, a toast names each one it skipped, and ✅ is not drawn while only ⚠️ asks are left to mark (FRM-510)
   - given dima presses 🛎️ on an ask of this session's own orbit, then the record holds it; a second press takes it back; a 🔁 replay writes none
   - given an agent's orbit op carries a `mark` (an add, a follow, a resolve), then no tick is written: only his press writes one

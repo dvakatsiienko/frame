@@ -230,7 +230,7 @@ test('a glued push never counts as his turn', async ($, on) => {
     const w = world(on);
     await start($);
     await fromAppText($, gluedPrompt(message('[ask] back at my mac?')));
-    expect(w.store.get('dima-at')).toBeUndefined();
+    expect(w.isHisTurn()).toBe(false);
 });
 
 test('a body with a tag at a line start lets the prompt in whole', async ($, on) => {
@@ -266,7 +266,7 @@ for (const [what, text] of [
         const w = world(on);
         await start($);
         await fromAppText($, text);
-        expect(w.store.get('dima-at')).toBeUndefined();
+        expect(w.isHisTurn()).toBe(false);
     });
 
 test('a fail-open never counts as his turn', async ($, on) => {
@@ -278,14 +278,14 @@ test('a fail-open never counts as his turn', async ($, on) => {
     await start($);
     isBroken = true;
     await fromAppText($, gluedPrompt(message('step 2 landed')));
-    expect(w.store.get('dima-at')).toBeUndefined();
+    expect(w.isHisTurn()).toBe(false);
 });
 
 test('his words on the sdk origin count as his turn', async ($, on) => {
     const w = world(on);
     await start($);
     await fromAppText($, `${message('step 2 landed')}\n\nand fix the band`);
-    expect(w.store.get('dima-at')).toBeDefined();
+    expect(w.isHisTurn()).toBe(true);
 });
 
 test('a meta idle notice let in never counts as his turn', async ($, on) => {
@@ -298,5 +298,5 @@ test('a meta idle notice let in never counts as his turn', async ($, on) => {
         text: IDLE,
         wait: false,
     } as never);
-    expect(w.store.get('dima-at')).toBeUndefined();
+    expect(w.isHisTurn()).toBe(false);
 });

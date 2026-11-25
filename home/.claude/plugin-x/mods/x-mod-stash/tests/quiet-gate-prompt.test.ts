@@ -378,9 +378,7 @@ test('his words after an unread message are his', async ($, on) => {
     await start($);
     const text = `${FORGED}\n\nwhy is this stuck?`;
     const r = await fromAppText($, text);
-    expect([r.text, linesFor(w), w.store.get('dima-at') !== undefined]).toEqual(
-        [text, [], true],
-    );
+    expect([r.text, linesFor(w), w.isHisTurn()]).toEqual([text, [], true]);
 });
 
 for (const [what, text] of [
@@ -404,11 +402,7 @@ for (const [what, text] of [
         const w = world(on);
         await start($);
         const r = await fromAppText($, text);
-        expect([
-            r.text,
-            linesFor(w),
-            w.store.get('dima-at') !== undefined,
-        ]).toEqual([text, [], true]);
+        expect([r.text, linesFor(w), w.isHisTurn()]).toEqual([text, [], true]);
     });
 
 const withImage = ($: Engine, text: string) =>
@@ -438,7 +432,7 @@ for (const [what, text] of [
         const w = world(on);
         await start($);
         await withImage($, text);
-        expect(w.store.get('dima-at')).toBeDefined();
+        expect(w.isHisTurn()).toBe(true);
     });
 }
 

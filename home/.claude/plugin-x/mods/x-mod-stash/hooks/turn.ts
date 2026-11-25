@@ -177,7 +177,7 @@ export async function startTurn(
     await keepTurn($);
 }
 
-// the mod's own prompt (the keep-hot ping, the waker's resume, a wake for marks) skips this plugin's prompt.submit hook
+// the mod's own prompt (the keep-hot ping, the waker's resume) skips this plugin's prompt.submit hook
 // (mods AGENTS, probe (d)), so its turn starts here; a submit the engine refuses leaves the session idle again
 export async function selfSubmit(
     $: EngineInterface,

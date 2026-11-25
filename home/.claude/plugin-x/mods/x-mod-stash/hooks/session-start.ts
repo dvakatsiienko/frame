@@ -24,7 +24,7 @@ import {
     openDispatchedLanes,
     reshowLanes,
 } from './lanes.ts';
-import { tellStranded, wakeForMarks } from './orbit-presses.ts';
+import { tellStranded } from './orbit-presses.ts';
 import {
     EMPTY_ORBIT,
     absorbMarks,
@@ -181,7 +181,6 @@ async function startPoll($: EngineInterface, view: ViewDoors) {
             await absorbMarks($, () => keepShelf($), isTypedHere).catch(
                 () => undefined,
             );
-            await wakeForMarks($, view).catch(() => undefined);
             if (isBookkept) await tellStranded($, view).catch(() => undefined);
             await takeBandPresses($, view).catch(() => undefined);
             // pollShelf paces itself every third tick; a gate here would slow it twice over

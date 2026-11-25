@@ -343,28 +343,6 @@ for (const [site, act] of [
     });
 }
 
-test("the idle wake's lock, reading from before his press, keeps the mark", async ($, on) => {
-    const w = world(on);
-    const race = pressRace(on);
-    await start($);
-    const ui = await board($);
-    await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
-    await endTurn($);
-    herdrPress(w, 'o1', { at: w.clock.now(), verdict: 'tick' });
-    await w.clock.advance(5_000);
-    await ui.find({ key: 'orbit:accepted:o1' });
-    const stale = race.last;
-    await ui.press({ key: 'orbit:accepted:o2' });
-    w.store.set('dima-at', w.clock.now() + 1);
-    race.frozen = stale;
-    await w.clock.advance(5_000);
-    race.frozen = undefined;
-    expect([askOf(race, 'o1')?.isLocked, askOf(race, 'o2')?.mark]).toEqual([
-        true,
-        'accepted',
-    ]);
-});
-
 test("a press reading from before a turn's lock leaves the lock", async ($, on) => {
     world(on);
     const race = pressRace(on);
@@ -789,7 +767,7 @@ test("herdr's 🔁 hides a look ask once a turn takes it", async ($, on) => {
     ]);
 });
 
-test("his mid-turn 🔁 and its steer reach the poster in its very next orbit call, which changes nothing it names; a subagent's is refused; a wake's refused prompt gives the mark back", async ($, on) => {
+test("his mid-turn 🔁 and its steer reach the poster in its very next orbit call, which changes nothing it names; a subagent's is refused; his dropped prompt gives the mark back", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -800,9 +778,8 @@ test("his mid-turn 🔁 and its steer reach the poster in its very next orbit ca
     await endTurn($);
     herdrPress(w, 'o2', { at: w.clock.now() + 1, verdict: 'replay' });
     await w.clock.advance(5_000);
-    w.store.set('dima-at', w.clock.now() + 1);
     w.prompts.isDropped = true;
-    await w.clock.advance(5_000);
+    await say($, 'lost').catch(() => undefined);
     w.prompts.isDropped = false;
     await ui.press({ key: 'orbit:accepted:o3' });
     await say($, 'go');
