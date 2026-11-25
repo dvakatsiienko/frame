@@ -225,3 +225,4 @@ Ticket: none
 - 2026-11-24 18:51 wing 1 · 159k tokens · 1 high, 7 medium, 3 low · highs real: y (the queue trigger never fired on a reorder) · acted: high and 5 mediums fixed, 2 handed to main
 - 2026-11-25 13:09 · 208k tokens · 1 high, 4 medium, 6 low · highs real: y (told dima the free-CPU rows were blank, column 4 holds them) · acted: high corrected to him, the o4 note and PK-471 corrected, 2 told as corrections, deck layout glide left unseen and said
 - 2026-11-25 13:26 · 112k tokens · 0 high, 3 medium, 3 low · highs real: none · acted: the probe line told to two threads, a false ear gate on kokoro taken back, its W-lines to FRM-669
+- 2026-11-25 13:41, wing 1 · 227k tokens · 3 high, 5 medium, 3 low · highs real: y (gate-speed told with half its kill line, its worse rows untold, «nothing enforces a speed» left out the budget check) · acted: all three corrected to him, the trial live again, hunt and heads fixed, 1 medium dropped
