@@ -101,8 +101,6 @@ export const meterTip = (name, pct) =>
         ? `${METER_WHAT[name] ?? name}: not read yet`
         : (METER_WHAT[name] ?? name);
 
-// the deck's block in his layout: 🚦 shows and hides it with herdr's own click command, never a layout file write
-export const DECK_BLOCK = 'b582b696a6329c1b15cd453c0c01c3204';
 // the operator override's store, the one x-mod-guard, the stash and `x` read
 export const OVERRIDE_STORE = '.local/state/x/operator-override.json';
 

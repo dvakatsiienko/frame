@@ -14,5 +14,5 @@ read this before a change: find the one module that owns the state you touch, an
 ## rules and reads, no view
 
 - `git.js` — a repo's status, its sync, its branches, its forge and the PR of a branch; keeps each folder's origin, read once
-- `commands.js`, `blocks.js` — the x-herdr keys that land here, the block they toggle
+- `commands.js` — the x-herdr keys that land here
 - `statusline.cjs` — claude's status line command: it saves the usage file `usage.js` reads; `azure-prs.ps1` — Azure's PRs

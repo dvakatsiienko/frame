@@ -14,6 +14,7 @@ import {
     openOverlay,
     readTextFile,
     run as runCommand,
+    setShared,
     shared,
     terminals,
     watchFolder,
@@ -22,7 +23,6 @@ import {
 
 import {
     AUTO_WIND_DOOR,
-    DECK_BLOCK,
     OVERRIDE_STORE,
     THREADS_KEY,
     autoWind,
@@ -47,6 +47,7 @@ import {
     withBandPress,
 } from './band-press.js';
 import { settingsOverlay } from './chat-asks.js';
+import { deckNode, toggleDeck } from './deck-block.js';
 
 /** @typedef {import('./chat-types.js').Color} Color */
 /** @typedef {import('./chat-types.js').Context} Context */
@@ -544,7 +545,7 @@ export function createBand({ shownAddress, pid, turnStart, column }) {
      */
     function pressBand(btn, cx) {
         if (btn.key === 'board') {
-            runCommand('layout.toggle', { id: DECK_BLOCK });
+            toggleDeck({ layout, run: runCommand, setShared });
             cx.notify();
             return;
         }
@@ -659,19 +660,8 @@ async function autoWindDoor(args) {
     return out.stdout;
 }
 
-/** whether his layout shows the deck's block; a layout without it reads as shown, so 🚦 offers a hide */
-function isDeckShown() {
-    /** @param {any} node @returns {any} */
-    const find = (node) => {
-        if (node?.id === DECK_BLOCK) return node;
-        for (const child of node?.children ?? []) {
-            const found = find(child);
-            if (found) return found;
-        }
-        return null;
-    };
-    return !find(layout())?.hidden;
-}
+/** a layout without the deck reads as shown, so 🚦 offers a hide */
+const isDeckShown = () => !deckNode(layout())?.hidden;
 
 /**
  * a meter as a row of matte cells in a recessed rail, the lit ones in one colour (the old chat's, PK-384)
