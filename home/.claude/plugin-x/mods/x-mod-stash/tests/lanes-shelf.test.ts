@@ -106,6 +106,12 @@ test('every field the stash writes to lanes.json is in the shared fixture', asyn
         // a title naming a ticket makes the lane's own ticket field
         title: 'herdr — FRM-1 kept',
     });
+    await glide($, {
+        act: 'link',
+        id: 'l1',
+        role: 'codie',
+        session: 'bf1baf60-cda2-4d56-bde4-9b6a23b29840',
+    });
     await glide($, { act: 'step', current: 1, id: 'l1' });
     await glide($, {
         act: 'create',

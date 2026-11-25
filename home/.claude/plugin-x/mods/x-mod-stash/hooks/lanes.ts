@@ -19,6 +19,7 @@ import {
     WING_ROLE,
     identity,
     isLaneOwner,
+    runnerOf,
     selfRecord,
     successorOf,
     threadRecords,
@@ -401,6 +402,33 @@ async function laneShown(
     return { isFresh: true, sixth, title };
 }
 
+// the live hand card linked to a dispatched codie, its runner's own, the newest of two: it is the lane's card, so the
+// dispatch opens no second one beside it (FRM-527:W139)
+async function handCardOf(
+    $: EngineInterface,
+    lanes: StashLane[],
+    codie: string,
+    runner: string,
+) {
+    let hand: StashLane | undefined;
+    for (const l of lanes) {
+        const linked = l.linkedIds?.codie;
+        if (!linked || l.endedAt || l.plan) continue;
+        if (bare(l.runner ?? '') !== bare(runner)) continue;
+        if ((await successorOf($, linked)) === codie) hand = l;
+    }
+    return hand;
+}
+
+// her own last move of a card; one at or past the dispatch keeps it a hand card till the lane's next one
+const handMovedAt = (lane: StashLane) =>
+    Math.max(
+        0,
+        ...lane.history
+            .filter((h) => ['create', 'edit', 'step'].includes(h.act))
+            .map((h) => h.at),
+    );
+
 // a dispatch opens its lane's card (FRM-602): x's record of a live codie names the lane, whose plan file holds the steps,
 // and the clio that dispatched it, whose session opens the card; a record with no dispatching clio (a summon's) opens
 // none. a lane whose card ended after its newest dispatch opens none again, and the newest live codie dispatched into a
@@ -417,6 +445,7 @@ export async function openDispatchedLanes(
               ? `clio-wing-${self.wing}`
               : undefined;
     if (!label || !(await partsShown($))('stash.glide')) return;
+    const runner = self?.role === WING_ROLE ? runnerOf(self) : '';
     const dispatched = (await threadRecords($)).filter(
         (t): t is ThreadRecord & { lane: string } =>
             t.role === 'codie' &&
@@ -482,6 +511,16 @@ export async function openDispatchedLanes(
             continue;
         const text = await $.fs.read(path).catch(() => undefined);
         if (text === undefined) continue;
+        const hand = await handCardOf($, lanes, codie.sessionId, runner);
+        if (hand) {
+            if ((codie.dispatchedAt ?? 0) > handMovedAt(hand))
+                await changeLanes(
+                    $,
+                    lanes,
+                    lanes.map((l) => (l.id === hand.id ? { ...l, plan } : l)),
+                );
+            continue;
+        }
         const title =
             shown.title ||
             text
