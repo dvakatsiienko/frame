@@ -68,6 +68,10 @@ export function askFields(
         isTyped && chars > ORBIT_TITLE_MAX
             ? `title is ${chars} chars, keep it ≤${ORBIT_TITLE_MAX}`
             : '',
+        // herdr draws a title on one cut line, and his tick opens every span he pressed on: a command there could go unseen
+        topic.includes('`')
+            ? 'title holds a backtick: a command goes in the pick'
+            : '',
         body ? '' : 'body is missing',
         [...body].length > ORBIT_BODY_MAX
             ? `body is ${[...body].length} chars, keep it ≤${ORBIT_BODY_MAX}`

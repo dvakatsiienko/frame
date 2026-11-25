@@ -613,7 +613,8 @@ test('the notice says wind now with nothing in hand, else finish the meaningful 
         [
             'nothing planned and nothing pending: take it now',
             'work in hand: wind at a good point of your own',
-            'finish the meaningful part',
+            'plan your nearest steps so you finish the meaningful part',
+            'solve its tails',
             'commit',
             'handoff',
             'never mid-build or mid-step',

@@ -275,6 +275,12 @@ for (const [what, fields, miss] of [
         { body: '', title: 'a b c d e f g h' },
         'title is 8 words, keep ≤7; body is missing',
     ],
+    // a security read, 25 Nov: a title herdr cuts could hide the command his tick opens
+    [
+        'a command in a title',
+        { title: 'tidy `git clean -fdx`' },
+        'title holds a backtick: a command goes in the pick',
+    ],
     [
         'an 8-word title past its kind',
         { title: 'look: a b c d e f g h' },
@@ -488,12 +494,12 @@ for (const [what, line, words] of [
     [
         'a file for dima goes in link, named in the body',
         'add',
-        'a file or page in link (https/obsidian:// url or path), named in words in body',
+        'a file or page in link (https/obsidian:// url or path), named in words in body; pictures to compare: one in link, the rest as paths in body.',
     ],
     [
         'an ask is a title, its topic, and a body, the fact that decides',
         'add',
-        "asks: title: the topic, led by its area's emoji, ≤7 words, ≤45 chars; body ≤200 chars, the fact that decides, crew names and deciding words **bold**, readable alone",
+        "asks: title: the topic, led by its area's emoji, ≤7 words, ≤45 chars, no backtick; body ≤200 chars, the fact that decides, crew names and deciding words **bold**, readable alone",
     ],
     ['a pick is the action', 'add', 'pick: your recommendation, the action;'],
     [
@@ -607,7 +613,7 @@ test('a gated ask carries isGated in the store, a plain ask none', async ($, on)
         ...addOf(
             { pick: 'run `git push -n`' },
             { pick: 'yes, `main`' },
-            { body: 'a ` b', title: 'the ` key' },
+            { body: 'a ` b\nc ` d' },
         ).asks,
     ];
     await orbit($, { asks, op: 'add' });
