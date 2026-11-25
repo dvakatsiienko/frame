@@ -20,7 +20,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - not checked: his look, A (the title at today's size) against B (the title a step larger, `LOOK` in orbit-view.js)
 - 🔎 an ask's id is a pill at the card's far top right, over the card (FRM-620 slice 7, W73)
   - given an ask in three parts
-  - then its title ends before the pill, which reads `o12`, `w1·o12` or `codie·o12`, 🆕 first on a new round, its hover word «copy» (dima, 25 Nov 16:33)
+  - then its title ends before the pill, which reads `o12` in every thread (dima, 25 Nov 16:44), 🆕 first on a new round, its hover word «copy» (dima, 25 Nov 16:33)
   - when dima clicks the pill
   - then `o12` is on his clipboard, the pill shows ✓ in its place, the same width, for a moment, and the card is not pressed
 - 🔎 a file or a link an ask names opens by the chat's rule (FRM-620 step 138)
@@ -101,9 +101,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and Enter then ⌘Enter takes the replay over the tick at once, with no read of the shelf between; ⌘Enter again takes it back (FRM-628:W1, a fake-clock test)
   - and a press the thread never answers in 2 min says «No answer in 2 min: press again» under its box, never a silent flip back (FRM-628 step 96)
   - decision: dima, 20:34 (FRM-564:W75)
-- ✅ an ask id names its thread
-  - given main clio and wing 1 both have an o8 open
-  - then the deck reads `o8` for main, `w1·o8` for wing 1, and `codie·o1` for any other thread (shot 1508)
+- 🔎 an ask's id reads plain in every thread (FRM-620:W82)
+  - given main clio, wing 1 and a codie each have an o1 open
+  - then all three cards read `o1` under their thread's name, the pill copies `o1`, and each press reaches its own thread
 - ⬜ Tab walks orbit, its ring always in sight (FRM-620 slice 4)
   - given orbit's asks, the look and 🧪 cards drawn first
   - when dima presses Tab, or shift+Tab

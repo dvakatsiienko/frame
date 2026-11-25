@@ -691,19 +691,6 @@ export function pressLabel(state, mark) {
 }
 
 /**
- * an ask's id as the deck draws it: every thread numbers its asks on its own, so a wing's reads `w1·o8`, another
- * thread's `codie·o1`, and only main clio's stays bare
- * @param {string} thread the session's name
- * @param {string} id
- */
-export function askLabel(thread, id) {
-    const wing = /\bwing (\d+)/.exec(thread);
-    if (wing) return `w${wing[1]}·${id}`;
-    const word = /[a-z][\w-]*/i.exec(thread)?.[0];
-    return !word || word === 'clio' ? id : `${word}·${id}`;
-}
-
-/**
  * the asks updated under their id since the last read (FRM-620 W1, W2, W13): a new text or pick on an id seen before.
  * herdr's state file carries no «changed» flag, so the deck tells by what it saw; an ask that left is forgotten
  * @param {Record<string, string>} seen `sid:id` → the text and pick it last had

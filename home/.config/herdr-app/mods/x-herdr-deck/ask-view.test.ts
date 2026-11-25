@@ -246,15 +246,15 @@ describe('an ask in three parts', () => {
 test('an ask sent the old way draws as before: its id first, its text, its pick bare', () => {
     const card = drawn(plain);
     expect(find(card, 'ask-s1:o3').args[1]).toMatch(/^\s+push \*\*FRM-1\*\*$/);
-    expect(find(card, 'ask-s1:o3-label').kids).toEqual(['w1·o3']);
+    expect(find(card, 'ask-s1:o3-label').kids).toEqual(['o3']);
     expect(find(card, 'pick-s1:o3').args[1]).toBe('push it');
     expect(ids(card)).not.toContain('id-s1:o3');
 });
 
 describe('the id pill', () => {
-    test('sits over the card’s far top right, named by its thread, 🆕 first', () => {
+    test('sits over the card’s far top right, its id plain in every thread, 🆕 first', () => {
         const pill = find(drawn(look), 'id-s1:o12');
-        expect(pill.kids).toEqual(['🆕 w1·o12']);
+        expect(pill.kids).toEqual(['🆕 o12']);
         expect(pill.calls.get('tooltip')).toEqual(['copy']);
         expect([...pill.calls.keys()]).toEqual(
             expect.arrayContaining(['absolute', 'top', 'right']),
@@ -277,6 +277,30 @@ describe('the id pill', () => {
     });
 });
 
+test('three threads with an o1 each read o1, and a press reaches its own thread', () => {
+    const open = { ...(look as object), id: 'o1' };
+    for (const [sid, name] of [
+        ['main', '🦉 clio'],
+        ['wing', '🦉🪽 clio: wing 1'],
+        ['herdr', '⚡ 🔧 herdr'],
+    ]) {
+        const thread = { asks: [open], name, sid } as never;
+        const card = view.ask(theme, thread, open as never);
+        const pill = find(card, `id-${sid}:o1`);
+        expect(pill.kids).toEqual(['o1']);
+        const copy = cx();
+        fire(pill, 'on_click', {}, copy);
+        expect(copy.write_to_clipboard).toHaveBeenCalledWith('o1');
+        const old = { id: 'o1', pick: 'go', text: 'old' };
+        const oldCard = view.ask(theme, thread, old as never);
+        expect(find(oldCard, `ask-${sid}:o1-label`).kids).toEqual(['o1']);
+        press.mockClear();
+        fire(find(card, `tick-${sid}:o1`), 'on_click', {}, cx());
+        expect(press.mock.calls.map(([, row]) => row.sid)).toEqual([sid]);
+    }
+    press.mockClear();
+});
+
 test('a second copy keeps its ✓ its own whole moment', () => {
     const ends: (() => void)[] = [];
     const clock = {
@@ -292,7 +316,7 @@ test('a second copy keeps its ✓ its own whole moment', () => {
     ends[0]?.();
     expect(pill().kids).toEqual(['✓']);
     ends[1]?.();
-    expect(pill().kids).toEqual(['🆕 w1·o12']);
+    expect(pill().kids).toEqual(['🆕 o12']);
 });
 
 // exit 3: a 45-char title and a three-digit id at each width, zoomed or not

@@ -26,7 +26,6 @@ import {
 } from './look.js';
 import { openWebLink } from './open-path.js';
 import {
-    askLabel,
     cardKind,
     cardPaint,
     cardText,
@@ -273,7 +272,7 @@ export function createOrbitView(deps) {
 
     /** @param {Row} s @param {Ask} ask */
     const pillLabel = (s, ask) =>
-        `${deps.updated()?.has(`${s.sid}:${ask.id}`) ? '🆕 ' : ''}${askLabel(s.name, ask.id ?? '')}`;
+        `${deps.updated()?.has(`${s.sid}:${ask.id}`) ? '🆕 ' : ''}${ask.id ?? ''}`;
 
     /** the id pill's width as drawn, guessed wide until it is @param {string} key @param {string} label */
     const pillWidth = (key, label) =>
@@ -440,7 +439,7 @@ export function createOrbitView(deps) {
                 SIZE.main,
             );
         const isUpdated = deps.updated()?.has(`${s.sid}:${ask.id}`);
-        const label = `${isUpdated ? '🆕 ' : ''}${askLabel(s.name, ask.id)}`;
+        const label = `${isUpdated ? '🆕 ' : ''}${ask.id}`;
         const width = (labelW.get(id) ?? label.length * 0.62 * SIZE.main) + 6;
         return div()
             .relative()
