@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T17:21:21Z'
+updated_date: '2026-11-25T17:35:00Z'
 labels:
   - s
   - clio-wing-1
@@ -19,7 +19,7 @@ ordinal: 1001
 - [ ] #1 f106 26 Nov, FIRST: herdr plan talk-through, FRM-616, three decisions as a grill — with: dima
 - [ ] #2 f107 26 Nov: kokoro step by hand after speak push (evergreen runs it), then FRM-669 closes — parked: 2026-11-25
 - [ ] #3 f108 board: the «assumed» list and the eight blank text boxes in herdr, keep, move or drop — with: dima
-- [ ] #4 f110 26 Nov: FRM-582 the edge-case read, done while mods builds FRM-639 — with: dima
+- [ ] #4 f112 26 Nov: FRM-582 the edge-case read, done while mods builds FRM-639 — parked: 2026-11-25
 - [ ] #5 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
 - [ ] #6 f93 ⏳ bytes#176 github-actions pr: merge it once renovate stability-days goes green — waits for: bytes#176 release age
 - [ ] #7 f111 ⏳ FRM-582 prior art with dima, right before the mods half — waits for: FRM-639
@@ -180,4 +180,6 @@ PK-346:W133 (2026-11-25 17:57, dima): the next catch block is only for cases whe
 19:16 reordered, nothing finished: f105, f104, f96 left as done lines only to move; they are the new lines. his word, 19:15 herdr-typed: «note: set your flyway in a way so tomorrow first item to solve is herdr talkthrough, main clio should've delegated it to you»
 
 19:21 f109 split in two, nothing finished
+
+19:35 f110 re-added without «with: dima», nothing finished: the read is the wing's own. halt of 25 Nov, his 19:35 word through main
 <!-- SECTION:NOTES:END -->
