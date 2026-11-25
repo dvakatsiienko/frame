@@ -11,7 +11,7 @@ const { isOnDisk, onDisk } = await import('./disk.js');
 const dir = mkdtempSync(join(tmpdir(), 'disk-'));
 writeFileSync(join(dir, "a b'$x.md"), '');
 const real = async (program: string, args: string[]) => {
-    const ran = spawnSync(program, args, { encoding: 'utf8' });
+    const ran = spawnSync(program, args, { encoding: 'utf8', timeout: 10_000 });
     return { code: ran.status ?? 1, stdout: ran.stdout };
 };
 
