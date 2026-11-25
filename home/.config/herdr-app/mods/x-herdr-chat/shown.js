@@ -100,6 +100,18 @@ export const isViewAsked = (ask, last, isShown, now) =>
     isShown && ask !== null && ask.time !== last && isFreshAsk(ask.time, now);
 
 /**
+ * a drop on the header joins the quill once, in the chat on screen, for the thread it was dropped over
+ * @param {import('./chat-asks.js').ChatDrop | null} ask @param {number | null} last the time of the drop taken last
+ * @param {{ address: string | null, isShown: boolean, now: number }} at
+ */
+export const isDropAsked = (ask, last, { address, isShown, now }) =>
+    isShown &&
+    ask !== null &&
+    ask.address === address &&
+    ask.time !== last &&
+    isFreshAsk(ask.time, now);
+
+/**
  * what a draw does about the keyboard and the picker: only the chat on screen acts, so a hidden one never opens a
  * second picker on the same thread. the quill takes the keyboard when the chat comes on screen, on a thread switch
  * and on a fresh ⌘K; a fresh ⌘⇧E not acted on yet opens the picker on the effort, or applies it

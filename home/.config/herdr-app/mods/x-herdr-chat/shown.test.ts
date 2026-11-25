@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import {
     asksActedOn,
+    isDropAsked,
     isFreshAsk,
     isShownIn,
     isViewAsked,
@@ -319,5 +320,24 @@ describe("orbit's preview opens the viewer once, on the chat in view (FRM-676)",
     test('a hidden chat, or a stale ask, opens nothing', () => {
         expect(isViewAsked(ask, null, false, 10_000)).toBe(false);
         expect(isViewAsked(ask, null, true, 20_000)).toBe(false);
+    });
+});
+
+describe('a drop on the header joins the quill once (FRM-620:W79)', () => {
+    const ask = { address: 't1', paths: ['/a.png'], time: 9_000 };
+    const here = { address: 't1', isShown: true, now: 10_000 };
+
+    test('a fresh drop over the thread on screen is taken', () => {
+        expect(isDropAsked(ask, null, here)).toBe(true);
+    });
+
+    test('the same drop again is not', () => {
+        expect(isDropAsked(ask, 9_000, here)).toBe(false);
+    });
+
+    test('a hidden chat, another thread or a stale drop takes none', () => {
+        expect(isDropAsked(ask, null, { ...here, isShown: false })).toBe(false);
+        expect(isDropAsked(ask, null, { ...here, address: 't2' })).toBe(false);
+        expect(isDropAsked(ask, null, { ...here, now: 20_000 })).toBe(false);
     });
 });

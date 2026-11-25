@@ -16,7 +16,7 @@ import {
     theme,
 } from 'herdr';
 
-import { CHAT_ASK, CHAT_SHOWN, chatShownOf } from './chat-asks.js';
+import { CHAT_ASK, CHAT_DROP, CHAT_SHOWN, chatShownOf } from './chat-asks.js';
 import {
     hasNode,
     headerOf,
@@ -101,50 +101,64 @@ export default class ChatHeader extends View {
                 cx.stop_propagation();
                 this.press(kind, pane, isFindOpen);
             };
-        return row
-            .on_hover((isHovered, cx) => {
-                this.isHovered = isHovered;
-                cx.notify();
-            })
-            .when(view === 'terminal' && Boolean(pane), (el) =>
-                el.on_click(() => run('pane.focus', { pane: pane?.pane })),
-            )
-            .when(Boolean(pane?.program?.icon), (el) =>
-                el.child(programIcon(t, pane?.program)),
-            )
-            .child(
-                div()
-                    .flex_none()
-                    .max_w(320)
-                    .truncate()
-                    .font_medium()
-                    .text_color(t.foreground)
-                    .child(head.name),
-            )
-            .child(
-                div()
-                    .flex_1()
-                    .min_w(0)
-                    .truncate()
-                    .text_color(t.dim)
-                    .child(head.place),
-            )
-            .when(head.status !== null, (el) =>
-                el.child(statusMark(t, head.status)),
-            )
-            .children(
-                shown.map((c) => controlButton(t, c, paneId, onPress(c.kind))),
-            )
-            .when(head.hasSwitch, (el) =>
-                el.child(
-                    viewSwitch(
-                        t,
-                        view === 'chat' ? 'chat' : 'terminal',
-                        paneId,
-                        onPress('switch'),
+        return (
+            row
+                .on_hover((isHovered, cx) => {
+                    this.isHovered = isHovered;
+                    cx.notify();
+                })
+                // over the chat a file dropped on its header joins its quill
+                .when(view === 'chat' && Boolean(pane?.terminal), (el) =>
+                    el.on_drop((e) =>
+                        setShared(CHAT_DROP, {
+                            address: pane?.terminal,
+                            paths: e?.paths ?? [],
+                            time: Date.now(),
+                        }),
                     ),
-                ),
-            );
+                )
+                .when(view === 'terminal' && Boolean(pane), (el) =>
+                    el.on_click(() => run('pane.focus', { pane: pane?.pane })),
+                )
+                .when(Boolean(pane?.program?.icon), (el) =>
+                    el.child(programIcon(t, pane?.program)),
+                )
+                .child(
+                    div()
+                        .flex_none()
+                        .max_w(320)
+                        .truncate()
+                        .font_medium()
+                        .text_color(t.foreground)
+                        .child(head.name),
+                )
+                .child(
+                    div()
+                        .flex_1()
+                        .min_w(0)
+                        .truncate()
+                        .text_color(t.dim)
+                        .child(head.place),
+                )
+                .when(head.status !== null, (el) =>
+                    el.child(statusMark(t, head.status)),
+                )
+                .children(
+                    shown.map((c) =>
+                        controlButton(t, c, paneId, onPress(c.kind)),
+                    ),
+                )
+                .when(head.hasSwitch, (el) =>
+                    el.child(
+                        viewSwitch(
+                            t,
+                            view === 'chat' ? 'chat' : 'terminal',
+                            paneId,
+                            onPress('switch'),
+                        ),
+                    ),
+                )
+        );
     }
 }
 

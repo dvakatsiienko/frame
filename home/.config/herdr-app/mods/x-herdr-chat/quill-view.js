@@ -248,7 +248,6 @@ export function createQuill({
                         .border(1)
                         .border_color(focusBorder(isQuillFocused, t, t.border))
                         .key_context('XChatQuill')
-                        .on_drop((e, cx) => addFiles(e?.paths ?? [], cx))
                         // Enter runs the send button's hold (FRM-628 W12): a tap joins on its release, a hold fills
                         // the disc and pushes; its repeats keep the one hold going
                         .on_action(QUILL_TAB, () => tabFromQuill(false))

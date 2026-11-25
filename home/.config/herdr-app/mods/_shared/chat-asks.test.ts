@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { chatSelectArgs, chatViewOf } from './chat-asks.js';
+import { chatDropOf, chatSelectArgs, chatViewOf } from './chat-asks.js';
 
 describe('another mod brings the chat into view (FRM-676)', () => {
     const chat = {
@@ -52,5 +52,20 @@ describe("a viewer ask, read safely from herdr's shared value", () => {
         expect(chatViewOf({ at: 2, files: ['/a.png'], time: 5 })).toBeNull();
         expect(chatViewOf({ at: 0, files: ['/a.png'] })).toBeNull();
         expect(chatViewOf(null)).toBeNull();
+    });
+});
+
+describe("a drop on the header, read safely from herdr's shared value", () => {
+    const drop = { address: 't1', paths: ['/a.png', '/b.md'], time: 5 };
+
+    test('its thread, its files and its time pass', () => {
+        expect(chatDropOf(drop)).toEqual(drop);
+    });
+
+    test('no file, no thread or no time is no drop', () => {
+        expect(chatDropOf({ ...drop, paths: [7] })).toBeNull();
+        expect(chatDropOf({ ...drop, address: null })).toBeNull();
+        expect(chatDropOf({ ...drop, time: '5' })).toBeNull();
+        expect(chatDropOf(null)).toBeNull();
     });
 });

@@ -24,7 +24,13 @@ import {
 
 import { createBand } from './band-view.js';
 import { createBlockedPanel } from './blocked-panel.js';
-import { CHAT_SHOWN, CHAT_VIEW, chatViewOf } from './chat-asks.js';
+import {
+    CHAT_DROP,
+    CHAT_SHOWN,
+    CHAT_VIEW,
+    chatDropOf,
+    chatViewOf,
+} from './chat-asks.js';
 import { readableTheme } from './contrast.js';
 import { onDisk } from './disk.js';
 import { createFindBar } from './find-bar.js';
@@ -43,7 +49,13 @@ import { SENT_DIR, createSentPictures } from './sent-pictures.js';
 import { readSettings, settingsDir } from './settings-io.js';
 import { createSettingsWindow } from './settings-window.js';
 import { saveSquareThumb } from './shots.js';
-import { asksActedOn, isShownIn, isViewAsked, shownThread } from './shown.js';
+import {
+    asksActedOn,
+    isDropAsked,
+    isShownIn,
+    isViewAsked,
+    shownThread,
+} from './shown.js';
 import { createTabMember } from './tab-loop.js';
 import { START_ROW, createThreadFeed } from './thread-feed.js';
 
@@ -95,6 +107,8 @@ export default class Chat extends View {
     escapeAsk = null;
     /** the time of the last viewer ask opened: one made before this load never opens again @type {number | null} */
     viewAsk = chatViewOf(shared(CHAT_VIEW))?.time ?? null;
+    /** the header's drop taken last @type {number | null} */
+    dropAsk = chatDropOf(shared(CHAT_DROP))?.time ?? null;
     /** ⌘⇧E's last ask @type {unknown} */
     effortAsk = null;
     /** what this chat last wrote in `chat.shown`, as json: its thread on screen and whether find is open @type {string} */
@@ -374,6 +388,20 @@ export default class Chat extends View {
                 ),
             );
         }
+        const dropAsk = chatDropOf(shared(CHAT_DROP));
+        if (
+            isDropAsked(dropAsk, this.dropAsk, {
+                address: this.feed.address(),
+                isShown,
+                now: Date.now(),
+            }) &&
+            dropAsk
+        ) {
+            this.dropAsk = dropAsk.time;
+            _cx.timer.after(0, (later) =>
+                this.quill.addFiles(dropAsk.paths, later),
+            );
+        }
         if (acts.isFind && !this.pictures.isOpen())
             _cx.timer.after(0, (later) => this.findBar.open(later));
         // the quill is the chat's one Tab stop while the chat shows; the loop asks for it, or a reload hands it back
@@ -430,6 +458,8 @@ export default class Chat extends View {
             .on_mouse_move((e) => {
                 this.isCmdHeld = Boolean(e.modifiers.platform);
             })
+            // a file dropped anywhere on the chat joins the quill (FRM-620:W79), the one handler of the pane
+            .on_drop((e, cx) => this.quill.addFiles(e?.paths ?? [], cx))
             .bg(t.background)
             .text_color(t.foreground)
             .text_size(look.size)

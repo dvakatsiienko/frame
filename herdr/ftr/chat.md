@@ -27,6 +27,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - then its transcript is drawn from its tail: his messages as bubbles on the right, replies as bubbles on the left with rich text and code blocks, a run of tool calls as one line that counts them by name (shot `~/.local/state/looks/FRM-638/1901-new-chat-overlay.png`)
   - and it opens at the newest and follows it only while he sits at the end; a wheel step up stops following, and a small «↓» at the bottom right goes back
   - and the end is the list's last line, read from the list itself: a step down that reaches it follows again, under a newest reply taller than the view too; a step that stops above it keeps him reading
+  - and at the very end the «↓» is gone with no further step, however he got there (one big step, small ones, a flick's glide, the cards under the list shrinking, a thread that fits the view); one px up and it is back (dima, 25 Nov 16:26)
   - and a reply, a tool line, a peer or plugin line, a turn end, a resize or a reload of the mod never moves the text he reads; only his scroll to the end or the «↓» brings him back to following
   - and a new line in the transcript changes only its own row; a long transcript opens at its last 4 MB
   - and after a reload of the mod the message he was reading is on screen again, read in from above when it must be
@@ -125,9 +126,11 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - decision: the clipboard is read, never written (FRM-612)
   - decision: the preview row holds the previews alone, no caption and no Remove: each × takes its own (FRM-609, his 16:40 shot: «delete description, i know what it does»)
 - ⬜ files attach to the next message
-  - when dima presses + at the left of the lower card and picks files, or drops files on the quill
+  - when dima presses + at the left of the lower card and picks files, or drops files anywhere on the chat: its header, a message, the space between, the meters, the quill, the bottom bar (dima, 25 Nov 16:27)
   - then each shows as a «📎 name» chip above the quill, its path on hover, × takes it off; a picture shows in the preview row instead
   - and a send puts each path on its own line after the text, spaces escaped the way a terminal drop types them
+  - and a drop joins the quill once, the draft's words staying; over the Terminal view or a steer box it goes where it went
+  - decision: no sign while a file is over the chat: herdr gives a mod a drop, never a drag on its way
   - decision: a drop looks like a paste, one preview row (dima, 14:09: «dnd does not shows preview»)
 - ⬜ a reply's files open in one click from rows under it (FRM-587)
   - given a reply names a file by a bare path, a `~` path, a quoted or backslash-escaped path, a `file://` link or a markdown link to one

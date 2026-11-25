@@ -31,6 +31,24 @@ export function chatViewOf(/** @type {unknown} */ value) {
     return { at, files, isDesktop: v.isDesktop === true, time: v.time };
 }
 
+// files dropped on the chat's header, for the quill of the thread it names: a `ChatDrop`, its time the drop's
+export const CHAT_DROP = 'chat.drop';
+
+/** @typedef {{ address: string, paths: string[], time: number }} ChatDrop */
+
+/** a drop on the header, read safely from herdr's shared value: null when it names no file or thread @returns {ChatDrop | null} */
+export function chatDropOf(/** @type {unknown} */ value) {
+    const v = /** @type {Partial<ChatDrop> | null} */ (
+        value && typeof value === 'object' ? value : null
+    );
+    const paths = Array.isArray(v?.paths)
+        ? v.paths.filter((p) => typeof p === 'string')
+        : [];
+    if (!paths.length || typeof v?.time !== 'number') return null;
+    if (typeof v.address !== 'string') return null;
+    return { address: v.address, paths, time: v.time };
+}
+
 /**
  * what `layout.select` takes to bring the chat into view: its block's child in its stack, or null with none stacked
  * @param {any} tree the shown layout
