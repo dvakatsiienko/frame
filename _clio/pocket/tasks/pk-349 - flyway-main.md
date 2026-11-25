@@ -2833,5 +2833,5 @@ done 2026-11-25 13:09: f114 FRM-678: the queue's free-CPU number, read from two 
 
 his o6 tick (2026-11-25 13:13): the lanes file rider goes to the mods codie after FRM-645
 
-PK-349:W2441 corrected (helga's groom flipped it; his raw, 13:08): if a skill typed from the quill in herdr, that opens a message, expands - it is fine then. his 13:08 line's correct reading, the line above is superseded
+correction to W2441, helga's groom flipped it (his raw, 13:08): if a skill typed from the quill in herdr, that opens a message, expands - it is fine then
 <!-- SECTION:NOTES:END -->
