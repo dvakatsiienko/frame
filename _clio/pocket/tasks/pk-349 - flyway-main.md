@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T15:35:36Z'
+updated_date: '2026-11-25T15:50:08Z'
 labels:
   - s
   - clio-main
@@ -18,11 +18,11 @@ ordinal: 1000
 <!-- AC:BEGIN -->
 - [ ] #1 f120 the plan over all herdr work (FRM-616): talk it through — with: dima
 - [ ] #2 f121 FRM-678: the queue's free-CPU number from two days of rows, one number to dima — waits for: FRM-678 — parked: 2026-11-25
-- [ ] #3 f130 FRM-596: the seat switch tested with a live wing, by 27 Nov (both halves on main) — parked: 2026-11-25
-- [ ] #4 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #5 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
-- [ ] #6 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
-- [ ] #7 f126 ⏳ kokoro engine upgrade: before and after sounds to dima, told when it lands — waits for: FRM-669
+- [ ] #3 f139 FRM-596: the seat switch, 3 test lines and 4 gaps left (its 25 Nov comment), by 27 Nov — parked: 2026-11-25
+- [ ] #4 f140 newJoins in prompt-raw-save.ts logs a joined note he edits or takes back, before herdr step 149 (FRM-585 spec) — parked: 2026-11-25
+- [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #6 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
+- [ ] #7 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
 - [ ] #8 f134 ⏳ herdr wisp: a triple click takes one visual line, fixed upstream, waits a herdr release — waits for: FRM-655
 - [ ] #9 f136 ⏳ the two old speak verify trees go, their env files moved first — waits for: FRM-669
 - [ ] #10 f138 ⏳ your one listening session on speak: cut-off sound, double read, pauses (FRM-288:W22) — waits for: FRM-669
