@@ -214,11 +214,27 @@ test("a session's state file holds its asks, plan, wait, taken, ctx and model", 
     await orbit($, {
         asks: [
             { area: 'mods', pick: 'yes', text: 'ship it', why: 'a test ask' },
+            {
+                area: 'mods',
+                body: 'log each\nor not',
+                pick: 'log',
+                title: 'the queue',
+                why: 'a test ask',
+            },
         ],
         op: 'add',
     });
     expect(s.read(A)).toMatchObject({
-        asks: [{ id: 'o1', pick: 'yes', text: 'ship it' }],
+        asks: [
+            { id: 'o1', pick: 'yes', text: 'ship it' },
+            {
+                body: 'log each\nor not',
+                id: 'o2',
+                pick: 'log',
+                text: 'the queue\n\nlog each\nor not',
+                title: 'the queue',
+            },
+        ],
         ctx: 54,
         model: 'opus 5.5 · medium',
         pid: 100,

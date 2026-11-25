@@ -24,7 +24,7 @@ import { SHOWN, partsShown, shownOf } from './settings-store.ts';
 import { REPLY, type Reply } from './store-keys.ts';
 import { clearWrap, endUserTurn, turn } from './turn.ts';
 import { countWords } from './usage.ts';
-import { STALE_MS, errorText } from './util.ts';
+import { STALE_MS, errorText, onOneLine } from './util.ts';
 
 // the Stop's two reds, once a turn (FRM-427): a wrap_up ask while an orbit ask is open (PK-227, one home for the next
 // move), and an orbit add opening «Q<n>» whose round the reply never printed as «❓ **Q<n>**» (the 10-25 rider); a --bg
@@ -42,7 +42,7 @@ export async function stopRed($: EngineInterface, reply: string) {
     );
     const reds = [
         turn.isWrapAsked && open.length
-            ? `your wrap_up asks dima a question while orbit holds ${open.map((a) => `${a.id} «${a.text}»`).join(', ')} open: one home for the next move — resolve or follow the orbit ask, or drop the wrap_up ask`
+            ? `your wrap_up asks dima a question while orbit holds ${open.map((a) => `${a.id} «${onOneLine(a.text)}»`).join(', ')} open: one home for the next move — resolve or follow the orbit ask, or drop the wrap_up ask`
             : '',
         lost.length
             ? `you added ${lost.map((n) => `Q${n}`).join(', ')} to orbit, but the reply never printed ${lost.map((n) => `❓ **Q${n}**`).join(', ')}: a grill's asks go out with their round, so print the round in the reply`

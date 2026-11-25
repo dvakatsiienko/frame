@@ -85,6 +85,10 @@ const ASK_FROM = {
     },
     type: ['object', 'null'],
 } as const;
+const RETIRED = {
+    description: 'retired: title and body',
+    type: 'string',
+} as const;
 // the orbit tool's arguments; an `ops` item takes the same ones, since the engine drops any argument a schema does not name
 export const ORBIT_PROPS = {
     act: {
@@ -96,20 +100,24 @@ export const ORBIT_PROPS = {
         items: {
             properties: {
                 area: { type: 'string' },
+                body: { type: 'string' },
                 from: ASK_FROM,
                 hiddenNote: { type: 'string' },
                 // no enum: the op's own refusal names the two kinds
                 kind: { type: 'string' },
                 link: { type: 'string' },
                 pick: { type: 'string' },
-                text: { type: 'string' },
+                text: RETIRED,
+                title: { type: 'string' },
                 why: { type: 'string' },
             },
-            required: ['text', 'pick', 'area', 'why'],
+            // no title: a session still sending `text` is taken, never refused before its op reads it
+            required: ['pick', 'area', 'why'],
             type: 'object',
         },
         type: 'array',
     },
+    body: { type: 'string' },
     current: { type: 'number' },
     from: ASK_FROM,
     id: { type: 'string' },
@@ -146,7 +154,7 @@ export const ORBIT_PROPS = {
     session: { type: 'string' },
     slug: { type: 'string' },
     step: { type: 'number' },
-    text: { type: 'string' },
+    text: RETIRED,
     texts: { items: { type: 'string' }, type: 'array' },
     title: { type: 'string' },
     why: { type: 'string' },
@@ -428,8 +436,9 @@ export async function orbitCall(
     if (input.op === 'add')
         addGridQs(
             ...(Array.isArray(input.asks) ? input.asks : []).flatMap((x) => {
-                const n = oneLine((x as { text?: unknown })?.text).match(
-                    /^Q(\d+)\b/,
+                const said = (x ?? {}) as { text?: unknown; title?: unknown };
+                const n = oneLine(said.title ?? said.text).match(
+                    /^[^\p{L}\p{N}]*Q(\d+)\b/u,
                 )?.[1];
                 return n ? [n] : [];
             }),

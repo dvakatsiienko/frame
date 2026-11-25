@@ -8,9 +8,10 @@ import type {
     StashPlan,
     StashTick,
 } from '../types/stash.d.ts';
-import { askKind, hiddenAtTake, isFixing } from './orbit-ask-kind.ts';
+import { RETIRED_TEXT, askFields } from './orbit-ask-fields.ts';
+import { hiddenAtTake, isFixing } from './orbit-ask-kind.ts';
 import { type OriginRead, askOrigin } from './orbit-ask-origin.ts';
-import { ORBIT_TEXT_MAX, oneLine } from './util.ts';
+import { ORBIT_TEXT_MAX, onOneLine, oneLine } from './util.ts';
 
 export const ORBIT_TOOL = 'mcp__x-mod-stash__orbit';
 export const PLAN_MAX = 7;
@@ -48,15 +49,23 @@ export const opAskIds = (input: Record<string, unknown>) =>
           ? idsOf(input.ids)
           : [];
 
+// a merge or land ask, past the area's emoji that leads a title
+const MERGE_ASK =
+    /^[^\p{L}\p{N}]*(?:(?:look|test):\s*)?[^\p{L}\p{N}]*(?:merge|land)\b/iu;
 // what ✅ marks: an open ask he has not marked; a ⚠️ or a merge ask takes its own 🛎️, so one press never unlocks what he has not read
 export const isAllAsksMarkable = (a: OrbitAsk) =>
     !a.mark &&
     !a.isLocked &&
     !a.isResolved &&
-    !/⚠️|^\s*(?:(?:look|test):\s*)?(?:merge|land)\b/iu.test(a.text);
+    !a.text.includes('⚠️') &&
+    !MERGE_ASK.test(a.text);
 
-// the record x-mod-guard reads as dima's word, one per ask his press marks: what its text and its pick quote, as they
-// stand at the press; the pick carries a command of any length (FRM-661)
+const quoted = (s: string) =>
+    [...s.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string);
+
+// the record x-mod-guard reads as dima's word, one per ask his press marks, as it stands at the press: what its pick
+// quotes, a command of any length (FRM-661), and with none there what its text does, so a command the body turns down is
+// no word of his (his o9 tick, 25 Nov)
 export const allAsksTicks = (
     asks: Pick<OrbitAsk, 'id' | 'pick' | 'text'>[],
     at: number,
@@ -64,9 +73,7 @@ export const allAsksTicks = (
     asks.map(({ id, pick, text }) => ({
         at,
         id,
-        targets: [text, pick].flatMap((s) =>
-            [...s.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string),
-        ),
+        targets: quoted(pick).length ? quoted(pick) : quoted(text),
         text,
     }));
 
@@ -280,7 +287,7 @@ export const TICK_SENTENCE = `answer each in this reply, then call ${ORBIT_TOOL}
 export function joinText(asks: OrbitAsk[], sentence = TICK_SENTENCE) {
     const lines = asks.map(
         (a) =>
-            `- ${a.id} ${markWord(a.mark)}${a.isHerdrMark ? ' from herdr' : ''}: ${a.text} (your pick: ${a.pick})` +
+            `- ${a.id} ${markWord(a.mark)}${a.isHerdrMark ? ' from herdr' : ''}: ${onOneLine(a.text)} (your pick: ${a.pick})` +
             (a.steer ? ` · his steer: «${a.steer.trim()}»` : '') +
             (a.hiddenNote ? ` · your note: «${a.hiddenNote}»` : ''),
     );
@@ -293,9 +300,9 @@ export function joinText(asks: OrbitAsk[], sentence = TICK_SENTENCE) {
 // an ask whose tick x-mod-guard reads as dima's word — a sign, a ⚠️ or merge ask, one quoting a command; published as
 // `isGated` beside the ask, so x-herdr-deck draws the mark instead of keeping its own copy of the pattern (FRM-544 slice 1)
 export const isGuardGated = (text: string) =>
-    /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|^\s*(?:(?:look|test):\s*)?(?:merge|land)\b|`[^`]+`/iu.test(
-        text,
-    );
+    /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|`[^`]+`/iu.test(text) ||
+    MERGE_ASK.test(text);
+const named = (x: string) => `«${[...x].slice(0, 40).join('')}»`;
 const overCapText = (x: string) =>
     [...x].length > ORBIT_TEXT_MAX
         ? `«${[...x].slice(0, 40).join('')}…» is ${[...x].length} chars; keep it ≤${ORBIT_TEXT_MAX}, subject first, detail he need not read in hiddenNote`
@@ -337,11 +344,12 @@ export function orbitOp(
             const raw = Array.isArray(input.asks) ? input.asks : [];
             const added: OrbitAsk[] = [];
             const wrong: string[] = [];
+            let isRetired = false;
             let next = o.next;
             for (const item of raw) {
                 const v = (item ?? {}) as Record<string, unknown>;
-                const text = oneLine(v.text);
-                if (!text) continue;
+                const said = askFields(v);
+                if (!said) continue;
                 const hiddenNote = oneLine(v.hiddenNote);
                 const link = oneLine(v.link);
                 const misses: string[] = [];
@@ -351,30 +359,30 @@ export function orbitOp(
                     );
                 const told = askOrigin(v, read, false);
                 if ('deny' in told) misses.push(told.deny);
-                const typed = askKind(text, v.kind);
-                if ('deny' in typed) misses.push(typed.deny);
+                if ('deny' in said) misses.push(said.deny);
                 if (misses.length)
-                    wrong.push(`«${text.slice(0, 40)}»: ${misses.join('; ')}`);
-                const led = 'deny' in typed ? { text } : typed;
-                const long = overCapText(led.text);
+                    wrong.push(`${named(said.name)}: ${misses.join('; ')}`);
+                if ('deny' in said) continue;
+                const long = said.isRetired && overCapText(said.fields.text);
                 if (long) wrong.push(long);
+                isRetired ||= said.isRetired;
                 added.push({
                     ...('deny' in told ? {} : told.origin),
                     hiddenNote: hiddenNote || undefined,
                     id: `o${next++}`,
                     ...(link ? { link } : {}),
                     pick: oneLine(v.pick) || 'no pick',
-                    ...led,
+                    ...said.fields,
                 });
             }
             if (wrong.length) return { deny: `orbit add: ${wrong.join('\n')}` };
             if (!added.length)
                 return {
-                    deny: 'orbit add: asks needs one { text, pick, area, why } or more',
+                    deny: 'orbit add: asks needs one { title, body, pick, area, why } or more',
                 };
             return {
                 orbit: { ...o, asks: [...o.asks, ...added], next },
-                result: `added ${added.map((a) => a.id).join(', ')} to dima's orbit; never repeat them in the reply`,
+                result: `added ${added.map((a) => a.id).join(', ')} to dima's orbit; never repeat them in the reply${isRetired ? RETIRED_TEXT : ''}`,
             };
         }
         case 'assume': {
@@ -445,16 +453,17 @@ export function orbitOp(
         }
         case 'follow': {
             const id = typeof input.id === 'string' ? input.id : '';
-            const text = oneLine(input.text);
             const was = o.asks.find((a) => a.id === id);
-            if (!was || !text)
+            const said = askFields({ ...input, kind: '' }, was);
+            if (!was || !said)
                 return {
-                    deny: `orbit follow: needs a known id and a text, got «${id}»`,
+                    deny: `orbit follow: needs a known id and a title or a body, got «${id}»`,
                 };
-            const typed = askKind(text, '', was.kind);
-            if ('deny' in typed)
-                return { deny: `orbit follow: ${id}: ${typed.deny}` };
-            const isHide = isFixing(typed.kind, oneLine(input.why));
+            if ('deny' in said)
+                return {
+                    deny: `orbit follow: ${id} ${named(said.name)}: ${said.deny}`,
+                };
+            const isHide = isFixing(said.fields.kind, oneLine(input.why));
             // «fixing …» says why it hides, never why the ask exists, so it is no why to check or keep
             const told = askOrigin(
                 isHide ? { ...input, why: undefined } : input,
@@ -463,7 +472,8 @@ export function orbitOp(
             );
             if ('deny' in told)
                 return { deny: `orbit follow: ${id}: ${told.deny}` };
-            const tooLong = overCap('follow', [typed.text]);
+            const tooLong =
+                said.isRetired && overCap('follow', [said.fields.text]);
             if (tooLong) return tooLong;
             return {
                 orbit: {
@@ -473,6 +483,8 @@ export function orbitOp(
                             ? {
                                   ...a,
                                   ...told.origin,
+                                  // a retired `text` replaces the whole question, its title and body with it
+                                  body: undefined,
                                   hidden: isHide ? {} : undefined,
                                   isChanged: true,
                                   isClosed: undefined,
@@ -484,7 +496,8 @@ export function orbitOp(
                                   pick: oneLine(input.pick) || a.pick,
                                   // his steer answered the old question
                                   steer: undefined,
-                                  ...typed,
+                                  title: undefined,
+                                  ...said.fields,
                                   word: undefined,
                               }
                             : a,
@@ -492,7 +505,7 @@ export function orbitOp(
                 },
                 result: isHide
                     ? `${id} hidden from dima; your next follow with another why shows it`
-                    : `${id} changed in place`,
+                    : `${id} changed in place${said.isRetired ? RETIRED_TEXT : ''}`,
             };
         }
         case 'plan': {

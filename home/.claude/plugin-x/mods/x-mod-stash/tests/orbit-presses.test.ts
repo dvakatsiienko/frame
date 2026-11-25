@@ -486,15 +486,27 @@ test('✅ names every ask it left unticked', async ($, on) => {
         $,
         ['⚠️ merge bytes#104 at abc1234: the guard fix', 'merge it'],
         ['push `backup`', 'yes'],
-        ['look: merge bytes#105', 'merge it'],
     );
+    await orbit($, {
+        asks: [
+            {
+                area: 'mods',
+                body: 'its card\nwaits',
+                kind: 'look',
+                pick: 'merge it',
+                title: '🧩 merge bytes#105',
+                why: 'a test ask',
+            },
+        ],
+        op: 'add',
+    });
     await ui.press({ key: 'orbit:all' });
     expect([
         toasts,
         (await ui.find({ key: 'orbit:accepted:o1' }))?.text,
     ]).toEqual([
         [
-            '✅ left unticked: o1 ⚠️ merge bytes#104 at abc1234: the guard fix; o3 look: merge bytes#105',
+            '✅ left unticked: o1 ⚠️ merge bytes#104 at abc1234: the guard fix; o3 look: 🧩 merge bytes#105 — its card — waits',
         ],
         '🛎️ tick',
     ]);

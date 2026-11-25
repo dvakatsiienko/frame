@@ -192,12 +192,19 @@ test('an orbit add opening «Q2» passes, and a reply lacking «❓ **Q2**» red
                 text: 'Q2 which door for the tick record?',
                 why: 'a test ask',
             },
+            {
+                area: 'mods',
+                body: 'one or two',
+                pick: 'one',
+                title: '🧩 Q3 how many files',
+                why: 'a test ask',
+            },
         ],
         op: 'add',
     });
     expect([r.deny, (await stop($, 'asked in orbit.')).block]).toEqual([
         undefined,
-        expect.stringMatching(/Q2.*❓ \*\*Q2\*\*/s),
+        expect.stringMatching(/Q2, Q3 .*❓ \*\*Q2\*\*.*❓ \*\*Q3\*\*/s),
     ]);
 });
 

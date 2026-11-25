@@ -31,6 +31,9 @@ export type PublishedAsk = Omit<AskOrigin, 'from'> & {
     from?: AskFrom & { line: string };
     id: string;
     kind?: AskKind;
+    // the topic with no kind's lead, and what is asked under it; an ask sent the old way has neither, its `text` the whole
+    title?: string;
+    body?: string;
     text: string;
     pick: string;
     link?: string;
@@ -163,6 +166,9 @@ export type OrbitAsk = AskOrigin & {
     kind?: AskKind;
     // kept from dima while its poster fixes it: since when, and whether its coordinator was told it stands
     hidden?: { at?: number; isTold?: boolean };
+    // the topic and what is asked (FRM-695); `text` is the two, a blank line between, and the whole of an old ask
+    title?: string;
+    body?: string;
     text: string;
     pick: string;
     hiddenNote?: string;

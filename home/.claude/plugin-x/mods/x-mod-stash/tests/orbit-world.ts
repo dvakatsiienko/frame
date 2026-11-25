@@ -15,7 +15,10 @@ export const registered: {
         properties?: Record<
             string,
             {
-                items?: { properties?: Record<string, unknown> };
+                items?: {
+                    properties?: Record<string, unknown>;
+                    required?: string[];
+                };
                 enum?: string[];
             }
         >;

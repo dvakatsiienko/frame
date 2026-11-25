@@ -1,7 +1,7 @@
 // an ask's kind (FRM-645): a look is ready and needs only dima's eyes, a test needs his hands; a pure rule
 
 import type { AskKind, KindEmoji, OrbitAsk } from '../types/stash.d.ts';
-import { oneLine } from './util.ts';
+import { onOneLine, oneLine } from './util.ts';
 
 const KINDS = ['look', 'test'] as const satisfies readonly AskKind[];
 // herdr reads the kind off the text (x-herdr-deck `cardKind`: the colon form past a 👀 or 🧪), so the text a typed ask is
@@ -36,7 +36,7 @@ export const strandedLine = (
     poster: string,
     ticket: string | undefined,
 ) =>
-    `[escalate] a ${a.kind} ask stands hidden 60 min with no follow: ${a.id} «${a.text}» (${a.text.match(/\b(?:FRM|BYT)-\d+\b/u)?.[0] ?? a.from?.ticket ?? ticket ?? 'no ticket'}) from ${poster}; ask whether it is ready, its follow shows it to dima`;
+    `[escalate] a ${a.kind} ask stands hidden 60 min with no follow: ${a.id} «${onOneLine(a.text)}» (${a.text.match(/\b(?:FRM|BYT)-\d+\b/u)?.[0] ?? a.from?.ticket ?? ticket ?? 'no ticket'}) from ${poster}; ask whether it is ready, its follow shows it to dima`;
 
 // what leads an ask's line: its kind's emoji, or the mark of one answered this turn, never 👀 on a typed ask (FRM-645)
 export const askLead = (
@@ -59,6 +59,7 @@ export function askKind(
     text: string,
     given: unknown,
     kept?: AskKind,
+    field: 'text' | 'title' = 'text',
 ): { kind?: AskKind; text: string } | { deny: string } {
     const word =
         typeof given === 'string'
@@ -72,11 +73,13 @@ export function askKind(
     const lead = text.match(LEAD);
     const led = lead?.[1]?.toLowerCase() as AskKind | undefined;
     if (asked && led && asked !== led)
-        return { deny: `its text opens «${led}:» while its kind is ${asked}` };
+        return {
+            deny: `its ${field} opens «${led}:» while its kind is ${asked}`,
+        };
     const kind = asked ?? led ?? kept;
     if (!kind) return { text };
     const words = text.slice(lead?.[0].length ?? 0).replace(EMOJI, '');
     return words
         ? { kind, text: `${kind}: ${words}` }
-        : { deny: `its text says nothing past «${kind}:»` };
+        : { deny: `its ${field} says nothing past «${kind}:»` };
 }
