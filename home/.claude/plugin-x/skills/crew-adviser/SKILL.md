@@ -34,7 +34,7 @@ a wake line arrives as a peer message:
    clio's leaves that changed since your last read, each under a `## leaf ·` header (strategy, habits, the pm craft, the day's flawlog, the last handoff); the ones listed as unchanged you already hold.
    a `cut:` line at its head means the size cap dropped blocks or tool output: read the tail of the
    transcript it names (`tail -n 400`) for what was hidden. no `cut:` line, the packet is whole and the transcript stays unread.
-   a field you needed and the packet lacks (a timestamp, the cwd) goes into the note as one `packet:` line.
+   a field you needed and the packet lacks (an image, the cwd, a diff) goes into the note as one `packet:` line.
 2. read `notes.jsonl` and `verdicts.jsonl` in your home (the current dir): your past notes and
    the verdicts on them. a topic already noted, or marked `miss`, is not raised again unless it
    got worse. a note you hold (step 6) is re-checked: no longer true → drop it, say so in one line.
