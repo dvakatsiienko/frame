@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 import { antennaRows } from './rows.js';
 
 // FRM-618 slice A exit 1: five threads in two spaces, his saved order; each thread once, under its space name, in that
-// order, a still dot per row
+// order
 const threads = [
     { address: 't1', space: 'sA', space_name: 'frame', status: 'working' },
     { address: 't2', space: 'sA', space_name: 'frame', status: 'idle' },
@@ -25,12 +25,12 @@ describe('antenna rows', () => {
         const rows = antennaRows(threads, { isGrouped: true, names, order });
         expect(rows).toEqual([
             { kind: 'space', name: 'bytes', space: 'sB' },
-            { address: 't5', dot: 'idle', kind: 'thread', name: 'codie a' },
-            { address: 't3', dot: 'blocked', kind: 'thread', name: 'codie b' },
+            { address: 't5', kind: 'thread', name: 'codie a' },
+            { address: 't3', kind: 'thread', name: 'codie b' },
             { kind: 'space', name: 'frame', space: 'sA' },
-            { address: 't2', dot: 'idle', kind: 'thread', name: 'crow' },
-            { address: 't1', dot: 'working', kind: 'thread', name: 'clio' },
-            { address: 't4', dot: 'done', kind: 'thread', name: 'helga' },
+            { address: 't2', kind: 'thread', name: 'crow' },
+            { address: 't1', kind: 'thread', name: 'clio' },
+            { address: 't4', kind: 'thread', name: 'helga' },
         ]);
     });
 
@@ -60,7 +60,6 @@ describe('antenna rows', () => {
         );
         expect(rows.at(-1)).toEqual({
             address: 't6',
-            dot: 'idle',
             kind: 'thread',
             name: 't6',
         });
@@ -91,24 +90,22 @@ describe('pinned threads', () => {
             { kind: 'pins' },
             {
                 address: 't5',
-                dot: 'idle',
                 isPinned: true,
                 kind: 'thread',
                 name: 'codie a',
             },
             {
                 address: 't4',
-                dot: 'done',
                 isPinned: true,
                 kind: 'thread',
                 name: 'helga',
             },
             { kind: 'unpinned' },
             { kind: 'space', name: 'frame', space: 'sA' },
-            { address: 't2', dot: 'idle', kind: 'thread', name: 'crow' },
-            { address: 't1', dot: 'working', kind: 'thread', name: 'clio' },
+            { address: 't2', kind: 'thread', name: 'crow' },
+            { address: 't1', kind: 'thread', name: 'clio' },
             { kind: 'space', name: 'bytes', space: 'sB' },
-            { address: 't3', dot: 'blocked', kind: 'thread', name: 'codie b' },
+            { address: 't3', kind: 'thread', name: 'codie b' },
         ]);
     });
 

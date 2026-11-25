@@ -2,11 +2,21 @@
 // one fixture (x-mod-stash/tests/lanes-shelf.ts, FRM-659)
 
 /** @typedef {{ text: string, isDone?: boolean, ticket?: string }} LaneItem */
-/** @typedef {{ id?: string, title: string, ticket?: string, items?: LaneItem[], current?: number, done?: number, endedAt?: number | null, linkedIds?: { codie?: string } }} Lane */
+/** @typedef {{ id?: string, title: string, ticket?: string, items?: LaneItem[], current?: number, done?: number, endedAt?: number | null, plan?: string, linkedIds?: { codie?: string } }} Lane */
+
+/** a card's lane: its codie and its title's first word («mods», «speak»); a card linked to none is a lane of its own @param {Lane} l */
+const laneOf = (l) =>
+    l.linkedIds?.codie
+        ? `${l.linkedIds.codie} ${/[a-z0-9]+/i.exec(l.title)?.[0]?.toLowerCase()}`
+        : (l.id ?? l.title);
+
+/** @param {Lane} l */
+const isFinished = (l) =>
+    Boolean(l.items?.length && l.items.every((item) => item.isDone));
 
 /**
- * the lanes a board shows: every one the file holds that has not ended, one card each. a codie runs one lane, so of two
- * live cards linked to it the one opened first stays, as the stash keeps the open one over a second create
+ * the lanes a board shows: every one the file holds that has not ended, one card each. of two live cards of one lane the
+ * one that moves is drawn: one not finished over one that is, then one that follows its plan, then the newest
  * @param {any} body the parsed file, or null when it could not be read
  * @returns {Lane[]}
  */
@@ -14,13 +24,18 @@ export function lanesShown(body) {
     /** @type {Lane[]} */
     const all = Array.isArray(body?.lanes) ? body.lanes : [];
     const live = all.filter((l) => !l.endedAt);
-    return live.filter((l, i) => {
-        const codie = l.linkedIds?.codie;
-        return (
-            !codie ||
-            live.findIndex((other) => other.linkedIds?.codie === codie) === i
-        );
-    });
+    /** @type {Map<string, Lane>} */
+    const shown = new Map();
+    for (const l of live) {
+        const had = shown.get(laneOf(l));
+        const isBetter =
+            !had ||
+            (isFinished(had) !== isFinished(l)
+                ? isFinished(had)
+                : Boolean(l.plan) || !had.plan);
+        if (isBetter) shown.set(laneOf(l), l);
+    }
+    return live.filter((l) => shown.get(laneOf(l)) === l);
 }
 
 /**

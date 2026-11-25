@@ -17,6 +17,7 @@ describe('the deck reads the lanes.json the stash writes', () => {
             done: typeof lane?.done,
             id: typeof lane?.id,
             isDone: typeof lane?.items?.[0]?.isDone,
+            itemTicket: typeof lane?.items?.[0]?.ticket,
             text: typeof lane?.items?.[0]?.text,
             ticket: typeof lane?.ticket,
             title: typeof lane?.title,
@@ -25,32 +26,76 @@ describe('the deck reads the lanes.json the stash writes', () => {
             done: 'number',
             id: 'string',
             isDone: 'boolean',
+            itemTicket: 'string',
             text: 'string',
             ticket: 'string',
             title: 'string',
         });
     });
 
-    // l111 and l112 as they stood on 23 Nov 19:27: one codie's lane with two live cards (FRM-527:W139–W142)
+    // l105 to l112 as they stood on 23 Nov: one lane with a card made by hand and one its dispatch opened (FRM-527:W139–W142)
+    const CODIE = 'bcdc16c6';
+    const card = (id: string, over: object = {}) => ({
+        id,
+        linkedIds: { codie: CODIE },
+        title: 'mods — a lighter board',
+        ...over,
+    });
+    const PLAN = { plan: '~/lanes/mods-lane-9/lane-plan.md' };
+    const DONE = { items: [{ isDone: true, text: 'a' }] };
+    const HALF = { items: [...DONE.items, { isDone: false, text: 'b' }] };
     test.each([
-        ['linked to one codie', 'bcdc16c6', 'bcdc16c6', ['l111']],
-        ['of two codies', 'bcdc16c6', 'e412b9a7', ['l111', 'l112']],
-        ['linked to none', undefined, undefined, ['l111', 'l112']],
-    ])('two live cards %s', (_what, a, b, shown) => {
-        const card = (id: string, codie?: string) => ({
-            id,
-            linkedIds: { codie },
-            title: 'mods',
-        });
-        const body = { lanes: [card('l111', a), card('l112', b)] };
-        expect(lanesShown(body).map((l) => l.id)).toEqual(shown);
-        const [, second] = body.lanes;
-        // the first one ends while herdr is open: its lane still has a card
-        expect(
-            lanesShown({
-                lanes: [{ ...card('l111', a), endedAt: 1 }, second],
-            }).map((l) => l.id),
-        ).toEqual(['l112']);
+        ['the one that follows its plan', {}, PLAN, ['l2']],
+        ['the one that follows its plan, opened first', PLAN, {}, ['l1']],
+        ['the newest, neither following one', {}, {}, ['l2']],
+        ['the newest, both following one', PLAN, PLAN, ['l2']],
+        [
+            'the one not finished, over one that follows a plan',
+            { ...PLAN, ...DONE },
+            HALF,
+            ['l2'],
+        ],
+        [
+            'the one not finished, opened first',
+            HALF,
+            { ...PLAN, ...DONE },
+            ['l1'],
+        ],
+        ['the newest, both finished', DONE, DONE, ['l2']],
+        [
+            'a title of the same first word',
+            {},
+            { title: 'mods lane 9' },
+            ['l2'],
+        ],
+        [
+            'a dashed one',
+            { title: 'speak — x' },
+            { title: 'speak-move' },
+            ['l2'],
+        ],
+    ])('two live cards of one lane: %s', (_what, first, second, shown) => {
+        const lanes = [card('l1', first), card('l2', second)];
+        expect(lanesShown({ lanes }).map((l) => l.id)).toEqual(shown);
+    });
+
+    test.each([
+        ['of two codies', { linkedIds: { codie: 'e412b9a7' } }],
+        ['linked to none', { linkedIds: undefined }],
+        [
+            'of two lanes of one codie, as l93 and l94',
+            { ...PLAN, title: 'frm-602 probe' },
+        ],
+    ])('two live cards %s are both drawn', (_what, second) => {
+        const lanes = [card('l1'), card('l2', second)];
+        expect(lanesShown({ lanes }).map((l) => l.id)).toEqual(['l1', 'l2']);
+        const unlinked = lanes.map((l) => ({ ...l, linkedIds: undefined }));
+        expect(lanesShown({ lanes: unlinked })).toHaveLength(2);
+    });
+
+    test('the drawn one ends: the other comes, the lane keeps a card', () => {
+        const lanes = [card('l1'), card('l2', { ...PLAN, endedAt: 1 })];
+        expect(lanesShown({ lanes }).map((l) => l.id)).toEqual(['l1']);
     });
 
     test('a file that cannot be read shows no lane', () => {

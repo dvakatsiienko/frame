@@ -41,7 +41,7 @@ describe("antenna's head counts its threads, busy of all (FRM-620:W86)", () => {
         expect(counted().all).toBe('4/10');
     });
 
-    test('a pinned row counts once, the rows drawn being as many', () => {
+    test('as many as the rows antenna draws, pinned ones among them', () => {
         const rows = antennaRows(threads, {
             isGrouped: true,
             names: {},
@@ -74,7 +74,7 @@ describe("antenna's head counts its threads, busy of all (FRM-620:W86)", () => {
 });
 
 describe('each space carries its own count (FRM-620:W87)', () => {
-    test("the spaces' sums are the total, a pinned thread in its own space", () => {
+    test('of its own threads alone', () => {
         expect(spaces(counted())).toEqual({ bytes: '2/5', frame: '2/5' });
         expect(spaces(counted(states(['t1'])))).toEqual({
             bytes: '0/5',
