@@ -35,7 +35,7 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 - `pnpm herdr-mods:land <mod> --dry` (a staged check: a bare `herdr-app check` writes herdr's types in), `herdr-app status`, `herdr-app shot`, read it
 - edit in frame; `pnpm herdr-mods:land --watch` lands each save whose staged check passes, live; a link never does
 - a change he can see lands live under `--watch` while he watches (dima 2026-11-17: «the cost of doing the wrong thing is higher»); one that only fixes code lands once at its job's end; «landing now» in the ping
-- a landing restarts the mod and stalls his chats: land yourself, then one look ask once it's live: what he sees and where, with a shot; a land is never an ask (dima, 19 Nov 19:55); a chat land waits for afk or an empty quill
+- a landing restarts the mod and stalls his chats: land yourself, then one look ask once it's live: what he sees and where, with a shot; a land is never an ask (dima, 19 Nov 19:55); a chat land waits for afk or an empty quill, at most a minute: then an orbit ask for his quill through your coordinator, and you take the next step, never parked (dima, 2026-11-25)
 - a herdr restart is his hand alone: it can lose his prompt
 - a layout experiment: `x:herdr` § recipes «move a part»; one to try is a copy at `layouts/<name>.json`, moved with `--layout <name>`, picked in the picker, left by picking the old; a save to his shown layout asks him
 - commit through `x lane commit` in the background; a new mod's `landedByCopy` line (`script/lib/manifest.ts`) rides its first commit
