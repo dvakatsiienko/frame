@@ -28,7 +28,7 @@ const wing: Row = {
 const drawn = (sections: ReturnType<typeof orbitSections<Row>>) =>
     sections.map((s) =>
         s.kind === 'pinned'
-            ? `pinned ${s.cards.map((c) => `${c.row.pid}:${c.ask.id}`).join(' ')}`
+            ? `pinned ${s.groups.map((g) => `${g.row.pid}:${g.asks.map((a) => a.id).join(',')}`).join(' ')}`
             : `${s.row.pid} ${s.asks.map((a) => a.id).join(' ')}`,
     );
 
@@ -39,6 +39,17 @@ describe('orbit sections', () => {
             '10 o1 o2',
             '20 o1',
         ]);
+    });
+
+    // FRM-620:W63 (dima, 14:15): two cards from clio drew her name twice
+    test('cards from one sender sit under its one heading', () => {
+        const two: Row = {
+            ...clio,
+            asks: [...clio.asks, { id: 'o4', text: 'test: the keys' }],
+        };
+        expect(drawn(orbitSections([wing, two], [10, 20], 'top'))[0]).toBe(
+            'pinned 10:o3,o4 20:o2',
+        );
     });
 
     test('«pin: bottom» puts the same pinned group last, the rest above in their order', () => {
