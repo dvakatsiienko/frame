@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T16:34:41Z'
+updated_date: '2026-11-25T17:11:55Z'
 labels:
   - s
   - clio-main
@@ -16,20 +16,19 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f120 the plan over all herdr work (FRM-616): talk it through — with: dima
-- [ ] #2 f121 FRM-678: the queue's free-CPU number from two days of rows, one number to dima — waits for: FRM-678 — parked: 2026-11-25
-- [ ] #3 f139 FRM-596: the seat switch, 3 test lines and 4 gaps left (its 25 Nov comment), by 27 Nov — parked: 2026-11-25
-- [ ] #4 f142 your one listening session on speak: cut-off sound, double read, pauses (FRM-288:W22) — with: dima
-- [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #6 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
-- [ ] #7 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
-- [ ] #8 f134 ⏳ herdr wisp: a triple click takes one visual line, fixed upstream, waits a herdr release — waits for: FRM-655
-- [ ] #9 f131 📅 FRM-645: a shot dima sent through herdr on 25 Nov still opens — on: 2026-11-26
-- [ ] #10 f132 📅 read the first week's typed look and test asks (mods spec after-merge) — on: 2026-12-02
-- [ ] #11 f137 📅 orbit asks: 7 days of real ones hold a title, a body and a pick (FRM-695 exit 10) — on: 2026-12-02
-- [ ] #12 f144 📅 FRM-669: its first real kokoro call by evergreen, then it closes — on: 2026-12-02
-- [ ] #13 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
-- [ ] #14 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #1 f121 FRM-678: the queue's free-CPU number from two days of rows, one number to dima — waits for: FRM-678 — parked: 2026-11-25
+- [ ] #2 f139 FRM-596: the seat switch, 3 test lines and 4 gaps left (its 25 Nov comment), by 27 Nov — parked: 2026-11-25
+- [ ] #3 f142 your one listening session on speak: cut-off sound, double read, pauses (FRM-288:W22) — with: dima
+- [ ] #4 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #5 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
+- [ ] #6 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
+- [ ] #7 f134 ⏳ herdr wisp: a triple click takes one visual line, fixed upstream, waits a herdr release — waits for: FRM-655
+- [ ] #8 f131 📅 FRM-645: a shot dima sent through herdr on 25 Nov still opens — on: 2026-11-26
+- [ ] #9 f132 📅 read the first week's typed look and test asks (mods spec after-merge) — on: 2026-12-02
+- [ ] #10 f137 📅 orbit asks: 7 days of real ones hold a title, a body and a pick (FRM-695 exit 10) — on: 2026-12-02
+- [ ] #11 f144 📅 FRM-669: its first real kokoro call by evergreen, then it closes — on: 2026-12-02
+- [ ] #12 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
+- [ ] #13 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
