@@ -16,7 +16,7 @@ import { copiedFrom, createMessageMenu, menuPlace } from './menu.js';
 import { createMessageBodies } from './message-body.js';
 import { openPath } from './open-path.js';
 import { pathOf } from './path-links.js';
-import { createPlace } from './place.js';
+import { END_QUIET_MS, createPlace } from './place.js';
 import { createSelections } from './selection.js';
 import { missingNote } from './viewer.js';
 
@@ -140,8 +140,8 @@ export function createMessageList(deps) {
             if (i === cutAt) return `${id}#above`;
             return i === cutAt + 1 && cutAt >= 0 ? `${id}#below` : id;
         });
-        isNewestShown = !at.follow;
-        watchEnd(cx, END_LOOK_MS);
+        isNewestShown = !at.isAtNewest;
+        watchEnd(cx, END_QUIET_MS + END_LOOK_MS);
         items = {
             keys,
             preOf,
@@ -310,7 +310,7 @@ export function createMessageList(deps) {
             .when(Boolean(messageMenu.state), (el) =>
                 el.child(messageMenuView(t)),
             )
-            .when(!at.follow, (el) =>
+            .when(isNewestShown, (el) =>
                 el.child(
                     div()
                         .id('chat-newest')
@@ -344,8 +344,8 @@ export function createMessageList(deps) {
         isEndWatched = true;
         cx.timer.after(END_LOOK_MS, (later) => {
             isEndWatched = false;
-            if (at.rested()) forgetPlace();
-            if (isNewestShown === at.follow) later.notify();
+            if (at.rested(Date.now())) forgetPlace();
+            if (isNewestShown === at.isAtNewest) later.notify();
             if (Date.now() < endWatchUntil) watchEnd(later, 0);
         });
     }

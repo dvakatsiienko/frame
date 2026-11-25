@@ -115,9 +115,13 @@ const FRAME_MS = 16;
 
 /**
  * the real list in a window: a frame draws it, herdr's list scrolls as it was probed to, and each newly mounted
- * measuring row reports `first` px in its first frame and `real` px from the next one, as rich text does
+ * measuring row reports `first` px in its first `shortFrames` frames and `real` px from the next one, as rich text does
  */
-function createWindow(real: number[], first: (px: number) => number) {
+function createWindow(
+    real: number[],
+    first: (px: number) => number,
+    shortFrames = 1,
+) {
     const rows = real.map((_, i) => ({
         id: `r${i}`,
         kind: i === 3 ? 'mine' : 'reply',
@@ -247,6 +251,8 @@ function createWindow(real: number[], first: (px: number) => number) {
         },
         write_to_clipboard: (text: string) => written.push(text),
     };
+    /** the frames each mounted measuring row has been drawn in */
+    const ages = new Map<string, number>();
     /** each mounted measuring row and the height it last reported */
     let mounted = new Map<string, number>();
     /** each mounted measuring row's own size handler */
@@ -318,8 +324,11 @@ function createWindow(real: number[], first: (px: number) => number) {
         for (const child of measurer.children.map(raw)) {
             const index = Number(/r(\d+)@/.exec(child.id ?? '')?.[1]);
             const px = real[index] ?? 1;
-            const now = mounted.has(child.id ?? '') ? px : first(px);
-            next.set(child.id ?? '', now);
+            const id = child.id ?? '';
+            const age = mounted.has(id) ? (ages.get(id) ?? 0) + 1 : 0;
+            ages.set(id, age);
+            const now = age >= shortFrames ? px : first(px);
+            next.set(id, now);
             sizeOf.set(
                 child.id ?? '',
                 child.handlers.get('on_size_change') as Handler,
@@ -337,6 +346,9 @@ function createWindow(real: number[], first: (px: number) => number) {
         for (const [id, px] of mounted) {
             const now = real[Number(/r(\d+)@/.exec(id)?.[1])] ?? 1;
             if (px === now) continue;
+            const age = (ages.get(id) ?? 0) + 1;
+            ages.set(id, age);
+            if (age < shortFrames) continue;
             mounted.set(id, now);
             (sizeOf.get(id) as Handler)(
                 { height: now, width: 900 } as never,
@@ -408,7 +420,10 @@ function createWindow(real: number[], first: (px: number) => number) {
             scrollTop = px;
             isDirty = true;
         },
-        land: (id: string, offset: number) => list.land(id, offset),
+        land(id: string, offset: number) {
+            list.land(id, offset);
+            isDirty = true;
+        },
         reset: () => list.reset(),
         /** his right press on a message, the menu left open */
         rightDown(id: string) {
@@ -462,6 +477,9 @@ function createWindow(real: number[], first: (px: number) => number) {
         /** herdr tells the list its size: at a change, and once it is back on the screen */
         told: (height: number) =>
             fire(root, 'on_size_change', { height, width: 900 }, cx),
+        /** the list's width changes: every row is laid out anew */
+        wide: (width: number) =>
+            fire(root, 'on_size_change', { height: viewH, width }, cx),
     };
 }
 
@@ -748,6 +766,62 @@ describe('the ↓ is there only off the very bottom', () => {
         expect(w.isNewestShown()).toBe(false);
         // and its older page is asked for
         expect(w.earlier).toHaveLength(1);
+    });
+
+    // the 🔎's round 1: at a new width the list's end came under him while the rows were still laid out short
+    test.each(
+        [1, 4, 8, 20].flatMap((frames) =>
+            [
+                [300, 300, 300, 28, 2400, 300, 300, 28, 700, 1200],
+                [300, 300, 300, 28, 700, 400, 900],
+            ].map((heights) => ({ frames, heights })),
+        ),
+    )(
+        'a new width keeps his place and the ↓, its rows short for $frames frames',
+        ({ frames, heights }) => {
+            const w = createWindow(heights, (px) => Math.min(px, 60), frames);
+            w.run(2_500);
+            for (let i = 0; i < 10; i++) {
+                w.scroll(-40);
+                w.run(16);
+            }
+            w.run(2_500);
+            const at = heights.length - 2;
+            const before = w.above(at);
+            const saved = [...kept.values()];
+            w.wide(700);
+            w.run(2_500);
+            // the list's end marks, 2 px, are not in his place
+            expect(Math.abs(w.above(at) - before)).toBeLessThanOrEqual(2);
+            expect(w.isNewestShown()).toBe(true);
+            expect([...kept.values()]).toEqual(saved);
+        },
+    );
+
+    test.each([
+        ['a thread that fits the view', [100, 200], 'r1', 10],
+        ['the last screen, come from the newest', thread, 'r9', 40],
+    ] as const)(
+        'a find hit in %s rests with none',
+        (_where, heights, id, px) => {
+            const w = createWindow([...heights], (h) => h);
+            w.run(1_000);
+            w.land(id, px);
+            const early = w.run(2_000).drawn;
+            expect(w.isNewestShown()).toBe(false);
+            // at rest, not redrawn for good
+            expect(w.run(1_000).drawn).toBe(early);
+        },
+    );
+
+    test('a pixel up, then the cards under the list shrink: it goes', () => {
+        const w = createWindow([...thread], (px) => px);
+        w.run(1_000);
+        w.scroll(-1);
+        w.run(1_000);
+        w.tall(150);
+        w.run(1_000);
+        expect(w.isNewestShown()).toBe(false);
     });
 
     test('a step that stops short of the bottom keeps it', () => {

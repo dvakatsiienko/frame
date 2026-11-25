@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { topOf } from './follow.js';
-import { WHEEL_REST_MS, createPlace } from './place.js';
+import { END_QUIET_MS, WHEEL_REST_MS, createPlace } from './place.js';
 
 // the place keeper the view runs, against a list that behaves as herdr's was probed to (2026-11-16): its first drawn
 // row is exact in every frame; the row callback is called once more each frame, first, for row 0 alone; a wheel step
@@ -91,7 +91,10 @@ function createSim(heights: number[], startH = 600, zoom = 1) {
         idle(ms: number) {
             now += ms;
         },
+        isAtNewest: () => place.isAtNewest,
         isFollowing: () => place.follow,
+        /** one look, the list perhaps still moving */
+        look: () => place.rested(now),
         /** a row got its real height */
         measure(index: number, height: number) {
             place.read(rows, sizes);
@@ -146,8 +149,12 @@ function createSim(heights: number[], startH = 600, zoom = 1) {
             place.hold();
             frame();
         },
-        /** the view's look between frames */
-        rest: () => place.rested(),
+        /** the view's look between frames, and one once the list has stood still */
+        rest: () => {
+            place.rested(now);
+            now += END_QUIET_MS;
+            return place.rested(now);
+        },
         /** a saved place read back after a reload */
         restore(saved: { id: string; offset: number }) {
             place.restore(saved.id, saved.offset);
@@ -467,10 +474,64 @@ describe('nothing moves the view without him', () => {
         const sizes = thread();
         place.restore(`r${REPLY}`, 405);
         const plan = place.plan(rows, sizes, 600);
-        place.rested();
+        place.rested(0);
         place.drawn({ end: plan.itemSizes.length, start: 7 }, plan, 0);
-        place.rested();
+        place.rested(END_QUIET_MS);
         expect(place.follow).toBe(false);
+    });
+
+    test('a list that shrinks past the pixel he is off the end brings the end under him', () => {
+        const sim = createSim(thread());
+        sim.wheel(1);
+        sim.rest();
+        sim.reshape(750);
+        sim.rest();
+        expect(sim.isFollowing()).toBe(true);
+    });
+
+    test('an end there for less than the quiet, a row laid out short, follows nothing', () => {
+        const sim = createSim(thread());
+        sim.wheel(200);
+        sim.rest();
+        sim.measure(8, 60);
+        sim.look();
+        sim.idle(END_QUIET_MS - 1);
+        sim.look();
+        sim.measure(8, 300);
+        sim.rest();
+        expect(sim.isFollowing()).toBe(false);
+    });
+
+    test('a landing that passes above the end, then its rows laid out short: no arrival', () => {
+        const sim = createSim(thread());
+        sim.wheel(200);
+        sim.resize();
+        sim.measure(8, 320);
+        sim.look();
+        sim.measure(8, 60);
+        sim.rest();
+        expect(sim.isFollowing()).toBe(false);
+        expect(sim.isAtNewest()).toBe(true);
+    });
+
+    test('a held place resting at the end takes the ↓ away and stays his', () => {
+        const sim = createSim(thread());
+        sim.restore({ id: 'r8', offset: 10 });
+        sim.rest();
+        expect(sim.isAtNewest()).toBe(true);
+        expect(sim.isFollowing()).toBe(false);
+        // a reply lands under it: nothing scrolls, the ↓ is back
+        const before = sim.truth();
+        sim.append(900);
+        sim.rest();
+        expect(sim.truth()).toEqual(before);
+        expect(sim.isAtNewest()).toBe(false);
+        // and his step up shows it at once
+        sim.restore({ id: 'r9', offset: 800 });
+        sim.rest();
+        expect(sim.isAtNewest()).toBe(true);
+        sim.wheel(1);
+        expect(sim.isAtNewest()).toBe(false);
     });
 
     test('steps down that reach the end follow again', () => {

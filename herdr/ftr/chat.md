@@ -28,6 +28,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and it opens at the newest and follows it only while he sits at the end; a wheel step up stops following, and a small «↓» at the bottom right goes back
   - and the end is the list's last line, read from the list itself: a step down that reaches it follows again, under a newest reply taller than the view too; a step that stops above it keeps him reading
   - and at the very end the «↓» is gone with no further step, however he got there (one big step, small ones, a flick's glide, the cards under the list shrinking, a thread that fits the view); one px up and it is back (dima, 25 Nov 16:26)
+  - and the end counts once the list has stood still a quarter second; a place held for him there (a find hit, a new width) loses the «↓» and stays his: a new reply scrolls nothing and brings the «↓» back
   - and a reply, a tool line, a peer or plugin line, a turn end, a resize or a reload of the mod never moves the text he reads; only the list's end, reached by him or brought under him, or the «↓» brings him back to following
   - and a new line in the transcript changes only its own row; a long transcript opens at its last 4 MB
   - and after a reload of the mod the message he was reading is on screen again, read in from above when it must be

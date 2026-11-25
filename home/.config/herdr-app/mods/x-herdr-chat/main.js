@@ -125,15 +125,16 @@ export default class Chat extends View {
     quill = createQuill({
         column: () => this.list.column(),
         flash: (note, ms, cx) => this.flashNote(note, cx, ms),
-        leave: (cx) => {
-            if (this.findBar.find.state.isOpen) this.findBar.close(cx);
-            else this.chatKeys?.focus();
-        },
+        leave: (cx) => this.leaveQuill(cx),
         messages: () =>
             this.model.rows
                 .filter((r) => r.kind === 'mine' || r.kind === 'reply')
                 .map((r) => r.text),
         pickersView: (t) => this.pickers.view(t),
+        pressEscape: (cx) => {
+            if (this.pictures.isOpen()) this.closeTop(cx);
+            else this.leaveQuill(cx);
+        },
         say: (note, cx) => this.say(note, cx),
         sendPath: () => this.sendPath,
         showPictures: (files, at, cx) => this.pictures.show(files, at, cx),
@@ -611,6 +612,12 @@ export default class Chat extends View {
             cx.notify();
         });
         cx.notify();
+    }
+
+    /** the keyboard leaves the quill: find closes, else the chat takes it @param {Context} cx */
+    leaveQuill(cx) {
+        if (this.findBar.find.state.isOpen) this.findBar.close(cx);
+        else this.chatKeys?.focus();
     }
 
     /** Esc over the chat: the viewer closes, or find when no viewer shows (dima, 18:18) @param {Context} cx */

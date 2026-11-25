@@ -53,9 +53,18 @@ vi.mock('gpui-kit', () => ({
 vi.mock('gpui-base', () => ({
     Button: { new: element },
     InputState: { new: () => quiet() },
+    Popover: { new: element },
     Switch: { new: element },
     TextView: { markdown: element },
     Textarea: { new: element },
+    TextareaState: {
+        new: () =>
+            quiet({
+                focus: vi.fn(),
+                selected_range: () => ({ end: 0, start: 0 }),
+                value: () => '',
+            }),
+    },
     VirtualListScrollHandle: { new: () => quiet() },
     h_flex: element,
     v_flex: element,
@@ -99,6 +108,26 @@ const cx = {
     },
 };
 const addFiles = vi.fn();
+/** the chat as it loads, its own quill and pickers started */
+const loaded = () => {
+    const view = new Chat() as never as {
+        chatKeys: unknown;
+        dropAsk: number | null;
+        findBar: unknown;
+        pickers: { start: Handler };
+        pictures: unknown;
+        quill: { start: Handler };
+    };
+    const starting = {
+        ...cx,
+        bind_keys: vi.fn(),
+        focus_handle: () => quiet(),
+        spawn: vi.fn(),
+    };
+    view.quill.start(starting);
+    view.pickers.start(starting);
+    return view;
+};
 /** the chat as it draws a thread, its parts quiet but the quill */
 const chat = (over: Record<string, unknown> = {}) => {
     const view = Object.assign(Object.create(Chat.prototype), {
@@ -176,6 +205,21 @@ describe('a file dropped on the chat', () => {
     });
 });
 
+test('with the real quill and pickers drawn, two take a drop: the open picker over the pane, and the pane', () => {
+    const { pickers, quill } = loaded();
+    const made = takers(() => chat({ pickers, quill }).render(cx));
+    expect(made.map((el) => [...el.handlers.keys()])).toEqual([
+        [
+            'on_drop',
+            'x_herdr_chat_effort_left',
+            'x_herdr_chat_effort_right',
+            'x_herdr_chat_effort_apply',
+            'x_herdr_chat_effort_close',
+        ],
+        ['on_drop'],
+    ]);
+});
+
 describe('a file dropped on the chat’s header', () => {
     const header = (view: string) => {
         at.props = { pane: 'p1', view };
@@ -191,6 +235,15 @@ describe('a file dropped on the chat’s header', () => {
         for (const _draw of [1, 2]) view.render(cx);
         for (const run of at.timers) run();
         expect(addFiles.mock.calls).toEqual([[['/a.png'], cx]]);
+    });
+
+    test('is not taken again by a chat loaded after it', () => {
+        const [row] = header('chat');
+        row?.handlers.get('on_drop')?.({ paths: ['/a.png'] }, cx);
+        at.props = {};
+        chat({ dropAsk: loaded().dropAsk }).render(cx);
+        for (const run of at.timers) run();
+        expect(addFiles).not.toHaveBeenCalled();
     });
 
     test('over the Terminal view it takes none, as before', () => {
@@ -250,6 +303,38 @@ describe('Esc over the chat', () => {
             passedOn: 0,
             viewer: [],
         });
+    });
+});
+
+describe('Esc in the quill', () => {
+    test.each([
+        [
+            'closes the viewer, find under it left as it is',
+            true,
+            true,
+            ['viewer'],
+        ],
+        ['closes the viewer alone', true, false, ['viewer']],
+        ['closes find with no viewer open', false, true, ['find']],
+        ['else hands the keyboard to the chat', false, false, ['chat']],
+    ])('%s', (_how, isViewerOpen, isFindOpen, closed) => {
+        const done: string[] = [];
+        const view = loaded();
+        view.chatKeys = { focus: () => done.push('chat') };
+        view.findBar = {
+            close: () => done.push('find'),
+            find: { state: { isOpen: isFindOpen } },
+        };
+        view.pictures = {
+            isOpen: () => isViewerOpen,
+            step: () => done.push('viewer'),
+        };
+        at.made.length = 0;
+        (view.quill as never as { view: Handler }).view({});
+        at.made
+            .find((el) => el.handlers.has('x_herdr_chat_quill_escape'))
+            ?.handlers.get('x_herdr_chat_quill_escape')?.({}, cx);
+        expect(done).toEqual(closed);
     });
 });
 

@@ -40,6 +40,11 @@ import {
 
 // how long after his last wheel step a range that reaches the end still counts as his own step there
 export const WHEEL_REST_MS = 200;
+// how long the list's scroll room stays the same before its end is believed: a row laid out short for a few frames
+// brings the end under him and takes it away again
+export const END_QUIET_MS = 250;
+
+const END_PX = topOf(END_MARKS, END_MARKS.length);
 
 export function createPlace() {
     /** following the newest: only while he sits at the end */
@@ -67,6 +72,12 @@ export function createPlace() {
     let isLastWheelDown = false;
     /** the list drew off its end since his last step up: its end drawn again is an arrival, whatever brought it there */
     let hasLeftEnd = false;
+    /** a held place rests at the list's very end: the ↓ goes, the place stays his */
+    let isHeldAtEnd = false;
+    /** how far the list can scroll */
+    let room = 0;
+    /** the room at the last look, and since when it has been that */
+    let seen = { room: 0, since: 0 };
 
     /**
      * his place from the rows the list drew last. never inside the row callback (its extra call names row 0), and
@@ -88,6 +99,9 @@ export function createPlace() {
     function hold() {
         if (!id || follow) return false;
         cut = { id, offset };
+        isHeldAtEnd = false;
+        // a landing's own frames are no arrival
+        hasLeftEnd = false;
         isSeekDue = true;
         isLifted = false;
         return true;
@@ -125,6 +139,10 @@ export function createPlace() {
             return follow;
         },
         hold,
+        /** at the very end: following the newest, or a held place resting there */
+        get isAtNewest() {
+            return follow || isHeldAtEnd;
+        },
         /** a place is held and still landing or resting until his next step */
         get isHeld() {
             return cut !== null;
@@ -150,6 +168,7 @@ export function createPlace() {
             below = null;
             isSeekDue = false;
             isLifted = false;
+            isHeldAtEnd = false;
         },
         /** the place to save: the message and the px of it above the view; null while following */
         get place() {
@@ -163,6 +182,7 @@ export function createPlace() {
          * @returns {Plan}
          */
         plan(rows, sizes, viewH) {
+            room = Math.max(0, topOf(sizes, sizes.length) - viewH);
             if (cut && share !== null) {
                 const at = placeIndex(rows, cut.id);
                 if (at >= 0) {
@@ -221,7 +241,7 @@ export function createPlace() {
                 }
             } else if (follow) {
                 ask = 'end';
-                top = Math.max(0, topOf(sizes, sizes.length) - viewH);
+                top = room;
             }
             const cutAt = split.cut?.at ?? -1;
             /** @param {number} item */
@@ -263,19 +283,35 @@ export function createPlace() {
             wheelUntil = 0;
             isLastWheelDown = false;
             hasLeftEnd = false;
+            isHeldAtEnd = false;
+            seen = { room: 0, since: 0 };
         },
         /**
          * a look at where the list came to rest, between frames: at its very end he follows the newest again, however he
-         * got there; never in the row callback (its extra call names row 0), nor while a held place is landing
+         * got there; never in the row callback (its extra call names row 0). a held place that landed at the end
+         * stays his, only the ↓ goes; one that came to rest above the end follows as any other
+         * @param {number} now
          * @returns {boolean} whether he follows from now on
          */
-        rested() {
+        rested(now) {
+            if (room !== seen.room) {
+                // a pixel off the end still draws its marks: a list that shrank past them brought the end under him
+                if (room + END_PX <= seen.room && !cut) hasLeftEnd = true;
+                seen = { room, since: now };
+            }
             if (follow || isSeekDue || isLifted) return false;
-            if (!isAtEnd) hasLeftEnd = true;
-            else if (hasLeftEnd) {
+            const isQuiet = now - seen.since >= END_QUIET_MS;
+            if (!isAtEnd) {
+                if (!cut || isQuiet) hasLeftEnd = true;
+                isHeldAtEnd = false;
+                return false;
+            }
+            if (!isQuiet) return false;
+            if (hasLeftEnd) {
                 this.newest();
                 return true;
             }
+            isHeldAtEnd = cut !== null;
             return false;
         },
         /**
@@ -349,6 +385,7 @@ export function createPlace() {
             // his own step ends a held place: the two halves are one row again, at the same height
             const hadCut = cut !== null;
             cut = null;
+            isHeldAtEnd = false;
             share = null;
             below = null;
             isSeekDue = false;
