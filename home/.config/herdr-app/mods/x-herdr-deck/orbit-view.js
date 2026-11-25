@@ -35,7 +35,6 @@ import { ORDER_KEY } from './thread-keys.js';
  * @property {() => string | null} hoverSid
  * @property {() => Map<string, { text: string, until: number }>} keyNotes
  * @property {() => Set<string>} passedOver
- * @property {() => string | null} pickedSid
  * @property {() => import('./orbit.js').OrbitPin} pin
  * @property {(cx: AsyncContext, s: Row, ask: Ask, verdict: 'tick' | 'replay') => Promise<void>} press
  * @property {(cx: AsyncContext, s: Row) => Promise<void>} pressAll
@@ -44,7 +43,6 @@ import { ORDER_KEY } from './thread-keys.js';
  * @property {() => Row[]} rows
  * @property {(sid: string | null) => void} setHoverSid
  * @property {(stops: string[]) => void} setOrbitStops
- * @property {(sid: string | null) => void} setPickedSid
  * @property {(tabAt: Map<string, number>) => void} setTabAt
  * @property {(t: Theme, key: string, tabIndex: number, isLocked: boolean) => ReturnType<typeof import('./steer-kit.js').steerBox>} steerOf
  * @property {() => Map<string, import('gpui-base').InputState>} steers
@@ -314,65 +312,63 @@ export function createOrbitView(deps) {
             const canTickAll =
                 tickAllTakes(s.asks, (id) => deps.pressStateOf(s, id)).length >
                 0;
-            // ⌘⇧K ticks the asker under the pointer, else the one he clicked last, ringed so he sees which
-            const isPicked = deps.pickedSid() === s.sid;
-            return v_flex()
-                .id(`asker-${s.sid}`)
-                .tab_stop(false)
-                .px(12)
-                .py(4)
-                .gap(8)
-                .rounded(8)
-                .border_1()
-                .border_color(isPicked ? t.border : t.canvas)
-                .on_hover((isOn, cx) => {
-                    if (isOn) deps.setHoverSid(s.sid);
-                    else if (deps.hoverSid() === s.sid) deps.setHoverSid(null);
-                })
-                .on_click((_e, cx) => {
-                    if (deps.pickedSid() === s.sid) return;
-                    deps.setPickedSid(s.sid);
-                    cx.notify();
-                })
-                .child(
-                    h_flex()
-                        .gap(8)
-                        .items_center()
-                        .child(
-                            line(t.foreground, SIZE.main)
-                                .flex_1()
-                                .font_semibold()
-                                .child(s.name),
-                        )
-                        .when(canTickAll, (row) =>
-                            row.child(
-                                Button.new(`tick-all-${s.sid}`)
-                                    .tab_stop(false)
-                                    .h(24)
-                                    .px(10)
-                                    .flex_none()
-                                    .flex()
-                                    .items_center()
-                                    .rounded(6)
-                                    .border_1()
-                                    .border_color(t.border)
-                                    .bg(t.surface)
-                                    .text_size(SIZE.secondary)
-                                    .text_color(t.foreground)
-                                    .cursor_pointer()
-                                    .hover((st) => st.bg(t.hover))
-                                    .on_click((_e, cx) =>
-                                        cx.spawn((cx) => deps.pressAll(cx, s)),
-                                    )
-                                    .gap(6)
-                                    .child('🛎️ tick all')
-                                    .child(
-                                        div().text_color(t.muted).child('⌘⇧K'),
-                                    ),
+            return (
+                v_flex()
+                    .id(`asker-${s.sid}`)
+                    .tab_stop(false)
+                    .px(12)
+                    .py(4)
+                    .gap(8)
+                    // ⌘⇧K ticks the asker under the pointer
+                    .on_hover((isOn) => {
+                        if (isOn) deps.setHoverSid(s.sid);
+                        else if (deps.hoverSid() === s.sid)
+                            deps.setHoverSid(null);
+                    })
+                    .child(
+                        h_flex()
+                            .gap(8)
+                            .items_center()
+                            .child(
+                                line(t.foreground, SIZE.main)
+                                    .flex_1()
+                                    .font_semibold()
+                                    .child(s.name),
+                            )
+                            .when(canTickAll, (row) =>
+                                row.child(
+                                    Button.new(`tick-all-${s.sid}`)
+                                        .tab_stop(false)
+                                        .h(24)
+                                        .px(10)
+                                        .flex_none()
+                                        .flex()
+                                        .items_center()
+                                        .rounded(6)
+                                        .border_1()
+                                        .border_color(t.border)
+                                        .bg(t.surface)
+                                        .text_size(SIZE.secondary)
+                                        .text_color(t.foreground)
+                                        .cursor_pointer()
+                                        .hover((st) => st.bg(t.hover))
+                                        .on_click((_e, cx) =>
+                                            cx.spawn((cx) =>
+                                                deps.pressAll(cx, s),
+                                            ),
+                                        )
+                                        .gap(6)
+                                        .child('🛎️ tick all')
+                                        .child(
+                                            div()
+                                                .text_color(t.muted)
+                                                .child('⌘⇧K'),
+                                        ),
+                                ),
                             ),
-                        ),
-                )
-                .children(section.asks.map((ask) => view.ask(t, s, ask)));
+                    )
+                    .children(section.asks.map((ask) => view.ask(t, s, ask)))
+            );
         });
     }
 

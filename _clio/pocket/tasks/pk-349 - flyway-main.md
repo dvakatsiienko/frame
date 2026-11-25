@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T12:02:32Z'
+updated_date: '2026-11-25T12:10:08Z'
 labels:
   - s
   - clio-main
@@ -2857,4 +2857,21 @@ done 2026-11-25 14:02: f119 decamp bytes' verify tree after speak's round 2 — 
 done 2026-11-25 14:02: f124 kokoro engine upgrade: the speak codie's pick of the slot, then before/after sounds to dima — waits for: FRM-683 — parked: 2026-11-25 (FRM-683 Done)
 
 done 2026-11-25 14:02: f127 ⏳ bytes tree verify-FRM-683 goes once the speak sixth sense leaves it — waits for: FRM-406 (FRM-683 Done, FRM-406 In Progress)
+
+groomed 2026-11-25 14:10, answered in the thread; the want's home is the mods lane's takeSteers rider (wishkeeper's 14:04 high):
+PK-349:W2448 (2026-11-25 13:46, dima): I have a question about second wind.
+PK-349:W2449 (2026-11-25 13:46, dima): I recently asked about it so I don't know how it works now.
+PK-349:W2450 (2026-11-25 13:46, dima): You tell me. ❓
+PK-349:W2451 (2026-11-25 13:46, dima): Previously it was like this: when you start a second wind, you send a push message to everyone telling them that you are second winding and so no one should message you back until you second wind, compact, and return.
+PK-349:W2452 (2026-11-25 13:46, dima): This is to avoid lost messages but I told them that it is inefficient because it is.
+PK-349:W2453 (2026-11-25 13:46, dima): Instead we agreed to change it in a way where we just make held messages more hardened and robust so that in any thread, even when it gets compacted, all messages would still reach the thread.
+PK-349:W2454 (2026-11-25 13:46, dima): For example if they get attached to a thread while it is compacted, it would still receive those messages after post-compaction.
+PK-349:W2455 (2026-11-25 13:46, dima): Tell me if it is the case already, or not yet, or planned, or lost somewhere, because I don't remember that you were telling me that it was completed at some point. ❓
+PK-349:W2456 (2026-11-25 13:51, dima): so you now do not send everyone the second wind notice (push) from your side? ❓
+PK-349:W2457 (2026-11-25 13:51, dima): it would be nice to trace.
+PK-349:W2458 (2026-11-25 13:51, dima): can you trace it? ❓
+PK-349:W2459 (2026-11-25 13:51, dima): so we know for sure if hole is there (not a good one)
+PK-349:W2460 (2026-11-25 13:51, dima): confirmed ✓ remove asks probes.
+PK-349:W2461 (2026-11-25 13:55, dima): what tails can we solve on your side? ❓
+PK-349:W2462 (2026-11-25 13:55, dima): i run lowtide with wing 1 meanwhile (currently solving evergreen and perf topics)
 <!-- SECTION:NOTES:END -->

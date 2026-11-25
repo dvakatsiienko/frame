@@ -263,7 +263,12 @@ describe('his second press picks the door that still reaches the thread', () => 
     });
 });
 
-test('the deck draws a press only through the record', () => {
-    const main = readFileSync(new URL('./main.js', import.meta.url), 'utf8');
-    expect(main).not.toMatch(/\btickState\b|\bisPressSettled\b|presses\.of\(/);
-});
+test.each(['main.js', 'orbit-view.js', 'phases-view.js'])(
+    'the deck draws a press only through the record, in %s',
+    (file) => {
+        const text = readFileSync(new URL(file, import.meta.url), 'utf8');
+        expect(text).not.toMatch(
+            /\btickState\b|\bisPressSettled\b|presses(\(\))?\.of\(/,
+        );
+    },
+);
