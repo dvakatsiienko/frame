@@ -14,6 +14,13 @@
 # a turn is a mkdir, atomic on any disk, holding the holder's pid and start time, so a dead holder or a reused pid frees it.
 # waiters line up first come, first served inside their class: one ticket file each, named <epoch>.<pid>, a suite's 0.<epoch>.<pid>, a run the load gates <epoch>.m.<pid> after its class.
 set -u
+# bash 3.2, the mac's, keeps a write that failed (a closed pane, a dead x's pipe) and every fork writes it again, into a substitution
+# too, where it breaks the arithmetic: the empty echo drops it
+drop_unwritten() { echo >/dev/null; }
+say() {
+    echo "gate-queue: $*" >&2
+    drop_unwritten
+}
 slot=none
 is_hold=
 case ${1-} in
@@ -44,7 +51,7 @@ hold_until_told() {
     echo turn
     read -r -t "$cap" code
     if [ -z "$code" ] && [ $((SECONDS - from)) -ge "$cap" ]; then
-        echo "gate-queue: a hold passed its ${cap}s cap, the turn is free and its run goes on: $*" >&2
+        say "a hold passed its ${cap}s cap, the turn is free and its run goes on: $*"
         exit 124
     fi
     exit "${code:-1}"
@@ -153,7 +160,7 @@ if [ "$slot" = long ] && [ "$held" = long ] && [ -z "$is_hold" ]; then
     turn=/nonexistent
     until is_calm; do
         if [ $(($(date +%s) - began)) -ge "${GATE_QUEUE_WAIT:-1500}" ]; then
-            echo "gate-queue: waited $(($(date +%s) - began))s, deadline passed, nothing ran. $(holder)" >&2
+            say "waited $(($(date +%s) - began))s, deadline passed, nothing ran. $(holder)"
             exit 75
         fi
         sleep "${GATE_QUEUE_POLL:-2}"
@@ -206,21 +213,22 @@ take_sample() {
     printf '%s\t%s\n' "${idle:--}" "${spawn:--}" >"$sample.tmp"
     if kill -0 $$ 2>/dev/null; then mv "$sample.tmp" "$sample"; else rm -f "$sample.tmp"; fi
 }
-# the cpu seconds (user + sys) of every child this shell has waited for, into cpu_now; `times` runs in this shell, never in a
-# substitution or a pipe, whose fork would report its own children; bash prints them on its second line
-read_children_cpu() {
-    times >"$sample.times"
-    cpu_now=$(sed -n 2p "$sample.times" | awk '{ for (i = 1; i <= 2; i++) { split($i, p, "m"); s += p[1] * 60 + p[2] } printf "%.1f", s }')
+# the cpu seconds (user + sys) of the children this shell waited for between its two `times` reads, whose second line bash gives them;
+# `times` runs in this shell, never in a substitution or a pipe, whose fork would report its own children
+children_cpu() {
+    awk 'FNR == 2 { s = 0; for (i = 1; i <= 2; i++) { split($i, p, "m"); s += p[1] * 60 + p[2] }; if (NR == FNR) was = s; else printf "%.1f", s - was }' "$sample.times-before" "$sample.times-after"
 }
 # one row to the sibling log, then the sample is done with
 log_cpu() {
-    local idle=- spawn=- cpu=${2--}
+    local idle=- spawn=- cpu=-
+    # a held turn's work runs under x, never as this shell's child
+    [ -z "$is_hold" ] && [ -e "$sample.times-after" ] && cpu=$(children_cpu)
     [ -s "$sample" ] && IFS=$'\t' read -r idle spawn <"$sample"
-    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$slot" "${is_mods_suite:-0}" "${idle:--}" "$load" "$waited" "${1--}" "$cpu" "${spawn:--}" >>"$cpu_log"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$slot" "${is_mods_suite:-0}" "${idle:--}" "$load" "$waited" "${1--}" "${cpu:--}" "${spawn:--}" >>"$cpu_log"
     drop_sample
 }
 # the sampler is never killed: its pid is long reused by the end of a run. it ends by itself, and keeps no file once the run is gone
-drop_sample() { rm -f "$sample" "$sample.tmp" "$sample.times"; }
+drop_sample() { rm -f "$sample" "$sample.tmp" "$sample.times-before" "$sample.times-after"; }
 drop_sample
 
 freed() { [ "$slot" != long ] || { date +%s >"$turn.freed.$$" && mv "$turn.freed.$$" "$turn.freed"; }; }
@@ -262,7 +270,7 @@ load=$(load_now)
 began=$(date +%s)
 waited=0
 if [ "$slot" = none ]; then
-    echo "gate-queue: no turn here: x lane commit and push take their own, a long round takes --long" >&2
+    say "no turn here: x lane commit and push take their own, a long round takes --long"
     logged() {
         local code=$?
         log_run "$(($(date +%s) - began))" "$code"
@@ -282,51 +290,59 @@ trap 'leave; drop_sample' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 next_say=0
-until first_in_line past-load && is_calm && mkdir "$turn" 2>/dev/null; do
+has_turn=
+until first_in_line past-load && is_calm && mkdir "$turn" 2>/dev/null && has_turn=1; do
     # only the first in line frees a stale turn, so it never takes a turn a newer run just made
     if first_in_line && is_stale; then
         freed
         if mv "$turn" "$turn.stale.$$" 2>/dev/null; then
-            echo "gate-queue: freed a dead holder's turn" >&2
+            say "freed a dead holder's turn"
             rm -rf "$turn.stale.$$"
         fi
         continue
     fi
     if [ "$waited" -ge "$wait_max" ]; then
-        echo "gate-queue: waited ${waited}s, deadline passed, nothing ran. $(holder)" >&2
+        say "waited ${waited}s, deadline passed, nothing ran. $(holder)"
         log_run - 75
-        log_cpu - -
+        log_cpu -
         exit 75
     fi
     if [ "$waited" -ge "$next_say" ]; then
-        echo "gate-queue: waiting ${waited}s, $(holder)" >&2
+        say "waiting ${waited}s, $(holder)"
         next_say=$((next_say + 30))
     fi
     sleep "${GATE_QUEUE_POLL:-2}"
     waited=$(($(date +%s) - began))
 done
+# a broken wait ends its loop with no turn: going on would free the holder's
+if [ -z "$has_turn" ]; then
+    say "the wait broke, nothing ran. $(holder)"
+    log_run - 75
+    log_cpu -
+    exit 75
+fi
 
 took=$(date +%s)
-read_children_cpu
-cpu_before=$cpu_now
+times >"$sample.times-before"
 release() {
-    local code=$? ran=$(($(date +%s) - took)) cpu
-    read_children_cpu
-    cpu=$(awk -v now="$cpu_now" -v was="$cpu_before" 'BEGIN { printf "%.1f", now - was }')
+    local code=$? ran
+    # a signal that ended it here would leave the turn taken
+    trap '' INT TERM
+    drop_unwritten
+    ran=$(($(date +%s) - took))
+    times >"$sample.times-after"
     freed
     rm -rf "$turn"
     log_run "$ran" "$code"
-    # a held turn's work runs under x, never as this shell's child
-    [ -n "$is_hold" ] && cpu=-
-    log_cpu "$ran" "$cpu"
+    log_cpu "$ran"
     # a batch run whole keeps every suite behind it: two held the turn 21 min each while four suites stood 7 to 16 (2026-11-24)
     if [ "$slot" = long ] && [ -z "$is_suite$is_hold" ] && [ "$ran" -gt "${GATE_QUEUE_BATCH_MAX:-180}" ]; then
-        echo "gate-queue: this batch kept the long turn ${ran}s; run it in groups under 3 min, each its own --long, so a lane's suite goes between" >&2
+        say "this batch kept the long turn ${ran}s; run it in groups under 3 min, each its own --long, so a lane's suite goes between"
     fi
 }
 leave
 trap release EXIT
 printf '%s\n%s\n%s\n' "$$" "$(started_at $$)" "$*" >"$turn/holder"
-[ "$waited" -gt 0 ] && echo "gate-queue: took the turn after ${waited}s" >&2
+[ "$waited" -gt 0 ] && say "took the turn after ${waited}s"
 [ -n "$is_hold" ] && hold_until_told "$@"
 GATE_QUEUE_HELD=$slot "$@"

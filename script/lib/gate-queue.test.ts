@@ -5,6 +5,7 @@ import {
     mkdtempSync,
     readFileSync,
     readdirSync,
+    rmSync,
     utimesSync,
     writeFileSync,
 } from 'node:fs';
@@ -253,6 +254,26 @@ describe('gate-queue --hold: the turn x takes', () => {
         expect(existsSync(gateTurn)).toBe(false);
     });
 
+    // x died in line, so the ready line meets a closed pipe: bash 3.2, the mac's, once wrote it into the run's own clock read
+    test('an x gone before its turn leaves the turn free, its row at exit 1', async () => {
+        const { gateTurn, state } = fixture();
+        plantHolder(gateTurn, String(process.pid), liveSince());
+        const child = spawn(script, ['--hold', 'x'], {
+            env: queueEnv(state),
+            stdio: ['pipe', 'pipe', 'ignore'],
+        });
+        const ended = new Promise((done) => child.on('exit', done));
+        const tickets = `${gateTurn}.tickets`;
+        while (!existsSync(tickets) || readdirSync(tickets).length === 0)
+            await sleep(20);
+        child.stdin.destroy();
+        child.stdout.destroy();
+        rmSync(gateTurn, { recursive: true });
+        await ended;
+        expect(existsSync(gateTurn)).toBe(false);
+        expect(logRows(state).map((row) => row[5])).toEqual(['1']);
+    });
+
     test('a hold past its cap frees the turn, logs 124 and names the cap', () => {
         const { state, gateTurn } = fixture();
         const stdin = join(state, 'stdin');
@@ -451,6 +472,44 @@ describe('gate-queue --long', () => {
         const old = new Date(Date.now() - 300_000);
         utimesSync(turn, old, old);
         expect(long(state, ['sh', '-c', 'exit 6']).status).toBe(6);
+    });
+
+    test('a waiter whose words cannot be written waits on, and the holder keeps its turn', async () => {
+        const { state, turn } = fixture();
+        plantHolder(turn, String(process.pid), liveSince());
+        const ran = join(state, 'ran');
+        // a pipe nobody reads, and no signal for it: the write fails and the script lives on
+        const child = spawn(
+            'sh',
+            ['-c', `trap "" PIPE; exec ${script} --long touch ${ran}`],
+            { env: queueEnv(state, '1'), stdio: ['ignore', 'ignore', 'pipe'] },
+        );
+        child.stderr.destroy();
+        const code = await new Promise((done) => child.on('exit', done));
+        expect([code, existsSync(ran)]).toEqual([75, false]);
+        expect(readFileSync(join(turn, 'holder'), 'utf8')).toContain('old run');
+    });
+
+    test('a TERM while it frees its turn leaves no turn and keeps its row', async () => {
+        const { state, turn } = fixture();
+        const bin = join(state, 'bin');
+        const freeing = join(state, 'freeing');
+        mkdirSync(bin);
+        writeFileSync(
+            join(bin, 'rm'),
+            `#!/bin/sh\ncase "$*" in *long.turn) touch ${freeing}; sleep 0.5 ;; esac\nexec /bin/rm "$@"\n`,
+            { mode: 0o755 },
+        );
+        const child = spawn(script, ['--long', 'true'], {
+            env: { ...queueEnv(state), PATH: `${bin}:${process.env.PATH}` },
+            stdio: 'ignore',
+        });
+        const ended = new Promise((done) => child.on('exit', done));
+        while (!existsSync(freeing)) await sleep(20);
+        child.kill('SIGTERM');
+        await ended;
+        expect(existsSync(turn)).toBe(false);
+        expect(logRows(state).map((row) => row[5])).toEqual(['0']);
     });
 
     test('a waiter behind the line never frees a stale turn', () => {
