@@ -8,6 +8,7 @@ type El = {
     id: string | null;
     isClipped: boolean;
     opacity: number;
+    top: number;
 };
 
 const gpui = vi.hoisted(() => {
@@ -19,6 +20,7 @@ const gpui = vi.hoisted(() => {
             sizes: number[];
         },
         seekAt: -1,
+        zoom: 1,
     };
     const make = () => {
         const el = {
@@ -27,6 +29,7 @@ const gpui = vi.hoisted(() => {
             id: null as string | null,
             isClipped: false,
             opacity: 1,
+            top: 0,
         };
         const self: unknown = new Proxy(el, {
             get(target, name) {
@@ -34,6 +37,7 @@ const gpui = vi.hoisted(() => {
                 return (...args: unknown[]) => {
                     if (name === 'overflow_hidden') target.isClipped = true;
                     else if (name === 'id') target.id = args[0] as string;
+                    else if (name === 'top') target.top = args[0] as number;
                     else if (name === 'opacity')
                         target.opacity = args[0] as number;
                     else if (name === 'child') target.children.push(args[0]);
@@ -71,7 +75,7 @@ const gpui = vi.hoisted(() => {
 vi.mock('herdr', () => ({
     exec: gpui.exec,
     home: () => '/Users/me',
-    settings: () => ({ zoom: 1 }),
+    settings: () => ({ zoom: gpui.seen.zoom }),
 }));
 vi.mock('gpui-kit', () => ({ View: class {}, div: gpui.make }));
 vi.mock('gpui-base', () => ({
@@ -449,11 +453,15 @@ function createWindow(
             );
         },
         /** the right-click menu's items after his right press on a message, and a press on one */
-        menu(id: string) {
-            const position = { x: 1, y: id.length + Number(id.slice(1)) };
+        menu(id: string, y = id.length + Number(id.slice(1))) {
+            const position = { x: 1, y };
+            const press = {
+                local_position: { x: 1 - 453, y: y - 82 },
+                position,
+            };
             const at = raw(gpui.seen.list?.el);
             fire(at, 'on_item_secondary_click', id, { position }, cx);
-            fire(root, 'on_mouse_down_right', { position }, cx);
+            fire(root, 'on_mouse_down_right', press, cx);
             draw();
             const items = under(root).filter(
                 (el): el is El =>
@@ -471,6 +479,10 @@ function createWindow(
                         {},
                         cx,
                     ),
+                top: under(root).find(
+                    (el): el is El =>
+                        typeof el !== 'string' && el.id === 'chat-message-menu',
+                )?.top,
             };
         },
         /** a note row of 28 px comes after a row, or goes */
@@ -939,6 +951,29 @@ describe('the words a note is written on', () => {
             at: { x: 200, y: 200 },
             passage: passage(first, 'two words'),
         });
+    });
+
+    test('zoomed, the place is in the list’s own px', () => {
+        const { first, select, w } = rested();
+        gpui.seen.zoom = 2;
+        w.leftDown(600, 200);
+        select(first, words('two words'));
+        expect(w.selectedAt(Date.now())?.at).toEqual({ x: 100, y: 100 });
+        gpui.seen.zoom = 1;
+    });
+
+    test('a right press alone gives the place', () => {
+        const { first, select, w } = rested();
+        select(first, words('two words'));
+        w.menu(first);
+        expect(w.selectedAt(Date.now())?.at).toEqual({ x: 200, y: 200 });
+    });
+
+    test('a right press near the bottom: the menu stands whole above it', () => {
+        const { first, second, select, w } = rested();
+        select(first, words('two words'));
+        expect(w.menu(second, VIEW - 10 + 82).top).toBe(VIEW - 10 - 34);
+        expect(w.menu(first, VIEW - 11 + 82).top).toBe(VIEW - 11 - 34 - 26);
     });
 
     test('with no press in the list yet, or a select-all, no place', () => {

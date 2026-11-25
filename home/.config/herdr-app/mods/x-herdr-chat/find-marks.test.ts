@@ -159,6 +159,23 @@ test('a message’s look changes with what its text views draw, and only then', 
     expect(look(1)).not.toBe(before[1]);
 });
 
+// FRM-585 A4
+test('each text view reports the words it drew, and its place', () => {
+    const { view } = createRows();
+    const said: [number, string][] = [];
+    view.texts(reply('a', 'one\n\n```ts\ntwo\n```') as never, t, 'p', true, ((
+        drawn: unknown,
+        block: number,
+        source: string,
+    ) => {
+        said.push([block, source]);
+        return drawn;
+    }) as never);
+    expect(said[0]).toEqual([0, expect.stringContaining('one')]);
+    expect(said.map(([block]) => block)).toEqual(said.map((_s, i) => i));
+    expect(said.map(([, source]) => source).join()).toContain('two');
+});
+
 // FRM-585 B4
 test('his notes’ words are painted under find’s hits, the stepped one last, and stay once find shuts', () => {
     const { find, notes, view } = createRows();

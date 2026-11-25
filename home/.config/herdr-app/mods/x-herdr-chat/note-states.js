@@ -1,8 +1,10 @@
 // a note's states, and what each event makes of it: a note he writes on words he selected is a draft, then waits in the
-// thread's join file, then a turn takes it and is done with it, or it goes at once as a prompt of its own. nothing here
-// reads a clock or a file; notes.js owns the notes and tells each what happened
+// thread's join file, then a turn takes it and is done with it, or it goes at once as a prompt of its own. words he types
+// past what a turn took are a new draft on the same words. nothing here reads a clock or a file; notes.js owns the notes
+// and tells each what happened
 
 import { noteLine } from './note-text.js';
+import { withoutPathLinks } from './path-links.js';
 
 /**
  * one text view's share of the words he selected
@@ -18,7 +20,7 @@ import { noteLine } from './note-text.js';
  * @property {{ id: string, kind: 'mine' | 'reply', at: string | null }} row `id` its line's uuid
  * @property {Part[]} parts in block order
  */
-/** @typedef {'draft' | 'waiting' | 'taken' | 'joined' | 'sent'} NoteState */
+/** @typedef {'draft' | 'waiting' | 'taken' | 'joined' | 'sending' | 'sent'} NoteState `sending`: herdr has not answered yet */
 /**
  * @typedef {object} Note
  * @property {string} id
@@ -42,27 +44,33 @@ import { noteLine } from './note-text.js';
  *   | { type: 'turnTook' }
  *   | { type: 'arrived', line?: string }
  *   | { type: 'pushed', at: number, back: number }
+ *   | { type: 'landed' }
+ *   | { type: 'reloaded' }
  *   | { type: 'logged' }
  * )} NoteEvent
  */
 
-/** @param {Passage} passage @param {string} id @returns {Note} */
-export const newNote = (passage, id) => ({
+/** @param {Passage} passage @param {string} id @param {{ reason: string, text: string }} [past] @returns {Note} */
+export const newNote = (passage, id, past) => ({
     back: 0,
     id,
     isLogged: false,
     joinId: null,
     passage,
-    reason: null,
+    reason: past?.reason ?? null,
     said: [],
     state: 'draft',
-    text: '',
+    text: past?.text ?? '',
     writtenAt: 0,
 });
 
 /** a note the thread has or is getting: it opens, and nothing in it changes @param {Note} note */
 export const isLocked = (note) =>
-    note.state === 'taken' || note.state === 'joined' || note.state === 'sent';
+    note.state !== 'draft' && note.state !== 'waiting';
+
+/** it stands, or stood until a turn took it, in the thread's join file @param {Note} note */
+export const isInFile = (note) =>
+    note.state === 'waiting' || note.state === 'taken';
 
 /** a note not yet on its way for good @param {Note} note */
 export const isUnsent = (note) => !isLocked(note);
@@ -79,6 +87,33 @@ export const lineOf = (note) =>
         row: note.passage.row,
         text: note.text,
     });
+
+const WORD_END = /[\p{L}\p{N}_]$/u;
+const WORD_START = /^[\p{L}\p{N}_]/u;
+
+/**
+ * of what he typed, the words the thread has not got: those after its own, a word cut in two from its start, or all of
+ * them when he changed some inside; '' when he only took words out
+ * @param {string} got what the thread has @param {string} text
+ */
+export function pastText(got, text) {
+    if (text.startsWith(got)) {
+        const rest = text.slice(got.length);
+        const isCut = WORD_END.test(got) && WORD_START.test(rest);
+        const word = isCut ? (/\S+$/.exec(got)?.[0] ?? '') : '';
+        return `${word}${rest}`.trimStart();
+    }
+    let head = 0;
+    while (head < text.length && text[head] === got[head]) head += 1;
+    let tail = 0;
+    while (
+        tail < text.length - head &&
+        text.at(-1 - tail) === got.at(-1 - tail)
+    )
+        tail += 1;
+    const isOnlyOut = text.length < got.length && head + tail === text.length;
+    return isOnlyOut || !text.trim() ? '' : text;
+}
 
 /** @param {Note} note @returns {Note} the line it now says is kept beside the ones before */
 const told = (note, text = note.text) => ({
@@ -107,6 +142,7 @@ export function nextNote(note, event) {
                       back: event.back,
                       joinId: event.joinId,
                       reason: null,
+                      said: [],
                       state: 'waiting',
                       writtenAt: event.at,
                   })
@@ -138,7 +174,7 @@ export function nextNote(note, event) {
                 : note;
         // the thread's own line wins: an edit that lost the race shows what the thread got
         case 'arrived': {
-            if (note.state === 'draft' || note.state === 'sent') return note;
+            if (note.state !== 'joined' && !isInFile(note)) return note;
             const got = note.said.find((s) => s.line === event.line);
             const text = (got ?? note.said.at(-1))?.text ?? note.text;
             return note.state === 'joined' && note.text === text
@@ -151,9 +187,28 @@ export function nextNote(note, event) {
                       ...note,
                       back: event.back,
                       reason: null,
-                      state: 'sent',
+                      said: [],
+                      state: 'sending',
                       writtenAt: event.at,
                   })
+                : note;
+        // herdr took the prompt, or its line is in the transcript; a reload may have made it his draft meanwhile
+        case 'landed': {
+            const isGone =
+                note.state === 'sending' ||
+                (note.state === 'draft' && note.said.length > 0);
+            const text = note.said.at(-1)?.text ?? note.text;
+            return isGone
+                ? { ...note, reason: null, state: 'sent', text }
+                : note;
+        }
+        case 'reloaded':
+            return note.state === 'sending'
+                ? {
+                      ...note,
+                      reason: 'The chat reloaded as it went: look before you send it again',
+                      state: 'draft',
+                  }
                 : note;
         case 'logged':
             return note.isLogged ? note : { ...note, isLogged: true };
@@ -162,11 +217,41 @@ export function nextNote(note, event) {
     }
 }
 
-/** how far one text stands in the other that ends with it, null with no such pair @param {Part} p @param {Part} q */
-const movedBy = (p, q) =>
-    q.source.endsWith(p.source) || p.source.endsWith(q.source)
+/** @typedef {Pick<Part, 'range' | 'source'>} Place */
+
+/**
+ * how far one text stands in the other: a row that grew holds the shorter at its start, one an older page joined at its
+ * end; null with no such pair @param {Place} p @param {Place} q @param {boolean} isSameRow
+ */
+function movedBy(p, q, isSameRow) {
+    if (isSameRow)
+        return p.source.startsWith(q.source) || q.source.startsWith(p.source)
+            ? 0
+            : null;
+    return q.source.endsWith(p.source) || p.source.endsWith(q.source)
         ? q.source.length - p.source.length
         : null;
+}
+
+/** two texts of one message share a character @param {Part} p @param {Part} q @param {boolean} isSameRow */
+function isSharing(p, q, isSameRow) {
+    // a path above the words may be a link in one of them
+    for (const [a, b] of [
+        [p, q],
+        [
+            withoutPathLinks(p.source, p.range),
+            withoutPathLinks(q.source, q.range),
+        ],
+    ]) {
+        const moved = a && b ? movedBy(a, b, isSameRow) : null;
+        if (moved === null) continue;
+        return a?.range && b?.range
+            ? a.range.start + moved < b.range.end &&
+                  b.range.start < a.range.end + moved
+            : p.words === q.words;
+    }
+    return isSameRow && p.words === q.words;
+}
 
 /**
  * two passages share a character of one message; a row an older page joined has that page's text before its own
@@ -177,12 +262,9 @@ export const isOverlapping = (a, b, rowOf = (id) => id) =>
     a.parts.some((p) =>
         b.parts.some((q) => {
             const isSameRow = a.row.id === b.row.id;
-            const moved = isSameRow ? 0 : movedBy(p, q);
-            if (moved === null || (isSameRow && p.block !== q.block))
-                return false;
-            return p.range && q.range
-                ? p.range.start + moved < q.range.end &&
-                      q.range.start < p.range.end + moved
-                : p.words === q.words;
+            return (
+                (!isSameRow || p.block === q.block) &&
+                isSharing(p, q, isSameRow)
+            );
         }),
     );

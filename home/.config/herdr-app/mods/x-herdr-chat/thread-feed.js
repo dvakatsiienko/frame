@@ -356,11 +356,11 @@ export function createThreadFeed(deps) {
      */
     async function watchState(file, turn, cx) {
         const dir = `${home()}/${STATE_DIR}`;
-        /** @param {string} path */
+        /** undefined when it could not be read @param {string} path */
         const readJson = (path) =>
             readTextFile(path)
                 .then((text) => JSON.parse(text ?? 'null'))
-                .catch(() => null);
+                .catch(() => undefined);
         const sid = sidOf(file);
         while (feed.stateTurn === turn) {
             // armed before the read, so a change during it is never missed
@@ -371,10 +371,15 @@ export function createThreadFeed(deps) {
                 readJson(`${dir}/fleet.json`),
             ]);
             if (feed.stateTurn !== turn) return;
+            // a read that failed says nothing of the thread: what it said before stands until the next change
+            if (state === undefined) {
+                await watch;
+                continue;
+            }
             deps.sendPath.takeJoins(state?.joins ?? null);
             feed.isStateRead = true;
             const band = {
-                fleet,
+                fleet: fleet ?? null,
                 thread: state
                     ? { hot: state.hot ?? null, sid, wind: state.wind ?? null }
                     : null,

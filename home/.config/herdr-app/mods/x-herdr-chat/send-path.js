@@ -198,6 +198,7 @@ export function createSendPath({
         if ('reason' in out) return out.reason;
         const reason = await deliver(address, out.line);
         if (reason) notes.returned(file, id, reason);
+        else notes.landed(file, id);
         return reason;
     }
 
@@ -284,16 +285,29 @@ export function createSendPath({
                     });
                     if (shownFile() === file) quillBox()?.focus();
                 };
+                /** pulled out for good: a note's words are its draft again, the others the quill's @param {string[]} texts */
+                const handBack = (texts) => {
+                    const words = texts.filter((t) => !notePulled(file, t));
+                    if (words.length) toQuill(words);
+                    const notes = texts.length - words.length;
+                    return [
+                        words.length && `${words.length} in your quill`,
+                        notes &&
+                            `${notes} back in ${notes === 1 ? 'its note' : 'their notes'}`,
+                    ]
+                        .filter(Boolean)
+                        .join(', ');
+                };
                 // a send into a prompt that still holds text glues onto it (94bd977c's «plumm»): then all come back
                 await cx.sleep(400);
                 const after = await hc(['read', address, '--lines', '40']);
                 const left = after.code === 0 ? promptLeft(after.stdout) : null;
                 if (left !== '') {
-                    toQuill(pulled.map(unwrapPastes));
+                    const back = handBack(pulled.map(unwrapPastes));
                     return say(
                         left
-                            ? `Claude's box kept «${left.slice(0, 40)}»: all ${pulled.length} are in your quill`
-                            : `Couldn't read Claude's box: all ${pulled.length} are in your quill`,
+                            ? `Claude's box kept «${left.slice(0, 40)}»: ${back}`
+                            : `Couldn't read Claude's box: ${back}`,
                         cx,
                     );
                 }
@@ -306,9 +320,8 @@ export function createSendPath({
                     );
                     if (sent.code === 0) continue;
                     // a re-send that failed is never lost: it and the ones after it come to the quill
-                    toQuill(rest.slice(n));
                     return say(
-                        `Not sent again: ${rest.length - n} back in your quill`,
+                        `Not sent again: ${handBack(rest.slice(n))}`,
                         cx,
                     );
                 }

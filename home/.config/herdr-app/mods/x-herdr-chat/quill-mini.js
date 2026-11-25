@@ -55,9 +55,13 @@ export function miniPlace(end, view, size) {
     };
 }
 
-/** the word under the box: where the note stands @param {Note} note */
-export const noteWord = (note) =>
-    note.state === 'draft' ? (note.reason ?? '') : stateWord(note);
+/** the word under the box: where the note stands @param {Note} note @param {boolean} isRefused its row would not take its last words */
+export function noteWord(note, isRefused) {
+    if (note.state === 'draft') return note.reason ?? '';
+    return note.state === 'waiting' && isRefused
+        ? 'Not in its row yet'
+        : stateWord(note);
+}
 
 /**
  * @param {object} deps
@@ -67,6 +71,7 @@ export const noteWord = (note) =>
  * @param {(id: string) => string} deps.rowOf the row that holds a message's line now: an older page may join it
  * @param {(id: string) => number} deps.back how many replies stand below a message
  * @param {(id: string, back: number) => Promise<string | null>} deps.sendNote why it did not go
+ * @param {(note: string, cx: Context) => void} deps.say the chat's line under the quill
  * @param {(cx: Context) => void} deps.settle the shown thread's notes stand by its state
  * @param {() => { width: number, height: number }} deps.room the list's size
  * @param {ReturnType<typeof import('./tab-loop.js').createTabMember>} deps.tab
@@ -87,7 +92,7 @@ export function createQuillMini(deps) {
     const sending = new Set();
     /** the ⌘ of a ⌘Enter is down */
     let isCmdDown = false;
-    /** why the last press did nothing @type {string | null} */
+    /** why the last press did nothing, while the note stands where it stood; `isKept`: past his next key too @type {{ words: string, at: string, isKept: boolean } | null} */
     let said = null;
     const enter = createKeyPress();
     const cmdEnter = createCmdEnter();
@@ -97,6 +102,12 @@ export function createQuillMini(deps) {
             ? (deps.notes.of(open.thread).find((n) => n.id === open?.id) ??
               null)
             : null;
+
+    /** @param {Note} note */
+    const wordNow = (note) =>
+        said?.at === stateWord(note)
+            ? said.words
+            : noteWord(note, deps.notes.isRefused(note.id));
 
     /** the thread has it, or herdr may be handing it over now @param {Note} note */
     const isClosed = (note) => isLocked(note) || sending.has(note.id);
@@ -172,10 +183,29 @@ export function createQuillMini(deps) {
         if (now) show(now, cx);
     }
 
-    /** @param {string | null} reason @param {{ thread: string, id: string }} at @param {Context} cx */
-    function say(reason, at, cx) {
-        if (open?.id === at.id) said = reason;
+    /** why a press did nothing: in the box, or in the chat once it is shut or on another note @param {string | null} words @param {{ thread: string, id: string }} at @param {Context} cx */
+    function say(words, at, cx) {
+        const note = noteNow();
+        if (note?.id === at.id)
+            said = words ? { at: stateWord(note), isKept: false, words } : null;
+        else if (words && deps.thread() === at.thread) deps.say(words, cx);
         cx.notify();
+    }
+
+    /** the words a turn did not get of the note in the box are a new one: the box is on it, the cursor where it was in them @param {string} thread @param {string} id @param {Note} next @param {number} cut characters off their start */
+    function movedOn(thread, id, next, cut) {
+        if (!box || open?.id !== id || open.thread !== thread) return;
+        const { end, start } = box.selected_range();
+        open = { ...open, id: next.id };
+        typed += 1;
+        said = next.reason
+            ? { at: stateWord(next), isKept: true, words: next.reason }
+            : null;
+        box.set_value(next.text);
+        box.set_selected_range({
+            end: Math.max(0, end - cut),
+            start: Math.max(0, start - cut),
+        });
     }
 
     /** Enter: the note joins, again takes it back @param {Context} cx */
@@ -206,21 +236,20 @@ export function createQuillMini(deps) {
         cx.spawn(async (cx) => {
             const reason = await answer.catch(String);
             sending.delete(at.id);
-            // its row says where it stands, the box shut or on another
-            if (open?.id !== at.id) return cx.notify();
-            if (noteNow()?.state === 'sent') return close(cx);
+            if (open?.id === at.id && noteNow()?.state === 'sent')
+                return close(cx);
             say(reason, at, cx);
             noteChanged(cx);
         });
         cx.notify();
     }
 
-    /** the note in the box moved by itself: one the thread has by now leaves the keyboard to the quill @param {Context} cx */
+    /** the note in the box moved by itself: the box keeps the keyboard, whoever has the note by now @param {Context} cx */
     function noteChanged(cx) {
         const note = noteNow();
         if (!note || sending.has(note.id)) return cx.notify();
-        if (box && box.value() !== note.text) box.set_value(note.text);
-        if (isFocused && isLocked(note)) deps.focusQuill(isCmdDown);
+        if (box && box.value().trim() !== note.text.trim())
+            box.set_value(note.text);
         cx.notify();
     }
 
@@ -229,17 +258,24 @@ export function createQuillMini(deps) {
         const note = noteNow();
         if (!open || !note || note.text === text) return;
         // no word is taken that would go nowhere
-        if (isClosed(note)) return box?.set_value(note.text);
+        if (sending.has(note.id)) return box?.set_value(note.text);
         const at = open;
-        said = null;
+        if (isLocked(note)) {
+            // the next word after a note the thread has is a new one's; a space alone waits for it
+            const isNew = deps.notes.addAfter(at.thread, at.id, text);
+            if (!isNew && text.trim() !== note.text.trim())
+                box?.set_value(note.text);
+            return cx.notify();
+        }
+        if (!said?.isKept) said = null;
         deps.notes.typed(at.thread, at.id, text);
         const serial = ++typed;
         if (note.state === 'waiting')
             cx.timer.after(retextWait(text), (later) => {
                 if (serial !== typed) return;
                 later.spawn(async (cx) => {
-                    const isWritten = await deps.notes.write(at.thread, at.id);
-                    say(isWritten ? null : 'Not in its row yet', at, cx);
+                    await deps.notes.write(at.thread, at.id);
+                    cx.notify();
                 });
             });
         cx.notify();
@@ -396,7 +432,7 @@ export function createQuillMini(deps) {
                         .child(div().flex_none().child(deps.threadName())),
                 )
                 .child(
-                    isLocked(note) && !sending.has(note.id)
+                    isLocked(note) && !sending.has(note.id) && !isFocused
                         ? div().child(note.text)
                         : Textarea.new(box),
                 )
@@ -411,7 +447,7 @@ export function createQuillMini(deps) {
                                 .truncate()
                                 .text_size(12)
                                 .text_color(t.muted)
-                                .child(said ?? noteWord(note)),
+                                .child(wordNow(note)),
                         )
                         .child(
                             button(
@@ -440,6 +476,7 @@ export function createQuillMini(deps) {
         /** the Tab loop's turn */
         focus: () => box?.focus(),
         isOpen: () => open !== null,
+        movedOn,
         noteChanged,
         openNote,
         reset,

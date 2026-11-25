@@ -5,7 +5,7 @@ const at = vi.hoisted(() => ({
     joined: null as string | null,
     lines: [] as { id: string; isWaiting?: boolean; text: string }[],
     place: null as { id: string; offset: number } | null,
-    state: null as object | null,
+    state: null as object | string | null,
     /** resolves the pending wait for a change of each folder */
     touch: new Map<string, () => void>(),
 }));
@@ -28,7 +28,11 @@ vi.mock('herdr', () => ({
     readTextFile: async (path: string) => {
         const pid = /sessions\/(\d+)\.json$/.exec(path)?.[1];
         if (pid) return JSON.stringify({ cwd: '/w', sessionId: `s-${pid}` });
-        return path.endsWith('fleet.json') ? null : JSON.stringify(at.state);
+        if (path.endsWith('fleet.json')) return null;
+        if (at.state instanceof Error) throw at.state;
+        return typeof at.state === 'string'
+            ? at.state
+            : JSON.stringify(at.state);
     },
     watchFolder: (dir: string) =>
         Object.assign(
@@ -170,6 +174,36 @@ test("the thread's notes settle by its state, at its opening and at each change 
         { joined: ['j1'], taken: [] },
     ]);
     expect(w.said.changed).toBe(2);
+});
+
+test.each([
+    ['cannot be read', new Error('busy')],
+    ['is half written', '{"joins":'],
+])(
+    'a state that %s says nothing: what it listed stands',
+    async (_how, broken) => {
+        const w = world();
+        await open(w, 't1');
+        const file = w.feed.file() ?? '';
+        at.state = broken;
+        at.touch.get(STATE_DIR)?.();
+        await tick();
+        expect([w.said.settled.length, w.feed.joinsOf(file)]).toEqual([
+            1,
+            { joined: [], taken: ['j1'] },
+        ]);
+        at.state = { joins: { joined: ['j1'], taken: [] } };
+        at.touch.get(STATE_DIR)?.();
+        await tick();
+        expect(w.said.settled).toHaveLength(2);
+    },
+);
+
+test('a thread with no state file takes no joins', async () => {
+    const w = world();
+    at.state = null;
+    await open(w, 't1');
+    expect(w.feed.joinsOf(w.feed.file() ?? '')).toBeNull();
 });
 
 test('a state that moved no note says nothing', async () => {

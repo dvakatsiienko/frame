@@ -82,6 +82,7 @@ describe('a note sent now', () => {
             joinsOf: () => on,
             linesWith: async () => [],
             logTrial: () => {},
+            movedOn: () => {},
             newId: () => 'id-1',
             store,
         });
@@ -226,6 +227,61 @@ describe('a note sent now', () => {
                     value: () => '',
                 } as never),
             ).toBe(quill);
+        },
+    );
+
+    test.each([
+        [
+            'Claude’s box kept some of it',
+            '❯ left over',
+            0,
+            'else\n\nin the quill',
+            "Claude's box kept «left over»: 1 in your quill, 1 back in its note",
+        ],
+        [
+            'it could not go again',
+            '❯ ',
+            1,
+            'in the quill',
+            'Not sent again: 1 back in its note',
+        ],
+    ])(
+        'another’s × pulled it too, and %s: its words are its note’s',
+        async (_what, left, code, quill, note) => {
+            const w = await waiting();
+            await w.path.sendNote(w.notes, w.id, 2);
+            const line = 'dima on "the retry" (reply 1a2b3c4d, 2 back): why?';
+            let isPulled = false;
+            vi.mocked(hc).mockImplementation(async (args) => {
+                const isRead = args[0] === 'read';
+                if (args[0] === 'keys') isPulled = true;
+                return {
+                    code: isRead || args[0] === 'keys' ? 0 : code,
+                    stderr: '',
+                    stdout: isRead
+                        ? `Press up to edit queued messages\n───\n${isPulled ? left : '❯ '}\n───`
+                        : '',
+                } as never;
+            });
+            w.popped.push('else', line);
+            w.path.unsend('else', {
+                notify: () => {},
+                sleep: async () => {},
+                spawn: (run: (cx: unknown) => unknown) =>
+                    run({ notify: () => {}, sleep: async () => {} }),
+            } as never);
+            await vi.waitFor(() => expect(w.said.length).toBeGreaterThan(0));
+            expect([w.note()?.state, w.note()?.text, w.said]).toEqual([
+                'draft',
+                'why?',
+                [note],
+            ]);
+            expect(
+                w.quills.show(THREAD, {
+                    set_value() {},
+                    value: () => '',
+                } as never),
+            ).toBe(code ? `else\n\n${quill}` : quill);
         },
     );
 });

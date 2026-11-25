@@ -104,6 +104,7 @@ vi.stubGlobal('localStorage', {
 });
 
 const { default: Chat } = await import('./main.js');
+const { NAMES_KEY } = await import('./thread-keys.js');
 const { default: ChatHeader } = await import('../x-herdr-chat-header/main.js');
 
 const cx = {
@@ -456,6 +457,33 @@ describe('the note box', () => {
         on('on_modifiers_changed')?.({ modifiers: { platform: false } }, cx);
         at.box.get('submit')?.({ secondary: true }, cx);
         expect(pressed).toHaveBeenCalledTimes(1);
+    });
+
+    test('a message’s replies are counted under the row an older page joined it to', () => {
+        const view = chat({
+            model: {
+                indexOf: () => 1,
+                rows: [
+                    { id: 'line', kind: 'mine' },
+                    { id: 'page-row', kind: 'reply' },
+                    { id: 'b', kind: 'reply' },
+                ],
+            },
+        }) as never as { repliesUnder: (id: string) => number };
+        expect(view.repliesUnder('line')).toBe(1);
+    });
+
+    test('the thread is named as the fleet names it, else by its title', () => {
+        const view = chat() as never as { threadName: () => string };
+        expect(view.threadName()).toBe('');
+        at.agents.push(
+            { address: 't9', title: 'x' },
+            { address: 't1', title: 'a title' },
+        );
+        expect(view.threadName()).toBe('a title');
+        at.shared.set(NAMES_KEY, { t1: '🦉 clio', t9: 'other' });
+        expect(view.threadName()).toBe('🦉 clio');
+        at.agents.splice(0);
     });
 
     test.each([

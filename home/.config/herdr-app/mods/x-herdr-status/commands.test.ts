@@ -9,7 +9,16 @@ vi.mock('herdr', () => ({
     exec: vi.fn(),
     layout: () => ({
         root: {
-            children: [{ content: { mod: 'x-herdr-deck' }, id: 'orbit' }],
+            children: [
+                {
+                    content: {
+                        mod: 'x-herdr-chat',
+                        props: { self: 'chat', stack: 'main' },
+                    },
+                    id: 'chat',
+                },
+                { content: { mod: 'x-herdr-deck' }, id: 'orbit' },
+            ],
             id: 'root',
             type: 'row',
         },
@@ -25,6 +34,17 @@ vi.mock('herdr', () => ({
 
 const { DECK_TOGGLED } = await import('../_shared/chat-asks.js');
 const { takeCommands } = await import('./commands.js');
+
+// FRM-585 A4: with no words selected it moves no view, and the words that stood are its press's
+test('F6 hands the chat when it was pressed, and moves no view', async () => {
+    vi.useFakeTimers({ now: 5000, toFake: ['Date'] });
+    herdr.commands.push('annotate');
+    takeCommands();
+    await new Promise((done) => setTimeout(done, 0));
+    expect([herdr.ran, herdr.wrote]).toEqual([[], [['chat.annotate', 5000]]]);
+    herdr.wrote.length = 0;
+    vi.useRealTimers();
+});
 
 // FRM-620:W61: herdr tells the deck no leave of a hidden element, so it forgets a hover made before this time
 test('⌘E toggles the deck and writes when', async () => {

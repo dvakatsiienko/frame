@@ -14,6 +14,7 @@ const at = vi.hoisted(() => ({
     box: {
         focused: 0,
         on: new Map<string, (event: unknown, cx: unknown) => void>(),
+        range: { end: 0, start: 0 },
         text: '',
     },
     keys: [] as { action: string; context: string; keystroke: string }[],
@@ -70,8 +71,11 @@ vi.mock('gpui-base', () => ({
             },
             on: (event: string, run: (e: unknown, cx: unknown) => void) =>
                 at.box.on.set(event, run),
+            selected_range: () => at.box.range,
             set_auto_grow: () => {},
-            set_selected_range: () => {},
+            set_selected_range: (range: typeof at.box.range) => {
+                at.box.range = range;
+            },
             set_value: (text: string) => {
                 at.box.text = text;
             },
@@ -107,13 +111,15 @@ const selected = (words: string, id = 'r1'): SelectedAt => ({
     },
 });
 const settle = async () => {
-    for (let i = 0; i < 60; i++) await Promise.resolve();
+    // a held lock is asked for twenty times
+    for (let i = 0; i < 300; i++) await Promise.resolve();
 };
 
 function world() {
     const files = new Map<string, string>();
     const writes: string[] = [];
     const said = {
+        chat: [] as (string | null)[],
         escapes: 0,
         isSending: null as boolean | null,
         lines: [] as string[],
@@ -121,6 +127,7 @@ function world() {
         sent: [] as string[],
         sentAnswer: null as string | null,
         settles: 0,
+        tab: [] as string[],
         tabs: [] as [string, boolean][],
     };
     const now = {
@@ -156,6 +163,7 @@ function world() {
         joinsOf: () => now.joins,
         linesWith: async () => [],
         logTrial: () => {},
+        movedOn: (thread, id, next, cut) => mini.movedOn(thread, id, next, cut),
         newId: () => `id-${++ids}`,
         store: {
             getItem: (key) => kept.get(key) ?? null,
@@ -187,6 +195,7 @@ function world() {
         },
         room: () => ({ height: 600, width: 800 }),
         rowOf: (id: string) => now.rowOf(id),
+        say: (note: string | null) => said.chat.push(note),
         sendNote: async (id: string) => {
             said.sent.push(id);
             if (now.broken) throw now.broken;
@@ -196,6 +205,7 @@ function world() {
             await now.sending;
             if (said.sentAnswer)
                 notes.returned('/t/a.jsonl', id, said.sentAnswer);
+            else notes.landed('/t/a.jsonl', id);
             return said.sentAnswer;
         },
         settle: () => {
@@ -204,8 +214,11 @@ function world() {
         tab: {
             ask: (from: string, isBack: boolean) =>
                 said.tabs.push([from, isBack]),
-            held: () => {},
-            left: () => {},
+            held: (stop: string) => said.tab.push(`held ${stop}`),
+            left: (stop: string, later: (run: () => void) => void) => {
+                said.tab.push(`left ${stop}`);
+                later(() => said.tab.push('after'));
+            },
         },
         thread: () => now.thread,
         threadName: () => 'clio',
@@ -379,6 +392,37 @@ describe('its keys (A5)', () => {
                 ['quill-mini', true],
             ],
         ]);
+    });
+
+    test('its cursor is the Tab loop’s while it has it', () => {
+        const w = world();
+        w.f6();
+        at.box.on.get('focus')?.({}, w.cx);
+        expect(w.said.tab).toEqual(['held quill-mini']);
+        at.box.on.get('blur')?.({}, w.cx);
+        expect(w.said.tab).toEqual(['held quill-mini', 'left quill-mini']);
+        w.run();
+        expect(w.said.tab.at(-1)).toBe('after');
+    });
+
+    test('Enter held as the cursor left acts at its next press', async () => {
+        const w = world();
+        w.f6();
+        w.type('mine');
+        w.act(ENTER);
+        at.box.on.get('blur')?.({}, w.cx);
+        w.act(ENTER);
+        await settle();
+        expect(w.note()?.state).toBe('draft');
+    });
+
+    test('⌘ let go elsewhere is no send’s as the box shuts', () => {
+        const w = world();
+        w.f6();
+        w.act(CMD_ENTER);
+        at.box.on.get('blur')?.({}, w.cx);
+        w.mini.close(w.cx as never);
+        expect(w.said.isSending).toBe(false);
     });
 
     test('Enter joins, again takes it back', async () => {
@@ -662,7 +706,20 @@ describe('a send under way', () => {
         ]);
     });
 
-    test('taken by a turn as it went: the keyboard goes to the quill', async () => {
+    test.each([
+        ['shut', '/t/a.jsonl', ['Not sent: refused']],
+        ['shut, another thread on screen', '/t/b.jsonl', []],
+    ])('refused with the box %s', async (_how, thread, chat) => {
+        const { answer, w } = await slow();
+        w.said.sentAnswer = 'Not sent: refused';
+        w.mini.close(w.cx as never);
+        w.now.thread = thread;
+        answer();
+        await settle();
+        expect(w.said.chat).toEqual(chat);
+    });
+
+    test('taken by a turn as it went: the box keeps the keyboard', async () => {
         const w = world();
         w.f6();
         w.type('mine');
@@ -674,12 +731,10 @@ describe('a send under way', () => {
         await w.notes.settle('/t/a.jsonl');
         w.mini.noteChanged(w.cx as never);
         await settle();
-        expect([w.note()?.state, w.said.quill, w.said.isSending]).toEqual([
-            'taken',
-            1,
-            true,
-        ]);
-        expect(w.words()).toContain('It joined the turn first');
+        expect([w.note()?.state, w.said.quill]).toEqual(['taken', 0]);
+        expect(w.words()).toEqual(
+            expect.arrayContaining(['the box', 'It joined the turn first']),
+        );
     });
 });
 
@@ -852,25 +907,122 @@ describe('a note that moved by itself (A2)', () => {
         expect(minute()).toHaveLength(1);
     });
 
-    test('one a turn took under his cursor leaves the keyboard to the quill, its words kept', async () => {
+    /** a turn took it under his cursor */
+    const taken = async (typed: string) => {
         const w = await waiting();
         at.box.on.get('focus')?.({}, w.cx);
-        w.mini.noteChanged(w.cx as never);
-        expect(w.said.quill).toBe(0);
+        if (typed !== 'mine') w.type(typed);
+        at.box.range = { end: typed.length - 1, start: typed.length - 2 };
         w.now.joins = { joined: [], taken: [w.note()?.joinId ?? ''] };
         await w.notes.settle('/t/a.jsonl');
         w.mini.noteChanged(w.cx as never);
-        expect([w.said.quill, w.mini.isOpen()]).toEqual([1, true]);
-        expect(w.words()).toContain('mine');
+        return w;
+    };
+    const texts = (w: Awaited<ReturnType<typeof waiting>>) =>
+        w.notes.of('/t/a.jsonl').map((n) => [n.state, n.text]);
+
+    test('taken under his cursor, the box keeps the keyboard and the next word is a new note', async () => {
+        const w = await taken('mine');
+        expect([w.said.quill, w.words().includes('the box')]).toEqual([
+            0,
+            true,
+        ]);
+        w.press(ENTER);
+        w.act(CMD_ENTER);
+        await settle();
+        expect(texts(w)).toEqual([['taken', 'mine']]);
+        w.type('mine ');
+        w.mini.noteChanged(w.cx as never);
+        expect(at.box.text).toBe('mine ');
+        w.type('mine t');
+        expect(at.box.text).toBe('t');
+        w.type('too');
+        expect(texts(w)).toEqual([
+            ['taken', 'mine'],
+            ['draft', 'too'],
+        ]);
+        expect(w.words()).toContain('It joined first, this is a new note');
+        w.press(ENTER);
+        await settle();
+        expect(w.words()).toContain('waiting');
+        expect(texts(w).at(-1)).toEqual(['waiting', 'too']);
     });
 
-    test('the box holds what the note holds: words its row never got are gone', async () => {
+    test('its words alone cut, they are back', async () => {
+        const w = await taken('mine');
+        w.type('min');
+        expect([at.box.text, texts(w)]).toEqual(['mine', [['taken', 'mine']]]);
+    });
+
+    test('words its row never got are a new note in the box, the cursor where it was in them', async () => {
+        const w = await taken('mine too');
+        expect([at.box.text, at.box.range]).toEqual([
+            'too',
+            { end: 2, start: 1 },
+        ]);
+        expect(texts(w)).toEqual([
+            ['taken', 'mine'],
+            ['draft', 'too'],
+        ]);
+        expect(w.said.quill).toBe(0);
+        w.type('too far');
+        w.f6();
+        w.f6();
+        expect(at.box.text).toBe('too far');
+    });
+
+    test('another note in the box stays there', async () => {
         const w = await waiting();
         w.type('mine too');
+        const id = w.note()?.id ?? '';
+        w.now.isHeld = true;
+        w.f6();
+        w.f6(selected('other words', 'r2'));
+        w.type('other');
         w.now.joins = { joined: [], taken: [w.note()?.joinId ?? ''] };
         await w.notes.settle('/t/a.jsonl');
         w.mini.noteChanged(w.cx as never);
-        expect(at.box.text).toBe('mine');
+        expect(at.box.text).toBe('other');
+        expect(w.notes.of('/t/a.jsonl').find((n) => n.id === id)?.text).toBe(
+            'mine',
+        );
+    });
+
+    test('its row would not take his words: said while so, never over «joined»', async () => {
+        const w = await waiting();
+        w.now.isHeld = true;
+        w.type('mine too');
+        w.run();
+        await settle();
+        expect(w.words()).toContain('Not in its row yet');
+        w.now.isHeld = false;
+        await w.notes.settle('/t/a.jsonl');
+        expect(w.words()).toContain('waiting');
+        w.now.joins = { joined: [w.note()?.joinId ?? ''], taken: [] };
+        await w.notes.settle('/t/a.jsonl');
+        expect(w.words()).toContain('joined');
+    });
+
+    test('why a press did nothing goes as the note moves on', async () => {
+        const w = await waiting();
+        w.now.isHeld = true;
+        w.press(ENTER);
+        await settle();
+        expect(w.words()).toContain('Its file was held, try again');
+        w.now.joins = { joined: [w.note()?.joinId ?? ''], taken: [] };
+        await w.notes.settle('/t/a.jsonl');
+        expect(w.words()).toContain('joined');
+    });
+
+    test('a join refused with the box shut says so in the chat', async () => {
+        const w = world();
+        w.f6();
+        w.type('mine');
+        w.now.isHeld = true;
+        w.press(ENTER);
+        w.f6();
+        await settle();
+        expect(w.said.chat).toEqual([expect.stringMatching(/^Not joined/)]);
     });
 
     test('with the cursor elsewhere, or the box shut, no keyboard moves', async () => {

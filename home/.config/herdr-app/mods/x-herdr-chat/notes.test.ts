@@ -10,7 +10,8 @@ import {
 import { JOIN_TAKE_MS } from './joins.js';
 import type { Joins } from './magic.js';
 import { noteMarks } from './note-marks.js';
-import { JOINS_OFF, NOTES, createNotes } from './notes.js';
+import { JOINS_OFF, NEW_NOTE, NOTES, createNotes } from './notes.js';
+import { linkPaths } from './path-links.js';
 import { createRowModel } from './row-model.js';
 
 const THREAD = '/t/a.jsonl';
@@ -20,12 +21,12 @@ const ROW = {
     id: '1a2b3c4d-0000-4000-8000-000000000000',
     kind: 'reply' as const,
 };
-const passage = (words: string, start = 0, row = ROW) => ({
+const passage = (words: string, start = 0, row = ROW, source = words) => ({
     parts: [
         {
             block: 0,
             range: { end: start + words.length, start },
-            source: words,
+            source,
             words,
         },
     ],
@@ -41,6 +42,7 @@ function world() {
     const locks = new Set<string>();
     const transcript: string[] = [];
     const trial: string[] = [];
+    const moved: [string, string, number][] = [];
     let now = 1_000_000;
     let asked = 0;
     let ids = 0;
@@ -72,9 +74,10 @@ function world() {
             linesWith: async (_thread, words) => {
                 const lines = transcript.filter((line) => line.includes(words));
                 await at.searching;
-                return lines;
+                return at.isSearchBroken ? null : lines;
             },
             logTrial: (line) => trial.push(line),
+            movedOn: (_thread, id, next, cut) => moved.push([id, next.id, cut]),
             newId: () => `id-${++ids}`,
             store: {
                 getItem: (key) => kept.get(key) ?? null,
@@ -83,6 +86,7 @@ function world() {
             },
         });
     const at = {
+        isSearchBroken: false,
         joins: ON as Joins | null | undefined,
         /** what happens while the join file is held */
         locked: () => {},
@@ -118,6 +122,7 @@ function world() {
         files,
         kept,
         locks,
+        moved,
         note: (id: string) => {
             const note = notes.of(THREAD).find((n) => n.id === id);
             if (!note) throw new Error(`no note ${id}`);
@@ -434,7 +439,7 @@ describe('words its row has not got', () => {
     });
 
     test.each(['taken', 'joined'] as const)(
-        'are not shown as the thread’s once it is %s',
+        'are a draft of their own once it is %s, a reload after it too',
         async (list) => {
             const w = world();
             const id = await w.draft('mine');
@@ -442,8 +447,188 @@ describe('words its row has not got', () => {
             w.notes.typed(THREAD, id, 'mine too');
             await w.settle({ ...ON, [list]: [w.note(id).joinId ?? ''] });
             expect(w.note(id)).toMatchObject({ state: list, text: 'mine' });
+            w.reload();
+            expect(w.notes.of(THREAD).at(-1)).toMatchObject({
+                passage: w.note(id).passage,
+                reason: NEW_NOTE,
+                state: 'draft',
+                text: 'too',
+            });
+            expect(w.moved).toEqual([
+                [id, w.notes.of(THREAD).at(-1)?.id, 'mine '.length],
+            ]);
         },
     );
+
+    test.each([
+        ['a word cut by the take is whole', 'the ret', 'the retry', 'retry'],
+        ['a one-word note', 'ret', 'retry now', 'retry now'],
+        ['a sentence after a stop', 'one.', 'one. two', 'two'],
+        ['a line under it', 'one', 'one\ntwo', 'two'],
+        ['a word right after a sign', 'see:', 'see:x', 'x'],
+        ['a letter doubled inside', 'aXa', 'aXXa', 'aXXa'],
+        ['words changed inside are all of them', 'a b c', 'a x c', 'a x c'],
+        ['a shorter note in its place', 'a long one', 'no', 'no'],
+        ['words only taken out leave none', 'not cheap', 'cheap', null],
+        ['nor does a space', 'one', 'one  ', null],
+        ['nor an emptied one', 'one', '', null],
+        ['nor spaces in its place', 'one', '   ', null],
+    ])('%s', async (_what, got, typed, past) => {
+        const w = world();
+        const id = await w.draft(got);
+        await w.notes.join(THREAD, id, 0);
+        w.notes.typed(THREAD, id, typed);
+        await w.settle({ ...ON, taken: [w.note(id).joinId ?? ''] });
+        expect(
+            w.notes
+                .of(THREAD)
+                .filter((n) => n.id !== id)
+                .map((n) => n.text),
+        ).toEqual(past === null ? [] : [past]);
+    });
+
+    test('his row was rewritten as the turn took it: the words it did not get are his', async () => {
+        const w = world();
+        const id = await w.draft('first');
+        await w.notes.join(THREAD, id, 0);
+        const taken = w.rows();
+        await w.type(id, 'second');
+        w.notes.arrived(THREAD, w.arrive(taken));
+        expect(w.notes.of(THREAD).map((n) => [n.state, n.text])).toEqual([
+            ['joined', 'first'],
+            ['draft', 'second'],
+        ]);
+    });
+
+    test('a reload before his keys rested: its row has them at the next settle', async () => {
+        const w = world();
+        const id = await w.draft('mine');
+        await w.notes.join(THREAD, id, 0);
+        w.notes.typed(THREAD, id, 'mine too');
+        w.reload();
+        await w.settle({ ...ON, waiting: [w.note(id).joinId ?? ''] });
+        expect(w.texts()).toEqual([expect.stringMatching(/: mine too$/)]);
+    });
+
+    test('a settle under his fingers writes none', async () => {
+        const w = world();
+        const id = await w.draft('mine');
+        await w.notes.join(THREAD, id, 0);
+        for (let i = 0; i < 80; i++) await Promise.resolve();
+        w.pass(5000);
+        w.notes.typed(THREAD, id, 'mine t');
+        await w.settle({ ...ON, waiting: [w.note(id).joinId ?? ''] });
+        expect(w.texts()).toEqual([expect.stringMatching(/: mine$/)]);
+    });
+
+    test('emptied, its take back refused once: its row is out at the next settle', async () => {
+        const w = world();
+        const id = await w.draft('mine');
+        await w.notes.join(THREAD, id, 0);
+        w.locks.add(`${FILE}.lock`);
+        expect(await w.type(id, '')).toBe(false);
+        expect(w.notes.isRefused(id)).toBe(true);
+        w.locks.clear();
+        expect(
+            await w.settle({ ...ON, waiting: [w.note(id).joinId ?? ''] }),
+        ).toBe(true);
+        expect([w.rows(), w.note(id).state, w.notes.isRefused(id)]).toEqual([
+            [],
+            'draft',
+            false,
+        ]);
+    });
+});
+
+describe('a look that could not be made decides nothing', () => {
+    const late = async () => {
+        const w = world();
+        const id = await w.draft('mine');
+        await w.notes.join(THREAD, id, 0);
+        w.pass(JOIN_TAKE_MS);
+        return { id, w };
+    };
+
+    test('its row could not be taken out: no draft of it', async () => {
+        const { id, w } = await late();
+        w.locks.add(`${FILE}.lock`);
+        await w.notes.settle(THREAD);
+        expect([w.note(id).state, w.texts().length]).toEqual(['waiting', 1]);
+        w.locks.clear();
+        await w.notes.settle(THREAD);
+        expect([w.note(id).state, w.texts().length]).toEqual(['draft', 0]);
+    });
+
+    test('its row is gone by itself: his draft', async () => {
+        const { id, w } = await late();
+        w.files.set(FILE, '');
+        await w.notes.settle(THREAD);
+        expect(w.note(id).state).toBe('draft');
+    });
+
+    test('its transcript could not be searched: no draft of it', async () => {
+        const { id, w } = await late();
+        w.isSearchBroken = true;
+        await w.notes.settle(THREAD);
+        expect([w.note(id).state, w.texts().length]).toEqual(['waiting', 1]);
+    });
+
+    test('its file is held: Enter and ⌘Enter say so, never that it joined', async () => {
+        const { id, w } = await late();
+        w.locks.add(`${FILE}.lock`);
+        expect(await w.notes.takeBack(THREAD, id)).toMatch(/held/);
+        expect(await w.notes.release(THREAD, id, 0)).toEqual({
+            reason: expect.stringMatching(/held/),
+        });
+        expect(w.note(id).state).toBe('waiting');
+    });
+
+    test('its thread’s state is not read yet: it joins', async () => {
+        const w = world();
+        const id = await w.draft('mine');
+        w.joins = undefined;
+        expect(await w.notes.join(THREAD, id, 0)).toBeNull();
+        expect(w.texts()).toHaveLength(1);
+    });
+});
+
+describe('a reload as a note was sent', () => {
+    const cut = async () => {
+        const w = world();
+        const id = await w.draft('mine');
+        const out = await w.notes.release(THREAD, id, 0);
+        expect(w.note(id).state).toBe('sending');
+        w.pass(1000);
+        w.reload();
+        return { id, line: 'line' in out ? out.line : '', w };
+    };
+
+    test('it is his draft, and says why', async () => {
+        const { id, w } = await cut();
+        expect(w.note(id)).toMatchObject({
+            reason: expect.stringMatching(/reloaded/),
+            state: 'draft',
+            text: 'mine',
+        });
+    });
+
+    test('its line in the transcript says it went, what he typed since a draft of its own', async () => {
+        const { id, line, w } = await cut();
+        w.notes.typed(THREAD, id, 'mine and more');
+        expect(w.notes.arrived(THREAD, [{ at: w.stamp(), text: line }])).toBe(
+            true,
+        );
+        expect(w.notes.of(THREAD).map((n) => [n.state, n.text])).toEqual([
+            ['sent', 'mine'],
+            ['draft', 'and more'],
+        ]);
+    });
+
+    test('joined since, the lost line is no word of its own', async () => {
+        const { id, w } = await cut();
+        await w.notes.join(THREAD, id, 0);
+        expect(w.note(id).said).toHaveLength(1);
+    });
 });
 
 test('a line as old as another note of the same words is not this one’s', async () => {
@@ -529,6 +714,9 @@ describe('the trial line', () => {
 });
 
 describe('the notes he keeps', () => {
+    const TEXT = 'qrst wxyz0123456789abcd efgh';
+    const part = (words: string) =>
+        passage(words, TEXT.indexOf(words), ROW, TEXT);
     test('come back after a reload, a thread’s own; an emptied draft leaves no record', async () => {
         const w = world();
         const id = await w.draft('kept');
@@ -556,12 +744,11 @@ describe('the notes he keeps', () => {
 
     test('words that share a character with an unsent note open it, a joined one’s words a new note', async () => {
         const w = world();
-        const id = await w.draft('why?', passage('0123456789', 10));
-        expect(w.notes.open(THREAD, passage('89ab', 18)).id).toBe(id);
-        expect(w.notes.open(THREAD, passage('abcd', 20)).id).not.toBe(id);
+        const id = await w.draft('why?', part('0123456789'));
+        expect(w.notes.open(THREAD, part('89ab')).id).toBe(id);
         await w.notes.join(THREAD, id, 0);
         await w.settle({ ...ON, joined: [w.note(id).joinId ?? ''] });
-        expect(w.notes.open(THREAD, passage('0123456789', 10)).id).not.toBe(id);
+        expect(w.notes.open(THREAD, part('0123456789')).id).not.toBe(id);
     });
 
     test('an older page that joined the row: the same words still open it, that page’s text before them', async () => {
@@ -590,6 +777,76 @@ describe('the notes he keeps', () => {
             })),
         };
         expect(w.notes.open(THREAD, before, rowOf).id).not.toBe(id);
+    });
+
+    test('ranges that only touch are two notes', async () => {
+        const w = world();
+        const id = await w.draft('why?', part('0123456789'));
+        expect(w.notes.open(THREAD, part('abcd')).id).not.toBe(id);
+        expect(w.notes.open(THREAD, part('wxyz')).id).not.toBe(id);
+    });
+
+    describe('a path above his words became a link, or a link its words again', () => {
+        const plain = 'see /tmp/a.md first\n\nthe retry is cheap, so is this';
+        const linked = linkPaths(plain, ['/tmp/a.md']);
+        const on = (source: string, words: string) => {
+            const start = source.indexOf(words);
+            return {
+                parts: [
+                    {
+                        block: 0,
+                        range: { end: start + words.length, start },
+                        source,
+                        words,
+                    },
+                ],
+                row: ROW,
+            };
+        };
+        test.each([
+            ['linked', plain, linked],
+            ['unlinked', linked, plain],
+        ])(
+            '%s: the same words open their note, others do not',
+            async (_how, was, now) => {
+                const w = world();
+                const id = await w.draft('why?', on(was, 'retry is'));
+                expect(w.notes.open(THREAD, on(now, 'is cheap')).id).toBe(id);
+                const before = on(now, 'retry is').parts[0]?.range.start ?? 0;
+                const old = on(was, 'retry is').parts[0]?.range.start ?? 0;
+                expect(before).not.toBe(old);
+                expect(w.notes.open(THREAD, on(now, 'so is this')).id).not.toBe(
+                    id,
+                );
+                expect(w.notes.open(THREAD, on(now, 'first')).id).not.toBe(id);
+            },
+        );
+
+        test('its text changed above: by its words alone', async () => {
+            const w = world();
+            const id = await w.draft('why?', on(plain, 'retry is'));
+            const now = `so ${plain}`;
+            expect(w.notes.open(THREAD, on(now, 'retry is')).id).toBe(id);
+            expect(w.notes.open(THREAD, on(now, 'is cheap')).id).not.toBe(id);
+        });
+
+        test('its own words, the link in them', async () => {
+            const w = world();
+            const id = await w.draft('why?', on(plain, '/tmp/a.md first'));
+            expect(
+                w.notes.open(THREAD, on(linked, '[/tmp/a.md](path:0)')).id,
+            ).toBe(id);
+        });
+
+        test('a row an older page joined, and a link in it', async () => {
+            const w = world();
+            const id = await w.draft('why?', on(plain, 'retry is'));
+            const page = {
+                ...on(`older\n\n${linked}`, 'is cheap'),
+                row: { ...ROW, id: 'page-row' },
+            };
+            expect(w.notes.open(THREAD, page, () => 'page-row').id).toBe(id);
+        });
     });
 
     test('a store that holds no list reads as none', () => {

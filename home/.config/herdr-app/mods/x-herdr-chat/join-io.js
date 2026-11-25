@@ -23,10 +23,12 @@ export const joinIo = {
     write: (path, body, expected) => writeTextFile(path, body, expected),
 };
 
-/** the lines of a transcript that hold the words: a search, for a whole long one is past what herdr reads @param {string} path @param {string} words */
+/** the lines of a transcript that hold the words: a search, for a whole long one is past what herdr reads; null when it could not be made @param {string} path @param {string} words */
 export async function linesWith(path, words) {
     const out = await exec('grep', ['-F', '--', words, path]).catch(() => null);
-    return out?.code === 0 ? out.stdout.split('\n').filter(Boolean) : [];
+    // grep answers 1 for no line, past it for an error
+    if (!out || out.code > 1) return null;
+    return out.stdout.split('\n').filter(Boolean);
 }
 
 // outside the shelf: frame is public, and what stands under the shelf is tracked

@@ -90,6 +90,37 @@ export const linkPaths = (text, paths) =>
         return at < 0 ? plain : `[${words}](path:${at})`;
     });
 
+// a link of `linkPaths`, its words as TOKEN's label reads them
+const PATH_LINK = /\[((?:`[^`\n]*`|[^[\]\n`])*)\]\(path:\d+\)/g;
+
+/**
+ * a markdown with each link of `linkPaths` read as its words, and where a range of it stands then
+ * @param {string} source @param {{ start: number, end: number } | null} range
+ */
+export function withoutPathLinks(source, range) {
+    /** what each link loses: its `[`, then its `](path:n)` @type {{ at: number, size: number }[]} */
+    const cuts = [...source.matchAll(PATH_LINK)].flatMap((link) => {
+        const [whole, words = ''] = link;
+        return [
+            { at: link.index, size: 1 },
+            {
+                at: link.index + 1 + words.length,
+                size: whole.length - words.length - 1,
+            },
+        ];
+    });
+    /** @param {number} at */
+    const moved = (at) =>
+        cuts.reduce(
+            (to, cut) => to - Math.max(0, Math.min(at - cut.at, cut.size)),
+            at,
+        );
+    return {
+        range: range && { end: moved(range.end), start: moved(range.start) },
+        source: source.replace(PATH_LINK, '$1'),
+    };
+}
+
 /** the path a link of `linkPaths` names, null for any other link @param {string} url @param {Row} row @param {string} home */
 export function pathOf(url, row, home) {
     const at = LINK.exec(url)?.[1];

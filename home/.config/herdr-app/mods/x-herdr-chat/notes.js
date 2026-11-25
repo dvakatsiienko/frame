@@ -6,18 +6,19 @@ import {
     appendJoin,
     joinStatus,
     joinedTexts,
-    pushReason,
     retextJoin,
-    takeBackJoin,
+    takeOutJoin,
 } from './joins.js';
 import {
     isBehind,
+    isInFile,
     isLocked,
     isOverlapping,
     isUnsent,
     lineOf,
     newNote,
     nextNote,
+    pastText,
 } from './note-states.js';
 import { quoteOf, shortId } from './note-text.js';
 import { joinedWords } from './row-model.js';
@@ -30,6 +31,12 @@ import { sidOf } from './thread.js';
 
 export const NOTES = 'notes:';
 export const JOINS_OFF = 'Joins are off for this thread: ⌘Enter sends it now';
+/** why a draft he did not open is there: a turn took the note he was typing in */
+export const NEW_NOTE = 'It joined first, this is a new note';
+const JOINED_FIRST = 'It joined the turn first';
+const HELD = 'Its file was held, try again';
+// his keys are down until they rest this long: the box writes the row itself then, a settle never under them
+const TYPING_MS = 1000;
 
 /** what the thread's row of a line holds; the reader takes the stash's «»\n«» between two for the next one's start @param {string} line */
 const drawnOf = (line) => joinedWords(line.split('»\n«')[0] ?? '');
@@ -41,8 +48,9 @@ const drawnOf = (line) => joinedWords(line.split('»\n«')[0] ?? '');
  * @param {{ getItem: (key: string) => string | null, setItem: (key: string, text: string) => void, removeItem: (key: string) => void }} doors.store
  * @param {() => string} doors.newId
  * @param {(thread: string) => Joins | null | undefined} doors.joinsOf what the thread's state lists of its joins now: null, joins are off for it; undefined, its state is not read
- * @param {(thread: string, words: string) => Promise<string[]>} doors.linesWith the lines of a transcript that hold the words
+ * @param {(thread: string, words: string) => Promise<string[] | null>} doors.linesWith the lines of a transcript that hold the words, null when it could not be searched
  * @param {(line: string) => void} doors.logTrial one line of the trial's record
+ * @param {(thread: string, id: string, next: Note, cut: number) => void} doors.movedOn the words a turn did not get of a note are a new one, `cut` characters off their start
  */
 export function createNotes({
     io,
@@ -52,6 +60,7 @@ export function createNotes({
     joinsOf,
     linesWith,
     logTrial,
+    movedOn,
 }) {
     /** @type {Map<string, Note[]>} */
     const threads = new Map();
@@ -61,6 +70,8 @@ export function createNotes({
     const searched = new Set();
     /** notes whose row would not take their words: asked again as the thread's state changes @type {Set<string>} */
     const refused = new Set();
+    /** when he last typed in a note @type {Map<string, number>} */
+    const typedAt = new Map();
 
     /** @param {string} thread */
     function notesOf(thread) {
@@ -70,7 +81,8 @@ export function createNotes({
         let read = [];
         try {
             const kept = JSON.parse(store.getItem(NOTES + thread) ?? '[]');
-            if (Array.isArray(kept)) read = kept;
+            if (Array.isArray(kept))
+                read = kept.map((n) => nextNote(n, { type: 'reloaded' }));
         } catch {
             // a store that cannot be read shows none; the next note he keeps writes it anew
         }
@@ -106,6 +118,26 @@ export function createNotes({
             thread,
             notesOf(thread).map((n) => (n.id === id ? now : n)),
         );
+        if (isLocked(now) && now.text !== note.text)
+            addAfter(thread, id, note.text);
+        return true;
+    }
+
+    /**
+     * the words he typed past a note the thread has: a draft of their own on the same passage
+     * @param {string} thread @param {string} id @param {string} text all he typed
+     * @returns {boolean} whether there were any
+     */
+    function addAfter(thread, id, text) {
+        const note = find(thread, id);
+        const past = note ? pastText(note.text, text) : '';
+        if (!note || !past) return false;
+        const next = newNote(note.passage, newId(), {
+            reason: NEW_NOTE,
+            text: past,
+        });
+        keep(thread, [...notesOf(thread), next]);
+        movedOn(thread, id, next, text.length - past.length);
         return true;
     }
 
@@ -153,17 +185,21 @@ export function createNotes({
         );
     }
 
-    /** a waiting note's row out of the join file; not once a turn took it, before or while the file was written @param {string} thread @param {Note} note */
+    /**
+     * a waiting note's row out of the join file; not once a turn took it, before or while the file was written
+     * @param {string} thread @param {Note} note @returns {Promise<string | null>} why it stays, null when it is out
+     */
     async function takeRowBack(thread, note) {
-        if (!note.joinId || isTaken(thread, note)) return false;
-        const isOut = await takeBackJoin(io, fileOf(thread), note.joinId);
+        if (!note.joinId || isTaken(thread, note)) return JOINED_FIRST;
+        const answer = await takeOutJoin(io, fileOf(thread), note.joinId);
+        if (answer === 'held') return HELD;
         const now = find(thread, note.id);
-        return (
-            isOut &&
+        const isOut =
+            answer === 'written' &&
             now?.state === 'waiting' &&
             now.joinId === note.joinId &&
-            !isTaken(thread, note)
-        );
+            !isTaken(thread, note);
+        return isOut ? null : JOINED_FIRST;
     }
 
     /** the thread's state lists the note's row nowhere, a minute after it was written @param {string} thread @param {Note} note */
@@ -173,7 +209,7 @@ export function createNotes({
         // another thread is shown by now: this one's notes settle as it is opened again
         if (joins === undefined || !now?.joinId) return false;
         return (
-            (now.state === 'waiting' || now.state === 'taken') &&
+            isInFile(now) &&
             !isTaken(thread, now) &&
             joinStatus(joins, now.joinId, now.writtenAt, io.now()) ===
                 'not taken'
@@ -181,6 +217,7 @@ export function createNotes({
     }
 
     return {
+        addAfter,
         /**
          * his messages the transcript just added: a note whose line is one of them has joined, or its prompt has landed.
          * one older than the note is another's with the same words
@@ -190,7 +227,7 @@ export function createNotes({
         arrived(thread, rows) {
             let isChanged = false;
             for (const note of notesOf(thread)) {
-                if (note.state === 'draft') continue;
+                if (!note.said.length) continue;
                 const texts = rows
                     .filter(
                         (r) =>
@@ -201,24 +238,27 @@ export function createNotes({
                     .reverse()
                     .find((s) => texts.includes(drawnOf(s.line)));
                 if (!said) continue;
-                if (note.state === 'sent') log(thread, note.id);
-                else {
-                    const isNew = tell(thread, note.id, {
-                        line: said.line,
-                        type: 'arrived',
-                    });
-                    isChanged = isNew || isChanged;
-                    log(thread, note.id);
-                }
+                const isJoin = isInFile(note) || note.state === 'joined';
+                const isNew = tell(
+                    thread,
+                    note.id,
+                    isJoin
+                        ? { line: said.line, type: 'arrived' }
+                        : { type: 'landed' },
+                );
+                isChanged = isNew || isChanged;
+                log(thread, note.id);
             }
             return isChanged;
         },
+        /** its row has not his last words, and would not take them @param {string} id */
+        isRefused: (id) => refused.has(id),
         /** @param {string} thread @param {string} id @param {number} back @returns {Promise<string | null>} why it did not join, null when it did */
         join(thread, id, back) {
             const note = find(thread, id);
             if (note?.state !== 'draft' || !note.text.trim())
                 return Promise.resolve(null);
-            if (pushReason(joinsOf(thread))) return Promise.resolve(JOINS_OFF);
+            if (joinsOf(thread) === null) return Promise.resolve(JOINS_OFF);
             const joinId = newId();
             tell(thread, id, { at: io.now(), back, joinId, type: 'queued' });
             const line = lineOf(/** @type {Note} */ (find(thread, id)));
@@ -230,6 +270,8 @@ export function createNotes({
                 return reason;
             });
         },
+        /** herdr took the prompt of a note @param {string} thread @param {string} id */
+        landed: (thread, id) => tell(thread, id, { type: 'landed' }),
         /** the thread's notes, in the order he made them @param {string} thread @returns {readonly Note[]} */
         of: notesOf,
         /**
@@ -254,7 +296,7 @@ export function createNotes({
         pulled(thread, line) {
             const note = notesOf(thread).find(
                 (n) =>
-                    n.state === 'sent' &&
+                    (n.state === 'sent' || n.state === 'sending') &&
                     n.said.at(-1)?.line.trim() === line.trim(),
             );
             return Boolean(
@@ -269,13 +311,14 @@ export function createNotes({
         release(thread, id, back) {
             return after(id, async () => {
                 const note = find(thread, id);
-                if (!note || note.state === 'sent' || !note.text.trim())
-                    return { reason: null };
-                if (isLocked(note))
-                    return { reason: 'It joined the turn first' };
+                if (!note?.text.trim()) return { reason: null };
+                if (isLocked(note)) {
+                    const isOwn = isInFile(note) || note.state === 'joined';
+                    return { reason: isOwn ? JOINED_FIRST : null };
+                }
                 if (note.state === 'waiting') {
-                    if (!(await takeRowBack(thread, note)))
-                        return { reason: 'It joined the turn first' };
+                    const reason = await takeRowBack(thread, note);
+                    if (reason) return { reason };
                     tell(thread, id, { type: 'takenBack' });
                 }
                 tell(thread, id, { at: io.now(), back, type: 'pushed' });
@@ -294,13 +337,17 @@ export function createNotes({
          */
         async settle(thread) {
             let isChanged = false;
+            /** @type {Promise<boolean>[]} */
+            const writes = [];
             for (const { id } of notesOf(thread)) {
                 const note = find(thread, id);
                 const joins = joinsOf(thread);
-                if (!note?.joinId) continue;
-                if (note.state !== 'waiting' && note.state !== 'taken')
-                    continue;
-                if (refused.delete(id)) write(thread, id);
+                if (!note?.joinId || !isInFile(note)) continue;
+                const isRested =
+                    refused.has(id) ||
+                    io.now() - (typedAt.get(id) ?? 0) >= TYPING_MS;
+                if (isBehind(note) && isRested && !work.has(id))
+                    writes.push(write(thread, id));
                 const state = joinStatus(
                     joins,
                     note.joinId,
@@ -323,17 +370,17 @@ export function createNotes({
                     }
                 }
             }
-            return isChanged;
+            const written = await Promise.all(writes);
+            return isChanged || written.includes(true);
         },
         /** Enter on a waiting note takes it back @param {string} thread @param {string} id @returns {Promise<string | null>} why it stays, null when it came back */
         takeBack(thread, id) {
             return after(id, async () => {
                 const note = find(thread, id);
                 if (note?.state !== 'waiting') return null;
-                if (!(await takeRowBack(thread, note)))
-                    return 'It joined the turn first';
-                tell(thread, id, { type: 'takenBack' });
-                return null;
+                const reason = await takeRowBack(thread, note);
+                if (!reason) tell(thread, id, { type: 'takenBack' });
+                return reason;
             });
         },
         /** an empty draft leaves, its box closed @param {string} thread */
@@ -345,7 +392,10 @@ export function createNotes({
             if (kept.length !== had.length) keep(thread, kept);
         },
         /** he typed in its box: the note keeps the words at once, `write` takes them to a waiting note's row @param {string} thread @param {string} id @param {string} text @returns {boolean} whether the note took them */
-        typed: (thread, id, text) => tell(thread, id, { text, type: 'typed' }),
+        typed(thread, id, text) {
+            typedAt.set(id, io.now());
+            return tell(thread, id, { text, type: 'typed' });
+        },
         write,
     };
 
@@ -358,12 +408,13 @@ export function createNotes({
             const note = find(thread, id);
             if (note?.state !== 'waiting' || !note.joinId)
                 return note?.state === 'draft';
+            refused.delete(id);
             if (!isBehind(note)) return true;
-            if (!note.text.trim())
-                return (
-                    (await takeRowBack(thread, note)) &&
-                    tell(thread, id, { type: 'takenBack' })
-                );
+            if (!note.text.trim()) {
+                const reason = await takeRowBack(thread, note);
+                if (reason) refused.add(id);
+                return !reason && tell(thread, id, { type: 'takenBack' });
+            }
             const { text } = note;
             const isWritten =
                 !isTaken(thread, note) &&
@@ -386,6 +437,7 @@ export function createNotes({
     async function look(thread, note) {
         const head = `(${note.passage.row.kind === 'mine' ? 'message' : 'reply'} ${shortId(note.passage.row.id)}`;
         const lines = await linesWith(thread, head);
+        if (!lines) return false;
         const texts = lines.flatMap((line) => {
             try {
                 const entry = JSON.parse(line);
@@ -410,8 +462,9 @@ export function createNotes({
         // its row leaves the file before his words are his again, so a stash that comes back never hands it in late
         return after(note.id, async () => {
             if (!note.joinId || !isLost(thread, note)) return false;
-            await takeBackJoin(io, fileOf(thread), note.joinId);
+            const answer = await takeOutJoin(io, fileOf(thread), note.joinId);
             return (
+                answer !== 'held' &&
                 isLost(thread, note) &&
                 tell(thread, note.id, {
                     reason: 'Not taken, still yours',

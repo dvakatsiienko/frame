@@ -183,18 +183,21 @@ export default class Chat extends View {
         joinsOf: (thread) => this.feed.joinsOf(thread),
         linesWith,
         logTrial,
+        movedOn: (thread, id, next, cut) =>
+            this.quillMini.movedOn(thread, id, next, cut),
         newId,
         store: localStorage,
     });
     notesUnder = createNotesByRow((id) => this.rowOf(id));
     /** the box a note is written in, over the list */
     quillMini = createQuillMini({
-        back: (id) => repliesBelow(this.model.rows, this.rowOf(id)),
+        back: (id) => this.repliesUnder(id),
         focusQuill: (isSending) => this.quill.focus(isSending),
         notes: this.notes,
         pressEscape: (cx) => this.closeTop(cx),
         room: () => this.list.size(),
         rowOf: (id) => this.rowOf(id),
+        say: (note, cx) => this.say(note, cx),
         sendNote: (id, back) => this.sendPath.sendNote(this.notes, id, back),
         settle: (cx) => this.feed.settleNotes(cx),
         tab: this.tab,
@@ -299,6 +302,11 @@ export default class Chat extends View {
     /** the row that holds a message's line now: an older page may join it under its own id @param {string} id */
     rowOf(id) {
         return this.model.rows[this.model.indexOf(id)]?.id ?? id;
+    }
+
+    /** how many replies stand below a message's line @param {string} id */
+    repliesUnder(id) {
+        return repliesBelow(this.model.rows, this.rowOf(id));
     }
 
     /** his notes on a row of the thread shown @param {Row} row */
