@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T15:24:02Z'
+updated_date: '2026-11-25T15:38:01Z'
 labels:
   - s
   - clio-wing-1
@@ -161,4 +161,6 @@ PK-346:W130 (2026-11-25 17:13, dima): attached screenshot: /Users/dima/.local/st
 17:24 W118–W130: PK-346:W118 answered 17:16 (built 24 Nov, open for its 1 Dec check); PK-346:W119–PK-346:W129 the lists moved 17:15 (01c1b805), the sweep in code is being built in clio-wing-1, run by every pocket write and the halt
 
 17:26 FRM-596 seat test: this line is wing 1's, written as main in the main checkout and committed by `x lane commit`
+
+17:38 the sweep landed (64f3c228, pushed with d9faf8fe); the pocket hook runs it at every pocket write
 <!-- SECTION:NOTES:END -->
