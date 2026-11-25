@@ -155,14 +155,18 @@ func TestThreadRenameRoleWaitsOutTheMainCheckoutsIndexLock(t *testing.T) {
 func TestThreadRenameRoleRestoresTheStoreWhenTheSeatFileCannotBeWritten(t *testing.T) {
 	t.Parallel()
 	w := newSeatWorld(t)
-	blocker := filepath.Join(t.TempDir(), "file")
-	write(t, blocker, "not a dir")
-	env := append(w.env, "X_MAIN_SESSION="+filepath.Join(blocker, "main-session"))
+	// a dir that holds a file where the seat file goes: the write fails beside a parent that takes one
+	parent := t.TempDir()
+	write(t, filepath.Join(parent, "main-session", "full"), "")
+	env := append(w.env, "X_MAIN_SESSION="+filepath.Join(parent, "main-session"))
 	before, _ := os.ReadFile(w.store)
 
 	got := scriptX(t, env, "thread", "rename", "sid-b", "--role", "main")
 
 	after, _ := os.ReadFile(w.store)
+	if sent := readFile0(w.sent); sent != "" || exists(filepath.Join(parent, "seat-notes")) {
+		t.Errorf("hc was told %q, or a note was left, by a switch that did not land", sent)
+	}
 	if got.code != 1 || string(after) != string(before) || !strings.Contains(got.out, "the store is as it was") {
 		t.Errorf("exit %d, store changed %v, want exit 1, the store as it was and said so:\n%s", got.code, string(after) != string(before), got.out)
 	}
@@ -222,10 +226,32 @@ func TestThreadRenameRoleMovesTheMainSeatBetweenTwoLiveThreads(t *testing.T) {
 			t.Errorf("hc was told %q, want %q", sent, want)
 		}
 	}
+	for sid, want := range map[string]string{"sid-a": "you are a wing now", "sid-b": "you are main now", "sid-c": ""} {
+		terminal := "t" + strings.ToUpper(strings.TrimPrefix(sid, "sid-"))
+		note := strings.TrimSpace(readFile0(filepath.Join(filepath.Dir(w.mainFile), "seat-notes", sid)))
+		if n := strings.Count(string(sent), "send "+terminal+" you are"); note != want || n != min(len(want), 1) || !strings.Contains(string(sent), strings.TrimSpace("send "+terminal+" "+want)) && want != "" {
+			t.Errorf("%s: note %q and %d sends, want %q noted and sent once:\n%s", sid, note, n, want, sent)
+		}
+	}
 	for name, pid := range w.pids {
 		if syscall.Kill(pid, 0) != nil {
 			t.Errorf("thread %s (pid %d) is gone, want no process restarted", name, pid)
 		}
+	}
+}
+
+// a note its thread's prompt hook took before the send: the line is heard once
+func TestThreadRenameRoleSendsNoLineItsThreadReadAlready(t *testing.T) {
+	t.Parallel()
+	w := newSeatWorld(t)
+	hc := envOf(w.env, "X_HC")
+	note := filepath.Join(filepath.Dir(w.mainFile), "seat-notes", "sid-b")
+	write(t, hc, strings.Replace(readFile0(hc), "send) ", "send) rm -f "+note+"; ", 1))
+
+	got := scriptX(t, w.env, "thread", "rename", "wing1", "--role", "main")
+
+	if sent := readFile0(w.sent); got.code != 0 || strings.Contains(sent, "send tB you are") || !strings.Contains(sent, "send tA you are a wing now") {
+		t.Errorf("exit %d, hc was told %q, want no line to b, who read it, and one to a:\n%s", got.code, sent, got.out)
 	}
 }
 
@@ -573,6 +599,9 @@ func TestThreadRenameRoleNeverWaitsForABusyThread(t *testing.T) {
 	}
 	if sent := readFile0(w.sent); sent != "" {
 		t.Errorf("hc was told %q, want nothing typed at a busy thread", sent)
+	}
+	if note := readFile0(filepath.Join(filepath.Dir(w.mainFile), "seat-notes", "sid-b")); note != "you are main now\n" {
+		t.Errorf("the busy new main's note holds %q, want its line for its next prompt", note)
 	}
 	if log := readFile0(follow); !strings.Contains(log, "thread sync sid-a") || !strings.Contains(log, "thread sync sid-b") {
 		t.Errorf("the follow log holds %q, want both threads followed", log)

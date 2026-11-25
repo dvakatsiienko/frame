@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -117,6 +118,27 @@ func seatSwap(threads []thread, target int, role string) (promote, demote int, e
 	return 0, 0, usageFail("--role is main or wing:<n>, not "+role, usage)
 }
 
+// the line each moved thread reads at its next prompt: a file by session id, taken by clio's prompt hook; a note that cannot
+// be written never holds the seat
+func seatNotePath(sid string) string {
+	return filepath.Join(filepath.Dir(mainSessionPath()), "seat-notes", sid)
+}
+
+func seatNote(role string) string {
+	if role == "coordinator" {
+		return "you are main now"
+	}
+	return "you are a wing now"
+}
+
+func writeSeatNote(sid, line string) error {
+	path := seatNotePath(sid)
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
+	return atomicWrite(path, []byte(line+"\n"))
+}
+
 func writeMainSession(path string, pid int, sid string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
@@ -200,24 +222,53 @@ func threadRoleSwitch(r *Run, key, role string) (any, error) {
 		err = fmt.Errorf("%w; the store is as it was", err)
 		pass.putBack()
 	}
+	lines, noteErrs := map[string]string{}, map[string]error{}
+	if err == nil {
+		for _, t := range store.Threads {
+			if slices.Contains(moved, t.SessionID) {
+				lines[t.SessionID] = seatNote(t.Role)
+				noteErrs[t.SessionID] = writeSeatNote(t.SessionID, seatNote(t.Role))
+			}
+		}
+	}
 	unlock()
 	if err != nil {
 		return nil, &Fail{Msg: "the seat was not moved: " + err.Error(), Next: "x thread list"}
 	}
 	pass.log(key, role)
-	var places []ordered
+	var places, told []ordered
 	behind := 0
 	for _, sid := range moved {
 		rows := renamePlaces(sid, recordDisplay(sid), 0, 0)
 		behind += followUntaken(sid, rows[1:])
 		places = append(places, rows...)
+		told = append(told, seatTold(sid, lines[sid], noteErrs[sid]))
 	}
 	r.Done(next.SessionID+" holds the main seat", "")
-	data := ordered{{"main", next.SessionID}, {"places", places}, {"behind", behind}}
+	data := ordered{{"main", next.SessionID}, {"places", places}, {"behind", behind}, {"notes", told}}
 	if demote >= 0 {
 		data = append(data, kv{"wing", ordered{{"session", store.Threads[demote].SessionID}, {"number", wing}}})
 	}
 	return data, nil
+}
+
+// an idle herdr thread hears its line at once, as a message; a busy one reads it at its next prompt. a note that no longer
+// holds the line was read already, or a later switch wrote over it: no send
+func seatTold(sid, line string, noteErr error) ordered {
+	row := ordered{{"session", sid}, {"noted", noteErr == nil}}
+	if noteErr != nil {
+		row = append(row, kv{"error", noteErr.Error()})
+	}
+	kept, _ := os.ReadFile(seatNotePath(sid))
+	if _, idle := herdrTerminalOf(sessionPid(sid)); !idle || noteErr == nil && strings.TrimSpace(string(kept)) != line {
+		return append(row, kv{"sent", false})
+	}
+	sent, command := tellThread(sid, line)
+	row = append(row, kv{"sent", sent})
+	if !sent {
+		row = append(row, kv{"command", command})
+	}
+	return row
 }
 
 // whether x runs under a registered claude session, a thread, and not at dima's own terminal; a process table that cannot be
