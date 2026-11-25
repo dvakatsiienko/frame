@@ -1,6 +1,6 @@
 ---
 name: lowtide-triage
-description: lowtide, the flyway prep — load when dima says «lowtide triage», «low tide triage», «triage», «re-triage», «hoist», «hunt strays», «strays», «seed the flyways», or `clio:lowtide` finds no seeded plan — split the piled-up chores across the open clio lanes, one scope per lane. main or any wing runs it.
+description: lowtide, the flyway prep — load when dima says «lowtide triage», «low tide triage», «triage», «re-triage», «hoist», «hunt strays», «strays», «seed the flyways», or `clio:lowtide` offers it — split the piled-up chores across the open clio lanes, one scope per lane. main or any wing runs it.
 ---
 
 # lowtide-triage — one scope per clio lane

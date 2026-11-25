@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-25
 dies-when: the verdict line below is written
 fits: codie sixth-sense
@@ -159,6 +159,10 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-20 · FRM-662, mods-lane-8 quick lane on main, register.tsx 11,557 → 228 lines over 81 steps, plus the wisp: no coderabbit, no /security-review (no role or guard door touched) · local reviews 2
 
 ## verdict
+
+- 2026-11-25 · **adopted** (dima, 15:23: «review-rounds adopted», over the pick that judged 12 fixes first) — one ci reviewer round, one set of local reviews a chunk, no rerun after a sixth sense round; kept on his word: the kill rule was never read (no probe of a merged diff ever run), 12 blamed fixes stay unjudged, 12 of 20 window prs are under 7 days old. codie bytes prs merge in a median 21 min (n 20), baseline n 1 and n 4, not like for like; frame got slower, 16 → 66 min, no cause read; ci rounds 2 → 1 (bytes 4 of 4 to 17 of 20). numbers: wing 1 tree `.scratch/trials/review-rounds-numbers.md`
+- the log goes on: each lane's graded lines still land here (`x lane landed` reads them), under this section; the lines below are such rows
+
 - 2026-11-12 · frame#172, FRM-572 chunk 2 (cli wisps): clean at 3 rounds · wishkeeper found 1 high (a UTC lock stamp read every live holder as gone), sixth sense round 2 found 1 P1 (a `ps` that did not run read as gone); both fixed, red-proven · ci reviewer: not named
 - 2026-11-13 · FRM-601, herdr-lane-2 quick lane on main (a2559f99..61ff052c), the deck drops a dead thread's row: clean at 3 rounds · rounds 1–2 found the start-time check missing and a silent `ps` listing every row; both fixed, red on revert · P2 left: the deck keeps a JS twin of x's running-thread rule, a cli-lane ticket
 - 2026-11-13 · FRM-597, mods-lane-7 quick lane on main (3d741859..1fea2c06), a held message reaches an idle session at its compact end: clean at round 1 · haiku probe table over every edge, all pass; wisphunter found 6 P2s, none reproduced, 4 folded into FRM-583 slice 04
