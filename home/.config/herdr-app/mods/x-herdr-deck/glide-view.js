@@ -6,7 +6,7 @@ import { div } from 'gpui-kit';
 import { exec, run, theme } from 'herdr';
 
 import { GLIDE_MAX_PX, glideResize } from './glide-size.js';
-import { lanesShown, stepMark } from './lanes.js';
+import { laneTicket, lanesShown, stepMark } from './lanes.js';
 import { SANS, SIZE, bar, line } from './look.js';
 import { ticketUrl } from './orbit.js';
 import { LANES, json, onShelfWrite } from './shelf.js';
@@ -15,6 +15,9 @@ import { LANES, json, onShelfWrite } from './shelf.js';
 /** @typedef {import('./deck-types.js').Context} Context */
 /** @typedef {import('./lanes.js').Lane} Lane */
 /** @typedef {import('./lanes.js').LaneItem} LaneItem */
+
+// a read that gave nothing is asked again this soon, with no write to wake it
+const REREAD_MS = 2000;
 
 // below this the sidebar is a rail, the width antenna draws its own rail at
 const RAIL_PX = 160;
@@ -36,9 +39,15 @@ export function createGlide(block) {
         cx.spawn(async (cx) => {
             const mine = ++reads;
             const body = await json(LANES);
-            // a read in the middle of a write parses to nothing: the cards stay, the write's end is read next; a read
-            // that answers after a later one draws nothing
-            if (!body || mine !== reads) return;
+            // a read that answers after a later one draws nothing
+            if (mine !== reads) return;
+            // a file that would not read: the cards stay
+            if (!body) {
+                cx.timer.after(REREAD_MS, (later) => {
+                    if (mine === reads) read(later);
+                });
+                return;
+            }
             lanes = lanesShown(body);
             cx.notify();
         });
@@ -55,7 +64,8 @@ export function createGlide(block) {
         const key = l.id ?? l.title;
         const isOpen = open.has(key);
         const now = items[current];
-        const ticket = ticketUrl(l.ticket);
+        const ticketId = laneTicket(l);
+        const ticket = ticketUrl(ticketId);
         /** @param {LaneItem} item @param {number} i */
         const step = (item, i) =>
             h_flex()
@@ -110,7 +120,7 @@ export function createGlide(block) {
                                 .hover((st) =>
                                     st.text_color(t.foreground).underline(),
                                 )
-                                .tooltip(`open ${l.ticket} in linear`)
+                                .tooltip(`open ${ticketId} in linear`)
                                 .on_mouse_down('left', (_e, cx) =>
                                     cx.stop_propagation(),
                                 )
@@ -124,7 +134,7 @@ export function createGlide(block) {
                                         );
                                     });
                                 })
-                                .child(l.ticket ?? ''),
+                                .child(ticketId ?? ''),
                         ),
                     )
                     .child(
