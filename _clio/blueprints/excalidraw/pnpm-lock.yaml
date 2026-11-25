@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@excalidraw/cli':
-        specifier: 0.3.0
-        version: 0.3.0
+        specifier: 1.1.2
+        version: 1.1.2
       '@excalidraw/excalidraw':
         specifier: 0.18.1
         version: 0.18.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -223,8 +223,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@excalidraw/cli@0.3.0':
-    resolution: {integrity: sha512-KOKe6TjnxKJBM6M3UXi/7/2lT+rTp94I8MM48tSU1Pq/TsGEbmZgY/tuQwJI8IHCse3oMVvOiC4WSa8zvrpQNg==}
+  '@excalidraw/cli@1.1.2':
+    resolution: {integrity: sha512-VMohBAik602mBP3USRsfvmmK45azC3utKXNyICW4IN2WEGwaCFupMw6fJHS0MfTrML5KAaM3mN3kE0LDVPywCA==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -1772,7 +1772,7 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@excalidraw/cli@0.3.0':
+  '@excalidraw/cli@1.1.2':
     dependencies:
       playwright-core: 1.63.0
 

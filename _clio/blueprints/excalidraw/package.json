@@ -12,7 +12,7 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@excalidraw/cli": "0.3.0",
+        "@excalidraw/cli": "1.1.2",
         "@excalidraw/excalidraw": "0.18.1",
         "@xmldom/xmldom": "0.9.12",
         "esbuild": "0.28.2",

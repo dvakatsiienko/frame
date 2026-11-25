@@ -135,7 +135,7 @@
     },
     "engines": {
         "node": ">=26.13.1",
-        "pnpm": ">=12.21.0"
+        "pnpm": ">=12.23.0"
     },
     "devEngines": {
         "runtime": {
@@ -144,5 +144,5 @@
             "onFail": "error"
         }
     },
-    "packageManager": "pnpm@12.21.0"
+    "packageManager": "pnpm@12.23.0"
 }
