@@ -5,6 +5,7 @@ import { activityShown, rowDetails, waitRuns, waitShown } from './details.js';
 // FRM-618 slice A exit 2: each row detail off in turn, that detail alone leaves the row
 const facts = {
     context: 42,
+    effort: null,
     model: 'opus 5.5',
     time: 'idle 3m',
     wait: 'waiting on 🦉 clio',
@@ -43,11 +44,27 @@ describe('a row details', () => {
         expect(
             rowDetails(allOn, {
                 context: null,
+                effort: null,
                 model: null,
                 time: null,
                 wait: null,
             }),
         ).toEqual({ context: null, idle: null, model: null, wait: null });
+    });
+
+    // FRM-620:W57: the session's own effort stands beside its model
+    test('two sessions at different efforts each show their own', () => {
+        expect(
+            ['medium', 'xhigh'].map(
+                (effort) => rowDetails(allOn, { ...facts, effort }).model,
+            ),
+        ).toEqual(['opus 5.5 · medium', 'opus 5.5 · xhigh']);
+    });
+
+    test('an effort with no model read draws nothing', () => {
+        expect(
+            rowDetails(allOn, { ...facts, effort: 'high', model: null }).model,
+        ).toBeNull();
     });
 });
 
@@ -135,6 +152,7 @@ describe('a wait on a background command', () => {
                 { 'antenna.details.wait': true },
                 {
                     context: null,
+                    effort: null,
                     model: null,
                     time: null,
                     wait: 'waiting on S=/private/tmp/x',

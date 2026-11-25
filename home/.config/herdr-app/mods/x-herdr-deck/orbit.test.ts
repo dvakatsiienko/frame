@@ -311,6 +311,7 @@ describe('the deck publishes each thread its three facts', () => {
             {
                 '7': {
                     context: 40,
+                    effort: 'medium',
                     isHot: true,
                     model: 'opus 5.5',
                     sid: 'sid-7',
@@ -321,6 +322,20 @@ describe('the deck publishes each thread its three facts', () => {
                 },
             },
         );
+    });
+
+    test('an effort changed mid-session reaches the facts; a label with none carries none (FRM-620:W57)', () => {
+        const effortOf = (model: string) =>
+            threadFacts([{ ...row(7, 'idle', null), model }], null)['7'];
+        expect(
+            ['opus 5.5 · medium', 'opus 5.5 · high', 'opus 5.5'].map(
+                (label) => [effortOf(label)?.model, effortOf(label)?.effort],
+            ),
+        ).toEqual([
+            ['opus 5.5', 'medium'],
+            ['opus 5.5', 'high'],
+            ['opus 5.5', null],
+        ]);
     });
 
     test('a bold fleet name in the waiting-on line arrives bold, for every view to draw (FRM-618:W41)', () => {
@@ -355,6 +370,7 @@ describe('the deck publishes each thread its three facts', () => {
             )['7'],
         ).toEqual({
             context: null,
+            effort: null,
             isHot: false,
             model: null,
             sid: 'sid-7',

@@ -110,7 +110,7 @@ const HOT_ASK = 'x-herdr-deck.hot';
 // a press shows at once and holds as long as the deck waits on the thread (its PENDING_MS, 20 s) and one redraw more
 const HOT_PENDING_MS = 21_000;
 
-/** @typedef {{ activity: import('./details.js').Activity | null, context: number | null, isHot: boolean, model: string | null, sid: string | null, wait: string | null }} Facts */
+/** @typedef {{ activity: import('./details.js').Activity | null, context: number | null, effort: string | null, isHot: boolean, model: string | null, sid: string | null, wait: string | null }} Facts */
 
 /** @param {number | null | undefined} pid @returns {Facts | null} */
 function factsOf(pid) {
@@ -126,6 +126,7 @@ function factsOf(pid) {
                       ? { since: f.since, state: f.state }
                       : null,
               context: typeof f.context === 'number' ? f.context : null,
+              effort: typeof f.effort === 'string' ? f.effort : null,
               isHot: f.isHot === true,
               model: typeof f.model === 'string' ? f.model : null,
               sid: typeof f.sid === 'string' ? f.sid : null,
@@ -669,6 +670,7 @@ export default class Antenna extends View {
             const isQuiet = shown.dot === 'idle' && !a.focused;
             const more = rowDetails(knobs, {
                 context: state?.context ?? null,
+                effort: state?.effort ?? null,
                 model: state?.model ?? null,
                 time: shown.time,
                 wait: state?.wait ?? null,

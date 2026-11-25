@@ -15,7 +15,7 @@ wish: FRM-618 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ a row carries keep hot 🔥 and the model, once the deck's
   - given Keep hot 🔥 on (its default) and Model off (its default)
   - when antenna draws
-  - then each row shows its 🔥, filled while kept hot, and a press keeps that thread hot as the deck's did; with Model on, each row shows its model (FRM-618:W1292)
+  - then each row shows its 🔥, filled while kept hot, and a press keeps that thread hot as the deck's did; with Model on, each row shows its model and the session's own effort, «opus 5.5 · medium», the model alone while no effort was named (FRM-618:W1292, FRM-620:W57)
 - ⬜ a drag orders the rows, no sort and no sound button
   - given antenna's rows
   - when he drags one within its space

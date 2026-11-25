@@ -573,7 +573,7 @@ export async function tickAll(io, dir, rows, sid, stateOf, steerOf, at) {
     return takes;
 }
 
-/** @typedef {{ context: number | null, isHot: boolean, model: string | null, sid: string, since: number | null, state: 'working' | 'waiting' | 'idle' | null, wait: string | null, week: number | null }} ThreadFacts */
+/** @typedef {{ context: number | null, effort: string | null, isHot: boolean, model: string | null, sid: string, since: number | null, state: 'working' | 'waiting' | 'idle' | null, wait: string | null, week: number | null }} ThreadFacts */
 /** @typedef {{ at: number, threads: Record<string, ThreadFacts> }} DeckThreads */
 
 // herdr's shared state, the one door the chat reads a thread's facts through (a mod imports nothing outside its folder)
@@ -591,17 +591,21 @@ export const THREADS_BEAT_MS = 60 * 1000;
 export function threadFacts(rows, week) {
     /** @type {Record<string, ThreadFacts>} */
     const facts = {};
-    for (const row of [...rows].sort((a, b) => a.pid - b.pid))
+    for (const row of [...rows].sort((a, b) => a.pid - b.pid)) {
+        // the state file's label, «opus 5.5 · medium»: a session that named no effort carries the model alone
+        const [model, effort] = row.model?.split(' · ') ?? [];
         facts[String(row.pid)] = {
             context: typeof row.context === 'number' ? row.context : null,
+            effort: effort ?? null,
             isHot: Boolean(row.hot),
-            model: row.model?.split(' · ')[0] ?? null,
+            model: model ?? null,
             sid: row.sid,
             since: row.activity?.since ?? null,
             state: row.activity?.state ?? null,
             wait: row.wait ?? null,
             week,
         };
+    }
     return facts;
 }
 
