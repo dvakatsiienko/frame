@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T10:57:02Z'
+updated_date: '2026-11-25T11:01:32Z'
 labels:
   - s
   - clio-main
@@ -17,9 +17,9 @@ ordinal: 1000
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 f113 the plan over all herdr work (FRM-616), parked on his word — later: dima 19:32 («tomorrow or the day after») — parked: 2026-11-24
-- [ ] #2 f116 decamp the verify trees (frame 5, bytes FRM-683 after its round 2) — waits for: FRM-645 — parked: 2026-11-24
-- [ ] #3 f114 FRM-678: the queue's free-CPU number, read from two days of rows, then one number to dima — on: 2026-11-26 — parked: 2026-11-24
-- [ ] #4 f115 FRM-596 slice 09: my hook design, and its live-wing done test — on: 2026-11-27 — parked: 2026-11-24
+- [ ] #2 f118 FRM-596 slice 09 hook half: built with the x half, then the live-wing done test — waits for: FRM-645 — parked: 2026-11-25
+- [ ] #3 f119 decamp bytes' verify tree after speak's round 2 — waits for: FRM-683 — parked: 2026-11-25
+- [ ] #4 f114 FRM-678: the queue's free-CPU number, read from two days of rows, then one number to dima — on: 2026-11-26 — parked: 2026-11-24
 - [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
 - [ ] #6 f104 ⏳ herdr wisp: the slash list misses his skill, in chat's commands() — waits for: FRM-620
 - [ ] #7 f105 ⏳ herdr wisps: the phases steer text empties; a Read picture says «gone» on click — waits for: FRM-620
@@ -2813,4 +2813,8 @@ PK-349:W2430 (2026-11-25 12:55, dima): summon wing 1 and ask to do evergreen
 PK-349:W2431 (2026-11-25 12:55, dima): you do this now
 PK-349:W2432 (2026-11-25 12:55, dima): yesterday i did it with wing (verify), and remove the schedule.
 PK-349:W2433 (2026-11-25 12:55, dima): system checkup is run on my word (we should've been set it with wing 1 yesterday)
+
+done 2026-11-25 13:01: f116 decamp the verify trees (frame 5, bytes FRM-683 after its round 2) — waits for: FRM-645 — parked: 2026-11-24 (FRM-683 In Progress, FRM-645 In Progress)
+
+done 2026-11-25 13:01: f115 FRM-596 slice 09: my hook design, and its live-wing done test — on: 2026-11-27 — parked: 2026-11-24 (FRM-596 In Progress)
 <!-- SECTION:NOTES:END -->

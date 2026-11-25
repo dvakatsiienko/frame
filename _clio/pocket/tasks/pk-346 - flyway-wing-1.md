@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T10:57:02Z'
+updated_date: '2026-11-25T11:02:25Z'
 labels:
   - s
   - clio-wing-1
@@ -817,4 +817,6 @@ done 2026-11-24 16:13: f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's f
 his o3 steer (2026-11-25 12:46, dima): discuss with wing, after everything pending solved
 
 PK-346:W93 (2026-11-25 12:46, dima, o3 steer): discuss with wing, after everything pending solved
+
+13:02 f52: frame's only minor, @raycast/api 2.13.1, kept out of the evergreen landing (crow) so the window can be read; no renovate run inside the 07:00–23:59 window yet at 13:02; taken by hand at the window's end if it never wakes
 <!-- SECTION:NOTES:END -->
