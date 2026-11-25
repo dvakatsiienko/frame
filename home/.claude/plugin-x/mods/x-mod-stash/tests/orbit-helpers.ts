@@ -1,6 +1,8 @@
 import type { On } from 'claude-code';
 import type { Engine } from 'claude-code/testing';
 
+import { orbitOp } from '../hooks/orbit.ts';
+import type { OrbitAsk } from '../types/stash.d.ts';
 import {
     type Board,
     SID,
@@ -256,3 +258,28 @@ export const nextPrompt = async ($: Engine) => {
     await endTurn($);
     await say($, 'more');
 };
+
+// a titled ask (FRM-695)
+export const TITLED = {
+    area: 'mods',
+    body: '- log each run\n- or  **skip** it',
+    pick: 'log',
+    title: '🧩 tests queue, log or not',
+    why: 'a test ask',
+};
+export const TITLED_TEXT =
+    '🧩 tests queue, log or not\n\n- log each run\n- or **skip** it';
+// what one add or a run of ops leaves, or its refusal: no host, so a row costs no boot
+export const ran = (...ops: Record<string, unknown>[]): OrbitAsk[] | string => {
+    let o = { asks: [] as OrbitAsk[], next: 1, turns: 0 };
+    for (const input of ops) {
+        const r = orbitOp(o, input, true);
+        if ('deny' in r) return r.deny;
+        o = r.orbit;
+    }
+    return o.asks;
+};
+export const addOf = (...asks: object[]) => ({
+    asks: asks.map((a) => ({ ...TITLED, ...a })),
+    op: 'add',
+});

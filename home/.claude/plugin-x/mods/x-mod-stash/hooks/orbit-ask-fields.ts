@@ -12,8 +12,9 @@ import {
 
 export const RETIRED_TEXT = `; text is retired: title (the topic, ≤${ORBIT_TITLE_WORDS} words) and body`;
 const SHAPE = 'an ask is { title, body, pick, area, why }';
-// a leading «[tag]», past the emoji before it, counts in neither title cap; a markdown link is no tag
-const TAG = /^([^\p{L}\p{N}[]*)\[[^\]]*\](?!\()\s*/u;
+export const NO_FIELDS = `«no title»: title is missing; body is missing; ${SHAPE}`;
+// a leading «[tag]», one short word past the emoji before it, counts in neither title cap; a markdown link is no tag
+const TAG = /^([^\p{L}\p{N}[]*)\[[\p{L}\p{N}-]{1,16}\](?!\()\s*/u;
 
 // his list in a body stays a list: the line breaks are kept, each line's spaces collapsed
 const bodyOf = (v: unknown) =>
@@ -40,24 +41,28 @@ export function askFields(
             ? { deny: typed.deny, name: text }
             : { fields: typed, isRetired: true, name: text };
     }
-    // a `text` beside a body alone is neither form: reading either one would drop what the other says
+    // a `text` beside one of the two is neither form: the field left out is missing, never kept, or the text's words go lost
     const title =
         input.title === undefined && !text
             ? (was?.title ?? '')
             : oneLine(input.title);
     const body =
-        input.body === undefined ? (was?.body ?? '') : bodyOf(input.body);
+        input.body === undefined && !text
+            ? (was?.body ?? '')
+            : bodyOf(input.body);
     const typed = askKind(title, input.kind, was?.kind, 'title');
-    const topic = 'deny' in typed ? title : askWords(typed);
+    // a refused kind's lead is still on the title, so only the kind is told, never a cap the lead breaks
+    const isTyped = !('deny' in typed);
+    const topic = isTyped ? askWords(typed) : title;
     const counted = topic.replace(TAG, '$1');
     const words = counted.split(' ').filter((x) => /[\p{L}\p{N}]/u.test(x));
     const chars = [...counted].length;
     const misses = [
         words.length ? ('deny' in typed ? typed.deny : '') : 'title is missing',
-        words.length > ORBIT_TITLE_WORDS
+        isTyped && words.length > ORBIT_TITLE_WORDS
             ? `title is ${words.length} words, keep ≤${ORBIT_TITLE_WORDS}`
             : '',
-        chars > ORBIT_TITLE_MAX
+        isTyped && chars > ORBIT_TITLE_MAX
             ? `title is ${chars} chars, keep it ≤${ORBIT_TITLE_MAX}`
             : '',
         body ? '' : 'body is missing',

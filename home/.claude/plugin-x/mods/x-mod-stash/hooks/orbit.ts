@@ -8,7 +8,7 @@ import type {
     StashPlan,
     StashTick,
 } from '../types/stash.d.ts';
-import { RETIRED_TEXT, askFields } from './orbit-ask-fields.ts';
+import { NO_FIELDS, RETIRED_TEXT, askFields } from './orbit-ask-fields.ts';
 import { hiddenAtTake, isFixing } from './orbit-ask-kind.ts';
 import { type OriginRead, askOrigin } from './orbit-ask-origin.ts';
 import { ORBIT_TEXT_MAX, onOneLine, oneLine } from './util.ts';
@@ -49,9 +49,9 @@ export const opAskIds = (input: Record<string, unknown>) =>
           ? idsOf(input.ids)
           : [];
 
-// a merge or land ask, past the area's emoji that leads a title
+// a merge or land ask, past the emoji and the tag that lead a title
 const MERGE_ASK =
-    /^[^\p{L}\p{N}]*(?:(?:look|test):\s*)?[^\p{L}\p{N}]*(?:merge|land)\b/iu;
+    /^[^\p{L}\p{N}[]*(?:(?:look|test):\s*)?[^\p{L}\p{N}[]*(?:\[[^\]]*\])?[^\p{L}\p{N}]*(?:merge|land)\b/iu;
 // what ✅ marks: an open ask he has not marked; a ⚠️ or a merge ask takes its own 🛎️, so one press never unlocks what he has not read
 export const isAllAsksMarkable = (a: OrbitAsk) =>
     !a.mark &&
@@ -64,8 +64,8 @@ const quoted = (s: string) =>
     [...s.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string);
 
 // the record x-mod-guard reads as dima's word, one per ask his press marks, as it stands at the press: what its pick
-// quotes, a command of any length (FRM-661), and with none there what its text does, so a command the body turns down is
-// no word of his (his o9 tick, 25 Nov)
+// quotes, a command of any length (FRM-661), so one the body turns down is no word of his (his o9 tick, 25 Nov); a pick
+// with no command, at most a name, leaves what both quote. a path the text names opens x-mod-holds' pass either way
 export const allAsksTicks = (
     asks: Pick<OrbitAsk, 'id' | 'pick' | 'text'>[],
     at: number,
@@ -73,7 +73,12 @@ export const allAsksTicks = (
     asks.map(({ id, pick, text }) => ({
         at,
         id,
-        targets: quoted(pick).length ? quoted(pick) : quoted(text),
+        targets: quoted(pick).some((q) => /\s/.test(q.trim()))
+            ? [
+                  ...quoted(text).filter((q) => /^~?\/\S+$/.test(q)),
+                  ...quoted(pick),
+              ]
+            : [...quoted(text), ...quoted(pick)],
         text,
     }));
 
@@ -349,7 +354,10 @@ export function orbitOp(
             for (const item of raw) {
                 const v = (item ?? {}) as Record<string, unknown>;
                 const said = askFields(v);
-                if (!said) continue;
+                if (!said) {
+                    wrong.push(NO_FIELDS);
+                    continue;
+                }
                 const hiddenNote = oneLine(v.hiddenNote);
                 const link = oneLine(v.link);
                 const misses: string[] = [];
@@ -463,6 +471,7 @@ export function orbitOp(
                 return {
                     deny: `orbit follow: ${id} ${named(said.name)}: ${said.deny}`,
                 };
+            const retired = said.isRetired ? RETIRED_TEXT : '';
             const isHide = isFixing(said.fields.kind, oneLine(input.why));
             // «fixing …» says why it hides, never why the ask exists, so it is no why to check or keep
             const told = askOrigin(
@@ -504,8 +513,8 @@ export function orbitOp(
                     ),
                 },
                 result: isHide
-                    ? `${id} hidden from dima; your next follow with another why shows it`
-                    : `${id} changed in place${said.isRetired ? RETIRED_TEXT : ''}`,
+                    ? `${id} hidden from dima; your next follow with another why shows it${retired}`
+                    : `${id} changed in place${retired}`,
             };
         }
         case 'plan': {

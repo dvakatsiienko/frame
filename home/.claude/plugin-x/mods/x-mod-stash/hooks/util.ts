@@ -18,9 +18,10 @@ export const short = (sid: string) => sid.slice(0, 8);
 
 // an ask, its why, a follow-up or a phase reads at a glance in the narrow board (dima's o60, 22:13)
 export const ORBIT_TEXT_MAX = 90;
-// an ask's title is its topic, one line of his board; its body the fact that decides (FRM-695)
+// an ask's title is its topic, one line of his herdr board beside its id, kind and tag (a shot read 25 Nov: ~66 letters);
+// its body the fact that decides (FRM-695)
 export const ORBIT_TITLE_WORDS = 7;
-export const ORBIT_TITLE_MAX = 60;
+export const ORBIT_TITLE_MAX = 45;
 export const ORBIT_BODY_MAX = 200;
 export const oneLine = (v: unknown) =>
     typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '';

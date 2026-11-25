@@ -196,7 +196,7 @@ test('an orbit add opening «Q2» passes, and a reply lacking «❓ **Q2**» red
                 area: 'mods',
                 body: 'one or two',
                 pick: 'one',
-                title: '🧩 Q3 how many files',
+                title: '🧩 [mods] Q3 how many files',
                 why: 'a test ask',
             },
         ],

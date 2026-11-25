@@ -6,8 +6,10 @@ import { onOneLine, oneLine } from './util.ts';
 const KINDS = ['look', 'test'] as const satisfies readonly AskKind[];
 // herdr reads the kind off the text (x-herdr-deck `cardKind`: the colon form past a 👀 or 🧪), so the text a typed ask is
 // stored with opens «look: » or «test: » with no emoji, and the two boards never disagree
-const LEAD = /^(?:👀|🧪)?\s*(look|test):\s*/iu;
-const EMOJI = /^(?:👀|🧪)\s*/u;
+// its lead is read past the emoji that opens a title, which stays with the words («🔊 test: F4» → «test: 🔊 F4»)
+const LEAD =
+    /^((?:\p{Extended_Pictographic}|\uFE0F|\u200D|\s)*)(look|test):\s*/iu;
+const EMOJI = /^(?:(?:👀|🧪)\s*)+/u;
 
 export const KIND_EMOJI: Readonly<KindEmoji> = { look: '👀', test: '🧪' };
 
@@ -71,14 +73,15 @@ export function askKind(
             deny: `kind «${word.slice(0, 40)}» is neither look nor test`,
         };
     const lead = text.match(LEAD);
-    const led = lead?.[1]?.toLowerCase() as AskKind | undefined;
+    const led = lead?.[2]?.toLowerCase() as AskKind | undefined;
     if (asked && led && asked !== led)
         return {
             deny: `its ${field} opens «${led}:» while its kind is ${asked}`,
         };
     const kind = asked ?? led ?? kept;
     if (!kind) return { text };
-    const words = text.slice(lead?.[0].length ?? 0).replace(EMOJI, '');
+    const past = text.slice(lead?.[0].length ?? 0);
+    const words = `${lead?.[1] ?? ''}${past}`.replace(EMOJI, '').trim();
     return words
         ? { kind, text: `${kind}: ${words}` }
         : { deny: `its ${field} says nothing past «${kind}:»` };

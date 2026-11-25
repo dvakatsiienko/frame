@@ -10,10 +10,15 @@ import { strandedLine } from '../hooks/orbit-ask-kind.ts';
 import type { OrbitAsk } from '../types/stash.d.ts';
 import {
     AREAS,
+    TITLED,
+    TITLED_TEXT,
     addLinked,
+    addOf,
     assume,
     bgWorld,
     partOff,
+    press,
+    ran,
     texts,
     tickLog,
     ticked,
@@ -186,96 +191,45 @@ test('an ask text of exactly 90 chars is taken', async ($, on) => {
 
 /* FRM-695: a title, a body and the pick, handed to herdr as three fields */
 
-const TITLED = {
-    area: 'mods',
-    body: '- log each run\n- or  **skip** it',
-    pick: 'log',
-    title: '🧩 tests queue, log or not',
-    why: 'a test ask',
-};
-const TEXT = '🧩 tests queue, log or not\n\n- log each run\n- or **skip** it';
 const RETIRED = '; text is retired: title (the topic, ≤7 words) and body';
-// what one add or a run of ops leaves, or its refusal: no host, so a row costs no boot
-const ran = (...ops: Record<string, unknown>[]): OrbitAsk[] | string => {
-    let o = { asks: [] as OrbitAsk[], next: 1, turns: 0 };
-    for (const input of ops) {
-        const r = orbitOp(o, input, true);
-        if ('deny' in r) return r.deny;
-        o = r.orbit;
-    }
-    return o.asks;
-};
-const addOf = (...asks: object[]) => ({
-    asks: asks.map((a) => ({ ...TITLED, ...a })),
-    op: 'add',
-});
-
 test('a titled ask publishes title, body and pick apart, its text the two, and takes a press on all of it', async ($, on) => {
     const files: Record<string, string> = {};
     const w = world(on, files);
     const writes = tickLog(on);
     await start($);
-    await orbit($, {
-        asks: [
-            TITLED,
-            { ...TITLED, body: 'runs `git push`' },
-            { ...TITLED, kind: 'look' },
-        ],
-        op: 'add',
-    });
+    const gated = 'runs `git push`';
+    await orbit($, addOf({}, { body: gated }, { kind: 'look' }));
     const items = () =>
         (w.store.get(`asks:${SID}`) as { items: Record<string, unknown>[] })
             .items;
     const shown = items();
     const ui = await board($);
     const card = (await ui.find({ key: 'orbit:ask:o3', type: 'Box' }))?.text;
-    const press = (id: string, text: unknown) =>
-        `${JSON.stringify({ at: w.clock.now(), id, pick: 'log', text, verdict: 'tick' })}\n`;
+    const at = w.clock.now();
+    const pressed = (id: string, text: unknown) =>
+        press({ at, id, pick: 'log', text, verdict: 'tick' });
     // a body-only follow lands before the press written on the old body is read: that press marks nothing
     await orbit($, { body: 'a new fact', id: 'o1', op: 'follow' });
     files[`/home/.claude/shelf/orbit-ticks/${SID}.jsonl`] =
-        press('o1', TEXT) + press('o2', shown[1]?.text);
+        pressed('o1', TITLED_TEXT) + pressed('o2', shown[1]?.text);
     await $.tool.call({ command: 'ls', tool: 'Bash' });
+    const body = '- log each run\n- or **skip** it';
     expect([
-        shown.map(({ body, isGated, pick, text, title }) => [
-            title,
-            body,
-            pick,
-            text,
-            isGated,
-        ]),
+        shown.map((a) => [a.title, a.body, a.pick, a.text, a.isGated]),
         card,
         items().map((a) => [a.mark, a.text]),
         writes.at(-1),
     ]).toEqual([
         [
-            [
-                TITLED.title,
-                '- log each run\n- or **skip** it',
-                'log',
-                TEXT,
-                undefined,
-            ],
-            [
-                TITLED.title,
-                'runs `git push`',
-                'log',
-                `${TITLED.title}\n\nruns \`git push\``,
-                true,
-            ],
-            [
-                TITLED.title,
-                '- log each run\n- or **skip** it',
-                'log',
-                `look: ${TEXT}`,
-                undefined,
-            ],
+            [TITLED.title, body, 'log', TITLED_TEXT, undefined],
+            [TITLED.title, gated, 'log', `${TITLED.title}\n\n${gated}`, true],
+            [TITLED.title, body, 'log', `look: ${TITLED_TEXT}`, undefined],
         ],
         expect.stringMatching(/^👀 o3 mods: 🧩 tests queue/u),
         [
             [undefined, `${TITLED.title}\n\na new fact`],
-            ['accepted', `${TITLED.title}\n\nruns \`git push\``],
-            [undefined, `look: ${TEXT}`],
+            ['accepted', `${TITLED.title}\n\n${gated}`],
+            [undefined, `look: ${TITLED_TEXT}`],
         ],
         [expect.objectContaining({ id: 'o2', targets: ['git push'] })],
     ]);
@@ -288,9 +242,9 @@ for (const [what, fields, miss] of [
         '«a b c d e f g h»: title is 8 words, keep ≤7',
     ],
     [
-        'a 61-char title',
-        { title: 'x'.repeat(61) },
-        `«${'x'.repeat(40)}»: title is 61 chars, keep it ≤60`,
+        'a 46-char title',
+        { title: 'x'.repeat(46) },
+        `«${'x'.repeat(40)}»: title is 46 chars, keep it ≤45`,
     ],
     ['no body', { body: undefined }, 'log or not»: body is missing'],
     ['a blank body', { body: ' \n ' }, 'log or not»: body is missing'],
@@ -310,6 +264,11 @@ for (const [what, fields, miss] of [
         'a text beside a body',
         { body: 'so', text: 'x', title: undefined },
         '«so»: title is missing',
+    ],
+    [
+        'a long bracket for a tag',
+        { title: `[${'x '.repeat(25)}] queue` },
+        'title is 26 words, keep ≤7; title is 58 chars, keep it ≤45',
     ],
     [
         'two misses',
@@ -347,8 +306,8 @@ for (const [what, fields] of [
         '7 words past ⚠️, an emoji and a tag',
         { title: '⚠️ 🧩 [mods] a b c d e f g' },
     ],
-    ['60 chars past a tag', { title: `[mods] ${'x'.repeat(60)}` }],
-    ['60 chars past its kind', { title: `test: ${'x'.repeat(60)}` }],
+    ['45 chars past a tag', { title: `[mods] ${'x'.repeat(45)}` }],
+    ['45 chars past its kind', { title: `test: ${'x'.repeat(45)}` }],
     ['a 200-char body', { body: '🧩'.repeat(200) }],
     ['a text beside its title', { text: 'x'.repeat(91) }],
 ] as const)
@@ -413,14 +372,32 @@ test('a title led by its kind loses the lead, and a follow keeps the kind', () =
     expect([
         [led.kind, led.title, led.text.split('\n')[0]],
         [followed.kind, followed.title, followed.text],
-        ran(addOf({ kind: 'look', title: 'test: x' })),
+        ran(
+            addOf({
+                kind: 'look',
+                title: 'test: aaaaaa bbbbbb cccccc dddddd eeeeee fffff g',
+            }),
+        ),
+        // an item that says nothing refuses the add, its siblings with it
+        ran(addOf({}, { body: undefined, title: undefined })),
+        ran(addOf({ kind: 'test', title: '🔊 test: F4' })),
         // neither form: the text would be dropped without a word
         ran(addOf({}), { body: 'so', id: 'o1', op: 'follow', text: 'x' }),
+        ran(addOf({}), { id: 'o1', op: 'follow', text: 'x', title: 'so' }),
     ]).toEqual([
         ['look', 'the card', 'look: the card'],
         ['test', TITLED.title, `test: ${TITLED.title}\n\nso`],
-        expect.stringMatching(/its title opens «test:» while its kind is look/),
+        expect.stringMatching(/kind is look; an ask is/),
+        expect.stringMatching(/«no title»: title is missing; body is missing/),
+        [
+            expect.objectContaining({
+                kind: 'test',
+                text: expect.stringMatching(/^test: 🔊 F4\n/u),
+                title: '🔊 F4',
+            }),
+        ],
         expect.stringMatching(/o1 «so»: title is missing/),
+        expect.stringMatching(/o1 «so»: body is missing/),
     ]);
 });
 
@@ -428,24 +405,38 @@ test('a titled ask draws on one line where one line is read, and an emoji-led me
     const [a, merge, gated] = ran(
         addOf(
             { kind: 'look' },
-            { title: '🧩 merge pr 7' },
+            { title: '🧩 [mods] merge pr 7' },
             { body: 'runs `git push`' },
         ),
     ) as [OrbitAsk, OrbitAsk, OrbitAsk];
-    const line = `look: ${TEXT.replaceAll(/\n+/g, ' — ')}`;
+    const line = `look: ${TITLED_TEXT.replaceAll(/\n+/g, ' — ')}`;
     expect([
         joinText([{ ...a, mark: 'accepted' }]).split('\n')[1],
         strandedLine(a, 'p', undefined).includes(`«${line}»`),
         [a, merge, { ...a, text: '⚠️ x' }].map(isAllAsksMarkable),
         allAsksTicks([gated], 1)[0]?.targets,
         // a turned-down command in the body is no word of his: the pick's spans alone once it holds one
-        allAsksTicks([{ ...gated, pick: 'run `git push -n`' }], 1)[0]?.targets,
+        allAsksTicks(
+            [
+                {
+                    ...gated,
+                    pick: 'run `git push -n`',
+                    text: '`git push` on `~/a.ts`',
+                },
+                // a name is no command, so the text's stands as before
+                { ...gated, pick: 'yes, `main` stays' },
+            ],
+            1,
+        ).map((t) => t.targets),
     ]).toEqual([
         `- o1 🛎️ accepted: ${line} (your pick: log)`,
         true,
         [true, false, false],
         ['git push'],
-        ['git push -n'],
+        [
+            ['~/a.ts', 'git push -n'],
+            ['git push', 'main'],
+        ],
     ]);
 });
 
@@ -507,8 +498,14 @@ test("orbit's description fits the 4096 chars cc shows the model, every op named
     const ops = [...registered.described.matchAll(/^op (\w+)/gmu)].map(
         (m) => m[1],
     );
-    expect([registered.described.length <= 4096, ops]).toEqual([
+    expect([
+        registered.described.length <= 4096,
+        // the retired name is in no line of its own; the glide line's items keep theirs
+        /\btext\b/u.test(registered.described.split('\nop glide')[0] ?? ''),
+        ops,
+    ]).toEqual([
         true,
+        false,
         ['add', 'resolve', 'follow', 'assume', 'plan', 'glide'],
     ]);
 });
@@ -531,14 +528,25 @@ for (const [what, line, words] of [
         'never what he must read or pick',
     ],
     [
-        'a list for dima goes in the text',
+        'a list for dima goes in the body',
         'add',
-        'a list for him goes in the text, a longer one in a file',
+        'a list for him is bullets or numbers in the body, a longer one in a file',
     ],
     [
-        'a file for dima goes in link, named in the text',
+        'a file for dima goes in link, named in the body',
         'add',
-        'a file or page in link (https/obsidian:// url or path), named in words in text',
+        'a file or page in link (https/obsidian:// url or path), named in words in body',
+    ],
+    [
+        'an ask is a title, its topic, and a body, the fact that decides',
+        'add',
+        "asks: title: the topic, led by its area's emoji, ≤7 words, ≤45 chars; body ≤200 chars, the fact that decides, crew names and deciding words **bold**, readable alone",
+    ],
+    ['a pick is the action', 'add', 'pick: your recommendation, the action;'],
+    [
+        'a follow carries a title and a body',
+        'follow',
+        'id, title, body, pick, area, why, from|null:',
     ],
     [
         'an ask reads plain',
@@ -570,13 +578,25 @@ for (const [what, line, words] of [
         'follow',
         'on a look or test a why opening «fixing» hides it, your next follow shows it',
     ],
+    [
+        'an ask goes up as soon as it is known',
+        'when',
+        "known, at the turn's start before the work, mid-turn at once: his tick slipstreams into a running turn, and the turn goes on with",
+    ],
+    [
+        'a guarded ask names its target in plain words',
+        'guard',
+        'names its target in plain words, the pick quotes it whole',
+    ],
     ['a --bg session sets no phases', 'plan', 'a --bg session sets neither'],
 ] as const)
     test(`orbit's text says ${what}`, async ($, on) => {
         world(on);
         await start($);
         expect(
-            registered.described.match(new RegExp(`^op ${line}.*$`, 'mu'))?.[0],
+            registered.described.match(
+                new RegExp(`^(?:op )?${line}\\b.*$`, 'mu'),
+            )?.[0],
         ).toContain(words);
     });
 

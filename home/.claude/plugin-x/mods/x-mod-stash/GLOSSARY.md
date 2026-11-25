@@ -9,7 +9,7 @@ The shared row and the one store behind it; every feature below lives in it.
 _Avoid_: deck, band, dock
 
 **Ask**:
-An open question a session put to dima through orbit's tool: one line, its pick, its area, its ask origin and a hidden note, live until the session resolves it; a ticked one resolves «as ticked» or «changed: <what>».
+An open question a session put to dima through orbit's tool: its title (the topic), its body (what is asked and the fact that decides), its pick, its area, its ask origin and a hidden note, live until the session resolves it; a ticked one resolves «as ticked» or «changed: <what>».
 _Avoid_: question, todo, pending
 
 **Ask kind**:
