@@ -4,7 +4,7 @@ title: 'delete hunt: scan the whole fleet, top 5 to delete'
 status: open
 assignee: []
 created_date: '2026-11-25T15:33:41Z'
-updated_date: '2026-11-25T15:53:23Z'
+updated_date: '2026-11-25T16:02:34Z'
 labels:
   - s
   - clio-wing-1
@@ -52,4 +52,6 @@ PK-472:W21 (2026-11-25 17:45, dima): do not have any tech details unless i ask. 
 
 PK-472:W22 (2026-11-25 17:52, dima): we reshape cuts and run it via my initial ask about finding stuff to delete.
 PK-472:W23 (2026-11-25 17:52, dima): after you update this cut skill, how does it work now by default when i run bare cuts with no text and arguments? ❓
+
+PK-472:W24 (2026-11-25 18:00, dima): note: after we scan deletion candidates and decide what to delete, we should also decide who does the deletion and when. (skill upd)
 <!-- SECTION:NOTES:END -->
