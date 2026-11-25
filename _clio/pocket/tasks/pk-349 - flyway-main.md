@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T12:45:01Z'
+updated_date: '2026-11-25T13:02:24Z'
 labels:
   - s
   - clio-main
@@ -20,20 +20,21 @@ ordinal: 1000
 - [ ] #2 f121 FRM-678: the queue's free-CPU number from two days of rows, one number to dima — waits for: FRM-678 — parked: 2026-11-25
 - [ ] #3 f129 FRM-700 close: its 141 rider (12ad6787) is on main, one live refusal seen, then the close — parked: 2026-11-25
 - [ ] #4 f130 FRM-596 slice 09 hook half is mine now its x half landed (7f2d5c23), then the live-wing test by 27 Nov — parked: 2026-11-25
-- [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #6 f104 ⏳ herdr wisp: the slash list misses his skill, in chat's commands() — waits for: FRM-620
-- [ ] #7 f105 ⏳ herdr wisps: the phases steer text empties; a Read picture says «gone» on click — waits for: FRM-620
-- [ ] #8 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
-- [ ] #9 f107 ⏳ herdr wisp: a triple click selects one visual run, not the bullet (shot 24 Nov) — waits for: FRM-620
-- [ ] #10 f108 ⏳ herdr wisp: a click on a file path or dir link does nothing (his o6) — waits for: FRM-620
-- [ ] #11 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
-- [ ] #12 f112 ⏳ FRM-585 annotate (F6) seal, right after FRM-699 — waits for: FRM-699
-- [ ] #13 f126 ⏳ kokoro engine upgrade: before and after sounds to dima, told when it lands — waits for: FRM-669
-- [ ] #14 f128 ⏳ the speak sixth sense leaves its old bytes verify tree, then it goes — waits for: FRM-406
-- [ ] #15 f131 📅 FRM-645: a shot dima sent through herdr on 25 Nov still opens — on: 2026-11-26
-- [ ] #16 f132 📅 read the first week's typed look and test asks (mods spec after-merge) — on: 2026-12-02
-- [ ] #17 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
-- [ ] #18 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #5 f133 FRM-689 starts in the mods lane: dispatch marks, steer to its spec — waits for: FRM-695 — parked: 2026-11-25
+- [ ] #6 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #7 f104 ⏳ herdr wisp: the slash list misses his skill, in chat's commands() — waits for: FRM-620
+- [ ] #8 f105 ⏳ herdr wisps: the phases steer text empties; a Read picture says «gone» on click — waits for: FRM-620
+- [ ] #9 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
+- [ ] #10 f107 ⏳ herdr wisp: a triple click selects one visual run, not the bullet (shot 24 Nov) — waits for: FRM-620
+- [ ] #11 f108 ⏳ herdr wisp: a click on a file path or dir link does nothing (his o6) — waits for: FRM-620
+- [ ] #12 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
+- [ ] #13 f112 ⏳ FRM-585 annotate (F6) seal, right after FRM-699 — waits for: FRM-699
+- [ ] #14 f126 ⏳ kokoro engine upgrade: before and after sounds to dima, told when it lands — waits for: FRM-669
+- [ ] #15 f128 ⏳ the speak sixth sense leaves its old bytes verify tree, then it goes — waits for: FRM-406
+- [ ] #16 f131 📅 FRM-645: a shot dima sent through herdr on 25 Nov still opens — on: 2026-11-26
+- [ ] #17 f132 📅 read the first week's typed look and test asks (mods spec after-merge) — on: 2026-12-02
+- [ ] #18 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
+- [ ] #19 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes

@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T12:53:27Z'
+updated_date: '2026-11-25T13:09:36Z'
 labels:
   - s
   - clio-wing-1
@@ -16,24 +16,23 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f55 FRM-582 emoji reactions: its ten questions, three a batch — with: dima
-- [ ] #2 f59 FRM-696 hang-heal: the full shape-idea grill — with: dima
-- [ ] #3 f61 PK-468 ticket flow: where we stand and his next step — with: dima
-- [ ] #4 f71 FRM-639 events piece 2: six questions, the draft in mods-lane-9/frm-639-section.md — with: dima
-- [ ] #5 f72 github event streams: is gh event listen worth it for our ci and pr watches — after everything pending — with: dima
-- [ ] #6 f78 trials, one at a time: review-rounds, then wisphunter, verdicts due 27 Nov (gate-speed closed) — with: dima
-- [ ] #7 f79 lowtide run: the list is with dima, his go and order on o3 — with: dima
-- [ ] #8 f74 ⏳ bytes prod: rerun the five failed deploys at 15:25, read every app Ready — waits for: pnpm 12.23 release age
-- [ ] #9 f77 ⏳ FRM-704 the cited-docs check at commit: built in my tree after the rerun, main pulled first — waits for: FRM-596
-- [ ] #10 f80 ⏳ evergreen tail: PK-469 closes once bytes#176 merges — waits for: PK-469
-- [ ] #11 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
-- [ ] #12 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
-- [ ] #13 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
-- [ ] #14 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #15 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #16 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #17 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
-- [ ] #18 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
+- [ ] #1 f78 trials, one at a time: review-rounds, then wisphunter, verdicts due 27 Nov (gate-speed closed) — with: dima
+- [ ] #2 f86 FRM-639 events piece 2: six questions, the draft in mods-lane-9/frm-639-section.md — with: dima
+- [ ] #3 f87 FRM-582 emoji reactions: its ten questions, three a batch — with: dima
+- [ ] #4 f74 ⏳ bytes prod: rerun the five failed deploys at 15:25, read every app Ready — waits for: pnpm 12.23 release age
+- [ ] #5 f77 ⏳ FRM-704 the cited-docs check at commit: built in my tree after the rerun, main pulled first — waits for: FRM-596
+- [ ] #6 f80 ⏳ evergreen tail: PK-469 closes once bytes#176 merges — waits for: PK-469
+- [ ] #7 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
+- [ ] #8 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
+- [ ] #9 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
+- [ ] #10 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
+- [ ] #11 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #12 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #13 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #14 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #15 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
+- [ ] #16 f84 🦥 FRM-696 hang-heal: the full shape-idea grill — later: dima 15:08
+- [ ] #17 f85 🦥 github event streams: is gh event listen worth it for our ci and pr watches — later: dima 15:08
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -858,4 +857,18 @@ done 2026-11-25 14:53: f75 lowtide run: the false-open hunt first, then the tail
 done 2026-11-25 14:53: f81 ⏳ FRM-702 the two slow test files split, after gate-queue.test.ts goes quiet — waits for: FRM-645 (FRM-702 Triage, FRM-645 Done)
 
 14:53 f81 was reworded (FRM-645 is Done), not done: FRM-702 waits on FRM-596 now; f73 and f75 became f78 and f79
+
+done 2026-11-25 15:09: f61 PK-468 ticket flow: where we stand and his next step — with: dima (PK-468 open)
+
+done 2026-11-25 15:09: f59 FRM-696 hang-heal: the full shape-idea grill — with: dima (FRM-696 Todo)
+
+done 2026-11-25 15:09: f72 github event streams: is gh event listen worth it for our ci and pr watches — after everything pending — with: dima
+
+done 2026-11-25 15:09: f79 lowtide run: the list is with dima, his go and order on o3 — with: dima
+
+done 2026-11-25 15:09: f55 FRM-582 emoji reactions: its ten questions, three a batch — with: dima (FRM-582 Todo)
+
+done 2026-11-25 15:09: f71 FRM-639 events piece 2: six questions, the draft in mods-lane-9/frm-639-section.md — with: dima (FRM-639 Todo)
+
+15:09 reworded or reordered, not done: f61 to f83, f59 to f84, f72 to f85, f71 and f55 re-added in his 15:08 order (trials, events, emoji); f79 done, his go came 15:08
 <!-- SECTION:NOTES:END -->
