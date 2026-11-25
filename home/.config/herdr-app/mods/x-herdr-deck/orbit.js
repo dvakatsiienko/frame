@@ -118,10 +118,10 @@ export const tint = (color, alpha) =>
         : color;
 
 /** @typedef {'top' | 'bottom'} OrbitPin */
-/** @template T @typedef {{ kind: 'pinned', cards: { ask: Ask, row: T }[] } | { kind: 'thread', row: T, asks: Ask[] }} OrbitSection */
+/** @template T @typedef {{ kind: 'pinned', groups: { asks: Ask[], row: T }[] } | { kind: 'thread', row: T, asks: Ask[] }} OrbitSection */
 
 /**
- * orbit's sections (FRM-620:W16, W17): look and 🧪 cards from every thread in one group, first or last by his setting,
+ * orbit's sections (FRM-620:W16, W17, W63): look and 🧪 cards first or last by his setting, grouped by their sender,
  * then each thread's other asks in the agents list's order; a thread it does not show goes last by name, never by its
  * status, so an arriving ask moves no other row
  * @template {{ asks: Ask[], name: string, pid: number }} T
@@ -133,19 +133,18 @@ export function orbitSections(rows, pids, pin) {
         [...rows].sort((a, b) => byName(a.name, b.name)),
         pids,
     );
-    const cards = ordered.flatMap((row) =>
-        row.asks
-            .filter((a) => isPinnedCard(a.text))
-            .map((ask) => ({ ask, row })),
-    );
+    const groups = ordered.flatMap((row) => {
+        const asks = row.asks.filter((a) => isPinnedCard(a.text));
+        return asks.length > 0 ? [{ asks, row }] : [];
+    });
     /** @type {OrbitSection<T>[]} */
     const threads = ordered.flatMap((row) => {
         const asks = row.asks.filter((a) => !isPinnedCard(a.text));
         return asks.length > 0 ? [{ asks, kind: 'thread', row }] : [];
     });
-    if (cards.length === 0) return threads;
+    if (groups.length === 0) return threads;
     /** @type {OrbitSection<T>} */
-    const pinned = { cards, kind: 'pinned' };
+    const pinned = { groups, kind: 'pinned' };
     return pin === 'bottom' ? [...threads, pinned] : [pinned, ...threads];
 }
 
@@ -159,9 +158,9 @@ export function orbitSections(rows, pids, pin) {
 export function orbitTabOrder(sections, isBox = () => true) {
     return sections
         .flatMap((s) =>
-            s.kind === 'pinned'
-                ? s.cards
-                : s.asks.map((ask) => ({ ask, row: s.row })),
+            (s.kind === 'pinned' ? s.groups : [s]).flatMap(({ asks, row }) =>
+                asks.map((ask) => ({ ask, row })),
+            ),
         )
         .filter(({ ask, row }) => ask.id && isBox(row, ask))
         .map(({ ask, row }) => `steer-${row.sid}:${ask.id}`);

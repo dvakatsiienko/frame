@@ -273,6 +273,10 @@ export function createOrbitView(deps) {
             );
     }
 
+    /** a section's heading, the thread its asks come from @param {Theme} t @param {Row} s */
+    const senderName = (t, s) =>
+        line(t.foreground, SIZE.main).flex_1().font_semibold().child(s.name);
+
     // look and 🧪 cards from every thread lead (or close, by his setting), then each thread in the agents list's order
     /** @param {Theme} t */
     function orbit(t) {
@@ -294,20 +298,20 @@ export function createOrbitView(deps) {
         deps.setTabAt(new Map(stops.map((id, i) => [id, i + 1])));
         return sections.map((section) => {
             if (section.kind === 'pinned')
-                return v_flex()
-                    .px(12)
-                    .py(4)
-                    .gap(8)
-                    .children(
-                        section.cards.map(({ ask, row }) =>
-                            v_flex()
-                                .gap(4)
-                                .child(
-                                    line(t.muted, SIZE.small).child(row.name),
-                                )
-                                .child(view.ask(t, row, ask)),
-                        ),
-                    );
+                return v_flex().children(
+                    section.groups.map(({ asks, row }) =>
+                        v_flex()
+                            .px(12)
+                            .py(4)
+                            .gap(8)
+                            .child(
+                                h_flex()
+                                    .items_center()
+                                    .child(senderName(t, row)),
+                            )
+                            .children(asks.map((ask) => view.ask(t, row, ask))),
+                    ),
+                );
             const s = section.row;
             const canTickAll =
                 tickAllTakes(s.asks, (id) => deps.pressStateOf(s, id)).length >
@@ -329,12 +333,7 @@ export function createOrbitView(deps) {
                         h_flex()
                             .gap(8)
                             .items_center()
-                            .child(
-                                line(t.foreground, SIZE.main)
-                                    .flex_1()
-                                    .font_semibold()
-                                    .child(s.name),
-                            )
+                            .child(senderName(t, s))
                             .when(canTickAll, (row) =>
                                 row.child(
                                     Button.new(`tick-all-${s.sid}`)
