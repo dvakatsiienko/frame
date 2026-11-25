@@ -30,7 +30,7 @@ import { ORDER_KEY } from './thread-keys.js';
 /**
  * @typedef {object} OrbitViewDeps
  * @property {(cx: Context, key: string, paths: string[]) => void} addSteerFiles files dropped on a card join its steer
- * @property {(t: Theme, key: string, isLocked: boolean) => any[]} chipsOf
+ * @property {(t: Theme, key: string, isLocked: boolean) => ReturnType<typeof import('./attach-row.js').attachRow>[]} chipsOf
  * @property {() => ReturnType<typeof import('./card-files.js').createCardFiles>} files
  * @property {() => string | null} hoverSid
  * @property {() => Map<string, { text: string, until: number }>} keyNotes
@@ -46,7 +46,7 @@ import { ORDER_KEY } from './thread-keys.js';
  * @property {(stops: string[]) => void} setOrbitStops
  * @property {(sid: string | null) => void} setPickedSid
  * @property {(tabAt: Map<string, number>) => void} setTabAt
- * @property {(t: Theme, key: string, tabIndex: number, isLocked: boolean) => any} steerOf
+ * @property {(t: Theme, key: string, tabIndex: number, isLocked: boolean) => ReturnType<typeof import('./steer-kit.js').steerBox>} steerOf
  * @property {() => Map<string, import('gpui-base').InputState>} steers
  * @property {() => Map<string, number>} tabAt
  * @property {(cx: AsyncContext, s: Row, ask: Ask) => Promise<void>} unpress

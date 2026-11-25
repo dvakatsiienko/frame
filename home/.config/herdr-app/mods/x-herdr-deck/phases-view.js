@@ -20,7 +20,7 @@ import { pressButton } from './steer-kit.js';
  * @property {() => Map<string, string>} planTicked
  * @property {() => Row[]} rows
  * @property {(error: string | null) => void} setPressError
- * @property {(t: Theme, key: string, tabIndex: number, isLocked: boolean) => any} steerOf
+ * @property {(t: Theme, key: string, tabIndex: number, isLocked: boolean) => ReturnType<typeof import('./steer-kit.js').steerBox>} steerOf
  * @property {(key: string) => string} steerSent
  * @property {() => Map<string, import('gpui-base').InputState>} steers
  * @property {() => Map<string, number>} tabAt
