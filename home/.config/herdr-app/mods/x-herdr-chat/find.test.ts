@@ -1,8 +1,19 @@
 import { describe, expect, test } from 'vitest';
 
-import { createFind, findCount, findSpans, hitsOf, plainOf } from './find.js';
+import { drawnBlocks } from './drawn.js';
+import { createFind, findCount, findRanges, hitsOf, readOf } from './find.js';
 
-const row = (id: string, text: string) => ({ id, text }) as never;
+const row = (id: string, text: string, kind = 'reply') =>
+    ({ id, kind, text }) as never;
+const plainOf = (source: string) =>
+    readOf(source)
+        .map((line) => line.text)
+        .join('\n');
+/** each hit of `q` as the drawn source holds it */
+const sliced = (at: never, q: string) =>
+    findRanges(at, q).map((r) =>
+        (drawnBlocks(at)[r.block] ?? '').slice(r.start, r.end),
+    );
 const rows = [
     row('a', 'Ship the viewer'),
     row('b', 'tests pass'),
@@ -73,17 +84,119 @@ describe('find steps match by match (word marks probe)', () => {
     });
 });
 
-describe('a matched message cut into words and marks (word marks probe)', () => {
-    test('every match is its own span, numbered in the message, any case, lines kept', () => {
-        expect(findSpans('Slice 6 and slice 7\nno', 'slice')).toEqual([
-            [
-                { match: 0, text: 'Slice' },
-                { match: null, text: ' 6 and ' },
-                { match: 1, text: 'slice' },
-                { match: null, text: ' 7' },
-            ],
-            [{ match: null, text: 'no' }],
+describe('each match placed in the markdown drawn (FRM-699)', () => {
+    const REPLY = [
+        '## The viewer',
+        '**viewer** and `the viewer` 🐬 viewer, [viewer docs](https://viewer.dev)',
+        '<i title="viewer">plain</i> \\*viewer\\*',
+        '- a viewer here',
+        '```ts',
+        'const viewer = "**viewer**";',
+        '```',
+        'bye, **view**er',
+    ].join('\n');
+
+    test('a range covers its match in the source, over bold, code, a link, a list, a fence and an emoji', () => {
+        const at = row('a', REPLY);
+        // counted by hand: the heading, bold, code, after the emoji, the link's label, the escaped one, the list, two in
+        // the fence, the one bold splits; never the link's address nor the html tag's title
+        expect(sliced(at, 'viewer')).toEqual([
+            'viewer',
+            'viewer',
+            'viewer',
+            'viewer',
+            'viewer',
+            'viewer',
+            'viewer',
+            'viewer',
+            'viewer',
+            'view**er',
         ]);
+        expect(hitsOf([at], 'viewer')).toHaveLength(10);
+        expect(findRanges(at, 'viewer').map((r) => r.n)).toEqual([
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+        ]);
+        expect(new Set(findRanges(at, 'viewer').map((r) => r.block))).toEqual(
+            new Set([0, 1, 2]),
+        );
+    });
+
+    test('the mark after an emoji starts on its own first letter', () => {
+        const at = row('a', '🐬 ok **go**');
+        const [range] = findRanges(at, 'go');
+        expect(range).toEqual({ block: 0, end: 10, n: 0, start: 8 });
+    });
+
+    test('his message is read as typed: every mark he typed is there to find', () => {
+        const at = row(
+            'm',
+            'a **bold** <b>tag</b> and `code`\nsecond line\n\nC:\\dir',
+            'mine',
+        );
+        expect(plainOf(drawnBlocks(at)[0] ?? '')).toBe(
+            'a **bold** <b>tag</b> and `code`\nsecond line\n\nC:\\dir',
+        );
+        expect(hitsOf([at], '**bold**')).toEqual([{ id: 'm', n: 0 }]);
+        expect(sliced(at, '<b>tag')).toEqual(['<b\\>tag']);
+        expect(sliced(at, 'bold')).toEqual(['bold']);
+        expect(sliced(at, 'C:\\dir')).toEqual(['C:\\\\dir']);
+    });
+
+    test('a query of regexp signs is searched as typed, any case, and one longer in capitals shifts nothing', () => {
+        expect(hitsOf([row('a', 'what (now)? a.b')], '(NOW)?')).toHaveLength(1);
+        expect(hitsOf([row('a', 'axb')], 'a.b')).toEqual([]);
+        expect(hitsOf([row('a', 'x-y / [z]')], 'x-y / [z]')).toHaveLength(1);
+        expect(sliced(row('a', 'İİ the go'), 'go')).toEqual(['go']);
+    });
+
+    test('a row drawn as labels is searched as it stands, an open call’s card in its json', () => {
+        expect(hitsOf([row('t', 'Bash 2, **x**', 'tool')], '**x')).toHaveLength(
+            1,
+        );
+        expect(findRanges(row('t', 'Bash 2', 'tool'), 'bash')).toEqual([]);
+    });
+
+    test('an empty query, or one over two lines, matches nothing', () => {
+        expect(findRanges(row('a', 'x'), '  ')).toEqual([]);
+        expect(hitsOf([row('a', 'one\ntwo')], 'one\ntwo')).toEqual([]);
+    });
+
+    test('a match over a link’s end or a tag is found as it reads', () => {
+        expect(
+            sliced(row('a', '[docs](https://x.y) here'), 'docs here'),
+        ).toEqual(['docs](https://x.y) here']);
+        expect(sliced(row('a', 'a<b>b</b>c'), 'abc')).toEqual(['a<b>b</b>c']);
+    });
+
+    test('raw html draws nothing to find, the words between its tags do; a bare < stays', () => {
+        expect(
+            plainOf(
+                'a <span class="x">b</span> <!-- c --> 1 < 2 > 0 <https://x.y>',
+            ),
+        ).toBe('a b  1 < 2 > 0 <https://x.y>');
+    });
+
+    test('code in a fence is read as written, the fence lines left out', () => {
+        expect(plainOf('```ts\n**a** [b](c) \\* <d>\n```')).toBe(
+            '**a** [b](c) \\* <d>',
+        );
+        expect(plainOf('~~~\n```\nx\n~~~\ny')).toBe('```\nx\ny');
+    });
+
+    test('the same ranges are handed out again until the row or the query changes', () => {
+        const find = createFind();
+        const at = { id: 'a', kind: 'reply', text: 'go', version: 1 } as never;
+        find.search([at], 'go');
+        expect(find.rangesOf(at)).toBe(find.rangesOf(at));
+        const grown = {
+            id: 'a',
+            kind: 'reply',
+            text: 'go go',
+            version: 2,
+        } as never;
+        expect(find.rangesOf(grown)).toHaveLength(2);
+        find.search([grown], 'g');
+        expect(find.rangesOf(grown)[0]).toMatchObject({ end: 1, start: 0 });
     });
 });
 
@@ -100,10 +213,7 @@ describe('the stepped row reads clean, no markdown marks (dima o14)', () => {
         expect(
             hitsOf([row('l', '[docs](https://viewer.dev)')], 'viewer'),
         ).toEqual([]);
-        expect(findSpans('**Ship** it', 'ship')[0]).toEqual([
-            { match: 0, text: 'Ship' },
-            { match: null, text: ' it' },
-        ]);
+        expect(sliced(row('b', '**Ship** it'), 'ship')).toEqual(['Ship']);
     });
 });
 

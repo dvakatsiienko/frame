@@ -1,6 +1,8 @@
 // find in the chat (FRM-638 slice 6): his query, the rows holding it and the one shown. one owner for that state; the
 // view hands each query and key here and draws `state`.
 
+import { drawnBlocks } from './drawn.js';
+
 /** @typedef {import('./row-model.js').Row} Row */
 /** @typedef {{ id: string, n: number }} Hit one match: its row, and its place among that row's matches */
 /** @typedef {{ isOpen: boolean, q: string, hits: Hit[], at: number }} FindState hits newest row first, each row's in reading order */
@@ -8,93 +10,177 @@
 // his query settles this long before the rows are searched: each search redraws the hit's place
 export const FIND_SETTLE_MS = 150;
 
-/**
- * a message as he reads it once drawn: markdown's marks dropped, so the stepped row's plain words read clean and a
- * match hidden in a link address is no hit (dima's o14)
- * @param {string} text
- */
-export function plainOf(text) {
-    return text
-        .split('\n')
-        .filter((line) => !/^\s*(```|~~~)/.test(line))
-        .map((line) => {
-            // code is read as written: its spans step aside while the marks around them drop
-            /** @type {string[]} */
-            const codes = [];
-            const marked = line
-                .replace(/^\s{0,3}>\s?/, '')
-                .replace(/^\s{0,3}#{1,6}\s+/, '')
-                .replace(/(`+)([^`]*?)\1/g, (_all, _ticks, code) => {
-                    codes.push(code);
-                    return `\uE000${codes.length - 1}\uE000`;
-                })
-                .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
-                .replace(/\*\*(?=\S)(.+?)(?<=\S)\*\*/g, '$1')
-                .replace(/(^|[^\w_])__(?=\S)(.+?)(?<=\S)__(?![\w_])/g, '$1$2')
-                .replace(/(^|[^\w*])\*(?=\S)(.+?)(?<=\S)\*(?![\w*])/g, '$1$2')
-                .replace(/(^|[^\w_])_(?=\S)(.+?)(?<=\S)_(?![\w_])/g, '$1$2');
-            return marked.replace(
-                /\uE000(\d+)\uE000/g,
-                (_all, n) => codes[Number(n)] ?? '',
-            );
-        })
-        .join('\n');
+/** @typedef {{ text: string, at: number[] }} Read what he reads of a markdown source, and each char's offset in it */
+/** @typedef {{ block: number, start: number, end: number, n: number }} FindRange one match in the row's `block`th source, `n` its place in the row */
+
+// a char read as written: no mark rule below matches it, as none matches the chars of a code span
+const LITERAL = String.fromCharCode(0xe000);
+
+// a mark dropped, its words kept: how many chars of the match stand before them, and after
+/** @type {[RegExp, (match: RegExpExecArray) => [number, number]][]} */
+const MARKS = [
+    [/^\s{0,3}>\s?/g, (m) => [m[0].length, 0]],
+    [/^\s{0,3}#{1,6}\s+/g, (m) => [m[0].length, 0]],
+    // raw html draws nothing; what stands between two tags does
+    [
+        /<!--.*?-->|<\/?[A-Za-z][\w-]*(?:\s[^<>]*)?\/?>/g,
+        (m) => [m[0].length, 0],
+    ],
+    [
+        /!?\[([^\]]*)\]\([^)]*\)/g,
+        (m) => {
+            const before = m[0].startsWith('!') ? 2 : 1;
+            return [before, m[0].length - before - (m[1] ?? '').length];
+        },
+    ],
+    [/\*\*(?=\S)(.+?)(?<=\S)\*\*/g, () => [2, 2]],
+    [/(?<![\w_])__(?=\S)(.+?)(?<=\S)__(?![\w_])/g, () => [2, 2]],
+    [/(?<![\w*])\*(?=\S)(.+?)(?<=\S)\*(?![\w*])/g, () => [1, 1]],
+    [/(?<![\w_])_(?=\S)(.+?)(?<=\S)_(?![\w_])/g, () => [1, 1]],
+];
+
+/** one line of prose, its marks dropped @param {string} line @param {number} from its offset in the source @returns {Read} */
+function readLine(line, from) {
+    // what the rules read, what he reads, and where each char stands
+    let mask = '';
+    let text = '';
+    /** @type {number[]} */
+    const at = [];
+    const add = (
+        /** @type {number} */ start,
+        /** @type {number} */ end,
+        isLiteral = true,
+    ) => {
+        for (let i = start; i < end; i++) {
+            mask += isLiteral ? LITERAL : line[i];
+            text += line[i];
+            at.push(from + i);
+        }
+    };
+    // an escaped char and a code span are read as written; a `\` that ends the line breaks it
+    let done = 0;
+    for (const m of line.matchAll(/\\([!-/:-@[-`{-~])|(`+)([^`]*?)\2|\\$/g)) {
+        add(done, m.index, false);
+        done = m.index + m[0].length;
+        if (m[1]) add(done - 1, done);
+        else if (m[2]) add(m.index + m[2].length, done - m[2].length);
+    }
+    add(done, line.length, false);
+    for (const [rule, cut] of MARKS) {
+        const matches = [...mask.matchAll(rule)].reverse();
+        for (const m of matches) {
+            const [before, after] = cut(m);
+            const end = m.index + m[0].length;
+            for (const [a, b] of [
+                [end - after, end],
+                [m.index, m.index + before],
+            ]) {
+                mask = mask.slice(0, a) + mask.slice(b);
+                text = text.slice(0, a) + text.slice(b);
+                at.splice(
+                    /** @type {number} */ (a),
+                    /** @type {number} */ (b) - /** @type {number} */ (a),
+                );
+            }
+        }
+    }
+    return { at, text };
 }
 
 /**
- * every match of `q`, any case: the newest row first, a row's matches in reading order; none for an empty query
+ * a drawn markdown source as he reads it: its marks dropped, so a match hidden in a link address is no hit (dima's o14);
+ * code is read as written
+ * @param {string} source
+ * @param {(line: string) => boolean} [mayHold] a prose line it refuses is left out unread
+ * @returns {Read[]} line by line
+ */
+export function readOf(source, mayHold = () => true) {
+    /** @type {Read[]} */
+    const lines = [];
+    /** @type {string | null} the fence that opened the code around this line */
+    let fence = null;
+    let from = 0;
+    for (const line of source.split('\n')) {
+        const mark = /^\s*(`{3,}|~{3,})(.*)$/.exec(line);
+        const isEnd =
+            fence && !mark?.[2]?.trim() && mark?.[1]?.startsWith(fence);
+        if (isEnd) fence = null;
+        else if (mark && !fence) fence = mark[1] ?? null;
+        else if (fence) {
+            const start = from;
+            lines.push({
+                at: Array.from(line.split(''), (_c, k) => start + k),
+                text: line,
+            });
+        } else if (mayHold(line)) lines.push(readLine(line, from));
+        from += line.length + 1;
+    }
+    return lines;
+}
+
+/** @param {string} words */
+const anyCase = (words) =>
+    new RegExp(words.replace(/[\\^$.*+?()[\]{}|/]/g, '\\$&'), 'giu');
+
+/** a line as written with no mark in it, as the cheap look below compares it @param {string} words */
+const bare = (words) => words.replace(/[\\`*_]/g, '');
+
+/**
+ * his query as a search, any case: the words, and which prose lines may hold them, told cheaply from the line as written,
+ * since reading the marks of every line at each key he types costs. a link or a tag, whose own words draw nothing, is
+ * always read. null for an empty query
+ * @param {string} q
+ */
+function searchOf(q) {
+    const words = q.trim();
+    if (!words) return null;
+    const about = bare(words) ? anyCase(bare(words)) : null;
+    return {
+        mayHold: (/** @type {string} */ line) =>
+            !about || /\]\(|</.test(line) || bare(line).search(about) >= 0,
+        needle: anyCase(words),
+    };
+}
+
+/** @param {string[]} blocks @param {NonNullable<ReturnType<typeof searchOf>>} search */
+function rangesIn(blocks, { mayHold, needle }) {
+    /** @type {FindRange[]} */
+    const ranges = [];
+    blocks.forEach((source, block) => {
+        for (const { at, text } of readOf(source, mayHold))
+            for (const m of text.matchAll(needle)) {
+                const start = at[m.index] ?? 0;
+                const last = at[m.index + m[0].length - 1] ?? start;
+                ranges.push({ block, end: last + 1, n: ranges.length, start });
+            }
+    });
+    return ranges;
+}
+
+/**
+ * every match in a row's drawn markdown, in reading order; a match stays inside one line of one block
+ * @param {Row} row @param {string} q @returns {FindRange[]}
+ */
+export function findRanges(row, q) {
+    const search = searchOf(q);
+    return search ? rangesIn(drawnBlocks(row), search) : [];
+}
+
+/**
+ * every match of `q`, any case: the newest row first, a row's matches in reading order; none for an empty query. a row
+ * drawn as plain labels (a tool line, a file) is searched as it stands
  * @param {readonly Row[]} rows @param {string} q @returns {Hit[]}
  */
 export function hitsOf(rows, q) {
-    const needle = q.trim().toLowerCase();
-    if (!needle) return [];
-    return [...rows].reverse().flatMap((r) => {
-        const text = plainOf(r.text).toLowerCase();
-        /** @type {Hit[]} */
-        const hits = [];
-        for (
-            let at = text.indexOf(needle);
-            at >= 0;
-            at = text.indexOf(needle, at + needle.length)
-        )
-            hits.push({ id: r.id, n: hits.length });
-        return hits;
+    const search = searchOf(q);
+    if (!search) return [];
+    return [...rows].reverse().flatMap((row) => {
+        const blocks = drawnBlocks(row);
+        const matches = blocks.length
+            ? rangesIn(blocks, search)
+            : [...row.text.matchAll(search.needle)];
+        return matches.map((_match, n) => ({ id: row.id, n }));
     });
-}
-
-/**
- * a matched message, its marks dropped, cut into plain words and its matches, line by line, for the word marks probe (dima, 17:46): each
- * match carries its place among the message's matches
- * @param {string} text @param {string} q
- * @returns {{ text: string, match: number | null }[][]}
- */
-export function findSpans(text, q) {
-    const needle = q.trim().toLowerCase();
-    let n = 0;
-    return plainOf(text)
-        .split('\n')
-        .map((line) => {
-            /** @type {{ text: string, match: number | null }[]} */
-            const spans = [];
-            const lower = line.toLowerCase();
-            let from = 0;
-            for (
-                let at = needle ? lower.indexOf(needle) : -1;
-                at >= 0;
-                at = lower.indexOf(needle, from)
-            ) {
-                if (at > from)
-                    spans.push({ match: null, text: line.slice(from, at) });
-                spans.push({
-                    match: n++,
-                    text: line.slice(at, at + needle.length),
-                });
-                from = at + needle.length;
-            }
-            if (from < line.length || !spans.length)
-                spans.push({ match: null, text: line.slice(from) });
-            return spans;
-        });
 }
 
 /** «2 / 5», «no match» or nothing before a query @param {FindState} state */
@@ -108,8 +194,12 @@ export function findCount(state) {
 export function createFind() {
     /** @type {FindState} */
     let state = { at: 0, hits: [], isOpen: false, q: '' };
+    // a row's ranges, placed once per version: the list draws its rows on every frame of a scroll
+    /** @type {Map<string, { q: string, ranges: FindRange[], version: number }>} */
+    const placed = new Map();
     return {
         close() {
+            placed.clear();
             state = { at: 0, hits: [], isOpen: false, q: '' };
         },
         /** the hit shown now */
@@ -118,6 +208,15 @@ export function createFind() {
         currentHit: () => state.hits[state.at] ?? null,
         open() {
             state = { ...state, isOpen: true };
+        },
+        /** where the query stands in the row's drawn markdown @param {Row} row */
+        rangesOf(row) {
+            const kept = placed.get(row.id);
+            if (kept?.q === state.q && kept.version === row.version)
+                return kept.ranges;
+            const ranges = findRanges(row, state.q);
+            placed.set(row.id, { q: state.q, ranges, version: row.version });
+            return ranges;
         },
         /**
          * a page landed: the same query over the rows now loaded, the stepped hit kept

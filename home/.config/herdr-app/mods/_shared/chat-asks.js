@@ -52,7 +52,7 @@ export function chatSelectArgs(tree) {
     return find(tree?.root ?? tree);
 }
 
-/** @typedef {{ pid: number | null, address: string | null, isFindOpen: boolean }} ChatShown */
+/** @typedef {{ address: string | null, isFindOpen: boolean }} ChatShown */
 
 /** what the chat says it shows, read safely from herdr's shared value @param {unknown} value @returns {ChatShown} */
 export function chatShownOf(value) {
@@ -62,7 +62,6 @@ export function chatShownOf(value) {
     return {
         address: typeof v?.address === 'string' ? v.address : null,
         isFindOpen: v?.isFindOpen === true,
-        pid: typeof v?.pid === 'number' ? v.pid : null,
     };
 }
 

@@ -8,7 +8,6 @@ import { fileName } from './attach.js';
 import { messageDetails } from './details.js';
 import { blockSource, drawnBlocks, replyBlocks } from './drawn.js';
 import { fileAt, isSentRow, isUnsendRow, withFileRows } from './files.js';
-import { findSpans } from './find.js';
 import { replyFold } from './fold.js';
 import { ICONS } from './icons.js';
 import { tint } from './tint.js';
@@ -30,13 +29,15 @@ const ROW_PAD = { normal: 6, roomy: 10, tight: 3 };
 const SENT_THUMB = 96;
 // about how wide a character of a reply is, in px: the fold counts a bubble's lines from its width
 const CHAR_PX = 7.5;
+// how strong find paints a match, and the one it stepped to
+const HIT_ALPHA = '4d';
+const STEPPED_ALPHA = 'b3';
 
 /**
  * @typedef {object} MessageRowsDeps
  * @property {() => number} column the readable column's width
  * @property {() => number} room the width a row may take: the list's, at most the column
- * @property {() => ReturnType<typeof import('./find.js').createFind>} find the chat's search, which marks the rows it matched
- * @property {ReturnType<typeof import('./heights.js').createHeights>} heights
+ * @property {() => ReturnType<typeof import('./find.js').createFind>} find the chat's search, which marks the rows and the words it matched
  * @property {() => import('./look.js').Look} look
  * @property {() => boolean} isShowMore his «Show more» switch (FRM-607)
  * @property {ReturnType<typeof import('./sent-pictures.js').createSentPictures>} sent
@@ -107,7 +108,7 @@ export function createMessageRows(deps) {
         if (row.kind === 'tool') return column(toolRow(row, t, pre, isShown));
         const most = Math.max(240, Math.floor(deps.room() * BUBBLE_SHARE));
         const id = `${pre}${row.id}@${row.version}`;
-        const fold = rowLook(row) === 'fold' ? foldOf(row) : null;
+        const fold = foldOf(row);
         if (row.kind === 'mine')
             return column(
                 v_flex()
@@ -135,11 +136,11 @@ export function createMessageRows(deps) {
                                 )
                                 .when(row.isWaiting, (el) => el.opacity(0.75))
                                 .child(
-                                    markedText(row, t, isShown) ??
-                                        TextView.markdown(
-                                            id,
-                                            drawnBlocks(row)[0] ?? '',
-                                        ).selectable(isShown),
+                                    textView(row, t, {
+                                        id,
+                                        isShown,
+                                        source: drawnBlocks(row)[0] ?? '',
+                                    }),
                                 ),
                         ),
                     )
@@ -164,32 +165,26 @@ export function createMessageRows(deps) {
                         .gap(8)
                         .rounded(12)
                         .bg(t.raised)
-                        .when(Boolean(markedText(row, t, isShown)), (el) =>
-                            el.child(markedText(row, t, isShown) ?? ''),
-                        )
                         .children(
-                            (markedText(row, t, isShown)
-                                ? []
-                                : (fold?.shown ?? replyBlocks(row))
-                            ).map((block, i) =>
-                                block.kind === 'text'
-                                    ? TextView.markdown(
-                                          `${id}-${i}`,
-                                          blockSource(block),
-                                      ).selectable(isShown)
-                                    : div()
-                                          .px(10)
-                                          .py(8)
-                                          .rounded(8)
-                                          .bg(t.background)
-                                          .border(1)
-                                          .border_color(t.border)
-                                          .child(
-                                              TextView.markdown(
-                                                  `${id}-${i}`,
-                                                  blockSource(block),
-                                              ).selectable(isShown),
-                                          ),
+                            (fold?.shown ?? replyBlocks(row)).map(
+                                (block, i) => {
+                                    const view = textView(row, t, {
+                                        block: i,
+                                        id: `${id}-${i}`,
+                                        isShown,
+                                        source: blockSource(block),
+                                    });
+                                    return block.kind === 'text'
+                                        ? view
+                                        : div()
+                                              .px(10)
+                                              .py(8)
+                                              .rounded(8)
+                                              .bg(t.background)
+                                              .border(1)
+                                              .border_color(t.border)
+                                              .child(view);
+                                },
                             ),
                         )
                         // the line he clicks to open it: the list's item click does, herdr-app#894 keeps a press
@@ -208,6 +203,37 @@ export function createMessageRows(deps) {
                 )
                 .child(detailsLine(row, t)),
         );
+    }
+
+    /**
+     * one text view of a row, find's matches painted behind its words: the stepped one last, so it paints over. a mark moves
+     * no line, so the measured copy has none
+     * @param {Row} row @param {Theme} t
+     * @param {{ block?: number, id: string, isShown: boolean, source: string }} at `block` its place in the row
+     */
+    function textView(row, t, { block = 0, id, isShown, source }) {
+        const view = TextView.markdown(id, source).selectable(isShown);
+        const find = deps.find();
+        const { hits, isOpen } = find.state;
+        if (!isShown || !isOpen || !hits.some((h) => h.id === row.id))
+            return view;
+        const stepped = find.current() === row.id ? find.currentHit()?.n : null;
+        return find
+            .rangesOf(row)
+            .filter((m) => m.block === block)
+            .sort((a, b) => Number(a.n === stepped) - Number(b.n === stepped))
+            .reduce(
+                (el, { end, n, start }) =>
+                    el.highlight_range(
+                        start,
+                        end,
+                        tint(
+                            t.accent,
+                            n === stepped ? STEPPED_ALPHA : HIT_ALPHA,
+                        ),
+                    ),
+                view,
+            );
     }
 
     /**
@@ -240,10 +266,11 @@ export function createMessageRows(deps) {
                         .border_color(t.border)
                         .text_size(12)
                         .child(
-                            TextView.markdown(
-                                `${pre}${row.id}@${row.version}`,
-                                drawnBlocks(row)[0] ?? '',
-                            ).selectable(isShown),
+                            textView(row, t, {
+                                id: `${pre}${row.id}@${row.version}`,
+                                isShown,
+                                source: drawnBlocks(row)[0] ?? '',
+                            }),
                         ),
                 );
         if (!isCallRow(row.id))
@@ -392,17 +419,6 @@ export function createMessageRows(deps) {
     }
 
     /**
-     * how a row draws when not plain: find's word marks over the stepped row only, keyed by the query; every other
-     * match keeps its markdown under a tint, since a marked row loses its bold and reflows (dima's o2, 18:46)
-     * @param {Row} row
-     */
-    function rowLook(row) {
-        const { isOpen, q } = deps.find().state;
-        if (isOpen && deps.find().current() === row.id) return `find:${q}`;
-        return foldOf(row) ? 'fold' : undefined;
-    }
-
-    /**
      * how a reply folds now: only a long one of an earlier turn, while his switch is on and he has not opened it; a
      * search hit shows whole
      * @param {Row} row
@@ -423,62 +439,9 @@ export function createMessageRows(deps) {
         );
     }
 
-    /** the rows as the height book keys them: a row drawn another way is measured apart @param {readonly Row[]} rows */
-    function booked(rows) {
-        return rows.map((row) => {
-            const look = rowLook(row);
-            return look ? { ...row, look } : row;
-        });
-    }
-
-    /**
-     * the stepped row as plain words, every match in a soft accent, the stepped one in full accent; null for any
-     * other row, or while its marked height is not measured yet
-     * @param {Row} row @param {Theme} t
-     */
-    function markedText(row, t, isShown = true) {
-        const look = rowLook(row);
-        // the shown copy waits for its marked height, so the list never draws it at the plain one and jumps
-        if (
-            !look?.startsWith('find:') ||
-            (isShown && !deps.heights.has({ ...row, look }))
-        )
-            return null;
-        const { q } = deps.find().state;
-        const current = deps.find().currentHit();
-        return v_flex().children(
-            findSpans(row.text, q).map((line) =>
-                h_flex()
-                    .flex_wrap()
-                    .children(
-                        line.flatMap((span) =>
-                            span.match === null
-                                ? span.text
-                                      .split(/(?<=\s)/)
-                                      .map((word) => div().child(word))
-                                : [
-                                      div()
-                                          .rounded(3)
-                                          .px(1)
-                                          .bg(
-                                              current?.id === row.id &&
-                                                  current.n === span.match
-                                                  ? t.accent
-                                                  : tint(t.accent, '4d'),
-                                          )
-                                          .when(
-                                              current?.id === row.id &&
-                                                  current.n === span.match,
-                                              (el) =>
-                                                  el.text_color(t.background),
-                                          )
-                                          .child(span.text),
-                                  ],
-                        ),
-                    ),
-            ),
-        );
-    }
+    /** the rows as the height book keys them: a folded reply is measured apart @param {readonly Row[]} rows */
+    const booked = (rows) =>
+        rows.map((row) => (foldOf(row) ? { ...row, look: 'fold' } : row));
 
     return {
         booked,

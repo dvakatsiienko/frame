@@ -195,7 +195,6 @@ export default class Chat extends View {
     rows = createMessageRows({
         column: () => this.list.column(),
         find: () => this.findBar.find,
-        heights: this.heights,
         isShowMore: () => this.isShowMore,
         look: () => this.look,
         room: () => this.list.room(),
@@ -311,9 +310,8 @@ export default class Chat extends View {
             ? {
                   address,
                   isFindOpen: this.findBar.find.state.isOpen,
-                  pid: this.feed.pid() ?? null,
               }
-            : { address: null, isFindOpen: false, pid: null };
+            : { address: null, isFindOpen: false };
         const namedKey = JSON.stringify(named);
         if (namedKey !== this.namedShown) {
             this.namedShown = namedKey;

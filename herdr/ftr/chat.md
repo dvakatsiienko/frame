@@ -237,11 +237,13 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and Esc, ✕ or a press anywhere outside the bar closes it and gives the keyboard back to the quill; a thread switch closes it (dima, 18:11, 18:18, 21:04)
   - and an open find re-counts when an older page lands, and its «n / N» says on hover that it counts the history loaded so far
   - decision: it searches the rows loaded so far, never pages further up
-- ✅ the stepped reply reads as plain words, its markdown marks dropped (FRM-638:W131, dima's o14)
-  - given find steps onto a reply holding bold, code, a fence, a heading or a link
-  - then that reply shows its words with no `**`, backticks, fence lines, `#` or link addresses, its matches marked
-  - decision: plain words, not rendered marks: rendered bold with word marks waits on herdr-app TextView highlight ranges
-- ⬜ wanted: find marks words inside the rendered reply, no flicker, its markdown kept, once [herdr-app#1231](https://github.com/herdrdev/herdr-app/issues/1231) ships (FRM-638:W131: plain words are accepted, not wanted)
+- ⬜ find marks its matches inside the drawn message (FRM-699:W3, over FRM-638:W131's plain words)
+  - given find is open on a query
+  - when it counts and when he steps
+  - then every match in a reply, his message or an open call's card is painted behind its words, its bold, code and links kept, the stepped one stronger; a tool line or a file is found by its row's tint alone
+  - and it counts what the message draws: a link's address, a fence line and a tag are no match, his own message and code match as typed; a match stays inside one line
+  - and a step moves no row and redraws none another way; a folded reply unfolds once, when it becomes a match
+  - and a reply taller than the view comes in at its top, so its stepped match may stand below
 
 ## settings
 

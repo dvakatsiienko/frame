@@ -53,7 +53,7 @@ export function createHeights() {
     const measured = new Map();
     /** a row's last height at any version: what a grown row keeps until it is measured again @type {Map<string, number>} */
     const last = new Map();
-    /** a row drawn another way (find's word marks) is its own entry: `look` names the way @param {Measured} row */
+    /** a row drawn another way (a folded reply) is its own entry: `look` names the way @param {Measured} row */
     const keyOf = (row) =>
         `${row.id}@${row.version}${row.look ? `~${row.look}` : ''}`;
 
