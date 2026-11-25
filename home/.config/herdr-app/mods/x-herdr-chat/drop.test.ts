@@ -4,19 +4,24 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 // handler, the innermost under the pointer (0.1.18 vendor/gpui-pre div.rs takes the drag), so each pane has one
 type Handler = (...args: unknown[]) => unknown;
 const at = vi.hoisted(() => ({
-    made: [] as { handlers: Map<string, Handler> }[],
+    made: [] as { handlers: Map<string, Handler>; kids: unknown[] }[],
     props: {} as Record<string, unknown>,
     shared: new Map<string, unknown>(),
     timers: [] as (() => void)[],
 }));
 const { element } = vi.hoisted(() => ({
     element: (): unknown => {
-        const el = { handlers: new Map<string, Handler>() };
+        const el = {
+            handlers: new Map<string, Handler>(),
+            kids: [] as unknown[],
+        };
         at.made.push(el);
         const self: unknown = new Proxy(el, {
             get(target, name) {
                 if (name === 'handlers') return target.handlers;
+                if (name === 'kids') return target.kids;
                 return (...args: unknown[]) => {
+                    if (name === 'child') target.kids.push(args[0]);
                     if (name === 'when' && args[0]) (args[1] as Handler)(self);
                     if (String(name).startsWith('on_'))
                         target.handlers.set(
@@ -153,21 +158,19 @@ describe('a file dropped on the chat', () => {
             { findBar: quiet({ find: { state: { isOpen: true } } }) },
         ],
         [
-            'before any row',
-            {
-                feed: quiet({
-                    address: () => 't1',
-                    error: () => null,
-                    file: () => null,
-                    follow: () => false,
-                    isRead: () => false,
-                }),
-            },
+            'with the viewer over it',
+            { pictures: quiet({ isOpen: () => true }) },
         ],
     ])('joins the quill, %s, by the pane’s one handler', (_how, over) => {
         const view = chat(over);
         const [pane, ...more] = takers(() => view.render(cx));
         expect(more).toEqual([]);
+        // over everything the chat draws: a link or the viewer under the pointer takes a drop's mouse-up
+        const root = view.render(cx) as unknown as {
+            kids: { handlers?: Map<string, Handler> }[];
+        };
+        expect(root.kids.at(-1)?.handlers?.has('on_drop')).toBe(true);
+        expect([...(pane?.handlers.keys() ?? [])]).toEqual(['on_drop']);
         pane?.handlers.get('on_drop')?.({ paths: ['/a.png', '/b.md'] }, cx);
         expect(addFiles.mock.calls).toEqual([[['/a.png', '/b.md'], cx]]);
     });
@@ -248,4 +251,21 @@ describe('Esc over the chat', () => {
             viewer: [],
         });
     });
+});
+
+test('⌘F with the viewer open opens no find under it', () => {
+    const open = vi.fn();
+    const find = { state: { isOpen: false } };
+    for (const isOpen of [true, false]) {
+        const view = chat({
+            findBar: quiet({ find, open }),
+            pictures: quiet({ isOpen: () => isOpen }),
+        });
+        at.made.length = 0;
+        view.render(cx);
+        at.made
+            .find((el) => el.handlers.has('x_herdr_chat_find'))
+            ?.handlers.get('x_herdr_chat_find')?.({}, cx);
+    }
+    expect(open).toHaveBeenCalledTimes(1);
 });

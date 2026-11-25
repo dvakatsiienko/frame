@@ -178,6 +178,7 @@ export default class Chat extends View {
     noteSerial = 0;
     /** the model, effort and permission pickers under the quill */
     pickers = createPickers({
+        addFiles: (paths, cx) => this.quill.addFiles(paths, cx),
         claudeSettings: () => this.claudeSettings,
         column: () => this.list.column(),
         hasRows: () => this.model.rows.length > 0,
@@ -442,7 +443,9 @@ export default class Chat extends View {
                     ),
                 ),
             )
-            .on_action('x_herdr_chat_find', (_e, cx) => this.findBar.open(cx))
+            .on_action('x_herdr_chat_find', (_e, cx) => {
+                if (!this.pictures.isOpen()) this.findBar.open(cx);
+            })
             // claimed with nothing to close too: herdr answers a mod's key no handler claims with an error
             .on_action('x_herdr_chat_find_close', (_e, cx) => this.closeTop(cx))
             // ⌘ held at a click on a picture opens it in his desktop app, not the viewer
@@ -453,8 +456,6 @@ export default class Chat extends View {
             .on_mouse_move((e) => {
                 this.isCmdHeld = Boolean(e.modifiers.platform);
             })
-            // a file dropped anywhere on the chat joins the quill (FRM-620:W79), the one handler of the pane
-            .on_drop((e, cx) => this.quill.addFiles(e?.paths ?? [], cx))
             .bg(t.background)
             .text_color(t.foreground)
             .text_size(look.size)
@@ -545,6 +546,19 @@ export default class Chat extends View {
                 )
                 .when(this.pictures.isOpen(), (el) =>
                     el.child(this.pictures.view(t)),
+                )
+                // a file dropped anywhere on the chat joins the quill (FRM-620:W79): over it all, since a drop is a mouse-up and
+                // a link or the viewer under the pointer takes one; herdr lets every click through a layer that only
+                // takes a drop
+                .child(
+                    div()
+                        .absolute()
+                        .top(0)
+                        .left(0)
+                        .size_full()
+                        .on_drop((e, cx) =>
+                            this.quill.addFiles(e?.paths ?? [], cx),
+                        ),
                 )
         );
     }

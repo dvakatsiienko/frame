@@ -419,6 +419,16 @@ describe('nothing moves the view without him', () => {
         expect(sim.isFollowing()).toBe(true);
     });
 
+    test('a place held and landed, then the end comes into view: he follows', () => {
+        const sim = createSim(thread());
+        sim.wheel(200);
+        sim.resize();
+        sim.rest();
+        sim.measure(8, 60);
+        sim.rest();
+        expect(sim.isFollowing()).toBe(true);
+    });
+
     test('a reply that grows while he reads above the end scrolls nothing', () => {
         const sim = createSim(thread());
         sim.wheel(200);

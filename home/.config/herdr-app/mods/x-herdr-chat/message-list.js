@@ -299,7 +299,10 @@ export function createMessageList(deps) {
                 if (step.isIgnored) return;
                 savePlaceSoon(cx);
                 // within a screen of the first row: the next older page, one at a time
-                if (!at.follow && at.top < viewH) deps.loadEarlier(cx);
+                // a step up in a thread that fits the view too, which follows the newest all the while
+                const isUp = (event.delta?.y ?? 0) > 0;
+                if ((isUp || !at.follow) && at.top < viewH)
+                    deps.loadEarlier(cx);
                 if (step.hadCut || step.isFollowChanged) cx.notify();
             })
             .child(list)
@@ -323,8 +326,7 @@ export function createMessageList(deps) {
                         .child(ICONS.newest)
                         .on_click((_event, cx) => {
                             at.newest();
-                            const file = deps.file();
-                            if (file) localStorage.removeItem(placeKey(file));
+                            forgetPlace();
                             cx.notify();
                         }),
                 ),
@@ -342,10 +344,16 @@ export function createMessageList(deps) {
         isEndWatched = true;
         cx.timer.after(END_LOOK_MS, (later) => {
             isEndWatched = false;
-            at.rested();
+            if (at.rested()) forgetPlace();
             if (isNewestShown === at.follow) later.notify();
             if (Date.now() < endWatchUntil) watchEnd(later, 0);
         });
+    }
+
+    /** he follows the newest: the thread opens there again */
+    function forgetPlace() {
+        const file = deps.file();
+        if (file) localStorage.removeItem(placeKey(file));
     }
 
     /** a message off the screen holds no selection */

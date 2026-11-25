@@ -136,7 +136,6 @@ export function createFindBar({ rows, show, isAllLoaded, focusQuill }) {
                 .key_context('ChatFind')
                 // a press anywhere else closes it (dima, 21:04)
                 .on_mouse_down_out((_e, cx) => close(cx))
-                .on_action('x_herdr_chat_find_close', (_e, cx) => close(cx))
                 .on_action('x_herdr_chat_find_newer', (_e, cx) =>
                     showHit(find.step('newer'), cx),
                 )

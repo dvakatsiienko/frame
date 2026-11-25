@@ -36,6 +36,7 @@ const PICK_WAIT_MS = 12000;
 
 /**
  * @param {{
+ *   addFiles: (paths: string[], cx: Context) => void,
  *   shownAddress: () => string | null,
  *   status: () => string | undefined,
  *   claudeSettings: () => import('./picker.js').ClaudeSettings,
@@ -43,10 +44,11 @@ const PICK_WAIT_MS = 12000;
  *   hasRows: () => boolean,
  *   column: () => number,
  *   typingInto: Set<string>,
- * }} deps the shown thread and its status, Claude's settings.json, the quill's box, whether the thread has rows, the
+ * }} deps the quill's taking of dropped files, the shown thread and its status, Claude's settings.json, the quill's box, whether the thread has rows, the
  *   chat's column width, and the threads a send or a pick types into now (one owner: the chat)
  */
 export function createPickers({
+    addFiles,
     shownAddress,
     status,
     claudeSettings,
@@ -363,6 +365,8 @@ export function createPickers({
                         ),
                     )
                     .key_context('ChatPick')
+                    // a popover hides the pane under it from a drop
+                    .on_drop((e, cx) => addFiles(e?.paths ?? [], cx))
                     .on_action('x_herdr_chat_effort_left', (_event, cx) =>
                         slide('left', cx),
                     )

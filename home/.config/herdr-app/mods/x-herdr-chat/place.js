@@ -266,15 +266,17 @@ export function createPlace() {
         },
         /**
          * a look at where the list came to rest, between frames: at its very end he follows the newest again, however he
-         * got there; never in the row callback (its extra call names row 0), nor while a place is held
+         * got there; never in the row callback (its extra call names row 0), nor while a held place is landing
+         * @returns {boolean} whether he follows from now on
          */
         rested() {
-            if (follow || cut) return;
+            if (follow || isSeekDue || isLifted) return false;
             if (!isAtEnd) hasLeftEnd = true;
             else if (hasLeftEnd) {
-                follow = true;
-                id = null;
+                this.newest();
+                return true;
             }
+            return false;
         },
         /**
          * a saved place read back after a reload, or kept over a page landing: held until the list lands it

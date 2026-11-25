@@ -99,6 +99,13 @@ vi.mock('gpui-base', () => ({
     },
 }));
 
+const kept = new Map<string, string>();
+vi.stubGlobal('localStorage', {
+    getItem: (key: string) => kept.get(key) ?? null,
+    removeItem: (key: string) => kept.delete(key),
+    setItem: (key: string, value: string) => kept.set(key, value),
+});
+
 const { createHeights } = await import('./heights.js');
 const { createMessageList } = await import('./message-list.js');
 
@@ -143,11 +150,12 @@ function createWindow(real: number[], first: (px: number) => number) {
         squares: new Map<string, Handler>(),
     };
     const written: string[] = [];
+    const earlier: number[] = [];
     const list = createMessageList({
         audioApp: () => null,
-        file: () => null,
+        file: () => '/t.jsonl',
         heights: createHeights(),
-        loadEarlier: () => {},
+        loadEarlier: () => earlier.push(1),
         pictures: {
             isOpen: () => bodies.isViewerOpen,
             show: (files: string[]) => bodies.opened.push(files.join()),
@@ -377,6 +385,7 @@ function createWindow(real: number[], first: (px: number) => number) {
                 .filter((box) => box.children.length)
                 .map((box) => box.isClipped);
         },
+        earlier,
         /** his click on a link in a message */
         async follow(id: string, url: string) {
             gpui.opened.length = 0;
@@ -457,6 +466,7 @@ function createWindow(real: number[], first: (px: number) => number) {
 }
 
 beforeEach(() => {
+    kept.clear();
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(1_000_000);
 });
@@ -721,9 +731,13 @@ describe('the ↓ is there only off the very bottom', () => {
         w.scroll(-100);
         w.run(1_000);
         expect(w.isNewestShown()).toBe(true);
+        w.run(1_000);
+        expect(kept.size).toBe(1);
         w.tall(150);
         w.run(1_000);
         expect(w.isNewestShown()).toBe(false);
+        // the thread opens at the newest again
+        expect(kept.size).toBe(0);
     });
 
     test('a thread that fits the view never shows it', () => {
@@ -732,6 +746,8 @@ describe('the ↓ is there only off the very bottom', () => {
         w.scroll(-50);
         w.run(1_000);
         expect(w.isNewestShown()).toBe(false);
+        // and its older page is asked for
+        expect(w.earlier).toHaveLength(1);
     });
 
     test('a step that stops short of the bottom keeps it', () => {
