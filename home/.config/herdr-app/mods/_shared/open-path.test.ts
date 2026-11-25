@@ -1,4 +1,3 @@
-import { spawnSync } from 'node:child_process';
 import {
     mkdirSync,
     mkdtempSync,
@@ -11,6 +10,7 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { settingRows } from '../x-herdr-chat/settings-model.js';
+import { macExec } from './mac-exec.ts';
 import {
     audioAppOf,
     isWebLink,
@@ -90,16 +90,7 @@ describe('what he clicked is judged by what it resolves to', () => {
     const exec = async (program: string, args: string[]) => {
         if (program === 'open') opened.push(args);
         if (program === 'open') return { code: 0, stdout: '' };
-        // the mac's realpath refuses a path that is not there; linux's does with -e
-        const asMac =
-            program === '/bin/realpath' && process.platform === 'linux'
-                ? ['-e', ...args]
-                : args;
-        const ran = spawnSync(program, asMac, {
-            encoding: 'utf8',
-            timeout: 10_000,
-        });
-        return { code: ran.status ?? 1, stdout: ran.stdout };
+        return macExec(program, args);
     };
 
     test.each([

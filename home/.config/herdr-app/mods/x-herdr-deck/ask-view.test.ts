@@ -1,6 +1,4 @@
-import { spawnSync } from 'node:child_process';
 import {
-    existsSync,
     mkdirSync,
     mkdtempSync,
     realpathSync,
@@ -11,6 +9,8 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
+
+import { macExec } from '../_shared/mac-exec.ts';
 
 // FRM-620 slice 7: the card as it draws, on a stand-in for herdr's elements that keeps each call and child
 type Drawn = {
@@ -74,21 +74,7 @@ vi.mock('herdr', () => ({
             at.opened.push(args);
             return { code: 0, stdout: '' };
         }
-        // the mac's own flags, which the linux runner's stat reads as others
-        if (program === 'stat')
-            return {
-                code: 0,
-                stdout: args
-                    .slice(3)
-                    .filter((path) => existsSync(path))
-                    .map((path) => `1\t${path}`)
-                    .join('\n'),
-            };
-        const ran = spawnSync(program, args, {
-            encoding: 'utf8',
-            timeout: 10_000,
-        });
-        return { code: ran.status ?? 1, stdout: ran.stdout };
+        return macExec(program, args);
     },
     home: () => '/Users/me',
     layout: () => null,
@@ -124,7 +110,7 @@ const row = {
     sid: 's1',
 } as never;
 const press = vi.fn();
-const files = createCardFiles({ audioApp: () => null });
+const files = createCardFiles({ audioApp: () => 'VLC' });
 const deps = {
     chipsOf: () => [],
     files: () => files,
@@ -231,6 +217,17 @@ describe('an ask in three parts', () => {
         );
     });
 
+    test('a path in its title or body reads as the file’s name', () => {
+        const named = {
+            ...(look as object),
+            body: 'read /tmp/x/notes.md',
+            title: '🐑 /tmp/x/a.md',
+        };
+        const card = drawn(named);
+        expect(find(card, 'body-s1:o12').args[1]).toBe('read notes\\.md');
+        expect(find(card, 'title-s1:o12').args[1]).toBe('**👀 🐑 a\\.md**');
+    });
+
     test('its pick is the grey ➡️ line', () => {
         const pick = find(drawn(look), 'pick-s1:o12');
         expect(pick.args[1]).toBe('➡️ both work');
@@ -326,6 +323,7 @@ describe('a file or link an ask names opens by the chat’s rule', () => {
     mkdirSync(join(dir, 'Calculator.app'));
     symlinkSync(join(dir, 'Calculator.app'), join(dir, 'notes.md'));
     writeFileSync(join(dir, 'real.md'), '');
+    writeFileSync(join(dir, 'a.mp3'), '');
     const linked = (link: string) => ({ ...(look as object), id: 'o9', link });
 
     test.each([
@@ -333,6 +331,11 @@ describe('a file or link an ask names opens by the chat’s rule', () => {
         ['a symlink to one', 'notes.md', ['-R', 'Calculator.app']],
         ['an app by a file url', 'file', ['-R', 'Calculator.app']],
         ['a note', 'real.md', ['real.md']],
+        [
+            'a song, in the app his settings name',
+            'a.mp3',
+            ['-a', 'VLC', 'a.mp3'],
+        ],
     ])('%s', async (_what, name, want) => {
         const link =
             name === 'file' ? `file://${dir}/Calculator.app` : `${dir}/${name}`;
@@ -342,7 +345,7 @@ describe('a file or link an ask names opens by the chat’s rule', () => {
         fire(chip, 'on_click', {}, cx());
         await vi.waitFor(() => expect(at.opened).toHaveLength(1));
         expect(at.opened).toEqual([
-            want.map((w) => (w === '-R' ? w : `${dir}/${w}`)),
+            want.map((w) => (/^-|^VLC$/.test(w) ? w : `${dir}/${w}`)),
         ]);
     });
 
