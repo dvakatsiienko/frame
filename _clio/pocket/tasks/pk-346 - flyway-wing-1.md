@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T12:07:24Z'
+updated_date: '2026-11-25T12:34:52Z'
 labels:
   - s
   - clio-wing-1
@@ -24,13 +24,14 @@ ordinal: 1001
 - [ ] #6 f73 trials, one topic at a time with dima after evergreen: gate-speed, review-rounds, wisphunter verdicts — with: dima
 - [ ] #7 f75 lowtide run: the false-open hunt first, then the tails (PK-346:W95) — waits for: perf and bytes — parked: 2026-11-25
 - [ ] #8 f74 ⏳ bytes prod: rerun the five failed deploys at 15:25, read every app Ready — waits for: pnpm 12.23 release age
-- [ ] #9 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
-- [ ] #10 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
-- [ ] #11 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #12 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #13 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #14 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
-- [ ] #15 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
+- [ ] #9 f77 ⏳ FRM-704 the cited-docs check at commit: built in my tree after the rerun, main pulled first — waits for: FRM-596
+- [ ] #10 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
+- [ ] #11 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
+- [ ] #12 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #13 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #14 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #15 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #16 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -837,4 +838,6 @@ PK-346:W96 (2026-11-25 13:29, dima): and btw: refresh lowtide to also hunt stray
 PK-346:W97 (2026-11-25 13:29, dima): it is the first step of lowtide always, start with it.
 PK-346:W98 (2026-11-25 13:29, dima): (after your gate-speed proposal)
 13:49 the 13:29 groom: PK-346:W96 and PK-346:W97 landed in lowtide's SKILL.md and references/false-open-hunt.md; PK-346:W95 and PK-346:W98 wait behind his 13:34 «perf and bytes first»
+
+14:34 the false-open hunt (his o16 tick, 14:29): 136 open FRM and BYT tickets read, 37 of them someday or snoozed and skipped, 0 falsely open; FRM-497 is built, its look left, sent to main; gate-speed verdict closed (his o15), FRM-704 its fix
 <!-- SECTION:NOTES:END -->
