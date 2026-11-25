@@ -3,7 +3,7 @@
 
 import { Button, h_flex, v_flex } from 'gpui-base';
 import { div } from 'gpui-kit';
-import { home, shared } from 'herdr';
+import { exec, home, shared } from 'herdr';
 
 import {
     CARD_PAD,
@@ -18,12 +18,12 @@ import {
 import {
     SIZE,
     drawnSize,
-    followLink,
     leadingRoom,
     line,
     markdownText,
     prose,
 } from './look.js';
+import { openWebLink } from './open-path.js';
 import {
     askLabel,
     cardKind,
@@ -85,7 +85,7 @@ export function createOrbitView(deps) {
     const pillW = new Map();
     /** each card's inner width, by its ask: a look's border takes two pixels of it @type {Map<string, number>} */
     const cardW = new Map();
-    /** each title's width on one line @type {Map<string, number>} */
+    /** each title's width on one line, by its ask @type {Map<string, number>} */
     const titleW = new Map();
     /** the id copied last, its ✓ shown for a moment; each copy its own record @type {{ key: string } | null} */
     let copied = null;
@@ -263,10 +263,9 @@ export function createOrbitView(deps) {
     const pillLabel = (s, ask) =>
         `${deps.updated()?.has(`${s.sid}:${ask.id}`) ? '🆕 ' : ''}${askLabel(s.name, ask.id ?? '')}`;
 
-    /** the id pill's width as drawn, guessed wide until it is @param {string} label */
-    const pillWidth = (label) =>
-        pillW.get(label) ??
-        label.length * 0.75 * SIZE.small + 2 * PILL.padX + 2;
+    /** the id pill's width as drawn, guessed wide until it is @param {string} key @param {string} label */
+    const pillWidth = (key, label) =>
+        pillW.get(key) ?? label.length * 0.75 * SIZE.small + 2 * PILL.padX + 2;
 
     /**
      * an ask in its three parts (FRM-620 slice 7): the title, bold on one line that ends before the id, its body as
@@ -278,9 +277,9 @@ export function createOrbitView(deps) {
             ...ask,
             title: askText(ask.title ?? '', home()),
         });
-        const inset = titleInset(pillWidth(pillLabel(s, ask)));
+        const inset = titleInset(pillWidth(key, pillLabel(s, ask)));
         const isWhole =
-            (titleW.get(title) ?? Number.POSITIVE_INFINITY) <=
+            (titleW.get(key) ?? Number.POSITIVE_INFINITY) <=
             (cardW.get(key) ?? 0) - inset;
         const body = ask.body ? askMarkdown(askText(ask.body, home())) : '';
         return [
@@ -302,7 +301,7 @@ export function createOrbitView(deps) {
                         .whitespace_nowrap()
                         .font_bold()
                         .text_size(LOOK.title)
-                        .on_size_change(keepWidth(titleW, title))
+                        .on_size_change(keepWidth(titleW, key))
                         .child(title),
                 )
                 .child(
@@ -367,9 +366,11 @@ export function createOrbitView(deps) {
                 )
                 .tooltip(`copy ${ask.id}`)
                 // the ✓ takes the id's own room, so the title beside it does not move
-                .when(isCopied, (el) => el.w(pillWidth(label)).text_center())
+                .when(isCopied, (el) =>
+                    el.w(pillWidth(key, label)).text_center(),
+                )
                 .when(!isCopied, (el) =>
-                    el.on_size_change(keepWidth(pillW, label)),
+                    el.on_size_change(keepWidth(pillW, key)),
                 )
                 .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
                 .on_click((_e, cx) => {
@@ -403,7 +404,9 @@ export function createOrbitView(deps) {
             .text_color(t.accent)
             .cursor_pointer()
             .hover((st) => st.underline())
-            .on_click((_e, cx) => followLink(ask.link ?? '', cx))
+            .on_click((_e, cx) =>
+                openWebLink(ask.link ?? '', (url) => cx.open_url(url), exec),
+            )
             .child('🔗')
             .child(shown?.label ?? '');
     }
@@ -419,8 +422,7 @@ export function createOrbitView(deps) {
             );
         const isUpdated = deps.updated()?.has(`${s.sid}:${ask.id}`);
         const label = `${isUpdated ? '🆕 ' : ''}${askLabel(s.name, ask.id)}`;
-        const width =
-            (labelW.get(label) ?? label.length * 0.62 * SIZE.main) + 6;
+        const width = (labelW.get(id) ?? label.length * 0.62 * SIZE.main) + 6;
         return div()
             .relative()
             .w_full()
@@ -441,7 +443,7 @@ export function createOrbitView(deps) {
                     .font_semibold()
                     .text_size(SIZE.main)
                     .text_color(t.foreground)
-                    .on_size_change(keepWidth(labelW, label))
+                    .on_size_change(keepWidth(labelW, id))
                     .child(label),
             );
     }

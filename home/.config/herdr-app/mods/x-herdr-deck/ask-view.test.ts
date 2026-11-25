@@ -214,6 +214,13 @@ describe('an ask in three parts', () => {
         expect(cut.calls.get('tooltip')).toEqual(['👀 🐑 path links']);
     });
 
+    test('a new title of the same width, which herdr does not report, stays whole', () => {
+        drawn(look);
+        const renamed = { ...(look as object), title: '🐑 links path' };
+        const card = view.ask(theme, row, renamed as never);
+        expect(find(card, 'title-s1:o12').args[1]).toBe('**👀 🐑 links path**');
+    });
+
     test('its body is small markdown, a step smaller than the title', () => {
         const card = drawn(look);
         const body = find(card, 'body-s1:o12');
@@ -387,19 +394,6 @@ describe('a file or link an ask names opens by the chat’s rule', () => {
         expect(find(drawn(ask), 'chip-s1:o9-0').kids).toEqual([
             'not found: brief.md',
         ]);
-    });
-
-    test('a link in its words that would run something opens nothing', () => {
-        const text = find(drawn(plain), 'ask-s1:o3');
-        fire(text, 'on_link_click', 'shortcuts://run-shortcut?name=x', cx());
-        expect([at.urls, at.opened]).toEqual([[], []]);
-    });
-
-    test('a link in an old-form ask’s words opens by it too', async () => {
-        const text = find(drawn(plain), 'ask-s1:o3');
-        fire(text, 'on_link_click', `file://${dir}/Calculator.app`, cx());
-        await vi.waitFor(() => expect(at.opened).toHaveLength(1));
-        expect(at.opened).toEqual([['-R', `${dir}/Calculator.app`]]);
     });
 
     test('a link that would run something draws none', () => {

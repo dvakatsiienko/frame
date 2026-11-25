@@ -22,12 +22,12 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given an ask in three parts
   - then its title ends before the pill, which reads `o12`, `w1·o12` or `codie·o12`, 🆕 first on a new round
   - when dima clicks the pill
-  - then `o12` is on his clipboard, the pill leads with ✓ for a moment, and the card is not pressed
+  - then `o12` is on his clipboard, the pill shows ✓ in its place, the same width, for a moment, and the card is not pressed
 - 🔎 a file or a link an ask names opens by the chat's rule (FRM-620 step 138)
   - given an ask naming an app, or a symlink to one, however its path is written, `file://` too
   - when dima clicks it
   - then Finder shows it, it never runs; a file he reads, looks at or hears opens, a folder too, audio in the app his settings name; one gone since reads «not found»
-  - and an https, linear or obsidian note link opens, in an old-form ask's words too; a link of any other scheme opens nothing, and as the ask's link draws nothing
+  - and an https, linear or obsidian note link opens; a link of any other scheme draws nothing
   - decision: one shared rule, `_shared/open-path.js`, no copy (the sixth sense's find, 25 Nov)
 - ✅ an ask sent the old way leads with its id, so dima can name it
   - given a thread has an open ask with an id and no title

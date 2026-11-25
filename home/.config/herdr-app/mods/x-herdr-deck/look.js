@@ -2,13 +2,11 @@
 
 import { TextView } from 'gpui-base';
 import { div } from 'gpui-kit';
-import { exec, home, settings } from 'herdr';
+import { settings } from 'herdr';
 
-import { linkPath, openPath, openWebLink } from './open-path.js';
 import { literalAngles } from './orbit.js';
 
 /** @typedef {import('gpui-kit').Color} Color */
-/** @typedef {import('./deck-types.js').Context} Context */
 /** @typedef {import('./deck-types.js').Theme} Theme */
 
 // the system font: herdr's own UI font (Geist) ships one face, so markdown's **bold** drew flat in it
@@ -54,21 +52,14 @@ export const leadingRoom = (width, size) => {
     return ' '.repeat(ems) + ' '.repeat(sixths);
 };
 
-// TextView is the one element whose text can be selected, so anything worth reading aloud goes through it.
 /** a size herdr reports in window pixels, as the pixels a view draws in @param {number} size */
 export const drawnSize = (size) => size / (Number(settings().zoom) || 1);
 
-/** a link in a text or on its own line, opened by the chat's rule; herdr's own opening takes any scheme, `file://` too @param {string} url @param {Context} cx */
-export function followLink(url, cx) {
-    const path = linkPath(url, home());
-    if (path) openPath(path, null, exec).catch(() => {});
-    else openWebLink(url, (page) => cx.open_url(page), exec);
-}
-
+// TextView is the one element whose text can be selected, so anything worth reading aloud goes through it. a link in
+// it opens as herdr opens a mod's: http(s) alone, never on a right-click
 /** @param {string} id @param {string} markdown @param {Color} color @param {number} size */
 export const markdownText = (id, markdown, color, size) =>
     TextView.markdown(id, markdown)
-        .on_link_click((url, cx) => followLink(url, cx))
         .selectable()
         .w_full()
         .text_size(size)

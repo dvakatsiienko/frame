@@ -20,7 +20,7 @@ read this before a change: find the one module that owns the state you touch, an
 ## drawing parts, no state
 
 - `steer-kit.js` — the press button and the steer box every card draws
-- `look.js` — the font, the type scale, a meter bar, a one-line row, selectable prose and where its links open
+- `look.js` — the font, the type scale, a meter bar, a one-line row, selectable prose
 
 ## rules — pure steps, each with its test
 
