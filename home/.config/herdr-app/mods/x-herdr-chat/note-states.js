@@ -23,7 +23,7 @@ import { noteLine } from './note-text.js';
  * @typedef {object} Note
  * @property {string} id
  * @property {Passage} passage
- * @property {string} text his note
+ * @property {string} text his note as he last typed it, the thread's once it has it
  * @property {NoteState} state
  * @property {string | null} reason a draft's: why it came back
  * @property {number} back the replies below the message when it was joined or sent
@@ -77,10 +77,14 @@ export const lineOf = (note) =>
     });
 
 /** @param {Note} note @returns {Note} the line it now says is kept beside the ones before */
-const told = (note) => ({
+const told = (note, text = note.text) => ({
     ...note,
-    said: [...note.said, { line: lineOf(note), text: note.text }],
+    said: [...note.said, { line: lineOf({ ...note, text }), text }],
 });
+
+/** its row does not carry these words @param {Note} note */
+export const isBehind = (note, text = note.text) =>
+    note.said.at(-1)?.text !== text;
 
 /**
  * @param {Note} note @param {NoteEvent} event
@@ -89,7 +93,7 @@ const told = (note) => ({
 export function nextNote(note, event) {
     switch (event.type) {
         case 'typed':
-            return note.state === 'draft' && note.text !== event.text
+            return isUnsent(note) && note.text !== event.text
                 ? { ...note, reason: null, text: event.text }
                 : note;
         case 'queued':
@@ -104,8 +108,8 @@ export function nextNote(note, event) {
                   })
                 : note;
         case 'rewritten':
-            return note.state === 'waiting' && note.text !== event.text
-                ? told({ ...note, text: event.text })
+            return note.state === 'waiting' && isBehind(note, event.text)
+                ? told(note, event.text)
                 : note;
         // off the join file, never taken, or a send that did not go: his words are his again
         case 'takenBack':
@@ -119,15 +123,20 @@ export function nextNote(note, event) {
                       state: 'draft',
                       writtenAt: 0,
                   };
+        // what he typed and the row never carried is not the thread's
         case 'turnTook':
             return note.state === 'waiting'
-                ? { ...note, state: 'taken' }
+                ? {
+                      ...note,
+                      state: 'taken',
+                      text: note.said.at(-1)?.text ?? note.text,
+                  }
                 : note;
         // the thread's own line wins: an edit that lost the race shows what the thread got
         case 'arrived': {
             if (note.state === 'draft' || note.state === 'sent') return note;
             const got = note.said.find((s) => s.line === event.line);
-            const text = got?.text ?? note.text;
+            const text = (got ?? note.said.at(-1))?.text ?? note.text;
             return note.state === 'joined' && note.text === text
                 ? note
                 : { ...note, state: 'joined', text };
@@ -149,15 +158,27 @@ export function nextNote(note, event) {
     }
 }
 
-/** two passages share a character of one message @param {Passage} a @param {Passage} b */
-export const isOverlapping = (a, b) =>
-    a.row.id === b.row.id &&
+/** how far one text stands in the other that ends with it, null with no such pair @param {Part} p @param {Part} q */
+const movedBy = (p, q) =>
+    q.source.endsWith(p.source) || p.source.endsWith(q.source)
+        ? q.source.length - p.source.length
+        : null;
+
+/**
+ * two passages share a character of one message; a row an older page joined has that page's text before its own
+ * @param {Passage} a @param {Passage} b @param {(id: string) => string} [rowOf] the row that holds a message's line now
+ */
+export const isOverlapping = (a, b, rowOf = (id) => id) =>
+    rowOf(a.row.id) === rowOf(b.row.id) &&
     a.parts.some((p) =>
-        b.parts.some(
-            (q) =>
-                p.block === q.block &&
-                (p.range && q.range
-                    ? p.range.start < q.range.end && q.range.start < p.range.end
-                    : p.words === q.words),
-        ),
+        b.parts.some((q) => {
+            const isSameRow = a.row.id === b.row.id;
+            const moved = isSameRow ? 0 : movedBy(p, q);
+            if (moved === null || (isSameRow && p.block !== q.block))
+                return false;
+            return p.range && q.range
+                ? p.range.start + moved < q.range.end &&
+                      q.range.start < p.range.end + moved
+                : p.words === q.words;
+        }),
     );

@@ -117,6 +117,7 @@ describe('a thread he switches to is opening', () => {
             links: quiet(),
             list: quiet(),
             model: quiet(),
+            notes: quiet(),
             pickers: quiet(),
             quill: quiet(),
             rows: quiet(),

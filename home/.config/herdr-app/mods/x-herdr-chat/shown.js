@@ -157,15 +157,16 @@ export function asksActedOn(at) {
     const isNew = (ask, last) =>
         at.isShown && ask !== last && isFreshAsk(ask, at.now);
     return {
-        isAnnotate: isNew(at.annotateAsk, at.lastAnnotate),
+        isAnnotate: at.wasShown && isNew(at.annotateAsk, at.lastAnnotate),
         isEffort: isNew(at.effortAsk, at.lastEffort),
         isEscape: isNew(at.escapeAsk, at.lastEscape),
         isFind: isNew(at.findAsk, at.lastFind),
         isFocus: at.isShown && isQuillAsked,
         isOpened: at.isShown && !at.isKept && (!at.wasShown || at.isSwitched),
-        // a press counts as seen only on screen: the status bar shows the chat and writes the press in one tick, so a
+        // F6 is for the words he sees: one under Terminal view is over
+        lastAnnotate: at.annotateAsk,
+        // any other press counts as seen only on screen: the status bar shows the chat and writes the press in one tick, so a
         // draw can see the press while the chat is still hidden
-        lastAnnotate: at.isShown ? at.annotateAsk : at.lastAnnotate,
         lastEffort: at.isShown ? at.effortAsk : at.lastEffort,
         lastEscape: at.isShown ? at.escapeAsk : at.lastEscape,
         lastFind: at.isShown ? at.findAsk : at.lastFind,

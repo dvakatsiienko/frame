@@ -1,0 +1,210 @@
+import { beforeEach, expect, test, vi } from 'vitest';
+
+// FRM-585 A2: a note of the thread shown hears of its thread's state and of its line landing, and of no other thread's
+const at = vi.hoisted(() => ({
+    lines: [] as { id: string; isWaiting?: boolean; text: string }[],
+    state: null as object | null,
+    /** resolves the pending wait for a change of each folder */
+    touch: new Map<string, () => void>(),
+}));
+vi.mock('gpui-kit', () => ({ View: class {}, div: () => null }));
+vi.mock('gpui-base', () => ({
+    Textarea: {},
+    TextareaState: {},
+    VirtualListScrollHandle: {},
+    h_flex: () => null,
+    v_flex: () => null,
+}));
+vi.mock('fs/promises', () => ({ readdir: async () => ['11.json', '22.json'] }));
+vi.mock('herdr', () => ({
+    appHome: () => '/app',
+    exec: async () => ({
+        code: 0,
+        stdout: '11 01:00 claude HC_TERMINAL_ID=t1\n22 01:00 claude HC_TERMINAL_ID=t2',
+    }),
+    home: () => '/h',
+    readTextFile: async (path: string) => {
+        const pid = /sessions\/(\d+)\.json$/.exec(path)?.[1];
+        if (pid) return JSON.stringify({ cwd: '/w', sessionId: `s-${pid}` });
+        return path.endsWith('fleet.json') ? null : JSON.stringify(at.state);
+    },
+    watchFolder: (dir: string) =>
+        Object.assign(
+            new Promise((done) => at.touch.set(dir, () => done([dir]))),
+            { cancel: () => {} },
+        ),
+}));
+vi.stubGlobal('localStorage', { getItem: () => null });
+vi.mock('./reader.js', () => ({
+    createReader: () => ({
+        readNew: async () => ({
+            isRestart: false,
+            lines: at.lines.splice(0),
+        }),
+    }),
+}));
+vi.mock('./pages.js', () => ({ createPages: () => ({ close: () => {} }) }));
+const { createThreadFeed } = await import('./thread-feed.js');
+
+const quiet = (): unknown =>
+    new Proxy(() => undefined, { apply: () => quiet(), get: () => quiet() });
+const tick = async () => {
+    for (let i = 0; i < 80; i++) await Promise.resolve();
+};
+const cx = {
+    notify: () => {},
+    spawn: (job: (c: unknown) => unknown) => job(cx),
+    timer: {
+        after: (_ms: number, run: (c: unknown) => void) => run(cx),
+        every: () => {},
+    },
+};
+const STATE_DIR = '/h/.claude/shelf/herdr-state';
+
+function world() {
+    const said = {
+        arrived: [] as [string, readonly { text: string }[]][],
+        changed: 0,
+        settled: [] as [string, unknown][],
+    };
+    const answer = { arrived: true, settle: async () => true };
+    let joins: unknown = null;
+    const rows: object[] = [];
+    const feed: ReturnType<typeof createThreadFeed> = createThreadFeed({
+        ...(Object.fromEntries(
+            [
+                'band',
+                'findBar',
+                'heights',
+                'links',
+                'list',
+                'pickers',
+                'quill',
+                'rows',
+                'sent',
+            ].map((k) => [k, quiet()]),
+        ) as object),
+        clearShown: () => {
+            joins = null;
+        },
+        look: () => undefined,
+        model: {
+            add: (lines: object[]) => {
+                for (const line of lines) rows.push({ kind: 'mine', ...line });
+                return {
+                    changed: (lines as { id: string }[]).map((l) => l.id),
+                    removed: 0,
+                };
+            },
+            rows,
+        },
+        notes: {
+            arrived: (file: string, rows: readonly { text: string }[]) => {
+                said.arrived.push([file, rows]);
+                return answer.arrived;
+            },
+            settle: (file: string) => {
+                said.settled.push([file, feed.joinsOf(file)]);
+                return answer.settle();
+            },
+        },
+        notesChanged: () => {
+            said.changed += 1;
+        },
+        sendPath: {
+            joins: () => joins,
+            magic: { arrived: () => null },
+            settle: () => {},
+            showSettled: () => {},
+            takeJoins: (next: unknown) => {
+                joins = next;
+            },
+        },
+    } as never);
+    feed.start(cx as never);
+    return { answer, feed, said };
+}
+const open = async (w: ReturnType<typeof world>, address: string) => {
+    w.feed.follow(address, cx as never);
+    await tick();
+};
+
+beforeEach(() => {
+    at.lines = [];
+    at.state = { joins: { joined: [], taken: ['j1'] } };
+    at.touch.clear();
+});
+
+test("the thread's notes settle by its state, at its opening and at each change of it", async () => {
+    const w = world();
+    await open(w, 't1');
+    const file = w.feed.file();
+    expect(file).toContain('s-11');
+    expect(w.said.settled).toEqual([[file, { joined: [], taken: ['j1'] }]]);
+    at.state = { joins: { joined: ['j1'], taken: [] } };
+    at.touch.get(STATE_DIR)?.();
+    await tick();
+    expect(w.said.settled.at(-1)).toEqual([
+        file,
+        { joined: ['j1'], taken: [] },
+    ]);
+    expect(w.said.changed).toBe(2);
+});
+
+test('a state that moved no note says nothing', async () => {
+    const w = world();
+    w.answer.settle = async () => false;
+    await open(w, 't1');
+    expect([w.said.settled.length, w.said.changed]).toEqual([1, 0]);
+});
+
+test('what its state lists of its joins is unknown until it is read, and of another thread’s always', async () => {
+    const w = world();
+    await open(w, 't1');
+    const first = w.feed.file() ?? '';
+    expect(w.feed.joinsOf(first)).toEqual({ joined: [], taken: ['j1'] });
+    w.feed.follow('t2', cx as never);
+    while (!w.feed.file()?.includes('s-22')) await Promise.resolve();
+    const second = w.feed.file() ?? '';
+    expect(w.feed.joinsOf(second)).toBeUndefined();
+    await tick();
+    expect(w.feed.joinsOf(second)).toEqual({ joined: [], taken: ['j1'] });
+    expect(w.feed.joinsOf(first)).toBeUndefined();
+});
+
+test('an answer that comes after he left the thread says nothing in the next one', async () => {
+    const w = world();
+    let done = (_is: boolean) => {};
+    w.answer.settle = () =>
+        new Promise((resolve) => {
+            done = resolve;
+        });
+    await open(w, 't1');
+    w.answer.settle = async () => false;
+    await open(w, 't2');
+    done(true);
+    await tick();
+    expect(w.said.changed).toBe(0);
+});
+
+test('his messages as they land, never one still in the queue', async () => {
+    const w = world();
+    await open(w, 't1');
+    const dir = [...at.touch.keys()].find((d) => d !== STATE_DIR) ?? '';
+    const changed = w.said.changed;
+    at.lines = [
+        { id: 'a', text: 'a line' },
+        { id: 'b', isWaiting: true, text: 'queued' },
+    ];
+    at.touch.get(dir)?.();
+    await tick();
+    expect(w.said.arrived).toEqual([
+        [w.feed.file(), [expect.objectContaining({ text: 'a line' })]],
+    ]);
+    expect(w.said.changed).toBe(changed + 1);
+    w.answer.arrived = false;
+    at.lines = [{ id: 'c', text: 'another' }];
+    at.touch.get(dir)?.();
+    await tick();
+    expect([w.said.arrived.length, w.said.changed]).toEqual([2, changed + 1]);
+});

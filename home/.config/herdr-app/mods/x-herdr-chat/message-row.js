@@ -10,6 +10,7 @@ import { blockSource, drawnBlocks, replyBlocks } from './drawn.js';
 import { fileAt, isSentRow, isUnsendRow, withFileRows } from './files.js';
 import { replyFold } from './fold.js';
 import { ICONS } from './icons.js';
+import { noteMarks } from './note-marks.js';
 import { tint } from './tint.js';
 import {
     createToolFolds,
@@ -31,12 +32,16 @@ const SENT_THUMB = 96;
 const CHAR_PX = 7.5;
 // how strong find paints a match, and the one it stepped to
 const HIT_ALPHA = '4d';
+// the words of a note the thread has not got, and of one it has
+const NOTE_ALPHA = '40';
+const HAD_NOTE_ALPHA = '22';
 const STEPPED_ALPHA = 'b3';
 
 /**
  * @typedef {object} MessageRowsDeps
  * @property {() => number} column the readable column's width
  * @property {() => number} room the width a row may take: the list's, at most the column
+ * @property {(row: Row) => readonly import('./note-states.js').Note[]} notesOn his notes on a row
  * @property {() => ReturnType<typeof import('./find.js').createFind>} find the chat's search, which marks the rows and the words it matched
  * @property {() => import('./look.js').Look} look
  * @property {() => boolean} isShowMore his «Show more» switch (FRM-607)
@@ -241,6 +246,7 @@ export function createMessageRows(deps) {
             stampOf(row, pre),
             foldOf(row)?.hidden ?? '',
             isHit ? find.state.q : '',
+            JSON.stringify(marksOf(row)),
             find.current() === row.id ? find.currentHit()?.n : '',
             ...row.pictures.map((p) => deps.sent.relOf(p) ?? ''),
             t.accent,
@@ -252,17 +258,34 @@ export function createMessageRows(deps) {
         ].join('|');
     }
 
+    /** the words of his notes on a row @param {Row} row */
+    function marksOf(row) {
+        const notes = deps.notesOn(row);
+        return notes.length ? noteMarks(notes, drawnBlocks(row)) : [];
+    }
+
     /**
-     * one text view of a row, find's matches painted behind its words: the stepped one last, so it paints over. a mark moves
-     * no line, so the measured copy has none
+     * one text view of a row, the words of his notes and find's matches painted behind its own: the stepped match last, so
+     * it paints over. a mark moves no line, so the measured copy has none
      * @param {Row} row @param {Theme} t
      * @param {{ block?: number, id: string, isShown: boolean, source: string }} at `block` its place in the row
      */
     function textView(row, t, { block = 0, id, isShown, source }) {
-        const view = TextView.markdown(id, source).selectable(isShown);
+        const plain = TextView.markdown(id, source).selectable(isShown);
+        if (!isShown) return plain;
+        const view = marksOf(row)
+            .filter((m) => m.block === block)
+            .reduce(
+                (el, { end, isStrong, start }) =>
+                    el.highlight_range(
+                        start,
+                        end,
+                        tint(t.accent, isStrong ? NOTE_ALPHA : HAD_NOTE_ALPHA),
+                    ),
+                plain,
+            );
         const find = deps.find();
-        if (!isShown || !find.state.hits.some((h) => h.id === row.id))
-            return view;
+        if (!find.state.hits.some((h) => h.id === row.id)) return view;
         const stepped = find.current() === row.id ? find.currentHit()?.n : null;
         return find
             .rangesOf(row)

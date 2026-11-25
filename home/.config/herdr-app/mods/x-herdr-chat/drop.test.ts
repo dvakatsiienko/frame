@@ -5,11 +5,13 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 type Handler = (...args: unknown[]) => unknown;
 const at = vi.hoisted(() => ({
     agents: [] as object[],
+    box: new Map<string, Handler>(),
     layout: null as object | null,
     made: [] as { handlers: Map<string, Handler>; kids: unknown[] }[],
     props: {} as Record<string, unknown>,
     shared: new Map<string, unknown>(),
     timers: [] as ((() => void) & { ms: number })[],
+    typed: '',
 }));
 const { element } = vi.hoisted(() => ({
     element: (): unknown => {
@@ -63,8 +65,9 @@ vi.mock('gpui-base', () => ({
         new: () =>
             quiet({
                 focus: vi.fn(),
+                on: (event: string, run: Handler) => at.box.set(event, run),
                 selected_range: () => ({ end: 0, start: 0 }),
-                value: () => '',
+                value: () => at.typed,
             }),
     },
     VirtualListScrollHandle: { new: () => quiet() },
@@ -362,13 +365,14 @@ describe('the note box', () => {
     const asked = (over: Record<string, unknown> = {}, time = Date.now()) => {
         const opened: unknown[] = [];
         const stops: unknown[] = [];
-        at.shared.set('chat.annotate', time);
+        at.shared.set('chat.annotate', null);
         const view = chat({
             list: quiet({ selectedAt: (pressed: number) => `at ${pressed}` }),
             quillMini: quiet({
                 focus: () => opened.push('focus'),
                 isOpen: () => false,
-                toggle: (selected: () => unknown) => opened.push(selected()),
+                toggle: (selected: () => unknown, pressed: number) =>
+                    opened.push(selected(), pressed),
             }),
             tab: quiet({
                 draw: (drawn: unknown) => {
@@ -383,13 +387,15 @@ describe('the note box', () => {
             for (const run of at.timers.splice(0)) run();
         };
         draw();
+        at.shared.set('chat.annotate', time);
+        draw();
         draw();
         return { opened, stops: stops[0] };
     };
 
     test('F6 takes the words that stood at its press, once', () => {
         const time = Date.now() - 20;
-        expect(asked({}, time).opened).toEqual([`at ${time}`]);
+        expect(asked({}, time).opened).toEqual([`at ${time}`, time]);
     });
 
     test.each([
@@ -405,7 +411,7 @@ describe('the note box', () => {
 
     test('F6 over an open find bar works', () => {
         const findBar = quiet({ find: { state: { isOpen: true } } });
-        expect(asked({ findBar }).opened).toHaveLength(1);
+        expect(asked({ findBar }).opened).toHaveLength(2);
     });
 
     test('F6 with the chat not on screen does nothing', () => {
@@ -426,6 +432,40 @@ describe('the note box', () => {
     test('the loop’s turn gives it the keyboard', () => {
         const tab = quiet({ draw: () => 'quill-mini' });
         expect(asked({ tab }, 0).opened).toContain('focus');
+    });
+
+    test('the quill under a ⌘Enter that sent the note sends nothing of its own till ⌘ is let go', () => {
+        const pressed = vi.fn();
+        const view = loaded();
+        Object.assign(view.sendPath as object, {
+            press: pressed,
+            push: pressed,
+        });
+        const quill = view.quill as never as {
+            focus: (isSending: boolean) => void;
+            view: Handler;
+        };
+        at.typed = 'the quill’s own';
+        quill.focus(true);
+        at.made.length = 0;
+        quill.view({});
+        const on = (name: string) =>
+            at.made.find((el) => el.handlers.has(name))?.handlers.get(name);
+        at.box.get('submit')?.({ secondary: true }, cx);
+        expect(pressed).not.toHaveBeenCalled();
+        on('on_modifiers_changed')?.({ modifiers: { platform: false } }, cx);
+        at.box.get('submit')?.({ secondary: true }, cx);
+        expect(pressed).toHaveBeenCalledTimes(1);
+    });
+
+    test.each([
+        ['an older page joined', 0, 'page-row'],
+        ['not loaded', -1, 'line'],
+    ])('a message whose row is %s', (_how, index, row) => {
+        const view = chat({
+            model: { indexOf: () => index, rows: [{ id: 'page-row' }] },
+        }) as never as { rowOf: (id: string) => string };
+        expect(view.rowOf('line')).toBe(row);
     });
 
     test('a thread switched from shuts it', () => {
@@ -683,13 +723,22 @@ describe('a thread he switches to', () => {
     test.each([
         ['a steer box drawn in the deck keeps the cursor', ['steer-a:o1'], []],
         ['a steer box gone since does not', [], ['chat', 'quill']],
-    ])('a reload of the chat: %s', (_what, stops, focused) => {
-        const w = open({ held: 'steer-a:o1', isLoaded: false, stops });
-        w.draw();
-        w.there();
-        w.draw();
-        expect(w.focused).toEqual(focused);
-    });
+        [
+            'the note box, shut by it, does not',
+            ['quill', 'quill-mini'],
+            ['chat', 'quill'],
+            'quill-mini',
+        ],
+    ])(
+        'a reload of the chat: %s',
+        (_what, stops, focused, held = 'steer-a:o1') => {
+            const w = open({ held, isLoaded: false, stops });
+            w.draw();
+            w.there();
+            w.draw();
+            expect(w.focused).toEqual(focused);
+        },
+    );
 });
 
 test('⌘F with the viewer open opens no find under it', () => {

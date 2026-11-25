@@ -296,7 +296,6 @@ export function createPlace() {
             wheelUntil = 0;
             glideUntil = 0;
             isLastWheelDown = false;
-            hasLeftEnd = false;
             isHeldAtEnd = false;
             seen = { room: 0, since: 0 };
             stepRoom = 0;
