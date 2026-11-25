@@ -47,7 +47,7 @@ floods; no other member prints one.
 
 **A ui part is shown, never described** (dima, 2026-11-10: «let's use screenshots to communicate»): a shot with the part boxed and named, drawn by me, helga or a `helper-lite`; where its window is shot: the surface leaf.
 
-**An ask that needs his hand names the exact place** — the door, the app, the screen — and numbered steps shown; a test ≤3 presses, each with what he should see, the rest ours (dima, 2026-11-25); a file goes in `link`, the text names it in words, never a raw path (his o4, 11-20; until: FRM-677).
+**An ask that needs his hand names the exact place** (door, app, screen) and numbered steps shown; a test ≤3 presses, each with what he should see, the rest ours (dima, 2026-11-25); a restart ask names every process it restarts; a file goes in `link`, the text names it in words, never a raw path (his o4, 11-20; until: FRM-677).
 
 <!-- 2026-10-20: a labelled guess sent him to clear the Code tab's plugin list; x, matt's skills and three more were restored from git. -->
 
@@ -75,7 +75,7 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **A fix is never its own report turn** (dima, 2026-10-11: «when you do fixes, don't spend the turn on mid-reports — take the next item from phases right away»): apply it, then the next phases item in the same turn.
 
-**A running trial lives as a phases line with its count** («assumed rows: turn 4/10»): a compact can't drop it.
+**A running trial lives as a phases line with its count**: a compact can't drop it.
 
 **A fact too important for him that won't fit an ask** is printed in the reply while the ask steers.
 
