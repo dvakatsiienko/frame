@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T17:10:41Z'
+updated_date: '2026-11-25T17:16:07Z'
 labels:
   - s
   - clio-wing-1
@@ -16,23 +16,24 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f96 FRM-582 two reads before dispatch: edge cases, then prior art with dima — waits for: FRM-585 — parked: 2026-11-25
-- [ ] #2 f104 board: the «assumed» list and the eight blank text boxes in herdr, keep, move or drop — with: dima
-- [ ] #3 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
-- [ ] #4 f93 ⏳ bytes#176 github-actions pr: merge it once renovate stability-days goes green — waits for: bytes#176 release age
-- [ ] #5 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
-- [ ] #6 f105 📅 herdr plan talk-through, FRM-616: three decisions, your grill — on: 2026-11-26
-- [ ] #7 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
-- [ ] #8 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
-- [ ] #9 f103 📅 FRM-706 lost-ping alarm: 7 days after its land, a true gap since? none → the cut to dima — on: 2026-12-04
-- [ ] #10 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #11 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #12 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #13 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
-- [ ] #14 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
-- [ ] #15 f84 🦥 FRM-696 hang-heal: the full shape-idea grill — later: dima 15:08
-- [ ] #16 f85 🦥 github event streams: is gh event listen worth it for our ci and pr watches — later: dima 15:08
-- [ ] #17 f99 🦥 the guard, an emoji may allow anything (FRM-582:W94): a grill on his time — later: dima 16:55
+- [ ] #1 f106 26 Nov, FIRST: herdr plan talk-through, FRM-616, three decisions as a grill — with: dima
+- [ ] #2 f107 26 Nov: kokoro step by hand after speak push (evergreen runs it), then FRM-669 closes — parked: 2026-11-25
+- [ ] #3 f108 board: the «assumed» list and the eight blank text boxes in herdr, keep, move or drop — with: dima
+- [ ] #4 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
+- [ ] #5 f93 ⏳ bytes#176 github-actions pr: merge it once renovate stability-days goes green — waits for: bytes#176 release age
+- [ ] #6 f109 ⏳ FRM-582 two reads before dispatch: edge cases, then prior art with dima — waits for: FRM-639
+- [ ] #7 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
+- [ ] #8 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
+- [ ] #9 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
+- [ ] #10 f103 📅 FRM-706 lost-ping alarm: 7 days after its land, a true gap since? none → the cut to dima — on: 2026-12-04
+- [ ] #11 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #12 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #13 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #14 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #15 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
+- [ ] #16 f84 🦥 FRM-696 hang-heal: the full shape-idea grill — later: dima 15:08
+- [ ] #17 f85 🦥 github event streams: is gh event listen worth it for our ci and pr watches — later: dima 15:08
+- [ ] #18 f99 🦥 the guard, an emoji may allow anything (FRM-582:W94): a grill on his time — later: dima 16:55
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -174,4 +175,6 @@ PK-346:W133 (2026-11-25 17:57, dima): the next catch block is only for cases whe
 19:07 his 19:04 words beside the peek, answered by it: FRM-694:W7 (2026-11-25 19:04, dima): i am fine with overall speak lane peek. FRM-694:W8 (2026-11-25 19:04, dima): let's peek into mods side.
 
 19:10 FRM-616 talk-through, his word through main 19:11: «more like a grill … do it tomorrow with wing i already grilled enough today». the three: answer buttons in an ask (2–4, never built, his 13 Nov pick); splitting orbit and phases into two mods (never built); closing the umbrella with orbit's ticket after its open wishes are shown
+
+19:16 reordered, nothing finished: f105, f104, f96 left as done lines only to move; they are the new lines. his word, 19:15 herdr-typed: «note: set your flyway in a way so tomorrow first item to solve is herdr talkthrough, main clio should've delegated it to you»
 <!-- SECTION:NOTES:END -->
