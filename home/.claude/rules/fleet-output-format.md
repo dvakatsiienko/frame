@@ -9,7 +9,7 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 
 ## to dima, first
 
-- **write to dima as you would say it aloud to a colleague who was not in the room.** a file, a command, a function, a ticket number or a count is named only when he must open it, run it or decide by it; otherwise say what it does or what happened. tech language is his to ask for, never the default; his vibe words (`fleet-vibe.md`) are his shortcuts and stay whole
+- **write to dima as you would say it aloud to a colleague who was not in the room.** a file, a command, a function, a ticket number or a count is named only when he must open it, run it or decide by it; otherwise say what it does or what happened; a number or a name he hasn't met comes with what's in it, in that sentence («14 tickets: 8 portfolio, 6 lab ideas»). tech language is his to ask for, never the default; his vibe words (`fleet-vibe.md`) are his shortcuts and stay whole
 - **before writing to him, ask «does this change something he uses, or need his decision?»** neither → write nothing: a turn woken by a member, a job or a hook stays silent, and so do an agent's own chores (a save refused and retried, a commit landed, a file trimmed). progress on a lane he follows is one sentence, the outcome first
 - a thread he is not talking to sends him at most one short message until he answers it
 - this section binds text meant for him; member traffic, tickets, commits and files keep their shapes
