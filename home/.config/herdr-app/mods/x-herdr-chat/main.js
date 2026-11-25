@@ -57,7 +57,7 @@ import {
     openingKeys,
     shownThread,
 } from './shown.js';
-import { TAB_HELD, createTabMember } from './tab-loop.js';
+import { TAB_HELD, createTabMember, loopOf } from './tab-loop.js';
 import { START_ROW, createThreadFeed } from './thread-feed.js';
 
 /** @typedef {import('./chat-types.js').Color} Color */
@@ -116,6 +116,8 @@ export default class Chat extends View {
     namedShown = '';
     /** the chat has drawn since this load */
     isLoaded = false;
+    /** the threads opened this load: an earlier one's landing is not the newest's */
+    openedCount = 0;
     /** the keyboard on its way to a thread he opened @type {import('./shown.js').OpeningKeys} */
     keys = 'none';
     /** whether the chat was on screen at the last draw */
@@ -350,16 +352,17 @@ export default class Chat extends View {
         const effortAsk = shared('chat.effort') ?? null;
         const findAsk = shared('chat.find') ?? null;
         const escapeAsk = shared('chat.escape') ?? null;
+        const heldStop = shared(TAB_HELD);
+        const isHeldElsewhere =
+            typeof heldStop === 'string' &&
+            heldStop !== 'quill' &&
+            loopOf(shared, layout()).includes(heldStop);
         const acts = asksActedOn({
             effortAsk,
             escapeAsk,
             findAsk,
             // a reload of the chat opens no thread: a steer box he types in keeps the keyboard
-            isKept:
-                !this.isLoaded &&
-                ![null, undefined, 'quill'].includes(
-                    /** @type {any} */ (shared(TAB_HELD)),
-                ),
+            isKept: !this.isLoaded && isHeldElsewhere,
             isShown,
             isSwitched,
             lastEffort: this.effortAsk,
@@ -415,23 +418,33 @@ export default class Chat extends View {
         if (acts.isFind && !this.pictures.isOpen())
             _cx.timer.after(0, (later) => this.findBar.open(later));
         // the quill is the chat's one Tab stop while the chat shows; the loop asks for it, or a reload hands it back
-        if (
+        const isTabbed =
             this.tab.draw(isShown ? ['quill'] : [], (run) =>
                 _cx.timer.after(0, run),
-            ) === 'quill'
-        )
-            _cx.timer.after(0, () => this.quill.focus());
-        if (acts.isFocus && !this.pictures.isOpen())
-            _cx.timer.after(50, () => {
-                if (!this.pickers.isOpen()) this.quill.focus();
+            ) === 'quill';
+        const isAsked = isTabbed || (acts.isFocus && !this.pictures.isOpen());
+        // a quill the next opening takes off the screen is no place for the keyboard
+        if (isAsked && !this.isOpening())
+            _cx.timer.after(isTabbed ? 0 : 50, () => {
+                if (isTabbed || !this.pickers.isOpen()) this.quill.focus();
             });
         if (!isShown || !address) this.tellKeys({ type: 'left' });
-        else if (acts.isOpened) {
+        else if (acts.isOpened || (isAsked && this.isOpening())) {
             this.tellKeys({ type: 'opened' });
+            this.openedCount += 1;
+            const opened = this.openedCount;
+            // the viewer and the picker of the thread he left hold no keyboard here
+            if (isSwitched)
+                _cx.timer.after(0, (later) => {
+                    this.pictures.close();
+                    this.pickers.clear();
+                    later.notify();
+                });
             // past herdr's own focus, which a tab switch gives that tab's hidden terminal
             _cx.timer.after(50, (later) => {
+                if (opened !== this.openedCount) return;
                 this.tellKeys({
-                    isOpening: this.feed.isOpening(),
+                    isOpening: this.isOpening(),
                     type: 'landed',
                 });
                 later.notify();
@@ -440,7 +453,7 @@ export default class Chat extends View {
             _cx.timer.after(0, () =>
                 this.tellKeys({
                     isHere: Boolean(this.chatKeys?.is_focused()),
-                    isOpening: this.feed.isOpening(),
+                    isOpening: this.isOpening(),
                     type: 'drawn',
                 }),
             );
@@ -643,6 +656,11 @@ export default class Chat extends View {
             cx.notify();
         });
         cx.notify();
+    }
+
+    /** the thread shown has no quill drawn yet, or one about to go */
+    isOpening() {
+        return this.feed.isOpening() || !this.feed.file();
     }
 
     /** @param {Parameters<typeof openingKeys>[1]} event */

@@ -149,6 +149,17 @@ describe('a thread he switches to is opening', () => {
         expect(made.isOpening()).toBe(true);
     });
 
+    test('an opening he switched away from says nothing of the next one', async () => {
+        const made = feed();
+        made.follow('t1', cx as never);
+        // t1's Claude is found, its file not read yet
+        while (!made.pid()) await Promise.resolve();
+        at.isPsDown = true;
+        made.follow('t2', cx as never);
+        await settle();
+        expect(made.isOpening()).toBe(true);
+    });
+
     test('there and back before it opened', async () => {
         const made = feed();
         made.follow('t1', cx as never);
@@ -193,8 +204,9 @@ test('his caret is where he left it in each thread’s draft, at its end in one 
     box.set_selected_range({ end: 7, start: 4 });
     // a switch shows no thread first, then the next one
     go(null);
+    quill.quills.apply('/t/b.jsonl', { text: 'four five', type: 'typed' });
     go('/t/b.jsonl');
-    expect(box.selected_range()).toEqual({ end: 0, start: 0 });
+    expect(box.selected_range()).toEqual({ end: 9, start: 9 });
     go(null);
     go('/t/a.jsonl');
     expect(box.selected_range()).toEqual({ end: 7, start: 4 });

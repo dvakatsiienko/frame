@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 type Handler = (...args: unknown[]) => unknown;
 const at = vi.hoisted(() => ({
     agents: [] as object[],
+    layout: null as object | null,
     made: [] as { handlers: Map<string, Handler>; kids: unknown[] }[],
     props: {} as Record<string, unknown>,
     shared: new Map<string, unknown>(),
@@ -79,7 +80,7 @@ vi.mock('herdr', () => ({
     focused: () =>
         at.agents.length ? { agent: 't1', tab: 'tab', terminal: 't1' } : null,
     home: () => '/Users/me',
-    layout: () => null,
+    layout: () => at.layout,
     panes: () => [{ pane: 'p1', tab: 'tab', terminal: 't1' }],
     props: () => at.props,
     readTextFile: vi.fn(),
@@ -342,64 +343,168 @@ describe('Esc in the quill', () => {
 
 // FRM-620:W84: the quill is not drawn while the thread opens, so a focus given at the switch was lost with it
 describe('a thread he switches to', () => {
-    const drawnSwitch = (isHere: boolean, isGone = false) => {
+    type Over = {
+        hasViewer?: boolean;
+        held?: string;
+        isHere?: boolean;
+        isLoaded?: boolean;
+        stops?: string[];
+    };
+    const open = (over: Over = {}) => {
         const focused: string[] = [];
-        let isOpening = true;
-        const isFresh = [true];
+        const state = {
+            file: null as string | null,
+            isFresh: true,
+            isOpening: true,
+            isViewerOpen: Boolean(over.hasViewer),
+        };
+        at.shared.set('tab.held', over.held ?? null);
+        at.shared.set('tab.stops.x-herdr-deck', over.stops ?? []);
         const view = chat({
             chatKeys: {
                 focus: () => focused.push('chat'),
-                is_focused: () => isHere,
+                is_focused: () => over.isHere ?? true,
             },
             feed: quiet({
                 address: () => 't1',
                 error: () => null,
-                file: () => (isOpening ? null : '/t.jsonl'),
-                follow: () => isFresh.pop() ?? false,
-                isOpening: () => isOpening,
-                isRead: () => !isOpening,
+                file: () => state.file,
+                follow: () => {
+                    const was = state.isFresh;
+                    state.isFresh = false;
+                    return was;
+                },
+                isOpening: () => state.isOpening,
+                isRead: () => Boolean(state.file),
                 isStart: () => false,
                 shownAddress: () => 't1',
             }),
-            isLoaded: true,
+            isLoaded: over.isLoaded ?? true,
             keys: 'none',
+            openedCount: 0,
+            pictures: quiet({
+                close: () => {
+                    state.isViewerOpen = false;
+                },
+                isOpen: () => state.isViewerOpen,
+                keepKeys: () => {},
+            }),
             quill: quiet({
                 box: () => ({}),
                 focus: () => focused.push('quill'),
                 isFocused: () => false,
             }),
-            wasShown: true,
+            wasShown: over.isLoaded ?? true,
         });
-        const draw = () => {
-            view.render(cx);
+        const timers = () => {
             for (const run of at.timers.splice(0)) run();
         };
-        if (isGone) {
-            view.render(cx);
-            at.agents.splice(0);
-        }
-        draw();
-        draw();
-        isOpening = false;
-        draw();
-        draw();
-        return focused;
+        return {
+            draw() {
+                view.render(cx);
+                timers();
+            },
+            focused,
+            render: () => view.render(cx),
+            state,
+            /** its Claude is found, its quill drawn */
+            there() {
+                state.isOpening = false;
+                state.file = '/t.jsonl';
+            },
+            timers,
+        };
     };
-    beforeEach(() =>
-        at.agents.push({ address: 't1', app: 'claude-code', tab: 'tab' }),
-    );
-    afterEach(() => at.agents.splice(0));
+    const layout = { root: { mod: 'x-herdr-deck' } };
+    beforeEach(() => {
+        at.agents.push({ address: 't1', app: 'claude-code', tab: 'tab' });
+        at.layout = layout;
+    });
+    afterEach(() => {
+        at.agents.splice(0);
+        at.layout = null;
+    });
 
     test('has the cursor in its quill once it is drawn', () => {
-        expect(drawnSwitch(true)).toEqual(['chat', 'quill']);
+        const w = open();
+        w.draw();
+        w.draw();
+        w.there();
+        w.draw();
+        w.draw();
+        expect(w.focused).toEqual(['chat', 'quill']);
+    });
+
+    test('whose Claude has no session file yet, once it has one', () => {
+        const w = open();
+        w.draw();
+        w.state.isOpening = false;
+        w.draw();
+        w.there();
+        w.draw();
+        expect(w.focused).toEqual(['chat', 'quill']);
+    });
+
+    test('from one with the viewer open: the viewer goes with it', () => {
+        const w = open({ hasViewer: true });
+        w.draw();
+        w.there();
+        w.draw();
+        expect(w.focused).toEqual(['chat', 'quill']);
+    });
+
+    test('and from there to a third at once: the first one’s landing is not its', () => {
+        const w = open();
+        w.render();
+        w.state.isFresh = true;
+        w.render();
+        const [first] = at.timers.splice(1, 1);
+        first?.();
+        expect(w.focused).toEqual([]);
+        w.timers();
+        expect(w.focused).toEqual(['chat']);
+    });
+
+    test('and ⌘K while it opens: no keyboard to the quill that goes', () => {
+        const w = open();
+        w.draw();
+        at.shared.set('chat.quill', Date.now());
+        w.draw();
+        expect(w.focused).toEqual(['chat', 'chat']);
+        w.there();
+        w.draw();
+        expect(w.focused.at(-1)).toBe('quill');
     });
 
     test('left for a tab with no Claude before it landed, takes nothing', () => {
-        expect(drawnSwitch(true, true)).toEqual([]);
+        const w = open();
+        w.render();
+        at.agents.splice(0);
+        w.render();
+        w.timers();
+        w.there();
+        w.draw();
+        expect(w.focused).toEqual([]);
     });
 
     test('a box he clicked meanwhile keeps the cursor', () => {
-        expect(drawnSwitch(false)).toEqual(['chat']);
+        const w = open({ isHere: false });
+        w.draw();
+        w.there();
+        w.draw();
+        w.draw();
+        expect(w.focused).toEqual(['chat']);
+    });
+
+    test.each([
+        ['a steer box drawn in the deck keeps the cursor', ['steer-a:o1'], []],
+        ['a steer box gone since does not', [], ['chat', 'quill']],
+    ])('a reload of the chat: %s', (_what, stops, focused) => {
+        const w = open({ held: 'steer-a:o1', isLoaded: false, stops });
+        w.draw();
+        w.there();
+        w.draw();
+        expect(w.focused).toEqual(focused);
     });
 });
 
