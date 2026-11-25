@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import {
+    existsSync,
     mkdirSync,
     mkdtempSync,
     realpathSync,
@@ -71,6 +72,16 @@ vi.mock('herdr', () => ({
             at.opened.push(args);
             return { code: 0, stdout: '' };
         }
+        // the mac's own flags, which the linux runner's stat reads as others
+        if (program === 'stat')
+            return {
+                code: 0,
+                stdout: args
+                    .slice(2)
+                    .filter((path) => existsSync(path))
+                    .map((path) => `1\t${path}`)
+                    .join('\n'),
+            };
         const ran = spawnSync(program, args, {
             encoding: 'utf8',
             timeout: 10_000,

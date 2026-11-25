@@ -90,7 +90,12 @@ describe('what he clicked is judged by what it resolves to', () => {
     const exec = async (program: string, args: string[]) => {
         if (program === 'open') opened.push(args);
         if (program === 'open') return { code: 0, stdout: '' };
-        const ran = spawnSync(program, args, {
+        // the mac's realpath refuses a path that is not there; linux's does with -e
+        const asMac =
+            program === '/bin/realpath' && process.platform === 'linux'
+                ? ['-e', ...args]
+                : args;
+        const ran = spawnSync(program, asMac, {
             encoding: 'utf8',
             timeout: 10_000,
         });
