@@ -277,11 +277,8 @@ fi
 ticket=$tickets/${is_suite:+0.}$began.${is_mods_suite:+m.}$$
 started_at $$ >"$tickets/.new.$$"
 mv "$tickets/.new.$$" "$ticket"
-leave() {
-    rm -f "$ticket"
-    drop_sample
-}
-trap leave EXIT
+leave() { rm -f "$ticket"; }
+trap 'leave; drop_sample' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 next_say=0

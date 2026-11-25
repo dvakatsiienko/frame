@@ -963,6 +963,22 @@ describe('gate-queue cpu log', () => {
         expect(cpuRows(state)).toHaveLength(1);
     });
 
+    test('a run that waited keeps its sample', async () => {
+        const { state } = fixture();
+        const env = stubbed(state, {
+            iostat: 'echo " us sy id"; echo " 15 8 77 2 2 2"; echo " 43 10 47 2 2 2"',
+        });
+        const first = spawn(script, ['--long', 'sleep', '4'], {
+            env: queueEnv(state),
+            stdio: 'ignore',
+        });
+        await new Promise((resolve) => setTimeout(resolve, 700));
+        queue(state, ['--long', 'true'], '20', env);
+        await new Promise((resolve) => first.on('exit', resolve));
+        const waited = cpuRows(state).find((row) => Number(row[5]) > 0);
+        expect(waited?.[3]).toBe('47');
+    });
+
     test('a run that ends before its sample leaves no sample file behind', async () => {
         const { state } = fixture();
         queue(state, ['--long', 'true'], '20', {
