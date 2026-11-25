@@ -82,3 +82,11 @@
 ## 2026-11-16 22:40 · arm switch to opus
 - dima, in crow's session: «you were switched from fable 5.2 medium to opus 5.5 medium (i reached 100% fable usage) and used 1 reset (2 left). starting from now to fable 5.2 unless i say. proceed with a plan. i now go and switch everyone else from fable to opus.»
 - so (crow's reading, dictation: «to fable» read as «no fable»): crow runs Opus 5.5 medium from now, arm `opus`, every vet id ends `-opus`; no move back to Fable 5.2 until his word. a pace note on the fable week is moot: the week is spent, 2 resets left.
+
+## 2026-11-25 15:28 · second wind at 55 % (relayed by clio, his words)
+- dima: «i exepcted crow to auto-sw before 60% (he have nothing todo except of advising and being parked) but often saw him at ~60% ctx».
+- so: the 55 % notice means the wind is crow's next act after the note it is on; never wait for the 65 % ask.
+
+## 2026-11-25 16:00 · second wind, softer (relayed by clio, his words)
+- dima: «do not rush sw. it is not-immediately-required by design … when nothing is planned at all, a thread should auto-second-wind right away if nothing is pending at 55%»; with work in hand, a good point up to 65 % (clio's words).
+- so: at 55 % with nothing pending, crow winds right away; with a note in hand, after it, unrushed, up to 65 %. this replaces the 15:28 line.
