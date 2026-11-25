@@ -611,18 +611,29 @@ test("a --bg session's plan op answers that phases are off there and stores none
 });
 
 // review round 1: «changed:» needs a follow or an add that lands, never one the same call refuses
-test('a «changed:» resolve beside a refused follow is refused', async ($, on) => {
-    const w = world(on);
-    await start($);
-    await ticked($, w);
-    const r = await orbit($, {
-        ops: [
-            { ids: ['o1'], op: 'resolve', words: { o1: 'changed: renamed' } },
-            { id: 'o9', op: 'follow', pick: 'x', text: 'no such ask' },
-        ],
+for (const [why, follow] of [
+    ['refused', { id: 'o9', text: 'no such ask' }],
+    // he sees no new round of an ask that hides
+    ['«fixing»', { id: 'o1', text: 'look: the bars', why: 'fixing the wrap' }],
+] as const)
+    test(`a «changed:» resolve beside a ${why} follow is refused`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        await ticked($, w);
+        const r = (await orbit($, {
+            ops: [
+                {
+                    ids: ['o1'],
+                    op: 'resolve',
+                    words: { o1: 'changed: renamed' },
+                },
+                { op: 'follow', pick: 'x', ...follow },
+            ],
+        })) as { deny?: string; result?: string };
+        expect(r.deny ?? r.result).toMatch(
+            /1 resolve: refused.*follow or an add/s,
+        );
     });
-    expect(r.deny).toMatch(/1 resolve: refused.*follow or an add/s);
-});
 
 // dima, 2026-10-28 15:33: the 🐠 catch shelf is gone, settings row included — «full delete but surgical»
 test('orbit has no catch op: the schema names none, a call is refused as unknown', async ($, on) => {

@@ -1082,6 +1082,8 @@ for (const [text, kind, kept] of [
     ['push FRM-1', '', [undefined, 'push FRM-1']],
     ['look at the new card', undefined, [undefined, 'look at the new card']],
     ['x', 'probe', /«x»: kind «probe» is neither look nor test/],
+    ['x', ['look'], /«x»: kind «\["look"\]» is neither look nor test/],
+    ['x', true, /«x»: kind «true» is neither look nor test/],
     ['test: x', 'look', /its text opens «test:» while its kind is look/],
     ['look:', undefined, /its text says nothing past «look:»/],
     ['a'.repeat(85), 'look', /is 91 chars; keep it ≤90/],
@@ -1107,10 +1109,18 @@ test('a kind rides the store item, and a follow keeps it or takes the new lead',
         seen.push(
             (await orbit($, { id: 'o1', op: 'follow', text }), items(w)?.[0]),
         );
-    expect(seen.map((a) => [a?.kind, a?.text])).toEqual([
-        ['look', 'look: the new card'],
-        ['look', 'look: the card, fixed'],
-        ['test', 'test: press it'],
+    const long = (await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        text: 'a'.repeat(85),
+    })) as { deny?: string };
+    expect([seen.map((a) => [a?.kind, a?.text]), long.deny]).toEqual([
+        [
+            ['look', 'look: the new card'],
+            ['look', 'look: the card, fixed'],
+            ['test', 'test: press it'],
+        ],
+        expect.stringMatching(/is 91 chars; keep it ≤90/),
     ]);
 });
 

@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T11:20:29Z'
+updated_date: '2026-11-25T11:26:51Z'
 labels:
   - s
   - clio-main
@@ -20,9 +20,9 @@ ordinal: 1000
 - [ ] #2 f119 decamp bytes' verify tree after speak's round 2 — waits for: FRM-683 — parked: 2026-11-25
 - [ ] #3 f120 the plan over all herdr work (FRM-616): talk it through — with: dima
 - [ ] #4 f121 FRM-678: the queue's free-CPU number from two days of rows, one number to dima — waits for: FRM-678 — parked: 2026-11-25
-- [ ] #5 f122 FRM-700 close: refusal seen live (FRM-639, 13:21), the 141 rider sits in the mods lane plan; closing word and Done — waits for: FRM-645 — parked: 2026-11-25
-- [ ] #6 f123 nudge comments for cc#100797 and cc#100193 as drafts for his yes, before 7 Dec — with: dima
-- [ ] #7 f124 kokoro engine upgrade: the speak codie's pick of the slot, then before/after sounds to dima — waits for: FRM-683 — parked: 2026-11-25
+- [ ] #5 f123 nudge comments for cc#100797 and cc#100193 as drafts for his yes, before 7 Dec — with: dima
+- [ ] #6 f124 kokoro engine upgrade: the speak codie's pick of the slot, then before/after sounds to dima — waits for: FRM-683 — parked: 2026-11-25
+- [ ] #7 f125 FRM-700 close: the refusal is seen live, its 141 rider sits in the mods plan — waits for: FRM-645 — parked: 2026-11-25
 - [ ] #8 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
 - [ ] #9 f104 ⏳ herdr wisp: the slash list misses his skill, in chat's commands() — waits for: FRM-620
 - [ ] #10 f105 ⏳ herdr wisps: the phases steer text empties; a Read picture says «gone» on click — waits for: FRM-620
@@ -2839,4 +2839,8 @@ his o6 tick (2026-11-25 13:13): the lanes file rider goes to the mods codie afte
 correction to W2441, helga's groom flipped it (his raw, 13:08): if a skill typed from the quill in herdr, that opens a message, expands - it is fine then
 
 PK-349:W2442 (2026-11-25 13:19, dima, wing 1's o7 tick steer): tell main clio to consult with lane when to upgrade kokoro engine better. and i want to see differences after upgrade let me know when it will be done
+
+done 2026-11-25 13:20: f122 FRM-700 close: refusal seen live (FRM-639, 13:21), the 141 rider sits in the mods lane plan; closing word and Done — waits for: FRM-645 — parked: 2026-11-25 (FRM-700 Todo, FRM-639 Todo, FRM-645 In Progress)
+
+moved: W2442 to FRM-669:W4 and W5 (wing 1 writes them, 2026-11-25)
 <!-- SECTION:NOTES:END -->

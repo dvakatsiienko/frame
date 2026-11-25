@@ -1,6 +1,7 @@
 // an ask's kind (FRM-645): a look is ready and needs only dima's eyes, a test needs his hands; a pure rule
 
 import type { AskKind, KindEmoji, OrbitAsk } from '../types/stash.d.ts';
+import { oneLine } from './util.ts';
 
 const KINDS = ['look', 'test'] as const satisfies readonly AskKind[];
 // herdr reads the kind off the text (x-herdr-deck `cardKind`: the colon form past a 👀 or 🧪), so the text a typed ask is
@@ -56,13 +57,17 @@ export const askWords = (a: {
 // the kind a text and its argument give, and the text as stored; `kept` is the kind a followed ask already has
 export function askKind(
     text: string,
-    given: string,
+    given: unknown,
     kept?: AskKind,
 ): { kind?: AskKind; text: string } | { deny: string } {
-    const asked = KINDS.find((k) => k === given);
-    if (given && !asked)
+    const word =
+        typeof given === 'string'
+            ? oneLine(given)
+            : (JSON.stringify(given ?? '') ?? '').replace(/^""$/u, '');
+    const asked = KINDS.find((k) => k === word);
+    if (word && !asked)
         return {
-            deny: `kind «${given.slice(0, 40)}» is neither look nor test`,
+            deny: `kind «${word.slice(0, 40)}» is neither look nor test`,
         };
     const lead = text.match(LEAD);
     const led = lead?.[1]?.toLowerCase() as AskKind | undefined;

@@ -5,13 +5,14 @@ import type { EngineInterface } from 'claude-code';
 
 import type { OrbitAsk, StashOrbit } from '../types/stash.d.ts';
 import { carried } from './fields.ts';
-import { type ViewDoors, prepareTurn } from './keep-warm.ts';
+import { type ViewDoors, armHot, prepareTurn } from './keep-warm.ts';
 import {
     hasPlanMark,
     isAllAsksMarkable,
     isFresh,
     joinText,
     lockJoined,
+    marksGivenBack,
     planTaken,
 } from './orbit.ts';
 import { isShown, isStranded, strandedLine } from './orbit-ask-kind.ts';
@@ -60,13 +61,17 @@ export async function wakeForMarks($: EngineInterface, view: ViewDoors) {
             ? held
             : [];
     });
-    if (due.length)
-        void selfSubmit(
-            $,
-            joinText(due, tickSentence(await orbitTexts($), due.length)),
-            false,
-            () => prepareTurn(view),
-        ).catch(() => undefined);
+    if (due.length) void wakeWith($, due, view).catch(() => undefined);
+}
+async function wakeWith($: EngineInterface, due: OrbitAsk[], view: ViewDoors) {
+    const text = joinText(due, tickSentence(await orbitTexts($), due.length));
+    const r = await selfSubmit($, text, false, () => prepareTurn(view)).catch(
+        () => undefined,
+    );
+    if (r && !r.drop) return;
+    await giveBackMarks($, due);
+    await idleTurn($);
+    await armHot($, view);
 }
 // a hide never strands a look (FRM-645:W29): 60 min with no follow is one line to the poster's coordinator, else main
 // clio; main clio's own ask wakes her instead, once idle. told only once it went, so a refused send goes at the next poll
@@ -93,9 +98,12 @@ export async function tellStranded($: EngineInterface, view: ViewDoors) {
         ) ?? live.find((t) => ownerOf(t) === MAIN_OWNER);
     if (ownerOf(self) === MAIN_OWNER) {
         if (await isTurnBusy($)) return;
-        const r = await selfSubmit($, line, false, () => prepareTurn(view));
-        if (r.drop !== undefined) {
+        const r = await selfSubmit($, line, false, () =>
+            prepareTurn(view),
+        ).catch(() => undefined);
+        if (!r || r.drop) {
             await idleTurn($);
+            await armHot($, view);
             return;
         }
     } else {
@@ -113,7 +121,8 @@ export async function tellStranded($: EngineInterface, view: ViewDoors) {
             {
                 ...o,
                 asks: o.asks.map((x) =>
-                    x.id === a.id && x.hidden
+                    // a follow that hid it anew while this went is owed its own line
+                    x.id === a.id && x.hidden?.at === a.hidden?.at
                         ? { ...x, hidden: { ...x.hidden, isTold: true } }
                         : x,
                 ),
@@ -137,6 +146,12 @@ export function takeMarks(
             asks.map((a) => `orbit:steer:${a.id}`),
         );
         return asks;
+    });
+}
+export function giveBackMarks($: EngineInterface, asks: OrbitAsk[]) {
+    return inMarking(async () => {
+        const o = await currentOrbit($);
+        await saveOrbit($, marksGivenBack(o, asks), () => keepShelf($));
     });
 }
 // a turn takes his phases mark the same way: a reorder lands wholly before or after, never put back

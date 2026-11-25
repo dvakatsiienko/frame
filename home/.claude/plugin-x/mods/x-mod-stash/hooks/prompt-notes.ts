@@ -25,7 +25,12 @@ import {
     planText,
     wrongText,
 } from './orbit.ts';
-import { DIMA_AT, takeMarks, takePlanMark } from './orbit-presses.ts';
+import {
+    DIMA_AT,
+    giveBackMarks,
+    takeMarks,
+    takePlanMark,
+} from './orbit-presses.ts';
 import {
     absorbMarks,
     currentOrbit,
@@ -268,6 +273,6 @@ export async function composePrompt(
         toldOrbitAs(told?.key);
         toldHowAs(how);
         if (isOwner && isOn('stash.glide')) toldStaleAs(staleNow.map(staleKey));
-    }
+    } else if (marked.length) await giveBackMarks($, marked);
     return sent;
 }

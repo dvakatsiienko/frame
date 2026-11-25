@@ -129,8 +129,15 @@ test('a wrap_up carrying an ask while an orbit ask is open reds the Stop, naming
 
 for (const [why, run] of [
     [
-        'no open orbit ask',
+        'no ask of his to see: the one open is hidden while it is fixed',
         async ($: Engine) => {
+            await add($, ['look: the card', 'yes']);
+            await orbit($, {
+                id: 'o1',
+                op: 'follow',
+                text: 'look: the card',
+                why: 'fixing the wrap',
+            });
             await say($, 'go');
             await wrapUp($, 'Commit now?');
         },

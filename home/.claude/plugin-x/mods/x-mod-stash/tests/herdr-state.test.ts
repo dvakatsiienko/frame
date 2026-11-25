@@ -230,6 +230,35 @@ test("a session's state file holds its asks, plan, wait, taken, ctx and model", 
     });
 });
 
+test("a hidden ask leaves the file's asks and stays named in hiddenAsks until it shows or is resolved", async ($, on) => {
+    const s = await session($, on);
+    const follow = (why: string) =>
+        orbit($, { id: 'o1', op: 'follow', text: 'look: the card', why });
+    await orbit($, {
+        asks: [
+            { area: 'mods', pick: 'yes', text: 'look: the card', why: 'a b' },
+        ],
+        op: 'add',
+    });
+    const seen: unknown[] = [];
+    const read = () => {
+        const { asks, hiddenAsks } = s.read(A);
+        seen.push([asks.map((a: { id: string }) => a.id), hiddenAsks]);
+    };
+    await follow('fixing the wrap');
+    read();
+    await follow('it holds now');
+    read();
+    await follow('fixing the wrap');
+    await orbit($, { ids: ['o1'], op: 'resolve' });
+    read();
+    expect(seen).toEqual([
+        [[], ['o1']],
+        [['o1'], []],
+        [[], []],
+    ]);
+});
+
 // cc measures only at a turn's end, and a wind's ingest runs as one long turn: the fill from before the compact
 // stayed on the row for 17 min (2026-11-11)
 for (const trigger of ['manual', 'auto'] as const)

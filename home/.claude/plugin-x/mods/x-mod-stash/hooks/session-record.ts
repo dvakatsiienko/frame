@@ -2,6 +2,7 @@ import type { EngineInterface } from 'claude-code';
 
 import type { StashEntry } from '../types/stash.d.ts';
 import { JOIN_OWED, handBackJoins, joinsOf } from './joins.ts';
+import { isShown } from './orbit-ask-kind.ts';
 import { PREFIX, currentOrbit } from './orbit-store.ts';
 import { backgroundWaits } from './parse.ts';
 import { modelLabel } from './roster.ts';
@@ -96,6 +97,10 @@ async function writeState($: EngineInterface) {
         asks: entry?.items ?? [],
         assumed: o.assumed ?? [],
         ctx: typeof ctx === 'number' ? ctx : null,
+        // open but hidden while it is fixed: herdr keeps the steer he types on one, which an ask gone from `asks` loses
+        hiddenAsks: o.asks
+            .filter((a) => !a.isResolved && !isShown(a))
+            .map((a) => a.id),
         hot: hotOf(await get(HOT + sid)) ?? null,
         // a row reads joined only once the turn that took it completed, a slash row too (dima's o3); switched off, none:
         // herdr pushes instead; `push` stays empty while herdr still reads it

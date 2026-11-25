@@ -188,7 +188,8 @@ const LOOK_ROW = 'stash.orbit.look.how';
 const hows = (w: { contexts: string[][] }) =>
     w.contexts.map((c) => c.filter((x) => x.startsWith('a look ask: ')));
 
-test('how a look and a test ask are written is told once, and again when his row changes', async ($, on) => {
+test('how a look and a test ask are written is told once, and again when his row changes or a compact forgot it', async ($, on) => {
+    on('session.compact', (_$, e) => ({ messages: e.messages }));
     const w = world(
         on,
         typed({ [LOOK_ROW]: 'heron one', 'stash.orbit.test.how': 'press' }),
@@ -199,11 +200,20 @@ test('how a look and a test ask are written is told once, and again when his row
     w.files[SETTINGS] = typed({ [LOOK_ROW]: 'heron two' })[SETTINGS] ?? '';
     await nextPrompt($);
     await nextPrompt($);
+    await $.session.compact({
+        messages: [{ role: 'user', text: 'hi', toolUses: [] }],
+        trigger: 'auto',
+    } as never);
+    await nextPrompt($);
+    const two = [
+        expect.stringMatching(/^a look ask: heron two; a test ask: say what/),
+    ];
     expect(hows(w)).toEqual([
         ['a look ask: heron one; a test ask: press.'],
         [],
-        [expect.stringMatching(/^a look ask: heron two; a test ask: say what/)],
+        two,
         [],
+        two,
     ]);
 });
 
