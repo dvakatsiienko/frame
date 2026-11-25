@@ -83,20 +83,6 @@
             "tool": []
         }
     },
-    "shelf-load-go-charm": {
-        "command": [
-            "(?:^|[;&|(\\n]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+)\\s+)*(?:\\S*/)?go\\s+get\\b[^;&|\\n]*\\bcharm\\.land",
-            "(?:^|[;&|(\\n]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+)\\s+)*(?:\\S*/)?go\\s+mod\\s+init\\b"
-        ],
-        "edit_text": ["charm\\.land"],
-        "input": [],
-        "project": [],
-        "prompt": [],
-        "signal": {
-            "reply": [],
-            "tool": []
-        }
-    },
     "shelf-load-macos-apps": {
         "command": [
             "(?:^|[;&|(\\n]|\\$\\()\\s*(?:(?:\\w+=\\S*|env|command|exec|nohup|timeout\\s+\\S+)\\s+)*(?:\\S*/)?brew\\s+(?:install|reinstall|uninstall|remove|rm|upgrade)\\b[^;&|\\n]*--cask\\b",

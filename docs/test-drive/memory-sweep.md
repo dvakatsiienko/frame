@@ -82,7 +82,7 @@ his full brief: the vault note `_hq/memory-sweep.md` (read 2026-10-07).
 - **a `shape-*` family:** `x:shape-test-drive` replaces the resident `habit-test-drive`, `x:shape-recipe` replaces `_spec.md` + `habit-recipe-first`
 - **the order, amended twice by dima in round 1** (ccrow caught that it was never shown back whole): 0 baseline + prompt-audit scan · 1 research · 2 recipes, the full reshape · 3 dupes · 4 buckets · 5 leaf pass (audit findings applied) · 6 skills · 7 recipe runs · 8 global review
 - **recipe candidates join phase 2:** dima: «scan the system for more recipe candidates: which frequent activities of ours lack a recipe? for example: guide-tests does not have a recipe. what are test writing best practices for agents? how to prevent agents from writing useless tests, and only have useful tests? and it should complement matt's tdd» — [FRM-270](https://linear.app/x-com/issue/FRM-270) moves in
-- **measures fold into `refresh-fleet-ops`** (guard refusals per rule, skill loads, dima's wait, cost per member), duckdb as the engine; the baseline runs two of them
+- **measures fold into `refresh-fleet-ops`** (that recipe is gone since 2026-11-25) (guard refusals per rule, skill loads, dima's wait, cost per member), duckdb as the engine; the baseline runs two of them
 
 ## phase 01 · baseline · 2026-10-07 18:07
 

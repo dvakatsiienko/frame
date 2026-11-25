@@ -209,7 +209,7 @@ dima, 2026-08-27, the purpose:
 
 - run #1's finding, re-checked: opus writes long by default; ~70 % of written text was not needed
 - `author-memory/references/skill-craft.md`'s best practices against our files: a practice we miss is a finding
-- which memories misfired or sat unused: `refresh-fleet-ops`' skill-load measure; a leaf never load-bearing since the last sweep is a retirement candidate
+- which memories misfired or sat unused (the skill fire counts of the deletion hunt's census); a leaf never load-bearing since the last sweep is a retirement candidate
 - did a silent-failure class fire, and does `method-silent-failures` name its shape?
 - placement drift: a leaf past one decision, a fact at the wrong altitude
 - the failure-mode scrape, theo's method: `~/.claude/projects/`, `~/.claude/history.jsonl`, `~/.claude/shelf/flawlog/`; events not opinions, bucket then count, scripted with duckdb — never an agent sampling transcripts

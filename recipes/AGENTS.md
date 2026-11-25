@@ -30,8 +30,8 @@ map back.
 
 kind-first, then the main artifact it refreshes, so the recipe sits beside its target:
 `refresh-guide-go` → `x:guide-go`. a recipe that keeps one fleet member true is named after the member
-(`refresh-crew-coordinator`). its script or verb shares the stem (`refresh-fleet-ops` ↔ `x fleet ops`).
-two recipes that refresh one file merge. a refresh recipe's artifact carries its stem or the stem's last word (`refresh-code-storage` → `code-storage.md`), and the shape test reds one that does not; a member-named recipe is exempt.
+(`refresh-crew-coordinator`). its script or verb shares the stem (`refresh-research-lanes` ↔ `research:lanes`).
+two recipes that refresh one file merge. a refresh recipe's artifact carries its stem or the stem's last word (`refresh-pr-flow` → `pr-flow.md`), and the shape test reds one that does not; a member-named recipe is exempt.
 
 ## recipe.md
 

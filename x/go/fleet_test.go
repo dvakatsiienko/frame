@@ -52,7 +52,7 @@ var crewLoad = called("Skill", map[string]any{"skill": "x:crew-codie"}, flowAt)
 
 func flowCounts(t *testing.T, lines ...any) flowTranscripts {
 	session(t, lines...)
-	return transcriptCounts(flowStart, []string{"authoring-skill.md", "go-charm.md"})
+	return transcriptCounts(flowStart, []string{"authoring-skill.md", "pr-flow.md"})
 }
 
 func TestFlawlogCountsTaggedLinesInTheWindow(t *testing.T) {
@@ -167,8 +167,8 @@ func TestFlowMarksACrewLoadByWhetherAMessageNamedIt(t *testing.T) {
 
 func TestFlowCountsReadsOfEachKnowledgeFile(t *testing.T) {
 	// serial: t.Setenv(HOME) — the flow counts read transcripts from the process HOME
-	got := flowCounts(t, called("Read", map[string]any{"file_path": "/Users/dima/frame/docs/knowledge/go-charm.md"}, flowAt))
-	want := `[{"file":"go-charm.md","count":1},{"file":"authoring-skill.md","count":0}]`
+	got := flowCounts(t, called("Read", map[string]any{"file_path": "/Users/dima/frame/docs/knowledge/pr-flow.md"}, flowAt))
+	want := `[{"file":"pr-flow.md","count":1},{"file":"authoring-skill.md","count":0}]`
 	if marshal(got.reads) != want {
 		t.Errorf("reads %s, want %s", marshal(got.reads), want)
 	}

@@ -579,38 +579,6 @@ describe('shelf and model-cards rows', () => {
             ],
         ] as const;
 
-    it.each(edits('import "charm.land/lipgloss/v2"'))(
-        'shelf-load-go-charm fires on charm.land in a %s',
-        (tool, input) => {
-            const reason = session().tool(tool, input).permissionDecisionReason;
-            expect(reason).toContain('x knowledge read go-charm');
-        },
-    );
-
-    it.each([
-        'go get charm.land/bubbletea/v2',
-        'cd x && go get -u charm.land/lipgloss/v2',
-        'go mod init example.com/a',
-    ])('shelf-load-go-charm fires on `%s`', (command) => {
-        const reason = session().tool('Bash', {
-            command,
-        }).permissionDecisionReason;
-        expect(reason).toContain('x knowledge read go-charm');
-    });
-
-    it.each([
-        ['Bash', { command: 'rg charm.land' }],
-        ['Bash', { command: 'go get golang.org/x/net; rg charm.land' }],
-        ['Bash', { command: 'git commit -m "go mod init"' }],
-        ['Edit', { file_path: '/w/charm.land/a.md', new_string: 'x' }],
-        [
-            'Edit',
-            { file_path: '/w/a.md', new_string: 'x', old_string: 'charm.land' },
-        ],
-    ])('shelf-load-go-charm stays out of %s %j', (tool, input) => {
-        expect(session().tool(tool, input)).toEqual({});
-    });
-
     it.each([
         'brew install --cask iterm2',
         'brew uninstall --zap --cask iterm2',

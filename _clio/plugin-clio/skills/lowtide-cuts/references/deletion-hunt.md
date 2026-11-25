@@ -6,11 +6,11 @@ two runs, never mixed: **features** (this one), then **clutter** on his word: ol
 
 ## the run
 
-1. **his gut**: ask «what felt useless lately?»; his answer ranks first
-2. **the shallow scan, the whole fleet**: every thing with its own door, listed from disk: skills, recipes, trials (`docs/test-drive`), scripts, `x` verbs, scheduled jobs, hooks, checks, tests, memories, chores in our flows, mod parts. only counts that exist: the census and the cli census below, `x fleet growth`, recipe and trial logs. a mod part enters by his gut or its fixes, marked «unmeasured». apps wait for his word
+1. **his gut**: ask «what felt useless lately?»; his answer ranks first; no scan starts before it is asked
+2. **the shallow scan, the whole fleet**: every thing with its own door, listed from disk: skills, recipes, trials (`docs/test-drive`), scripts, `x` verbs, scheduled jobs, hooks, checks, tests, memories, chores in our flows, mod parts. only counts that exist: the census and the cli census below, `x fleet growth`, recipe and trial logs. a mod part enters by his gut or its fixes, marked «unmeasured»; a thing run on his word (a recipe, a safety net) is never suspect by its run count alone. apps wait for his word
 3. **the area**: print the areas from most to least suspect, each with its last deep date from `~/frame/_clio/checkup/deletion-scans.md`; he picks one. one area a run: «it is not a sweep that can be done blindly» (PK-472:W17)
 4. **the deep read**: the area's suspects, one `helper` each, about 10: used (real runs, his presses), costs (fixes, turns, upkeep), gave. a working chore is judged by what it caught or changed in 30 days. safe: younger than 30 days, a safety net without his word, his own aliases and raycast unless he asks
-5. **the print**: at most 5, in the reply, the shape below
+5. **the print**: 5 a batch, or the number he names (10, PK-472:W30), in the reply, the shape below. each suspect's want is read whole first: every quote of his that dies prints in its block, with the home it moves to; a number is a read of the log that counts it, never of mentions
 6. **his tick, per item**, then its delete is planned: the tails map (callers, hooks, settings, stores, docs, memory, skills, tests, jobs, tickets, links in `~`, bytes, crow's rules, the cloud chat leaf). a small one is a helper card, a mods or cli one a signed chunk; git is the undo, what git lacks goes to `trash`, named. who deletes and when is decided with the tick (dima, 2026-11-25 17:59), so each block carries it
 7. **the log**: one line in `deletion-scans.md`: `- <date> · <area> · <what goes> · <what stays, why>`
 

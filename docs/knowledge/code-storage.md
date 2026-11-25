@@ -1,5 +1,5 @@
 ---
-fed-by: recipe refresh-code-storage
+fed-by: incidents
 when:
   - { kind: command, value: git remote }
   - { kind: command, value: git push --mirror }
@@ -32,3 +32,17 @@ then codeberg, radicle, sourcehut, gitea cloud
 
 each run rewrites the sections above and appends one line here: date · the headline delta.
 - 2026-10-13 · seeded from two research rounds (`~/frame/.scratch/research/code-hosts/`, `repos-backup/`)
+
+## dima's want
+
+his words from the recipe deleted on 2026-11-25 (PK-472:W32: «i ask for it once per 6 months maybe»):
+
+> what if github dies suddenly? how to have a synced backup mirror of my repos, just in case? no budget, a generous free tier is really nice to have. ideally solid. (2026-10-13)
+
+> backup only for now, but hunt for github alternatives as well, out of curiosity: everyone says github is not so good anymore because of how agents work and how often they push, the ecosystem is changing, even git is not seen as agent-grade. new platforms appear. hunt for places we could migrate to someday, paid or free, prefer a generous free tier. i want code storage that is agent-friendly, looks pretty, and is ideally next gen. (2026-10-13)
+
+> it's good to have a prepped recipe to see what's happening via a run, instead of me explaining every time why and what to research. keep it compact. (2026-10-13)
+
+> i wish code storage had a cli, ideally, like gh. (2026-10-14)
+
+his standing calls: gitlab is out (archaic); the backup is codeberg-first until a run says otherwise; jj is tried in a bytes lane only.

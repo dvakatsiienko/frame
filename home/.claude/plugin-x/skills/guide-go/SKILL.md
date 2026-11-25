@@ -28,7 +28,6 @@ go test -count=1 ./...     # frame's x/go: pnpm x-go:gate (all five) or pnpm x-g
 - `go fix ./...` applies what `-diff` shows; its fixes are safe by contract (`go tool fix help`).
 - `go doc <pkg>` answers a stdlib question in one call; a charm module's source sits under
   `~/go/pkg/mod/charm.land/<module>@<version>/`; ctx7 carries `/charmbracelet/{bubbletea,lipgloss,huh,glamour,fang}`.
-- the stack page: `docs/knowledge/go-charm.md` (each charm lib, its job, our gotchas)
 
 ## Module layout
 
@@ -73,7 +72,7 @@ go test -count=1 ./...     # frame's x/go: pnpm x-go:gate (all five) or pnpm x-g
 
 ## Charm (bubbletea v2, lipgloss v2, huh v2)
 
-the traps live in `x/go/AGENTS.md` § charm traps, beside the only charm code; the stack is `docs/knowledge/go-charm.md`.
+the traps live in `x/go/AGENTS.md` § charm traps, beside the only charm code.
 
 ## The worktree guard
 

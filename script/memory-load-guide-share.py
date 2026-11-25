@@ -9,7 +9,7 @@ import time
 
 KINDS = {
     "ts": ((".ts", ".tsx"), ("x:guide-typescript", "x:guide-code")),
-    "go": ((".go",), ("x:guide-go", "go-charm")),
+    "go": ((".go",), ("x:guide-go",)),
 }
 
 
