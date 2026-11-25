@@ -2,6 +2,7 @@ import {
     FILE,
     ITEMS,
     LIVE_FIX,
+    PID,
     create,
     denied,
     endTurn,
@@ -26,6 +27,57 @@ test('a create lands in the shelf file with its history', async ($, on) => {
         r.deny,
         kept(w).map((l) => [l.id, l.title, l.history.length]),
     ]).toEqual([undefined, [['l1', 'mods settings', 1]]]);
+});
+
+for (const [why, text] of [
+    ['a torn one', '{ "lanes": [{ "id": "l1"'],
+    ['an empty one', ''],
+    ['one with no lanes', '{}'],
+] as const)
+    test(`a lanes file that would not read, ${why}, is never written over`, async ($, on) => {
+        const w = world(on);
+        w.files[FILE] = text;
+        await start($);
+        const r = await create($);
+        expect([r.deny?.includes('would not read'), w.files[FILE]]).toEqual([
+            true,
+            text,
+        ]);
+    });
+
+for (const good of [0, 1])
+    test(`a lanes file whose reads are refused after ${good} is never written over`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        await create($);
+        const was = w.files[FILE];
+        w.shelfReads.good = good;
+        const r = await create($, { title: 'another lane' });
+        expect([r.deny?.includes('would not read'), w.files[FILE]]).toEqual([
+            true,
+            was,
+        ]);
+    });
+
+test('a lanes write that did not land is refused, naming why', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.shelfReads.isMoveRefused = true;
+    const r = await create($);
+    expect([r.deny, w.files[FILE]]).toEqual([
+        'orbit glide: the lanes file was not kept: disk full',
+        undefined,
+    ]);
+});
+
+test('the lanes file is written whole: a temp file beside it, moved over it', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await create($);
+    expect([
+        w.writes.filter((p) => p.includes('lanes.json')),
+        Object.keys(w.files).filter((p) => p.includes('lanes.json')),
+    ]).toEqual([[`/home/.claude/shelf/.lanes.json.${PID}.tmp`], [FILE]]);
 });
 
 for (const [why, input] of [

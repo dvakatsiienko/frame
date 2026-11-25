@@ -1,6 +1,7 @@
 import type { On } from 'claude-code';
 
 import { PARTS } from '../hooks/settings-store.ts';
+import { movedFile } from './moved-file.ts';
 import { type Engine, expect, mock, test } from './shared-boot.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
@@ -42,15 +43,19 @@ function world(on: On, name = '🦉 clio') {
     });
     on('session.id', () => ({ value: SID }));
     on('env.get', () => ({ value: '/home' }));
-    on('process.run', () => ({
-        value: {
-            exitCode: 0,
-            isStderrTruncated: false,
-            isStdoutTruncated: false,
-            stderr: '',
-            stdout: `${PID}\nMon Oct 12 15:00:00 2026\n`,
-        },
-    }));
+    on('process.run', (_$, e) => {
+        movedFile(files, e.argv);
+        return {
+            value: {
+                exitCode: 0,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout: `${PID}\nMon Oct 12 15:00:00 2026\n`,
+            },
+        };
+    });
+    on('fs.exists', (_$, e) => ({ value: e.path in files }));
     on('fs.read', (_$, e) =>
         e.path in files
             ? { value: files[e.path] ?? '' }

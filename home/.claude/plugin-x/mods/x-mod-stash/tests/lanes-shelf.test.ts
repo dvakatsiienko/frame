@@ -1,6 +1,7 @@
 import type { On } from 'claude-code';
 
 import { LANES_SHELF } from './lanes-shelf.ts';
+import { movedFile } from './moved-file.ts';
 import { type Engine, expect, mock, test } from './shared-boot.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
@@ -40,15 +41,18 @@ function world(on: On) {
     on('session.repo', () => ({
         value: { internal: false, name: null, remote: null, root: '/tmp' },
     }));
-    on('process.run', (_$, e) => ({
-        value: {
-            exitCode: 0,
-            isStderrTruncated: false,
-            isStdoutTruncated: false,
-            stderr: '',
-            stdout: e.argv[0] === 'ps' ? `${PID}` : '',
-        },
-    }));
+    on('process.run', (_$, e) => {
+        movedFile(files, e.argv);
+        return {
+            value: {
+                exitCode: 0,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout: e.argv[0] === 'ps' ? `${PID}` : '',
+            },
+        };
+    });
     on('fs.list', (_$, e) => ({
         value:
             e.path === '/home/.claude/sessions'
@@ -68,6 +72,7 @@ function world(on: On) {
             ? { value: files[e.path] ?? '' }
             : { deny: 'no such file' },
     );
+    on('fs.exists', (_$, e) => ({ value: e.path in files }));
     on('fs.write', (_$, e) => {
         files[e.path] = e.text;
         return { value: undefined };

@@ -2,6 +2,7 @@ import type { On } from 'claude-code';
 import { type Engine, mock } from 'claude-code/testing';
 
 import { QUIET_LOG_APPEND } from '../hooks/parse.ts';
+import { movedFile } from './moved-file.ts';
 import { pollSkip } from './poll-skip.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
@@ -133,6 +134,7 @@ export function world(
                     stdout: typeof own === 'string' ? own : '',
                 },
             };
+        movedFile(files, e.argv);
         return {
             value: {
                 exitCode: 0,
@@ -151,7 +153,9 @@ export function world(
         return { value: undefined };
     });
     on('fs.exists', (_$, e, next) =>
-        e.path.includes('/quiet-log/') ? { value: e.path in files } : next(e),
+        e.path === LANES || e.path.includes('/quiet-log/')
+            ? { value: e.path in files }
+            : next(e),
     );
     on('fs.read', (_$, e) =>
         unreadable.includes(e.path)

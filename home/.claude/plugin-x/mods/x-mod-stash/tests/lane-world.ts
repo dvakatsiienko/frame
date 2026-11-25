@@ -1,6 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, mock } from 'claude-code/testing';
 
+import { movedFile } from './moved-file.ts';
 import {
     THREADS_FILE,
     type ThreadRow,
@@ -39,6 +40,8 @@ export function world(
     // `x lane show <lane> --json`'s record per lane; a lane with none fails the run, as x would
     const shows: Record<string, unknown> = {};
     const showRuns: string[] = [];
+    // the lanes file's reads, each past `good` refused, and its move into place
+    const shelfReads = { good: Number.POSITIVE_INFINITY, isMoveRefused: false };
     files[`/home/.claude/sessions/${PID}.json`] = JSON.stringify({
         name,
         pid: PID,
@@ -73,6 +76,17 @@ export function world(
         value: { internal: false, name: null, remote: null, root: '/tmp' },
     }));
     on('process.run', (_$, e) => {
+        if (e.argv[0] === 'mv' && shelfReads.isMoveRefused)
+            return {
+                value: {
+                    exitCode: 1,
+                    isStderrTruncated: false,
+                    isStdoutTruncated: false,
+                    stderr: 'disk full',
+                    stdout: '',
+                },
+            };
+        movedFile(files, e.argv);
         if (e.argv[1] === 'lane' && e.argv[2] === 'show') {
             showRuns.push(e.argv[3] ?? '');
             const record = shows[e.argv[3] ?? ''];
@@ -144,12 +158,17 @@ export function world(
                           size: 1,
                       })),
     }));
-    on('fs.read', (_$, e) =>
-        e.path in files
+    const writes: string[] = [];
+    on('fs.read', (_$, e) => {
+        if (e.path === FILE && shelfReads.good-- <= 0)
+            return { deny: 'resource busy' };
+        return e.path in files
             ? { value: files[e.path] ?? '' }
-            : { deny: 'no such file' },
-    );
+            : { deny: 'no such file' };
+    });
+    on('fs.exists', (_$, e) => ({ value: e.path in files }));
     on('fs.write', (_$, e) => {
+        writes.push(e.path);
         files[e.path] = e.text;
         return { value: undefined };
     });
@@ -169,11 +188,13 @@ export function world(
         contexts,
         files,
         planRuns,
+        shelfReads,
         showRuns,
         shows,
         steps,
         store,
         texts,
+        writes,
     };
 }
 

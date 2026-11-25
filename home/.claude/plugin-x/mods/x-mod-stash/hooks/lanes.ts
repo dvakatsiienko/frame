@@ -17,13 +17,14 @@ import {
     MAIN_ROLE,
     type ThreadRecord,
     WING_ROLE,
+    identity,
     isLaneOwner,
     selfRecord,
     successorOf,
     threadRecords,
 } from './session-identity.ts';
 import { partsShown } from './settings-store.ts';
-import { bare, errorText, expandHome, oneLine } from './util.ts';
+import { bare, errorText, expandHome, oneLine, writeWhole } from './util.ts';
 import { xRead } from './x-cli.ts';
 
 type Entry = StashEntry;
@@ -319,7 +320,7 @@ export async function followCodies($: EngineInterface) {
         );
     }
     if (!moves.length) return;
-    await writeLanes($, mergeLanes(lanes, next, await readLanes($)));
+    if (await changeLanes($, lanes, next)) return;
     await $.store.set(LANE_MOVES, [...(await heldLaneMoves($)), ...moves]);
 }
 
@@ -579,8 +580,7 @@ export async function followPlans($: EngineInterface) {
             movedAt: at === lane.current ? lane.movedAt : turns,
         });
     }
-    if (isChanged)
-        await writeLanes($, mergeLanes(lanes, next, await readLanes($)));
+    if (isChanged) await changeLanes($, lanes, next);
 }
 
 async function heldLaneMoves($: EngineInterface) {
@@ -674,6 +674,8 @@ function laneSummary(
 
 const lanesFile = (home: string | undefined) =>
     `${home}/.claude/shelf/lanes.json`;
+export const LANES_UNREAD =
+    'the lanes file is there but would not read, so nothing was written over it';
 
 // read-both: a lane stored before the 10-29 rename names its members coder and verifier
 function laneRolesNow(lane: StashLane): StashLane {
@@ -690,18 +692,27 @@ function laneRolesNow(lane: StashLane): StashLane {
     };
 }
 
-// the shelf file as it stands: every lane, ended ones kept as the record
-export async function readLanes($: EngineInterface): Promise<StashLane[]> {
-    const home = await $.env.get('HOME').catch(() => undefined);
-    const text = await $.fs.read(lanesFile(home)).catch(() => undefined);
+// the shelf file as it stands: every lane, ended ones kept as the record; only a file that is not there is no lanes, one
+// that is there and would not read is `undefined`, never written over
+export async function laneStore(
+    $: EngineInterface,
+): Promise<StashLane[] | undefined> {
+    const file = lanesFile(await $.env.get('HOME').catch(() => undefined));
+    const text = await $.fs.read(file).catch(() => undefined);
+    if (text === undefined)
+        return (await $.fs.exists(file).catch(() => true)) ? undefined : [];
     try {
-        const body = text ? JSON.parse(text) : undefined;
+        const body = JSON.parse(text);
         return Array.isArray(body?.lanes)
             ? (body.lanes as StashLane[]).map(laneRolesNow)
-            : [];
+            : undefined;
     } catch {
-        return [];
+        return undefined;
     }
+}
+// for a draw or a read that writes nothing back
+export async function readLanes($: EngineInterface) {
+    return (await laneStore($)) ?? [];
 }
 
 // the file a peer wrote while this write was being worked out: mine wins only on a lane mine changed, and a lane ended
@@ -725,24 +736,35 @@ export function mergeLanes(
     ];
 }
 
-// each card carries its ticked steps: the deck's count is done of all, never the pointer (FRM-656: l96 read 49/116)
-export async function writeLanes($: EngineInterface, lanes: StashLane[]) {
+// a change onto the file as it stands now, or why it was not kept; each card carries its ticked steps: the deck's count is
+// done of all, never the pointer (FRM-656: l96 read 49/116)
+export async function changeLanes(
+    $: EngineInterface,
+    before: StashLane[],
+    mine: StashLane[],
+): Promise<string | undefined> {
+    const fresh = await laneStore($);
+    if (!fresh) return LANES_UNREAD;
+    const lanes = mergeLanes(before, mine, fresh);
     const home = await $.env.get('HOME').catch(() => undefined);
     const counted = lanes.map((l) => ({
         ...l,
         done: l.items.filter((x) => x.isDone).length,
     }));
-    await $.fs
-        .write(
+    try {
+        await writeWhole(
+            $,
+            identity.proc?.pid ?? 0,
             lanesFile(home),
             `${JSON.stringify({ lanes: counted }, null, 2)}\n`,
-        )
-        .catch((err) =>
-            $.ui.log(
-                `x-mod-stash: the lanes file was not kept: ${errorText(err)}`,
-            ),
         );
+    } catch (err) {
+        const why = `the lanes file was not kept: ${errorText(err)}`;
+        $.ui.log(`x-mod-stash: ${why}`);
+        return why;
+    }
     await showLanes($, lanes);
+    return undefined;
 }
 
 type LaneSteer = { steer?: string; isTaken?: boolean };

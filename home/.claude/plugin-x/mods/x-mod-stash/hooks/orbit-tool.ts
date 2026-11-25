@@ -5,17 +5,17 @@ import type { EngineInterface } from 'claude-code';
 
 import { takeJoinLock } from './joins.ts';
 import {
+    LANES_UNREAD,
     LANE_MAX,
     LANE_ROLES,
     LANE_STEER,
     LANE_STEER_OLD,
     LANE_STEP,
     LANE_TEXT_MAX,
+    changeLanes,
     glideOp,
-    mergeLanes,
-    readLanes,
+    laneStore,
     readPlanSteps,
-    writeLanes,
 } from './lanes.ts';
 import { ASSUMED_MAX, CHANGED_MARK, PLAN_MAX, orbitOp } from './orbit.ts';
 import { isShown } from './orbit-ask-kind.ts';
@@ -280,7 +280,8 @@ export async function orbitCall(
             return {
                 deny: `orbit glide: only ${LANE_OWNER} writes the lanes; every board shows them`,
             };
-        const before = await readLanes($);
+        const before = await laneStore($);
+        if (!before) return { deny: `orbit glide: ${LANES_UNREAD}` };
         if (side && input.act !== 'create') {
             const card = before.find((l) => l.id === oneLine(input.id));
             if (card && bare(card.runner ?? '') !== bare(side))
@@ -354,6 +355,8 @@ export async function orbitCall(
                   known.has(l.id) ? l : { ...l, runner: side },
               )
             : op.lanes;
+        const lost = await changeLanes($, before, lanes);
+        if (lost) return { deny: `orbit glide: ${lost}` };
         // a steer was about the step it sat on: it drops when the lane's current step is another one — by its text, so
         // an edit that only moves the step keeps dima's steer
         const was = new Map(
@@ -366,7 +369,6 @@ export async function orbitCall(
                     .delete(LANE_STEER_OLD + l.id)
                     .catch(() => undefined);
             }
-        await writeLanes($, mergeLanes(before, lanes, await readLanes($)));
         markWork();
         return { result: op.result };
     }

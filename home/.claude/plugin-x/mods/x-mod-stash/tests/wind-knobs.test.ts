@@ -149,8 +149,8 @@ test("the coordinator's mod-asked wind note carries her checkpoint", async ($, o
     );
     expect([
         ask?.includes('clio:checkpoint'),
-        ask?.includes('tell the fleet'),
-    ]).toEqual([true, true]);
+        ask?.includes('the fleet'),
+    ]).toEqual([true, false]);
 });
 
 test('a reload after the notice turn still asks at the next turn', async ($, on) => {

@@ -68,7 +68,7 @@ export const windSay = (w: StashWind) =>
     w.isGone ? 'stopped, its handoff left the store' : WIND_SAY[w.state];
 const WIND_NOTE = `🐦‍🔥 second wind: dima asked you to refresh your context at a good stop. ${WIND_WORDS} finish the step you are on, nothing interrupts it; a member mid-round (sixth sense's loop, a designer's take) stops after that round or take. then ${WIND_HOW}`;
 // clio's good stop is todo 16's nine steps (dima, 10-13)
-const WIND_NOTE_OWNER = `🐦‍🔥 second wind: dima asked you to checkpoint once the topic you are on is done — no rush, no deadline. ${WIND_WORDS} finish that topic whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run clio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
+const WIND_NOTE_OWNER = `🐦‍🔥 second wind: dima asked you to checkpoint once the topic you are on is done — no rush, no deadline. ${WIND_WORDS} finish that topic whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run clio:checkpoint, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
 const windRefused = (what: string) =>
     `🐦‍🔥 second wind refused: ${what} still runs after you said pending: none, so nothing compacted. stop it with TaskStop or name it in pending, then call ${ORBIT_TOOL} op second-wind again.`;
 // FRM-505: past the 🎛️ `wind-notice` line a session hears its wind is coming, past `wind-at` the mod asks for it (W1,
@@ -90,7 +90,7 @@ const FILL_NOTICE = `🐦‍🔥 context at {fill} %: a second wind is coming. {
 const FILL_PROPOSE =
     "🐦‍🔥 second wind due at {fill} %: past the {wind} % boundary, and this thread's 🍃 second wind auto is off: propose the wind to dima in orbit at your next good stop, never take it yourself.";
 const WIND_NOTE_AUTO = `🐦‍🔥 second wind: the mod asks you for it, your context is past {wind} %: a must, never a rush. finish the step you are on and commit it, nothing interrupts it; never wind mid-build. then ${WIND_HOW}`;
-const WIND_NOTE_AUTO_OWNER = `🐦‍🔥 second wind: the mod asks you to checkpoint, your context is past {wind} %: a must, never a rush. finish the topic you are on whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run clio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
+const WIND_NOTE_AUTO_OWNER = `🐦‍🔥 second wind: the mod asks you to checkpoint, your context is past {wind} %: a must, never a rush. finish the topic you are on whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run clio:checkpoint, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
 // the five notes dima may rewrite, each a row of the second-wind store; an empty row is the default here (FRM-634).
 // `{fill}` and `{wind}` take the thread's fill and the wind line
 const WIND_DEFAULTS: Readonly<Record<WindRow, string>> = {
