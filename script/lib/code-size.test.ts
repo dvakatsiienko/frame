@@ -22,10 +22,6 @@ const skipped = [/\.d\.ts$/, /^logos\/data\.gen\.ts$/, /(^|\/)public\//];
 // a raise names dima's word and its date in the why
 const caps = {
     'x/go/lane_landed.go': { cap: 1_398, why: 'lane landed and its decamp' },
-    'x/go/merge_auto.go': {
-        cap: 1_707,
-        why: 'merge-auto: the gates and the merge',
-    },
     'x/go/stacks_test.go': {
         cap: 1_363,
         why: 'the stacked-pr add-on, one file of cases',

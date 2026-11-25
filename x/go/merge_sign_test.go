@@ -90,6 +90,7 @@ func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 	t.Run("the files cut from a self file", func(t *testing.T) {
 		waits(t,
 			"x/go/gate_queue.go",
+			"x/go/lane_branch_drop.go",
 			"x/go/lane_commit.go",
 			"x/go/lane_commit_gates.go",
 			"x/go/lane_commit_input.go",
@@ -101,6 +102,21 @@ func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 			"x/go/lane_push.go",
 			"x/go/lane_unlock.go",
 			"x/go/lane_words.go",
+			"x/go/merge_auto_apply.go",
+			"x/go/merge_auto_decision.go",
+			"x/go/merge_carry.go",
+			"x/go/merge_ci.go",
+			"x/go/merge_clock.go",
+			"x/go/merge_decamp.go",
+			"x/go/merge_deploy.go",
+			"x/go/merge_marks.go",
+			"x/go/merge_mergeable.go",
+			"x/go/merge_round.go",
+			"x/go/merge_security.go",
+			"x/go/merge_sixth_sense.go",
+			"x/go/merge_threads.go",
+			"x/go/merge_tier.go",
+			"x/go/merge_wishkeeper.go",
 		)
 	})
 }

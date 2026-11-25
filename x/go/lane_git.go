@@ -96,3 +96,13 @@ func runCmd(c *exec.Cmd) (result, error) {
 func ok(got result, _ error) bool { return got.ok }
 
 func exists(path string) bool { _, err := os.Stat(path); return err == nil }
+
+// the sha origin holds for a branch, "" with none or with no origin at all
+func remoteBranch(dir, ref string) (string, error) {
+	if !ok(gitIn(dir, "remote", "get-url", "origin")) {
+		return "", nil
+	}
+	listed, err := mustGitIn(dir, "ls-remote", "ls-remote", "origin", "refs/heads/"+ref)
+	sha, _, _ := strings.Cut(listed, "\t")
+	return sha, err
+}
