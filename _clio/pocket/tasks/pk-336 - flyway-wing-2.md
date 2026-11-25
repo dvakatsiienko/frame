@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-24T15:16:00Z'
+updated_date: '2026-11-25T11:10:24Z'
 labels:
   - m
   - clio-wing-2
@@ -185,6 +185,8 @@ done 2026-11-11 17:08: cli rider from main (dima 16:32): x lane gate maps herdr-
 19:00 wing 1 shortened #3 to ≤120 chars (dima's flyway readability, 11-12); the line before, whole: 💤 redraw the crew-pm board: pocket-check.ts, merge_auto.go, stacks.go, habit-shared-files, the siesta skill, prompt-groom.ts, craft-fleet-flow, shape-lane-dispatch, crew-codie and watch-pr.sh changed since its last version — later: dima 20:21 («i tell when»)
 
 done 2026-11-19 16:17: 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when») (PK-362 done)
+
+13:10 wing 1: the crew-pm redraw (f2) also routes the long straight arrow «his pick is the summon» (fx:e-spawn): it crosses 7 tiles, and 2 excalidraw tests stay red until it does
 <!-- SECTION:NOTES:END -->
 
 2026-11-09 23:12 wing 2 halts (dima 23:07 via main). handed to wing 1's PK-346: the FRM-548, FRM-549, FRM-553, FRM-509 closes at the next frame pr's merge-auto run, and cli lane 6's rest (FRM-384 with its gate riders and FRM-554, FRM-436, FRM-424). done tonight: frame#152 merged, FRM-546 closed, FRM-414 re-grilled and built (25d84100), the review contract notice sent. the 💤 lines wait here for the next wing 2.

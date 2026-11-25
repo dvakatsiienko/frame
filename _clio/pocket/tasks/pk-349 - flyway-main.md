@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T11:09:11Z'
+updated_date: '2026-11-25T11:09:32Z'
 labels:
   - s
   - clio-main
@@ -2830,4 +2830,6 @@ PK-349:W2441 (2026-11-25 13:08, dima): if skill typed from quill in herdr, it op
 done 2026-11-25 13:09: f113 the plan over all herdr work (FRM-616), parked on his word — later: dima 19:32 («tomorrow or the day after») — parked: 2026-11-24 (FRM-616 Todo)
 
 done 2026-11-25 13:09: f114 FRM-678: the queue's free-CPU number, read from two days of rows, then one number to dima — on: 2026-11-26 — parked: 2026-11-24 (FRM-678 Todo)
+
+his o6 tick (2026-11-25 13:13): the lanes file rider goes to the mods codie after FRM-645
 <!-- SECTION:NOTES:END -->
