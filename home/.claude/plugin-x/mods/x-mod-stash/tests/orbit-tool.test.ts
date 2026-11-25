@@ -1,11 +1,24 @@
 import type { On } from 'claude-code';
 
 import {
+    allAsksTicks,
+    isAllAsksMarkable,
+    joinText,
+    orbitOp,
+} from '../hooks/orbit.ts';
+import { strandedLine } from '../hooks/orbit-ask-kind.ts';
+import type { OrbitAsk } from '../types/stash.d.ts';
+import {
     AREAS,
+    TITLED,
+    TITLED_TEXT,
     addLinked,
+    addOf,
     assume,
     bgWorld,
     partOff,
+    press,
+    ran,
     texts,
     tickLog,
     ticked,
@@ -176,6 +189,257 @@ test('an ask text of exactly 90 chars is taken', async ($, on) => {
     expect((r as { deny?: string }).deny).toBe(undefined);
 });
 
+/* FRM-695: a title, a body and the pick, handed to herdr as three fields */
+
+const RETIRED = '; text is retired: title (the topic, ≤7 words) and body';
+test('a titled ask publishes title, body and pick apart, its text the two, and takes a press on all of it', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    const writes = tickLog(on);
+    await start($);
+    const gated = 'runs `git push`';
+    await orbit($, addOf({}, { body: gated }, { kind: 'look' }));
+    const items = () =>
+        (w.store.get(`asks:${SID}`) as { items: Record<string, unknown>[] })
+            .items;
+    const shown = items();
+    const ui = await board($);
+    const card = (await ui.find({ key: 'orbit:ask:o3', type: 'Box' }))?.text;
+    const at = w.clock.now();
+    const pressed = (id: string, text: unknown) =>
+        press({ at, id, pick: 'log', text, verdict: 'tick' });
+    // a body-only follow lands before the press written on the old body is read: that press marks nothing
+    await orbit($, { body: 'a new fact', id: 'o1', op: 'follow' });
+    files[`/home/.claude/shelf/orbit-ticks/${SID}.jsonl`] =
+        pressed('o1', TITLED_TEXT) + pressed('o2', shown[1]?.text);
+    await $.tool.call({ command: 'ls', tool: 'Bash' });
+    const body = '- log each run\n- or **skip** it';
+    expect([
+        shown.map((a) => [a.title, a.body, a.pick, a.text, a.isGated]),
+        card,
+        items().map((a) => [a.mark, a.text]),
+        writes.at(-1),
+    ]).toEqual([
+        [
+            [TITLED.title, body, 'log', TITLED_TEXT, undefined],
+            [TITLED.title, gated, 'log', `${TITLED.title}\n\n${gated}`, true],
+            [TITLED.title, body, 'log', `look: ${TITLED_TEXT}`, undefined],
+        ],
+        expect.stringMatching(/^👀 o3 mods: 🧩 tests queue/u),
+        [
+            [undefined, `${TITLED.title}\n\na new fact`],
+            ['accepted', `${TITLED.title}\n\n${gated}`],
+            [undefined, `look: ${TITLED_TEXT}`],
+        ],
+        [expect.objectContaining({ id: 'o2', targets: ['git push'] })],
+    ]);
+});
+
+for (const [what, fields, miss] of [
+    [
+        'an 8-word title',
+        { title: 'a b c d e f g h' },
+        '«a b c d e f g h»: title is 8 words, keep ≤7',
+    ],
+    [
+        'a 46-char title',
+        { title: 'x'.repeat(46) },
+        `«${'x'.repeat(40)}»: title is 46 chars, keep it ≤45`,
+    ],
+    ['no body', { body: undefined }, 'log or not»: body is missing'],
+    ['a blank body', { body: ' \n ' }, 'log or not»: body is missing'],
+    [
+        'a 201-char body',
+        { body: 'b'.repeat(201) },
+        'log or not»: body is 201 chars, keep it ≤200',
+    ],
+    [
+        'no title',
+        { body: 'b'.repeat(50), title: undefined },
+        `«${'b'.repeat(40)}»: title is missing`,
+    ],
+    ['a blank title', { body: 'so', title: ' ' }, '«so»: title is missing'],
+    ['an emoji title', { body: 'so', title: '🧩' }, '«so»: title is missing'],
+    [
+        'a text beside a body',
+        { body: 'so', text: 'x', title: undefined },
+        '«so»: title is missing',
+    ],
+    [
+        'a long bracket for a tag',
+        { title: `[${'x '.repeat(25)}] queue` },
+        'title is 26 words, keep ≤7; title is 58 chars, keep it ≤45',
+    ],
+    [
+        'two misses',
+        { body: '', title: 'a b c d e f g h' },
+        'title is 8 words, keep ≤7; body is missing',
+    ],
+    [
+        'an 8-word title past its kind',
+        { title: 'look: a b c d e f g h' },
+        'title is 8 words, keep ≤7',
+    ],
+] as const)
+    test(`an ask with ${what} is refused whole in one line, as a follow is`, () => {
+        const deny = `${miss}; an ask is { title, body, pick, area, why }`;
+        const { body, text, title } = fields as Record<string, string>;
+        // a follow keeps the field it leaves out, so one with no title is refused on an ask that has none
+        const was = addOf(
+            'title' in fields && title === undefined
+                ? { body: undefined, text: 'x', title: undefined }
+                : {},
+        );
+        const follow = { body, id: 'o1', op: 'follow', text, title };
+        for (const got of [
+            ran(addOf(TITLED, fields)),
+            ...(what === 'no body' ? [] : [ran(was, follow)]),
+        ])
+            expect([
+                String(got).includes(deny),
+                String(got).split('\n').length,
+            ]).toEqual([true, 1]);
+    });
+
+for (const [what, fields] of [
+    [
+        '7 words past ⚠️, an emoji and a tag',
+        { title: '⚠️ 🧩 [mods] a b c d e f g' },
+    ],
+    ['45 chars past a tag', { title: `[mods] ${'x'.repeat(45)}` }],
+    ['45 chars past its kind', { title: `test: ${'x'.repeat(45)}` }],
+    ['a 200-char body', { body: '🧩'.repeat(200) }],
+    ['a text beside its title', { text: 'x'.repeat(91) }],
+] as const)
+    test(`an ask with ${what} lands`, () => {
+        const got = ran(addOf(fields));
+        expect(got).toHaveLength(1);
+        expect(got[0]).not.toHaveProperty('text', expect.stringMatching(/^x/));
+    });
+
+test('the old text call lands as before, its line naming title and body', () => {
+    const old = {
+        area: 'mods',
+        pick: 'yes',
+        text: 'ship it',
+        why: 'a test ask',
+    };
+    const o = { asks: [], next: 1, turns: 0 };
+    const add = orbitOp(o, { asks: [old], op: 'add' }, true);
+    const follow = orbitOp(
+        'orbit' in add ? add.orbit : o,
+        { id: 'o1', op: 'follow', text: 'ship it now' },
+        true,
+    );
+    expect([
+        add,
+        follow,
+        (orbitOp(o, addOf({}), true) as { result: string }).result,
+    ]).toEqual([
+        expect.objectContaining({
+            result: `added o1 to dima's orbit; never repeat them in the reply${RETIRED}`,
+        }),
+        expect.objectContaining({ result: `o1 changed in place${RETIRED}` }),
+        "added o1 to dima's orbit; never repeat them in the reply",
+    ]);
+    expect(ran({ asks: [old], op: 'add' })[0]).not.toHaveProperty('title');
+});
+
+for (const [what, fields, kept] of [
+    ['a title alone', { title: 'the door' }, ['the door', TITLED.body]],
+    ['a body alone', { body: 'so' }, [TITLED.title, 'so']],
+    ['the old text', { text: 'the door' }, [undefined, undefined]],
+] as const)
+    test(`a follow with ${what} keeps or drops the rest`, () => {
+        const got = ran(addOf({}), { id: 'o1', op: 'follow', ...fields });
+        const a = got[0] as OrbitAsk;
+        const [title, body] = kept;
+        const said = body?.replace('  ', ' ');
+        expect([a.title, a.body, a.text]).toEqual([
+            title,
+            said,
+            title ? `${title}\n\n${said}` : 'the door',
+        ]);
+    });
+
+test('a title led by its kind loses the lead, and a follow keeps the kind', () => {
+    const led = ran(addOf({ title: '👀 look: the card' }))[0] as OrbitAsk;
+    const followed = ran(addOf({ kind: 'test' }), {
+        body: 'so',
+        id: 'o1',
+        op: 'follow',
+    })[0] as OrbitAsk;
+    expect([
+        [led.kind, led.title, led.text.split('\n')[0]],
+        [followed.kind, followed.title, followed.text],
+        ran(
+            addOf({
+                kind: 'look',
+                title: 'test: aaaaaa bbbbbb cccccc dddddd eeeeee fffff g',
+            }),
+        ),
+        // an item that says nothing refuses the add, its siblings with it
+        ran(addOf({}, { body: undefined, title: undefined })),
+        ran(addOf({ kind: 'test', title: '🔊 test: F4' })),
+        // neither form: the text would be dropped without a word
+        ran(addOf({}), { body: 'so', id: 'o1', op: 'follow', text: 'x' }),
+        ran(addOf({}), { id: 'o1', op: 'follow', text: 'x', title: 'so' }),
+    ]).toEqual([
+        ['look', 'the card', 'look: the card'],
+        ['test', TITLED.title, `test: ${TITLED.title}\n\nso`],
+        expect.stringMatching(/kind is look; an ask is/),
+        expect.stringMatching(/«no title»: title is missing; body is missing/),
+        [
+            expect.objectContaining({
+                kind: 'test',
+                text: expect.stringMatching(/^test: 🔊 F4\n/u),
+                title: '🔊 F4',
+            }),
+        ],
+        expect.stringMatching(/o1 «so»: title is missing/),
+        expect.stringMatching(/o1 «so»: body is missing/),
+    ]);
+});
+
+test('a titled ask draws on one line where one line is read, and an emoji-led merge takes its own 🛎️', () => {
+    const [a, merge, gated] = ran(
+        addOf(
+            { kind: 'look' },
+            { title: '🧩 [mods] merge pr 7' },
+            { body: 'runs `git push`' },
+        ),
+    ) as [OrbitAsk, OrbitAsk, OrbitAsk];
+    const line = `look: ${TITLED_TEXT.replaceAll(/\n+/g, ' — ')}`;
+    expect([
+        joinText([{ ...a, mark: 'accepted' }]).split('\n')[1],
+        strandedLine(a, 'p', undefined).includes(`«${line}»`),
+        [a, merge, { ...a, text: '⚠️ x' }].map(isAllAsksMarkable),
+        allAsksTicks([gated], 1)[0]?.targets,
+        // a turned-down command in the body is no word of his: the pick's spans alone once it holds one
+        allAsksTicks(
+            [
+                {
+                    ...gated,
+                    pick: 'run `git push -n`',
+                    text: '`git push` on `~/a.ts`',
+                },
+                // a name is no command, so the text's stands as before
+                { ...gated, pick: 'yes, `main` stays' },
+            ],
+            1,
+        ).map((t) => t.targets),
+    ]).toEqual([
+        `- o1 🛎️ accepted: ${line} (your pick: log)`,
+        true,
+        [true, false, false],
+        ['git push'],
+        [
+            ['~/a.ts', 'git push -n'],
+            ['git push', 'main'],
+        ],
+    ]);
+});
+
 test('a fourth assumption in one turn is refused', async ($, on) => {
     world(on);
     await start($);
@@ -234,8 +498,14 @@ test("orbit's description fits the 4096 chars cc shows the model, every op named
     const ops = [...registered.described.matchAll(/^op (\w+)/gmu)].map(
         (m) => m[1],
     );
-    expect([registered.described.length <= 4096, ops]).toEqual([
+    expect([
+        registered.described.length <= 4096,
+        // the retired name is in no line of its own; the glide line's items keep theirs
+        /\btext\b/u.test(registered.described.split('\nop glide')[0] ?? ''),
+        ops,
+    ]).toEqual([
         true,
+        false,
         ['add', 'resolve', 'follow', 'assume', 'plan', 'glide'],
     ]);
 });
@@ -258,14 +528,25 @@ for (const [what, line, words] of [
         'never what he must read or pick',
     ],
     [
-        'a list for dima goes in the text',
+        'a list for dima goes in the body',
         'add',
-        'a list for him goes in the text, a longer one in a file',
+        'a list for him is bullets or numbers in the body, a longer one in a file',
     ],
     [
-        'a file for dima goes in link, named in the text',
+        'a file for dima goes in link, named in the body',
         'add',
-        'a file or page in link (https/obsidian:// url or path), named in words in text',
+        'a file or page in link (https/obsidian:// url or path), named in words in body',
+    ],
+    [
+        'an ask is a title, its topic, and a body, the fact that decides',
+        'add',
+        "asks: title: the topic, led by its area's emoji, ≤7 words, ≤45 chars; body ≤200 chars, the fact that decides, crew names and deciding words **bold**, readable alone",
+    ],
+    ['a pick is the action', 'add', 'pick: your recommendation, the action;'],
+    [
+        'a follow carries a title and a body',
+        'follow',
+        'id, title, body, pick, area, why, from|null:',
     ],
     [
         'an ask reads plain',
@@ -297,13 +578,25 @@ for (const [what, line, words] of [
         'follow',
         'on a look or test a why opening «fixing» hides it, your next follow shows it',
     ],
+    [
+        'an ask goes up as soon as it is known',
+        'when',
+        "known, at the turn's start before the work, mid-turn at once: his tick slipstreams into a running turn, and the turn goes on with",
+    ],
+    [
+        'a guarded ask names its target in plain words',
+        'guard',
+        'names its target in plain words, the pick quotes it whole',
+    ],
     ['a --bg session sets no phases', 'plan', 'a --bg session sets neither'],
 ] as const)
     test(`orbit's text says ${what}`, async ($, on) => {
         world(on);
         await start($);
         expect(
-            registered.described.match(new RegExp(`^op ${line}.*$`, 'mu'))?.[0],
+            registered.described.match(
+                new RegExp(`^(?:op )?${line}\\b.*$`, 'mu'),
+            )?.[0],
         ).toContain(words);
     });
 
@@ -394,6 +687,7 @@ test("orbit's schema names every argument its ops read", async ($, on) => {
             'act',
             'area',
             'asks',
+            'body',
             'current',
             'from',
             'id',
@@ -413,10 +707,26 @@ test("orbit's schema names every argument its ops read", async ($, on) => {
             'words',
         ].filter((name) => !(name in props)),
         inner('asks'),
+        props.asks?.items?.required,
+        inner('ops').includes('text'),
         props.act?.enum,
     ]).toEqual([
         [],
-        ['area', 'from', 'hiddenNote', 'kind', 'link', 'pick', 'text', 'why'],
+        [
+            'area',
+            'body',
+            'from',
+            'hiddenNote',
+            'kind',
+            'link',
+            'pick',
+            'text',
+            'title',
+            'why',
+        ],
+        // a required title would refuse a session still sending `text`
+        ['pick', 'area', 'why'],
+        true,
         ['create', 'edit', 'link', 'step', 'end'],
     ]);
 });

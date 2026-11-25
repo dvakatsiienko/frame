@@ -5,6 +5,8 @@ import { describe, expect, test, vi } from 'vitest';
 // its answer runs there; but what `init` left queued runs inside the next call, whichever mod's
 const at = vi.hoisted(() => ({
     files: new Map<string, string>(),
+    /** native calls and timers on their way */
+    inFlight: 0,
     isFolderDown: false,
     psCodes: [] as number[],
     scope: 'deck',
@@ -12,8 +14,10 @@ const at = vi.hoisted(() => ({
 }));
 const native = <T>(answer: () => T) => {
     const made = at.scope;
+    at.inFlight += 1;
     return new Promise<T>((done, fail) =>
         setTimeout(() => {
+            at.inFlight -= 1;
             at.scope = made;
             try {
                 done(answer());
@@ -101,15 +105,35 @@ const cx: Record<string, unknown> = {
     timer: {
         after: (ms: number, run: (c: unknown) => void) => {
             const made = at.scope;
+            // a retry seconds away is not waited for
+            const weight = ms <= 100 ? 1 : 0;
+            at.inFlight += weight;
+            let isOver = false;
+            const end = () => {
+                if (!isOver) at.inFlight -= weight;
+                isOver = true;
+            };
             const id = setTimeout(() => {
+                end();
                 at.scope = made;
                 run(cx);
             }, ms);
-            return { cancel: () => clearTimeout(id) };
+            return {
+                cancel: () => {
+                    clearTimeout(id);
+                    end();
+                },
+            };
         },
         every: () => ({ cancel() {} }),
     },
 };
+
+/** every read asked for has answered, and what its answer asked for too, however slow the mac */
+async function settled() {
+    for (let calm = 0; calm < 5; calm = at.inFlight ? 0 : calm + 1)
+        await new Promise((done) => setTimeout(done, 0));
+}
 
 /** a deck landed over what the last one kept */
 function landed(plan: string[] = []) {
@@ -153,7 +177,7 @@ test('a deck landed again draws the steer and the 🆕 it kept, and keeps what h
     const deck = landed();
     // init's own call is over: the next one to run is another mod's
     at.scope = 'other';
-    await new Promise((done) => setTimeout(done, 100));
+    await settled();
 
     expect(deck.steers.get('a:o1')?.value()).toBe('my unsent words');
     expect([...(deck.updated ?? [])]).toEqual(['a:o1']);
@@ -170,7 +194,7 @@ test('a first read that fails wipes nothing the deck kept', async () => {
     at.scope = 'deck';
     at.psCodes = [2];
     const deck = landed();
-    await new Promise((done) => setTimeout(done, 100));
+    await settled();
     expect(deck.updated).toBe(null);
     expect(at.stores.deck).toMatchObject({
         seen: JSON.stringify({ 'a:o1': 'look: the card\nyes' }),
@@ -180,7 +204,7 @@ test('a first read that fails wipes nothing the deck kept', async () => {
 
     const again = deck as unknown as { reload: (c: unknown) => void };
     again.reload(cx);
-    await new Promise((done) => setTimeout(done, 100));
+    await settled();
     expect([...(deck.updated ?? [])]).toEqual(['a:o1']);
     expect(deck.steers.get('a:o1')?.value()).toBe('my unsent words');
 });
@@ -193,7 +217,7 @@ describe.each([
     const STATE = '/Users/me/.claude/shelf/herdr-state/a.json';
     const readAgain = async (deck: unknown) => {
         (deck as { reload: (c: unknown) => void }).reload(cx);
-        await new Promise((done) => setTimeout(done, 100));
+        await settled();
     };
     const breakIt = (isBroken: boolean, whole: string) => {
         if (isHalf) at.files.set(STATE, isBroken ? whole.slice(0, 20) : whole);
@@ -203,7 +227,7 @@ describe.each([
     test('wipes nothing kept for its thread, its asks and the phases stay drawn', async () => {
         at.scope = 'deck';
         const deck = landed(['step one']);
-        await new Promise((done) => setTimeout(done, 100));
+        await settled();
         expect(deck.steers.get('a:plan')?.value()).toBe('my phases words');
         const whole = at.files.get(STATE) ?? '';
 
@@ -229,7 +253,7 @@ describe.each([
         const deck = landed(['step one']);
         const whole = at.files.get(STATE) ?? '';
         breakIt(true, whole);
-        await new Promise((done) => setTimeout(done, 100));
+        await settled();
         breakIt(false, whole);
         await readAgain(deck);
 
@@ -248,7 +272,7 @@ test('a thread back under a new pid, its state file half-written, loses no box a
         presses: Map<string, unknown>;
         reload: (c: unknown) => void;
     };
-    await new Promise((done) => setTimeout(done, 100));
+    await settled();
     deck.pressMade(cx, 'a:o1', 'tick', Date.now());
     deck.planSent.set('a', Date.now());
     const shelf = '/Users/me/.claude/shelf';
@@ -260,7 +284,7 @@ test('a thread back under a new pid, its state file half-written, loses no box a
         }),
     );
     deck.reload(cx);
-    await new Promise((done) => setTimeout(done, 100));
+    await settled();
     expect(deck.steers.get('a:o1')?.value()).toBe('my unsent words');
     expect(deck.steers.get('a:plan')?.value()).toBe('my phases words');
     expect(deck.presses.has('a:o1')).toBe(true);
@@ -270,13 +294,13 @@ test('a thread back under a new pid, its state file half-written, loses no box a
 test('an ask that left for real takes its steer, its files and its 🆕 with it', async () => {
     at.scope = 'deck';
     const deck = landed([]);
-    await new Promise((done) => setTimeout(done, 100));
+    await settled();
     at.files.set(
         '/Users/me/.claude/shelf/herdr-state/a.json',
         JSON.stringify({ asks: [], at: 2, pid: 7, sid: 'a' }),
     );
     (deck as unknown as { reload: (c: unknown) => void }).reload(cx);
-    await new Promise((done) => setTimeout(done, 100));
+    await settled();
     expect(deck.steers.has('a:o1')).toBe(false);
     expect(at.stores.deck).not.toHaveProperty('steer:a:o1');
     expect([...(deck.updated ?? [])]).toEqual([]);

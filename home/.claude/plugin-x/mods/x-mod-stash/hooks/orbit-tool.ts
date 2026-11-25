@@ -48,7 +48,15 @@ import { keepShelf } from './session-record.ts';
 import { partRefusal, readNumber, turnParts } from './settings-store.ts';
 import { addGridQs, markWork, turn } from './turn.ts';
 import { STALE_TURNS } from './turn-notes.ts';
-import { ORBIT_TEXT_MAX, bare, expandHome, oneLine } from './util.ts';
+import {
+    ORBIT_BODY_MAX,
+    ORBIT_TEXT_MAX,
+    ORBIT_TITLE_MAX,
+    ORBIT_TITLE_WORDS,
+    bare,
+    expandHome,
+    oneLine,
+} from './util.ts';
 import { windReady } from './wind-run.ts';
 
 // the running turn, so a mid-turn reload still knows it is busy
@@ -64,14 +72,14 @@ const TICKET_ID_ALL = /(?<!\[)\b(?:FRM|BYT)-\d+\b(?!\])/g;
 export const orbitAbout = (areas: AskArea[]) =>
     [
         'orbit: your asks to dima on the fleet board; an ask goes here, never into a reply. 🛎️ tick = pick good to go, 🔁 replay = another round, plus his steer; marked asks reach you model-only; an unmarked ask means nothing yet. a --bg session has no board: its asks go to its coordinator.',
-        "when: an ask goes up as soon as it is known: his tick slipstreams into a running turn, so one known at the turn's start is posted before the work, one born mid-turn the moment it is born, and the turn goes on with what does not hang on it; a recommendation, calm, never a rush, but never saved for the turn's end.",
+        "when: an ask goes up as soon as it is known, at the turn's start before the work, mid-turn at once: his tick slipstreams into a running turn, and the turn goes on with what does not hang on it; a recommendation, calm, never a rush, but never saved for the turn's end.",
         "who: a member's ask goes to its coordinator first, in its ping; the coordinator answers it or brings it to dima's orbit, so a member never asks dima directly.",
         'a pick names its whole outcome, so a tick needs no follow-up: a rename carries the new name («breather → breathing bars»), a choice its option, never the verb alone. a reply names an ask by its subject in plain words; its oN id stays on the board, never in the reply. another round is a follow, never a second add.',
-        'guard: a command x-mod-guard refuses, or would: the first ask names its target in plain words in the text, the pick quotes it whole in one backtick span, any length, never in words, and his one tick runs exactly that once within 2 h.',
-        `op add, asks: text one line ≤${ORBIT_TEXT_MAX} chars, subject first, readable alone (no «above», «this»), plain: what happens for him, no plan number («(24)») or unexplained label; pick: your recommendation; area, required: ${areaWords(areas) || 'one word'}; why, required: 2+ words; from: a starter not you, { who: ${STARTER_WORDS} }, a codie or sixth sense + lane and ticket or topic; kind: look (ready, only his check is left) or test (he probes something), both pinned; an ask for his hands links a file of plain numbered steps; hiddenNote: yours alone, source and a tick's meaning, never what he must read or pick; a list for him goes in the text, a longer one in a file; a file or page in link (https/obsidian:// url or path), named in words in text. irreversible (trash, push, close, merge) → lead with ⚠️, name the exact target.`,
+        'guard: a command x-mod-guard refuses, or would: the first ask names its target in plain words, the pick quotes it whole in one backtick span, any length, never in words, and his one tick runs exactly that once within 2 h.',
+        `op add, asks: title: the topic, led by its area's emoji, ≤${ORBIT_TITLE_WORDS} words, ≤${ORBIT_TITLE_MAX} chars; body ≤${ORBIT_BODY_MAX} chars, the fact that decides, crew names and deciding words **bold**, readable alone (no «above», «this»), plain: what happens for him, no plan number («(24)») or unexplained label; pick: your recommendation, the action; area, required: ${areaWords(areas) || 'one word'}; why, required: 2+ words; from: a starter not you, { who: ${STARTER_WORDS} }, a codie or sixth sense + lane and ticket or topic; kind: look (ready, only his check is left) or test (he probes something), both pinned; an ask for his hands links a file of plain numbered steps; hiddenNote: yours alone, source and a tick's meaning, never what he must read or pick; a list for him is bullets or numbers in the body, a longer one in a file; a file or page in link (https/obsidian:// url or path), named in words in body. irreversible (trash, push, close, merge) → lead with ⚠️, name the exact target.`,
         'op resolve, ids, words { id: closing word }: the asks answered this turn; they leave at its end, a worded one dim a turn more. ticked: «as ticked», or «changed: <what>» plus a follow or add.',
         'ops [{ op, … }]: several ops in one call, a result line each.',
-        `op follow, id, text, pick, area, why, from|null: another round on an answered ask, same id and place, marked ${CHANGED_MARK}; on a look or test a why opening «fixing» hides it, your next follow shows it.`,
+        `op follow, id, title, body, pick, area, why, from|null: another round on an answered ask, same id and place, marked ${CHANGED_MARK}; on a look or test a why opening «fixing» hides it, your next follow shows it.`,
         `op assume, texts: ≤${ASSUMED_MAX} a turn, ≤${ORBIT_TEXT_MAX} chars: unasked choices a wrong guess would cost a redo on, never routine; 🛎️ clears, ↩️ sends back with his steer.`,
         `op plan, lines: your next ${PLAN_MAX} moves, each ≤${ORBIT_TEXT_MAX} chars and readable alone; set at each turn end; untouched ${STALE_TURNS} turns reads stale. step: your lane step. a --bg session sets neither.`,
         `op glide (${LANE_OWNER}, or a wing on a card it created): act create, title, items [{ text, ticket, done }] or plan (path to the lane-plan.md: its «- [ ] NN · FRM-N text» lines are the steps, each with its ticket id, any count, a tick there moves the card, a hand step is refused): a lane's scope as 1–${LANE_MAX} plain steps ≤${LANE_TEXT_MAX} chars, no paths, op names or pr numbers; ticket optional; the result names the lane id. act link, id, session, role (codie or sixth-sense): a member's session id; a re-link of a role replaces the old one. act edit, id, title?, items?: the card refreshed in place, a kept step text keeps its done flag. act step, id, current: the step we are on, every step before it done; current = the count finishes it. act end, id: at the siesta or the halt after it finished. a running lane's card stays until every plan line is ticked, a parked lane's through the halt. nothing moved for ${LANE_STALE} of your turns reads stale.`,
@@ -85,6 +93,10 @@ const ASK_FROM = {
     },
     type: ['object', 'null'],
 } as const;
+const RETIRED = {
+    description: 'retired: title and body',
+    type: 'string',
+} as const;
 // the orbit tool's arguments; an `ops` item takes the same ones, since the engine drops any argument a schema does not name
 export const ORBIT_PROPS = {
     act: {
@@ -96,20 +108,24 @@ export const ORBIT_PROPS = {
         items: {
             properties: {
                 area: { type: 'string' },
+                body: { type: 'string' },
                 from: ASK_FROM,
                 hiddenNote: { type: 'string' },
                 // no enum: the op's own refusal names the two kinds
                 kind: { type: 'string' },
                 link: { type: 'string' },
                 pick: { type: 'string' },
-                text: { type: 'string' },
+                text: RETIRED,
+                title: { type: 'string' },
                 why: { type: 'string' },
             },
-            required: ['text', 'pick', 'area', 'why'],
+            // no title: a session still sending `text` is taken, never refused before its op reads it
+            required: ['pick', 'area', 'why'],
             type: 'object',
         },
         type: 'array',
     },
+    body: { type: 'string' },
     current: { type: 'number' },
     from: ASK_FROM,
     id: { type: 'string' },
@@ -146,7 +162,7 @@ export const ORBIT_PROPS = {
     session: { type: 'string' },
     slug: { type: 'string' },
     step: { type: 'number' },
-    text: { type: 'string' },
+    text: RETIRED,
     texts: { items: { type: 'string' }, type: 'array' },
     title: { type: 'string' },
     why: { type: 'string' },
@@ -428,8 +444,9 @@ export async function orbitCall(
     if (input.op === 'add')
         addGridQs(
             ...(Array.isArray(input.asks) ? input.asks : []).flatMap((x) => {
-                const n = oneLine((x as { text?: unknown })?.text).match(
-                    /^Q(\d+)\b/,
+                const said = (x ?? {}) as { text?: unknown; title?: unknown };
+                const n = oneLine(said.title ?? said.text).match(
+                    /^[^\p{L}\p{N}[]*(?:\[[^\]]*\])?[^\p{L}\p{N}]*Q(\d+)\b/u,
                 )?.[1];
                 return n ? [n] : [];
             }),

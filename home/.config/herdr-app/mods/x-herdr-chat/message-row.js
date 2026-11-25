@@ -63,8 +63,9 @@ export function createMessageRows(deps) {
      * @param {string} pre what tells this copy's rich text from the measured copy's
      * @param {boolean} [isShown] the copy on screen: the hidden measured copy takes no part in a selection, or its
      *   words, laid over the shown ones, flicker into his selection as he scrolls (dima, 13:51)
+     * @param {import('gpui-kit').Entity | null} [body] the view that draws its text views (message-body.js)
      */
-    function row(row, t, pre, isShown = true) {
+    function row(row, t, pre, isShown = true, body = null) {
         if (row.kind === 'start')
             return h_flex()
                 .w_full()
@@ -107,8 +108,8 @@ export function createMessageRows(deps) {
         if (row.kind === 'file') return column(fileRow(row, t));
         if (row.kind === 'tool') return column(toolRow(row, t, pre, isShown));
         const most = Math.max(240, Math.floor(deps.room() * BUBBLE_SHARE));
-        const id = `${pre}${row.id}@${row.version}`;
         const fold = foldOf(row);
+        const words = body ?? texts(row, t, pre, isShown);
         if (row.kind === 'mine')
             return column(
                 v_flex()
@@ -135,13 +136,7 @@ export function createMessageRows(deps) {
                                     tint(t.accent, row.isWaiting ? '99' : '4d'),
                                 )
                                 .when(row.isWaiting, (el) => el.opacity(0.75))
-                                .child(
-                                    textView(row, t, {
-                                        id,
-                                        isShown,
-                                        source: drawnBlocks(row)[0] ?? '',
-                                    }),
-                                ),
+                                .child(words),
                         ),
                     )
                     // a waiting message's time line is drawn by its × row, the × beside the time (his 20:24 steer)
@@ -165,28 +160,7 @@ export function createMessageRows(deps) {
                         .gap(8)
                         .rounded(12)
                         .bg(t.raised)
-                        .children(
-                            (fold?.shown ?? replyBlocks(row)).map(
-                                (block, i) => {
-                                    const view = textView(row, t, {
-                                        block: i,
-                                        id: `${id}-${i}`,
-                                        isShown,
-                                        source: blockSource(block),
-                                    });
-                                    return block.kind === 'text'
-                                        ? view
-                                        : div()
-                                              .px(10)
-                                              .py(8)
-                                              .rounded(8)
-                                              .bg(t.background)
-                                              .border(1)
-                                              .border_color(t.border)
-                                              .child(view);
-                                },
-                            ),
-                        )
+                        .child(words)
                         // the line he clicks to open it: the list's item click does, herdr-app#894 keeps a press
                         // handler out of a row
                         .when(Boolean(fold), (el) =>
@@ -203,6 +177,65 @@ export function createMessageRows(deps) {
                 )
                 .child(detailsLine(row, t)),
         );
+    }
+
+    /**
+     * a message's text views, under one another
+     * @param {Row} row @param {Theme} t @param {string} pre @param {boolean} [isShown]
+     * @param {import('./message-body.js').Reporting} [reporting]
+     */
+    function texts(row, t, pre, isShown = true, reporting = (view) => view) {
+        const id = stampOf(row, pre);
+        /** @param {number} block @param {string} source */
+        const viewAt = (block, source) =>
+            reporting(
+                textView(row, t, {
+                    block,
+                    id: row.kind === 'mine' ? id : `${id}-${block}`,
+                    isShown,
+                    source,
+                }),
+                block,
+            );
+        const column = v_flex().gap(8);
+        if (row.kind === 'mine')
+            return column.child(viewAt(0, drawnBlocks(row)[0] ?? ''));
+        return column.children(
+            (foldOf(row)?.shown ?? replyBlocks(row)).map((block, i) => {
+                const view = viewAt(i, blockSource(block));
+                return block.kind === 'text'
+                    ? view
+                    : div()
+                          .px(10)
+                          .py(8)
+                          .rounded(8)
+                          .bg(t.background)
+                          .border(1)
+                          .border_color(t.border)
+                          .child(view);
+            }),
+        );
+    }
+
+    /** how many text views a message draws @param {Row} row */
+    const textsCount = (row) =>
+        row.kind === 'reply'
+            ? (foldOf(row)?.shown ?? replyBlocks(row)).length
+            : 1;
+
+    /** what a message's text views draw from: while it stays the same, so does what they draw @param {Row} row @param {Theme} t @param {string} pre */
+    function textsLook(row, t, pre) {
+        const find = deps.find();
+        const isHit = find.state.hits.some((h) => h.id === row.id);
+        return [
+            stampOf(row, pre),
+            foldOf(row)?.hidden ?? '',
+            isHit ? find.state.q : '',
+            find.current() === row.id ? find.currentHit()?.n : '',
+            t.accent,
+            t.background,
+            t.border,
+        ].join('|');
     }
 
     /**
@@ -438,6 +471,12 @@ export function createMessageRows(deps) {
         );
     }
 
+    /** whether a row draws its message's words in text views he may copy from @param {Row} row */
+    const hasTexts = (row) =>
+        row.kind === 'reply' || (row.kind === 'mine' && Boolean(row.text));
+    /** the drawing a message's text views stand in: a new one is new text views @param {Row} row @param {string} pre */
+    const stampOf = (row, pre) => `${pre}${row.id}@${row.version}`;
+
     /** the rows as the height book keys them: a folded reply is measured apart @param {readonly Row[]} rows */
     const booked = (rows) =>
         rows.map((row) => (foldOf(row) ? { ...row, look: 'fold' } : row));
@@ -454,6 +493,7 @@ export function createMessageRows(deps) {
             fileRows.clear();
             toolFolds.clear();
         },
+        hasTexts,
         /**
          * the turn he reads now: from his last message to the end, never folded
          * @param {readonly Row[]} rows
@@ -510,5 +550,9 @@ export function createMessageRows(deps) {
                 ),
                 toolFolds,
             ),
+        stampOf,
+        texts,
+        textsCount,
+        textsLook,
     };
 }

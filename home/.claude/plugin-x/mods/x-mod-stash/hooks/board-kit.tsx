@@ -22,7 +22,7 @@ import { keepShelf } from './session-record.ts';
 import { readSwitch } from './settings-store.ts';
 import { isSpeakingNow, playPress, refreshSpeaking, speak } from './speak.ts';
 import { planAge } from './turn-notes.ts';
-import { expandHome } from './util.ts';
+import { expandHome, onOneLine } from './util.ts';
 import { viewDoors } from './view.ts';
 
 // a card that only shows asks: their keys' prefix, no tick, replay, sound or steer (a lane member's, FRM-643)
@@ -244,7 +244,7 @@ export async function boardKit($: EngineInterface, e: RenderInput<'Pane'>) {
             marginTop={i > 0 ? 0.5 : 0}
             paddingX={1}>
             <Text dimColor wrap='truncate-end'>
-                {`${closedMark(a.word ?? '')} ${a.id}: ${a.text}`}
+                {`${closedMark(a.word ?? '')} ${a.id}: ${onOneLine(a.text)}`}
             </Text>
             <Text bold dimColor>
                 {`➡️ ${a.word}`}
@@ -314,7 +314,7 @@ export async function boardKit($: EngineInterface, e: RenderInput<'Pane'>) {
                         ]}
                         {/* reading aloud edits nothing, so a locked row keeps 🔊 ⏯️ ⏹️ (dima, 20:25) */}
                         {/* 🔊 reads what the card shows, no «pick» word (dima, 17:14) */}
-                        {speakJSX(a.id, `${a.text}. ${a.pick}`)}
+                        {speakJSX(a.id, `${onOneLine(a.text)}. ${a.pick}`)}
                         {a.isLocked ? (
                             a.steer ? (
                                 <Box flexShrink={1} minWidth={0}>

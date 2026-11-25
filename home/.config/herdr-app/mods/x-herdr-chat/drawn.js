@@ -9,8 +9,18 @@ import { typedMarkdown } from './typed.js';
 /** @typedef {import('./blocks.js').Block} Block */
 /** @typedef {import('./row-model.js').Row} Row */
 
+// a reply's blocks by its row, for the text they were cut from: each draw of a row asks for them several times
+/** @type {WeakMap<Row, { blocks: Block[], text: string }>} */
+const cut = new WeakMap();
+
 /** a reply's blocks, unfolded @param {Row} row */
-export const replyBlocks = (row) => splitBlocks(unlinkFiles(row.text));
+export function replyBlocks(row) {
+    const had = cut.get(row);
+    if (had?.text === row.text) return had.blocks;
+    const blocks = splitBlocks(unlinkFiles(row.text));
+    cut.set(row, { blocks, text: row.text });
+    return blocks;
+}
 
 /** a block as one text view's markdown: code goes back into its fence @param {Block} block */
 export const blockSource = (block) =>

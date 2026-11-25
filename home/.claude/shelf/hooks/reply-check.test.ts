@@ -552,6 +552,11 @@ describe('an ask that points at a reply not written yet', () => {
 describe('a grill ask with no printed question (dima o18)', () => {
     const grillAdd = (text: string) => turnWith({ calls: [{ input: { asks: [{ pick: 'a', text }], op: 'add' }, name: 'mcp__x-mod-stash__orbit' }], id: 'm1' });
 
+    it.each([{ body: 'which lane first?', title: '🚀 Q3 the first lane' }, { body: 'grill round 2: keep it?', title: 'the card' }])('logs an ask by its title and body %o', (fields) => {
+        const add = turnWith({ calls: [{ input: { asks: [{ pick: 'a', ...fields }], op: 'add' }, name: 'mcp__x-mod-stash__orbit' }], id: 'm1' });
+        expect(loggedAfter('asked in orbit.', add)).toContain('grill-unprinted\t');
+    });
+
     it.each(['Q3 which lane first?', 'grill round 2: keep the card?'])('logs an orbit ask «%s» added with no ❓ **Q<n>** line', (text) => {
         expect(loggedAfter('asked in orbit.', grillAdd(text))).toContain('grill-unprinted\t');
     });

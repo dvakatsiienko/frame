@@ -91,9 +91,15 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - then a paste gives the command; a fence under a 📋 ribbon is a copy block too
   - decision: the prompt card that filled his quill is gone; a copy block carries anything he moves elsewhere (his o147 tick, 22:22)
 - ⬜ a right-click on a message copies it (FRM-638 slice 7)
-  - when he right-clicks a message, then a menu opens at the pointer with «Copy message»; a row with no message shows it dim; a click beside it or a scroll closes it
-  - when he picks it, then the message as written is on the clipboard and «Message copied» shows under the quill
-- 🧭 the right-click copies only the words he selected, the whole message when none (dima, 20:35; waits on herdr-app#1110: a mod cannot read a TextView's selection)
+  - when he right-clicks a message, then a menu opens at the pointer with «Copy message» (or «Copy text», below); a row with no message shows it dim; a click beside it or a scroll closes it
+  - when he picks it, then the message as written is on the clipboard, with no note (dima, 25 Nov 15:15: «remove it»)
+- ⬜ a right-click copies only the words he selected, the whole message when none (FRM-699:W1, dima, 20:35)
+  - given he selected words in a message: a drag, a double or a triple click
+  - when he right-clicks that message, then the menu reads «Copy text», and picking it puts those words on the clipboard as he reads them
+  - and a right-click on a message with no selection copies it whole, whatever is selected in another
+  - and a selection across two messages copies the part in the one he right-clicked; two blocks of one message join with an empty line
+  - and a selection lives while any line of its message is on screen, and is gone once the whole message left it (herdr's own, dima's look 25 Nov)
+  - and a reply that grows under his selection loses it, and then copies whole
 - 🧭 Reply quotes only the words he selected, never a whole message (dima, 20:35; waits on herdr-app#1110)
   - decision: Reply left the menu (dima, 20:35: «whole message quoting isn't useful»)
 

@@ -1,10 +1,12 @@
-// the right-click menu on a message (FRM-638 slice 7): «Copy message» copies it as written. herdr reports one
+// the right-click menu on a message (FRM-638 slice 7): «Copy text» copies the words he selected in it (FRM-699),
+// «Copy message» the whole as written. herdr reports one
 // right-click twice, on the list's item (which row) and on the list (where, in the list's own px), in either order:
 // whichever lands second completes the menu
 
 /** @typedef {import('./row-model.js').Row} Row */
 /** @typedef {{ x: number, y: number }} Point */
-/** @typedef {{ at: Point, text: string | null, x: number, y: number }} Menu `at` the press in window px, x and y in the list's */
+/** @typedef {{ isSelection: boolean, text: string }} Copied what the menu's item copies, as it stood at the press */
+/** @typedef {{ at: Point, copied: Copied | null, x: number, y: number }} Menu `at` the press in window px, x and y in the list's */
 
 /** @param {Point} a @param {Point} b */
 const isSame = (a, b) => a.x === b.x && a.y === b.y;
@@ -12,23 +14,23 @@ const isSame = (a, b) => a.x === b.x && a.y === b.y;
 export function createMessageMenu() {
     /** @type {Menu | null} */
     let menu = null;
-    /** @type {{ at: Point, text: string | null } | null} */
+    /** @type {{ at: Point, copied: Copied | null } | null} */
     let hit = null;
     return {
         close() {
             menu = null;
             hit = null;
         },
-        /** the item's half: the words of the row pressed @param {Point} at @param {string | null} text */
-        hit(at, text) {
-            if (menu && isSame(menu.at, at)) menu = { ...menu, text };
-            else hit = { at, text };
+        /** the item's half: what the row pressed copies @param {Point} at @param {Copied | null} copied */
+        hit(at, copied) {
+            if (menu && isSame(menu.at, at)) menu = { ...menu, copied };
+            else hit = { at, copied };
         },
         /** the list's half: where the press was @param {Point} at @param {Point} local */
         open(at, local) {
-            const text = hit && isSame(hit.at, at) ? hit.text : null;
+            const copied = hit && isSame(hit.at, at) ? hit.copied : null;
             hit = null;
-            menu = { at, text, x: local.x, y: local.y };
+            menu = { at, copied, x: local.x, y: local.y };
         },
         get state() {
             return menu;
@@ -36,12 +38,16 @@ export function createMessageMenu() {
     };
 }
 
-/** the words a right-click on a row copies: his message or a reply as written; a tool run or a file row has none
- * @param {Row | undefined} row */
-export const copyText = (row) =>
-    row && (row.kind === 'mine' || row.kind === 'reply') && row.text.trim()
-        ? row.text
-        : null;
+/**
+ * what a right-click on a row copies: the words he selected in it, else his message or a reply as written; a tool run or a
+ * file row has none
+ * @param {Row | undefined} row @param {string | null} selected @returns {Copied | null}
+ */
+export function copiedFrom(row, selected) {
+    if (row?.kind !== 'mine' && row?.kind !== 'reply') return null;
+    if (selected) return { isSelection: true, text: selected };
+    return row.text.trim() ? { isSelection: false, text: row.text } : null;
+}
 
 /**
  * where the menu sits: at the press, kept inside the list, above the press when it would run off the bottom

@@ -63,7 +63,6 @@ const BAND_AGE_MS = 5000;
 const ASK_READ_MS = 1000;
 // the settings folder is looked for again this often while it does not exist
 const SETTINGS_RETRY_MS = 10 * 1000;
-const COPIED_NOTE_MS = 1500;
 /** @type {import('./sent-pictures.js').SentIo} */
 const SENT_IO = {
     get home() {
@@ -204,7 +203,6 @@ export default class Chat extends View {
     list = createMessageList({
         audioApp: () => this.audioApp,
         file: () => this.feed.file(),
-        flash: (note, cx) => this.flashNote(note, cx),
         heights: this.heights,
         loadEarlier: (cx) => this.feed.loadEarlier(cx),
         pictures: this.pictures,
@@ -557,8 +555,8 @@ export default class Chat extends View {
             : 'Reading the thread…';
     }
 
-    /** a line under the quill that leaves on its own @param {string} note @param {Context} cx @param {number} [ms] */
-    flashNote(note, cx, ms = COPIED_NOTE_MS) {
+    /** a line under the quill that leaves on its own @param {string} note @param {Context} cx @param {number} ms */
+    flashNote(note, cx, ms) {
         this.note = note;
         const shown = ++this.noteSerial;
         cx.timer.after(ms, (cx) => {

@@ -34,6 +34,7 @@ import { keepShelf } from './session-record.ts';
 import { partsShown } from './settings-store.ts';
 import { idleTurn, isTurnBusy, selfSubmit, turn } from './turn.ts';
 import { orbitTexts, tickSentence } from './turn-notes.ts';
+import { onOneLine } from './util.ts';
 
 // the running turn, so a mid-turn reload still knows it is busy
 const TURN = { key: 'turn', plugin: 'x-mod-stash' } as const;
@@ -215,7 +216,7 @@ async function pressAllAsksNow(
     const skipped = open.filter((a) => !asks.includes(a));
     if (skipped.length)
         await $.ui.toast(
-            `✅ left unticked: ${skipped.map((a) => `${a.id} ${a.text}`).join('; ')}`,
+            `✅ left unticked: ${skipped.map((a) => `${a.id} ${onOneLine(a.text)}`).join('; ')}`,
         );
     if (!asks.length) return;
     await recordTicks($, asks, true);

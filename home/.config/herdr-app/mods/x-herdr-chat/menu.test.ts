@@ -1,39 +1,40 @@
 import { describe, expect, test } from 'vitest';
 
-import { copyText, createMessageMenu, menuPlace } from './menu.js';
+import { copiedFrom, createMessageMenu, menuPlace } from './menu.js';
 import type { Row } from './row-model.js';
 
 const press = { x: 400, y: 300 };
 const local = { x: 120, y: 80 };
+const hello = { isSelection: false, text: 'hello' };
 
 describe('one right-click reported twice', () => {
     test('the item first, then the list: the menu holds the words', () => {
         const menu = createMessageMenu();
-        menu.hit(press, 'hello');
+        menu.hit(press, hello);
         menu.open(press, local);
-        expect(menu.state).toEqual({ at: press, text: 'hello', ...local });
+        expect(menu.state).toEqual({ at: press, copied: hello, ...local });
     });
 
     test('the list first, then the item: the menu holds the words', () => {
         const menu = createMessageMenu();
         menu.open(press, local);
-        menu.hit(press, 'hello');
-        expect(menu.state?.text).toBe('hello');
+        menu.hit(press, hello);
+        expect(menu.state?.copied).toBe(hello);
     });
 
     test('an item half from another press gives the menu nothing to copy', () => {
         const menu = createMessageMenu();
-        menu.hit({ x: 1, y: 2 }, 'old');
+        menu.hit({ x: 1, y: 2 }, hello);
         menu.open(press, local);
-        expect(menu.state?.text).toBeNull();
+        expect(menu.state?.copied).toBeNull();
     });
 
     test('close leaves no menu and no waiting half', () => {
         const menu = createMessageMenu();
-        menu.hit(press, 'hello');
+        menu.hit(press, hello);
         menu.close();
         menu.open(press, local);
-        expect(menu.state?.text).toBeNull();
+        expect(menu.state?.copied).toBeNull();
     });
 });
 
@@ -54,22 +55,29 @@ const row = (over: Partial<Row>): Row => ({
 });
 
 describe('what a right-click copies', () => {
-    test('a reply copies its markdown as written', () => {
-        expect(copyText(row({}))).toBe('**bold** reply');
+    test.each([
+        ['a reply, its markdown as written', row({}), '**bold** reply'],
+        ['his own message', row({ kind: 'mine', text: 'go slay' }), 'go slay'],
+    ])('%s, whole when nothing is selected', (_name, at, text) => {
+        expect(copiedFrom(at, null)).toEqual({ isSelection: false, text });
     });
 
-    test('his own message copies his words', () => {
-        expect(copyText(row({ kind: 'mine', text: 'go slay' }))).toBe(
-            'go slay',
-        );
+    test.each([
+        ['a reply', row({})],
+        ['his own message', row({ kind: 'mine' })],
+    ])('the words he selected in %s', (_what, at) => {
+        expect(copiedFrom(at, 'bold')).toEqual({
+            isSelection: true,
+            text: 'bold',
+        });
     });
 
-    test('a tool run copies nothing', () => {
-        expect(copyText(row({ kind: 'tool', text: 'Bash 2' }))).toBeNull();
-    });
-
-    test('a message of only spaces copies nothing', () => {
-        expect(copyText(row({ text: '  ' }))).toBeNull();
+    test.each([
+        ['a tool run', row({ kind: 'tool', text: 'Bash 2' }), 'Bash'],
+        ['a message of only spaces', row({ text: '  ' }), null],
+        ['no row', undefined, null],
+    ])('%s copies nothing', (_name, at, selected) => {
+        expect(copiedFrom(at, selected)).toBeNull();
     });
 });
 

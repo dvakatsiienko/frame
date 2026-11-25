@@ -23,6 +23,13 @@ describe('the markdown a row draws', () => {
         ).toEqual(['see log', '```ts\nrun()\n```', 'bye']);
     });
 
+    test('a reply that grew is cut anew', () => {
+        const at = { id: 'a', kind: 'reply', text: 'one' };
+        expect(drawnBlocks(at as never)).toEqual(['one']);
+        at.text = 'one two';
+        expect(drawnBlocks(at as never)).toEqual(['one two']);
+    });
+
     test('an open call’s card is its json; a tool line and a file draw no text view', () => {
         expect(
             drawnBlocks(
