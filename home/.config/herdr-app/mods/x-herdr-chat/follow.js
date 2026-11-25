@@ -52,6 +52,20 @@ export function topOf(sizes, index) {
 }
 
 /**
+ * the rows a view from `start` down to `bottom` holds
+ * @param {number[]} sizes every row's height, in order
+ * @param {number} start its first row
+ * @param {number} bottom the px its bottom sits at
+ * @returns {Range}
+ */
+export function viewRange(sizes, start, bottom) {
+    let end = start;
+    for (let top = topOf(sizes, start); end < sizes.length && top < bottom; )
+        top += sizes[end++] ?? 0;
+    return { end, start };
+}
+
+/**
  * the list's own scroll position after a wheel step, as the view counts it: herdr hands a mod none, and the step is
  * the list's movement (measured by hand, 2026-11-16). kept inside what the list can scroll
  * @param {number} top how far the list is scrolled

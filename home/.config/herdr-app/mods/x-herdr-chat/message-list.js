@@ -218,7 +218,7 @@ export function createMessageList(deps) {
                 if (step.hadCut || step.isFollowChanged) cx.notify();
             })
             .child(list)
-            .child(measurer(booked, t, `m${widthGen}-`))
+            .child(measurer(booked, t, `m${widthGen}-`, plan.measured))
             .when(Boolean(messageMenu.state), (el) =>
                 el.child(messageMenuView(t)),
             )
@@ -306,8 +306,9 @@ export function createMessageList(deps) {
      * @param {readonly (Row & { look?: string })[]} rows
      * @param {Theme} t
      * @param {string} pre
+     * @param {import('./follow.js').Range | null} range the rows to measure around
      */
-    function measurer(rows, t, pre) {
+    function measurer(rows, t, pre, range) {
         return div()
             .absolute()
             .top(0)
@@ -320,7 +321,7 @@ export function createMessageList(deps) {
                 v_flex()
                     .w_full()
                     .children(
-                        deps.heights.toMeasure(rows, at.range).map((row) =>
+                        deps.heights.toMeasure(rows, range).map((row) =>
                             div()
                                 .id(
                                     `${pre}${row.id}@${row.version}${row.look ?? ''}`,
