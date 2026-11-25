@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T14:05:37Z'
+updated_date: '2026-11-25T14:55:38Z'
 labels:
   - s
   - clio-wing-1
@@ -16,22 +16,20 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f86 FRM-639 events piece 2: six questions, the draft in mods-lane-9/frm-639-section.md — with: dima
-- [ ] #2 f87 FRM-582 emoji reactions: its ten questions, three a batch — with: dima
-- [ ] #3 f89 trials: wisphunter, its verdict due 27 Nov (review-rounds adopted, gate-speed closed) — with: dima
-- [ ] #4 f92 x-mod-stash shrink read: 50,171 lines, 49 fixes in 7 days, what to cut (his o6 tick, 24 Nov 20:24) — parked: 2026-11-25
-- [ ] #5 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
-- [ ] #6 f93 ⏳ bytes#176 github-actions pr: merge it once renovate stability-days goes green — waits for: bytes#176 release age
-- [ ] #7 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
-- [ ] #8 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
-- [ ] #9 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
-- [ ] #10 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #11 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #12 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #13 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
-- [ ] #14 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
-- [ ] #15 f84 🦥 FRM-696 hang-heal: the full shape-idea grill — later: dima 15:08
-- [ ] #16 f85 🦥 github event streams: is gh event listen worth it for our ci and pr watches — later: dima 15:08
+- [ ] #1 f87 FRM-582 emoji reactions: its ten questions, three a batch — with: dima
+- [ ] #2 f92 x-mod-stash shrink read: 50,171 lines, 49 fixes in 7 days, what to cut (his o6 tick, 24 Nov 20:24) — parked: 2026-11-25
+- [ ] #3 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
+- [ ] #4 f93 ⏳ bytes#176 github-actions pr: merge it once renovate stability-days goes green — waits for: bytes#176 release age
+- [ ] #5 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
+- [ ] #6 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
+- [ ] #7 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
+- [ ] #8 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #9 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #10 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #11 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #12 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
+- [ ] #13 f84 🦥 FRM-696 hang-heal: the full shape-idea grill — later: dima 15:08
+- [ ] #14 f85 🦥 github event streams: is gh event listen worth it for our ci and pr watches — later: dima 15:08
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -912,4 +910,10 @@ PK-346:W117 (2026-11-25 15:46, dima): after SW? ❓
 done 2026-11-25 15:57: f94 ⏳ FRM-690 and FRM-704 close once the checks of their push are green — waits for: CI d5761785 (FRM-690 In Progress, FRM-704 In Progress)
 
 done 2026-11-25 16:05: f95 ⏳ FRM-690 and FRM-704 close once CI of their push (7a852ebf or newer) is green — waits for: CI (FRM-690 Done, FRM-704 Done)
+
+done 2026-11-25 16:42: f86 FRM-639 events piece 2: six questions, the draft in mods-lane-9/frm-639-section.md — with: dima (FRM-639 Todo)
+
+done 2026-11-25 16:42: f89 trials: wisphunter, its verdict due 27 Nov (review-rounds adopted, gate-speed closed) — with: dima
+
+16:55 W-lines of his 16:44 prompt about the shrink read (groomed to FRM-582): FRM-582:W90 (2026-11-25 16:44, dima): after that: the shrink read of the board mod, from your tick of 24 Nov. it was about 50,000 lines with 49 fixes in seven days. FRM-582:W91 (2026-11-25 16:44, dima): what is it about? why? ❓ FRM-582:W92 (2026-11-25 16:44, dima): i can't recall the tick. → answered 16:48 (what it is, 17,000 lines of code today, 52 fixes in the week)
 <!-- SECTION:NOTES:END -->
