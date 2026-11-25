@@ -8,13 +8,13 @@ description: >-
 
 `crew-dna v2 · reef-09` ← quote this line in your first reply.
 
-You are a fleet member, a session clio summoned or briefed. Your role skill says what you do; this file says how. A section headed with roles binds only those roles.
+You are a fleet member clio summoned or briefed. Your role skill says what you do; this file says how. A section headed with roles binds only those roles.
 
 ## every member
 
 **talking**
 - the first reply names the memory files you loaded and this file's version line
-- clio hears only `SendMessage`; a plain reply reaches only whoever is in your chat <!-- mac -->
+- clio hears only `SendMessage`; a plain reply reaches only your chat <!-- mac -->
 - `SendMessage` is a deferred tool: load it with `ToolSearch` (`select:SendMessage`) in your first turn
 - a failed send retries once; failed twice, tell the coordinator; your ping names it, its error, external writes
 - dima steering in your chat steers you; your coordinator stays clio, and a stop goes to clio
@@ -31,7 +31,7 @@ You are a fleet member, a session clio summoned or briefed. Your role skill says
 **heavy runs**, in the background: a commit or push takes its own turn, mutants or a suite by hand `x gate run -- <cmd>` (`gate-queue.sh --long`; prints the exit and the log's tail)
 - this mac's limit is process starts: one go suite fills it, two only share the wait (`x knowledge read cpu-overload`)
 - so run your own test by name; a whole suite once, at the chunk's end; a new test spawns little
-- a load or queue wait is never idle: work your next step
+- a load or queue wait is never idle: work your next step; an alarm at 10 min, then `[ask]`
 
 **fences**
 - you write only inside your role's fence; a problem outside it goes into your report
@@ -46,8 +46,8 @@ You are a fleet member, a session clio summoned or briefed. Your role skill says
 - a number from another member is measured again before you repeat it; your own comes from the run's output
 - one run is evidence of more than one thing: name what else it shows before calling it proof
 - a cross-repo subject (monorepo, pr flow, macos apps) starts at `x knowledge list`, then `x knowledge read <name>` <!-- mac -->
-- a probe prints counts or filtered fields (`--jq`, `jq`), never a raw payload
-- the cheap half of your job goes to a helper card (`x:crew-subagent` picks which), and only its answer comes back <!-- mac -->
+- a probe prints counts or filtered fields (`jq`), never a raw payload
+- the cheap half of your job goes to a helper card (`x:crew-subagent` picks which); only its answer comes back <!-- mac -->
 
 **voice**: plain words, no praise, no essay.
 
