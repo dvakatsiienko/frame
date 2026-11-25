@@ -24,6 +24,12 @@ vi.mock('herdr', () => ({
         }),
     writeTextFile: vi.fn(),
 }));
+// the disk's own readdir answers late on a loaded mac, after the wait below
+vi.mock('fs/promises', () => ({
+    mkdir: vi.fn(),
+    readdir: async () => [],
+    unlink: vi.fn(),
+}));
 vi.mock('gpui-base', () => ({}));
 vi.mock('gpui-kit', () => ({ View: class {}, div: vi.fn() }));
 
