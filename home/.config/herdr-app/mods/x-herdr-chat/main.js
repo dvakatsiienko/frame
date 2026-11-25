@@ -32,6 +32,7 @@ import { createHeights } from './heights.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { createMessageList } from './message-list.js';
 import { createMessageRows } from './message-row.js';
+import { audioAppOf } from './open-path.js';
 import { createPathLinks } from './path-links.js';
 import { createPickers } from './pickers.js';
 import { createPictureViewer } from './picture-viewer.js';
@@ -156,7 +157,7 @@ export default class Chat extends View {
     /** a picture's open button starts CleanShot's annotate, else Preview (`chatter.pictures.cleanshot`) */
     isCleanShot = true;
     /** the app a file row's audio opens in (`chatter.audio.app`); null: the system's choice @type {string | null} */
-    audioApp = 'IINA';
+    audioApp = audioAppOf(null);
     /** x-herdr-settings, when this copy draws it @type {{ render: () => any } | null} */
     settingsWindow = null;
     isCmdHeld = false;
@@ -577,8 +578,7 @@ export default class Chat extends View {
     applySettings(values) {
         this.sendPath.applySettings(values);
         this.isCleanShot = values['chatter.pictures.cleanshot'] === true;
-        const audio = values['chatter.audio.app'];
-        this.audioApp = typeof audio === 'string' && audio ? audio : null;
+        this.audioApp = audioAppOf(values);
         this.band.applySettings(values);
         this.isShowMore = values['chatter.showMore'] === true;
     }

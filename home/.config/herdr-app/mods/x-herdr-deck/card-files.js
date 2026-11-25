@@ -9,6 +9,7 @@ import { appHome, exec, home, layout, run, setShared } from 'herdr';
 
 import { CHAT_VIEW, chatSelectArgs } from './chat-asks.js';
 import { SIZE } from './look.js';
+import { openPath } from './open-path.js';
 import {
     attachmentsOf,
     cardFiles,
@@ -99,7 +100,8 @@ const chatDoors = {
     },
 };
 
-export function createCardFiles() {
+/** @param {{ audioApp: () => string | null }} deps `audioApp`: the app his settings open audio in, null: the system's choice */
+export function createCardFiles(deps) {
     /** what each path was found as: a tile copy, true for a file, false for none @type {Map<string, unknown>} */
     const found = new Map();
     /** each path's change time when it was looked at @type {Map<string, string>} */
@@ -238,9 +240,7 @@ export function createCardFiles() {
                     .text_color(t.foreground)
                     .cursor_pointer()
                     .hover((st) => st.border_color(t.accent))
-                    .on_click(() => {
-                        exec('open', [f.path]).catch(() => {});
-                    })
+                    .on_click((_e, cx) => openFile(f.path, cx))
                     .child('📄')
                     .child(f.name);
             return base
@@ -276,6 +276,16 @@ export function createCardFiles() {
                     ),
                 ),
         ];
+    }
+
+    /** a file or folder he clicked; one gone since reads «not found» @param {string} path @param {import('./deck-types.js').Context} cx */
+    function openFile(path, cx) {
+        cx.spawn(async (cx) => {
+            if (await openPath(path, deps.audioApp(), exec)) return;
+            found.set(path, false);
+            seen.delete(path);
+            cx.notify();
+        });
     }
 
     /** a picture's preview copy under the app dir, once looked at @param {string} path @returns {string | null} */

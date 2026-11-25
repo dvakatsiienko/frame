@@ -11,8 +11,26 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - not checked: the stash's side of the untick line, the mods codie's, not landed yet
   - decision: a gated ask keeps its one-way press until the mods lane's tick fixes settle (clio, 19:34)
   - not checked: the click itself, by his hand
-- ✅ each ask leads with its id, so dima can name it
-  - given a thread has an open ask with an id
+- 🔎 an ask reads as a card in three parts (FRM-620 slice 7, W64–W76)
+  - given a thread's ask sent with a title and a body
+  - then its title draws bold on one line with its emoji first (a look's 👀, a test's 🧪 before it), then its body a step smaller, then its pick in grey behind one ➡️
+  - and the body draws `**bold**`, backticks, `- ` and `1.` lists and a line per line; a heading, a link, an image, a table or an unclosed `**` reads as typed
+  - and a title past the card's edge ends in «…», whole in its tooltip; a title that fits can be selected, as the body and the pick can
+  - and an ask sent the old way draws as it did
+  - not checked: his look, A (the title at today's size) against B (the title a step larger, `LOOK` in orbit-view.js)
+- 🔎 an ask's id is a pill at the card's far top right, over the card (FRM-620 slice 7, W73)
+  - given an ask in three parts
+  - then its title ends before the pill, which reads `o12`, `w1·o12` or `codie·o12`, 🆕 first on a new round
+  - when dima clicks the pill
+  - then `o12` is on his clipboard, the pill leads with ✓ for a moment, and the card is not pressed
+- 🔎 a file or a link an ask names opens by the chat's rule (FRM-620 step 138)
+  - given an ask naming an app, or a symlink to one, however its path is written, `file://` too
+  - when dima clicks it
+  - then Finder shows it, it never runs; a file he reads, looks at or hears opens, a folder too, audio in the app his settings name; one gone since reads «not found»
+  - and an https, linear or obsidian note link opens; a link of any other scheme draws nothing
+  - decision: one shared rule, `_shared/open-path.js`, no copy (the sixth sense's find, 25 Nov)
+- ✅ an ask sent the old way leads with its id, so dima can name it
+  - given a thread has an open ask with an id and no title
   - then the deck reads «🪐 **o36**: <text>», under a head «🪐 orbit: N asks» (dima, 2026-11-16 18:26: «quiter»), each asker's name bold at the name size (shot 1929)
   - and the asker's suggestion sits under the ask in its own words, with no «pick:» before it (dima, 2026-11-16 20:17: «remove the pick: part everywhere. just print what you suggest: yes: …»)
 - ⬜ a plain ask ticks from the deck

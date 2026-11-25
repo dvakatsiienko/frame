@@ -254,7 +254,7 @@ def grill_drift(prose: str, session: str) -> str:
         return ""
     in_reply = {int(n) for n in GRILL_QUESTION.findall(prose[head.end():])}
     items = [i for i in entry.get("items") or [] if isinstance(i, dict) and not i.get("mark")]
-    in_orbit = {int(m.group(1)) for i in items for m in ASK_NUMBER.finditer(str(i.get("text", "")))}
+    in_orbit = {int(m.group(1)) for i in items for m in ASK_NUMBER.finditer(asked_words(i))}
     if in_orbit and in_reply != in_orbit:
         return f"reply {sorted(in_reply)}, orbit Q{sorted(in_orbit)}"
     return ""

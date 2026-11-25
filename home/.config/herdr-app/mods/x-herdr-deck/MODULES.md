@@ -8,7 +8,7 @@ read this before a change: find the one module that owns the state you touch, an
 
 ## views — each owns its state
 
-- `orbit-view.js` — orbit as drawn: an ask's card, its link line, the pinned cards, a section per thread; owns the id labels' widths
+- `orbit-view.js` — orbit as drawn: an ask's card in its three parts, its id pill, its link line, the pinned cards, a section per thread; owns the drawn widths, the id copied last and the sizes of the two looks
 - `phases-view.js` — the phases pinned at the deck's bottom, their header with «tick», the press that ticks a plan; owns the lines' widths and the presses being written
 - `glide-view.js` — glide, a `view: 'glide'` copy of the deck: each running lane's card, its block sized to them
 - `card-files.js` — an orbit card's pictures and file rows
@@ -25,6 +25,7 @@ read this before a change: find the one module that owns the state you touch, an
 ## rules — pure steps, each with its test
 
 - `orbit.js` — a session's asks, phases and facts, the ticks file's lines, the order of sections and Tab stops
+- `ask-card.js` — an ask's title, its body as small markdown, the ➡️ line, the room beside the id pill
 - `press.js` — an ask's press, one record per ask, moved by named events
 - `lanes.js`, `glide-size.js` — the lanes shown, glide's block height
 - `deck-parts.js`, `deck-commands.js` — what the deck draws, its key commands

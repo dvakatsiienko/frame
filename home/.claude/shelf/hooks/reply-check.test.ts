@@ -237,10 +237,10 @@ describe('the wide claim, log-only', () => {
 });
 
 describe('the grill-drift rule', () => {
-    const withAsks = (texts: string[]) => {
+    const withAsks = (texts: string[], title?: string) => {
         const home = mkdtempSync(join(tmpdir(), 'rc-home-'));
         mkdirSync(join(home, '.claude/plugins/store'), { recursive: true });
-        const items = texts.map((text, i) => ({ id: `o${i}`, pick: 'p', text }));
+        const items = texts.map((text, i) => ({ id: `o${i}`, pick: 'p', text, ...(title ? { title } : {}) }));
         writeFileSync(
             join(home, '.claude/plugins/store/x-mod-stash_a.json'),
             JSON.stringify({ [`asks:${SESSION}`]: { at: Date.now(), items } }),
@@ -257,6 +257,11 @@ describe('the grill-drift rule', () => {
     it('reminds when orbit holds a question the reply does not', () => {
         withAsks(['x Q1 a', 'x Q2 b', 'x Q3 c'])(grill);
         expect(nextPrompt()).toContain('the grill drifted from orbit');
+    });
+
+    it('reads the number from a titled ask, never its body', () => {
+        withAsks(['Q1 a\n\nafter Q3 answer'], 'Q1 a')('🔥 grill: x\n1. **a?** one\n\n🔭 waiting on **🙋‍♂️ dima**');
+        expect(nextPrompt()).not.toContain('the grill drifted from orbit');
     });
 
     it('passes when the numbers match', () => {

@@ -10,11 +10,11 @@ import { div } from 'gpui-kit';
 import { exec, home, settings } from 'herdr';
 
 import { isPicture } from './file-links.js';
-import { openPath } from './files.js';
 import { guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
 import { copiedFrom, createMessageMenu, menuPlace } from './menu.js';
 import { createMessageBodies } from './message-body.js';
+import { openPath } from './open-path.js';
 import { pathOf } from './path-links.js';
 import { createPlace } from './place.js';
 import { createSelections } from './selection.js';

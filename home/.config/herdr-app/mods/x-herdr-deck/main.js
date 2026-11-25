@@ -43,6 +43,7 @@ import { deckParts, orbitHeader } from './deck-parts.js';
 import { createGlide } from './glide-view.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
 import { SANS, SIZE, clockOf } from './look.js';
+import { audioAppOf } from './open-path.js';
 import {
     HOT_ASK,
     PIDS_KEY,
@@ -60,6 +61,7 @@ import {
     pressOf,
     roundsKept,
     savePress,
+    settingRowsIn,
     steerKeyAct,
     threadFacts,
     tickAll,
@@ -150,8 +152,10 @@ export default class Deck extends View {
     /** each thread's plan tick written and not read yet, by sid, the press's time @type {Map<string, number>} */
     planSent = new Map();
     steerFocus = /** @type {string | null} */ (null);
+    /** the app a card's audio file opens in @type {string | null} */
+    audioApp = audioAppOf(null);
     /** the files each ask names, previewed or listed in its card (FRM-676) */
-    files = createCardFiles();
+    files = createCardFiles({ audioApp: () => this.audioApp });
     // the files each steer box carries, sent as their paths with its steer (FRM-676 slice B)
     steerFiles = createSteerFiles(localStorage, forgetPasted);
     /** the deck's seat in the Tab loop: its drawn steer boxes */
@@ -414,9 +418,10 @@ export default class Deck extends View {
                 () => /** @type {string | null} */ (null),
             ),
         );
-        const pin = orbitPinIn(await readTextFile(SETTINGS).catch(() => null));
+        const settings = await readTextFile(SETTINGS).catch(() => null);
         if (!isCurrent()) return;
-        this.pin = pin;
+        this.pin = orbitPinIn(settings);
+        this.audioApp = audioAppOf(settingRowsIn(settings));
         this.week = week;
         this.isStale = listed === null;
         this.rows = !listed

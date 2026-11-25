@@ -3,8 +3,10 @@
 // session's next turn (FRM-552)
 
 import { PENDING_MS } from './band-press.js';
+import { isWebLink, linkPath } from './open-path.js';
 
-/** @typedef {{ id: string | null, text: string, pick: string | null, link: string | null, mark: string | null, isGated: boolean, isLocked: boolean }} Ask */
+// `title` and `body` are what `text` was built from; an ask sent the old way has neither, its `text` the whole
+/** @typedef {{ id: string | null, text: string, title: string | null, body: string | null, pick: string | null, link: string | null, mark: string | null, isGated: boolean, isLocked: boolean }} Ask */
 /** @typedef {ReturnType<typeof import('./press.js').pressState>} PressState */
 /** @typedef {{ id: string, verdict: 'tick' | 'replay' | 'untick', steer?: string, text?: string, pick?: string, at: number }} Press */
 
@@ -49,6 +51,7 @@ export function asksOf(state) {
         .map(
             (/** @type {any} */ a) =>
                 /** @type {Ask} */ ({
+                    body: typeof a.body === 'string' ? a.body : null,
                     id: a.id,
                     isGated: a.isGated === true,
                     isLocked: a.isLocked === true,
@@ -56,6 +59,7 @@ export function asksOf(state) {
                     mark: a.mark ?? null,
                     pick: a.pick ?? null,
                     text: a.text,
+                    title: typeof a.title === 'string' ? a.title : null,
                 }),
         )
         .sort(
@@ -77,7 +81,7 @@ const pinRank = (text) => {
 };
 
 /** an ask's text past a 👀 or 🧪 a thread led it with, so the kind reads the words @param {string} text */
-const wordsOf = (text) => text.trimStart().replace(/^(👀|🧪)\s*/u, '');
+export const wordsOf = (text) => text.trimStart().replace(/^(👀|🧪)\s*/u, '');
 
 /**
  * a look card («look: …»), a 🧪 test card («test: …»), or a plain ask; only the colon form counts, so «try a) or b)?»
@@ -169,33 +173,35 @@ export function orbitTabOrder(sections, isBox = () => true) {
 // his «orbit › pinned cards» row in x-herdr-settings (x-herdr-chat settings-model.js)
 export const ORBIT_PIN_ROW = 'orbit.pin';
 
-/**
- * his pin setting from the settings file's text: anything but a stored «bottom» pins on top, as before the setting
- * @param {string | null} text @returns {OrbitPin}
- */
-export function orbitPinIn(text) {
+/** his settings rows from the settings file's text; null: none stored, or unreadable @param {string | null} text @returns {Record<string, unknown> | null} */
+export function settingRowsIn(text) {
     try {
-        return JSON.parse(text ?? '')?.rows?.[ORBIT_PIN_ROW] === 'bottom'
-            ? 'bottom'
-            : 'top';
+        return JSON.parse(text ?? '')?.rows ?? null;
     } catch {
-        return 'top';
+        return null;
     }
 }
 
 /**
+ * his pin setting from the settings file's text: anything but a stored «bottom» pins on top, as before the setting
+ * @param {string | null} text @returns {OrbitPin}
+ */
+export const orbitPinIn = (text) =>
+    settingRowsIn(text)?.[ORBIT_PIN_ROW] === 'bottom' ? 'bottom' : 'top';
+
+/**
  * an ask's link as the card draws it: a web page by its host, an app link by its app (its scheme), a file by its name;
- * words that
- * are none of these draw nothing
+ * any other draws nothing, as no click would open it
  * @param {string | null} link
  * @returns {{ kind: 'web' | 'file', label: string } | null}
  */
 export function linkOf(link) {
     const text = link?.trim() ?? '';
-    if (/^(\/|~\/)/.test(text))
-        return { kind: 'file', label: text.slice(text.lastIndexOf('/') + 1) };
+    const path = linkPath(text, '~');
+    if (path)
+        return { kind: 'file', label: path.slice(path.lastIndexOf('/') + 1) };
     const url = /^([a-z][a-z0-9+.-]*):\/\/([^/?#]*)/i.exec(text);
-    if (!url) return null;
+    if (!url || !isWebLink(text)) return null;
     const scheme = (url[1] ?? '').toLowerCase();
     return {
         kind: 'web',

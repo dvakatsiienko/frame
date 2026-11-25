@@ -73,6 +73,7 @@ function fakeClock() {
 
 const SID = 's1';
 const ask: Ask = {
+    body: null,
     id: 'o1',
     isGated: false,
     isLocked: false,
@@ -80,6 +81,7 @@ const ask: Ask = {
     mark: null,
     pick: 'yes',
     text: 'push FRM-1',
+    title: null,
 };
 
 describe('the panel reads the state file the stash writes', () => {
@@ -797,11 +799,19 @@ describe('an ask’s link, as the card draws it', () => {
         ['/Users/dima/look card.md', { kind: 'file', label: 'look card.md' }],
         ['obsidian://open?vault=x&file=y', { kind: 'web', label: 'obsidian' }],
         ['~/notes/a.md', { kind: 'file', label: 'a.md' }],
+        ['file:///tmp/a.md', { kind: 'file', label: 'a.md' }],
     ])('%s', (link, shown) => {
         expect(linkOf(link)).toEqual(shown);
     });
 
-    test.each(['', '   ', 'just words', null])('«%s» draws no link', (link) => {
+    test.each([
+        '',
+        '   ',
+        'just words',
+        null,
+        'shortcuts://run-shortcut?name=x',
+        'obsidian://advanced-uri?commandid=x',
+    ])('«%s» draws no link', (link) => {
         expect(linkOf(link)).toBeNull();
     });
 });
