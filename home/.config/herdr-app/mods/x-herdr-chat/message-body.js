@@ -1,17 +1,22 @@
 // until herdr-app#942: a handler may not sit in a list row. then this file goes, the handler moves onto the row, and with
-// it go message-list.js's syncBodies and message-row.js's textsLook
+// it go message-list.js's syncBodies and message-row.js's bodyLook
 import { View } from 'gpui-kit';
 
 /** @typedef {import('gpui-kit').Element} Element */
 /** @typedef {import('gpui-base').TextViewElement} TextViewElement */
-/** @typedef {(view: TextViewElement, block: number) => TextViewElement} Reporting a text view that reports his selection */
+/** @typedef {(view: TextViewElement, block: number) => TextViewElement} Reporting a text view that reports his selection and his click on a link */
+
+/** @typedef {(square: Element, picture: string) => Element} Pressing a picture's square that says it was pressed */
+/** @typedef {{ pressing: Pressing, reporting: Reporting }} Handlers */
 
 /**
- * one list item's text views
+ * one list item's text views, or its squares
  * @typedef {object} BodyAt
  * @property {string} key the list item
  * @property {string} look what they draw from: another look draws them again, since a nested view is not drawn with its parent
- * @property {(reporting: Reporting) => Element} draw
+ * @property {(handlers: Handlers) => Element} draw
+ * @property {(url: string, cx: import('gpui-kit').Context) => void} follow a click on a link in its text
+ * @property {(picture: string) => void} press a left press on one of its squares, by the picture's id
  * @property {(block: number, words: string | null) => void} report his selection in one of them
  */
 
@@ -35,9 +40,14 @@ class MessageBody extends View {
 
 /** @param {BodyAt} at */
 const drawBody = (at) =>
-    at.draw((view, block) =>
-        view.on_selection_change((s) => at.report(block, s?.text ?? null)),
-    );
+    at.draw({
+        pressing: (square, picture) =>
+            square.on_mouse_down('left', () => at.press(picture)),
+        reporting: (view, block) =>
+            view
+                .on_link_click((url, cx) => at.follow(url, cx))
+                .on_selection_change((s) => at.report(block, s?.text ?? null)),
+    });
 
 export function createMessageBodies() {
     /** @type {Map<string, { entity: import('gpui-kit').Entity, held: { at: BodyAt } }>} */

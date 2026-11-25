@@ -1,27 +1,6 @@
-// the files a reply names, each to open in one click from a row under it (FRM-587). a link in the text can't be
-// pressed while herdr-app#894 is open (a handler inside a lazy-list row), so every file gets a row of its own.
+// the files a reply names, each to open in one click from a row under it (FRM-587)
 
-import { FILE_LINK, fileLinks, isPicture } from './file-links.js';
-
-/**
- * a reply's markdown with each file:// link drawn as plain text: a press on it does nothing in a lazy-list row
- * (herdr-app#894), so it never looks pressable; the row under the reply opens it. code stays as written
- * @param {string} text
- */
-export const unlinkFiles = (text) =>
-    text
-        .split(/(^(?:```|~~~)[\s\S]*?^(?:```|~~~)|`[^`\n]*`)/m)
-        .map((part, i) =>
-            i % 2
-                ? part
-                : part.replace(
-                      FILE_LINK,
-                      (_, label, url, auto) =>
-                          label ??
-                          (auto ?? url).split('/').filter(Boolean).pop(),
-                  ),
-        )
-        .join('');
+import { fileLinks, isPicture } from './file-links.js';
 
 /** @typedef {import('./row-model.js').Row} Row */
 
@@ -179,6 +158,13 @@ export const openArgs = (path, audioApp = null) =>
         : audioApp && AUDIO.test(path)
           ? ['-a', audioApp, path]
           : [path];
+
+/**
+ * the `open` arguments for a folder he clicked: Finder shows its inside; one that is an app is revealed instead
+ * @param {string} path
+ */
+export const openFolderArgs = (path) =>
+    /[^/]\.[^/.]+$/.test(path) ? openArgs(path) : [path];
 
 /** the row a saved reading place names: a file row's or a tool call's place is found through its own row @param {string} id */
 export const replyIdOf = (id) => id.replace(/#(?:file|call)-\d+$/, '');

@@ -42,18 +42,31 @@ const gpui = vi.hoisted(() => {
                     else if (name === 'when') {
                         if (args[0]) (args[1] as Handler)(self as never);
                     } else if (String(name).startsWith('on_'))
-                        target.handlers.set(String(name), args.at(-1));
+                        target.handlers.set(
+                            name === 'on_mouse_down'
+                                ? `${name}_${args[0]}`
+                                : String(name),
+                            args.at(-1),
+                        );
                     return self;
                 };
             },
         });
         return self;
     };
-    return { make, seen };
+    /** each `open`, and the folders there are */
+    const opened: string[][] = [];
+    const folders = ['/Users/me/frame'];
+    const exec = async (program: string, args: string[]) => {
+        if (program === 'open') opened.push(args);
+        return { code: folders.includes(args[1] ?? '') ? 0 : 1, stdout: '' };
+    };
+    return { exec, make, opened, seen };
 });
 
 vi.mock('herdr', () => ({
-    exec: vi.fn(),
+    exec: gpui.exec,
+    home: () => '/Users/me',
     settings: () => ({ zoom: 1 }),
 }));
 vi.mock('gpui-kit', () => ({ View: class {}, div: gpui.make }));
@@ -97,19 +110,26 @@ function createWindow(real: number[], first: (px: number) => number) {
     const rows = real.map((_, i) => ({
         id: `r${i}`,
         kind: i === 3 ? 'mine' : 'reply',
+        links: ['~/frame', '~/a.md', '/tmp/x.command', '/tmp/a.png'],
         text: 'x',
         version: 1,
     }));
     /** each row of the last frame, and whether its own view drew its words */
     const frame = new Map<string, boolean>();
     const bodies = {
+        /** a drawn body's link click, by row */
+        links: new Map<string, Handler>(),
         live: 0,
         /** what every row's text views draw from */
         look: 'first',
         /** a body told to draw again */
         notified: new Set<unknown>(),
+        /** the square each click on a row opens */
+        opened: [] as (string | null)[],
         /** a drawn body's selection handler, by row */
         reports: new Map<string, Handler>(),
+        /** a drawn square's press, by row */
+        squares: new Map<string, Handler>(),
     };
     const written: string[] = [];
     const list = createMessageList({
@@ -117,12 +137,45 @@ function createWindow(real: number[], first: (px: number) => number) {
         file: () => null,
         heights: createHeights(),
         loadEarlier: () => {},
-        pictures: {},
+        pictures: {
+            show: (files: string[]) => bodies.opened.push(files.join()),
+        },
         reader: () => null,
         rows: {
+            bodyLook: (_row: unknown, _t: unknown, pre: string) =>
+                `${pre}${bodies.look}`,
             booked: (r: unknown) => r,
-            hasTexts: () => true,
+            drawBody: (
+                row: { id: string },
+                _t: unknown,
+                _pre: string,
+                { pressing, reporting }: Record<string, Handler>,
+            ) => {
+                (pressing as Handler)(
+                    {
+                        on_mouse_down: (_button: string, press: Handler) =>
+                            bodies.squares.set(row.id, press),
+                    } as never,
+                    `${row.id}-second` as never,
+                );
+                return (reporting as Handler)(
+                    {
+                        on_link_click(follow: Handler) {
+                            bodies.links.set(row.id, follow);
+                            return this;
+                        },
+                        on_selection_change: (report: Handler) =>
+                            bodies.reports.set(row.id, report),
+                    } as never,
+                    0 as never,
+                );
+            },
+            hasBody: () => true,
             markTurn: () => {},
+            press: (_rows: unknown, _key: string, picture: string | null) => {
+                bodies.opened.push(picture);
+                return null;
+            },
             row: (
                 row: { id: string },
                 _t: unknown,
@@ -134,23 +187,7 @@ function createWindow(real: number[], first: (px: number) => number) {
                 return gpui.make();
             },
             stampOf: (row: { id: string }, pre: string) => `${pre}${row.id}`,
-            texts: (
-                row: { id: string },
-                _t: unknown,
-                _pre: string,
-                _isShown: boolean,
-                reporting: (view: unknown, block: number) => unknown,
-            ) =>
-                reporting(
-                    {
-                        on_selection_change: (report: Handler) =>
-                            bodies.reports.set(row.id, report),
-                    },
-                    0,
-                ),
             textsCount: () => 1,
-            textsLook: (_row: unknown, _t: unknown, pre: string) =>
-                `${pre}${bodies.look}`,
         },
         unsend: () => {},
     } as never);
@@ -178,6 +215,9 @@ function createWindow(real: number[], first: (px: number) => number) {
             bodies.notified.add(entity);
             entity.render();
         },
+        open_url: (url: string) => gpui.opened.push([url]),
+        spawn: (task: (c: unknown) => unknown) => task(cx),
+        stop_propagation: () => {},
         timer: {
             after: (ms: number, run: (cx: unknown) => void) =>
                 timers.push({ at: Date.now() + ms, run: () => run(cx) }),
@@ -296,6 +336,12 @@ function createWindow(real: number[], first: (px: number) => number) {
                 .slice(0, row)
                 .reduce((sum, px) => sum + px, 0),
         bodies,
+        /** his left press and release on a row, on its second square or beside the squares */
+        click(id: string, isOnSquare: boolean) {
+            if (isOnSquare) (bodies.squares.get(id) as Handler)();
+            fire(root, 'on_mouse_down_left', {}, cx);
+            fire(raw(gpui.seen.list?.el), 'on_item_click', id, cx);
+        },
         /** the rows drawn anew now, whatever asked: whether each is clipped */
         clipped() {
             draw();
@@ -303,7 +349,15 @@ function createWindow(real: number[], first: (px: number) => number) {
                 .filter((box) => box.children.length)
                 .map((box) => box.isClipped);
         },
+        /** his click on a link in a message */
+        async follow(id: string, url: string) {
+            gpui.opened.length = 0;
+            (bodies.links.get(id) as Handler)(url as never, cx as never);
+            for (let i = 0; i < 9; i++) await Promise.resolve();
+            return gpui.opened;
+        },
         frame,
+        hidden: () => list.hidden(),
         /** somewhere else in the list at once, in one redraw */
         jump(px: number) {
             scrollTop = px;
@@ -316,7 +370,7 @@ function createWindow(real: number[], first: (px: number) => number) {
             const position = { x: 1, y: 2 };
             const at = raw(gpui.seen.list?.el);
             fire(at, 'on_item_secondary_click', id, { position }, cx);
-            fire(root, 'on_mouse_down', { position }, cx);
+            fire(root, 'on_mouse_down_right', { position }, cx);
             draw();
             const item = under(root).find(
                 (el): el is El =>
@@ -474,3 +528,59 @@ test.each([
         expect(w.rightPress(id).label).toBe('Copy message');
     },
 );
+
+test('a click opens the square he pressed, and the first when he pressed beside them', () => {
+    const w = createWindow(Array(5).fill(60), (px) => px);
+    w.run(500);
+    w.click('r1', true);
+    w.click('r1', false);
+    expect(w.bodies.opened).toEqual(['r1-second', null]);
+});
+
+// dima's o6, 24 Nov: a path in a reply did nothing on a click
+test.each([
+    ['a folder opens in Finder', 'path:0', [['/Users/me/frame']]],
+    ['a file opens in its app', 'path:1', [['/Users/me/a.md']]],
+    ['a file that would run is revealed', 'path:2', [['-R', '/tmp/x.command']]],
+    ['a web link opens in his browser', 'https://x.dev', [['https://x.dev']]],
+    ['any other address opens nothing', 'javascript:x', []],
+])('a click on a link in a reply: %s', async (_what, url, opened) => {
+    const w = createWindow(Array(5).fill(60), (px) => px);
+    w.run(500);
+    expect(await w.follow('r1', url)).toEqual(opened);
+});
+
+test('a click on a picture’s path opens it in the viewer', async () => {
+    const w = createWindow(Array(5).fill(60), (px) => px);
+    w.run(500);
+    expect(await w.follow('r1', 'path:3')).toEqual([]);
+    expect(w.bodies.opened).toEqual(['/tmp/a.png']);
+});
+
+test.each([
+    [
+        'its message left the screen',
+        (w: ReturnType<typeof createWindow>) => {
+            w.scroll(-900);
+            w.run(40);
+            w.scroll(900);
+            w.run(40);
+        },
+    ],
+    ['the chat was hidden', (w: ReturnType<typeof createWindow>) => w.hidden()],
+    [
+        'the thread was read anew',
+        (w: ReturnType<typeof createWindow>) => {
+            w.reset();
+            w.run(200);
+        },
+    ],
+])('nothing selected is copied once %s', (_why, leave) => {
+    const w = createWindow(Array(200).fill(60), (px) => px);
+    w.run(1_000);
+    const id = [...w.frame.keys()].at(2) ?? '';
+    (w.bodies.reports.get(id) as Handler)({ text: 'two words' } as never);
+    expect(w.rightPress(id).label).toBe('Copy text');
+    leave(w);
+    expect(w.rightPress(id).label).toBe('Copy message');
+});

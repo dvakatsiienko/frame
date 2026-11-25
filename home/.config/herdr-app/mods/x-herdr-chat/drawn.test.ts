@@ -30,6 +30,13 @@ describe('the markdown a row draws', () => {
         expect(drawnBlocks(at as never)).toEqual(['one two']);
     });
 
+    test('a path found on disk is a link in its block', () => {
+        const at = { id: 'a', kind: 'reply', text: 'see /tmp/a' };
+        expect(drawnBlocks(at as never)).toEqual(['see /tmp/a']);
+        Object.assign(at, { links: ['/tmp/a'] });
+        expect(drawnBlocks(at as never)).toEqual(['see [/tmp/a](path:0)']);
+    });
+
     test('an open call’s card is its json; a tool line and a file draw no text view', () => {
         expect(
             drawnBlocks(

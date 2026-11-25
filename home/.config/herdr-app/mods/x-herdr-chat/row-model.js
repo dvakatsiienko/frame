@@ -30,6 +30,7 @@ import {
  * @property {string} [command] a prompt a tool round took: the queued command its `remove` record names
  * @property {string} [queued] a waiting row's text as Claude Code queued it, which its × pulls back
  * @property {Delivery | null} delivery his message's one state and that state's time (FRM-594); null on any other row
+ * @property {string[]} [links] the paths a reply names that are on disk, as it writes them (path-links.js)
  * @property {Picture[]} pictures the pictures his message sent, drawn under his words (FRM-638 slice 5)
  * @property {string[]} files the other files his message sent, by path
  * @property {Call[]} [calls] a tool row's calls, in order (PK-432)

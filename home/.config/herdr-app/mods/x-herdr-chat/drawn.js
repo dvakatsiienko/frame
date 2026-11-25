@@ -2,23 +2,23 @@
 // is always in what he reads
 
 import { splitBlocks } from './blocks.js';
-import { unlinkFiles } from './files.js';
+import { linkPaths } from './path-links.js';
 import { isCardRow } from './tool-folds.js';
 import { typedMarkdown } from './typed.js';
 
 /** @typedef {import('./blocks.js').Block} Block */
 /** @typedef {import('./row-model.js').Row} Row */
 
-// a reply's blocks by its row, for the text they were cut from: each draw of a row asks for them several times
-/** @type {WeakMap<Row, { blocks: Block[], text: string }>} */
+// a reply's blocks by its row, for the text and links they were cut from: each draw of a row asks for them several times
+/** @type {WeakMap<Row, { blocks: Block[], links?: string[], text: string }>} */
 const cut = new WeakMap();
 
 /** a reply's blocks, unfolded @param {Row} row */
 export function replyBlocks(row) {
     const had = cut.get(row);
-    if (had?.text === row.text) return had.blocks;
-    const blocks = splitBlocks(unlinkFiles(row.text));
-    cut.set(row, { blocks, text: row.text });
+    if (had?.text === row.text && had.links === row.links) return had.blocks;
+    const blocks = splitBlocks(linkPaths(row.text, row.links ?? []));
+    cut.set(row, { blocks, links: row.links, text: row.text });
     return blocks;
 }
 

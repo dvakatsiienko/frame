@@ -227,6 +227,24 @@ describe('the stepped row reads clean, no markdown marks (dima o14)', () => {
         },
     );
 
+    test.each([
+        [
+            'a table’s line under its head',
+            '| a | b |\n| --- | :-: |\n| c | d |',
+            '| a | b |\n| c | d |',
+        ],
+        ['a rule', 'a\n\n---\n* * *\nb', 'a\n\nb'],
+        ['a link’s definition', '[ref]: https://secret.io\nb', 'b'],
+        ['a struck word’s marks', '~~gone~~ and a ~ b', 'gone and a ~ b'],
+        ['an entity’s spelling', 'a &amp; b &lt;c&gt;', 'a & b <c>'],
+    ])('never %s', (_what, source, read) => {
+        expect(plainOf(source)).toBe(read);
+    });
+
+    test('a match over an entity covers the source between its ends', () => {
+        expect(sliced(row('e', 'x a &amp; b'), 'a & b')).toEqual(['a &amp; b']);
+    });
+
     test('a line that opens with inline triple backticks is no fence', () => {
         expect(plainOf('```npm x``` then\n[docs](https://viewer.dev)')).toBe(
             'npm x then\ndocs',

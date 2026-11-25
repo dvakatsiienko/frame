@@ -2,7 +2,7 @@
 // drawn as his messages, replies and one line per tool call, in a list that never moves without him, over the quill,
 // his text box. this file builds the views and composes them; MODULES.md names the module that owns each part.
 
-import { mkdir, readdir, writeFile } from 'fs/promises';
+import { exists, mkdir, readdir, writeFile } from 'fs/promises';
 import { h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
 import {
@@ -31,6 +31,7 @@ import { createHeights } from './heights.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { createMessageList } from './message-list.js';
 import { createMessageRows } from './message-row.js';
+import { createPathLinks } from './path-links.js';
 import { createPickers } from './pickers.js';
 import { createPictureViewer } from './picture-viewer.js';
 import { createQuill } from './quill-view.js';
@@ -124,6 +125,8 @@ export default class Chat extends View {
         tab: this.tab,
     });
     sent = createSentPictures(SENT_IO);
+    /** the paths a reply names that are on disk */
+    links = createPathLinks({ exists, home });
     /** what the quill says about his last send: why it did not go, or why it went as a push @type {string | null} */
     note = null;
     /** the send path: the magic send's marks, the hold, a send that did not go coming back */
@@ -216,6 +219,7 @@ export default class Chat extends View {
         clearShown: () => this.clearShown(),
         findBar: this.findBar,
         heights: this.heights,
+        links: this.links,
         list: this.list,
         look: () => this.look,
         model: this.model,
@@ -340,6 +344,7 @@ export default class Chat extends View {
         this.effortAsk = acts.lastEffort;
         this.findAsk = acts.lastFind;
         this.escapeAsk = acts.lastEscape;
+        if (!isShown) this.list.hidden();
         this.wasShown = isShown;
         // Esc pressed anywhere in the window closes the viewer, or find when no viewer shows (dima, 18:18)
         if (

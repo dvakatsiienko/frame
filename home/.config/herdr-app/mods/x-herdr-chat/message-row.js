@@ -105,7 +105,7 @@ export function createMessageRows(deps) {
                         )
                         .child(el),
                 );
-        if (row.kind === 'file') return column(fileRow(row, t));
+        if (row.kind === 'file') return column(fileRow(row, t, body));
         if (row.kind === 'tool') return column(toolRow(row, t, pre, isShown));
         const most = Math.max(240, Math.floor(deps.room() * BUBBLE_SHARE));
         const fold = foldOf(row);
@@ -223,8 +223,17 @@ export function createMessageRows(deps) {
             ? (foldOf(row)?.shown ?? replyBlocks(row)).length
             : 1;
 
-    /** what a message's text views draw from: while it stays the same, so does what they draw @param {Row} row @param {Theme} t @param {string} pre */
-    function textsLook(row, t, pre) {
+    /**
+     * what a row's body draws (message-body.js)
+     * @param {Row} row @param {Theme} t @param {string} pre @param {import('./message-body.js').Handlers} handlers
+     */
+    const drawBody = (row, t, pre, { pressing, reporting }) =>
+        row.kind === 'file'
+            ? sentFiles(row, t, pressing)
+            : texts(row, t, pre, true, reporting);
+
+    /** what a row's body draws from: while it stays the same, so does what it draws @param {Row} row @param {Theme} t @param {string} pre */
+    function bodyLook(row, t, pre) {
         const find = deps.find();
         const isHit = find.state.hits.some((h) => h.id === row.id);
         return [
@@ -232,9 +241,13 @@ export function createMessageRows(deps) {
             foldOf(row)?.hidden ?? '',
             isHit ? find.state.q : '',
             find.current() === row.id ? find.currentHit()?.n : '',
+            ...row.pictures.map((p) => deps.sent.relOf(p) ?? ''),
             t.accent,
             t.background,
             t.border,
+            t.dim,
+            t.muted,
+            t.raised,
         ].join('|');
     }
 
@@ -316,17 +329,19 @@ export function createMessageRows(deps) {
      * the pictures and files a message carries: a square per picture, a chip per file; his on the right, a reply's on
      * the left. no press or hover handler, one inside a list row blanks the whole list (herdr-app#894)
      * @param {Row} row @param {Theme} t
+     * @param {import('./message-body.js').Pressing} [pressing]
      */
-    function sentFiles(row, t) {
+    function sentFiles(row, t, pressing = (el) => el) {
         return h_flex()
             .gap(6)
             .flex_wrap()
             .when(isSentRow(row.id), (el) => el.justify_end())
             .max_w(deps.column())
+            .cursor_pointer()
             .children(
                 row.pictures.map((picture) => {
                     const rel = deps.sent.relOf(picture);
-                    return div()
+                    const square = div()
                         .size(SENT_THUMB)
                         .flex_none()
                         .flex()
@@ -339,6 +354,7 @@ export function createMessageRows(deps) {
                         .border_color(t.border)
                         .text_color(t.dim)
                         .child(rel ? image(rel).size_full() : ICONS.picture);
+                    return pressing(square, picture.id);
                 }),
             )
             .children(
@@ -387,9 +403,9 @@ export function createMessageRows(deps) {
     /**
      * a file a reply names, its own row under the reply (FRM-587): the list's item click opens it. no press or hover
      * handler in here, one inside a list row blanks the whole list (herdr-app#894)
-     * @param {Row} row @param {Theme} t
+     * @param {Row} row @param {Theme} t @param {import('gpui-kit').Entity | null} [body] the view that draws its squares
      */
-    function fileRow(row, t) {
+    function fileRow(row, t, body = null) {
         // a message still in Claude Code's queue: its × takes it back to the quill (FRM-563 b+c)
         if (isUnsendRow(row.id))
             return h_flex()
@@ -418,9 +434,10 @@ export function createMessageRows(deps) {
                 .w_full()
                 .items_end()
                 .gap(2)
-                .child(sentFiles(row, t).cursor_pointer())
+                .child(body ?? sentFiles(row, t))
                 .when(!row.isWaiting, (el) => el.child(detailsLine(row, t)));
-        if (row.pictures.length) return sentFiles(row, t).cursor_pointer();
+        if (row.pictures.length)
+            return body ? div().child(body) : sentFiles(row, t);
         return h_flex()
             .gap(6)
             .items_center()
@@ -437,17 +454,22 @@ export function createMessageRows(deps) {
             .child(div().truncate().child(row.text));
     }
     /**
-     * a click on a message's or a reply's pictures: the pictures it opens, whole, the first shown; ← → reach the rest
-     * @param {readonly Row[]} rows @param {string} key @returns {{ files: string[], at: number } | null}
+     * a click on a message's or a reply's pictures: the pictures it opens, whole, the one pressed shown, the first when the
+     * press was beside them; ← → reach the rest
+     * @param {readonly Row[]} rows @param {string} key @param {string | null} pressed a picture's id @returns {{ files: string[], at: number } | null}
      */
-    function picturesAt(rows, key) {
+    function picturesAt(rows, key, pressed) {
         const row = rows.find(
             (r) => r.id === key.replace(/#(?:above|below)$/, ''),
         );
         // his words select on a click; only the squares' own row opens the viewer
         if (row?.kind !== 'file') return null;
-        const files = row.pictures.flatMap((p) => deps.sent.pathOf(p) ?? []);
-        return files.length ? { at: 0, files } : null;
+        const pictures = row.pictures.filter((p) => deps.sent.pathOf(p));
+        const at = pressed ? pictures.findIndex((p) => p.id === pressed) : 0;
+        // the picture pressed opens, or nothing: never a sibling in its place
+        return pictures[at]
+            ? { at, files: pictures.flatMap((p) => deps.sent.pathOf(p) ?? []) }
+            : null;
     }
 
     /**
@@ -471,9 +493,11 @@ export function createMessageRows(deps) {
         );
     }
 
-    /** whether a row draws its message's words in text views he may copy from @param {Row} row */
-    const hasTexts = (row) =>
-        row.kind === 'reply' || (row.kind === 'mine' && Boolean(row.text));
+    /** whether a row holds words he may copy from or squares he may press @param {Row} row */
+    const hasBody = (row) =>
+        row.kind === 'reply' ||
+        (row.kind === 'mine' && Boolean(row.text)) ||
+        (row.kind === 'file' && row.pictures.length > 0);
     /** the drawing a message's text views stand in: a new one is new text views @param {Row} row @param {string} pre */
     const stampOf = (row, pre) => `${pre}${row.id}@${row.version}`;
 
@@ -482,6 +506,7 @@ export function createMessageRows(deps) {
         rows.map((row) => (foldOf(row) ? { ...row, look: 'fold' } : row));
 
     return {
+        bodyLook,
         booked,
         /** a replaced transcript makes its file rows again */
         clearFiles() {
@@ -493,7 +518,8 @@ export function createMessageRows(deps) {
             fileRows.clear();
             toolFolds.clear();
         },
-        hasTexts,
+        drawBody,
+        hasBody,
         /**
          * the turn he reads now: from his last message to the end, never folded
          * @param {readonly Row[]} rows
@@ -508,10 +534,10 @@ export function createMessageRows(deps) {
         /**
          * a click on a row: a tool call opens or closes, a folded reply opens whole, pictures open in the viewer,
          * a file in its app
-         * @param {readonly Row[]} rows @param {string} key
+         * @param {readonly Row[]} rows @param {string} key @param {string | null} [picture] the square pressed, by its id
          * @returns {{ kind: 'redraw' } | { kind: 'pictures', files: string[], at: number } | { kind: 'file', path: string } | { kind: 'unsend', queued: string } | null}
          */
-        press(rows, key) {
+        press(rows, key, picture = null) {
             const id = key.replace(/#(?:above|below)$/, '');
             const pressed = rows.find((r) => r.id === id);
             if (pressed && isUnsendRow(id)) {
@@ -527,7 +553,7 @@ export function createMessageRows(deps) {
                 openReplies.add(id);
                 return { kind: 'redraw' };
             }
-            const opened = picturesAt(rows, key);
+            const opened = picturesAt(rows, key, picture);
             if (opened) return { kind: 'pictures', ...opened };
             const path = fileAt(rows, key);
             return path ? { kind: 'file', path } : null;
@@ -553,6 +579,5 @@ export function createMessageRows(deps) {
         stampOf,
         texts,
         textsCount,
-        textsLook,
     };
 }
