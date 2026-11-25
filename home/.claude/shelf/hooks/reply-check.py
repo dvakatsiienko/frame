@@ -220,7 +220,7 @@ GRILL_PRINTED_NUMBER = re.compile(r"^\W*❓\s*\*\*Q(\d+)\b", re.M)
 
 
 def asked_words(a: dict) -> str:
-    return " ".join(str(a.get(k) or "") for k in ("title", "body")).strip() or str(a.get("text", ""))
+    return str(a.get("title") or a.get("text", ""))
 
 
 def grill_asks_unprinted(reply: str, calls: list[tuple[str, dict]]) -> list[str]:
