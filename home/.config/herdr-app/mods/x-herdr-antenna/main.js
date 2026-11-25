@@ -23,13 +23,8 @@ import {
     writeTextFile,
 } from 'herdr';
 
-import {
-    activityShown,
-    rowDetails,
-    rowFacts,
-    waitRuns,
-    windOf,
-} from './details.js';
+import { busyCounts, busyHint, dotsOf } from './busy.js';
+import { rowDetails, rowFacts, waitRuns, windOf } from './details.js';
 import { createListDrag } from './drag-view.js';
 import { contextMeter } from './meter.js';
 import {
@@ -580,6 +575,16 @@ export default class Antenna extends View {
             }),
             cx,
         );
+        const facts = new Map(
+            list.map((a) => [a.address, factsOf(NAMES.get(a.address)?.pid)]),
+        );
+        // the dot and the time come from the thread's state file, herdr's own status only for a permission prompt
+        const dots = dotsOf(
+            list,
+            (address) => facts.get(address)?.activity ?? null,
+            now,
+        );
+        const busy = busyCounts(list, dots);
         const isCompact = knobs['antenna.rowHeight'] === 'compact';
         // with the wait line on every row is two lines tall, so a drag's slots match the rows
         const rowHeight =
@@ -598,12 +603,17 @@ export default class Antenna extends View {
                     .items_center()
                     .text_size(11)
                     .font_medium()
+                    .gap(6)
                     .text_color(t.dim)
-                    .child(div().truncate().child(r.name));
+                    .child(div().min_w(0).truncate().child(r.name))
+                    .child(
+                        div()
+                            .flex_none()
+                            .child(busy.spaces.get(r.space) ?? ''),
+                    );
             const a = byAddress.get(r.address);
-            const state = factsOf(NAMES.get(r.address)?.pid);
-            // the dot and the time come from the thread's state file, herdr's own status only for a permission prompt
-            const shown = activityShown(r.dot, state?.activity ?? null, now);
+            const state = facts.get(r.address) ?? null;
+            const shown = dots.get(r.address);
             n += 1;
             if (isNarrow)
                 return h_flex()
@@ -814,13 +824,33 @@ export default class Antenna extends View {
                         .pb(5)
                         .flex_none()
                         .items_center()
-                        .justify_between()
+                        .gap(8)
                         .child(
                             div()
+                                .flex_1()
+                                .min_w(0)
+                                .truncate()
                                 .text_size(11.5)
                                 .font_medium()
                                 .text_color(t.dim)
                                 .child('Antenna'),
+                        )
+                        .when(busy.all !== null, (head) =>
+                            head.child(
+                                div()
+                                    .id('an-busy')
+                                    .flex_none()
+                                    .px(7)
+                                    .rounded(9)
+                                    .border_1()
+                                    .border_color(t.border)
+                                    .text_size(12)
+                                    .line_height('17px')
+                                    .whitespace_nowrap()
+                                    .text_color(t.muted)
+                                    .tooltip(busyHint(busy.all ?? ''))
+                                    .child(busy.all ?? ''),
+                            ),
                         )
                         .child(
                             div()
