@@ -219,9 +219,13 @@ Q_NUMBER = re.compile(r"\bQ(\d+)\b", re.I)
 GRILL_PRINTED_NUMBER = re.compile(r"^\W*❓\s*\*\*Q(\d+)\b", re.M)
 
 
+def asked_words(a: dict) -> str:
+    return " ".join(str(a.get(k) or "") for k in ("title", "body")).strip() or str(a.get("text", ""))
+
+
 def grill_asks_unprinted(reply: str, calls: list[tuple[str, dict]]) -> list[str]:
     ops = [op for name, args in calls if name == "mcp__x-mod-stash__orbit" for op in [args, *(args.get("ops") or [])] if isinstance(op, dict)]
-    texts = [str(a.get("text", "")) for op in ops if op.get("op") == "add" for a in op.get("asks") or [] if isinstance(a, dict)]
+    texts = [asked_words(a) for op in ops if op.get("op") == "add" for a in op.get("asks") or [] if isinstance(a, dict)]
     named = [t for t in texts if GRILL_ASK_TEXT.search(t)]
     printed = {int(n) for n in GRILL_PRINTED_NUMBER.findall(FENCE.sub("", reply))}
     # an ask naming Q3 needs its own «❓ **Q3**» line; a grill-round ask with no number needs any one
@@ -502,7 +506,7 @@ def lost_round(path: str, reply: str) -> list[str]:
     mid = FENCE.sub("", "\n".join(str(text) for kind, text in turn[:last_tool] if kind == "text"))
     calls = [call for kind, call in turn if kind == "tool"]
     ops = [op for name, args in calls if name == "mcp__x-mod-stash__orbit" for op in [args, *(args.get("ops") or [])] if isinstance(op, dict)]
-    asks = [str(a.get("text", "")) for op in ops if op.get("op") == "add" for a in op.get("asks") or [] if isinstance(a, dict)]
+    asks = [asked_words(a) for op in ops if op.get("op") == "add" for a in op.get("asks") or [] if isinstance(a, dict)]
     final = FENCE.sub("", reply)
     wanted = {int(n) for n in GRILL_PRINTED_NUMBER.findall(mid)} | {int(n) for t in asks for n in Q_NUMBER.findall(t)}
     missing = sorted(wanted - {int(n) for n in GRILL_PRINTED_NUMBER.findall(final)})
