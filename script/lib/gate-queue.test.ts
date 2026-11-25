@@ -521,8 +521,13 @@ describe('gate-queue --long', () => {
                 stdio: 'ignore',
             });
             const ended = new Promise((done) => child.on('exit', done));
-            while (!existsSync(freeing) && child.exitCode === null)
+            while (
+                !existsSync(freeing) &&
+                child.exitCode === null &&
+                child.signalCode === null
+            )
                 await sleep(20);
+            expect(existsSync(freeing)).toBe(true);
             child.kill(signal);
             await ended;
             expect(existsSync(turn)).toBe(false);

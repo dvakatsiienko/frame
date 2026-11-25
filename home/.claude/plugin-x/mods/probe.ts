@@ -7,7 +7,6 @@ import { randomUUID } from 'node:crypto';
 import {
     constants,
     copyFileSync,
-    cpSync,
     existsSync,
     mkdirSync,
     mkdtempSync,
@@ -108,14 +107,25 @@ export function sandboxHome(real: string, scratch: string) {
         if (existsSync(join(real, rel)))
             copyFileSync(join(real, rel), join(home, rel));
     const shelf = join(real, SANDBOX_SHELF);
-    // the shelf is itself a link into frame; a peer's lock or half-written temp file stays behind
     if (existsSync(shelf))
-        cpSync(realpathSync(shelf), join(home, SANDBOX_SHELF), {
-            filter: (from) => !/\.(?:lock|tmp)$/.test(from),
-            mode: constants.COPYFILE_FICLONE,
-            recursive: true,
-        });
+        copyShelf(realpathSync(shelf), join(home, SANDBOX_SHELF));
     return home;
+}
+
+// the live shelf changes under the copy: a peer's lock and temp files (`threads.json.<digits>` is x's) stay behind, and a file
+// that went between the listing and its copy is skipped
+function copyShelf(from: string, to: string) {
+    mkdirSync(to, { recursive: true });
+    for (const entry of readdirSync(from, { withFileTypes: true })) {
+        if (/\.(?:lock|tmp)$|\.json\.\d+$/.test(entry.name)) continue;
+        const [src, dest] = [join(from, entry.name), join(to, entry.name)];
+        try {
+            if (entry.isDirectory()) copyShelf(src, dest);
+            else copyFileSync(src, dest, constants.COPYFILE_FICLONE);
+        } catch (err) {
+            if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
+        }
+    }
 }
 
 // one `name<TAB>bash line` per line; `#` and blank lines skipped, a literal \n in the line is a newline

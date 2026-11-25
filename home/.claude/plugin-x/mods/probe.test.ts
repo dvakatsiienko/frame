@@ -165,12 +165,15 @@ describe('sandboxHome', () => {
         ]).toEqual(['[user]', 'x']);
     });
 
-    it('the shelf is a copy, read through a link: a write or a lock there never crosses', () => {
+    it('the shelf is a copy, read through a link: a write or a lock there never crosses, a file gone mid-copy is skipped', () => {
         const { real, run } = fixture();
         const shelf = join(real, 'frame-shelf');
         mkdirSync(join(shelf, 'herdr-state'), { recursive: true });
         writeFileSync(join(shelf, 'lanes.json'), 'real');
-        writeFileSync(join(shelf, 'threads.json.lock'), '');
+        for (const left of ['threads.json.lock', 'threads.json.4127', 'a.tmp'])
+            writeFileSync(join(shelf, left), '');
+        // listed, then gone before its copy, as a peer's removed file is
+        symlinkSync(join(shelf, 'gone'), join(shelf, 'dangling.json'));
         symlinkSync(shelf, join(real, '.claude/shelf'));
         const home = sandboxHome(real, run);
         const child = join(home, '.claude/shelf');
