@@ -49,8 +49,9 @@ func takeTurn(slot, door, label, again string) (func(error), error) {
 		if code == gateQueueDeadline {
 			return stay, &Fail{Msg: "the " + slot + " turn's wait passed its deadline, nothing ran; the holder is named above", Next: again}
 		}
-		// an interrupt while it waits reaches the queue, never x: the run stops, as it would have in line
-		if code == 130 || code == 143 || code < 0 {
+		// an interrupt while it waits reaches the queue, never x: the run stops, as it would have in line. 141 is the queue's own
+		// end when nobody reads its stderr any more
+		if code == 130 || code == 141 || code == 143 || code < 0 {
 			return stay, &Fail{Msg: "stopped while it waited for the " + slot + " turn, nothing ran", Next: again}
 		}
 		// a broken queue never blocks a commit

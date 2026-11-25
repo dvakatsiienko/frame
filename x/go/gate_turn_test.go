@@ -383,6 +383,25 @@ func TestGateTurnIsFreedWhenXDies(t *testing.T) {
 	}
 }
 
+func TestAQueueStoppedInLineRunsNothing(t *testing.T) {
+	t.Parallel()
+	for _, code := range []string{"130", "141", "143"} {
+		t.Run(code, func(t *testing.T) {
+			t.Parallel()
+			root := t.TempDir()
+			write(t, filepath.Join(root, gateQueueScript), "#!/bin/sh\nexit "+code+"\n")
+			_, env := turnOn(t)
+			dir := turnRepo(t, "true")
+
+			got := xIn(t, dir, append(env, "X_FRAME_ROOT="+root), "lane", "commit", message(t), "--", "readme.txt")
+
+			if got.code == 0 || !strings.Contains(got.stdout, "stopped while it waited") || gitT(t, dir, "status", "--porcelain") == "" {
+				t.Errorf("exit %d, want a stop with nothing committed:\n%s", got.code, got.stdout)
+			}
+		})
+	}
+}
+
 func TestAnXKilledInLineLeavesTheTurnFree(t *testing.T) {
 	t.Parallel()
 	state, env := turnOn(t)
