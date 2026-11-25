@@ -27,3 +27,4 @@
 - 19:02 · FRM-630's spec moved his «raw line to a shelf file» to a file outside the repo without a word to him (the reason was right) · told 19:12 · a spec that changes a signed line says so in the reply that seals it
 - fixed: 19:36 · the handoff and this log said a report stamped 19:37 at 19:35; the reply's stamp was 19:35 and right. what ran ahead was «19:30» sent to wing 1 at 19:26 · a false line carried through a compact · a flaw line quotes the message it names, opened first
 - 19:35 · `siesta-gate.ts skip` answered a window that held a reply to dima and a commit, where only an empty window may skip · wishkeeper run at 19:40 instead, over 19:11 on · the skip verb takes any reason and checks neither; it could read the window itself
+- fixed: 19:54 · the spec check's hook used `date -v-7d`, BSD alone: main red on d04bc09c, my push · one CI run · a hook's shell line runs once with a linux-like tool before its push
