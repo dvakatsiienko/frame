@@ -714,6 +714,16 @@ export default class Antenna extends View {
                                 ),
                             ),
                     )
+                    // the time comes and goes, so it leads: the columns right of it keep their place in every row
+                    .when(Boolean(more.idle), (el) =>
+                        el.child(
+                            div()
+                                .flex_none()
+                                .text_size(11)
+                                .text_color(t.dim)
+                                .child(more.idle ?? ''),
+                        ),
+                    )
                     .when(Boolean(more.model), (el) =>
                         el.child(
                             v_flex()
@@ -728,29 +738,22 @@ export default class Antenna extends View {
                                 ),
                         ),
                     )
-                    .when(Boolean(more.context), (el) =>
+                    .when(knobs['antenna.details.context'] === true, (el) =>
                         el.child(
                             contextMeter(
                                 t,
-                                state.context,
+                                more.context ? state.context : null,
                                 knobs['antenna.details.meter'],
                                 windLines(),
                             ),
                         ),
                     )
-                    .when(Boolean(more.idle), (el) =>
+                    .when(knobs['antenna.details.hot'] === true, (el) =>
                         el.child(
-                            div()
-                                .flex_none()
-                                .text_size(11)
-                                .text_color(t.dim)
-                                .child(more.idle ?? ''),
+                            state?.sid
+                                ? this.hotButton(t, state)
+                                : div().size(20).flex_none(),
                         ),
-                    )
-                    .when(
-                        knobs['antenna.details.hot'] === true &&
-                            Boolean(state?.sid),
-                        (el) => el.child(this.hotButton(t, state)),
                     )
                     .child(this.dot(t, shown.dot));
             return body(

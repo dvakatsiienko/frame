@@ -16,6 +16,7 @@ wish: FRM-618 · legend and the other areas: [FTR.md](../FTR.md)
   - given Keep hot 🔥 on (its default) and Model off (its default)
   - when antenna draws
   - then each row shows its 🔥, filled while kept hot, and a press keeps that thread hot as the deck's did; with Model on, each row shows its model and the session's own effort, under it on a two-line row (Wait line on), «opus 5.5 · medium» on one line otherwise, the model alone while no effort was named (FRM-618:W1292, FRM-620:W57)
+  - and the time («waiting 2m», «idle 4m») stands left of the model, the model, the meter, 🔥 and the dot keep one column each in every row, a fact not read leaving its column empty (dima, 2026-11-25 13:01: «ui looks like a ladder»)
 - ⬜ a drag orders the rows, no sort and no sound button
   - given antenna's rows
   - when he drags one within its space

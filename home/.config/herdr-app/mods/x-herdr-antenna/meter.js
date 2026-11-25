@@ -16,7 +16,13 @@ const levelColor = (t, percent, wind) =>
 
 /** @param {Theme} t @param {number} percent */
 const label = (t, percent) =>
-    div().flex_none().text_size(11).text_color(t.dim).child(`${percent}%`);
+    div()
+        .flex_none()
+        .w(28)
+        .text_right()
+        .text_size(11)
+        .text_color(t.dim)
+        .child(`${percent}%`);
 
 const RING = 16;
 const RADIUS = 6;
@@ -156,12 +162,26 @@ export function meterLine(t, percent, wind = WIND) {
         .child(label(t, percent));
 }
 
-/** the meter in his picked look, the ring for any other value @param {Theme} t @param {number} percent
- * @param {unknown} look the «Context meter» knob @param {Wind} wind */
+/** each look's width, a number as wide as «100%» included, so every row's columns line up */
+const WIDTHS = { bars: 61, line: 61, pill: 42, ring: 48 };
+
+/**
+ * the meter in his picked look, the ring for any other value; a thread whose context was never read keeps the column
+ * empty
+ * @param {Theme} t @param {number | null} percent @param {unknown} look the «Context meter» knob @param {Wind} wind
+ */
 export function contextMeter(t, percent, look, wind) {
-    if (look === 'bars') return meterBars(t, percent, wind);
-    if (look === 'line') return meterLine(t, percent, wind);
-    return look === 'pill'
-        ? meterPill(t, percent, wind)
-        : meterRing(t, percent, wind);
+    const key =
+        look === 'bars' || look === 'line' || look === 'pill' ? look : 'ring';
+    const draw = {
+        bars: meterBars,
+        line: meterLine,
+        pill: meterPill,
+        ring: meterRing,
+    }[key];
+    return h_flex()
+        .flex_none()
+        .w(WIDTHS[key])
+        .justify_end()
+        .when(percent !== null, (el) => el.child(draw(t, percent ?? 0, wind)));
 }
