@@ -565,6 +565,21 @@ func TestMergeAutoLeavesAFreshUpperLayerTree(t *testing.T) {
 	}
 }
 
+// another lane's verify tree sits detached at a head this merge never carried, clean, and is not its to take
+func TestMergeAutoLeavesADetachedTreeElsewhere(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	verify := filepath.Join(w.clone, ".claude/worktrees/verify-pr-9")
+	gitT(t, w.clone, "worktree", "add", "-q", "--detach", verify, "origin/main")
+
+	got := w.run(t, "7", "--apply")
+
+	if got.code != 0 || !exists(verify) || strings.Contains(got.stdout, "verify-pr-9") {
+		t.Fatalf("exit %d, the tree there: %v, want it unnamed:\n%s", got.code, exists(verify), got.stdout)
+	}
+}
+
 func TestMergeAutoNamesTheDoorForATreeThatStayed(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")

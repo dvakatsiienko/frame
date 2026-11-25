@@ -29,42 +29,15 @@ func decampMerged(d *mergeDecision) []string {
 		if !strings.HasPrefix(resolved(e.path), under) {
 			continue
 		}
-		atLanded := slices.Contains(landed, e.sha)
-		reason := ""
-		switch {
-		case d.Merged == "" && (atLanded || e.branch == d.headRef):
-			reason = "the merge is still enqueued"
-		// a branch still at the head that lands is a layer just cut above it, never the merged one
-		case e.branch != "" && e.branch != d.headRef && (!atLanded || e.sha == d.Head):
-			if !gitAncestorOfAny(e.path, landed) {
-				continue
-			}
-			reason = "it sits on an upper layer of the stack"
-		case e.branch != d.headRef && !atLanded:
+		reason, judged := whyMergedTreeStays(d, e, main, selves, landed)
+		if !judged {
 			continue
-		default:
-			merged := ""
-			if atLanded {
-				merged = e.sha
-			}
-			reason = treeStay(e, main, selves, merged)
-			if !atLanded {
-				reason = strings.TrimSuffix("it is not at the landed head, "+reason, ", ")
-			}
 		}
 		if reason != "" {
 			notes = append(notes, home(e.path)+" stays: "+reason+"; x lane landed <ticket> --pr "+d.PR+" --apply takes it once clean")
 			continue
 		}
-		if err := removeTree(main, e.path); err != nil {
-			notes = append(notes, "⚠ "+home(e.path)+" stays: "+err.Error())
-			continue
-		}
-		if _, err := hooksHome(main, e.path); err != nil {
-			notes = append(notes, "⚠ "+home(e.path)+" decamped, then "+err.Error())
-			continue
-		}
-		notes = append(notes, home(e.path)+" decamped")
+		notes = append(notes, decampTree(main, e.path))
 	}
 	if d.Merged != "" {
 		if note := laneBranchNote(asDima, main, d.Repo, d.headRef, d.Head); note != "" {
@@ -72,6 +45,34 @@ func decampMerged(d *mergeDecision) []string {
 		}
 	}
 	return notes
+}
+
+// not judged: the tree is none of the merge's own. a judged tree with no reason goes
+func whyMergedTreeStays(d *mergeDecision, e worktreeEntry, main string, selves, landed []string) (reason string, judged bool) {
+	atLanded := slices.Contains(landed, e.sha)
+	switch {
+	case d.Merged == "" && (atLanded || e.branch == d.headRef):
+		return "the merge is still enqueued", true
+	// a branch still at the head that lands is a layer just cut above it, never the merged one
+	case e.branch != "" && e.branch != d.headRef && (!atLanded || e.sha == d.Head):
+		return "it sits on an upper layer of the stack", gitAncestorOfAny(e.path, landed)
+	case e.branch != d.headRef && !atLanded:
+		return "", false
+	}
+	if !atLanded {
+		return strings.TrimSuffix("it is not at the landed head, "+treeStay(e, main, selves, ""), ", "), true
+	}
+	return treeStay(e, main, selves, e.sha), true
+}
+
+func decampTree(main, path string) string {
+	if err := removeTree(main, path); err != nil {
+		return "⚠ " + home(path) + " stays: " + err.Error()
+	}
+	if _, err := hooksHome(main, path); err != nil {
+		return "⚠ " + home(path) + " decamped, then " + err.Error()
+	}
+	return home(path) + " decamped"
 }
 
 func gitAncestorOfAny(tree string, shas []string) bool {
