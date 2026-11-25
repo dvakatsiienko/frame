@@ -29,8 +29,8 @@ export function createSteerFiles(store, forget = () => {}) {
         if (unsent.length) forget(unsent);
     };
 
-    // the store is the one owner, read each time: herdr fills a copy's store after its first render, so a copy kept
-    // here read empty for good (his 19:15 shot)
+    // the store is the one owner, read each time: a copy kept here once read empty for good (his 19:15 shot), made under
+    // another mod's store as kept.test.ts shows
     /** @param {string} key @returns {string[]} */
     function of(key) {
         try {
