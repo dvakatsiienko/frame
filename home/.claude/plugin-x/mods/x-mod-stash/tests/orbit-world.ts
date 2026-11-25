@@ -125,6 +125,17 @@ export function world(on: On, files: Record<string, string> = {}) {
         return next(e);
     });
     on('turn.complete', () => ({ text: '' }));
+    // biome-ignore lint/correctness/useYield: the model's empty answer streams no chunk, only its result
+    on('turn.step', async function* (_$, e) {
+        return {
+            answer: '',
+            index: e.index,
+            stopReason: 'end_turn',
+            toolUses: [],
+            turnId: e.turnId,
+            usage: null,
+        };
+    });
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
     on('skill.prompt', (_$, e) => ({ text: e.text }));
@@ -160,6 +171,16 @@ export const endTurn = ($: Engine) =>
         reason: 'answer',
         turnId: 't',
     });
+
+// the model's next request: it reads what its last calls answered
+export const nextRequest = async ($: Engine) => {
+    for await (const _ of $.turn.step({
+        index: 0,
+        messageCount: 1,
+        model: 'claude-opus-5-5',
+        turnId: 't',
+    }));
+};
 
 export const board = ($: Engine) =>
     $.ui.mount({

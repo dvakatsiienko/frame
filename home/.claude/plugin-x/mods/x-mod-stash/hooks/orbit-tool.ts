@@ -17,14 +17,7 @@ import {
     readPlanSteps,
     writeLanes,
 } from './lanes.ts';
-import {
-    ASSUMED_MAX,
-    CHANGED_MARK,
-    PLAN_MAX,
-    isFresh,
-    opAskIds,
-    orbitOp,
-} from './orbit.ts';
+import { ASSUMED_MAX, CHANGED_MARK, PLAN_MAX, orbitOp } from './orbit.ts';
 import { isShown } from './orbit-ask-kind.ts';
 import {
     AREAS_FILE,
@@ -39,6 +32,7 @@ import {
     currentOrbit,
     dropTicks,
     inMarking,
+    lateAsk,
     saveOrbit,
 } from './orbit-store.ts';
 import { memberOf, registry } from './roster.ts';
@@ -268,7 +262,6 @@ export async function orbitCall(
     input: Record<string, unknown>,
     isAmended: boolean,
     read?: OriginRead,
-    heard: ReadonlySet<string> = new Set(),
 ): Promise<{ result: string } | { deny: string }> {
     const hidden = await partRefusal($, input.op);
     if (hidden) return { deny: hidden };
@@ -394,12 +387,7 @@ export async function orbitCall(
         input.op === 'add' && Array.isArray(input.asks) ? input.asks.length : 0;
     const op = await inMarking(async () => {
         const current = await currentOrbit($);
-        // written before his verdict: an op over it would close or re-show an ask he sent back, or take a mark unheard
-        const late = opAskIds(input).find(
-            (id) =>
-                heard.has(id) ||
-                current.asks.some((a) => a.id === id && isFresh(a)),
-        );
+        const late = lateAsk(current, input);
         if (late)
             return {
                 deny: `orbit ${String(input.op)}: dima marked ${late} after you wrote this, so nothing changed: read his mark, here or at your next step, then call again`,
@@ -494,8 +482,6 @@ export async function registerOrbitTool($: EngineInterface) {
 export async function orbitToolCall(
     $: EngineInterface,
     input: Record<string, unknown>,
-    // the asks whose marks this very call heard
-    heard: ReadonlySet<string>,
 ): Promise<{ result: string } | { deny: string }> {
     const ops = Array.isArray(input.ops)
         ? input.ops.filter(
@@ -514,7 +500,7 @@ export async function orbitToolCall(
         : undefined;
     const isAmended = ops.some((x) => {
         if (x.op !== 'follow' && x.op !== 'add') return false;
-        if (opAskIds(x).some((id) => heard.has(id))) return false;
+        if (lateAsk(was, x)) return false;
         const made = orbitOp(was, x, true, undefined, false, read);
         if ('deny' in made) return false;
         // a «fixing» follow hides its ask, so he sees no new round
@@ -524,17 +510,11 @@ export async function orbitToolCall(
         );
     });
     if (ops.length === 1)
-        return orbitCall(
-            $,
-            ops[0] as Record<string, unknown>,
-            isAmended,
-            read,
-            heard,
-        );
+        return orbitCall($, ops[0] as Record<string, unknown>, isAmended, read);
     const lines: string[] = [];
     let landed = 0;
     for (const [i, x] of ops.entries()) {
-        const r = await orbitCall($, x, isAmended, read, heard);
+        const r = await orbitCall($, x, isAmended, read);
         if ('deny' in r)
             lines.push(`${i + 1} ${String(x.op)}: refused — ${r.deny}`);
         else {

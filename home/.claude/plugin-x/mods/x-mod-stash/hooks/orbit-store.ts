@@ -10,9 +10,11 @@ import type {
 import {
     allAsksTicks,
     herdrTicks,
+    isFresh,
     isGuardGated,
     isPressOn,
     mounted,
+    opAskIds,
     planMarked,
     steeredOrbit,
 } from './orbit.ts';
@@ -404,7 +406,23 @@ export async function pruneKept($: EngineInterface, now: number) {
     }
 }
 
+// the asks whose marks rode back on a tool call the model has not read yet: its next request reads them
+const unread = new Set<string>();
+export function unreadAs(asks: OrbitAsk[]) {
+    for (const a of asks) unread.add(a.id);
+}
+export function marksRead() {
+    unread.clear();
+}
+// an op written before his verdict would close or re-show an ask he sent back, or take a mark unheard: the ask it names
+// that stands so
+export const lateAsk = (o: StashOrbit, input: Record<string, unknown>) =>
+    opAskIds(input).find(
+        (id) => unread.has(id) || o.asks.some((a) => a.id === id && isFresh(a)),
+    );
+
 export function resetOrbitStore() {
+    unread.clear();
     orbit = EMPTY_ORBIT;
     isOrbitLoaded = false;
     orbitVersion = 0;

@@ -16,7 +16,7 @@ import {
     planText,
 } from './orbit.ts';
 import { takeMarks, takePlanMark } from './orbit-presses.ts';
-import { absorbMarks, currentOrbit } from './orbit-store.ts';
+import { absorbMarks, currentOrbit, unreadAs } from './orbit-store.ts';
 import { orbitToolCall } from './orbit-tool.ts';
 import { AWAY_NOTE, takeLaneSteers } from './prompt-notes.ts';
 import { SEND_TOOL, quietSendEnd, quietSendStart } from './quiet-gate.ts';
@@ -58,20 +58,26 @@ export const isWork = (tool: string, command?: string) =>
 async function isPingTurn($: EngineInterface) {
     return (await $.state.get(TURN)).value?.isPinged ?? turn.pinged;
 }
-const NOTHING_HEARD = { ids: [], notes: [] } as const;
+const isWindCall = ({ op, ops }: Record<string, unknown>) =>
+    op === 'second-wind' ||
+    (Array.isArray(ops) && ops.some((x) => x?.op === 'second-wind'));
 // a mark dima made while any turn of this session runs joins it at its next tool call, model-only, and locks — a peer's
 // or a task's turn too, only the keep-hot ping never takes one (dima's o10, 2026-10-11)
-async function hearMarks($: EngineInterface, isOn: IsPartOn) {
+async function hearMarks(
+    $: EngineInterface,
+    isOn: IsPartOn,
+    isDeaf = false,
+): Promise<string[]> {
     await absorbMarks($, () => keepShelf($), isTypedHere);
-    if (!isOn('stash.orbit') || (await isPingTurn($))) return NOTHING_HEARD;
-    const fresh = await takeMarks($, (o) => o.asks.filter(isFresh));
-    if (!fresh.length) return NOTHING_HEARD;
-    return {
-        ids: fresh.map((a) => a.id),
-        notes: [
-            joinText(fresh, tickSentence(await orbitTexts($), fresh.length)),
-        ],
-    };
+    if (isDeaf || !isOn('stash.orbit') || (await isPingTurn($))) return [];
+    const fresh = await takeMarks($, (o) => {
+        const asks = o.asks.filter(isFresh);
+        unreadAs(asks);
+        return asks;
+    });
+    return fresh.length
+        ? [joinText(fresh, tickSentence(await orbitTexts($), fresh.length))]
+        : [];
 }
 // every tool call: orbit's own ops, then the notes a step carries back — afk flipped, a tick, a lane steer, the
 // fill, the phases nudge, the pace, herdr's joins
@@ -83,18 +89,20 @@ export async function onToolCall(
 ) {
     await flushFields($, view);
     if ((e.tool as string) === ORBIT_TOOL) {
-        // his marks first, whatever the op comes to; a refusal is a result then, since a deny reason is capped at 4,096 chars
-        const heard = e.agentId
-            ? NOTHING_HEARD
-            : await hearMarks($, await turnParts($));
-        const r = await orbitToolCall(
+        const input = e as Record<string, unknown>;
+        // his marks first, whatever the op comes to; a refusal is a result then, since a deny reason is capped at 4,096
+        // chars. a subagent hears none, and a second wind ends the turn, so its marks wait for the next
+        const heard = await hearMarks(
             $,
-            e as Record<string, unknown>,
-            new Set(heard.ids),
-        ).catch((err: unknown) => ({ deny: `orbit: ${errorText(err)}` }));
-        if (!heard.notes.length) return r as never;
+            await turnParts($),
+            e.agentId !== undefined || isWindCall(input),
+        );
+        const r = await orbitToolCall($, input).catch((err: unknown) => ({
+            deny: `orbit: ${errorText(err)}`,
+        }));
+        if (!heard.length) return r as never;
         return {
-            context: heard.notes,
+            context: heard,
             result: 'deny' in r ? `refused — ${r.deny}` : r.result,
         } as never;
     }
@@ -144,7 +152,7 @@ export async function onToolCall(
     }
     const boot = await bootNote($, e.tool as string, isOn);
     if (boot) notes.push(boot);
-    notes.push(...(await hearMarks($, isOn)).notes);
+    notes.push(...(await hearMarks($, isOn)));
     const isPing = await isPingTurn($);
     // a lane steer dima took while clio's turn runs joins it here too, as an orbit mark does
     if (!isPing && isOn('stash.glide') && (await isLaneOwner($))) {

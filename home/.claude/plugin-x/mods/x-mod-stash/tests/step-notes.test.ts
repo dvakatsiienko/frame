@@ -5,6 +5,7 @@ import {
     board,
     endTurn,
     joined,
+    nextRequest,
     orbit,
     say,
     start,
@@ -73,6 +74,7 @@ test('a tick while the turn runs reaches that turn, and its resolve takes it out
     await ui.press({ key: 'orbit:accepted:o1' });
     await w.clock.advance(5_000);
     const r = await $.tool.call({ command: 'sleep 20', tool: 'Bash' });
+    await nextRequest($);
     await orbit($, { ids: ['o1'], op: 'resolve', words: { o1: 'as ticked' } });
     await endTurn($);
     await say($, 'next');

@@ -7,6 +7,7 @@ import {
     add,
     board,
     endTurn,
+    nextRequest,
     orbit,
     say,
     start,
@@ -235,6 +236,7 @@ export const ticked = async ($: Engine, w: ReturnType<typeof world>) => {
     await ui.press({ key: 'orbit:accepted:o1' });
     await w.clock.advance(5_000);
     await $.tool.call({ command: 'true', tool: 'Bash' });
+    await nextRequest($);
     return ui;
 };
 

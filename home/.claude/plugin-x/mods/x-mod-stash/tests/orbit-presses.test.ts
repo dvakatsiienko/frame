@@ -15,6 +15,7 @@ import {
     board,
     endTurn,
     joined,
+    nextRequest,
     orbit,
     say,
     start,
@@ -232,6 +233,8 @@ test('a 🛎️ press on a followed-up ask writes the tick record with the new t
     const ui = await board($);
     await add($, ['push `git push origin --delete old`', 'yes']);
     await ui.press({ key: 'orbit:accepted:o1' });
+    await $.tool.call({ command: 'true', tool: 'Bash' });
+    await nextRequest($);
     await orbit($, { ids: ['o1'], op: 'resolve' });
     await orbit($, {
         id: 'o1',
@@ -804,7 +807,9 @@ test("his mid-turn 🔁 and its steer reach the poster in its very next orbit ca
             { id: 'o1', op: 'follow', text: 'look: done' },
         ],
     })) as Answer;
+    const beside = (await followed($, { text: 'look: done' })) as Answer;
     const shown = await asksShown(ui);
+    await nextRequest($);
     await followed($, { text: 'look: done' });
     await ui.press({ key: 'orbit:accepted:o1' });
     w.taps.set = (key) =>
@@ -815,6 +820,7 @@ test("his mid-turn 🔁 and its steer reach the poster in its very next orbit ca
         bySubagent.deny,
         heard.context?.join(''),
         heard.result,
+        beside,
         shown,
         await asksShown(ui),
         thrown.context?.join(''),
@@ -826,10 +832,58 @@ test("his mid-turn 🔁 and its steer reach the poster in its very next orbit ca
             /o1 ↩️ rejected: look: the card .*the wrap is off/u,
         ),
         expect.stringMatching(/^refused — 1 resolve: refused.*dima marked o1/s),
+        { deny: expect.stringMatching(/dima marked o1 after you wrote this/) },
         ['o2', 'o3'],
         ['o1', 'o2', 'o3'],
         expect.stringMatching(/o1 🛎️ accepted/u),
         expect.stringMatching(/^refused — orbit: .*full/),
+    ]);
+});
+
+test("a mark pressed in herdr and not polled yet is no subagent's nor a second wind's to take, and refuses its batch whole", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await orbit($, {
+        asks: [{ ...ASK, text: 'look: the card' }, ASK],
+        op: 'add',
+    });
+    await ui.press({ key: 'orbit:accepted:o2' });
+    await say($, 'go');
+    herdrPress(w, 'o1', {
+        at: w.clock.now() + 1,
+        steer: 'the wrap is off',
+        verdict: 'replay',
+    });
+    const denied = (await orbit($, {
+        agentId: 'a1',
+        ops: [
+            { ids: ['o2'], op: 'resolve', words: { o2: 'changed: less' } },
+            { id: 'o1', op: 'follow', text: 'look: done' },
+        ],
+    })) as { deny?: string };
+    const closed = (await orbit($, {
+        agentId: 'a1',
+        ids: ['o1'],
+        op: 'resolve',
+    })) as { deny?: string };
+    const wind = await orbit($, { op: 'second-wind', slug: 'x' });
+    const left = await asksShown(ui);
+    const heard = (await orbit($, { lines: ['now: a'], op: 'plan' })) as {
+        context?: string[];
+    };
+    expect([
+        denied.deny,
+        closed.deny,
+        JSON.stringify(wind).includes('rejected'),
+        left,
+        heard.context?.join(''),
+    ]).toEqual([
+        expect.stringMatching(/1 resolve: refused.*2 follow: refused/s),
+        expect.stringMatching(/orbit resolve: dima marked o1/),
+        false,
+        ['o1', 'o2'],
+        expect.stringMatching(/o1 ↩️ rejected from herdr.*the wrap is off/u),
     ]);
 });
 

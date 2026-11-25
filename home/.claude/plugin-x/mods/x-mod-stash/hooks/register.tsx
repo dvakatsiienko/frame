@@ -18,6 +18,7 @@ import {
     EMPTY_ORBIT,
     currentOrbit,
     inMarking,
+    marksRead,
     saveOrbit,
 } from './orbit-store.ts';
 import { composePrompt } from './prompt-notes.ts';
@@ -150,7 +151,10 @@ export const register: Register = (on) => {
 
     // the board shows each session's model and effort as its main loop's last request named them; a subagent's step never counts
     on('turn.step', async function* ($, e, next) {
-        if (!e.agentId) await noteModel($, e.model, e.effort);
+        if (!e.agentId) {
+            marksRead();
+            await noteModel($, e.model, e.effort);
+        }
         const askedAt = await $.clock.now();
         const answer = yield* next(e);
         // a step that got no response stops for no reason
