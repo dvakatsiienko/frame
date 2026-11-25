@@ -18,7 +18,7 @@ read by `clio:evergreen` on the evergreen turn: **every ➡️ merge in the repo
   `<!-- rebase-check -->` box via `gh pr edit --body-file`; renovate rebases within its next scan (~hourly).
 - **a red PR gets its fix in the same round**, never parked to the next wednesday: a lint, a cycle or a small migration goes to the stray lane on its branch; a bigger migration gets codie through
   `x:crew-codie` («make this bump green; migrate what the release notes say changed»).
-- **a pnpm bump in bytes is a deploy risk**: the round counts as done only when every app's next head is Ready (12.16 → 12.21 moved the store, 2026-11-18).
+- **a pnpm bump in bytes is a deploy risk**: its pin lands only once the version is past the 3-day release age, since vercel's install refuses a younger one (`npm view pnpm time --json`; 12.23 was 2 h short, five deploys red, 2026-11-25); the round counts as done only when every app's next head is Ready (12.16 → 12.21 moved the store, 2026-11-18).
 - **hold** → a peer-range hold gets `gh pr close --comment` with the range named; renovate
   reopens it on the next release. any other hold: nothing, the age prefix carries it.
 - **steam tail** → the round diffs `~/Applications/*.app` launchers (a `Contents/MacOS/run.sh` calling `steam://`) against `~/Library/Application Support/Steam/steamapps/common`: a launcher with no game folder is a steam tail every cleaner skips — listed in the digest by path, trashed only on dima's word.

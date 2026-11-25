@@ -1,5 +1,5 @@
-// usage: node script/evergreen-delta.ts [--since YYYY-MM-DD] [--day YYYY-MM-DD] — the evergreen delta: every package that moved since the last run, `name from -> to`, by lane, for the read's researcher cards
-// the repos are compared with the heads the previous run saved in its log dir (heads.json), so a move lands in one report only; --since, or a first run with none saved, starts at that date
+// usage: node script/evergreen-delta.ts [--since YYYY-MM-DD] [--day YYYY-MM-DD] [--save-heads] — the evergreen delta: every package that moved since the last run, `name from -> to`, by lane, for the read's researcher cards
+// the repos are compared with the heads the previous run saved in its log dir (heads.json), so a move lands in one report only; --save-heads writes them, run once at the finish line, when both repos are pushed; --since, or a first run with none saved, starts at that date
 // --since defaults to the oldest `markedAt` in evergreen/sources.json (the last run, before this run marks); --day names the run's log dir, ~/.local/state/clio/evergreen/<day>/ (brew-upgrade.log, pnpm-g-outdated.json, uv-outdated.txt)
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -155,7 +155,11 @@ function print(title: string, moves: Move[]) {
 
 if (import.meta.main) {
     const { values } = parseArgs({
-        options: { day: { type: 'string' }, since: { type: 'string' } },
+        options: {
+            day: { type: 'string' },
+            'save-heads': { type: 'boolean' },
+            since: { type: 'string' },
+        },
     });
     const home = homedir();
     const sources = JSON.parse(
@@ -204,7 +208,7 @@ if (import.meta.main) {
                 `## ${title} — ⚠️ no ${full}: save it before the upgrade runs\n`,
             );
     }
-    if (existsSync(logs)) {
+    if (existsSync(logs) && values['save-heads']) {
         const heads = {
             bytes: git(bytes, 'rev-parse', 'origin/main').trim(),
             frame: git(frame, 'rev-parse', 'origin/main').trim(),

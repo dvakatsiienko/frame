@@ -18,7 +18,7 @@ the boot digest seeds «🧬 evergreen turn» first under the flyways (`boot-pre
 
 1. **upgrade, no ask** — first the before-snapshots into `~/.local/state/clio/evergreen/<today>/`: `pnpm outdated -g --json > pnpm-g-outdated.json`, `uv tool list --outdated > uv-outdated.txt`; then in the background: `timeout 2400 brew upgrade > brew-upgrade.log 2>&1` (pinned never), then `open -g -a 1Password` and `ssh-add -l` on its socket (an upgrade once left signing refused); `pnpm update -g --latest`, every uv tool but `mlx-audio` (`uv tool list | awk '/^[a-z]/{print $1}' | grep -vx mlx-audio | xargs -n1 uv tool upgrade`; kokoro's engine moves only on dima's word until FRM-669 lands); the merge round, [references/merge-round.md](references/merge-round.md): every green renovate pr, then one stray batch for the reds, the sweep and the no-break majors, both repos and the go modules; done = its finish line
 2. **read the delta** — `node script/evergreen-delta.ts > <today's dir>/delta.md` writes the delta file (read.md § 1), before `--mark`; then `researcher` cards (Opus 5.5), one per area, each briefed with [references/read.md](references/read.md) and [references/the-want.md](references/the-want.md); `wishkeeper` reads the joined report for its picks
-3. **the report** — whole in the chat in read.md § 4's shape, checked against the-want, the standing page republished, an action item only where it helps; then `pnpm skill:evergreen-apps --mark` and the 🧬 pocket item set done
+3. **the report** — whole in the chat in read.md § 4's shape, checked against the-want, the standing page republished, an action item only where it helps; then `pnpm skill:evergreen-apps --mark`; the 🧬 pocket item is done once both repos are pushed and `node script/evergreen-delta.ts --save-heads` ran
 4. **his feedback** — he steers line by line; each action he picks is done in place, a ticket or a lane rider, the page's chip at its landing
 
 ## the report — what clio does with the cards' replies
@@ -35,9 +35,9 @@ the boot digest seeds «🧬 evergreen turn» first under the flyways (`boot-pre
 
 ## act on his word
 
-the merge round runs on the evergreen turn itself, by clio, no ask (dima, 2026-11-18: «be more proactive … upgrade everything at once»); a steer of his subtracts from it: read [references/merge-round.md](references/merge-round.md) first — the merge, the sweep, the majors, the red fixes, the hold.
+the merge round runs on the evergreen turn itself, by clio, no ask (dima, 2026-11-18: «be more proactive … upgrade everything at once»); a steer of his subtracts from it: read [references/merge-round.md](references/merge-round.md) first.
 
-weekly with brew, the skills lane and the plugins lane join the digest: read [references/weekly-lanes.md](references/weekly-lanes.md).
+weekly, the skills and plugins lanes join the digest: read [references/weekly-lanes.md](references/weekly-lanes.md).
 
 ## a green run with no prs
 
