@@ -255,6 +255,7 @@ describe('the id pill', () => {
     test('sits over the card’s far top right, named by its thread, 🆕 first', () => {
         const pill = find(drawn(look), 'id-s1:o12');
         expect(pill.kids).toEqual(['🆕 w1·o12']);
+        expect(pill.calls.get('tooltip')).toEqual(['copy']);
         expect([...pill.calls.keys()]).toEqual(
             expect.arrayContaining(['absolute', 'top', 'right']),
         );

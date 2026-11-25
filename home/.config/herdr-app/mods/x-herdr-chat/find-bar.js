@@ -62,7 +62,7 @@ export function createFindBar({ rows, show, isAllLoaded, focusQuill }) {
 
     /** @param {Context} cx */
     function close(cx) {
-        if (!find.state.isOpen) return cx.propagate();
+        if (!find.state.isOpen) return;
         reset();
         focusQuill();
         cx.notify();

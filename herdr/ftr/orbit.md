@@ -20,7 +20,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - not checked: his look, A (the title at today's size) against B (the title a step larger, `LOOK` in orbit-view.js)
 - 🔎 an ask's id is a pill at the card's far top right, over the card (FRM-620 slice 7, W73)
   - given an ask in three parts
-  - then its title ends before the pill, which reads `o12`, `w1·o12` or `codie·o12`, 🆕 first on a new round
+  - then its title ends before the pill, which reads `o12`, `w1·o12` or `codie·o12`, 🆕 first on a new round, its hover word «copy» (dima, 25 Nov 16:33)
   - when dima clicks the pill
   - then `o12` is on his clipboard, the pill shows ✓ in its place, the same width, for a moment, and the card is not pressed
 - 🔎 a file or a link an ask names opens by the chat's rule (FRM-620 step 138)

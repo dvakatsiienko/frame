@@ -20,7 +20,9 @@ const { element } = vi.hoisted(() => ({
                     if (name === 'when' && args[0]) (args[1] as Handler)(self);
                     if (String(name).startsWith('on_'))
                         target.handlers.set(
-                            String(name),
+                            name === 'on_action'
+                                ? String(args[0])
+                                : String(name),
                             args.at(-1) as Handler,
                         );
                     return self;
@@ -190,5 +192,60 @@ describe('a file dropped on the chat’s header', () => {
 
     test('over the Terminal view it takes none, as before', () => {
         expect(header('terminal')).toEqual([]);
+    });
+});
+
+// dima, 2026-11-25 16:31: Esc left the viewer open and herdr said «x_herdr_chat_find_close failed»; a mod's key no
+// handler claims is an error in herdr (0.1.18 window.rs run_action)
+describe('Esc over the chat', () => {
+    const press = (over: Record<string, unknown>) => {
+        const step = vi.fn();
+        const close = vi.fn();
+        const propagate = vi.fn();
+        const view = chat({
+            findBar: quiet({
+                close,
+                find: { state: { isOpen: over.isFindOpen } },
+            }),
+            pictures: quiet({ isOpen: () => over.isViewerOpen, step }),
+        });
+        at.made.length = 0;
+        view.render(cx);
+        const root = at.made.find((el) =>
+            el.handlers.has('x_herdr_chat_find_close'),
+        );
+        root?.handlers.get('x_herdr_chat_find_close')?.(
+            {},
+            { ...cx, propagate },
+        );
+        return {
+            find: close.mock.calls.length,
+            passedOn: propagate.mock.calls.length,
+            viewer: step.mock.calls.map(([to]) => to),
+        };
+    };
+
+    test('closes the viewer, find under it left as it is', () => {
+        expect(press({ isFindOpen: true, isViewerOpen: true })).toEqual({
+            find: 0,
+            passedOn: 0,
+            viewer: ['close'],
+        });
+    });
+
+    test('closes find with no viewer open', () => {
+        expect(press({ isFindOpen: true, isViewerOpen: false })).toEqual({
+            find: 1,
+            passedOn: 0,
+            viewer: [],
+        });
+    });
+
+    test('with neither open is taken in silence', () => {
+        expect(press({ isFindOpen: false, isViewerOpen: false })).toEqual({
+            find: 0,
+            passedOn: 0,
+            viewer: [],
+        });
     });
 });

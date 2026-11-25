@@ -367,11 +367,7 @@ export default class Chat extends View {
             acts.isEscape &&
             (this.pictures.isOpen() || this.findBar.find.state.isOpen)
         )
-            _cx.timer.after(0, (later) =>
-                this.pictures.isOpen()
-                    ? this.pictures.step('close', later)
-                    : this.findBar.close(later),
-            );
+            _cx.timer.after(0, (later) => this.closeTop(later));
         // a click on an orbit preview brings the chat into view and asks its viewer here (FRM-676)
         const viewAsk = chatViewOf(shared(CHAT_VIEW));
         if (
@@ -447,9 +443,8 @@ export default class Chat extends View {
                 ),
             )
             .on_action('x_herdr_chat_find', (_e, cx) => this.findBar.open(cx))
-            .on_action('x_herdr_chat_find_close', (_e, cx) =>
-                this.findBar.close(cx),
-            )
+            // claimed with nothing to close too: herdr answers a mod's key no handler claims with an error
+            .on_action('x_herdr_chat_find_close', (_e, cx) => this.closeTop(cx))
             // ⌘ held at a click on a picture opens it in his desktop app, not the viewer
             .on_modifiers_changed((e) => {
                 this.isCmdHeld = Boolean(e.modifiers.platform);
@@ -602,6 +597,12 @@ export default class Chat extends View {
             cx.notify();
         });
         cx.notify();
+    }
+
+    /** Esc over the chat: the viewer closes, or find when no viewer shows (dima, 18:18) @param {Context} cx */
+    closeTop(cx) {
+        if (this.pictures.isOpen()) this.pictures.step('close', cx);
+        else if (this.findBar.find.state.isOpen) this.findBar.close(cx);
     }
 
     /** his settings rows as the chat uses them @param {Record<string, unknown>} values */

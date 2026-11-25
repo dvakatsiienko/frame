@@ -380,7 +380,7 @@ export function createOrbitView(deps) {
                 .hover((st) =>
                     st.text_color(t.foreground).border_color(t.accent),
                 )
-                .tooltip(`copy ${ask.id}`)
+                .tooltip('copy')
                 // the ✓ takes the id's own room, so the title beside it does not move
                 .when(isCopied, (el) =>
                     el.w(pillWidth(key, label)).text_center(),
