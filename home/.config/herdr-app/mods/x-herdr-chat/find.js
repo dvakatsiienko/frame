@@ -16,6 +16,20 @@ export const FIND_SETTLE_MS = 150;
 // a char read as written: no mark rule below matches it, as none matches the chars of a code span
 const LITERAL = String.fromCharCode(0xe000);
 
+/** @type {Record<string, string>} */
+const ENTITIES = {
+    '#39': "'",
+    amp: '&',
+    gt: '>',
+    lt: '<',
+    nbsp: '\u00a0',
+    quot: '"',
+};
+
+// a line that draws no words: a rule, a table's line under its head, a link's definition
+const WORDLESS =
+    /^\s{0,3}(?:([-*_])(?:[ \t]*\1){2,}[ \t]*|\|?[ \t]*:?-+:?[ \t]*(?:\|[ \t]*:?-+:?[ \t]*)+\|?[ \t]*|\|[ \t]*:?-+:?[ \t]*\|[ \t]*|\[[^\]]+\]:[ \t]+\S+.*)$/;
+
 // a mark dropped, its words kept: how many chars of the match stand before them, and after
 /** @type {[RegExp, (match: RegExpExecArray) => [number, number]][]} */
 const MARKS = [
@@ -39,6 +53,7 @@ const MARKS = [
     [/(?<![\w_])__(?=\S)(.+?)(?<=\S)__(?![\w_])/g, () => [2, 2]],
     [/(?<![\w*])\*(?=\S)(.+?)(?<=\S)\*(?![\w*])/g, () => [1, 1]],
     [/(?<![\w_])_(?=\S)(.+?)(?<=\S)_(?![\w_])/g, () => [1, 1]],
+    [/(?<!~)~~(?=[^\s~])(.+?)(?<=[^\s~])~~(?!~)/g, () => [2, 2]],
 ];
 
 /** one line of prose, its marks dropped @param {string} line @param {number} from its offset in the source @returns {Read} */
@@ -59,15 +74,20 @@ function readLine(line, from) {
             at.push(from + i);
         }
     };
-    // an escaped char and a code span are read as written; a `\` that ends the line breaks it
+    // an escaped char and a code span are read as written, an entity as its char; a `\` that ends the line breaks it
     let done = 0;
     for (const m of line.matchAll(
-        /\\([!-/:-@[-`{-~])|(?<!(?<!\\)`)(`+)(?!`)(.+?)(?<!`)\2(?!`)|\\$/g,
+        /\\([!-/:-@[-`{-~])|(?<!(?<!\\)`)(`+)(?!`)(.+?)(?<!`)\2(?!`)|\\$|&(amp|lt|gt|quot|nbsp|#39);/g,
     )) {
         add(done, m.index, false);
         done = m.index + m[0].length;
         if (m[1]) add(done - 1, done);
         else if (m[2]) add(m.index + m[2].length, done - m[2].length);
+        else if (m[4]) {
+            mask += LITERAL;
+            text += ENTITIES[m[4]] ?? '';
+            at.push(from + m.index);
+        }
     }
     add(done, line.length, false);
     for (const [rule, cut] of MARKS) {
@@ -116,7 +136,8 @@ export function readOf(source, mayHold = () => true) {
                 at: Array.from(line.split(''), (_c, k) => start + k),
                 text: line,
             });
-        } else if (mayHold(line)) lines.push(readLine(line, from));
+        } else if (!WORDLESS.test(line) && mayHold(line))
+            lines.push(readLine(line, from));
         from += line.length + 1;
     }
     return lines;
@@ -131,7 +152,7 @@ const bare = (words) => words.replace(/[\\`*_]/g, '');
 
 /**
  * his query as a search, any case: the words, and which prose lines may hold them, told cheaply from the line as written,
- * since reading the marks of every line at each key he types costs. a link or a tag, whose own words draw nothing, is
+ * since reading the marks of every line at each key he types costs. a link, a tag, an entity or a struck word is
  * always read. null for an empty query
  * @param {string} q
  */
@@ -141,7 +162,9 @@ function searchOf(q) {
     const about = bare(words) ? anyCase(bare(words)) : null;
     return {
         mayHold: (/** @type {string} */ line) =>
-            !about || /\]\(|</.test(line) || bare(line).search(about) >= 0,
+            !about ||
+            /\]\(|[<&]|~~/.test(line) ||
+            bare(line).search(about) >= 0,
         needle: anyCase(words),
     };
 }
