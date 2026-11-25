@@ -284,6 +284,13 @@ describe('newJoins', () => {
             { id: 'e', text: 'two' },
         ]);
     });
+
+    test('a row no turn took yet is skipped, one it took is not', () => {
+        const text = '{"id":"a","text":"waits"}\n{"id":"b","text":"taken"}';
+        expect(newJoins(text, new Set(), new Set(['b']))).toEqual([
+            { id: 'b', text: 'taken' },
+        ]);
+    });
 });
 
 describe('the hook saves herdr-typed joins', () => {
@@ -315,9 +322,29 @@ describe('the hook saves herdr-typed joins', () => {
                     timeout: 10_000,
                 },
             );
-        return { dayFile, joinsFile, run };
+        return { dayFile, home, joinsFile, run };
     };
     const first = '{"id":"a","text":"typed in herdr"}\n';
+
+    test('a waiting row is logged after its turn took it, with the words it was taken with', () => {
+        const { dayFile, home, joinsFile, run } = fixture();
+        const state = join(home, '.claude/shelf/herdr-state');
+        mkdirSync(state, { recursive: true });
+        const publish = (joins: object) =>
+            writeFileSync(join(state, 's1.json'), JSON.stringify({ joins }));
+        writeFileSync(joinsFile, '');
+        run();
+        publish({ joined: [], taken: [] });
+        writeFileSync(joinsFile, '{"id":"a","text":"first words"}\n');
+        run();
+        expect(existsSync(dayFile)).toBe(false);
+        writeFileSync(joinsFile, '{"id":"a","text":"edited words"}\n');
+        publish({ joined: [], taken: ['a'] });
+        run();
+        const day = readFileSync(dayFile, 'utf8');
+        expect(day).toContain('edited words');
+        expect(day).not.toContain('first words');
+    });
 
     test('a new entry is appended once, with the herdr-typed mark', () => {
         const { dayFile, joinsFile, run } = fixture();
