@@ -48,8 +48,11 @@ const gpui = vi.hoisted(() => {
     return { make, seen };
 });
 
-vi.mock('herdr', () => ({ exec: vi.fn(), settings: () => ({ zoom: 1 }) }));
-vi.mock('gpui-kit', () => ({ div: gpui.make }));
+vi.mock('herdr', () => ({
+    exec: vi.fn(),
+    settings: () => ({ zoom: 1 }),
+}));
+vi.mock('gpui-kit', () => ({ View: class {}, div: gpui.make }));
 vi.mock('gpui-base', () => ({
     VirtualListScrollHandle: {
         new: () => ({
@@ -92,6 +95,9 @@ function createWindow(real: number[], first: (px: number) => number) {
         text: 'x',
         version: 1,
     }));
+    /** each row of the last frame, and whether its own view drew its words */
+    const frame = new Map<string, boolean>();
+    const bodies = { live: 0 };
     const list = createMessageList({
         audioApp: () => null,
         file: () => null,
@@ -102,14 +108,30 @@ function createWindow(real: number[], first: (px: number) => number) {
         reader: () => null,
         rows: {
             booked: (r: unknown) => r,
+            hasTexts: () => true,
             markTurn: () => {},
-            row: () => gpui.make(),
+            row: (
+                row: { id: string },
+                _t: unknown,
+                _pre: string,
+                isShown: boolean,
+                body: unknown,
+            ) => {
+                if (isShown) frame.set(row.id, body !== null);
+                return gpui.make();
+            },
+            stampOf: (row: { id: string }, pre: string) => `${pre}${row.id}`,
+            textsLook: () => '',
         },
         unsend: () => {},
     } as never);
     let isDirty = true;
     const timers: { at: number; run: () => void }[] = [];
     const cx = {
+        new: () => {
+            bodies.live += 1;
+            return { release: () => (bodies.live -= 1) };
+        },
         notify: () => {
             isDirty = true;
         },
@@ -163,6 +185,7 @@ function createWindow(real: number[], first: (px: number) => number) {
         }
         scrollTop = Math.min(max, Math.max(0, scrollTop));
         drawn.draw({ end: 1, start: 0 });
+        frame.clear();
         drawn.draw(ranged(drawn.sizes));
         if (opacities.length === 1)
             (root.handlers.get('on_size_change') as Handler)(
@@ -207,7 +230,10 @@ function createWindow(real: number[], first: (px: number) => number) {
             (gpui.seen.list?.sizes ?? [])
                 .slice(0, row)
                 .reduce((sum, px) => sum + px, 0),
+        bodies,
+        frame,
         land: (id: string, offset: number) => list.land(id, offset),
+        reset: () => list.reset(),
         /** frames until `ms` pass; whether the list still redraws at the end */
         run(ms: number) {
             const until = Date.now() + ms;
@@ -266,4 +292,23 @@ test('a place among many short rows comes to rest', () => {
         more: late.drawn - early,
     }).toEqual({ isLast: 1, more: 0 });
     expect(w.above(20)).toBe(10);
+});
+
+// FRM-699: a row with no view of its own cannot report his selection
+test('at rest each message on screen has the view that reports his selection, and few far off keep theirs', () => {
+    const w = createWindow(Array(200).fill(60), (px) => px);
+    w.land('r100', 10);
+    w.run(1_500);
+    expect([...w.frame.values()]).toEqual(
+        Array.from(w.frame.values(), () => true),
+    );
+    expect(w.bodies.live).toBeLessThan(w.frame.size + 25);
+});
+
+test('a thread switch lets every one go', () => {
+    const w = createWindow(Array(20).fill(60), (px) => px);
+    w.run(500);
+    expect(w.bodies.live).toBeGreaterThan(0);
+    w.reset();
+    expect(w.bodies.live).toBe(0);
 });

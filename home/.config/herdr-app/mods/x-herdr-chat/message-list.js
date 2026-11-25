@@ -12,8 +12,10 @@ import { exec, settings } from 'herdr';
 import { openArgs } from './files.js';
 import { guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
-import { copyText, createMessageMenu, menuPlace } from './menu.js';
+import { copiedFrom, createMessageMenu, menuPlace } from './menu.js';
+import { createMessageBodies } from './message-body.js';
 import { createPlace } from './place.js';
+import { createSelections } from './selection.js';
 
 /** @typedef {import('./chat-types.js').Context} Context */
 /** @typedef {import('./row-model.js').Row} Row */
@@ -29,6 +31,9 @@ const SETTLE_MS = 120;
 // the right-click menu's size, one row; its note under the quill once a message is copied
 const MENU_SIZE = { h: 34, w: 200 };
 const COPIED_NOTE = 'Message copied';
+const SELECTION_COPIED_NOTE = 'Selection copied';
+// the rows past the view whose text views stand ready, so a row he scrolls to can report his selection at once
+const BODIES_AHEAD = 10;
 
 /** where his reading place in a thread is kept @param {string} file */
 export const placeKey = (file) => `place:${file}`;
@@ -53,6 +58,17 @@ export function createMessageList(deps) {
     const at = createPlace();
     /** the right-click menu on a message (slice 7) */
     const messageMenu = createMessageMenu();
+    /** the words he selected, which the menu copies (FRM-699) */
+    const selections = createSelections();
+    const bodies = createMessageBodies();
+    let isSyncing = false;
+    /** the items on screen @type {string[]} */
+    let drawnKeys = [];
+    /**
+     * the items of the last draw, and which of them herdr drew
+     * @type {{ keys: string[], range: import('./follow.js').Range, rowOf: (i: number) => Row | undefined, preOf: (i: number) => string, t: Theme } | null}
+     */
+    let items = null;
     let width = 0;
     let viewH = 0;
     /** bumped when the width or the look changes: rich text laid out for the old one is never reused */
@@ -100,19 +116,37 @@ export function createMessageList(deps) {
         const isSettling = settleFor > 0;
         if (isSettling)
             cx.timer.after(settleFor + 1, (later) => later.notify());
+        /** @param {number} i */
+        const preOf = (i) =>
+            i === cutAt
+                ? `${pre}a-`
+                : i === cutAt + 1 && cutAt >= 0
+                  ? `${pre}b-`
+                  : pre;
+        const keys = itemSizes.map((_, i) => {
+            const id = rows[rowAt(i)]?.id ?? `end-${i}`;
+            if (i === cutAt) return `${id}#above`;
+            return i === cutAt + 1 && cutAt >= 0 ? `${id}#below` : id;
+        });
+        items = {
+            keys,
+            preOf,
+            range: items?.range ?? { end: 0, start: 0 },
+            rowOf: (i) => rows[rowAt(i)],
+            t,
+        };
+        syncBodies(cx);
         const list = v_virtual_list(
             'chat-rows',
             itemSizes.length,
             itemSizes,
-            (i) => {
-                const id = rows[rowAt(i)]?.id ?? `end-${i}`;
-                if (i === cutAt) return `${id}#above`;
-                return i === cutAt + 1 && cutAt >= 0 ? `${id}#below` : id;
-            },
+            (i) => keys[i] ?? `end-${i}`,
             (drawn) => {
                 // no redraw is asked for in here, herdr refuses one: a ↓ that should leave does so at the next draw
                 at.drawn(drawn, plan, Date.now());
-                const items = [];
+                if (items) items.range = drawn;
+                drawnKeys = keys.slice(drawn.start, drawn.end);
+                const drawnItems = [];
                 for (let i = drawn.start; i < drawn.end; i++) {
                     const row = rows[rowAt(i)];
                     const box = div()
@@ -121,38 +155,54 @@ export function createMessageList(deps) {
                         .h(itemSizes[i] ?? 1);
                     // an end mark (follow.js END_MARKS): the list pairs each element with its item, so none is skipped
                     if (!row) {
-                        items.push(box);
+                        drawnItems.push(box);
                         continue;
                     }
+                    const drawnRow = deps.rows.row(
+                        row,
+                        t,
+                        preOf(i),
+                        true,
+                        bodies.of(keys[i] ?? ''),
+                    );
                     if (i === cutAt)
-                        items.push(
+                        drawnItems.push(box.overflow_hidden().child(drawnRow));
+                    else if (cutAt >= 0 && i === cutAt + 1)
+                        drawnItems.push(
                             box
                                 .overflow_hidden()
-                                .child(deps.rows.row(row, t, `${pre}a-`)),
+                                .child(
+                                    div()
+                                        .absolute()
+                                        .top(-cutOffset)
+                                        .left(0)
+                                        .w_full()
+                                        .child(drawnRow),
+                                ),
                         );
-                    else if (cutAt >= 0 && i === cutAt + 1)
-                        items.push(
-                            box.overflow_hidden().child(
-                                div()
-                                    .absolute()
-                                    .top(-cutOffset)
-                                    .left(0)
-                                    .w_full()
-                                    .child(deps.rows.row(row, t, `${pre}b-`)),
-                            ),
-                        );
-                    else items.push(box.child(deps.rows.row(row, t, pre)));
+                    else drawnItems.push(box.child(drawnRow));
                 }
-                return items;
+                return drawnItems;
             },
         )
             .track_scroll(scroll)
             // a right-click names the row first; the list's own handler below then opens the menu where it was
             .on_item_secondary_click((key, event) => {
                 const id = key.replace(/#(?:above|below)$/, '');
+                const row = rows.find((r) => r.id === id);
                 messageMenu.hit(
                     event.position,
-                    copyText(rows.find((r) => r.id === id)),
+                    copiedFrom(
+                        row,
+                        row
+                            ? selections.textFor(key, (k) =>
+                                  deps.rows.stampOf(
+                                      row,
+                                      preOf(keys.indexOf(k)),
+                                  ),
+                              )
+                            : null,
+                    ),
                 );
             })
             // a file row opens its file in its app, a png in Preview (FRM-587)
@@ -200,6 +250,7 @@ export function createMessageList(deps) {
                 cx.notify();
             })
             .on_scroll_wheel((event, cx) => {
+                syncBodies(cx);
                 if (messageMenu.state) {
                     messageMenu.close();
                     cx.notify();
@@ -246,10 +297,52 @@ export function createMessageList(deps) {
             );
     }
 
-    /** the right-click menu: «Copy message», dim when the press was on no message @param {Theme} t */
+    /**
+     * the messages near the view have their text views ready, and a message off the screen holds no selection; after the
+     * draw, where a view may be made
+     * @param {Context} cx
+     */
+    function syncBodies(cx) {
+        selections.keep(new Set(drawnKeys));
+        if (isSyncing) return;
+        isSyncing = true;
+        cx.timer.after(0, (later) => {
+            isSyncing = false;
+            if (!items) return;
+            const { keys, preOf, range, rowOf, t } = items;
+            const near = [];
+            const end = Math.min(keys.length, range.end + BODIES_AHEAD);
+            for (
+                let i = Math.max(0, range.start - BODIES_AHEAD);
+                i < end;
+                i++
+            ) {
+                const key = keys[i] ?? '';
+                const row = rowOf(i);
+                if (!row || !deps.rows.hasTexts(row)) continue;
+                const pre = preOf(i);
+                const stamp = deps.rows.stampOf(row, pre);
+                near.push({
+                    draw: (
+                        /** @type {import('./message-body.js').Reporting} */ reporting,
+                    ) => deps.rows.texts(row, t, pre, true, reporting),
+                    key,
+                    look: deps.rows.textsLook(row, t, pre),
+                    report: (
+                        /** @type {number} */ block,
+                        /** @type {string | null} */ words,
+                    ) => selections.report(key, stamp, block, words),
+                });
+            }
+            const made = bodies.sync(near, later);
+            if (made.some((key) => drawnKeys.includes(key))) later.notify();
+        });
+    }
+
+    /** the right-click menu: what it copies, dim when the press was on no message @param {Theme} t */
     function messageMenuView(t) {
         const menu = messageMenu.state;
-        const text = menu?.text ?? null;
+        const copied = menu?.copied ?? null;
         const place = menuPlace(
             { x: menu?.x ?? 0, y: menu?.y ?? 0 },
             { h: viewH, w: width || NARROW },
@@ -269,8 +362,8 @@ export function createMessageList(deps) {
                 .items_center()
                 .rounded(5)
                 .text_size(13)
-                .text_color(text ? t.foreground : t.dim)
-                .when(Boolean(text), (el) =>
+                .text_color(copied ? t.foreground : t.dim)
+                .when(Boolean(copied), (el) =>
                     el
                         .cursor_pointer()
                         .hover((s) => s.bg(t.hover))
@@ -294,10 +387,19 @@ export function createMessageList(deps) {
             .shadow_md()
             .on_mouse_down_out((_event, cx) => close(cx))
             .child(
-                item('copy', 'Copy message', (cx) => {
-                    cx.write_to_clipboard(text ?? '');
-                    deps.flash(COPIED_NOTE, cx);
-                }),
+                item(
+                    'copy',
+                    copied?.isSelection ? 'Copy selection' : 'Copy message',
+                    (cx) => {
+                        cx.write_to_clipboard(copied?.text ?? '');
+                        deps.flash(
+                            copied?.isSelection
+                                ? SELECTION_COPIED_NOTE
+                                : COPIED_NOTE,
+                            cx,
+                        );
+                    },
+                ),
             );
     }
 
@@ -416,6 +518,10 @@ export function createMessageList(deps) {
         reset() {
             at.reset();
             messageMenu.close();
+            items = null;
+            drawnKeys = [];
+            selections.clear();
+            bodies.clear();
         },
         /**
          * his place kept over a page landing: `offset` px of the row above the view; a page that joined the row above him
