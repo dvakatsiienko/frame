@@ -47,7 +47,7 @@
   - given a real `Skill` call past the last compaction, in the caller's own transcript
   - then nothing is refused; a parent's load, a mention and an unreadable transcript still fire
 - ✅ a touched subject brings its shelf file
-  - given `charm.land` in written text, `go get charm.land`, `go mod init`, a cask-changing `brew` verb or `mo uninstall`
+  - given a cask-changing `brew` verb or `mo uninstall`
   - then the call is refused once naming its `x knowledge read`
   - decision: `brew list --cask` and `brew info --cask` fire nothing, 6 of 7 replayed cask fires were reads
 - ✅ a cost question brings the model cards

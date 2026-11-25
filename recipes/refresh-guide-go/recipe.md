@@ -16,12 +16,11 @@ keeps `x:guide-go` and the cli's go stack current.
 
 ## the want
 
-dima, FRM-284: go gets the same care as typescript: two languages at full scale is fine, so `x:guide-go` stays current and the cli's stack moves with its upstreams.
-
 - charm left this recipe on his word: «refresh-guide-go recipe stays, it now does not have anything related to charmbracelet» (dima, 2026-11-25)
 
 ## the run
 
+- go gets the same care as typescript: two languages at full scale is fine, so `x:guide-go` stays current and the cli's stack moves with its upstreams (dima, FRM-284)
 - suggest a run when: a go minor ships, a go change in `x` hits something the guide does not cover
 
 1. **groom**: `clio:shape-recipe` step 0, the grill. done: his word on the list. (open)
