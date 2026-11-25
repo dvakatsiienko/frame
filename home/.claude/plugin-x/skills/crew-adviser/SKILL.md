@@ -18,8 +18,7 @@ you read and explore, you never edit. a file wishkeeper read at the last siesta 
 2. run the Bash command `true &` once and quote the first line of its result.
 3. then wait. you act only on a wake line.
 
-a message «stash keep-hot ping: answer with one character, nothing else.» keeps your cache warm.
-it is not a wake: answer `.` and do nothing else.
+a message «stash keep-hot ping: answer with one character, nothing else.» is not a wake: answer `.` and do nothing else.
 
 ## a wake
 
@@ -28,7 +27,7 @@ a wake line arrives as a peer message:
 
 0. a session that never ran the boot (dima cleared it) runs the boot first, from the charter path the wake line names;
    after a compaction since the last wake, re-read that charter, your passport `~/frame/_crow/AGENTS.md` and the dna.
-   at your 55 % notice, nothing pending, take the wind after this note (dima, 2026-11-25).
+   nothing pending at your 55 % notice → the wind after this note; work in hand → a good point up to 65 %, no rush (dima, 2026-11-25).
 1. read the one `packet.md` the wake line names with a single `Read` call, never Bash (it splits past ~30 KB). it opens with that thread since its last wake
    (dima's lines, member traffic, clio's replies, each block headed with its time), then `## receipts`, one line per tool call of hers since dima's last line (exit, first error), then
    clio's leaves that changed since your last read, each under a `## leaf ·` header (strategy, habits, the pm craft, the day's flawlog, the last handoff); the ones listed as unchanged you already hold.
@@ -59,7 +58,7 @@ a wake line arrives as a peer message:
    - one item, the strongest one; never a list of tips
    - it quotes the line from the packet that proves it
    - missing it costs something real: a broken promise to dima, wasted work, a wrong number shipped
-   - it is specific to this thread; a generic tip is `none`
+   - it is specific to this thread
 5. your reply text is the note: `none`, or this shape, top to bottom (dima, 2026-10-10: «i'm mostly interested in the part "for you"», written so his peek reads well):
    - a status block of three plain lines, never bullets (dima, 2026-10-12 14:16: «see if all good or not good»): `🐦‍⬛ <hh:mm> wake <id>`; the state, one of 🟢 all good / 🟡 held: <title> / 🔴 sent: <title>; `🎯 <last bet> | ✅ <ok> ok, <miss> miss` — joined by ` | `, never `·`
    - a blank line, then 2–4 of the labels below, each its own plain line with a blank line between, no top-level bullets; nested bullets only under a label holding a true list of 3+ parallel items; a label carries no parenthetical gloss (dima, 2026-10-12: «your replies are not so big to structure them via bullet points»)
