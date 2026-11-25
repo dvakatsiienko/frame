@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T11:26:51Z'
+updated_date: '2026-11-25T11:37:27Z'
 labels:
   - s
   - clio-main
@@ -2843,4 +2843,10 @@ PK-349:W2442 (2026-11-25 13:19, dima, wing 1's o7 tick steer): tell main clio to
 done 2026-11-25 13:20: f122 FRM-700 close: refusal seen live (FRM-639, 13:21), the 141 rider sits in the mods lane plan; closing word and Done — waits for: FRM-645 — parked: 2026-11-25 (FRM-700 Todo, FRM-639 Todo, FRM-645 In Progress)
 
 moved: W2442 to FRM-669:W4 and W5 (wing 1 writes them, 2026-11-25)
+
+PK-349:W2441 (2026-11-25 13:08, dima): if skill typed from quill in herdr, that opens a message, expands - it is fine then.
+PK-349:W2443 (2026-11-25 13:34, dima): put 1 probe ask on orbit (i tell when to remove). and ask wing 1 to put one. i test cmd+shit+k
+PK-349:W2444 (2026-11-25 13:37, dima, herdr-typed): also - do you see auto-sw notice? why not second winding? waiting for anything? ❓
+PK-349:W2445 (2026-11-25 13:37, dima, herdr-typed): cmd+shift+k wisp: when i am in your thread and press this, wing 1 asks get ticked. instead cmd+shift+k should tick all asks of a thread i currently see opened. → FRM-620:W61
+PK-349:W2446 (2026-11-25 13:37, dima, herdr-typed): note: there is a trick, when i hover the asks area and cmd+shift+k, it ticks the hovered area asks, this should still work, if i want a targeted asks group tick while being in a certain thread. → FRM-620:W62
 <!-- SECTION:NOTES:END -->
