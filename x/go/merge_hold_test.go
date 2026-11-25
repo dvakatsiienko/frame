@@ -98,6 +98,23 @@ func TestMergeAutoReadsAHoldSetAfterItsPlan(t *testing.T) {
 	}
 }
 
+// the plan reads the holds before the checks, so a hold set while they are read is the merge's own read
+func TestMergeAutoReadsAHoldSetWhileItsChecksAreRead(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.hub.onRead = func(path string) {
+		if strings.HasSuffix(path, "/check-runs") {
+			write(t, holdRecordOf(w), `{"prs":["7"]}`)
+		}
+	}
+
+	got := w.run(t, "7", "--apply")
+
+	if msg := envelopeOf(got).Error; got.code != 1 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(msg, "held") {
+		t.Fatalf("exit %d, puts %q, error %q: want the late hold to stop the merge", got.code, w.hub.sent("PUT "), msg)
+	}
+}
+
 func TestMergeAutoLeavesAPrWithNoMarkAlone(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")

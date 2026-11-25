@@ -69,6 +69,23 @@ func TestMergeAutoRefusesAStackWhoseLayerMovedAfterTheGate(t *testing.T) {
 	}
 }
 
+// the layers were gated before the checks, so a hold set on one since is the merge's own read
+func TestMergeAutoReadsALowerLayersHoldSetWhileItsChecksAreRead(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.hub.onRead = func(path string) {
+		if strings.HasSuffix(path, "/check-runs") {
+			write(t, holdRecordOf(w), `{"prs":["7"]}`)
+		}
+	}
+
+	got := w.run(t, "8", "--apply")
+
+	if msg := envelopeOf(got).Error; got.code != 1 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(msg, "held") {
+		t.Fatalf("exit %d, puts %q, error %q: want the late hold to stop the stack", got.code, w.hub.sent("PUT "), msg)
+	}
+}
+
 func TestMergeAutoSkipsAMergedLayerBelow(t *testing.T) {
 	t.Parallel()
 	w := linkedMergeWorld(t)
