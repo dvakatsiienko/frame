@@ -232,13 +232,12 @@ export default class Antenna extends View {
                 cx.notify();
             }
         });
-        /** @type {string[]} his order of addresses, antenna's own; empty until it is seeded once */
+        /** @type {string[]} his order of addresses, antenna's own; a first run seeds it */
         this.order = stored('order', []);
         /** @type {Record<string, string>} each ordered address's thread name, kept after its terminal goes */
         this.orderNames = stored('orderNames', {});
-        /** his order was saved once; until then antenna publishes no order, so his never gets wiped */
-        this.isSeeded = stored('seeded', false) === true;
-        if (!this.isSeeded) this.seed();
+        // the flag, not an empty order, marks a first run: an order he holds is never started over
+        if (stored('seeded', false) !== true) this.seed();
         const names = (/** @type {import('gpui-kit').Context} */ cx) =>
             cx.spawn(async (cx) => {
                 await readNames(agents());
@@ -252,7 +251,6 @@ export default class Antenna extends View {
     // a first run, before any drag can be made: his order starts as herdr lists the threads
     seed() {
         this.setOrder(agents().map((a) => a.address));
-        this.isSeeded = true;
         localStorage.setItem('seeded', 'true');
     }
 
@@ -264,7 +262,6 @@ export default class Antenna extends View {
 
     /** @param {import('herdr').AgentInfo[]} list */
     keepOrder(list) {
-        if (!this.isSeeded) return list.map((a) => a.address);
         const live = new Set(
             terminals()
                 .filter((t) => t.state === 'live')
@@ -543,11 +540,10 @@ export default class Antenna extends View {
         const now = Date.now();
         const order = this.keepOrder(list);
         setAgentOrder(order.filter((a) => list.some((x) => x.address === a)));
-        if (this.isSeeded)
-            publishOrder(
-                order,
-                list.map((a) => a.address),
-            );
+        publishOrder(
+            order,
+            list.map((a) => a.address),
+        );
         const byAddress = new Map(list.map((a) => [a.address, a]));
         const names = Object.fromEntries(
             list.map((a) => [a.address, sessionName(a.address) ?? a.title]),
