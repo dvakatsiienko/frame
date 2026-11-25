@@ -15,6 +15,7 @@
         "focus-ring.js",
         "joined.js",
         "keypress.js",
+        "open-path.js",
         "tab-loop.js"
     ],
     "title": "Chat"

@@ -14,7 +14,7 @@ export const FILE_LINK =
 const HAS_EXTENSION = /\.[A-Za-z0-9]{1,10}$/;
 
 /** the path a file:// url names, null for any other url or a broken escape @param {string} url */
-function filePath(url) {
+export function filePath(url) {
     const m = /^file:\/\/(?:localhost)?(\/.*)$/.exec(url);
     if (!m?.[1]) return null;
     try {

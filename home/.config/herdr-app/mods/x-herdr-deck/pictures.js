@@ -2,6 +2,7 @@
 // previews in the card and opens the chat's viewer, any other file is a row, a missing one says «not found»
 
 import { fileLinks } from './file-links.js';
+import { linkPath } from './open-path.js';
 
 // the pictures Claude Code reads from a path, the ones a card previews
 const PICTURE = /\.(?:png|jpe?g|gif|webp)$/i;
@@ -20,10 +21,8 @@ const nameOf = (path) => path.split('/').filter(Boolean).pop() ?? path;
  * @returns {Attachment[]}
  */
 export function attachmentsOf(ask, home) {
-    const link = ask.link?.trim() ?? '';
-    const linked = /^(\/|~\/)/.test(link)
-        ? [link.replace(/^~(?=\/)/, home)]
-        : [];
+    const link = linkPath(ask.link ?? '', home);
+    const linked = link ? [link] : [];
     const paths = [
         ...linked,
         ...fileLinks(ask.text, home).map((f) => f.path),

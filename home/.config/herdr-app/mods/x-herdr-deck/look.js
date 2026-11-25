@@ -53,12 +53,16 @@ export const leadingRoom = (width, size) => {
 
 // TextView is the one element whose text can be selected, so anything worth reading aloud goes through it.
 /** @param {string} id @param {string} markdown @param {Color} color @param {number} size */
-export const prose = (id, markdown, color, size) =>
-    TextView.markdown(id, literalAngles(markdown))
+export const markdownText = (id, markdown, color, size) =>
+    TextView.markdown(id, markdown)
         .selectable()
         .w_full()
         .text_size(size)
         .text_color(color);
+
+/** markdown as a thread writes it: a `<word>` in it is words, never html @param {string} id @param {string} markdown @param {Color} color @param {number} size */
+export const prose = (id, markdown, color, size) =>
+    markdownText(id, literalAngles(markdown), color, size);
 
 /** a time as HH:MM, or HH:MM:SS with 3 parts @param {Date} at @param {2 | 3} parts */
 export const clockOf = (at, parts) =>
