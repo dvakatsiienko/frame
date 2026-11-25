@@ -37,7 +37,6 @@ import { createCmdEnter, createKeyPress } from './keypress.js';
 import { SANS, SIZE, clockOf, leadingRoom, line, prose } from './look.js';
 import {
     HOT_ASK,
-    ORDER_KEY,
     PIDS_KEY,
     THREADS_BEAT_MS,
     THREADS_KEY,
@@ -93,6 +92,7 @@ import {
     steerBox,
 } from './steer-kit.js';
 import { createTabMember } from './tab-loop.js';
+import { ORDER_KEY } from './thread-keys.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('gpui-kit').AsyncContext} AsyncContext */

@@ -11,10 +11,10 @@ claims: `home/.config/herdr-app/mods/`
 ## the areas, one file each
 
 - [the setup — x-herdr](ftr/setup.md) — 2 features
-- [x-herdr-deck — phases and the deck's reads](ftr/sessions.md) — 6 features
-- [x-herdr-deck — orbit](ftr/orbit.md) — 11 features
+- [x-herdr-deck — phases and the deck's reads](ftr/sessions.md) — 7 features
+- [x-herdr-deck — orbit](ftr/orbit.md) — 17 features
 - [sidebar — antenna](ftr/antenna.md) — 6 features
-- [threads — tabs](ftr/tabs.md) — 6 features
+- [threads — tabs](ftr/tabs.md) — 9 features
 - [tray — quick terminal](ftr/tray.md) — 1 feature
-- [chat view — x-herdr-chat](ftr/chat.md) — 48 features
+- [chat view — x-herdr-chat](ftr/chat.md) — 44 features
 - [scripts](ftr/scripts.md) — 3 features

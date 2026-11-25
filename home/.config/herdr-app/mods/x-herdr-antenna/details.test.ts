@@ -1,13 +1,19 @@
 import { describe, expect, test } from 'vitest';
 
-import { activityShown, rowDetails, waitRuns, waitShown } from './details.js';
+import { threadFacts } from '../x-herdr-deck/orbit.js';
+import {
+    activityShown,
+    rowDetails,
+    rowFacts,
+    waitRuns,
+    waitShown,
+} from './details.js';
 
 // FRM-618 slice A exit 2: each row detail off in turn, that detail alone leaves the row
 const facts = {
     context: 42,
     effort: null,
     model: 'opus 5.5',
-    time: 'idle 3m',
     wait: 'waiting on 🦉 clio',
 };
 const allOn = {
@@ -19,7 +25,7 @@ const allOn = {
 
 describe('a row details', () => {
     test('every detail on: idle time, context fill and the wait line', () => {
-        expect(rowDetails(allOn, facts)).toEqual({
+        expect(rowDetails(allOn, facts, 'idle 3m')).toEqual({
             context: '42%',
             idle: 'idle 3m',
             model: ['opus 5.5'],
@@ -33,22 +39,20 @@ describe('a row details', () => {
         ['antenna.details.model', 'model'],
         ['antenna.details.wait', 'wait'],
     ])('%s off: only %s leaves', (knob, detail) => {
-        const shown = rowDetails({ ...allOn, [knob]: false }, facts);
+        const shown = rowDetails({ ...allOn, [knob]: false }, facts, 'idle 3m');
         expect(shown).toEqual({
-            ...rowDetails(allOn, facts),
+            ...rowDetails(allOn, facts, 'idle 3m'),
             [detail]: null,
         });
     });
 
     test('a fact never read draws nothing, never a zero', () => {
         expect(
-            rowDetails(allOn, {
-                context: null,
-                effort: null,
-                model: null,
-                time: null,
-                wait: null,
-            }),
+            rowDetails(
+                allOn,
+                { context: null, effort: null, model: null, wait: null },
+                null,
+            ),
         ).toEqual({ context: null, idle: null, model: null, wait: null });
     });
 
@@ -65,14 +69,57 @@ describe('a row details', () => {
             rowDetails(
                 { ...allOn, 'antenna.details.wait': wait },
                 { ...facts, effort },
+                null,
             ).model,
         ).toEqual(shown);
     });
 
     test('an effort with no model read draws nothing', () => {
         expect(
-            rowDetails(allOn, { ...facts, effort: 'high', model: null }).model,
+            rowDetails(allOn, { ...facts, effort: 'high', model: null }, null)
+                .model,
         ).toBeNull();
+    });
+});
+
+// FRM-620:W57, the whole way: the state file's label, the deck's facts, antenna's row
+describe('the effort from the deck to the row', () => {
+    const shownOf = (label: string | null) => {
+        const published = threadFacts(
+            [
+                {
+                    activity: null,
+                    context: null,
+                    hot: null,
+                    model: label,
+                    pid: 7,
+                    sid: 's7',
+                    status: 'idle',
+                    wait: null,
+                },
+            ],
+            null,
+        )['7'];
+        return rowDetails(allOn, rowFacts(published), null).model;
+    };
+
+    test.each([
+        ['opus 5.5 · medium', ['opus 5.5', 'medium']],
+        ['haiku 5.5 · xhigh', ['haiku 5.5', 'xhigh']],
+        ['opus 5.5', ['opus 5.5']],
+        [null, null],
+    ])('%j draws %j', (label, shown) => {
+        expect(shownOf(label)).toEqual(shown);
+    });
+
+    test('a thread the deck publishes nothing for draws no detail', () => {
+        expect(rowFacts(undefined)).toBeNull();
+        expect(rowDetails(allOn, null, null)).toEqual({
+            context: null,
+            idle: null,
+            model: null,
+            wait: null,
+        });
     });
 });
 
@@ -162,9 +209,9 @@ describe('a wait on a background command', () => {
                     context: null,
                     effort: null,
                     model: null,
-                    time: null,
                     wait: 'waiting on S=/private/tmp/x',
                 },
+                null,
             ).wait,
         ).toBe('waiting on a background task');
     });

@@ -8,6 +8,12 @@
         "width": 280
     },
     "place": "none",
-    "shared": ["drag-view.js", "drag.js", "joined.js", "tab-loop.js"],
+    "shared": [
+        "drag-view.js",
+        "drag.js",
+        "joined.js",
+        "tab-loop.js",
+        "thread-keys.js"
+    ],
     "title": "Antenna"
 }

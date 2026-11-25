@@ -9,7 +9,8 @@
         "focus-ring.js",
         "joined.js",
         "keypress.js",
-        "tab-loop.js"
+        "tab-loop.js",
+        "thread-keys.js"
     ],
     "title": "x-herdr deck"
 }

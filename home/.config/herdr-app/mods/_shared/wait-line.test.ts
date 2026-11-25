@@ -41,10 +41,11 @@ describe('one wait line on every surface', () => {
                 { 'antenna.details.wait': true },
                 {
                     context: null,
+                    effort: null,
                     model: null,
-                    time: null,
                     wait: deck.threads['7']?.wait ?? null,
                 },
+                null,
             ).wait,
         ).toBe(wait);
     });

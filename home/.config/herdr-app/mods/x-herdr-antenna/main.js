@@ -23,7 +23,13 @@ import {
     writeTextFile,
 } from 'herdr';
 
-import { activityShown, rowDetails, waitRuns, windOf } from './details.js';
+import {
+    activityShown,
+    rowDetails,
+    rowFacts,
+    waitRuns,
+    windOf,
+} from './details.js';
 import { createListDrag } from './drag-view.js';
 import { contextMeter } from './meter.js';
 import {
@@ -49,6 +55,7 @@ import {
 
 /** @typedef {Record<string, import('gpui-kit').Color> & import('./drag-view.js').DragTheme} Theme */
 /** @typedef {import('gpui-kit').Context} Context */
+/** @typedef {import('./details.js').Facts} Facts */
 /** a dragged row: its thread, and its group's addresses in drawn order, so a drop lands in that group
  * @typedef {{ address: string, pane: string, group: string, members: string[] }} Dragged */
 /** @typedef {{ address: string, at: number }} PinPress */
@@ -108,30 +115,13 @@ const HOT_ASK = 'x-herdr-deck.hot';
 // a press shows at once and holds as long as the deck waits on the thread (its PENDING_MS, 20 s) and one redraw more
 const HOT_PENDING_MS = 21_000;
 
-/** @typedef {{ activity: import('./details.js').Activity | null, context: number | null, effort: string | null, isHot: boolean, model: string | null, sid: string | null, wait: string | null }} Facts */
-
-/** @param {number | null | undefined} pid @returns {Facts | null} */
-function factsOf(pid) {
+/** @param {number | null | undefined} pid */
+const factsOf = (pid) => {
     const deck = /** @type {{ threads?: Record<string, any> } | null} */ (
         shared(THREADS_KEY)
     );
-    const f = pid == null ? null : deck?.threads?.[String(pid)];
-    return f
-        ? {
-              activity:
-                  ['working', 'waiting', 'idle'].includes(f.state) &&
-                  typeof f.since === 'number'
-                      ? { since: f.since, state: f.state }
-                      : null,
-              context: typeof f.context === 'number' ? f.context : null,
-              effort: typeof f.effort === 'string' ? f.effort : null,
-              isHot: f.isHot === true,
-              model: typeof f.model === 'string' ? f.model : null,
-              sid: typeof f.sid === 'string' ? f.sid : null,
-              wait: typeof f.wait === 'string' ? f.wait : null,
-          }
-        : null;
-}
+    return pid == null ? null : rowFacts(deck?.threads?.[String(pid)]);
+};
 
 /** @param {any} node @param {string} id @returns {any} */
 function find(node, id) {
@@ -248,20 +238,20 @@ export default class Antenna extends View {
         this.orderNames = stored('orderNames', {});
         /** his order was saved once; until then antenna publishes no order, so his never gets wiped */
         this.isSeeded = stored('seeded', false) === true;
+        if (!this.isSeeded) this.seed();
         const names = (/** @type {import('gpui-kit').Context} */ cx) =>
             cx.spawn(async (cx) => {
                 await readNames(agents());
                 publishNames();
-                if (!this.isSeeded) this.seed();
                 cx.notify();
             });
         names(cx);
         cx.timer.every(5000, names);
     }
 
-    // a first run: his order starts as herdr lists the threads, a drag already made kept
+    // a first run, before any drag can be made: his order starts as herdr lists the threads
     seed() {
-        if (!this.order.length) this.setOrder(agents().map((a) => a.address));
+        this.setOrder(agents().map((a) => a.address));
         this.isSeeded = true;
         localStorage.setItem('seeded', 'true');
     }
@@ -650,13 +640,7 @@ export default class Antenna extends View {
                             .child(this.dot(t, shown.dot, true)),
                     );
             const isQuiet = shown.dot === 'idle' && !a.focused;
-            const more = rowDetails(knobs, {
-                context: state?.context ?? null,
-                effort: state?.effort ?? null,
-                model: state?.model ?? null,
-                time: shown.time,
-                wait: state?.wait ?? null,
-            });
+            const more = rowDetails(knobs, state, shown.time);
             const { group, members } = groupOf.get(r.address);
             const at = members.indexOf(r.address);
             const key = this.rowKey(r.address);

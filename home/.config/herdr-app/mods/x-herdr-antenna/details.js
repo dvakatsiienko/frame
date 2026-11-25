@@ -43,12 +43,44 @@ function modelLines(model, effort, isTall) {
     return isTall ? [model, effort] : [`${model} · ${effort}`];
 }
 
+/** @typedef {{ activity: Activity | null, context: number | null, effort: string | null, isHot: boolean, model: string | null, sid: string | null, wait: string | null }} Facts */
+
+/**
+ * a thread's facts as the deck publishes them, each kept only in the shape a row draws; null when it publishes none
+ * @param {any} published @returns {Facts | null}
+ */
+export function rowFacts(published) {
+    if (!published) return null;
+    const { context, effort, isHot, model, sid, since, state, wait } =
+        published;
+    return {
+        activity:
+            ['working', 'waiting', 'idle'].includes(state) &&
+            typeof since === 'number'
+                ? { since, state }
+                : null,
+        context: typeof context === 'number' ? context : null,
+        effort: typeof effort === 'string' ? effort : null,
+        isHot: isHot === true,
+        model: typeof model === 'string' ? model : null,
+        sid: typeof sid === 'string' ? sid : null,
+        wait: typeof wait === 'string' ? wait : null,
+    };
+}
+
 /**
  * @param {Record<string, unknown>} settings antenna's knobs
- * @param {{ time: string | null, context: number | null, effort: string | null, model: string | null, wait: string | null }} facts
+ * @param {Pick<Facts, 'context' | 'effort' | 'model' | 'wait'> | null} facts
+ * @param {string | null} time
  * @returns {{ idle: string | null, context: string | null, model: string[] | null, wait: string | null }}
  */
-export function rowDetails(settings, { context, effort, model, time, wait }) {
+export function rowDetails(settings, facts, time) {
+    const {
+        context = null,
+        effort = null,
+        model = null,
+        wait = null,
+    } = facts ?? {};
     return {
         context:
             settings['antenna.details.context'] && typeof context === 'number'
