@@ -21,10 +21,6 @@ const skipped = [/\.d\.ts$/, /^logos\/data\.gen\.ts$/, /(^|\/)public\//];
 // today's giants, each capped at its size on 2026-11-19: a cap goes down by hand as the file shrinks;
 // a raise names dima's word and its date in the why
 const caps = {
-    'x/go/stacks_test.go': {
-        cap: 1_363,
-        why: 'the stacked-pr add-on, one file of cases',
-    },
     'x/go/verify_red_test.go': {
         cap: 1_279,
         why: 'verify red, one file of cases',
