@@ -55,7 +55,7 @@ for id in $(grep -iE "$idline" "$file" | grep -iEo '(PK|FRM|BYT)-[0-9]+' | tr a-
 	cover="$(dirname "$0")/../../script/wish-cover.ts"
 	if out="$(node "$cover" "$id" "$draft" 2>&1)"; then
 		# not red: a recent wish (7 days) the draft neither cites nor settles is flagged, never blocked
-		late="$(node "$cover" "$id" --since "$(date -v-7d +%F)" "$draft" 2>/dev/null)"
+		late="$(node "$cover" "$id" --since "$(date -v-7d +%F 2>/dev/null || date -d '7 days ago' +%F)" "$draft" 2>/dev/null)"
 		[ -z "$late" ] || notes+="wish-cover: $id $late. name each left-out wish in the spec's out or tell dima"$'\n'
 		continue
 	else
