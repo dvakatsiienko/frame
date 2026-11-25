@@ -110,6 +110,10 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and Enter joins the note, again takes it back; ⌘Enter sends it now and the box goes; Shift+Enter breaks the line; Tab walks the loop, where the box has a stop while open; an empty note does neither
   - and the box reads «joined» once the thread has the note, and is read-only from the moment a turn takes it, with what the thread got; a note no turn took in a minute is his draft again, saying so; a × on a sent one still in the queue makes it his draft too (FRM-585:W2, W14, W42)
   - and Esc closes the viewer first, then the box, then find; a thread switch closes the box, its draft kept in its own thread; an emptied draft leaves no record
+- ⬜ the words he wrote a note on stay highlighted in their message (FRM-585:W2, W50, W51; not live yet)
+  - given notes on a message, then each one's words are painted behind in the theme's accent, stronger while the thread has not got the note, quieter once it has; opening the box paints them at once
+  - and they are found again after the reply grew or an older page landed above it; words that are gone, or stand twice and moved, show none and the note stays
+  - and find's hits are painted over them, and leave them as they were
 - 🧭 Reply quotes only the words he selected, never a whole message (dima, 20:35; FRM-585)
   - decision: Reply left the menu (dima, 20:35: «whole message quoting isn't useful»)
 

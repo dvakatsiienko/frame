@@ -9,6 +9,7 @@ import {
 } from '../../../../.claude/plugin-x/mods/x-mod-stash/hooks/orbit.ts';
 import { JOIN_TAKE_MS } from './joins.js';
 import type { Joins } from './magic.js';
+import { noteMarks } from './note-marks.js';
 import { JOINS_OFF, NOTES, createNotes } from './notes.js';
 import { createRowModel } from './row-model.js';
 
@@ -595,5 +596,97 @@ describe('the notes he keeps', () => {
         const w = world();
         w.kept.set(NOTES + THREAD, '{"broken"');
         expect(w.notes.of(THREAD)).toEqual([]);
+    });
+});
+
+describe('where a note’s words are painted (FRM-585 B1)', () => {
+    const TEXT = 'the **retry** is cheap, see [the run](path:0) and `x run`.';
+    const on = (slice: string, over: Record<string, unknown> = {}) => {
+        const start = TEXT.indexOf(slice);
+        return {
+            parts: [
+                {
+                    block: 0,
+                    range: { end: start + slice.length, start },
+                    source: TEXT,
+                    words: slice.trim(),
+                    ...over,
+                },
+            ],
+            row: ROW,
+        };
+    };
+    const note = (passage: object, state = 'waiting', id = 'n') =>
+        ({ id, passage, state }) as never;
+    const slices = (passage: object, sources: string[]) =>
+        noteMarks([note(passage)], sources).map(({ block, end, start }) => [
+            block,
+            sources[block]?.slice(start, end),
+        ]);
+
+    test.each([
+        ['bold', 'the **retry** is'],
+        ['a link', '[the run](path:0) and'],
+        ['a code span', 'and `x run`'],
+        ['a space at each edge', ' is cheap, '],
+    ])('over %s, the passage’s own text', (_what, slice) => {
+        expect(slices(on(slice), [TEXT])).toEqual([[0, slice.trim()]]);
+    });
+
+    test.each([
+        ['a reply that grew', [`${TEXT}\n\nand more`], 0],
+        ['a page landed above', [`older\n\n${TEXT}`], 0],
+        ['a block cut before it', ['```\ncode\n```', TEXT], 1],
+    ])('%s: found again', (_what, sources, block) => {
+        expect(slices(on('is cheap'), sources)).toEqual([[block, 'is cheap']]);
+    });
+
+    test('a missing range: by its words', () => {
+        expect(slices(on('is cheap', { range: null }), [TEXT])).toEqual([
+            [0, 'is cheap'],
+        ]);
+    });
+
+    test('a phrase held twice: at its range while it stands there, nowhere once moved', () => {
+        const source = 'yes, then yes';
+        const twice = {
+            parts: [
+                {
+                    block: 0,
+                    range: { end: 13, start: 9 },
+                    source,
+                    words: 'yes',
+                },
+            ],
+            row: ROW,
+        };
+        expect(noteMarks([note(twice)], [source])).toMatchObject([
+            { end: 13, start: 10 },
+        ]);
+        expect(noteMarks([note(twice)], [`so ${source}`])).toEqual([]);
+    });
+
+    test('words no longer there: none, the other part’s kept', () => {
+        const both = on('is cheap');
+        both.parts.push({ ...both.parts[0], words: 'gone' } as never);
+        Object.assign(both.parts[1] as object, { range: null });
+        expect(slices(both, [TEXT])).toEqual([[0, 'is cheap']]);
+        expect(slices(on('is cheap'), ['another text'])).toEqual([]);
+    });
+
+    test('one the thread has is the quieter, under the others', () => {
+        const marks = noteMarks(
+            [
+                note(on('is cheap'), 'draft', 'a'),
+                note(on('is cheap'), 'joined', 'b'),
+                note(on('is cheap'), 'sent', 'c'),
+            ],
+            [TEXT],
+        );
+        expect(marks.map(({ id, isStrong }) => [id, isStrong])).toEqual([
+            ['b', false],
+            ['c', false],
+            ['a', true],
+        ]);
     });
 });

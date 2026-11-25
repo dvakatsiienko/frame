@@ -256,6 +256,7 @@ export default class Chat extends View {
         find: () => this.findBar.find,
         isShowMore: () => this.isShowMore,
         look: () => this.look,
+        notesOn: (row) => this.notesOn(row),
         room: () => this.list.room(),
         sent: this.sent,
     });
@@ -295,6 +296,16 @@ export default class Chat extends View {
     /** the row that holds a message's line now: an older page may join it under its own id @param {string} id */
     rowOf(id) {
         return this.model.rows[this.model.indexOf(id)]?.id ?? id;
+    }
+
+    /** his notes on a row of the thread shown @param {Row} row */
+    notesOn(row) {
+        const file = this.feed.file();
+        return file
+            ? this.notes
+                  .of(file)
+                  .filter((n) => this.rowOf(n.passage.row.id) === row.id)
+            : [];
     }
 
     /** every view lets go of the thread it showed: nothing of the old one may act on the next */

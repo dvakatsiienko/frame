@@ -64,14 +64,17 @@ function createRows() {
     const find = createFind();
     /** a picture's square, once it is made */
     const made = new Map<string, string>();
+    const notes = new Map<string, object[]>();
     return {
         find,
         made,
+        notes,
         view: createMessageRows({
             column: () => 700,
             find: () => find,
             isShowMore: () => true,
             look: () => ({ space: 'normal' }),
+            notesOn: (row: { id: string }) => notes.get(row.id) ?? [],
             room: () => 700,
             sent: {
                 pathOf: (p: { path: string | null }) => p.path,
@@ -154,6 +157,74 @@ test('a message’s look changes with what its text views draw, and only then', 
         LONG as never,
     ]);
     expect(look(1)).not.toBe(before[1]);
+});
+
+// FRM-585 B4
+test('his notes’ words are painted under find’s hits, the stepped one last, and stay once find shuts', () => {
+    const { find, notes, view } = createRows();
+    const source = 'one viewer';
+    const note = (id: string, state: string) => ({
+        id,
+        passage: {
+            parts: [
+                {
+                    block: 0,
+                    range: { end: 10, start: 4 },
+                    source,
+                    words: 'viewer',
+                },
+            ],
+        },
+        state,
+    });
+    const before = view.bodyLook(rows[2] as never, t, 'p');
+    notes.set('new', [note('a', 'waiting'), note('b', 'joined')]);
+    expect(view.bodyLook(rows[2] as never, t, 'p')).not.toBe(before);
+    const paint = () => {
+        gpui.painted.length = 0;
+        view.texts(rows[2] as never, t, 'p', true, (drawn) => drawn);
+        return gpui.painted.map(({ color, range }) => [
+            color.slice(-2),
+            ...range,
+        ]);
+    };
+    const mine = [
+        ['22', 4, 10],
+        ['40', 4, 10],
+    ];
+    expect(paint()).toEqual(mine);
+    find.open();
+    find.search(rows, 'viewer');
+    expect(paint()).toEqual([...mine, ['b3', 4, 10]]);
+    find.close();
+    expect(paint()).toEqual(mine);
+    gpui.painted.length = 0;
+    view.texts(rows[2] as never, t, 'p', false, (drawn) => drawn);
+    expect(gpui.painted).toEqual([]);
+});
+
+test('a note’s words are painted in their own text view alone', () => {
+    const { notes, view } = createRows();
+    const source = '```ts\ntwo\n```';
+    notes.set('a', [
+        {
+            id: 'n',
+            passage: {
+                parts: [
+                    {
+                        block: 1,
+                        range: { end: 9, start: 6 },
+                        source,
+                        words: 'two',
+                    },
+                ],
+            },
+            state: 'draft',
+        },
+    ]);
+    const row = reply('a', `one\n${source}`) as never;
+    view.texts(row, t, 'p', true, (drawn) => drawn);
+    expect(gpui.painted.map(({ range }) => range)).toEqual([[6, 9]]);
 });
 
 describe('a click on a message’s pictures', () => {
