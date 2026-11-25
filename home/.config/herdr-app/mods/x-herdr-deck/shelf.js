@@ -79,19 +79,35 @@ export function onShelfWrite(cx, file, act) {
     });
 }
 
-// each session's state file x-mod-stash writes (`fleet.json` beside them holds the fleet-wide states)
+/** @typedef {{ read: any[], unread: Set<string> }} States the states read, and the sids whose file gave none this time */
+
+/**
+ * each session's state file x-mod-stash writes (`fleet.json` beside them holds the fleet-wide states); a file read in the
+ * middle of a write parses to nothing, so its thread's asks are not known, never none
+ * @returns {Promise<States | null>} null: the folder gave no answer
+ */
 export async function states() {
-    const names = (
-        await readdir(STATES).catch(() => /** @type {string[]} */ ([]))
-    ).filter((f) => f.endsWith('.json') && f !== 'fleet.json');
-    return Promise.all(names.map((f) => json(`${STATES}/${f}`)));
+    const all = await readdir(STATES).catch(() => null);
+    if (!all) return null;
+    const names = all.filter((f) => f.endsWith('.json') && f !== 'fleet.json');
+    const read = await Promise.all(names.map((f) => json(`${STATES}/${f}`)));
+    return {
+        read: read.filter(Boolean),
+        unread: new Set(
+            names
+                .filter((_f, i) => !read[i])
+                .map((f) => f.slice(0, -'.json'.length)),
+        ),
+    };
 }
 
 /**
- * @param {any[]} shelf
+ * @param {States | null} shelf
+ * @param {Row[]} last the rows the last read gave: a thread whose state file is unread keeps its own
  * @returns {Promise<Row[] | null>} null: no answer, the deck keeps its last rows
  */
-export async function sessions(shelf) {
+export async function sessions(shelf, last) {
+    if (!shelf) return null;
     // one rule, one reader (FRM-570 rule 8): x's thread store names the live threads, a pid kept only while x finds it
     // running on its own start time, so no press goes to a dead session; the status is still cc's, from its registry
     // file. an unreadable store answers null, and the deck keeps its last rows marked stale
@@ -122,7 +138,14 @@ export async function sessions(shelf) {
     );
     return rows.map(
         /** @returns {Row} */ (s) => {
-            const state = stateOfPid(shelf, s.pid);
+            const was = last.find((r) => r.pid === s.pid);
+            if (was && shelf.unread.has(was.sid))
+                return {
+                    ...was,
+                    name: rejoin(s.name),
+                    status: s.status ?? 'unknown',
+                };
+            const state = stateOfPid(shelf.read, s.pid);
             const sid = state?.sid ?? s.sessionId;
             return {
                 activity: activityIn(state),

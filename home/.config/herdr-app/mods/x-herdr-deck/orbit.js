@@ -901,13 +901,14 @@ export function keep(store, key, value) {
  * @param {KeptStore} store
  * @param {Set<string> | null} updated
  * @param {Parameters<typeof askRounds>[1]} rows
+ * @param {(key: string) => boolean} [isUnread] an ask whose thread this read does not know: what was seen of it stays
  */
-export function roundsKept(store, updated, rows) {
+export function roundsKept(store, updated, rows, isUnread = () => false) {
     const was = updated ?? new Set(JSON.parse(kept(store, 'updated') ?? '[]'));
-    const { seen, updated: cleared } = askRounds(
-        JSON.parse(kept(store, 'seen') ?? '{}'),
-        rows,
-    );
+    const before = JSON.parse(kept(store, 'seen') ?? '{}');
+    const { seen: drawn, updated: cleared } = askRounds(before, rows);
+    const unread = Object.entries(before).filter(([key]) => isUnread(key));
+    const seen = { ...Object.fromEntries(unread), ...drawn };
     for (const key of cleared) keep(store, `steer:${key}`, '');
     const now = new Set([...was, ...cleared].filter((key) => key in seen));
     keep(store, 'seen', JSON.stringify(seen));

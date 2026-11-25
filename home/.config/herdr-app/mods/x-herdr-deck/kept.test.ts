@@ -1,20 +1,25 @@
-import { expect, test, vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 // herdr's one JavaScript runtime, by its source (0.1.18 vendor/gpui-kit/crates/shell engine/quickjs scheduler.rs, scope.rs):
 // `localStorage` is the store of the copy whose call is on the stack; a native call keeps the copy it was made under and
 // its answer runs there; but what `init` left queued runs inside the next call, whichever mod's
 const at = vi.hoisted(() => ({
     files: new Map<string, string>(),
+    isFolderDown: false,
     psCodes: [] as number[],
     scope: 'deck',
     stores: { deck: {}, other: {} } as Record<string, Record<string, string>>,
 }));
 const native = <T>(answer: () => T) => {
     const made = at.scope;
-    return new Promise<T>((done) =>
+    return new Promise<T>((done, fail) =>
         setTimeout(() => {
             at.scope = made;
-            done(answer());
+            try {
+                done(answer());
+            } catch (err) {
+                fail(err);
+            }
         }, 0),
     );
 };
@@ -28,7 +33,7 @@ vi.mock('herdr', () => ({
         native(() => ({
             code: at.psCodes.shift() ?? 0,
             stderr: '',
-            stdout: '7 Wed Nov 25 10:00:00 2026',
+            stdout: '7 Wed Nov 25 10:00:00 2026\n8 Wed Nov 25 10:00:00 2026',
         })),
     home: () => '/Users/me',
     layout: () => null,
@@ -44,7 +49,11 @@ vi.mock('herdr', () => ({
     writeTextFile: vi.fn(),
 }));
 vi.mock('fs/promises', () => ({
-    readdir: () => native(() => ['a.json']),
+    readdir: () =>
+        native(() => {
+            if (at.isFolderDown) throw new Error('EMFILE');
+            return ['a.json'];
+        }),
     unlink: async () => {},
 }));
 vi.mock('gpui-kit', () => ({ View: class {}, div: vi.fn() }));
@@ -103,7 +112,7 @@ const cx: Record<string, unknown> = {
 };
 
 /** a deck landed over what the last one kept */
-function landed() {
+function landed(plan: string[] = []) {
     const shelf = '/Users/me/.claude/shelf';
     at.files.set(
         `${shelf}/threads.json`,
@@ -117,17 +126,21 @@ function landed() {
             asks: [{ id: 'o1', pick: 'yes', text: 'look: the card' }],
             at: 1,
             pid: 7,
+            plan: { lines: plan },
             sid: 'a',
         }),
     );
     at.stores = { deck: {}, other: {} };
     at.stores.deck = {
         seen: JSON.stringify({ 'a:o1': 'look: the card\nyes' }),
+        'steer-files:a:o1': '["/tmp/shot.png"]',
         'steer:a:o1': 'my unsent words',
+        'steer:a:plan': 'my phases words',
         updated: JSON.stringify(['a:o1']),
     };
     const deck = new Deck() as unknown as {
         init: (props: unknown, cx: unknown) => void;
+        rows: { asks: unknown[]; phases: string[] }[];
         steers: Map<string, { value: () => string }>;
         updated: Set<string> | null;
     };
@@ -170,4 +183,101 @@ test('a first read that fails wipes nothing the deck kept', async () => {
     await new Promise((done) => setTimeout(done, 100));
     expect([...(deck.updated ?? [])]).toEqual(['a:o1']);
     expect(deck.steers.get('a:o1')?.value()).toBe('my unsent words');
+});
+
+// sixth sense, round 2: a state file read half-written took every ask of its thread as left, his typed steer with it
+describe.each([
+    ['half-written', true],
+    ['in a folder that did not answer', false],
+])('a state file %s', (_what, isHalf) => {
+    const STATE = '/Users/me/.claude/shelf/herdr-state/a.json';
+    const readAgain = async (deck: unknown) => {
+        (deck as { reload: (c: unknown) => void }).reload(cx);
+        await new Promise((done) => setTimeout(done, 100));
+    };
+    const breakIt = (isBroken: boolean, whole: string) => {
+        if (isHalf) at.files.set(STATE, isBroken ? whole.slice(0, 20) : whole);
+        else at.isFolderDown = isBroken;
+    };
+
+    test('wipes nothing kept for its thread, its asks and the phases stay drawn', async () => {
+        at.scope = 'deck';
+        const deck = landed(['step one']);
+        await new Promise((done) => setTimeout(done, 100));
+        expect(deck.steers.get('a:plan')?.value()).toBe('my phases words');
+        const whole = at.files.get(STATE) ?? '';
+
+        breakIt(true, whole);
+        await readAgain(deck);
+        expect(deck.rows[0]?.asks).toHaveLength(1);
+        expect(deck.rows[0]?.phases).toEqual(['step one']);
+        breakIt(false, whole);
+        await readAgain(deck);
+
+        expect(deck.steers.get('a:o1')?.value()).toBe('my unsent words');
+        expect(deck.steers.get('a:plan')?.value()).toBe('my phases words');
+        expect([...(deck.updated ?? [])]).toEqual(['a:o1']);
+        expect(at.stores.deck).toMatchObject({
+            'steer-files:a:o1': '["/tmp/shot.png"]',
+            'steer:a:o1': 'my unsent words',
+            'steer:a:plan': 'my phases words',
+        });
+    });
+
+    test('at the landing’s own first read wipes nothing either', async () => {
+        at.scope = 'deck';
+        const deck = landed(['step one']);
+        const whole = at.files.get(STATE) ?? '';
+        breakIt(true, whole);
+        await new Promise((done) => setTimeout(done, 100));
+        breakIt(false, whole);
+        await readAgain(deck);
+
+        expect(deck.steers.get('a:o1')?.value()).toBe('my unsent words');
+        expect(deck.steers.get('a:plan')?.value()).toBe('my phases words');
+        expect([...(deck.updated ?? [])]).toEqual(['a:o1']);
+        expect(at.stores.deck).toHaveProperty('steer-files:a:o1');
+    });
+});
+
+test('a thread back under a new pid, its state file half-written, loses no box and no press on its way', async () => {
+    at.scope = 'deck';
+    const deck = landed(['step one']) as ReturnType<typeof landed> & {
+        planSent: Map<string, number>;
+        pressMade: (cx: unknown, key: string, act: string, at: number) => void;
+        presses: Map<string, unknown>;
+        reload: (c: unknown) => void;
+    };
+    await new Promise((done) => setTimeout(done, 100));
+    deck.pressMade(cx, 'a:o1', 'tick', Date.now());
+    deck.planSent.set('a', Date.now());
+    const shelf = '/Users/me/.claude/shelf';
+    at.files.set(`${shelf}/herdr-state/a.json`, '{"asks":[{"id":');
+    at.files.set(
+        `${shelf}/threads.json`,
+        JSON.stringify({
+            threads: [{ name: 'clio', pid: 8, sessionId: 'a' }],
+        }),
+    );
+    deck.reload(cx);
+    await new Promise((done) => setTimeout(done, 100));
+    expect(deck.steers.get('a:o1')?.value()).toBe('my unsent words');
+    expect(deck.steers.get('a:plan')?.value()).toBe('my phases words');
+    expect(deck.presses.has('a:o1')).toBe(true);
+    expect(deck.planSent.has('a')).toBe(true);
+});
+
+test('an ask that left for real takes its steer, its files and its 🆕 with it', async () => {
+    at.scope = 'deck';
+    const deck = landed([]);
+    await new Promise((done) => setTimeout(done, 100));
+    at.files.set(
+        '/Users/me/.claude/shelf/herdr-state/a.json',
+        JSON.stringify({ asks: [], at: 2, pid: 7, sid: 'a' }),
+    );
+    (deck as unknown as { reload: (c: unknown) => void }).reload(cx);
+    await new Promise((done) => setTimeout(done, 100));
+    expect(deck.steers.has('a:o1')).toBe(false);
+    expect(at.stores.deck).not.toHaveProperty('steer:a:o1');
+    expect([...(deck.updated ?? [])]).toEqual([]);
 });

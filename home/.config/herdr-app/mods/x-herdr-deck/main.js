@@ -407,7 +407,7 @@ export default class Deck extends View {
         const week = usage
             ? (usage.rate_limits?.seven_day?.used_percentage ?? null)
             : this.week;
-        const listed = await sessions(shelf);
+        const listed = await sessions(shelf, this.rows);
         // a stale list keeps its rows, their presses read again all the same
         const rows = await withPending(listed ?? this.rows, (sid) =>
             readTextFile(`${TICKS}/${sid}.jsonl`).catch(
@@ -439,6 +439,9 @@ export default class Deck extends View {
                 .find((s) => s.sid === sid)
                 ?.asks.find((a) => a.id === id);
         };
+        // a thread whose state file was not read has no ask known to have left: what is kept for one stays
+        const isUnread = (/** @type {string} */ key) =>
+            shelf?.unread.has(key.split(':')[0] ?? '') ?? true;
         // every ask's press record hears this read; a record whose ask left goes
         const seen = new Set();
         for (const s of this.rows)
@@ -454,7 +457,7 @@ export default class Deck extends View {
                 });
             }
         for (const key of [...this.presses.keys()])
-            if (!seen.has(key))
+            if (!seen.has(key) && !isUnread(key))
                 this.pressStep(key, {
                     isGone: true,
                     isLocked: false,
@@ -465,6 +468,7 @@ export default class Deck extends View {
         // a read that failed knows of no ask that left: what is kept for one stays
         if (!listed) return;
         for (const key of this.steers.keys()) {
+            if (isUnread(key)) continue;
             const s = this.rows.find((r) => r.sid === key.split(':')[0]);
             // the phases' box (`<sid>:plan`) lives while its thread has phases
             const isKept = key.endsWith(':plan')
@@ -481,6 +485,7 @@ export default class Deck extends View {
             localStorage,
             this.updated ?? null,
             this.rows,
+            isUnread,
         );
         this.updated = rounds.updated;
         for (const key of rounds.cleared) {
@@ -511,7 +516,9 @@ export default class Deck extends View {
             new Set(
                 this.rows.flatMap((r) => r.asks.map((a) => `${r.sid}:${a.id}`)),
             ),
-            new Set(this.rows.map((r) => r.sid)),
+            new Set(
+                this.rows.map((r) => r.sid).filter((sid) => !isUnread(sid)),
+            ),
         );
     }
 
