@@ -11,8 +11,8 @@ import { SANS, SIZE, bar, line } from './look.js';
 import { ticketUrl } from './orbit.js';
 import { LANES, json, onShelfWrite } from './shelf.js';
 
-/** @typedef {import('./main.js').Theme} Theme */
-/** @typedef {import('./main.js').Context} Context */
+/** @typedef {import('./deck-types.js').Theme} Theme */
+/** @typedef {import('./deck-types.js').Context} Context */
 /** @typedef {import('./lanes.js').Lane} Lane */
 /** @typedef {import('./lanes.js').LaneItem} LaneItem */
 
