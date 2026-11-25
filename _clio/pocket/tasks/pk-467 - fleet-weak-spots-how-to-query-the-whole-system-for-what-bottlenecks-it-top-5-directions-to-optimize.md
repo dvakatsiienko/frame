@@ -3,10 +3,10 @@ id: PK-467
 title: >-
   fleet weak spots: how to query the whole system for what bottlenecks it, top 5
   directions to optimize
-status: open
+status: done
 assignee: []
 created_date: '2026-11-24T11:46:00Z'
-updated_date: '2026-11-25T12:40:31Z'
+updated_date: '2026-11-25T12:42:24Z'
 labels:
   - s
   - clio-wing-1
@@ -423,4 +423,8 @@ PK-467:W194 (2026-11-24 16:16, dima): [the jev compaction plugin] I asked you to
 14:40 W124–W125 evidence, 25 Nov: his 13:32 and 14:29 «what is gate speed», 14:00 and 14:06 «what is 15:25»; the order that worked was 14:30: what it is, yes or no, then numbers
 
 14:40 his 14:42 tick «close it, reopen if it overloads again» came on a pick that missed today's evidence; not closed, asked again with it (o1)
+
+14:41 closed on his 14:41 word: «no, close. it was something different. dima-intervenes is OK overall»; W120–W125 answered by fleet-output-format § to dima, first
+
+close: 2026-11-25 14:42 — PK-467:W1–W194 closed on dima's 14:41 word («no, close»); all but two were accounted at the 24 Nov 19:14 handback (its list, the done lines f50–f70 in PK-346), spot-read today: W187–W189 gone from system-checkup, W194 is FRM-681 snoozed; the two left: the count is noted 14:39, W124–W125 answered by fleet-output-format § to dima, first
 <!-- SECTION:NOTES:END -->
