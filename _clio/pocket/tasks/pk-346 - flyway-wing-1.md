@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T13:09:36Z'
+updated_date: '2026-11-25T13:17:01Z'
 labels:
   - s
   - clio-wing-1
@@ -19,20 +19,21 @@ ordinal: 1001
 - [ ] #1 f78 trials, one at a time: review-rounds, then wisphunter, verdicts due 27 Nov (gate-speed closed) — with: dima
 - [ ] #2 f86 FRM-639 events piece 2: six questions, the draft in mods-lane-9/frm-639-section.md — with: dima
 - [ ] #3 f87 FRM-582 emoji reactions: its ten questions, three a batch — with: dima
-- [ ] #4 f74 ⏳ bytes prod: rerun the five failed deploys at 15:25, read every app Ready — waits for: pnpm 12.23 release age
-- [ ] #5 f77 ⏳ FRM-704 the cited-docs check at commit: built in my tree after the rerun, main pulled first — waits for: FRM-596
-- [ ] #6 f80 ⏳ evergreen tail: PK-469 closes once bytes#176 merges — waits for: PK-469
-- [ ] #7 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
-- [ ] #8 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
-- [ ] #9 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
-- [ ] #10 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
-- [ ] #11 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #12 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #13 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #14 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
-- [ ] #15 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
-- [ ] #16 f84 🦥 FRM-696 hang-heal: the full shape-idea grill — later: dima 15:08
-- [ ] #17 f85 🦥 github event streams: is gh event listen worth it for our ci and pr watches — later: dima 15:08
+- [ ] #4 f88 FRM-690 three clio test files split to the map: a helper moves them, then the equality proof and the land — parked: 2026-11-25
+- [ ] #5 f74 ⏳ bytes prod: rerun the five failed deploys at 15:25, read every app Ready — waits for: pnpm 12.23 release age
+- [ ] #6 f77 ⏳ FRM-704 the cited-docs check at commit: built in my tree after the rerun, main pulled first — waits for: FRM-596
+- [ ] #7 f80 ⏳ evergreen tail: PK-469 closes once bytes#176 merges — waits for: PK-469
+- [ ] #8 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
+- [ ] #9 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
+- [ ] #10 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
+- [ ] #11 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
+- [ ] #12 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #13 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #14 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #15 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #16 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
+- [ ] #17 f84 🦥 FRM-696 hang-heal: the full shape-idea grill — later: dima 15:08
+- [ ] #18 f85 🦥 github event streams: is gh event listen worth it for our ci and pr watches — later: dima 15:08
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -871,4 +872,16 @@ done 2026-11-25 15:09: f55 FRM-582 emoji reactions: its ten questions, three a b
 done 2026-11-25 15:09: f71 FRM-639 events piece 2: six questions, the draft in mods-lane-9/frm-639-section.md — with: dima (FRM-639 Todo)
 
 15:09 reworded or reordered, not done: f61 to f83, f59 to f84, f72 to f85, f71 and f55 re-added in his 15:08 order (trials, events, emoji); f79 done, his go came 15:08
+
+PK-346:W104 (2026-11-25 15:08, dima): ticket flow: fix lowtide. date-gated items are excluded from lowtide.
+PK-346:W105 (2026-11-25 15:08, dima): correction, time gated for TODAY like with 15:25 are ok to stay. everything tomorrow+ is excluded.
+PK-346:W106 (2026-11-25 15:08, dima): approve the list lets do. exclude hung thread notices for now (later, i have more important side asks)
+PK-346:W107 (2026-11-25 15:08, dima): github event streams: too, slightly later.
+PK-346:W108 (2026-11-25 15:08, dima): need-you list, this order: 7, 9, 10, my asks here, 12, 8, 11.
+PK-346:W109 (2026-11-25 15:08, dima): ticket flow: on dec 1.
+PK-346:W110 (2026-11-25 15:08, dima): linux vm for go tests (FRM-551): same stuff, do not propose date-gated stuff. we won't solve it before date, it only clutters the list.
+PK-346:W111 (2026-11-25 15:08, dima): go
+15:17 the eight lines above: the date rule in lowtide's filter, f83 and f84 and f85 moved, his order on the flyway, the go running
+15:17 the stamp of his o2 steer is 14:48, not 14:46; the groomed line:
+PK-346:W103 (2026-11-25 14:48, dima): ok. you list all possible tails: ones you can solve yourself next step (mechanical) on my plain «go» (first to solve), and list of other items — everything inside your flyway and pocket parks, and non-lane-linear stuff, not-snoozed, not someday. if i query you to hunt over snoozed/someday - we switch to that filter (lowtide is flexible with non-snoozelike default mode)
 <!-- SECTION:NOTES:END -->
