@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-25T12:38:58Z'
+updated_date: '2026-11-25T15:53:50Z'
 labels:
   - m
   - clio-wing-2
@@ -22,8 +22,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f1 🦥 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
-- [ ] #2 f2 🦥 redraw the crew-pm board, ten sources changed since its version — later: dima 20:21 («i tell when»)
+- [ ] #1 f2 🦥 redraw the crew-pm board, ten sources changed since its version — later: dima 20:21 («i tell when»)
 <!-- AC:END -->
 
 ## Implementation Notes
