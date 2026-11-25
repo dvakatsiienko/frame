@@ -84,7 +84,7 @@ test('gitEnv drops every inherited GIT_ variable', () => {
 });
 
 test('every tracked test that spawns git passes env from gitEnv in script/lib/git-fixture.ts', () => {
-    const bare = trackedFiles(root, '*.test.ts').flatMap((file) =>
+    const bare = trackedFiles(root, '*.test.ts', '*-world.ts').flatMap((file) =>
         bareGitSpawns(readFileSync(path.join(root, file), 'utf8')).map(
             (line) => `${file}:${line}`,
         ),
@@ -142,6 +142,7 @@ test('every tracked test gives each spawnSync and execFileSync a timeout', () =>
         '*.test.ts',
         '*.test.mjs',
         '*.test.tsx',
+        '*-world.ts',
     ).flatMap((file) =>
         untimedSpawns(readFileSync(path.join(root, file), 'utf8')).map(
             (line) => `${file}:${line}`,

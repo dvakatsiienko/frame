@@ -21,18 +21,6 @@ const skipped = [/\.d\.ts$/, /^logos\/data\.gen\.ts$/, /(^|\/)public\//];
 // today's giants, each capped at its size on 2026-11-19: a cap goes down by hand as the file shrinks;
 // a raise names dima's word and its date in the why
 const caps = {
-    '_clio/script/pocket-check.test.ts': {
-        cap: 1_586,
-        why: 'the pocket checker, one file of cases',
-    },
-    '_clio/script/prompt-groom.test.ts': {
-        cap: 1_221,
-        why: 'the prompt groomer, one file of cases',
-    },
-    '_clio/script/siesta-gate.test.ts': {
-        cap: 1_540,
-        why: 'the siesta gate, one file of cases; +9 the queue-run case (dima o7, 2026-11-20)',
-    },
     'x/go/brief_summon_test.go': {
         cap: 1_312,
         why: 'brief summon, one file of cases',
