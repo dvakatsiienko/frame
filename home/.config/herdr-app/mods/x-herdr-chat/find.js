@@ -28,7 +28,7 @@ const ENTITIES = {
 
 // a line that draws no words: a rule, a table's line under its head, a link's definition
 const WORDLESS =
-    /^\s{0,3}(?:([-*_])(?:[ \t]*\1){2,}[ \t]*|\|?[ \t]*:?-+:?[ \t]*(?:\|[ \t]*:?-+:?[ \t]*)+\|?[ \t]*|\|[ \t]*:?-+:?[ \t]*\|[ \t]*|\[[^\]]+\]:[ \t]+\S+.*)$/;
+    /^\s{0,3}(?:([-*_])(?:[ \t]*\1){2,}[ \t]*|\|?[ \t]*:?-+:?[ \t]*(?:\|[ \t]*:?-+:?[ \t]*)+\|?[ \t]*|\|[ \t]*:?-+:?[ \t]*\|[ \t]*|\[(?!\^)[^\]]+\]:[ \t]+\S+(?:[ \t]+(?:"[^"]*"|'[^']*'|\([^)]*\)))?[ \t]*)$/;
 
 // a mark dropped, its words kept: how many chars of the match stand before them, and after
 /** @type {[RegExp, (match: RegExpExecArray) => [number, number]][]} */

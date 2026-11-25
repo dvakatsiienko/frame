@@ -327,7 +327,7 @@ export function createMessageRows(deps) {
 
     /**
      * the pictures and files a message carries: a square per picture, a chip per file; his on the right, a reply's on
-     * the left. no press or hover handler, one inside a list row blanks the whole list (herdr-app#894)
+     * the left. in a list row no press handler, one there blanks the whole list (herdr-app#894); its body hands one in
      * @param {Row} row @param {Theme} t
      * @param {import('./message-body.js').Pressing} [pressing]
      */

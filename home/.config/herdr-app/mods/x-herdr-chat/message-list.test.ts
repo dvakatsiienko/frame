@@ -127,6 +127,7 @@ function createWindow(real: number[], first: (px: number) => number) {
     /** each row of the last frame, and whether its own view drew its words */
     const frame = new Map<string, boolean>();
     const bodies = {
+        isViewerOpen: false,
         /** a drawn body's link click, by row */
         links: new Map<string, Handler>(),
         live: 0,
@@ -148,6 +149,7 @@ function createWindow(real: number[], first: (px: number) => number) {
         heights: createHeights(),
         loadEarlier: () => {},
         pictures: {
+            isOpen: () => bodies.isViewerOpen,
             show: (files: string[]) => bodies.opened.push(files.join()),
         },
         reader: () => null,
@@ -182,9 +184,11 @@ function createWindow(real: number[], first: (px: number) => number) {
             },
             hasBody: () => true,
             markTurn: () => {},
-            press: (_rows: unknown, _key: string, picture: string | null) => {
+            press: (_rows: unknown, key: string, picture: string | null) => {
                 bodies.opened.push(picture);
-                return null;
+                return key === 'r2'
+                    ? { kind: 'file', path: '/tmp/x.command' }
+                    : null;
             },
             row: (
                 row: { id: string },
@@ -328,6 +332,11 @@ function createWindow(real: number[], first: (px: number) => number) {
     }
     const fire = (el: El, name: string, ...args: unknown[]) =>
         (el.handlers.get(name) as Handler)(...(args as never[]));
+    /** what the disk's answers opened */
+    const answered = async () => {
+        for (let i = 0; i < 30; i++) await Promise.resolve();
+        return gpui.opened;
+    };
     /** every element under one, with its words */
     const under = (el: El): (El | string)[] => [
         el,
@@ -351,7 +360,9 @@ function createWindow(real: number[], first: (px: number) => number) {
         click(id: string, isOnSquare: boolean) {
             if (isOnSquare) (bodies.squares.get(id) as Handler)();
             fire(root, 'on_mouse_down_left', {}, cx);
+            gpui.opened.length = 0;
             fire(raw(gpui.seen.list?.el), 'on_item_click', id, cx);
+            return answered();
         },
         /** the rows drawn anew now, whatever asked: whether each is clipped */
         clipped() {
@@ -364,8 +375,7 @@ function createWindow(real: number[], first: (px: number) => number) {
         async follow(id: string, url: string) {
             gpui.opened.length = 0;
             (bodies.links.get(id) as Handler)(url as never, cx as never);
-            for (let i = 0; i < 30; i++) await Promise.resolve();
-            return gpui.opened;
+            return answered();
         },
         frame,
         /** somewhere else in the list at once, in one redraw */
@@ -375,6 +385,13 @@ function createWindow(real: number[], first: (px: number) => number) {
         },
         land: (id: string, offset: number) => list.land(id, offset),
         reset: () => list.reset(),
+        /** his right press on a message, the menu left open */
+        rightDown(id: string) {
+            const position = { x: 1, y: 2 };
+            const at = raw(gpui.seen.list?.el);
+            fire(at, 'on_item_secondary_click', id, { position }, cx);
+            fire(root, 'on_mouse_down_right', { position }, cx);
+        },
         /** his right press on a message, then the menu's one item */
         rightPress(id: string) {
             const position = { x: 1, y: 2 };
@@ -609,4 +626,21 @@ test('what he selected stays when the list grows or shrinks', () => {
     w.told(VIEW - 40);
     w.run(100);
     expect(w.rightPress('r1').label).toBe('Copy text');
+});
+
+test('a click on a file row goes through the same door: one that would run is revealed', async () => {
+    const w = createWindow(Array(5).fill(60), (px) => px);
+    w.run(500);
+    expect(await w.click('r2', false)).toEqual([['-R', '/tmp/x.command']]);
+});
+
+// herdr follows a link on any button's mouse-up, through an open menu and the viewer too
+test('a link under the right-click menu or the viewer opens nothing', async () => {
+    const w = createWindow(Array(5).fill(60), (px) => px);
+    w.run(500);
+    w.bodies.isViewerOpen = true;
+    expect(await w.follow('r1', 'path:1')).toEqual([]);
+    w.bodies.isViewerOpen = false;
+    w.rightDown('r1');
+    expect(await w.follow('r1', 'path:1')).toEqual([]);
 });

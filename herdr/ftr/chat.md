@@ -140,7 +140,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
 - ⬜ a path a reply names opens in one click, in its words (FRM-620, his o6 24 Nov)
   - given a reply names a `~/` path or an absolute one, in ticks or plain, or links to one, and it is on disk
   - then it draws as a link, and a click opens a file as its row does (a picture in the viewer), a folder in Finder; one gone since says so
-  - and a path that is not there, one in a fenced block, a command in ticks and a relative path draw as their words
+  - and a path that is not there, one in a code block, a command in ticks, a relative one and one on a network volume draw as their words; a path the newest replies name links once its file is written
 
 ## the quill and send
 

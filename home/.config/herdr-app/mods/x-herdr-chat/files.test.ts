@@ -178,7 +178,10 @@ describe('what he clicked is judged by what it resolves to', () => {
     const exec = async (program: string, args: string[]) => {
         if (program === 'open') opened.push(args);
         if (program === 'open') return { code: 0, stdout: '' };
-        const ran = spawnSync(program, args, { encoding: 'utf8' });
+        const ran = spawnSync(program, args, {
+            encoding: 'utf8',
+            timeout: 10_000,
+        });
         return { code: ran.status ?? 1, stdout: ran.stdout };
     };
 

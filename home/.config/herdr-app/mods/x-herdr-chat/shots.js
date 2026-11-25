@@ -1,8 +1,10 @@
 // Pictures waiting over the quill until sent. A pasted screenshot is saved here as a png and goes the way a dropped
 // picture does, by its path (FRM-613): never into Claude's own prompt, so × edits only our list. The png is its own
 // preview, kept per thread in shots.json, so a chat reload still shows what waits.
-import { exists, mkdir, readFile, unlink, writeFile } from 'fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'fs/promises';
 import { appHome, exec } from 'herdr';
+
+import { isOnDisk } from './disk.js';
 
 // image() loads from the app's own directory, so the previews live under it
 export const SHOTS_DIR = 'data/x-herdr-chat/shots';
@@ -191,7 +193,7 @@ export async function viewCopy(path) {
         ? path.slice(own.length)
         : `${VIEW_DIR}/${thumbName(path).slice(THUMBS_DIR.length + 1, -4)}${ext}`;
     const kept = `${appHome()}/${rel}`;
-    const isThere = await exists(path);
+    const isThere = await isOnDisk(path);
     if (path.startsWith(own) || !isThere) {
         const size = await sizeOf(kept);
         return size ? { ...size, isEarlier: !isThere, rel } : null;
