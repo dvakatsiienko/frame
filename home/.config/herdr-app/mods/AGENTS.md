@@ -52,7 +52,7 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 
 ## hazards
 
-- a `hc run --no-parent` thread has no tab until `skills/herdr/scripts/thread-tab.ts` gives it one
+- `init`'s own awaits can run under another mod's store: start async work from `cx.timer.after(0)`
 - vim normal mode has no screen marker: empty Claude's prompt via `clearKeys` (chatter `queued.js`)
 - a helper green in vitest can lack a herdr global (`TextEncoder`); `check` renders one frame: shoot a view that ran it
 - `keys.json` changes only through the door, `home/.claude/plugin-x/skills/herdr/scripts/keys-change.ts`: a plain save drops every mod's `cx.bind_keys`
