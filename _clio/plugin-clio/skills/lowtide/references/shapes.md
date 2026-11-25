@@ -1,11 +1,11 @@
 # lowtide shapes — what every lowtide skill reads and prints
 
-one home for shared parts (PK-387:W23, W25): every lowtide skill points here, none points at another.
+one home for shared parts (PK-387:W23, W25): every lowtide skill points here.
 
 ## the filter
 
 - off: `someday` and `snoozed` 🦥 tickets, in every lowtide query and «your tails» answer; they unfold on dima's ask; `snoozed` is set or lifted by dima, or a clio on his ask, and is left alone (11-18)
-- scoped tickets belong to their lane: a lane's (the cli project, the mods and herdr milestones) or an app's (its project), read from linear; triage leaves them out, a lane checkup reads only them
+- scoped tickets belong to their lane: a lane's (the cli project, the mods and herdr milestones) an app's (its project), or lab's and portfolio's, read from linear; triage leaves them out, a lane checkup reads only them
 - «signed» is the body's `## signed` lines, never the label
 - the report opens with its filter line: kept, dropped, stores searched
 
