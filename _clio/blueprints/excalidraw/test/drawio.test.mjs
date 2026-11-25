@@ -14,7 +14,7 @@ test('the real board parses to its known census', () => {
         count('tile'),
         count('label'),
         count('edge'),
-    ]).toEqual([22, 6, 190, 49, 172]);
+    ]).toEqual([22, 6, 190, 50, 174]);
 });
 
 test('child coordinates are absolute', () => {
