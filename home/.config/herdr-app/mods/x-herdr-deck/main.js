@@ -262,8 +262,12 @@ export default class Deck extends View {
         /** @type {import('./orbit.js').OrbitPin} */
         this.pin = 'top';
         cx.timer.every(THREADS_BEAT_MS, (cx) => this.reload(cx));
-        this.reload(cx);
-        onShelfWrite(cx, USAGE, (cx) => this.reload(cx));
+        // never in init itself: herdr runs what init queued inside the next call, another mod's, whose store and owner the
+        // first read would then take for its steer boxes (kept.test.ts); a timer's call is this copy's own
+        cx.timer.after(0, (cx) => {
+            this.reload(cx);
+            onShelfWrite(cx, USAGE, (cx) => this.reload(cx));
+        });
         // the press folder too: a 🔥 pressed on the band above a chat draws on its row at once
         for (const folder of [
             SESSIONS,

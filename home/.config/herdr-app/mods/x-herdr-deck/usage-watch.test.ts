@@ -46,7 +46,13 @@ const cx: Record<string, unknown> = {
     notify: () => {},
     on_action: () => {},
     spawn: (run: (c: unknown) => Promise<void>) => void run(cx),
-    timer: { after: () => ({ cancel() {} }), every: () => ({ cancel() {} }) },
+    timer: {
+        after: (ms: number, run: (c: unknown) => void) => {
+            if (ms === 0) run(cx);
+            return { cancel() {} };
+        },
+        every: () => ({ cancel() {} }),
+    },
 };
 
 // FRM-620 exit 2: the week number follows its file live, and a read half-written keeps it
