@@ -13,7 +13,7 @@ read this before a change: find the one module that owns the state you touch, an
 - `message-body.js` — a nested view for each message and row of pictures near the screen, the one place herdr takes a selection, link or press handler in a list (until herdr-app#942)
 - `message-row.js` — each row as drawn (his bubble, a reply and its fold, tool calls, files), the rows shown of the model's, which replies and tool calls he opened
 - `quill-view.js` — the quill: the text box, each thread's draft, the files over it, the + picker, the / menu
-- `send-path.js` — a send: the magic send's marks, the hold, a push, a send that did not go coming back
+- `send-path.js` — a send: a note's own, the magic send's marks, the hold, a push, a send that did not go coming back
 - `band-view.js` — the band over the quill and the bar under it: meters, 🍃 auto wind, the deck button, Stop
 - `pickers.js` — the model, effort and permission pickers under the quill
 - `picture-viewer.js` — the full-window picture viewer
@@ -26,6 +26,6 @@ read this before a change: find the one module that owns the state you touch, an
 - reading: `reader.js` (new lines of a file), `pages.js` (older pages), `row-model.js` (lines in, rows out), `thread.js`, `shown.js`
 - the list: `place.js` (his reading place), `follow.js`, `heights.js`, `fold.js`, `tool-folds.js`, `files.js`, `disk.js` (is a path there, asked of the shell), `path-links.js` (the paths a reply names, links once found on disk), `details.js`, `blocks.js`, `drawn.js` (the markdown each row draws, which find reads too), `relay.js`
 - the quill and sending: `quill.js`, `send.js`, `magic.js`, `joins.js`, `queued.js`, `attach.js`, `attachments.js`, `shots.js`, `sent-pictures.js`, `paste.js`, `lists.js` (a paste reads plain, its lists keep their markers), `typed.js`, `slash.js`, `commands.js`, `skills.js`
-- notes: `notes.js` (every note, its join row and its record), `note-states.js` (a note's states, what each event makes of it), `note-text.js` (the one line a thread gets of a note: the quote cut short, the message's id, the note)
+- notes: `notes.js` (every note, its join row and its record), `note-states.js` (a note's states, what each event makes of it), `join-io.js` (the join files' doors in herdr), `note-text.js` (the one line a thread gets of a note: the quote cut short, the message's id, the note)
 - the rest: `band.js`, `blocked.js`, `picker.js`, `effort.js`, `find.js`, `menu.js`, `selection.js` (the words he selected, read at a right press), `viewer.js`, `look.js`, `hotkeys.js`, `settings-model.js`, `settings-store.js`, `settings-io.js`, `icons.js`, `tint.js`, `contrast.js` (a background he can read on, whatever the theme), `chat-types.js`
 - shared with the other mods: each file in `mod.json`'s `shared` (`band-press.js`, `chat-asks.js`, `joined.js`, …) lives in `../_shared/` and lands beside the mod; vitest resolves the same import through `vitest.config.ts`'s `herdr-shared` resolver

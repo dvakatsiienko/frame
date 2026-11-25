@@ -2,9 +2,10 @@
 // cmd+Enter pushes them now; the hold's fill, the marks against the thread's state, a send that did not go coming
 // back. the rules live in magic.js, joins.js and send.js
 
-import { exec, hc, home, readTextFile, writeTextFile } from 'herdr';
+import { hc, home } from 'herdr';
 
 import { withPaths } from './attach.js';
+import { joinIo, newId } from './join-io.js';
 import {
     HOLD_DELAY_MS,
     HOLD_PUSH_MS,
@@ -28,35 +29,6 @@ import { sidOf } from './thread.js';
 /** @typedef {import('./chat-types.js').Context} Context */
 
 const NOT_IN_HERDR = 'This thread does not run in herdr: nothing was sent';
-
-/** the join file's doors in herdr: a mkdir lock dir, its age from macOS stat, a write over the text it read */
-/** @type {import('./joins.js').JoinIo} */
-const joinIo = {
-    lock: async (path) =>
-        (await exec('mkdir', [path]).catch(() => null))?.code === 0,
-    lockAge: async (path) => {
-        const out = await exec('stat', ['-f', '%m', path]).catch(() => null);
-        const at = Number(out?.stdout.trim());
-        return out?.code === 0 && at ? Date.now() - at * 1000 : null;
-    },
-    now: () => Date.now(),
-    read: (path) => readTextFile(path),
-    sleep: async (ms) => {
-        await exec('sleep', [String(ms / 1000)]);
-    },
-    unlock: async (path) => {
-        await exec('rmdir', [path]);
-    },
-    write: (path, body, expected) => writeTextFile(path, body, expected),
-};
-
-const newId = () =>
-    'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) =>
-        (c === 'x'
-            ? Math.floor(Math.random() * 16)
-            : Math.floor(Math.random() * 4) + 8
-        ).toString(16),
-    );
 
 /** herdr's window answers only inside a call it made; a timer tick may get a throw, read as «still active» */
 function isWindowActive() {
@@ -195,6 +167,37 @@ export function createSendPath({
         });
     }
 
+    /** a message to a thread, as its Claude's next prompt @param {string} address @param {string} message @returns {Promise<string | null>} why it did not go */
+    async function deliver(address, message) {
+        const sent = await hc(sendArgs(address, message)).catch(
+            (/** @type {unknown} */ error) => ({
+                code: 1,
+                stderr: String(error),
+            }),
+        );
+        return sent.code === 0
+            ? null
+            : `Not sent: ${sent.stderr.trim() || 'herdr refused it'}`;
+    }
+
+    /**
+     * a note of the thread shown goes now, alone: the quill's words and its files stay
+     * @param {ReturnType<typeof import('./notes.js').createNotes>} notes @param {string} id @param {number} back
+     * @returns {Promise<string | null>} why it did not go
+     */
+    async function sendNote(notes, id, back) {
+        const address = shownAddress();
+        const file = shownFile();
+        if (!address || !file) return NOT_IN_HERDR;
+        const blocked = sendBlocked(address, typingInto);
+        if (blocked) return blocked;
+        const out = await notes.release(file, id, joins, back);
+        if ('reason' in out) return out.reason;
+        const reason = await deliver(address, out.line);
+        if (reason) notes.returned(file, id, reason);
+        return reason;
+    }
+
     /**
      * the words leave the quill for the thread shown, as its Claude's next prompt, or wait in its queue while it
      * works. a message that did not go comes back to the quill
@@ -217,18 +220,13 @@ export function createSendPath({
         if (message.startsWith('/')) pushed(message, Date.now());
         say(note, cx);
         cx.spawn(async (cx) => {
-            const sent = await hc(sendArgs(address, message)).catch(
-                (/** @type {unknown} */ error) => ({
-                    code: 1,
-                    stderr: String(error),
-                }),
-            );
-            if (sent.code === 0) return;
+            const reason = await deliver(address, message);
+            if (!reason) return;
             // his words come back before what he typed since, and his files with them, never lost, on screen or not
             quills.apply(file, { said: text, type: 'returned' });
             if (file && files.length) attachments.add(file, files);
             if (shownFile() !== file) return;
-            say(`Not sent: ${sent.stderr.trim() || 'herdr refused it'}`, cx);
+            say(reason, cx);
         });
     }
 
@@ -445,6 +443,7 @@ export function createSendPath({
         magic,
         press,
         push,
+        sendNote,
         settle,
         showSettled,
         /** the shown thread's joins, as its state lists them; null: joins are off for it @param {import('./magic.js').Joins | null} next */
