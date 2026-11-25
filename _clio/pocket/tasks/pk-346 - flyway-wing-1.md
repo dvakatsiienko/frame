@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-24T18:07:00Z'
+updated_date: '2026-11-25T10:47:44Z'
 labels:
   - s
   - clio-wing-1
@@ -20,12 +20,13 @@ ordinal: 1001
 - [ ] #2 f59 FRM-696 hang-heal: the full shape-idea grill — with: dima
 - [ ] #3 f61 PK-468 ticket flow: where we stand and his next step — with: dima
 - [ ] #4 f71 FRM-639 events piece 2: six questions, the draft in mods-lane-9/frm-639-section.md — with: dima
-- [ ] #5 f52 📅 FRM-465 exit 5, the minors half: both repos get a minors pr at the 07:00 window — on: 2026-11-25
-- [ ] #6 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #7 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #8 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #9 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
-- [ ] #10 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
+- [ ] #5 f72 github event streams: is gh event listen worth it for our ci and pr watches — after everything pending — with: dima
+- [ ] #6 f52 📅 FRM-465 exit 5, the minors half: both repos get a minors pr at the 07:00 window — on: 2026-11-25
+- [ ] #7 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #8 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #9 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #10 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #11 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -812,4 +813,6 @@ done 2026-11-24 16:13: f39 📅 usage trial, all-fable, a fable reset only at fa
 done 2026-11-24 16:13: f41 ⏳ FRM-407 fresh-eyes: a trial round on speak v2's first screen, then the verdict — waits for: that pr (FRM-407 Todo)
 
 16:13: f53, f39 and f41 handed to main on his word, «f53 + f39 + f41: delegate to main clio»; not done here
+
+his o3 steer (2026-11-25 12:46, dima): discuss with wing, after everything pending solved
 <!-- SECTION:NOTES:END -->

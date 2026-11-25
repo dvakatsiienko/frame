@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T10:37:57Z'
+updated_date: '2026-11-25T10:47:43Z'
 labels:
   - s
   - clio-main
@@ -2805,4 +2805,7 @@ PK-349:W2427 (2026-11-24 21:11, dima): are you sure it is necessary to solve now
 
 PK-349:W2428 (2026-11-25 12:32, dima): afk 1 min, brewing coffee
 raw drop (2026-11-25 12:32, dima): afk 1 min, brewing coffe
+
+PK-349:W2429 (2026-11-25 12:39, dima, herdr-typed): herdr codie too
+raw drop (2026-11-25 12:39, dima): herdr codie too
 <!-- SECTION:NOTES:END -->
