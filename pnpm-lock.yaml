@@ -270,11 +270,11 @@ importers:
   import/raycast/extensions/x-ray:
     dependencies:
       '@raycast/api':
-        specifier: 2.12.1
-        version: 2.12.1(supports-color@8.1.1)
+        specifier: 2.13.1
+        version: 2.13.1(supports-color@8.1.1)
       '@raycast/utils':
         specifier: 2.3.3
-        version: 2.3.3(@raycast/api@2.12.1(supports-color@8.1.1))(react@19.3.1)
+        version: 2.3.3(@raycast/api@2.13.1(supports-color@8.1.1))(react@19.3.1)
       node-emoji:
         specifier: 2.2.0
         version: 2.2.0
@@ -870,8 +870,8 @@ packages:
   '@oxc-project/types@0.156.0':
     resolution: {integrity: sha512-1Duyg48TdJNdyhEB8Xn1L36bT9Pv6GUtlKjHxOys8xkaF/rQq3XJE+bAurSK/AgIz5mGFsb77cn9Pb20+WCScw==}
 
-  '@raycast/api@2.12.1':
-    resolution: {integrity: sha512-vqYBJUtN+0JwS6grg8QwCVoFIMC6rjQfLBjbEdR6gJrzZ1kwb/2Tus34OpMkH5c7IstZAzmw5L+8FlknHYoxjg==}
+  '@raycast/api@2.13.1':
+    resolution: {integrity: sha512-jlgadrs91RKLFfscvsJrDKWPqjFffN0o7xT2YK+23+fkxvKPfE9sqPPDvRYO6ZqcVZcrIC30lKeUipEUt1O6Og==}
     engines: {node: '>=22.22.2'}
     hasBin: true
     peerDependencies:
@@ -3071,7 +3071,7 @@ snapshots:
 
   '@oxc-project/types@0.156.0': {}
 
-  '@raycast/api@2.12.1(supports-color@8.1.1)':
+  '@raycast/api@2.13.1(supports-color@8.1.1)':
     dependencies:
       '@oclif/core': 5.1.10
       '@oclif/plugin-autocomplete': 4.0.6(supports-color@8.1.1)
@@ -3086,9 +3086,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@raycast/utils@2.3.3(@raycast/api@2.12.1(supports-color@8.1.1))(react@19.3.1)':
+  '@raycast/utils@2.3.3(@raycast/api@2.13.1(supports-color@8.1.1))(react@19.3.1)':
     dependencies:
-      '@raycast/api': 2.12.1(supports-color@8.1.1)
+      '@raycast/api': 2.13.1(supports-color@8.1.1)
       dequal: 2.0.3
     optionalDependencies:
       react: 19.3.1
