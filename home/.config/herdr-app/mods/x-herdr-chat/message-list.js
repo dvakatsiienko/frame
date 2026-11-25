@@ -14,6 +14,7 @@ import { guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
 import { copiedFrom, createMessageMenu, menuPlace } from './menu.js';
 import { createMessageBodies } from './message-body.js';
+import { notesBefore } from './note-rows.js';
 import { openPath } from './open-path.js';
 import { pathOf } from './path-links.js';
 import { END_GLIDE_MS, createPlace } from './place.js';
@@ -44,6 +45,7 @@ export const placeKey = (file) => `place:${file}`;
 /**
  * @typedef {object} MessageListDeps
  * @property {(selected: import('./selection.js').SelectedAt, cx: Context) => void} annotate the note box on words he selected
+ * @property {(id: string, at: { x: number, y: number } | null, cx: Context) => void} openNote the note box on a note he made
  * @property {() => string | null} audioApp the app his settings open audio in, null: the system's choice
  * @property {() => string | null} file the shown thread's transcript
  * @property {ReturnType<typeof import('./heights.js').createHeights>} heights
@@ -73,6 +75,8 @@ export function createMessageList(deps) {
     let pressing = null;
     /** @type {string | null} */
     let pressed = null;
+    /** the last left press, in the list's px @type {{ x: number, y: number } | null} */
+    let pressedAt = null;
     /** the items on screen @type {string[]} */
     let drawnKeys = [];
     /**
@@ -237,12 +241,18 @@ export function createMessageList(deps) {
                 else if (press?.kind === 'unsend')
                     deps.unsend(press.queued, cx);
                 else if (press?.kind === 'file') openFile(press.path, cx);
+                else if (press?.kind === 'note')
+                    deps.openNote(press.id, pressedAt, cx);
             })
             .size_full();
         return div()
             .id('chat-list')
             .on_mouse_down('left', (event, cx) => {
                 readOrigin(event);
+                const local = event.local_position;
+                pressedAt = local
+                    ? { x: local.x / zoom, y: local.y / zoom }
+                    : null;
                 pressed = pressing;
                 pressing = null;
                 cx.stop_propagation();
@@ -582,6 +592,16 @@ export function createMessageList(deps) {
         at.read(shownRows, sizes);
     }
 
+    /** a note row that comes or goes above his place moves nothing he reads @param {readonly Row[]} rows */
+    function keepOverNotes(rows) {
+        readPlace();
+        const { place } = at;
+        if (!place) return;
+        const was = notesBefore(shownRows, place.id);
+        const now = notesBefore(rows, place.id);
+        if (was >= 0 && now >= 0 && was !== now) at.hold();
+    }
+
     /** his place is asked of the list again, to the pixel: after a new width; unseen while it lands */
     function holdPlace() {
         if (at.hold()) settleUntil = Date.now() + SETTLE_MS;
@@ -692,6 +712,7 @@ export function createMessageList(deps) {
             }
             lookWidth = look.width;
             lookKey = key;
+            keepOverNotes(rows);
             shownRows = rows;
         },
         view,

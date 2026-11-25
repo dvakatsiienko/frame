@@ -732,6 +732,48 @@ test('its height is read in the px its place is in', () => {
     at.zoom = 1;
 });
 
+describe('a press on a note’s row (FRM-585 B2)', () => {
+    const made = async (isJoined: boolean) => {
+        const w = world();
+        w.f6();
+        w.type('mine');
+        w.press(ENTER);
+        await settle();
+        const id = w.note()?.id ?? '';
+        if (isJoined)
+            w.now.joins = { joined: [w.note()?.joinId ?? ''], taken: [] };
+        await w.notes.settle('/t/a.jsonl');
+        w.f6();
+        at.timers.length = 0;
+        at.box.focused = 0;
+        w.mini.openNote(id, { x: 10, y: 20 }, w.cx as never);
+        w.run();
+        return w;
+    };
+
+    test('opens it to edit while it waits', async () => {
+        const w = await made(false);
+        expect(at.box.text).toBe('mine');
+        expect(w.words()).toEqual(
+            expect.arrayContaining(['the box', 'waiting']),
+        );
+        expect([at.box.focused, w.top()]).toEqual([1, 32]);
+    });
+
+    test('opens it to read once the thread has it, the keyboard where it was', async () => {
+        const w = await made(true);
+        expect(w.words()).toEqual(expect.arrayContaining(['mine', 'joined']));
+        expect(w.words()).not.toContain('the box');
+        expect(at.box.focused).toBe(0);
+    });
+
+    test('that went meanwhile opens nothing', () => {
+        const w = world();
+        w.mini.openNote('gone', null, w.cx as never);
+        expect(w.mini.isOpen()).toBe(false);
+    });
+});
+
 test('a held F6 opens it once', () => {
     const w = world();
     w.f6();

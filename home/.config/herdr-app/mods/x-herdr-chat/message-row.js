@@ -11,6 +11,7 @@ import { fileAt, isSentRow, isUnsendRow, withFileRows } from './files.js';
 import { replyFold } from './fold.js';
 import { ICONS } from './icons.js';
 import { noteMarks } from './note-marks.js';
+import { noteIdOf, noteRows } from './note-rows.js';
 import { tint } from './tint.js';
 import {
     createToolFolds,
@@ -111,6 +112,7 @@ export function createMessageRows(deps) {
                         .child(el),
                 );
         if (row.kind === 'file') return column(fileRow(row, t, body));
+        if (row.kind === 'note') return column(noteRow(row, t));
         if (row.kind === 'tool') return column(toolRow(row, t, pre, isShown));
         const most = Math.max(240, Math.floor(deps.room() * BUBBLE_SHARE));
         const fold = foldOf(row);
@@ -424,6 +426,36 @@ export function createMessageRows(deps) {
             );
     }
 
+    /** a note of his under its message: the list's item click opens it @param {Row} row @param {Theme} t */
+    const noteRow = (row, t) =>
+        h_flex()
+            .w_full()
+            .when(Boolean(row.note?.isMine), (el) => el.justify_end())
+            .child(
+                h_flex()
+                    .max_w(
+                        Math.max(240, Math.floor(deps.room() * BUBBLE_SHARE)),
+                    )
+                    .min_w(0)
+                    .gap(6)
+                    .items_center()
+                    .px(8)
+                    .py(3)
+                    .rounded(6)
+                    .cursor_pointer()
+                    .hover((st) => st.bg(t.hover))
+                    .text_size(12)
+                    .text_color(t.muted)
+                    .child('📝')
+                    .child(div().min_w(0).truncate().child(row.text))
+                    .child(
+                        div()
+                            .flex_none()
+                            .text_color(t.dim)
+                            .child(row.note?.word ?? ''),
+                    ),
+            );
+
     /**
      * a file a reply names, its own row under the reply (FRM-587): the list's item click opens it. no press or hover
      * handler in here, one inside a list row blanks the whole list (herdr-app#894)
@@ -557,13 +589,15 @@ export function createMessageRows(deps) {
         },
         /**
          * a click on a row: a tool call opens or closes, a folded reply opens whole, pictures open in the viewer,
-         * a file in its app
+         * a file in its app, a note in its box
          * @param {readonly Row[]} rows @param {string} key @param {string | null} [picture] the square pressed, by its id
-         * @returns {{ kind: 'redraw' } | { kind: 'pictures', files: string[], at: number } | { kind: 'file', path: string } | { kind: 'unsend', queued: string } | null}
+         * @returns {{ kind: 'redraw' } | { kind: 'pictures', files: string[], at: number } | { kind: 'file', path: string } | { kind: 'unsend', queued: string } | { kind: 'note', id: string } | null}
          */
         press(rows, key, picture = null) {
             const id = key.replace(/#(?:above|below)$/, '');
             const pressed = rows.find((r) => r.id === id);
+            const note = pressed && noteIdOf(id);
+            if (note) return { id: note, kind: 'note' };
             if (pressed && isUnsendRow(id)) {
                 if (!pressed.queued) return null;
                 // the bubble leaves at the press, before the pull: his words are on their way back (his 20:24 «clunky»)
@@ -597,6 +631,7 @@ export function createMessageRows(deps) {
                     ),
                     home(),
                     fileRows,
+                    (row) => noteRows(row, deps.notesOn(row)),
                 ),
                 toolFolds,
             ),

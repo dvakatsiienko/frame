@@ -61,73 +61,79 @@ function unsendRow(row, cache) {
  * @param {readonly Row[]} rows
  * @param {string} home his home, for a `~` path
  * @param {Map<string, { version: number, files: Row[] }>} cache the file rows made so far, by reply
+ * @param {(row: Row) => Row[]} [under] the rows of its own a message has after its files
  * @returns {Row[]}
  */
-export function withFileRows(rows, home, cache) {
+export function withFileRows(rows, home, cache, under = () => []) {
+    return rows.flatMap((row) => [
+        row,
+        ...filesOf(row, home, cache),
+        ...under(row),
+    ]);
+}
+
+/** @param {Row} row @param {string} home @param {Map<string, { version: number, files: Row[] }>} cache @returns {Row[]} */
+function filesOf(row, home, cache) {
     /** @type {Row[]} */
     const out = [];
-    for (const row of rows) {
-        out.push(row);
-        if (row.kind === 'mine') {
-            if (row.pictures.length || row.files.length)
-                out.push(sentRow(row, cache));
-            if (row.isWaiting) out.push(unsendRow(row, cache));
-            continue;
-        }
-        if (row.kind !== 'reply') continue;
-        let had = cache.get(row.id);
-        if (had?.version !== row.version) {
-            const links = fileLinks(row.text, home).map((file, i) => ({
-                ...file,
-                id: `${row.id}#file-${i}`,
-            }));
-            const pictures = links.filter((f) => isPicture(f.path));
-            /** @param {string} id @param {string} text @param {string | null} path @returns {Row} */
-            const fileRow = (id, text, path) => ({
-                at: row.at,
-                delivery: null,
-                files: [],
-                id,
-                isTurnStart: false,
-                isWaiting: false,
-                kind: 'file',
-                ...(path ? { path } : {}),
-                pictures: path
-                    ? []
-                    : pictures.map((f) => ({
-                          data: null,
-                          id: f.id,
-                          media: null,
-                          path: f.path,
-                      })),
-                replyId: null,
-                text,
-                tools: [],
-                version: row.version,
-            });
-            // a reply's pictures draw together as squares under it, the way his own do; any other file is its own row
-            had = {
-                files: [
-                    ...(pictures.length
-                        ? [
-                              fileRow(
-                                  `${row.id}#pictures`,
-                                  pictures.map((f) => f.label).join(', '),
-                                  null,
-                              ),
-                          ]
-                        : []),
-                    ...links
-                        .filter((f) => !isPicture(f.path))
-                        .map((f) => fileRow(f.id, f.label, f.path)),
-                ],
-                version: row.version,
-            };
-            cache.set(row.id, had);
-        }
-        out.push(...had.files);
+    if (row.kind === 'mine') {
+        if (row.pictures.length || row.files.length)
+            out.push(sentRow(row, cache));
+        if (row.isWaiting) out.push(unsendRow(row, cache));
+        return out;
     }
-    return out;
+    if (row.kind !== 'reply') return out;
+    let had = cache.get(row.id);
+    if (had?.version !== row.version) {
+        const links = fileLinks(row.text, home).map((file, i) => ({
+            ...file,
+            id: `${row.id}#file-${i}`,
+        }));
+        const pictures = links.filter((f) => isPicture(f.path));
+        /** @param {string} id @param {string} text @param {string | null} path @returns {Row} */
+        const fileRow = (id, text, path) => ({
+            at: row.at,
+            delivery: null,
+            files: [],
+            id,
+            isTurnStart: false,
+            isWaiting: false,
+            kind: 'file',
+            ...(path ? { path } : {}),
+            pictures: path
+                ? []
+                : pictures.map((f) => ({
+                      data: null,
+                      id: f.id,
+                      media: null,
+                      path: f.path,
+                  })),
+            replyId: null,
+            text,
+            tools: [],
+            version: row.version,
+        });
+        // a reply's pictures draw together as squares under it, the way his own do; any other file is its own row
+        had = {
+            files: [
+                ...(pictures.length
+                    ? [
+                          fileRow(
+                              `${row.id}#pictures`,
+                              pictures.map((f) => f.label).join(', '),
+                              null,
+                          ),
+                      ]
+                    : []),
+                ...links
+                    .filter((f) => !isPicture(f.path))
+                    .map((f) => fileRow(f.id, f.label, f.path)),
+            ],
+            version: row.version,
+        };
+        cache.set(row.id, had);
+    }
+    return had.files;
 }
 
 /**
@@ -141,5 +147,6 @@ export function fileAt(rows, key) {
     return row?.kind === 'file' ? (row.path ?? null) : null;
 }
 
-/** the row a saved reading place names: a file row's or a tool call's place is found through its own row @param {string} id */
-export const replyIdOf = (id) => id.replace(/#(?:file|call)-\d+$/, '');
+/** the row a saved reading place names: a file row's, a tool call's or a note's place is found through its own row @param {string} id */
+export const replyIdOf = (id) =>
+    id.replace(/#(?:(?:file|call)-\d+|note-.+)$/, '');

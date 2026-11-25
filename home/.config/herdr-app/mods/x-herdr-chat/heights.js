@@ -29,7 +29,7 @@ const FILE_ROW_PX = 28;
  * @param {number} width
  */
 export function guessHeight(row, width) {
-    if (row.kind === 'tool') return TOOL_ROW_PX;
+    if (row.kind === 'tool' || row.kind === 'note') return TOOL_ROW_PX;
     const perLine = Math.max(20, Math.floor((width * 0.8) / CHAR_PX));
     const lines = row.text
         .split('\n')

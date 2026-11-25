@@ -17,9 +17,10 @@ import {
 /**
  * @typedef {object} Row
  * @property {string} id the uuid of the row's first transcript line
- * @property {'mine' | 'reply' | 'tool' | 'file' | 'start'} kind `file`: a file a reply names, drawn under it (files.js);
+ * @property {'mine' | 'reply' | 'tool' | 'file' | 'note' | 'start'} kind `file`: a file a reply names, drawn under it (files.js); `note`: a note of his on it (note-rows.js);
  *   `start`: the quiet row over a thread read back to its first line
  * @property {string} [path] a file row's file
+ * @property {{ isMine: boolean, word: string }} [note] a note row's: whether it is on a message of his, and where it stands
  * @property {string} text his words, the reply's markdown, or the line naming a run of tool calls
  * @property {string | null} at when its line was written, as the transcript stamps it
  * @property {number} version 1 at birth, one more each time the text changes

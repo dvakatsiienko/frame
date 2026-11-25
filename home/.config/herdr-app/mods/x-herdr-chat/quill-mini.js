@@ -10,7 +10,7 @@ import { focusBorder } from './focus-ring.js';
 import { JOIN_TAKE_MS } from './joins.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
 import { retextWait } from './magic.js';
-import { isLocked } from './note-states.js';
+import { isLocked, stateWord } from './note-states.js';
 import { quoteOf } from './note-text.js';
 
 /** @typedef {import('./chat-types.js').Context} Context */
@@ -57,11 +57,7 @@ export function miniPlace(end, view, size) {
 
 /** the word under the box: where the note stands @param {Note} note */
 export const noteWord = (note) =>
-    note.state === 'draft'
-        ? (note.reason ?? '')
-        : note.state === 'taken'
-          ? 'waiting'
-          : note.state;
+    note.state === 'draft' ? (note.reason ?? '') : stateWord(note);
 
 /**
  * @param {object} deps
@@ -126,12 +122,9 @@ export function createQuillMini(deps) {
         cx.notify();
     }
 
-    /** the box on these words, the cursor in it @param {SelectedAt} selected @param {Context} cx */
-    function show({ at, passage }, cx) {
-        const thread = deps.thread();
-        if (!thread || !box) return;
-        reset();
-        const note = deps.notes.open(thread, passage, deps.rowOf);
+    /** the box on a note, the cursor in it while the note is his @param {Note} note @param {string} thread @param {Point | null} at @param {Context} cx */
+    function openOn(note, thread, at, cx) {
+        if (!box) return;
         open = { at, id: note.id, thread };
         box.set_value(note.text);
         box.set_selected_range({
@@ -139,9 +132,26 @@ export function createQuillMini(deps) {
             start: note.text.length,
         });
         cx.timer.after(16, () => {
-            if (open?.id === note.id) box?.focus();
+            if (open?.id === note.id && !isClosed(note)) box?.focus();
         });
         cx.notify();
+    }
+
+    /** the box on these words @param {SelectedAt} selected @param {Context} cx */
+    function show({ at, passage }, cx) {
+        const thread = deps.thread();
+        if (!thread) return;
+        reset();
+        openOn(deps.notes.open(thread, passage, deps.rowOf), thread, at, cx);
+    }
+
+    /** the box on a note he made, by its row @param {string} id @param {Point | null} at @param {Context} cx */
+    function openNote(id, at, cx) {
+        const thread = deps.thread();
+        if (!thread) return;
+        reset();
+        const note = deps.notes.of(thread).find((n) => n.id === id);
+        if (note) openOn(note, thread, at, cx);
     }
 
     /** F6: the box on what stood selected, or shut @param {() => SelectedAt | null} selected @param {number} at when it was pressed @param {Context} cx */
@@ -422,6 +432,7 @@ export function createQuillMini(deps) {
         focus: () => box?.focus(),
         isOpen: () => open !== null,
         noteChanged,
+        openNote,
         reset,
         show,
         start,

@@ -203,6 +203,22 @@ test('his notes’ words are painted under find’s hits, the stepped one last, 
     expect(gpui.painted).toEqual([]);
 });
 
+test('the list draws a note’s row under its message', () => {
+    const { notes, view } = createRows();
+    notes.set('new', [{ id: 'n1', state: 'waiting', text: 'why?' }]);
+    const ids = view.shown(rows, { tools: 'show' } as never).map((r) => r.id);
+    expect(ids.slice(-2)).toEqual(['new', 'new#note-n1']);
+});
+
+test('a press on a note’s row names its note', () => {
+    const { view } = createRows();
+    const row = {
+        ...(reply('a#note-n1', 'why?') as object),
+        kind: 'note',
+    } as never;
+    expect(view.press([row], 'a#note-n1')).toEqual({ id: 'n1', kind: 'note' });
+});
+
 test('a note’s words are painted in their own text view alone', () => {
     const { notes, view } = createRows();
     const source = '```ts\ntwo\n```';
