@@ -14,7 +14,7 @@ The working shape that fits: labeled sub-batches with a **siesta** after each (`
 
 **The inbox is a plan source, never a work order.** Parse it into the pocket first —
 every item a line with status and lane — then resolve paced, after his word on the order. Data
-loss dies at the parse, not at the resolve: an item with a checklist line cannot vanish. **An
+loss dies at the parse, not at the resolve. **An
 item's url travels verbatim into its pocket item** — a link is payload, never decoration.
 
 **His thread is the lane; member traffic stays out of it** (dima, 2026-09-30: codie replies buried
@@ -45,7 +45,7 @@ floods; no other member prints one.
 
 **A remove or uninstall instruction to dima goes out only after its target's source is read**.
 
-**A ui part is shown, never described** (dima, 2026-11-10: «let's use screenshots to communicate»): a shot with the part boxed and named, drawn by me, helga or a `helper-lite`; where its window is shot: the surface leaf. An ask comparing pictures carries each: one in `link`, the rest as paths in its body (dima, 2026-11-25).
+**A ui part is shown, never described** (dima, 2026-11-10: «let's use screenshots to communicate»): a shot with the part boxed and named, drawn by me, helga or a `helper-lite`; where its window is shot: the surface leaf. An ask comparing pictures carries each (dima, 2026-11-25): one in `link`, the rest as paths in its body, the one raw path an ask holds.
 
 **An ask that needs his hand names the exact place** — the door, the app, the screen — and numbered steps shown; a test ≤3 presses, each with what he should see, the rest ours (dima, 2026-11-25); a file goes in `link`, the text names it in words, never a raw path (his o4, 11-20; until: FRM-677).
 
