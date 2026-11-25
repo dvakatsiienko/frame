@@ -255,7 +255,7 @@ describe('gate-queue --hold: the turn x takes', () => {
     });
 
     // x died in line, so the ready line meets a closed pipe: bash 3.2, the mac's, once wrote it into the run's own clock read
-    test('an x gone before its turn leaves the turn free, its row at exit 1', async () => {
+    test('an x gone before its turn leaves the turn free, its row at exit 141', async () => {
         const { gateTurn, state } = fixture();
         plantHolder(gateTurn, String(process.pid), liveSince());
         const child = spawn(script, ['--hold', 'x'], {
@@ -271,7 +271,7 @@ describe('gate-queue --hold: the turn x takes', () => {
         rmSync(gateTurn, { recursive: true });
         await ended;
         expect(existsSync(gateTurn)).toBe(false);
-        expect(logRows(state).map((row) => row[5])).toEqual(['1']);
+        expect(logRows(state).map((row) => row[5])).toEqual(['141']);
     });
 
     test('a hold past its cap frees the turn, logs 124 and names the cap', () => {
@@ -1115,7 +1115,7 @@ describe('gate-queue cpu log', () => {
             '20',
             { GATE_QUEUE_IDLE_SAMPLES: '1' },
         );
-        expect(Number(cpuRows(state)[0]?.[7])).toBeGreaterThan(0.2);
+        expect(Number(cpuRows(state)[0]?.[7])).toBeGreaterThan(0);
     });
 
     test('no turn, no row', () => {

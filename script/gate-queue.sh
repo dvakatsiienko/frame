@@ -292,6 +292,8 @@ leave() { rm -f "$ticket"; }
 trap 'leave; drop_sample' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
+# bash 5 left to die of it reads exit 0 in the trap below, bash 3.2 reads 1
+trap 'exit 141' PIPE
 next_say=0
 until first_in_line past-load && is_calm && mkdir "$turn" 2>/dev/null; do
     # only the first in line frees a stale turn, so it never takes a turn a newer run just made
@@ -322,7 +324,7 @@ times >"$sample.times-before"
 release() {
     local code=$? ran
     # a signal that ended it here would leave the turn taken
-    trap '' HUP INT TERM
+    trap '' HUP INT TERM PIPE
     drop_unwritten
     ran=$(($(date +%s) - took))
     times >"$sample.times-after"
