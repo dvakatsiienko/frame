@@ -1,16 +1,14 @@
 import { expect, test, vi } from 'vitest';
 
-type El = { id: string | null; kids: unknown[]; tooltip: string | null };
+type El = { id: string | null; kids: unknown[] };
 const { make } = vi.hoisted(() => ({
     make: (): unknown => {
-        const el: El = { id: null, kids: [], tooltip: null };
+        const el: El = { id: null, kids: [] };
         const self: unknown = new Proxy(el, {
             get(target, name) {
                 if (name === 'raw') return target;
                 return (...args: unknown[]) => {
                     if (name === 'id') target.id = String(args[0]);
-                    else if (name === 'tooltip')
-                        target.tooltip = String(args[0]);
                     else if (name === 'child') target.kids.push(args[0]);
                     else if (name === 'children')
                         target.kids.push(...(args[0] as unknown[]));
@@ -65,5 +63,4 @@ test("a card named by hand has its step's ticket as its pill (FRM-527:W137)", as
     await new Promise((done) => setTimeout(done, 0));
     const pill = all(glide.render()).find((e) => e.id === 'lane-ticket-l121');
     expect(pill?.kids).toEqual(['FRM-639']);
-    expect(pill?.tooltip).toBe('open FRM-639 in linear');
 });

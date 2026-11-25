@@ -41,6 +41,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a step ticked in its lane's plan moves the card within 5 s, no restart, a rename of the file included; the week meter over the quill follows its usage file the same way (FRM-620:W58)
   - and a lane has one card: of two live cards with one codie and one first word («mods»), the one not finished is drawn, else the one that follows its plan, else the newest; the other comes when that one ends (FRM-527:W140)
   - and each card's ticket is a pill at the top right: its own, else its step's, a step that names none taking the one before it (FRM-527:W137; shot `~/.local/state/looks/FRM-527/1810-glide-pills.png`)
+  - and nothing in glide shows a tooltip, its ticket pill included (dima, 25 Nov 18:31)
   - and a file that would not read keeps the cards and is read again 2 s later, with no write to wake it (FRM-527:W136)
   - decision: `~/.claude/shelf` is a link into frame and herdr names a change by the real path, so `onShelfWrite` (shelf.js) matches a path's end, one reader for glide and the usage file
   - decision: the deck and x-mod-stash test one fixture of the file (`x-mod-stash/tests/lanes-shelf.ts`), the writer that every field it writes is there, the deck that every field it reads is (FRM-659)
