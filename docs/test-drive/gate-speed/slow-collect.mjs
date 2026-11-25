@@ -42,7 +42,7 @@ const segs = (cmd) =>
             s
                 .trim()
                 .replace(/^(\w+=\S*\s+)+/, '')
-                .replace(/^(time|exec|\()\s*/, '')
+                .replace(/^((time|exec)\b|\()\s*/, '')
                 .replace(/^\{\s*/, '')
                 .replace(/^timeout \d+\s+/, ''),
         );
