@@ -259,9 +259,9 @@ export default class Antenna extends View {
         cx.timer.every(5000, names);
     }
 
-    // a first run, nothing saved: his order starts as herdr lists the threads
+    // a first run: his order starts as herdr lists the threads, a drag already made kept
     seed() {
-        this.setOrder(agents().map((a) => a.address));
+        if (!this.order.length) this.setOrder(agents().map((a) => a.address));
         this.isSeeded = true;
         localStorage.setItem('seeded', 'true');
     }

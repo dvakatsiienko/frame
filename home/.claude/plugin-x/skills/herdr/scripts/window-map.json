@@ -37,7 +37,7 @@
             "name": "box 2 tabs",
             "node": "tabs",
             "today": "x-herdr-tab-pills",
-            "what": "tab bar, with Files and Changes buttons"
+            "what": "tab bar, a pill per tab"
         },
         {
             "height": 36,

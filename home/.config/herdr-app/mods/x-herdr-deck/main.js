@@ -365,9 +365,11 @@ export default class Deck extends View {
      */
     async read(isCurrent) {
         const shelf = await states();
-        const week =
-            (await json(USAGE))?.rate_limits?.seven_day?.used_percentage ??
-            null;
+        const usage = await json(USAGE);
+        // a read in the middle of a write parses to nothing: the number stays, the write's end is read next
+        const week = usage
+            ? (usage.rate_limits?.seven_day?.used_percentage ?? null)
+            : this.week;
         const listed = await sessions(shelf);
         // a stale list keeps its rows, their presses read again all the same
         const rows = await withPending(listed ?? this.rows, (sid) =>

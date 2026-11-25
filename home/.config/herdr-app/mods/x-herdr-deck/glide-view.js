@@ -30,12 +30,15 @@ export function createGlide(block) {
     let blockPx = 0;
     let contentPx = 0;
 
+    let reads = 0;
     /** @param {Context} cx */
     const read = (cx) =>
         cx.spawn(async (cx) => {
+            const mine = ++reads;
             const body = await json(LANES);
-            // a read in the middle of a write parses to nothing: the cards stay, the write's end is read next
-            if (!body) return;
+            // a read in the middle of a write parses to nothing: the cards stay, the write's end is read next; a read
+            // that answers after a later one draws nothing
+            if (!body || mine !== reads) return;
             lanes = lanesShown(body);
             cx.notify();
         });
@@ -157,7 +160,6 @@ export function createGlide(block) {
     return {
         /** @param {Context} cx */
         init(cx) {
-            read(cx);
             onShelfWrite(cx, LANES, read);
         },
 

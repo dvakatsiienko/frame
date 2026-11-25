@@ -43,7 +43,7 @@ export async function json(path) {
 }
 
 // `~/.claude/shelf` is a link into frame, and herdr names a change by the real path behind it: a path is matched by its
-// end, never whole. the folder alone, or an empty list, is herdr's «refresh everything» and a watch it let go
+// end, never whole. the folder alone is herdr's «refresh everything»; an empty list, a watch let go, reads again too
 /** @param {string[]} changed @param {string} file a file right under the shelf */
 const reachesShelf = (changed, file) =>
     changed.length === 0 ||
@@ -55,21 +55,25 @@ const SHELF = `${CLAUDE}/shelf`;
 const WATCH_RETRY_MS = 5000;
 
 /**
- * runs `act` at each write of a shelf file
+ * runs `act` once, then at each write of a shelf file. the next watch is armed before `act` reads, so a write in between
+ * still wakes it
  * @param {import('gpui-kit').Context} cx @param {string} file
  * @param {(cx: import('gpui-kit').Context) => void} act
  */
 export function onShelfWrite(cx, file, act) {
     cx.spawn(async (cx) => {
+        let watch = watchFolder(SHELF);
+        act(cx);
         for (;;) {
-            const changed = await watchFolder(SHELF).catch(
-                () =>
-                    /** @type {Promise<string[]>} */ (
-                        new Promise((done) =>
-                            cx.timer.after(WATCH_RETRY_MS, () => done([])),
-                        )
-                    ),
+            const changed = await watch.catch(
+                () => /** @type {string[]} */ ([]),
             );
+            // a watch let go or refused: a pause, so two that push each other out never spin
+            if (changed.length === 0)
+                await new Promise((done) =>
+                    cx.timer.after(WATCH_RETRY_MS, () => done(null)),
+                );
+            watch = watchFolder(SHELF);
             if (reachesShelf(changed, file)) act(cx);
         }
     });
