@@ -35,4 +35,4 @@ Not on trial, on dima's tick: `wt merge` (it lands on main past our pr flow), `w
 
 ## verdict
 
-- 2026-11-24 · **dropped** (dima's tick and his 15:53 word) — 0 agent calls of `wt list` or `wt step` since 11-08 and none typed in his zsh history, 1 round; the binary stays installed until his word
+- 2026-11-24 · **dropped** (dima's tick and his 15:53 word) — 0 agent calls of `wt list` or `wt step` since 11-08 and none typed in his zsh history, 1 round; uninstalled 2026-11-25 on his tick

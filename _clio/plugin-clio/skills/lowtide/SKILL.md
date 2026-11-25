@@ -16,6 +16,10 @@ only tails outside every lane's scope (dima, 2026-11-23: «Low Tide is not inten
 - **a line is opened before it is listed** (his yes, 20:11): one read of its object (the tree list, the ticket, the spec); a line the read settles is solved or closed, never printed
 - **the stop**: every non-lane tail is solved, waits on his word, or waits on a date; that list prints once, no next item after it
 
+## first, always: the false-open hunt
+
+tickets done but still open, or hung In Progress, hunted before any tail: read [false-open-hunt.md](references/false-open-hunt.md) and run it.
+
 ## the start
 
 read the flyways' notes for today's `hoist MM-DD` line:
