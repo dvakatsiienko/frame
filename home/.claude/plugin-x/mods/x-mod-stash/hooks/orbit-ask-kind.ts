@@ -8,8 +8,16 @@ const KINDS = ['look', 'test'] as const satisfies readonly AskKind[];
 // stored with opens «look: » or «test: » with no emoji, and the two boards never disagree
 // its lead is read past the emoji that opens a title, which stays with the words («🔊 test: F4» → «test: 🔊 F4»)
 const LEAD =
-    /^((?:\p{Extended_Pictographic}|\uFE0F|\u200D|\s)*)(look|test):\s*/iu;
+    /^((?:[0-9#*]\uFE0F?\u20E3|\p{Extended_Pictographic}|\uFE0F|\u200D|\s)*)(look|test):\s*/iu;
 const EMOJI = /^(?:(?:👀|🧪)\s*)+/u;
+
+// what stands before a title's first word: emoji, a keycap, punctuation, each [tag]
+const OPENING = /^(?:[0-9#*]\uFE0F?\u20E3|\[[^\]]*\]|[^\p{L}\p{N}[])*/u;
+export const pastOpening = (text: string) =>
+    text
+        .replace(OPENING, '')
+        .replace(/^(?:look|test):/iu, '')
+        .replace(OPENING, '');
 
 export const KIND_EMOJI: Readonly<KindEmoji> = { look: '👀', test: '🧪' };
 

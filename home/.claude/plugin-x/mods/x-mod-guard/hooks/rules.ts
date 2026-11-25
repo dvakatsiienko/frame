@@ -410,12 +410,14 @@ export function message(r: Refusal) {
         ? `${said}.`
         : `${said}. only on dima's word: ${TICK_DOOR}`;
 }
+// a bare word («`main` stays») is a name; a path, `pbcopy` and an `mcp__` tool are one-word commands
+const isCommand = (q: string) => /[\s/]|^(?:pbcopy$|mcp__)/.test(q.trim());
 const quoted = (s: string) =>
-    [...s.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string);
+    [...s.matchAll(/`([^`\n]+)`/g)].map((m) => m[1] as string);
 // his presses in a ticks file as ticks: the newest press per ask decides, a ↩️ replay after a 🛎 taking it back; a press
 // carries the ask text and pick he pressed on, so a tick covers what those quote and nothing else: the pick's commands alone, of any
-// length (FRM-661), so one its body turns down is no word of his (FRM-695, his o9 tick); a pick with no command, at most a
-// name, leaves what both quote
+// length (FRM-661), so one its body turns down is no word of his (FRM-695, his o9 tick); a pick with no
+// command leaves what both quote. a span never crosses a line
 export function pressTicks(text: string) {
     const newest = new Map<
         string,
@@ -455,9 +457,7 @@ export function pressTicks(text: string) {
                       at: p.at,
                       id: `herdr:${id}`,
                       ...(p.pick !== undefined ? { pick: p.pick } : {}),
-                      targets: quoted(p.pick ?? '').some((q) =>
-                          /\s/.test(q.trim()),
-                      )
+                      targets: quoted(p.pick ?? '').some(isCommand)
                           ? quoted(p.pick ?? '')
                           : [p.text, p.pick ?? ''].flatMap(quoted),
                       text: p.text,

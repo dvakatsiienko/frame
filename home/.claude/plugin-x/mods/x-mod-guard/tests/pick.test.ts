@@ -168,16 +168,29 @@ test('a tick opens the command its pick quotes, never one its body turns down', 
         pick: 'delete it: `git branch -D foo`',
         text: '🧩 the old branch\n\n- `git branch -D foo`\n- or `git push origin --delete foo`',
     });
-    // a name in the pick is no command, so what that ask's text quotes stands as before
+    // a bare word is a name, so a pick with no command leaves every one its text quotes
     const named = ask({
         id: 'o3',
-        pick: 'yes, `main` stays',
+        pick: 'both, `main` stays',
         text: '⚠️ two\n\n- `git branch -D bar`\n- `git branch -D baz`',
     });
-    const { ran } = world(on, {
-        asks: [titled, named],
-        presses: [press(titled), press(named)],
+    // a path is a command, and a span never crosses from the title into the body
+    const script = ask({
+        id: 'o4',
+        pick: 'run `~/clean.sh`',
+        text: '🧩 clean\n\nor `git branch -D qux`',
     });
+    const crossed = ask({
+        id: 'o5',
+        pick: 'yes',
+        text: '🧩 `git branch\n\n-D quux` is it',
+    });
+    const asks = [titled, named, script, crossed];
+    const { ran } = world(on, { asks, presses: asks.map((a) => press(a)) });
+    for (const branch of ['qux', 'quux'])
+        expect((await bash($, `git branch -D ${branch}`)).deny).toContain(
+            'nothing in this command ran',
+        );
     await bash($, 'git branch -D baz');
     await bash($, 'git branch -D bar');
     const turnedDown = await bash($, 'git push origin --delete foo');

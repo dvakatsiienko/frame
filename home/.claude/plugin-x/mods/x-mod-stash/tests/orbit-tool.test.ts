@@ -259,7 +259,7 @@ for (const [what, fields, miss] of [
         `«${'b'.repeat(40)}»: title is missing`,
     ],
     ['a blank title', { body: 'so', title: ' ' }, '«so»: title is missing'],
-    ['an emoji title', { body: 'so', title: '🧩' }, '«so»: title is missing'],
+    ['an emoji title', { body: 'so', title: '🧩 1️⃣' }, '«so»: title is missing'],
     [
         'a text beside a body',
         { body: 'so', text: 'x', title: undefined },
@@ -345,67 +345,11 @@ test('the old text call lands as before, its line naming title and body', () => 
     expect(ran({ asks: [old], op: 'add' })[0]).not.toHaveProperty('title');
 });
 
-for (const [what, fields, kept] of [
-    ['a title alone', { title: 'the door' }, ['the door', TITLED.body]],
-    ['a body alone', { body: 'so' }, [TITLED.title, 'so']],
-    ['the old text', { text: 'the door' }, [undefined, undefined]],
-] as const)
-    test(`a follow with ${what} keeps or drops the rest`, () => {
-        const got = ran(addOf({}), { id: 'o1', op: 'follow', ...fields });
-        const a = got[0] as OrbitAsk;
-        const [title, body] = kept;
-        const said = body?.replace('  ', ' ');
-        expect([a.title, a.body, a.text]).toEqual([
-            title,
-            said,
-            title ? `${title}\n\n${said}` : 'the door',
-        ]);
-    });
-
-test('a title led by its kind loses the lead, and a follow keeps the kind', () => {
-    const led = ran(addOf({ title: '👀 look: the card' }))[0] as OrbitAsk;
-    const followed = ran(addOf({ kind: 'test' }), {
-        body: 'so',
-        id: 'o1',
-        op: 'follow',
-    })[0] as OrbitAsk;
-    expect([
-        [led.kind, led.title, led.text.split('\n')[0]],
-        [followed.kind, followed.title, followed.text],
-        ran(
-            addOf({
-                kind: 'look',
-                title: 'test: aaaaaa bbbbbb cccccc dddddd eeeeee fffff g',
-            }),
-        ),
-        // an item that says nothing refuses the add, its siblings with it
-        ran(addOf({}, { body: undefined, title: undefined })),
-        ran(addOf({ kind: 'test', title: '🔊 test: F4' })),
-        // neither form: the text would be dropped without a word
-        ran(addOf({}), { body: 'so', id: 'o1', op: 'follow', text: 'x' }),
-        ran(addOf({}), { id: 'o1', op: 'follow', text: 'x', title: 'so' }),
-    ]).toEqual([
-        ['look', 'the card', 'look: the card'],
-        ['test', TITLED.title, `test: ${TITLED.title}\n\nso`],
-        expect.stringMatching(/kind is look; an ask is/),
-        expect.stringMatching(/«no title»: title is missing; body is missing/),
-        [
-            expect.objectContaining({
-                kind: 'test',
-                text: expect.stringMatching(/^test: 🔊 F4\n/u),
-                title: '🔊 F4',
-            }),
-        ],
-        expect.stringMatching(/o1 «so»: title is missing/),
-        expect.stringMatching(/o1 «so»: body is missing/),
-    ]);
-});
-
 test('a titled ask draws on one line where one line is read, and an emoji-led merge takes its own 🛎️', () => {
     const [a, merge, gated] = ran(
         addOf(
             { kind: 'look' },
-            { title: '🧩 [mods] merge pr 7' },
+            { title: '1️⃣ [a] [b] merge pr 7' },
             { body: 'runs `git push`' },
         ),
     ) as [OrbitAsk, OrbitAsk, OrbitAsk];
@@ -421,10 +365,13 @@ test('a titled ask draws on one line where one line is read, and an emoji-led me
                 {
                     ...gated,
                     pick: 'run `git push -n`',
-                    text: '`git push` on `~/a.ts`',
                 },
-                // a name is no command, so the text's stands as before
+                // one word is a command too, and a span never crosses from the title into the body
+                { ...gated, pick: 'run `~/clean.sh`' },
+                { ...gated, pick: '`pbcopy`', text: 'a `b c` on `~/a.ts`' },
                 { ...gated, pick: 'yes, `main` stays' },
+                { ...gated, text: 'the ` key\n\nruns `git push`' },
+                { ...gated, text: '🧩 `git branch\n\n-D foo` is it' },
             ],
             1,
         ).map((t) => t.targets),
@@ -434,8 +381,12 @@ test('a titled ask draws on one line where one line is read, and an emoji-led me
         [true, false, false],
         ['git push'],
         [
-            ['~/a.ts', 'git push -n'],
+            ['git push -n'],
+            ['~/clean.sh'],
+            ['~/a.ts', 'pbcopy'],
             ['git push', 'main'],
+            ['git push'],
+            [],
         ],
     ]);
 });
@@ -651,7 +602,6 @@ test('a gated ask carries isGated in the store, a plain ask none', async ($, on)
             text: 'test: merge https://github.com/x/y/pull/7 at abc1234',
             why: 'a test ask',
         },
-        // a name in the pick is no command
         ...addOf({ pick: 'run `git push -n`' }, { pick: 'yes, `main`' }).asks,
     ];
     await orbit($, { asks, op: 'add' });

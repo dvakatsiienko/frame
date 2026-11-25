@@ -9,7 +9,7 @@ import type {
     StashTick,
 } from '../types/stash.d.ts';
 import { NO_FIELDS, RETIRED_TEXT, askFields } from './orbit-ask-fields.ts';
-import { hiddenAtTake, isFixing } from './orbit-ask-kind.ts';
+import { hiddenAtTake, isFixing, pastOpening } from './orbit-ask-kind.ts';
 import { type OriginRead, askOrigin } from './orbit-ask-origin.ts';
 import { ORBIT_TEXT_MAX, onOneLine, oneLine } from './util.ts';
 
@@ -49,25 +49,25 @@ export const opAskIds = (input: Record<string, unknown>) =>
           ? idsOf(input.ids)
           : [];
 
-// a merge or land ask, past the emoji and the tag that lead a title
-const MERGE_ASK =
-    /^[^\p{L}\p{N}[]*(?:(?:look|test):\s*)?[^\p{L}\p{N}[]*(?:\[[^\]]*\])?[^\p{L}\p{N}]*(?:merge|land)\b/iu;
+const isMergeAsk = (text: string) =>
+    /^(?:merge|land)\b/iu.test(pastOpening(text));
 // what ✅ marks: an open ask he has not marked; a ⚠️ or a merge ask takes its own 🛎️, so one press never unlocks what he has not read
 export const isAllAsksMarkable = (a: OrbitAsk) =>
     !a.mark &&
     !a.isLocked &&
     !a.isResolved &&
     !a.text.includes('⚠️') &&
-    !MERGE_ASK.test(a.text);
+    !isMergeAsk(a.text);
 
+// a bare word («`main` stays») is a name; a path, `pbcopy` and an `mcp__` tool are one-word commands
+const isCommand = (q: string) => /[\s/]|^(?:pbcopy$|mcp__)/.test(q.trim());
+// a span never crosses a line, so a stray backtick in a title opens none into the body
 const quoted = (s: string) =>
-    [...s.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string);
-// one word is a name, never a command
-const quotesCommand = (s: string) => quoted(s).some((q) => /\s/.test(q.trim()));
+    [...s.matchAll(/`([^`\n]+)`/g)].map((m) => m[1] as string);
 
 // the record x-mod-guard reads as dima's word, one per ask his press marks, as it stands at the press: what its pick
 // quotes, a command of any length (FRM-661), so one the body turns down is no word of his (his o9 tick, 25 Nov); a pick
-// with no command, at most a name, leaves what both quote. a path the text names opens x-mod-holds' pass either way
+// with none leaves what both quote. a path the text quotes stays, for x-mod-holds' pass: the guard stops no bare path
 export const allAsksTicks = (
     asks: Pick<OrbitAsk, 'id' | 'pick' | 'text'>[],
     at: number,
@@ -75,12 +75,12 @@ export const allAsksTicks = (
     asks.map(({ id, pick, text }) => ({
         at,
         id,
-        targets: quotesCommand(pick)
-            ? [
-                  ...quoted(text).filter((q) => /^~?\/\S+$/.test(q)),
-                  ...quoted(pick),
-              ]
-            : [...quoted(text), ...quoted(pick)],
+        targets: [
+            ...quoted(text).filter(
+                (q) => !quoted(pick).some(isCommand) || /^~?\/\S+$/.test(q),
+            ),
+            ...quoted(pick),
+        ],
         text,
     }));
 
@@ -308,8 +308,8 @@ export function joinText(asks: OrbitAsk[], sentence = TICK_SENTENCE) {
 // `isGated` beside the ask, so x-herdr-deck draws the mark instead of keeping its own copy of the pattern (FRM-544 slice 1)
 export const isGuardGated = ({ pick, text }: Pick<OrbitAsk, 'pick' | 'text'>) =>
     /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|`[^`]+`/iu.test(text) ||
-    MERGE_ASK.test(text) ||
-    quotesCommand(pick);
+    isMergeAsk(text) ||
+    quoted(pick).some(isCommand);
 const named = (x: string) => `«${[...x].slice(0, 40).join('')}»`;
 const overCapText = (x: string) =>
     [...x].length > ORBIT_TEXT_MAX

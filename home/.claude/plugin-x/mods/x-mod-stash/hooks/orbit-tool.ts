@@ -18,7 +18,7 @@ import {
     readPlanSteps,
 } from './lanes.ts';
 import { ASSUMED_MAX, CHANGED_MARK, PLAN_MAX, orbitOp } from './orbit.ts';
-import { isShown } from './orbit-ask-kind.ts';
+import { isShown, pastOpening } from './orbit-ask-kind.ts';
 import {
     AREAS_FILE,
     type AskArea,
@@ -445,8 +445,8 @@ export async function orbitCall(
         addGridQs(
             ...(Array.isArray(input.asks) ? input.asks : []).flatMap((x) => {
                 const said = (x ?? {}) as { text?: unknown; title?: unknown };
-                const n = oneLine(said.title ?? said.text).match(
-                    /^[^\p{L}\p{N}[]*(?:\[[^\]]*\])?[^\p{L}\p{N}]*Q(\d+)\b/u,
+                const n = pastOpening(oneLine(said.title ?? said.text)).match(
+                    /^Q(\d+)\b/,
                 )?.[1];
                 return n ? [n] : [];
             }),

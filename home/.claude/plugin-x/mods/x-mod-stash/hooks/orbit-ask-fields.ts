@@ -16,6 +16,9 @@ export const NO_FIELDS = `«no title»: title is missing; body is missing; ${SHA
 // a leading «[tag]», one short word past the emoji before it, counts in neither title cap; a markdown link is no tag
 const TAG = /^([^\p{L}\p{N}[]*)\[[\p{L}\p{N}-]{1,16}\](?!\()\s*/u;
 
+// «1️⃣» is an emoji, its digit no word
+const KEYCAP = /[0-9#*]\uFE0F?\u20E3/gu;
+
 // his list in a body stays a list: the line breaks are kept, each line's spaces collapsed
 const bodyOf = (v: unknown) =>
     typeof v === 'string' ? v.split('\n').map(oneLine).join('\n').trim() : '';
@@ -41,21 +44,21 @@ export function askFields(
             ? { deny: typed.deny, name: text }
             : { fields: typed, isRetired: true, name: text };
     }
-    // a `text` beside one of the two is neither form: the field left out is missing, never kept, or the text's words go lost
+    // a `text` beside a body alone is neither form; beside a title it is ignored
     const title =
         input.title === undefined && !text
             ? (was?.title ?? '')
             : oneLine(input.title);
     const body =
-        input.body === undefined && !text
-            ? (was?.body ?? '')
-            : bodyOf(input.body);
+        input.body === undefined ? (was?.body ?? '') : bodyOf(input.body);
     const typed = askKind(title, input.kind, was?.kind, 'title');
     // a refused kind's lead is still on the title, so only the kind is told, never a cap the lead breaks
     const isTyped = !('deny' in typed);
     const topic = isTyped ? askWords(typed) : title;
     const counted = topic.replace(TAG, '$1');
-    const words = counted.split(' ').filter((x) => /[\p{L}\p{N}]/u.test(x));
+    const words = counted
+        .split(' ')
+        .filter((x) => /[\p{L}\p{N}]/u.test(x.replace(KEYCAP, '')));
     const chars = [...counted].length;
     const misses = [
         words.length ? ('deny' in typed ? typed.deny : '') : 'title is missing',
