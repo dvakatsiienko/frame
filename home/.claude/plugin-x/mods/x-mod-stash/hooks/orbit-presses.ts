@@ -68,10 +68,10 @@ async function wakeWith($: EngineInterface, due: OrbitAsk[], view: ViewDoors) {
     const r = await selfSubmit($, text, false, () => prepareTurn(view)).catch(
         () => undefined,
     );
-    if (r && !r.drop) return;
-    await giveBackMarks($, due);
+    if (r && r.drop === undefined) return;
     await idleTurn($);
     await armHot($, view);
+    await giveBackMarks($, due);
 }
 // a hide never strands a look (FRM-645:W29): 60 min with no follow is one line to the poster's coordinator, else main
 // clio; main clio's own ask wakes her instead, once idle. told only once it went, so a refused send goes at the next poll
@@ -101,7 +101,7 @@ export async function tellStranded($: EngineInterface, view: ViewDoors) {
         const r = await selfSubmit($, line, false, () =>
             prepareTurn(view),
         ).catch(() => undefined);
-        if (!r || r.drop) {
+        if (!r || r.drop !== undefined) {
             await idleTurn($);
             await armHot($, view);
             return;

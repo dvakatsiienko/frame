@@ -186,6 +186,7 @@ test("a follow drops the ask's tick record: his word answered the old question (
     const ui = await board($);
     await add($, ['push `origin`', 'yes']);
     await ui.press({ key: 'orbit:accepted:o1' });
+    await say($, 'go');
     await orbit($, {
         id: 'o1',
         op: 'follow',

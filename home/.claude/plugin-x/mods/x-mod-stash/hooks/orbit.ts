@@ -40,6 +40,14 @@ export const ASSUMED_TURNS = 3;
 const idsOf = (v: unknown) =>
     Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
 
+// the asks an op would close or ask anew
+export const opAskIds = (input: Record<string, unknown>) =>
+    input.op === 'follow'
+        ? idsOf([input.id])
+        : input.op === 'resolve'
+          ? idsOf(input.ids)
+          : [];
+
 // what ✅ marks: an open ask he has not marked; a ⚠️ or a merge ask takes its own 🛎️, so one press never unlocks what he has not read
 export const isAllAsksMarkable = (a: OrbitAsk) =>
     !a.mark &&
@@ -199,18 +207,26 @@ export function lockJoined(o: StashOrbit, asks: OrbitAsk[]): StashOrbit {
     };
 }
 
-// a turn that never ran gives his marks back as it took them, unheard; with no wake time, so no poll tries again by itself
+// a turn that never ran gives his marks back as it took them, unheard, also after another turn's end spent them; one
+// followed, resolved or marked again since stays as it is. with no wake time, so no poll tries again by itself
 export function marksGivenBack(o: StashOrbit, asks: OrbitAsk[]): StashOrbit {
     return {
         ...o,
         asks: o.asks.map((a) => {
             const was = asks.find((x) => x.id === a.id);
-            return was && a.isLocked
+            return was &&
+                !a.isResolved &&
+                a.text === was.text &&
+                Boolean(a.isChanged) === Boolean(was.isChanged) &&
+                a.mark === (a.isLocked ? was.mark : undefined)
                 ? {
                       ...a,
                       hidden: was.hidden,
+                      isHerdrMark: was.isHerdrMark,
                       isLocked: undefined,
+                      mark: was.mark,
                       markedAt: undefined,
+                      steer: was.steer,
                   }
                 : a;
         }),

@@ -250,6 +250,12 @@ test("a hidden ask leaves the file's asks and stays named in hiddenAsks until it
     await follow('it holds now');
     read();
     await follow('fixing the wrap');
+    // mid-turn a resolved ask stays in the orbit till the turn ends
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'go',
+        wait: false,
+    });
     await orbit($, { ids: ['o1'], op: 'resolve' });
     read();
     expect(seen).toEqual([
