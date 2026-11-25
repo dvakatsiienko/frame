@@ -174,20 +174,22 @@ test('a tick opens the command its pick quotes, never one its body turns down', 
         pick: 'both, `main` stays',
         text: '⚠️ two\n\n- `git branch -D bar`\n- `git branch -D baz`',
     });
-    // a path is a command, and a span never crosses from the title into the body
-    const script = ask({
-        id: 'o4',
-        pick: 'run `~/clean.sh`',
-        text: '🧩 clean\n\nor `git branch -D qux`',
-    });
+    // a path, pbcopy and an mcp tool are one-word commands, and a span never crosses from the title into the body
+    const words = ['~/clean.sh', 'pbcopy', 'mcp__x__send'].map((word, i) =>
+        ask({
+            id: `o${6 + i}`,
+            pick: `run \`${word}\``,
+            text: `🧩 clean\n\nor \`git branch -D qux${i}\``,
+        }),
+    );
     const crossed = ask({
         id: 'o5',
         pick: 'yes',
         text: '🧩 `git branch\n\n-D quux` is it',
     });
-    const asks = [titled, named, script, crossed];
+    const asks = [titled, named, ...words, crossed];
     const { ran } = world(on, { asks, presses: asks.map((a) => press(a)) });
-    for (const branch of ['qux', 'quux'])
+    for (const branch of ['qux0', 'qux1', 'qux2', 'quux'])
         expect((await bash($, `git branch -D ${branch}`)).deny).toContain(
             'nothing in this command ran',
         );

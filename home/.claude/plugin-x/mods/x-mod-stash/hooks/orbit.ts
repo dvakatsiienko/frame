@@ -59,11 +59,13 @@ export const isAllAsksMarkable = (a: OrbitAsk) =>
     !a.text.includes('⚠️') &&
     !isMergeAsk(a.text);
 
+// twin tick-spans — a copy lives in x-mod-guard; the twins lint keeps them equal
 // a bare word («`main` stays») is a name; a path, `pbcopy` and an `mcp__` tool are one-word commands
 const isCommand = (q: string) => /[\s/]|^(?:pbcopy$|mcp__)/.test(q.trim());
 // a span never crosses a line, so a stray backtick in a title opens none into the body
 const quoted = (s: string) =>
     [...s.matchAll(/`([^`\n]+)`/g)].map((m) => m[1] as string);
+// twin end
 
 // the record x-mod-guard reads as dima's word, one per ask his press marks, as it stands at the press: what its pick
 // quotes, a command of any length (FRM-661), so one the body turns down is no word of his (his o9 tick, 25 Nov); a pick
@@ -307,7 +309,8 @@ export function joinText(asks: OrbitAsk[], sentence = TICK_SENTENCE) {
 // an ask whose tick x-mod-guard reads as dima's word — a sign, a ⚠️ or merge ask, one quoting a command, in its pick too; published as
 // `isGated` beside the ask, so x-herdr-deck draws the mark instead of keeping its own copy of the pattern (FRM-544 slice 1)
 export const isGuardGated = ({ pick, text }: Pick<OrbitAsk, 'pick' | 'text'>) =>
-    /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|`[^`]+`/iu.test(text) ||
+    /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️/iu.test(text) ||
+    quoted(text).length > 0 ||
     isMergeAsk(text) ||
     quoted(pick).some(isCommand);
 const named = (x: string) => `«${[...x].slice(0, 40).join('')}»`;

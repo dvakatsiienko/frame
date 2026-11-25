@@ -37,6 +37,7 @@ describe('twin blocks across mods', () => {
             'operator-override-store',
             'proc-of',
             'shared-boot',
+            'tick-spans',
         ]);
     });
     for (const [name, copies] of twins)

@@ -369,6 +369,7 @@ test('a titled ask draws on one line where one line is read, and an emoji-led me
                 // one word is a command too, and a span never crosses from the title into the body
                 { ...gated, pick: 'run `~/clean.sh`' },
                 { ...gated, pick: '`pbcopy`', text: 'a `b c` on `~/a.ts`' },
+                { ...gated, pick: '`mcp__x__send`' },
                 { ...gated, pick: 'yes, `main` stays' },
                 { ...gated, text: 'the ` key\n\nruns `git push`' },
                 { ...gated, text: '🧩 `git branch\n\n-D foo` is it' },
@@ -384,6 +385,7 @@ test('a titled ask draws on one line where one line is read, and an emoji-led me
             ['git push -n'],
             ['~/clean.sh'],
             ['~/a.ts', 'pbcopy'],
+            ['mcp__x__send'],
             ['git push', 'main'],
             ['git push'],
             [],
@@ -602,7 +604,11 @@ test('a gated ask carries isGated in the store, a plain ask none', async ($, on)
             text: 'test: merge https://github.com/x/y/pull/7 at abc1234',
             why: 'a test ask',
         },
-        ...addOf({ pick: 'run `git push -n`' }, { pick: 'yes, `main`' }).asks,
+        ...addOf(
+            { pick: 'run `git push -n`' },
+            { pick: 'yes, `main`' },
+            { body: 'a ` b', title: 'the ` key' },
+        ).asks,
     ];
     await orbit($, { asks, op: 'add' });
     const items = (
@@ -610,7 +616,13 @@ test('a gated ask carries isGated in the store, a plain ask none', async ($, on)
             items: { isGated?: boolean; text: string }[];
         }
     ).items;
-    expect(items.map((a) => a.isGated)).toEqual([true, true, true, undefined]);
+    expect(items.map((a) => a.isGated)).toEqual([
+        true,
+        true,
+        true,
+        undefined,
+        undefined,
+    ]);
 });
 
 test('orbit registers loaded up front, never behind ToolSearch', async ($, on) => {

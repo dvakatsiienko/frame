@@ -410,14 +410,17 @@ export function message(r: Refusal) {
         ? `${said}.`
         : `${said}. only on dima's word: ${TICK_DOOR}`;
 }
+// twin tick-spans — a copy lives in x-mod-stash; the twins lint keeps them equal
 // a bare word («`main` stays») is a name; a path, `pbcopy` and an `mcp__` tool are one-word commands
 const isCommand = (q: string) => /[\s/]|^(?:pbcopy$|mcp__)/.test(q.trim());
+// a span never crosses a line, so a stray backtick in a title opens none into the body
 const quoted = (s: string) =>
     [...s.matchAll(/`([^`\n]+)`/g)].map((m) => m[1] as string);
+// twin end
 // his presses in a ticks file as ticks: the newest press per ask decides, a ↩️ replay after a 🛎 taking it back; a press
 // carries the ask text and pick he pressed on, so a tick covers what those quote and nothing else: the pick's commands alone, of any
 // length (FRM-661), so one its body turns down is no word of his (FRM-695, his o9 tick); a pick with no
-// command leaves what both quote. a span never crosses a line
+// command leaves what both quote
 export function pressTicks(text: string) {
     const newest = new Map<
         string,
