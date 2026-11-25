@@ -21,7 +21,7 @@ Ticket: FRM-530. A ⛩️ gate is a check that refuses: it stops a commit, a pus
 - **typecheck**: the code's types fit together, 2 s
 - **test**: the tests for what changed still pass; none for a pocket-only commit, 28 s
 - **x-go-reads**: a script the go tests read still passes them
-- **cited-docs**: a doc a memory or skill file cites is one the review tiers read as memory, 2–4 s
+- **cited-docs**: a doc a memory or skill file newly cites is one the review tiers read as memory; no added cite, no run, else about 4 s
 - **mods**: a changed mod's types fit our cc version, 13 s
 - **mods-test**: a green read a changed mod's bytes, on the commit only; it runs no test (FRM-678)
 - **mods-vitest**: the vitest files beside the mods pass on any mod change (`twins.test.ts` holds every twin copy equal), 3 s

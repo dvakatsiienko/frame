@@ -37,9 +37,9 @@ pre-commit:
       run: 'script/index-run.sh sh -c "{ git diff --cached --name-only --no-renames || echo script/lib/staged-read-failed; } | awk ''NR == FNR { if (\$0 ~ /\/\$/) under[\$0]; else listed[\$0]; next } \$0 in listed || index(\$0, \"script/lib/\") == 1 { hit = 1 } { for (dir in under) if (index(\$0, dir) == 1) hit = 1 } END { exit !hit }'' script/lib/x-go-reads.txt -; [ \$? -ne 1 ] || exit 0; cd x/go && GIT_CONFIG_GLOBAL=/dev/null GOFLAGS=-buildvcs=false ../../script/test-cpu-budget.sh --log-only x-go go test -count=1 ./..."'
     cited-docs:
       # a memory file that cites a doc the review tiers read as light reds main after the push (9 runs, 11-11 and 11-18, FRM-704).
-      # the test greps these dirs whole, so any staged .md there can red it. it runs alone, uncached, and x-go-reads keeps the suite;
+      # only an added cite can, so a commit with none pays nothing; the test runs alone, uncached, and x-go-reads keeps the suite.
       # -trimpath: a fresh index copy's path never misses go's build cache. no glob: lefthook's staged list drops a deleted file
-      run: git diff --cached --name-only --no-renames | grep -E '^(home/\.claude|_clio|_crow)/.*\.md$' | grep -qvE '^_clio/(pocket|gazette)/|/\.scratch/' || exit 0; script/index-run.sh sh -c 'cd x/go && GIT_CONFIG_GLOBAL=/dev/null GOFLAGS=-buildvcs=false go test -trimpath -count=1 -run "^TestMergeAutoReadsEveryCitedDocAsMemory$" .'
+      run: git diff --cached --no-renames -- home/.claude _clio _crow ':(exclude)_clio/pocket' ':(exclude)_clio/gazette' ':(exclude)**/.scratch/**' | grep -qE '^\+.*docs/(research|test-drive)/' || exit 0; script/index-run.sh sh -c 'cd x/go && GIT_CONFIG_GLOBAL=/dev/null GOFLAGS=-buildvcs=false go test -trimpath -count=1 -run "^TestMergeAutoReadsEveryCitedDocAsMemory$" .'
     mods:
       # the mods sit outside vitest and the root tsconfig: their own runner and their engine-written types gate them.
       # a cc bump made fields required and 11 test fixtures went untyped for days before this ran (2026-10-08)

@@ -12,14 +12,14 @@ func citedDocsRun(calls string) bool {
 	return calls == "test -trimpath -count=1 -run ^"+citedDocsTest+"$ ."
 }
 
-func TestCommitRunsTheCitedDocsTestAloneForAMemoryEdit(t *testing.T) {
+func TestCommitRunsTheCitedDocsTestAloneForANewCite(t *testing.T) {
 	t.Parallel()
-	for _, path := range []string{"home/.claude/rules/a.md", "_clio/memory/a.md", "_crow/AGENTS.md"} {
+	for _, path := range []string{"home/.claude/rules/a.md", "_clio/memory/a.md", "_crow/AGENTS.md", "_clio/script/a.ts"} {
 		t.Run(path, func(t *testing.T) {
 			t.Parallel()
 			dir, env, goCalls := commitJobWorld(t, "cited-docs", "1")
 			before := gitT(t, dir, "rev-parse", "HEAD")
-			write(t, filepath.Join(dir, path), "docs/research/a.md\n")
+			write(t, filepath.Join(dir, path), "see docs/research/a.md\n")
 
 			code := commitThrough(t, "git commit", dir, env, path)
 
@@ -33,13 +33,21 @@ func TestCommitRunsTheCitedDocsTestAloneForAMemoryEdit(t *testing.T) {
 	}
 }
 
-func TestCommitRunsNoCitedDocsTestOffTheMemoryDirs(t *testing.T) {
+func TestCommitRunsNoCitedDocsTestWithoutANewCite(t *testing.T) {
 	t.Parallel()
-	for _, path := range []string{"docs/a.md", "home/.claude/a.ts", "_clio/pocket/a.md", "_clio/gazette/a.md", "_clio/.scratch/a.md"} {
+	cite := "see docs/test-drive/a.md\n"
+	for path, body := range map[string]string{
+		"home/.claude/rules/plain.md": "a rule\n",
+		"_clio/memory/plain.md":       "a docs/knowledge/a.md line\n",
+		"docs/a.md":                   cite,
+		"_clio/pocket/a.md":           cite,
+		"_clio/gazette/a.md":          cite,
+		"_clio/.scratch/a.md":         cite,
+	} {
 		t.Run(path, func(t *testing.T) {
 			t.Parallel()
 			dir, env, goCalls := commitJobWorld(t, "cited-docs", "1")
-			write(t, filepath.Join(dir, path), "a\n")
+			write(t, filepath.Join(dir, path), body)
 
 			code := commitThrough(t, "git commit", dir, env, path)
 
@@ -50,19 +58,25 @@ func TestCommitRunsNoCitedDocsTestOffTheMemoryDirs(t *testing.T) {
 	}
 }
 
-// a pocket write beside a memory edit still runs it
-func TestCommitRunsTheCitedDocsTestBesideAPocketWrite(t *testing.T) {
+// the cite is old and the edit is beside it, or the cite goes: neither adds one
+func TestCommitRunsNoCitedDocsTestForAnOldCite(t *testing.T) {
 	t.Parallel()
-	dir, env, goCalls := commitJobWorld(t, "cited-docs", "0")
-	write(t, filepath.Join(dir, "_clio/pocket/a.md"), "a\n")
-	gitT(t, dir, "add", "_clio/pocket/a.md")
-	write(t, filepath.Join(dir, "_clio/memory/a.md"), "a\n")
+	for name, body := range map[string]string{"an edit beside it": "a new line\nsee docs/research/a.md\n", "a cite taken out": "no cite\n"} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			dir, env, goCalls := commitJobWorld(t, "cited-docs", "1")
+			path := "_clio/memory/a.md"
+			write(t, filepath.Join(dir, path), "see docs/research/a.md\n")
+			gitT(t, dir, "add", path)
+			gitT(t, dir, "commit", "-q", "--no-verify", "-m", "old cite")
+			write(t, filepath.Join(dir, path), body)
 
-	if code := commitThrough(t, "git commit", dir, env, "_clio/memory/a.md"); code != 0 {
-		t.Fatalf("exit %d, want a green test to let it land", code)
-	}
-	if got := goCalls(); !citedDocsRun(got) {
-		t.Errorf("go ran %q, want the one test", got)
+			code := commitThrough(t, "git commit", dir, env, path)
+
+			if got := goCalls(); code != 0 || got != "" {
+				t.Errorf("exit %d, go ran %q, want no go run", code, got)
+			}
+		})
 	}
 }
 
