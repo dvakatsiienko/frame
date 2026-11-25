@@ -16,16 +16,6 @@ export const FIND_SETTLE_MS = 150;
 // a char read as written: no mark rule below matches it, as none matches the chars of a code span
 const LITERAL = String.fromCharCode(0xe000);
 
-/** @type {[RegExp, (match: RegExpExecArray) => [number, number]]} */
-const LINK = [
-    // brackets and parentheses nest once in a link's words and its address
-    /!?\[([^[\]]*(?:\[[^[\]]*\][^[\]]*)*)\]\([^()]*(?:\([^()]*\)[^()]*)*\)/g,
-    (m) => {
-        const before = m[0].startsWith('!') ? 2 : 1;
-        return [before, m[0].length - before - (m[1] ?? '').length];
-    },
-];
-
 // a mark dropped, its words kept: how many chars of the match stand before them, and after
 /** @type {[RegExp, (match: RegExpExecArray) => [number, number]][]} */
 const MARKS = [
@@ -36,9 +26,15 @@ const MARKS = [
         /<!--.*?-->|<\/?[A-Za-z][\w-]*(?:\s[^<>]*)?\/?>/g,
         (m) => [m[0].length, 0],
     ],
-    LINK,
-    // a picture inside a link, met once the link's own marks are cut
-    LINK,
+    // a picture first, so one inside a link leaves its words there; brackets and parentheses nest once
+    [
+        /!\[([^[\]]*(?:\[[^[\]]*\][^[\]]*)*)\]\([^()]*(?:\([^()]*\)[^()]*)*\)/g,
+        (m) => [2, m[0].length - 2 - (m[1] ?? '').length],
+    ],
+    [
+        /\[([^[\]]*(?:\[[^[\]]*\][^[\]]*)*)\]\([^()]*(?:\([^()]*\)[^()]*)*\)/g,
+        (m) => [1, m[0].length - 1 - (m[1] ?? '').length],
+    ],
     [/\*\*(?=\S)(.+?)(?<=\S)\*\*/g, () => [2, 2]],
     [/(?<![\w_])__(?=\S)(.+?)(?<=\S)__(?![\w_])/g, () => [2, 2]],
     [/(?<![\w*])\*(?=\S)(.+?)(?<=\S)\*(?![\w*])/g, () => [1, 1]],
@@ -66,7 +62,7 @@ function readLine(line, from) {
     // an escaped char and a code span are read as written; a `\` that ends the line breaks it
     let done = 0;
     for (const m of line.matchAll(
-        /\\([!-/:-@[-`{-~])|(?<!`)(`+)(?!`)(.+?)(?<!`)\2(?!`)|\\$/g,
+        /\\([!-/:-@[-`{-~])|(?<!(?<!\\)`)(`+)(?!`)(.+?)(?<!`)\2(?!`)|\\$/g,
     )) {
         add(done, m.index, false);
         done = m.index + m[0].length;
@@ -250,7 +246,9 @@ export function createFind() {
             const at = kept
                 ? hits.findIndex((h) => h.id === kept.id && h.n === kept.n)
                 : -1;
-            state = { ...state, at: Math.max(0, at), hits };
+            // a stepped match whose row took another id (a waiting message, taken) keeps its place in the count
+            const stay = Math.max(0, Math.min(state.at, hits.length - 1));
+            state = { ...state, at: at < 0 ? stay : at, hits };
         },
         /** his settled query over the rows: the newest hit is shown @param {readonly Row[]} rows @param {string} q */
         search(rows, q) {

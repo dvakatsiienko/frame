@@ -73,13 +73,15 @@ export function createPictureViewer({
     function show(files, at, cx, isDesktop = isCmdHeld()) {
         const clicked = files[at];
         if (!isDesktop || !clicked) return open(files, at, cx);
+        const shownFile = file();
+        const mine = ++ask;
         cx.spawn(async (cx) => {
             // his app opens nothing for a gone file: the viewer shows its earlier copy, or says why not
             if (await exists(clicked))
                 exec('open', pictureOpenArgs(clicked, isCleanShot())).catch(
                     () => {},
                 );
-            else open(files, at, cx);
+            else if (file() === shownFile && ask === mine) open(files, at, cx);
         });
     }
 

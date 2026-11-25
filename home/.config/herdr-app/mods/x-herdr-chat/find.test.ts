@@ -235,6 +235,12 @@ describe('the stepped row reads clean, no markdown marks (dima o14)', () => {
 
     test('a code span keeps a shorter run of backticks', () => {
         expect(plainOf('see ``a`b`` and `c`')).toBe('see a`b and c');
+        expect(plainOf('``a` b`` end')).toBe('a` b end');
+        expect(plainOf('`a``b` end')).toBe('a``b end');
+    });
+
+    test('a code span opens right after an escaped backtick', () => {
+        expect(plainOf('\\``**x**` end')).toBe('`**x** end');
     });
 });
 
@@ -262,6 +268,14 @@ describe('find over history as pages land (FRM-638 slice 6b)', () => {
         expect(find.rangesOf(row('r', 'viewer'))).toMatchObject([
             { end: 6, start: 0 },
         ]);
+    });
+
+    test('a stepped match whose waiting message a turn took keeps its place', () => {
+        const find = createFind();
+        find.search([row('w1', 'viewer'), row('w2', 'viewer')], 'viewer');
+        find.step('older');
+        find.recount([row('m1', 'viewer'), row('w2', 'viewer')]);
+        expect(findCount(find.state)).toBe('2 / 2');
     });
 
     test('with no query or no hit left, a recount shows the newest', () => {
