@@ -33,9 +33,20 @@ export function activityShown(status, activity, now) {
 }
 
 /**
+ * the model with the session's own effort beside it, or under it on a two-line row, where the name needs the width
+ * @param {string | null} model @param {string | null} effort @param {boolean} isTall
+ * @returns {string[] | null}
+ */
+function modelLines(model, effort, isTall) {
+    if (!model) return null;
+    if (!effort) return [model];
+    return isTall ? [model, effort] : [`${model} · ${effort}`];
+}
+
+/**
  * @param {Record<string, unknown>} settings antenna's knobs
  * @param {{ time: string | null, context: number | null, effort: string | null, model: string | null, wait: string | null }} facts
- * @returns {{ idle: string | null, context: string | null, model: string | null, wait: string | null }}
+ * @returns {{ idle: string | null, context: string | null, model: string[] | null, wait: string | null }}
  */
 export function rowDetails(settings, { context, effort, model, time, wait }) {
     return {
@@ -44,11 +55,13 @@ export function rowDetails(settings, { context, effort, model, time, wait }) {
                 ? `${context}%`
                 : null,
         idle: (settings['antenna.details.idle'] && time) || null,
-        model:
-            (settings['antenna.details.model'] &&
-                model &&
-                (effort ? `${model} · ${effort}` : model)) ||
-            null,
+        model: settings['antenna.details.model']
+            ? modelLines(
+                  model,
+                  effort,
+                  Boolean(settings['antenna.details.wait']),
+              )
+            : null,
         wait:
             (settings['antenna.details.wait'] && wait && waitShown(wait)) ||
             null,

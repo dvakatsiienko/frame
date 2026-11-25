@@ -22,7 +22,7 @@ describe('a row details', () => {
         expect(rowDetails(allOn, facts)).toEqual({
             context: '42%',
             idle: 'idle 3m',
-            model: 'opus 5.5',
+            model: ['opus 5.5'],
             wait: 'waiting on 🦉 clio',
         });
     });
@@ -52,13 +52,21 @@ describe('a row details', () => {
         ).toEqual({ context: null, idle: null, model: null, wait: null });
     });
 
-    // FRM-620:W57: the session's own effort stands beside its model
-    test('two sessions at different efforts each show their own', () => {
+    // FRM-620:W57: the session's own effort stands by its model; a two-line row stacks it, so the name keeps its width
+    test.each([
+        [true, 'medium', ['opus 5.5', 'medium']],
+        [true, 'xhigh', ['opus 5.5', 'xhigh']],
+        [false, 'medium', ['opus 5.5 · medium']],
+        [false, 'high', ['opus 5.5 · high']],
+        [true, null, ['opus 5.5']],
+        [false, null, ['opus 5.5']],
+    ])('wait line %s, effort %s: the model reads %j', (wait, effort, shown) => {
         expect(
-            ['medium', 'xhigh'].map(
-                (effort) => rowDetails(allOn, { ...facts, effort }).model,
-            ),
-        ).toEqual(['opus 5.5 · medium', 'opus 5.5 · xhigh']);
+            rowDetails(
+                { ...allOn, 'antenna.details.wait': wait },
+                { ...facts, effort },
+            ).model,
+        ).toEqual(shown);
     });
 
     test('an effort with no model read draws nothing', () => {

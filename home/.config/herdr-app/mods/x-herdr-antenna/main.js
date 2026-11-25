@@ -734,11 +734,16 @@ export default class Antenna extends View {
                     )
                     .when(Boolean(more.model), (el) =>
                         el.child(
-                            div()
+                            v_flex()
                                 .flex_none()
+                                .items_end()
                                 .text_size(11)
                                 .text_color(t.dim)
-                                .child(more.model ?? ''),
+                                .children(
+                                    (more.model ?? []).map((part) =>
+                                        div().h(16).child(part),
+                                    ),
+                                ),
                         ),
                     )
                     .when(Boolean(more.context), (el) =>
