@@ -98,8 +98,10 @@ describe('--check', () => {
             file,
             `---\nstatus: live\nuntil: 2099-01-01\n${head}---\nright if\n`,
         );
-        return spawnSync('node', [copy, '--check'], { encoding: 'utf8' })
-            .stdout;
+        return spawnSync('node', [copy, '--check'], {
+            encoding: 'utf8',
+            timeout: 10_000,
+        }).stdout;
     };
 
     it('reds a trial with no kill-read date', () => {
