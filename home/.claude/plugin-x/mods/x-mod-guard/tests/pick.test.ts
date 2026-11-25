@@ -162,6 +162,36 @@ test('an ask whose text quotes the command still opens it from a herdr tick', as
     ]);
 });
 
+// FRM-695: an ask's body names the option it turns down; the pick's command alone is his word
+test('a tick opens the command its pick quotes, never one its body turns down', async ($, on) => {
+    const titled = ask({
+        pick: 'delete it: `git branch -D foo`',
+        text: '🧩 the old branch\n\n- `git branch -D foo`\n- or `git push origin --delete foo`',
+    });
+    // a name in the pick is no command, so what that ask's text quotes stands as before
+    const named = ask({
+        id: 'o3',
+        pick: 'yes, `main` stays',
+        text: '⚠️ two\n\n- `git branch -D bar`\n- `git branch -D baz`',
+    });
+    const { ran } = world(on, {
+        asks: [titled, named],
+        presses: [press(titled), press(named)],
+    });
+    await bash($, 'git branch -D baz');
+    await bash($, 'git branch -D bar');
+    const turnedDown = await bash($, 'git push origin --delete foo');
+    expect([
+        turnedDown.deny,
+        (await bash($, 'git branch -D foo')).deny,
+        ran,
+    ]).toEqual([
+        expect.stringContaining('nothing in this command ran'),
+        undefined,
+        ['git branch -D baz', 'git branch -D bar', 'git branch -D foo'],
+    ]);
+});
+
 test('a press row from a deck that writes no pick still opens what the text quotes', async ($, on) => {
     const old = ask({ text: `⚠️ \`${'git branch -D foo'}\`` });
     const { ran } = world(on, {

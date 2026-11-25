@@ -119,7 +119,7 @@
   - 📌 the «names git» refusals the 10-08 retros counted come from cc's own worktree isolation («a worktree-isolated session's git operations must target its own worktree»), which no mod reaches (FRM-356)
   - proof: tests/words.test.ts::a command that only names git runs: …
 - ✅ dima's tick on an orbit ask opens one floor command once (FRM-427)
-  - given dima ticked an ask whose pick, or text, quotes the whole floor command in one backtick span, spacing aside, any length, on the seat board or on x-herdr-deck (a press counts only while this seat's orbit holds that ask with his accepted mark, and with the pick the press carries), within 2 h
+  - given dima ticked an ask whose pick, or text, quotes the whole floor command in one backtick span (the text's count only when the pick quotes no command, a span of two words or more, so one an ask's body turns down never opens: his o9 tick, 25 Nov), spacing aside, any length, on the seat board or on x-herdr-deck (a press counts only while this seat's orbit holds that ask with his accepted mark, and with the pick the press carries), within 2 h
   - and the tick covers the pick as it stood at his press: a `follow` that swaps it later moves nothing onto the new command; a press row with no pick, an older deck's, opens what the text quotes (FRM-661: a text caps at 90 chars, so a 130-char cleanup could never be ticked)
   - then the command runs, the escape kept with the ask's id; a second run is refused, a tick quoting another command opens nothing, and plain rm never opens
   - and a run that fails hands the tick back for the retry
