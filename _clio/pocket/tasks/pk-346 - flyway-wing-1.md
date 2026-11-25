@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T13:53:40Z'
+updated_date: '2026-11-25T13:57:14Z'
 labels:
   - s
   - clio-wing-1
@@ -22,7 +22,7 @@ ordinal: 1001
 - [ ] #4 f92 x-mod-stash shrink read: 50,171 lines, 49 fixes in 7 days, what to cut (his o6 tick, 24 Nov 20:24) — parked: 2026-11-25
 - [ ] #5 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
 - [ ] #6 f93 ⏳ bytes#176 github-actions pr: merge it once renovate stability-days goes green — waits for: bytes#176 release age
-- [ ] #7 f94 ⏳ FRM-690 and FRM-704 close once the checks of their push are green — waits for: CI d5761785
+- [ ] #7 f95 ⏳ FRM-690 and FRM-704 close once CI of their push (7a852ebf or newer) is green — waits for: CI
 - [ ] #8 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
 - [ ] #9 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
 - [ ] #10 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
@@ -901,4 +901,14 @@ done 2026-11-25 15:32: f74 ⏳ bytes prod: rerun the five failed deploys at 15:2
 done 2026-11-25 15:53: f88 FRM-690 three clio test files split to the map: a helper moves them, then the equality proof and the land — parked: 2026-11-25 (FRM-690 In Progress)
 
 done 2026-11-25 15:53: f90 FRM-704 the cited-docs check at commit: built after 15:25, main pulled first, timed before and after — parked: 2026-11-25 (FRM-704 In Progress)
+
+PK-346:W112 (2026-11-25 15:46, dima): events: let's do when you can.
+PK-346:W113 (2026-11-25 15:46, dima): tell what it is, why we have it, and proposed action items from you.
+PK-346:W114 (2026-11-25 15:46, dima): the 14 tickets: yes they are all out of lowtide scope. lab is experiments (not tails) (fix skill), and portfolip is kinda app (not really but it is unclear yet actually will it be an app or not).
+PK-346:W115 (2026-11-25 15:46, dima): wisphunter (not gated by 27 Nov): do after events then.
+PK-346:W116 (2026-11-25 15:46, dima): go events
+PK-346:W117 (2026-11-25 15:46, dima): after SW? ❓
+15:57 the lines above: events is the first thing after the reset, the lab and portfolio rule is in shapes.md, wisphunter after events
+
+done 2026-11-25 15:57: f94 ⏳ FRM-690 and FRM-704 close once the checks of their push are green — waits for: CI d5761785 (FRM-690 In Progress, FRM-704 In Progress)
 <!-- SECTION:NOTES:END -->
