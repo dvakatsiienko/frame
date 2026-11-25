@@ -28,9 +28,6 @@ export function createSelections() {
     };
 
     return {
-        clear() {
-            items.clear();
-        },
         /** @param {ReadonlySet<string>} keys the list items on screen */
         keep(keys) {
             for (const key of items.keys())

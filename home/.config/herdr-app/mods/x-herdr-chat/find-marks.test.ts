@@ -62,15 +62,21 @@ const rows = [
 
 function createRows() {
     const find = createFind();
+    /** a picture's square, once it is made */
+    const made = new Map<string, string>();
     return {
         find,
+        made,
         view: createMessageRows({
             column: () => 700,
             find: () => find,
             isShowMore: () => true,
             look: () => ({ space: 'normal' }),
             room: () => 700,
-            sent: { pathOf: () => null, relOf: () => null },
+            sent: {
+                pathOf: (p: { path: string | null }) => p.path,
+                relOf: (p: { id: string }) => made.get(p.id) ?? null,
+            },
         } as never),
     };
 }
@@ -121,7 +127,7 @@ test.each([
         kind,
     } as never;
     const blocks: number[] = [];
-    expect(view.hasTexts(at)).toBe(true);
+    expect(view.hasBody(at)).toBe(true);
     view.texts(at, t, 'p', true, (drawn, block) => {
         blocks.push(block);
         return drawn;
@@ -133,7 +139,7 @@ test.each([
 test('a message’s look changes with what its text views draw, and only then', () => {
     const { find, view } = createRows();
     view.markTurn([]);
-    const look = (i: number) => view.textsLook(rows[i] as never, t, 'p');
+    const look = (i: number) => view.bodyLook(rows[i] as never, t, 'p');
     const before = [look(0), look(1)];
     find.open();
     // the newest row is the one shown; the oldest is a match, the long one none
@@ -148,6 +154,40 @@ test('a message’s look changes with what its text views draw, and only then', 
         LONG as never,
     ]);
     expect(look(1)).not.toBe(before[1]);
+});
+
+describe('a click on a message’s pictures', () => {
+    const squares = {
+        ...(reply('a', '') as object),
+        kind: 'file',
+        pictures: [
+            { id: 'p1', path: '/tmp/1.png' },
+            { id: 'p2', path: null },
+            { id: 'p3', path: '/tmp/3.png' },
+        ],
+    } as never;
+    const open = (picture: string | null) =>
+        createRows().view.press([squares], 'a', picture);
+    const files = ['/tmp/1.png', '/tmp/3.png'];
+
+    test.each([
+        ['the third, the second not on disk', 'p3', 1],
+        ['the first, pressed beside them', null, 0],
+    ])('opens %s', (_what, picture, at) => {
+        expect(open(picture)).toEqual({ at, files, kind: 'pictures' });
+    });
+
+    test('never opens a sibling of the one pressed', () => {
+        expect(open('p2')).toBeNull();
+    });
+
+    test('its row draws again once a square is made', () => {
+        const { made, view } = createRows();
+        expect(view.hasBody(squares)).toBe(true);
+        const before = view.bodyLook(squares, t, 'p');
+        made.set('p1', 'sent/p1.png');
+        expect(view.bodyLook(squares, t, 'p')).not.toBe(before);
+    });
 });
 
 describe('each match painted in the drawn message (FRM-699:W3)', () => {

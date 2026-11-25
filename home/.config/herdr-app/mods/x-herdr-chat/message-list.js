@@ -7,13 +7,15 @@ import {
     v_virtual_list,
 } from 'gpui-base';
 import { div } from 'gpui-kit';
-import { exec, settings } from 'herdr';
+import { exec, home, settings } from 'herdr';
 
-import { openArgs } from './files.js';
+import { isPicture } from './file-links.js';
+import { openArgs, openFolderArgs } from './files.js';
 import { guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
 import { copiedFrom, createMessageMenu, menuPlace } from './menu.js';
 import { createMessageBodies } from './message-body.js';
+import { pathOf } from './path-links.js';
 import { createPlace } from './place.js';
 import { createSelections } from './selection.js';
 
@@ -59,6 +61,10 @@ export function createMessageList(deps) {
     const selections = createSelections();
     const bodies = createMessageBodies();
     let isSyncing = false;
+    /** the square a left press is on, told before the list hears the press, and the one the last press was on @type {string | null} */
+    let pressing = null;
+    /** @type {string | null} */
+    let pressed = null;
     /** the items on screen @type {string[]} */
     let drawnKeys = [];
     /**
@@ -132,6 +138,7 @@ export function createMessageList(deps) {
             rowOf: (i) => rows[rowAt(i)],
             t,
         };
+        keepDrawn();
         syncBodies(cx);
         const list = v_virtual_list(
             'chat-rows',
@@ -155,10 +162,10 @@ export function createMessageList(deps) {
                         drawnItems.push(box);
                         continue;
                     }
-                    const body = deps.rows.hasTexts(row)
+                    const body = deps.rows.hasBody(row)
                         ? bodies.of(
                               keys[i] ?? '',
-                              deps.rows.textsLook(row, t, preOf(i)),
+                              deps.rows.bodyLook(row, t, preOf(i)),
                           )
                         : null;
                     // the older text of one frame stays in its own row
@@ -215,7 +222,7 @@ export function createMessageList(deps) {
             })
             // a file row opens its file in its app, a png in Preview (FRM-587)
             .on_item_click((key, cx) => {
-                const press = deps.rows.press(rows, key);
+                const press = deps.rows.press(rows, key, pressed);
                 if (press?.kind === 'redraw') cx.notify();
                 else if (press?.kind === 'pictures')
                     deps.pictures.show(press.files, press.at, cx);
@@ -229,7 +236,11 @@ export function createMessageList(deps) {
             .size_full();
         return div()
             .id('chat-list')
-            .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
+            .on_mouse_down('left', (_event, cx) => {
+                pressed = pressing;
+                pressing = null;
+                cx.stop_propagation();
+            })
             .on_mouse_down('right', (event, cx) => {
                 const local = event.local_position ?? { x: 0, y: 0 };
                 messageMenu.open(event.position, {
@@ -258,6 +269,7 @@ export function createMessageList(deps) {
                 cx.notify();
             })
             .on_scroll_wheel((event, cx) => {
+                keepDrawn();
                 syncBodies(cx);
                 if (messageMenu.state) {
                     messageMenu.close();
@@ -305,13 +317,14 @@ export function createMessageList(deps) {
             );
     }
 
+    /** a message off the screen holds no selection */
+    const keepDrawn = () => selections.keep(new Set(drawnKeys));
+
     /**
-     * the messages near the view have their text views ready, and a message off the screen holds no selection; after the
-     * draw, where a view may be made
+     * the messages near the view have their text views ready; after the draw, where a view may be made
      * @param {Context} cx
      */
     function syncBodies(cx) {
-        selections.keep(new Set(drawnKeys));
         if (isSyncing) return;
         isSyncing = true;
         cx.timer.after(0, (later) => {
@@ -327,15 +340,22 @@ export function createMessageList(deps) {
             ) {
                 const key = keys[i] ?? '';
                 const row = rowOf(i);
-                if (!row || !deps.rows.hasTexts(row)) continue;
+                if (!row || !deps.rows.hasBody(row)) continue;
                 const pre = preOf(i);
                 const stamp = deps.rows.stampOf(row, pre);
                 near.push({
                     draw: (
-                        /** @type {import('./message-body.js').Reporting} */ reporting,
-                    ) => deps.rows.texts(row, t, pre, true, reporting),
+                        /** @type {import('./message-body.js').Handlers} */ handlers,
+                    ) => deps.rows.drawBody(row, t, pre, handlers),
+                    follow: (
+                        /** @type {string} */ url,
+                        /** @type {Context} */ cx,
+                    ) => follow(url, row, cx),
                     key,
-                    look: deps.rows.textsLook(row, t, pre),
+                    look: deps.rows.bodyLook(row, t, pre),
+                    press: (/** @type {string} */ picture) => {
+                        pressing = picture;
+                    },
                     report: (
                         /** @type {number} */ block,
                         /** @type {string | null} */ words,
@@ -344,6 +364,29 @@ export function createMessageList(deps) {
             }
             const made = bodies.sync(near, later);
             if (made.some((key) => drawnKeys.includes(key))) later.notify();
+        });
+    }
+
+    /**
+     * a link he clicked in a reply: a path opens as its file row does, a folder in Finder, any other link in his browser
+     * @param {string} url @param {Row} row @param {Context} cx
+     */
+    function follow(url, row, cx) {
+        const path = pathOf(url, row, home());
+        if (!path) {
+            if (/^https?:/.test(url)) cx.open_url(url);
+            return;
+        }
+        if (isPicture(path)) return deps.pictures.show([path], 0, cx);
+        cx.spawn(async () => {
+            const folder = await exec('test', ['-d', path]).catch(
+                /** @returns {null} */ () => null,
+            );
+            const args =
+                folder?.code === 0
+                    ? openFolderArgs(path)
+                    : openArgs(path, deps.audioApp());
+            await exec('open', args).catch(() => {});
         });
     }
 
@@ -500,6 +543,11 @@ export function createMessageList(deps) {
 
     return {
         column,
+        /** the chat left the screen: herdr drops every selection, and no text view says so */
+        hidden() {
+            drawnKeys = [];
+            keepDrawn();
+        },
         /** a restored place lands unseen: its frames would show him other rows first @param {string} id @param {number} offset */
         land(id, offset) {
             at.restore(id, offset);
@@ -520,7 +568,6 @@ export function createMessageList(deps) {
             messageMenu.close();
             items = null;
             drawnKeys = [];
-            selections.clear();
             bodies.clear();
         },
         /**

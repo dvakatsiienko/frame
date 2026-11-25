@@ -64,10 +64,4 @@ describe('the words he selected, read at a right press', () => {
         expect(textFor('a', now)).toBeNull();
         expect(textFor('b', now)).toBe('second');
     });
-
-    test('a thread switch clears all', () => {
-        select('a', 0, 'first');
-        selections.clear();
-        expect(textFor('a', now)).toBeNull();
-    });
 });

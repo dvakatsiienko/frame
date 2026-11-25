@@ -98,9 +98,9 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - when he right-clicks that message, then the menu reads «Copy text», and picking it puts those words on the clipboard as he reads them
   - and a right-click on a message with no selection copies it whole, whatever is selected in another
   - and a selection across two messages copies the part in the one he right-clicked; two blocks of one message join with an empty line
-  - and a selection lives while any line of its message is on screen, and is gone once the whole message left it (herdr's own, dima's look 25 Nov)
+  - and a selection lives while any line of its message is on screen, and is gone once the whole message left it or the chat was hidden (herdr's own, dima's look 25 Nov)
   - and a reply that grows under his selection loses it, and then copies whole
-- 🧭 Reply quotes only the words he selected, never a whole message (dima, 20:35; waits on herdr-app#1110)
+- 🧭 Reply quotes only the words he selected, never a whole message (dima, 20:35; FRM-585)
   - decision: Reply left the menu (dima, 20:35: «whole message quoting isn't useful»)
 
 ## pictures and files
@@ -134,8 +134,12 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - then each file gets one row under the reply, «🖼️ <name>» for a picture and «📂 <name>» for any other file, its whole path on hover, and a click opens it in its app (a png in Preview, a folder in Finder)
   - ✅ and a click on an audio file (mp3, m4a, wav, flac, …) opens it in the app «open audio in» names in x-herdr-settings › general: IINA by default, QuickTime, VLC or the macOS default (dima, 19 Nov 17:53: «they open in apple music»)
   - and a path inside a fenced block gets no row, a sentence's period or comma is not part of the path, and the same file twice is one row
-  - and a reply's pictures draw together as squares under it, the way his own do, and a click opens them in the viewer (FRM-638 slice 5, dima 16:59)
-  - decision: each file is its own row in the list, opened through the list's item click: a handler inside a row blanked the whole list; a link click inside the text waits on [herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894)
+  - and a reply's pictures draw together as squares under it, the way his own do, and a click opens them in the viewer, the one he pressed first (FRM-638 slice 5, dima 16:59)
+  - decision: each file is its own row in the list, opened through the list's item click: a handler inside a row blanked the whole list ([herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894))
+- ⬜ a path a reply names opens in one click, in its words (FRM-620, his o6 24 Nov)
+  - given a reply names a `~/` path or an absolute one, in ticks or plain, or links to one, and it is on disk
+  - then it draws as a link, and a click opens a file as its row does (a picture in the viewer, one that would run shown in Finder), a folder in Finder
+  - and a path that is not there, one in a fenced block, a command in ticks and a relative path draw as their words
 
 ## the quill and send
 
@@ -248,7 +252,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - given find is open on a query
   - when it counts and when he steps
   - then every match in a reply, his message or an open call's card is painted behind its words, its bold, code and links kept, the stepped one stronger; a tool line or a file is found by its row's tint alone
-  - and it counts what the message draws: a link's address, a fence line and a tag are no match, his own message and code match as typed; a match stays inside one line
+  - and it counts what the message draws: a link's address or definition, a fence line, a tag, a rule and a mark around words are no match, a list's dash and a table's pipe are; his own message and code match as typed; a match stays inside one line
   - and a step moves no row and redraws none another way; a folded reply unfolds once, when it becomes a match
   - and a reply taller than the view comes in at its top, so its stepped match may stand below
 

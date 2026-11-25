@@ -5,28 +5,13 @@ import {
     isSentRow,
     isUnsendRow,
     openArgs,
+    openFolderArgs,
     replyIdOf,
-    unlinkFiles,
     withFileRows,
 } from './files.js';
 import type { Row } from './row-model.js';
 
 const HOME = '/Users/dima';
-
-describe('a file:// link in the text reads plain while herdr-app#894 is open', () => {
-    test('a markdown link reads as its label, an autolink as its file name', () => {
-        expect(
-            unlinkFiles(
-                'see [the shot](file:///tmp/a.png) and <file:///tmp/b.md>',
-            ),
-        ).toBe('see the shot and b.md');
-    });
-
-    test('a link inside code and a web link stay as written', () => {
-        const text = '`[a](file:///tmp/a)` [w](https://x.dev)';
-        expect(unlinkFiles(text)).toBe(text);
-    });
-});
 
 describe("a reply's files are rows of their own in the list, so a click on one can open it (FRM-587)", () => {
     const reply = (id: string, text: string, version = 1): Row => ({
@@ -217,5 +202,22 @@ describe("a message still in Claude Code's queue carries a × row under it (FRM-
         );
         expect(ids).toEqual(['w1', 'w1#unsend', 'm1']);
         expect(isUnsendRow('w1#unsend')).toBe(true);
+    });
+});
+
+describe('a folder he clicked', () => {
+    test.each([
+        '/Users/dima/frame/herdr',
+        '/Users/dima/.claude',
+        '/Users/dima/v1.2',
+    ])('%s opens in Finder', (path) => {
+        expect(openFolderArgs(path)).toEqual([path]);
+    });
+
+    test('an app is revealed, never run', () => {
+        expect(openFolderArgs('/Users/dima/x.app')).toEqual([
+            '-R',
+            '/Users/dima/x.app',
+        ]);
     });
 });

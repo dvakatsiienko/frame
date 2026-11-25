@@ -93,6 +93,7 @@ const doorTo = (file) => ({
  * @property {() => void} clearShown every view lets go of the old thread: its rows, ask, menu, viewer, find, quill
  * @property {ReturnType<typeof import('./find-bar.js').createFindBar>} findBar
  * @property {ReturnType<typeof import("./heights.js").createHeights>} heights
+ * @property {ReturnType<typeof import('./path-links.js').createPathLinks>} links
  * @property {ReturnType<typeof import('./message-list.js').createMessageList>} list
  * @property {() => import('./look.js').Look} look
  * @property {ReturnType<typeof import('./row-model.js').createRowModel>} model
@@ -283,6 +284,7 @@ export function createThreadFeed(deps) {
         const { changed, removed } = deps.model.add(lines);
         deps.quill.learnSkills(lines);
         makePictures(cx);
+        linkPaths(cx);
         // his marked words showing as his message settle the mark in this same draw: they leave the quill as they land
         const added = new Set(changed);
         const arrived = deps.model.rows
@@ -345,6 +347,13 @@ export function createThreadFeed(deps) {
         }
     }
 
+    /** each reply's paths that are on disk become links in it @param {Context} cx */
+    function linkPaths(cx) {
+        cx.spawn(async (cx) => {
+            if (await deps.links.learn(deps.model.rows)) cx.notify();
+        });
+    }
+
     /** his messages' pictures get their files; each row draws its own once made @param {Context} cx */
     function makePictures(cx) {
         const pictures = deps.rows
@@ -383,6 +392,7 @@ export function createThreadFeed(deps) {
             deps.quill.learnSkills(lines);
         }
         makePictures(cx);
+        linkPaths(cx);
         // the saved line may sit inside a folded row: the place is that row
         const at = deps.model.indexOf(lineId);
         const row = deps.model.rows[at];
@@ -425,6 +435,7 @@ export function createThreadFeed(deps) {
             const first = deps.model.rows[deps.model.indexOf(firstId)];
             deps.quill.learnSkills(lines);
             makePictures(cx);
+            linkPaths(cx);
             // the page's last reply joined the row he reads: that row took the page's id and grew above him
             const joined = place
                 ? deps.model.rows[deps.model.indexOf(place.id)]
