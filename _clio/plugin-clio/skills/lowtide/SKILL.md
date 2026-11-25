@@ -5,7 +5,7 @@ description: lowtide, the hunt — load when dima says «lowtide», «low tide»
 
 # 🦪 lowtide — the chores cleared before a big step
 
-lowtide is the family that hunts and fixes gaps and inefficiencies in our plans (PK-387:W18–W22); the shared shapes: [shapes.md](references/shapes.md).
+lowtide is the family that hunts and fixes gaps and inefficiencies in our plans (PK-387:W18–W22).
 
 dima, 2026-10-20, folded: «before we move to something bigger, like the speak v2 revival, close every chore that would otherwise stay parked forever if i didn't ask — small, medium or big. i often find myself explaining this to you: during the memory sweep the pocket grew while we kept folding other useful stuff.»
 
@@ -14,28 +14,23 @@ dima, 2026-10-20, folded: «before we move to something bigger, like the speak v
 only tails outside every lane's scope (dima, 2026-11-23: «Low Tide is not intended for apps … every single tail that you have outside of the lane scope»). an app's or a lane's question goes to its lane.
 
 - **a line is opened before it is listed** (his yes, 20:11): one read of its object (the tree list, the ticket, the spec); a line the read settles is solved or closed, never printed
-- **the stop**: every non-lane tail is solved, waits on his word, or waits on a date; that list prints once, no next item after it
-
-## first, always: the false-open hunt
-
-tickets done but still open, or hung In Progress, hunted before any tail: read [false-open-hunt.md](references/false-open-hunt.md) and run it.
+- **the stop**: every non-lane tail is solved, waits on his word, or waits on a date
 
 ## the start
 
-read the flyways' notes for today's `hoist MM-DD` line:
-- none → `clio:lowtide-triage` runs first; offer it in one line
-- `proposing` → wait for dima's yes on that split
-- `done` → work your own flyway in its order
-- a wing opened after the hoist, its flyway empty → take only items no plan holds, your label on at the pick
-- mark the queue run: `mkdir -p ~/.local/state/clio/queue-run && touch ~/.local/state/clio/queue-run/$CLAUDE_CODE_SESSION_ID`
+1. **the false-open hunt, always first**: [false-open-hunt.md](references/false-open-hunt.md)
+2. today's `hoist MM-DD` line in the flyways' notes: `proposing` → wait for dima's yes; `done` → your flyway's order; none, 2+ clio threads → offer `clio:lowtide-triage`; a wing opened after it → only items no plan holds, your label on at the pick
+3. `mkdir -p ~/.local/state/clio/queue-run && touch ~/.local/state/clio/queue-run/$CLAUDE_CODE_SESSION_ID`
+4. **the list, before any pick** (dima, 2026-11-25: «list all possible tails», «then we set the order to solve them and then hunt»): your flyway's and the pocket's open lines, linear tickets outside a lane or an app, through [shapes.md](references/shapes.md)'s filter (snoozed or someday on his ask). one numbered list: the mechanical ones first, solved on his plain «go»; then the rest, what each waits on
+5. his order is one orbit ask, mine its pick
 
 ## each pick
 
 - **before it**, reread every flyway: an id already in another flyway stops the pick, named to dima
-- **a batch** (dima, 2026-11-07, folded: «it is good to batch them. one at a time is more for stuff that is quite bigger and wants my decision»): items passing the freebie test (`craft-pm`) run together with no ask, reported after as `PK-N → what happened`; an almost-freebie is one helper card
+- **a batch** (dima, 2026-11-07, folded: «it is good to batch them. one at a time is more for stuff that is quite bigger and wants my decision»): items passing the freebie test (`craft-pm`) run together on his one «go», reported after as `PK-N → what happened`; an almost-freebie is one helper card
 - **one at a time**: an unsure item, and anything irreversible or visible outside. print what it is, why it is parked, how to solve it, then wait for his steer or go
 - **big stuff** goes last and is proposed for its own shaping, never started in this run, unless he asks to prioritize it
-- **every done report ends with the next item**, never a bare «done» (dima, 2026-11-20 15:41: «each time that you solve stuff and print me a done report, in the same reply I want you to propose the next item right away, along with a description of what that next item to solve is and your proposal for how to solve it»): two next items, tails that need his call only (a tail I solve myself just runs; lanes, looks, siestas and review cards run in parallel, never a next item: his 15:59, 16:15), so his «ok» on the first still shows the second; the first's pick also an orbit ask. three paragraphs, an empty line between, no bullets (his 16:05 «currently reads as a wall of text», 16:08 «my take is not on new line», 16:11): `✅ **done:** …`, then each item one paragraph, `🎣 **next catch:**` (his pick, 2026-11-24) what it is in plain words, a trailing `\`, `💡 **my take:**` the action
+- **every done report ends with the next item**, never a bare «done» (dima, 2026-11-20 15:41: «each time that you solve stuff and print me a done report, in the same reply I want you to propose the next item right away, along with a description of what that next item to solve is and your proposal for how to solve it»): two next items, tails that need his call only (lanes, looks, siestas and review cards run in parallel, never a next item: his 15:59, 16:15), so his «ok» on the first still shows the second; the first's pick also an orbit ask. three paragraphs, an empty line between, no bullets (his 16:05 «currently reads as a wall of text», 16:08 «my take is not on new line», 16:11): `✅ **done:** …`, then each item one paragraph, `🎣 **next catch:**` (his pick, 2026-11-24) what it is in plain words, a trailing `\`, `💡 **my take:**` the action
 - **the run's end is auto mode** (dima, 2026-11-20 16:37: «for stuff that you can solve yourself, you don't put this stuff into your next items. once we finish low tide, stop next items and move into auto mode. low tide is only for tails, nothing else»): at 0 tails the marker is trashed; my own work runs unasked, never a next item
 - **then**: fully solved, its item closed (a close carrying his asks takes the ask-guard, `craft-pm`), its flyway line moved into the done note (`node script/flyway-done.ts <PK> <fN>`), synced with main (a wing lands per its banner)
 
@@ -45,8 +40,7 @@ an item moves between flyways on his want, or when another lane fits it better: 
 
 ## how it runs
 
-- a siesta at its usual triggers (`clio:siesta`), never one giant turn
-- an item that turns out blocked or lane-bound gets its `**waiting for:**` line or lane note the same turn, and leaves the hunt
-- the next big step starts only when this lane has nothing left, and after its cut pass: `clio:lowtide-cuts` weighs the step's planned tickets, its print goes to dima, his ticks land before the first chunk is signed
+- a blocked or lane-bound item gets its `**waiting for:**` line or lane note that turn, and leaves the hunt
+- the next big step starts only when this lane has nothing left, and after `clio:lowtide-cuts` over its tickets, his ticks in before the first chunk is signed
 
 **done**: reread the whole pile, not only your flyway. an unclaimed item or a parked wing's unticked line is taken or named. then «the lowtide hunt is finished» to dima, with a «nothing left» line naming every store searched (pocket, linear FRM, linear BYT, inbox), with the counts before and after.
