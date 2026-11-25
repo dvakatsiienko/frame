@@ -10,13 +10,12 @@ import { tickAllThread } from './orbit.js';
  * @param {{ isShown: boolean, hovered: string | null, picked: string | null, pid: number | undefined }} at
  * @returns {string | null}
  */
-export function tickAsker(rows, { isShown, hovered, picked, pid }) {
+export function tickAsker(rows, { isShown, hovered, pid }) {
     if (!isShown) return null;
     return tickAllThread(
         rows.filter((r) => r.takes > 0).map((r) => r.sid),
         {
             hovered,
-            picked,
             shown: rows.find((r) => r.pid === pid)?.sid ?? null,
         },
     );

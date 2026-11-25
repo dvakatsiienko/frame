@@ -794,36 +794,23 @@ describe('⌘⇧K picks the asker it ticks', () => {
         expect(
             tickAllThread(sids, {
                 hovered: 'codie',
-                picked: 'clio',
                 shown: 'clio',
             }),
         ).toBe('codie');
     });
-    test('no hover: the asker he last clicked', () => {
-        expect(
-            tickAllThread(sids, {
-                hovered: null,
-                picked: 'codie',
-                shown: 'clio',
-            }),
-        ).toBe('codie');
-    });
-    test('neither: the thread the chat shows', () => {
-        expect(
-            tickAllThread(sids, { hovered: null, picked: null, shown: 'clio' }),
-        ).toBe('clio');
+    test('no hover: the thread open on screen', () => {
+        expect(tickAllThread(sids, { hovered: null, shown: 'clio' })).toBe(
+            'clio',
+        );
     });
     test('an asker whose asks left is skipped for the next', () => {
         expect(
             tickAllThread(['clio'], {
                 hovered: 'gone',
-                picked: null,
                 shown: 'clio',
             }),
         ).toBe('clio');
-        expect(
-            tickAllThread([], { hovered: null, picked: null, shown: 'clio' }),
-        ).toBe(null);
+        expect(tickAllThread([], { hovered: null, shown: 'clio' })).toBe(null);
     });
 });
 
