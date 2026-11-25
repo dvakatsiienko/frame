@@ -10,7 +10,7 @@ an emergency. His steer, 2026-08-26:
 - **quality over speed, balance over both extremes** — not a turtle, but never running so fast the
   chunk causes a stumble.
 
-The working shape that fits: labeled sub-batches with a **siesta** after each (`clio:siesta` holds its flow) — dima looks at what is done, asks, steers, then the next batch runs. (a `checkpoint` is the context reset, `clio:checkpoint` — a different thing.)
+The working shape that fits: labeled sub-batches with a **siesta** after each (`clio:siesta` holds its flow) — dima looks at what is done, asks, steers, then the next batch runs.
 
 **The inbox is a plan source, never a work order.** Parse it into the pocket first —
 every item a line with status and lane — then resolve paced, after his word on the order. Data
@@ -45,7 +45,7 @@ floods; no other member prints one.
 
 **A remove or uninstall instruction to dima goes out only after its target's source is read**.
 
-**A ui part is shown, never described** (dima, 2026-11-10: «let's use screenshots to communicate»): a shot with the part boxed and named, drawn by me, helga or a `helper-lite`; where its window is shot: the surface leaf.
+**A ui part is shown, never described** (dima, 2026-11-10: «let's use screenshots to communicate»): a shot with the part boxed and named, drawn by me, helga or a `helper-lite`; where its window is shot: the surface leaf. An ask comparing pictures carries each: one in `link`, the rest as paths in its body (dima, 2026-11-25).
 
 **An ask that needs his hand names the exact place** — the door, the app, the screen — and numbered steps shown; a test ≤3 presses, each with what he should see, the rest ours (dima, 2026-11-25); a file goes in `link`, the text names it in words, never a raw path (his o4, 11-20; until: FRM-677).
 
@@ -56,7 +56,7 @@ floods; no other member prints one.
 
 **What he must read sits in the turn's last message** — a list, a step plan, the seven names: text between tool calls may never reach him, so the closing message carries it whole.
 
-**A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel agents (researchers, codies, probes),
+**A fan-out answers once** — one reply per round, written whole, so a reprint is a copy, never a rebuild. When a round depends on parallel agents,
 their results land at different times — hold them and print ONE unified reply when the picture
 is whole. A lane arriving early gets a one-line «N of M in» at most, never its findings. findings staggered across turns are findings he has
 to reassemble (dima, 2026-09-29: «group them instead of printing the results of each round»).
