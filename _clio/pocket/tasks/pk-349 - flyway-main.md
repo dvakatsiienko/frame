@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T11:01:32Z'
+updated_date: '2026-11-25T11:08:44Z'
 labels:
   - s
   - clio-main
@@ -2817,4 +2817,13 @@ PK-349:W2433 (2026-11-25 12:55, dima): system checkup is run on my word (we shou
 done 2026-11-25 13:01: f116 decamp the verify trees (frame 5, bytes FRM-683 after its round 2) — waits for: FRM-645 — parked: 2026-11-24 (FRM-683 In Progress, FRM-645 In Progress)
 
 done 2026-11-25 13:01: f115 FRM-596 slice 09: my hook design, and its live-wing done test — on: 2026-11-27 — parked: 2026-11-24 (FRM-596 In Progress)
+
+PK-349:W2434 (2026-11-25 13:08, dima): so it busts the cache? ❓
+PK-349:W2435 (2026-11-25 13:08, dima): typing clear is nearly the same as starting a fresh thread? ❓
+PK-349:W2436 (2026-11-25 13:08, dima): are you sure we want to fix it? ❓
+PK-349:W2437 (2026-11-25 13:08, dima): if it is a cc native behaviour even in cli - i dont really want to spend time on this.
+PK-349:W2438 (2026-11-25 13:08, dima): cc will maybe fix it itself later.
+PK-349:W2439 (2026-11-25 13:08, dima): so you just read skills by hand.
+PK-349:W2440 (2026-11-25 13:08, dima): what i want is our part to work as native.
+PK-349:W2441 (2026-11-25 13:08, dima): if skill typed from quill in herdr, it opens a message that expands - it is fine then.
 <!-- SECTION:NOTES:END -->
