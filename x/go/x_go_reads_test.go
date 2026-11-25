@@ -7,27 +7,34 @@ import (
 	"testing"
 )
 
-// frame's own x-go-reads job, as its lefthook.yaml holds it
-func xGoReadsJob(t *testing.T) string {
+// frame's own pre-commit job of that name, as its lefthook.yaml holds it
+func commitJob(t *testing.T, name string) string {
 	t.Helper()
 	gates, err := readHookGates("../..", "pre-commit")
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, g := range gates {
-		if g.name == "x-go-reads" {
+		if g.name == name {
 			return g.run
 		}
 	}
-	t.Fatal("frame's lefthook.yaml holds no x-go-reads job")
+	t.Fatalf("frame's lefthook.yaml holds no %s job", name)
 	return ""
 }
 
-// frame's own pre-commit go job behind a stub go that logs its args; the door is `x lane commit` or a plain git commit through lefthook
+func xGoReadsJob(t *testing.T) string { t.Helper(); return commitJob(t, "x-go-reads") }
+
 func xGoReadsWorld(t *testing.T, goExit string) (dir string, env []string, goCalls func() string) {
 	t.Helper()
-	job := xGoReadsJob(t)
-	dir, env = gateFixture(t, "pre-commit:\n  commands:\n    x-go-reads:\n      run: '"+strings.ReplaceAll(job, "'", "''")+"'\n")
+	return commitJobWorld(t, "x-go-reads", goExit)
+}
+
+// one of frame's own pre-commit go jobs behind a stub go that logs its args; the door is `x lane commit` or a plain git commit through lefthook
+func commitJobWorld(t *testing.T, name, goExit string) (dir string, env []string, goCalls func() string) {
+	t.Helper()
+	job := commitJob(t, name)
+	dir, env = gateFixture(t, "pre-commit:\n  commands:\n    "+name+":\n      run: '"+strings.ReplaceAll(job, "'", "''")+"'\n")
 	write(t, filepath.Join(dir, "x/go/go.mod"), "module x\n\ngo 1.21\n")
 	write(t, filepath.Join(dir, "script/test-cpu-budget.tsv"), "x-go\t99999\t2026-11-09\tfixture\n")
 	lefthook, err := filepath.Abs("../../node_modules/.bin/lefthook")
