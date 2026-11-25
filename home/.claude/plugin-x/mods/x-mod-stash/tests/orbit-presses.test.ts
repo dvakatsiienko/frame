@@ -589,24 +589,26 @@ test('✅ leaves an ask followed up since the frame he pressed', async ($, on) =
     const gate = new Promise<void>((resolve) => {
         open = resolve;
     });
-    on('state.get', async (_$, e, next) => {
-        if (isHeld && e.key === 'ticks') await gate;
-        return next(e as never);
+    // the follow waits inside its own write, so ✅ queues behind it, pressed on the frame from before it
+    on('state.set', async (_$, e, next) => {
+        if (isHeld && e.key === 'orbit') await gate;
+        return next(e);
     });
     await start($);
     const ui = await board($);
     await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
     isHeld = true;
-    await ui.press({ key: 'orbit:accepted:o1' });
     const follow = orbit($, {
         id: 'o2',
         op: 'follow',
         pick: 'yes',
         text: 'push `late`',
     });
-    await ui.press({ key: 'orbit:all' });
+    await w.clock.advance(1);
+    const all = ui.press({ key: 'orbit:all' });
+    await w.clock.advance(1);
     open();
-    await follow;
+    await Promise.all([follow, all]);
     await w.clock.advance(1);
     expect((writes.at(-1) as { id: string }[]).map((t) => t.id)).toEqual([
         'o1',
@@ -772,7 +774,7 @@ test("herdr's 🔁 hides a look ask once a turn takes it", async ($, on) => {
     ]);
 });
 
-test("his mid-turn 🔁 and its steer reach the poster in its very next call, a «fixing» follow or a refused one, and a wake's refused prompt gives the mark back", async ($, on) => {
+test("his mid-turn 🔁 and its steer reach the poster in its very next orbit call, which changes nothing it names; a subagent's is refused; a wake's refused prompt gives the mark back", async ($, on) => {
     const w = world(on);
     await start($);
     const ui = await board($);
@@ -787,25 +789,47 @@ test("his mid-turn 🔁 and its steer reach the poster in its very next call, a 
     w.prompts.isDropped = true;
     await w.clock.advance(5_000);
     w.prompts.isDropped = false;
+    await ui.press({ key: 'orbit:accepted:o3' });
     await say($, 'go');
     const again = joined(w.contexts).join('');
     await ui.press({ key: 'orbit:rejected:o1' });
     await ui.input({ key: 'orbit:steer:o1', text: 'the wrap is off' });
-    const heard = (await followed($, { why: 'fixing it' })) as {
-        context?: string[];
-    };
-    const shown = await asksShown(ui);
-    await ui.press({ key: 'orbit:accepted:o3' });
-    const refused = (await orbit($, { id: 'o9', op: 'follow', text: 'x' })) as {
+    const bySubagent = (await followed($, { agentId: 'a1' })) as {
         deny?: string;
     };
-    expect([again, heard.context?.join(''), shown, refused.deny]).toEqual([
+    type Answer = { context?: string[]; result?: string };
+    const heard = (await orbit($, {
+        ops: [
+            { ids: ['o3'], op: 'resolve', words: { o3: 'changed: less' } },
+            { id: 'o1', op: 'follow', text: 'look: done' },
+        ],
+    })) as Answer;
+    const shown = await asksShown(ui);
+    await followed($, { text: 'look: done' });
+    await ui.press({ key: 'orbit:accepted:o1' });
+    w.taps.set = (key) =>
+        key === 'ask-counter' ? 'the store is full' : undefined;
+    const thrown = (await add($, ['push it', 'yes'])) as Answer;
+    expect([
+        again,
+        bySubagent.deny,
+        heard.context?.join(''),
+        heard.result,
+        shown,
+        await asksShown(ui),
+        thrown.context?.join(''),
+        thrown.result,
+    ]).toEqual([
         expect.stringMatching(/o2 ↩️ rejected/u),
+        expect.stringMatching(/dima marked o1 after you wrote this/),
         expect.stringMatching(
             /o1 ↩️ rejected: look: the card .*the wrap is off/u,
         ),
+        expect.stringMatching(/^refused — 1 resolve: refused.*dima marked o1/s),
         ['o2', 'o3'],
-        expect.stringMatching(/o3 🛎️ accepted.*needs a known id/su),
+        ['o1', 'o2', 'o3'],
+        expect.stringMatching(/o1 🛎️ accepted/u),
+        expect.stringMatching(/^refused — orbit: .*full/),
     ]);
 });
 

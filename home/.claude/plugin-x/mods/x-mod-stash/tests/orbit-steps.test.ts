@@ -3,6 +3,7 @@ import { expect, test } from 'claude-code/testing';
 import {
     isFresh,
     lockJoined,
+    marksGivenBack,
     orbitOp,
     steered,
     steeredOrbit,
@@ -44,6 +45,32 @@ test('a joined ask is locked and its wake time spent, the others stay as they we
         { ...taken, isLocked: true, markedAt: undefined },
         left,
     ]);
+});
+
+test('a mark is given back while it is locked or a turn end spent it, never over what came since', () => {
+    const was = ask('o1', {
+        isHerdrMark: true,
+        kind: 'look',
+        mark: 'rejected',
+        markedAt: 5,
+        steer: 'less',
+    });
+    const locked = lockJoined(orbitOf({ asks: [was] }), [was]).asks[0] ?? was;
+    const ended = turnEnded(orbitOf({ asks: [locked] })).asks[0] ?? was;
+    const back = { ...was, isLocked: undefined, markedAt: undefined };
+    const since = [
+        { ...ended, isChanged: true },
+        { ...ended, text: 'another' },
+        { ...ended, mark: 'accepted' as const },
+        { ...locked, mark: 'accepted' as const },
+        { ...locked, isResolved: true },
+    ];
+    expect([
+        locked.hidden,
+        ...[locked, ended, ...since].map(
+            (a) => marksGivenBack(orbitOf({ asks: [a] }), [was]).asks[0],
+        ),
+    ]).toEqual([{}, back, back, ...since]);
 });
 
 test('a turn end drops the answered asks and unlocks the rest', () => {
