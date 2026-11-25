@@ -5,15 +5,9 @@ import { div, image } from 'gpui-kit';
 import { home } from 'herdr';
 
 import { fileName } from './attach.js';
-import { splitBlocks } from './blocks.js';
 import { messageDetails } from './details.js';
-import {
-    fileAt,
-    isSentRow,
-    isUnsendRow,
-    unlinkFiles,
-    withFileRows,
-} from './files.js';
+import { blockSource, drawnBlocks, replyBlocks } from './drawn.js';
+import { fileAt, isSentRow, isUnsendRow, withFileRows } from './files.js';
 import { findSpans } from './find.js';
 import { replyFold } from './fold.js';
 import { ICONS } from './icons.js';
@@ -24,7 +18,6 @@ import {
     isCardRow,
     withCallRows,
 } from './tool-folds.js';
-import { typedMarkdown } from './typed.js';
 
 /** @typedef {import('./row-model.js').Row} Row */
 /** @typedef {import('./chat-types.js').Theme} Theme */
@@ -145,7 +138,7 @@ export function createMessageRows(deps) {
                                     markedText(row, t, isShown) ??
                                         TextView.markdown(
                                             id,
-                                            typedMarkdown(row.text),
+                                            drawnBlocks(row)[0] ?? '',
                                         ).selectable(isShown),
                                 ),
                         ),
@@ -177,13 +170,12 @@ export function createMessageRows(deps) {
                         .children(
                             (markedText(row, t, isShown)
                                 ? []
-                                : (fold?.shown ??
-                                  splitBlocks(unlinkFiles(row.text)))
+                                : (fold?.shown ?? replyBlocks(row))
                             ).map((block, i) =>
                                 block.kind === 'text'
                                     ? TextView.markdown(
                                           `${id}-${i}`,
-                                          block.text,
+                                          blockSource(block),
                                       ).selectable(isShown)
                                     : div()
                                           .px(10)
@@ -195,7 +187,7 @@ export function createMessageRows(deps) {
                                           .child(
                                               TextView.markdown(
                                                   `${id}-${i}`,
-                                                  `\`\`\`${block.lang}\n${block.text}\n\`\`\``,
+                                                  blockSource(block),
                                               ).selectable(isShown),
                                           ),
                             ),
@@ -250,7 +242,7 @@ export function createMessageRows(deps) {
                         .child(
                             TextView.markdown(
                                 `${pre}${row.id}@${row.version}`,
-                                `\`\`\`json\n${row.calls?.[0]?.input ?? ''}\n\`\`\``,
+                                drawnBlocks(row)[0] ?? '',
                             ).selectable(isShown),
                         ),
                 );
@@ -422,7 +414,7 @@ export function createMessageRows(deps) {
             return null;
         const width = deps.room() * BUBBLE_SHARE;
         return replyFold(
-            splitBlocks(unlinkFiles(row.text)),
+            replyBlocks(row),
             Math.floor(Math.max(240, width) / CHAR_PX),
             {
                 isEarlierTurn: !currentTurn.has(row.id),
