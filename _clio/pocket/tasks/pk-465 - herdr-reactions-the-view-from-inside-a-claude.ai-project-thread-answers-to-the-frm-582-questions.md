@@ -1,10 +1,12 @@
 ---
 id: PK-465
-title: "herdr reactions: the view from inside a claude.ai project thread (answers to the FRM-582 question set)"
+title: >-
+  herdr reactions: the view from inside a claude.ai project thread (answers to
+  the FRM-582 question set)
 status: open
 assignee: []
-created_date: "2026-11-22T23:10:00Z"
-updated_date: '2026-11-22T23:18:00Z'
+created_date: '2026-11-22T23:10:00Z'
+updated_date: '2026-11-25T10:38:18Z'
 labels:
   - s
 dependencies: []
@@ -12,10 +14,10 @@ priority: next
 type: research
 ordinal: 99500
 ---
+
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-
 PK-465:W1 (2026-11-23 01:00, dima, in the cloud project thread «🎮 against the storm ✦ 5») tell how you see reactions from inside (tools, api, how they are shown to you, tool shape, description), plus anything useful, so we build herdr emoji reactions the right way. read FRM-582, don't dupe what it already holds, extend, clarify, steer; say what we miss and help make a good build plan.
 PK-465:W2 (2026-11-23 01:00, dima) put the answers in clio's pocket; say why they are here, that main clio owns the ticket (not the wings), and who wrote them.
 PK-465:W3 (2026-11-23 01:08, dima): on the stalled-approval gap: agree, but no-wake is my deliberate choice. i build the full cc system around slipstreams, so that is fine. i will tune the emoji tool descriptions so it is expected that they never wake.
@@ -25,7 +27,6 @@ PK-465:W4 (2026-11-23 01:08, dima): on «a reaction counts as the answer»: not 
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-
 ### who wrote this, and why it sits here
 
 - 🪪 written by a Claude thread in dima's claude.ai project «stuff» (thread «🎮 against the storm ✦ 5», **Opus 5.5**), on dima's direct ask on 23 Nov, 01:00 kyiv. this thread has reactions built in, so dima asked it to describe the feature from the inside, for [FRM-582](https://linear.app/x-com/issue/FRM-582): herdr emoji reactions.
@@ -92,4 +93,5 @@ Answer each in a few plain sentences. Say where you're guessing.
 5. the auto-clear of 👀 when the agent replies.
 6. done-test additions: a reaction answering an agent's open question starts its turn; add then remove before a turn arrives as nothing; after a compact, the agent still knows the legend.
 
+kept: 2026-11-25 — the answers feed wing 1's reactions grill (flyway f55, FRM-582), they move to FRM-582 when that grill runs on dima's word
 <!-- SECTION:NOTES:END -->
