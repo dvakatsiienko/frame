@@ -27,7 +27,10 @@ var (
 	shellSep = regexp.MustCompile(`\|\||&&|[|;&]`)
 )
 
-var signHash = regexp.MustCompile(`\bbody ([0-9a-f]{6,})\b`)
+var (
+	signHash    = regexp.MustCompile(`\bbody ([0-9a-f]{6,})\b`)
+	ticketNamed = regexp.MustCompile(`\b(?:FRM|BYT|PK)-\d+\b`)
+)
 
 func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 	id := args[0]
@@ -54,10 +57,10 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	paths, section := laneSpecSection(repo, id)
+	paths, section := ticketSpecOf(id, repo).binding()
 	if len(paths) > 1 {
 		return nil, &Fail{Refused: true, Msg: id + " has a section in " + specList(paths) + " — one spec binds a ticket",
-			Next: "remove the stale section, then x brief preflight " + id}
+			Next: "remove the stale section, then x brief preflight " + id + " --repo " + repo}
 	}
 	read, err := preflightFindings(repo, id, body, paths, section, r.Step)
 	if err != nil {
@@ -140,7 +143,7 @@ func preflightFindings(repo, id, body string, paths []string, section string, st
 		if exits == 0 {
 			found = append(found, finding{1, "lint", "## exit", "the ticket has no exit lines"})
 		}
-		if line, recorded, signed := sealDrift(section, body); recorded != "" {
+		if line, recorded, signed := sealDrift(section, id, body); recorded != "" {
 			found = append(found, finding{line, "seal", "wish: line", "records body " + recorded + ", the ticket's text hashes to body " + signed + ": the ticket's text moved since the seal: read what changed, fold it into the section, then set the hash"})
 		}
 		if len(paths) == 1 {
@@ -212,23 +215,43 @@ func specList(paths []string) string {
 	return plural(len(paths), "lane spec") + ": " + strings.Join(shown, ", ")
 }
 
-// sealRecorded is the hash the spec section's `wish:` line records and the line it sits on; "" when the section records none
-func sealRecorded(section string) (line int, recorded string) {
+// sealRecorded is the hash the spec section's `wish:` line records for a ticket and the line it sits on, "" when it records none: the
+// one after the ticket's own id, else the line's first, which an umbrella's section holds. a joint section seals each ticket its
+// heading names by its own hash, `wish: FRM-1 · body <hash> · FRM-2 · body <hash>`
+func sealRecorded(section, id string) (line int, recorded string) {
+	heading := ""
 	for i, text := range strings.Split(section, "\n") {
-		if strings.HasPrefix(text, "wish:") {
-			if found := signHash.FindStringSubmatch(text); found != nil {
+		if heading == "" {
+			heading = text
+		}
+		if !strings.HasPrefix(text, "wish:") {
+			continue
+		}
+		named := ticketNamed.FindAllStringIndex(text, -1)
+		for at, name := range named {
+			own := text[name[1]:]
+			if at+1 < len(named) {
+				own = text[name[1]:named[at+1][0]]
+			}
+			if found := signHash.FindStringSubmatch(own); found != nil && text[name[0]:name[1]] == id {
 				return i + 1, found[1]
 			}
-			break
 		}
+		if head := chunkHeading.FindStringSubmatch(heading); head != nil && strings.Contains(head[1], " + ") {
+			return 0, ""
+		}
+		if found := signHash.FindStringSubmatch(text); found != nil {
+			return i + 1, found[1]
+		}
+		break
 	}
 	return 0, ""
 }
 
 // sealDrift is the spec section's recorded seal hash when the ticket's current text, above its closing ## signed, hashes to another
 // in none of the forms a sign holds; signed is the hash a re-seal would set
-func sealDrift(section, ticket string) (line int, recorded, signed string) {
-	line, recorded = sealRecorded(section)
+func sealDrift(section, id, ticket string) (line int, recorded, signed string) {
+	line, recorded = sealRecorded(section, id)
 	text := ticket
 	if above, _, ok := signedBlock(ticket); ok {
 		text = above

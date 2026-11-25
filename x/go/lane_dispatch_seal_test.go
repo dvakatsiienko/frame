@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -32,6 +33,7 @@ func TestDispatchRefusesAChunkThatIsNotSealed(t *testing.T) {
 	t.Parallel()
 	staleVoices := "lane: quick\nrepo: frame\n\n* install few other best top rated speechify voices\n\n⸻ 🪪 stamp — please keep 🙏\n\n## signed\n\n✍️ signed 2026-11-24 · body " + bodyHash("lane: quick\nrepo: frame\n\n") + "\n✏️ changed 2026-11-24 — voices added\n"
 	sealed := undispatched.body
+	moved := dispatchState{body: signedBody(dispatchAbove+"and more\n\n", "", dispatchAbove) + "\n⸻ 🪪 stamp", state: "Todo", labels: []string{"agent", "signed"}}
 	quick := dispatchState{body: quickTicket, state: "Todo", labels: []string{"agent"}}
 	for _, c := range []struct {
 		name  string
@@ -45,6 +47,9 @@ func TestDispatchRefusesAChunkThatIsNotSealed(t *testing.T) {
 		{"no spec section, quick", quick, nil, append([]string{"--quick", "FRM-1", "--apply"}, sealLane...), []string{"FRM-1", "no spec section"}},
 		{"a section with no seal hash", undispatched, map[string]string{"FRM-1": sealedSection("wish: FRM-1")}, append([]string{"FRM-1"}, sealLane...), []string{"FRM-1", "no seal hash"}},
 		{"a hash that is not the text's", undispatched, map[string]string{"FRM-1": sealedSection("wish: FRM-1 · body 00000000")}, append([]string{"FRM-1"}, sealLane...), []string{"FRM-1", "moved since the seal", "00000000", bodySignHash(sealed)}},
+		{"a signed ticket whose text moved, dry", moved, map[string]string{"FRM-1": sealedSection(wishOf("FRM-1", dispatchAbove))}, append([]string{"FRM-1"}, sealLane...), []string{"FRM-1", "moved since the seal", "sign reads drifted", bodySignHash(moved.body)}},
+		{"a signed ticket whose text moved, sealed again and started for another lane", dispatchState{body: signedBody(dispatchAbove+"and more\n\n", "🚀 dispatched 2026-11-24 — l, codie s1, main:abc1234\n", dispatchAbove) + "\n⸻ 🪪 stamp", state: "In Progress", delegate: "codie"}, map[string]string{"FRM-1": sealedSection(wishOf("FRM-1", moved.body))}, append([]string{"FRM-1"}, sealLane...), []string{"FRM-1", "sign reads drifted"}},
+		{"a lane: main ticket whose text moved", dispatchState{body: signedBody("lane: main\n\n"+dispatchAbove+"and more\n\n", "", "lane: main\n\n"+dispatchAbove) + "\n⸻ 🪪 stamp", state: "Todo", labels: []string{"agent", "signed"}}, nil, append([]string{"FRM-1", "--apply"}, sealLane...), []string{"FRM-1", "sign reads drifted"}},
 		{"two unsealed tickets in one call", undispatched, nil, append([]string{"FRM-1", "FRM-2"}, sealLane...), []string{"FRM-1", "FRM-2", "no spec section"}},
 		{"a quick ticket edited under a ✏️ line after its seal", dispatchState{body: staleVoices, state: "Todo", labels: []string{"agent"}}, map[string]string{"FRM-1": sealedSection(wishOf("FRM-1", "lane: quick\nrepo: frame\n\n"))}, append([]string{"--quick", "FRM-1"}, sealLane...), []string{"FRM-1", "moved since the seal"}},
 		{"a start for another lane than the 🚀 line's", dispatchState{body: signedBody(dispatchAbove, "🚀 dispatched 2026-11-24 — l, codie s1, main:abc1234\n", dispatchAbove) + "\n⸻ 🪪 stamp", state: "In Progress", delegate: "codie"}, nil, []string{"FRM-1", "--session", "s2", "--area", "cli", "--lane", "other"}, []string{"FRM-1", "no spec section"}},
@@ -72,7 +77,7 @@ func TestDispatchRefusesAChunkThatIsNotSealed(t *testing.T) {
 			// a preflight reds on a moved text and prints ok for no section or no hash, so those name the command that prints the hash
 			wantNext := "x linear sign-check FRM-1 --body-file <the ticket's text, above its ## signed>"
 			if strings.Contains(strings.Join(c.want, " "), "moved since the seal") {
-				wantNext = "x brief preflight FRM-1"
+				wantNext = "x brief preflight FRM-1 --repo " + frame
 			}
 			if next := envelope["next"]; next != wantNext {
 				t.Errorf("next %q, want %q", next, wantNext)
@@ -290,5 +295,99 @@ func TestDispatchNamesTheCheckoutOfASpecFoundOutsideFrame(t *testing.T) {
 
 	if want := "x brief preflight FRM-1 --repo " + filepath.Join(home, "projects/bytes"); got.code != 1 || envelope["next"] != want {
 		t.Fatalf("exit %d, next %v, want %q:\n%s", got.code, envelope["next"], want, got.stdout)
+	}
+}
+
+// FRM-700 review: the binding section's file names the slices dir, and a rider with no hash in another file binds nothing
+func TestDispatchNamesTheSlicesDirAfterTheBindingFileBesideARider(t *testing.T) {
+	t.Parallel()
+	frame, _ := frameAtBase(t)
+	write(t, filepath.Join(frame, ".scratch/feat-a/spec.md"), "# feat a\n\n## FRM-1 — a rider\n\n"+sealedSection("wish: FRM-1"))
+	write(t, filepath.Join(frame, ".scratch/feat-b/spec.md"), "# feat b\n\n## FRM-1 — the chunk\n\n"+sealedSection(wishOf("FRM-1", dispatchAbove)))
+	server := dispatchServer(t, undispatched)
+
+	envelope, got := runDispatchUnsealed(t, server, frame, append([]string{"FRM-1"}, sealLane...)...)
+
+	if plan := jsonOf(envelope["plan"]); got.code != 4 || !strings.Contains(plan, "lanes/feat-b/issues/") {
+		t.Fatalf("exit %d, want 4 with the binding file's slices dir:\n%s", got.code, got.stdout)
+	}
+}
+
+// FRM-700 review: the preflight a refusal names shows what the dispatch refused, run from any checkout
+func TestThePreflightADispatchNamesShowsItsRefusal(t *testing.T) {
+	t.Parallel()
+	good, stale := sealedSection(wishOf("FRM-1", dispatchAbove)), sealedSection("wish: FRM-1 · body 00000000")
+	chunk := func(section string) string { return "## FRM-1 — the chunk\n\n" + section + "\n" }
+	for _, c := range []struct{ name, frame, bytes, said string }{
+		{"a moved text in a later hashed section", chunk(good) + chunk(stale), "", "moved since the seal"},
+		{"a hash in two checkouts", chunk(good), chunk(good), "one spec binds a ticket"},
+		{"a moved text in bytes", "", chunk(stale), "moved since the seal"},
+		{"a moved text in bytes, a rider in frame", chunk(sealedSection("wish: FRM-1")), chunk(stale), "moved since the seal"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			frame, _ := frameAtBase(t)
+			home := t.TempDir()
+			for path, text := range map[string]string{filepath.Join(frame, ".scratch/feat/spec.md"): c.frame, filepath.Join(home, "projects/bytes/.scratch/speak/spec.md"): c.bytes} {
+				if text != "" {
+					write(t, path, "# spec\n\n"+text+"## Problem Statement\n")
+				}
+			}
+			server := dispatchServer(t, undispatched)
+			env := []string{"HOME=" + home, "X_FRAME_ROOT=" + frame}
+
+			envelope, got := runLinearUnsealed(t, server, env, append([]string{"lane", "dispatch", "FRM-1"}, sealLane...)...)
+			next, _ := envelope["next"].(string)
+			named, isPreflight := strings.CutPrefix(next, "x brief preflight ")
+			if got.code != 1 || !isPreflight {
+				t.Fatalf("exit %d, next %q, want a preflight named:\n%s", got.code, next, got.stdout)
+			}
+			_, shown := runLinearUnsealed(t, server, env, append([]string{"brief", "preflight"}, strings.Fields(named)...)...)
+
+			if shown.code != 1 || !strings.Contains(shown.stdout, c.said) {
+				t.Errorf("%s: exit %d, want %q shown:\n%s", next, shown.code, c.said, shown.stdout)
+			}
+		})
+	}
+}
+
+// a linked tree under ~/projects reads frame's specs beside its own, a link to frame's .scratch included: one file, one section
+func TestDispatchCountsASpecALinkedTreeReadsOnce(t *testing.T) {
+	t.Parallel()
+	frame, _ := frameAtBase(t)
+	home := t.TempDir()
+	specWith(t, frame, map[string]string{"FRM-1": sealedSection(wishOf("FRM-1", dispatchAbove))})
+	for _, name := range []string{"frame-tree", "linked-tree"} {
+		gitT(t, frame, "worktree", "add", "-q", "--detach", filepath.Join(home, "projects", name))
+	}
+	if err := os.Symlink(filepath.Join(frame, ".scratch"), filepath.Join(home, "projects/linked-tree/.scratch")); err != nil {
+		t.Fatal(err)
+	}
+	server := dispatchServer(t, undispatched)
+
+	env := []string{"HOME=" + home, "X_FRAME_ROOT=" + frame}
+
+	envelope, got := runLinearUnsealed(t, server, env, append([]string{"lane", "dispatch", "FRM-1"}, sealLane...)...)
+	_, read := runLinearUnsealed(t, server, env, "brief", "preflight", "FRM-1", "--repo", filepath.Join(home, "projects/linked-tree"))
+
+	if plan := jsonOf(envelope["plan"]); got.code != 4 || strings.Contains(plan, "sealed sections") {
+		t.Fatalf("exit %d, want 4 with one section counted:\n%s", got.code, got.stdout)
+	}
+	if strings.Contains(read.stdout, "one spec binds a ticket") {
+		t.Errorf("one spec read through a link refuses as two:\n%s", read.stdout)
+	}
+}
+
+// a lane of two words would write a 🚀 line the hash reads as text, and break the seal of the ticket it starts
+func TestDispatchRefusesALaneOfMoreThanOneWord(t *testing.T) {
+	t.Parallel()
+	for _, lane := range []string{"my lane", "my,lane"} {
+		server := dispatchServer(t, undispatched)
+
+		_, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--area", "cli", "--lane", lane, "--apply")
+
+		if got.code != 2 || !strings.Contains(got.stdout, "a lane is one word") || len(mutations(server)) != 0 {
+			t.Errorf("%q: exit %d, want a usage refusal and no write:\n%s", lane, got.code, got.stdout)
+		}
 	}
 }

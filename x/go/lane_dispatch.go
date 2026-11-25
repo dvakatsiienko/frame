@@ -39,6 +39,8 @@ type dispatchTicket struct {
 	// the body the marks were read from, and whether this start repeats its newest 🚀 line's lane
 	body  string
 	rerun bool
+	// why its sign does not hold, "" when it does
+	unsigned string
 }
 
 type dispatchPlan struct {
@@ -85,6 +87,10 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	session, lane := flagString(flags, "session"), flagString(flags, "lane")
+	// the 🚀 line takes one word: a lane of more reads as text typed into the ticket, and moves the hash it is sealed on
+	if strings.ContainsAny(lane, ", \t\n") {
+		return nil, usageFail("a lane is one word, no space and no comma: "+lane, "x lane dispatch "+args[0]+" --session <sid> --lane <name>")
+	}
 	// a dispatch that names a thread gives its record a scope; one that names none writes no record
 	if session != "" || flagString(flags, "sixth-sense") != "" {
 		if _, err := areaRequired(flags, "lane dispatch"); err != nil {
@@ -163,27 +169,36 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 
 // sealChecks refuses a start whose chunk is not sealed, and prints every other preflight finding as a warning. three kinds refuse, all
 // of them one ticket's own: no spec section, no seal hash on one, a hash that is not the ticket's text (and a hash in two specs, since
-// one spec binds a ticket). a clio step (a first line `lane: main`) has no spec, and a re-run for the lane of the newest 🚀 line
+// one spec binds a ticket); a sign that does not hold joins the same refusal, so a ticket whose text moved hears both at once. a clio step (a first line `lane: main`) has no spec, and a re-run for the lane of the newest 🚀 line
 // refuses nothing: its drift came after the start
 func sealChecks(plan *dispatchPlan) error {
 	frame := mainCheckout(frameRoot())
 	var refused []string
 	next := ""
 	for _, ticket := range plan.Tickets {
+		signCheck := "x linear sign-check " + ticket.ID + " --body-file <the ticket's text, above its ## signed>"
+		if ticket.unsigned != "" {
+			refused = append(refused, ticket.unsigned)
+		}
 		if first, _, _ := strings.Cut(ticket.body, "\n"); ticket.rerun || strings.TrimRight(first, " \r") == "lane: main" {
+			if ticket.unsigned != "" {
+				next = cmp.Or(next, signCheck)
+			}
 			continue
 		}
 		spec := ticketSpecOf(ticket.ID)
 		if why, preflight := spec.unsealed(ticket.ID, ticket.body); why != "" {
 			refused = append(refused, why)
-			if next == "" {
-				// a preflight reds on a moved text and on two specs, and names both; it prints ok for a ticket with no section or
-				// no hash, so those are sent to the command that prints the hash to set
-				next = "x linear sign-check " + ticket.ID + " --body-file <the ticket's text, above its ## signed>"
-				if preflight {
-					next = "x brief preflight " + ticket.ID + spec.repoFlag(frame)
-				}
+			// a preflight reds on a moved text and on two specs, and names both; it prints ok for a ticket with no section or
+			// no hash, so those are sent to the command that prints the hash to set
+			if preflight {
+				next = cmp.Or(next, "x brief preflight "+ticket.ID+" --repo "+spec.checkout())
 			}
+			next = cmp.Or(next, signCheck)
+			continue
+		}
+		if ticket.unsigned != "" {
+			next = cmp.Or(next, signCheck)
 			continue
 		}
 		repo, err := ticketRepo(ticket.ID, ticket.body)
@@ -228,24 +243,33 @@ type ticketSpec struct {
 	files  []string
 }
 
-// ticketSpecOf looks for a ticket's spec sections where a lane's spec may live: frame, then every checkout under ~/projects (a bytes
-// chunk's spec sits in bytes, and a ticket's repo: line is not always one a reader finds, so none is read)
-func ticketSpecOf(id string) ticketSpec {
-	roots := []string{mainCheckout(frameRoot())}
+// ticketSpecOf looks for a ticket's spec sections where a lane's spec may live: the checkouts named, frame, then every checkout under
+// ~/projects (a bytes chunk's spec sits in bytes, and a ticket's repo: line is not always one a reader finds, so none is read). the
+// dispatch and the preflight both bind through it, so a preflight shows what a dispatch refused
+func ticketSpecOf(id string, named ...string) ticketSpec {
+	roots := append(named, mainCheckout(frameRoot()))
 	userHome, _ := os.UserHomeDir()
 	checkouts, _ := filepath.Glob(filepath.Join(userHome, "projects", "*"))
 	roots = append(roots, checkouts...)
-	seen := map[string]bool{}
+	// a linked tree reads its main checkout's specs beside its own, so one file comes back under two roots
+	type source struct{ root, path string }
+	read := map[string]source{}
 	var spec ticketSpec
 	for _, root := range roots {
-		if seen[root] {
-			continue
+		for _, hit := range specSections(root, id) {
+			file, from := hit.path, source{root, hit.path}
+			if real, err := filepath.EvalSymlinks(file); err == nil {
+				file = real
+			}
+			if first, ok := read[file]; ok && first != from {
+				continue
+			}
+			read[file] = from
+			spec.sections = append(spec.sections, hit)
 		}
-		seen[root] = true
-		spec.sections = append(spec.sections, specSections(root, id)...)
 	}
 	for i, hit := range spec.sections {
-		if _, recorded := sealRecorded(hit.section); recorded == "" {
+		if _, recorded := sealRecorded(hit.section, id); recorded == "" {
 			continue
 		}
 		spec.hashed++
@@ -268,12 +292,26 @@ func (spec ticketSpec) path() string {
 	return ""
 }
 
-// ` --repo <checkout>` for a spec that sits in another checkout than frame's, since a preflight reads one repo's specs
-func (spec ticketSpec) repoFlag(frame string) string {
-	if root := filepath.Dir(filepath.Dir(filepath.Dir(spec.path()))); spec.path() != "" && root != frame {
-		return " --repo " + root
+// what a preflight reads: the specs that bind the ticket, more than one a refusal, and the section it lints; with no seal hash
+// anywhere, every spec holding a section and the first one's
+func (spec ticketSpec) binding() (paths []string, section string) {
+	if spec.bound != nil {
+		return spec.files, spec.bound.section
 	}
-	return ""
+	for _, hit := range spec.sections {
+		if !slices.Contains(paths, hit.path) {
+			paths = append(paths, hit.path)
+		}
+	}
+	if len(spec.sections) > 0 {
+		section = spec.sections[0].section
+	}
+	return paths, section
+}
+
+// the checkout the binding spec sits in
+func (spec ticketSpec) checkout() string {
+	return filepath.Dir(filepath.Dir(filepath.Dir(spec.path())))
 }
 
 // how the sections fail to seal the ticket's text, "" when they seal it; preflight says whether `x brief preflight` reds on it
@@ -290,7 +328,7 @@ func (spec ticketSpec) unsealed(id, body string) (why string, preflight bool) {
 		}
 		return id + " has a sealed section in " + plural(len(spec.files), "lane spec") + ": " + strings.Join(shown, ", ") + " — one spec binds a ticket", true
 	}
-	if _, recorded, signed := sealDrift(spec.bound.section, body); recorded != "" {
+	if _, recorded, signed := sealDrift(spec.bound.section, id, body); recorded != "" {
 		return fmt.Sprintf("%s's text moved since the seal (the spec records body %s, the ticket's text hashes to body %s)", id, recorded, signed), true
 	}
 	return "", false
@@ -318,15 +356,11 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 	labelAt := slices.IndexFunc(issue.Labels.Nodes, func(l idName) bool { return strings.EqualFold(l.Name, "signed") })
 	held := heldDispatch(block)
 	dispatched := held != ""
-	sign, _, _ := bodySign(body)
 	switch {
 	// a quick lane has no sign to check
 	case note.quick:
 	case !signed:
 		return dispatchTicket{}, &Fail{Refused: true, Msg: id + " carries no ## signed block: a chunk is signed before its dispatch", Next: "x linear read " + id}
-	// a 🚀 already written stands: the drift came after the dispatch, and a re-run writes no new mark on it
-	case sign != signMatch && !dispatched:
-		return dispatchTicket{}, &Fail{Refused: true, Msg: id + "'s sign reads " + sign + ": the body moved since dima signed it, so it is signed again before its dispatch", Next: "x linear list --team " + strings.SplitN(id, "-", 2)[0] + " --label signed"}
 	case labelAt < 0 && !dispatched:
 		return dispatchTicket{}, &Fail{Refused: true, Msg: id + " carries neither the signed label nor a 🚀 dispatched line: its sign is missing", Next: "x linear read " + id}
 	}
@@ -372,6 +406,10 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 	ticket.body = body
 	// a 🚀 mentioned inside a sentence is no start to repeat: only a line that opens with it exempts
 	ticket.rerun = dispatched && newLane == was[1] && strings.Contains("\n"+block, "\n"+held)
+	// a 🚀 already written stands for its lane: the drift came after the dispatch, and a re-run writes no new mark on it
+	if sign, _, _ := bodySign(body); sign != signMatch && !note.quick && !ticket.rerun {
+		ticket.unsigned = id + "'s sign reads " + sign + ", so its text is signed again before its dispatch"
+	}
 	base, sixthSense := "", note.sixthSense
 	// the same lane under a new session keeps the range and the verifier its line names; another lane starts fresh
 	if newLane == was[1] {

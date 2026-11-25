@@ -24,6 +24,7 @@ func TestBodySignHashLeavesTheDispatchMarksOut(t *testing.T) {
 		{"a 🚀 line with a sixth sense", "🚀 dispatched 2026-11-24 — l, codie s, main:abc1234, sixth sense t\n\n", true},
 		{"a 🚀 line with scope typed after its fields", "🚀 dispatched 2026-11-24 — l, codie s, and add the pill to the build\n\n", false},
 		{"a 🚀 line with scope typed before codie", "🚀 dispatched 2026-11-24 — l, and add the pill, codie s\n\n", false},
+		{"a 🚀 line whose lane is words, scope typed as one", "🚀 dispatched 2026-11-24 — l and add the pill, codie s\n\n", false},
 		{"a 🚀 line with no date", "🚀 dispatched now — l, codie s\n\n", false},
 		{"a ↩️ line of no fixed shape", "↩️ taken back, drop the cleaner\n\n", false},
 		{"a ↩️ line with scope after its date", "↩️ back to Todo 2026-11-24 and add the pill\n\n", false},
@@ -83,7 +84,7 @@ func TestAQuickTicketReSignedAfterItsDispatchLineKeepsItsSeal(t *testing.T) {
 	if state, stored, _ := bodySign(stamped); state != signMatch || stored != sealed {
 		t.Errorf("the re-signed body reads %s with %s, want a match on the seal's %s", state, stored, sealed)
 	}
-	if line, recorded, now := sealDrift("wish: FRM-1 · body "+sealed+"\n", stamped); recorded != "" {
+	if line, recorded, now := sealDrift("wish: FRM-1 · body "+sealed+"\n", "FRM-1", stamped); recorded != "" {
 		t.Errorf("seal drift at line %d: %s against %s, want none", line, recorded, now)
 	}
 }
@@ -97,5 +98,29 @@ func TestBodySignReadsTheLegacyHashOfTheStrippedText(t *testing.T) {
 
 	if state, _, _ := bodySign(above + "## signed\n\n✍️ signed · body " + legacy + "\n"); state != signMatch {
 		t.Errorf("the legacy hash of the stripped text reads %s, want %s", state, signMatch)
+	}
+}
+
+// FRM-700 review: a joint heading's one section seals each ticket it names by that ticket's own hash
+func TestASectionRecordsEachTicketsOwnHash(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, section string
+		want          map[string]string
+	}{
+		{"both hashes on a joint section", "## FRM-1 + FRM-2 — both\n\nwish: FRM-1 · body aaaaaaaa · FRM-2 · body bbbbbbbb\n", map[string]string{"FRM-1": "aaaaaaaa", "FRM-2": "bbbbbbbb"}},
+		{"one hash on a joint section", "## FRM-1 + FRM-2 — both\n\nwish: FRM-1 · body aaaaaaaa\n", map[string]string{"FRM-1": "aaaaaaaa", "FRM-2": ""}},
+		{"an umbrella's hash on a joint section", "## FRM-1 + FRM-2 — both\n\nwish: FRM-9 · body cccccccc\n", map[string]string{"FRM-1": "", "FRM-2": ""}},
+		{"an umbrella's hash on one ticket's section", "\n\n## FRM-1 — one\n\nwish: FRM-9 · body cccccccc\n", map[string]string{"FRM-1": "cccccccc"}},
+		{"a wish line naming its lines and a joined ticket", "## FRM-1 — one\n\nwish: FRM-1:W3 W4, FRM-9 joined · FRM-1 · body aaaaaaaa · FRM-9 · body cccccccc\n", map[string]string{"FRM-1": "aaaaaaaa", "FRM-9": "cccccccc"}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			for id, want := range c.want {
+				if _, got := sealRecorded(c.section, id); got != want {
+					t.Errorf("%s reads %q, want %q", id, got, want)
+				}
+			}
+		})
 	}
 }

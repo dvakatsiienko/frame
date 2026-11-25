@@ -75,6 +75,10 @@ func runLinearUnsealed(t *testing.T, server *fakeLinear, env []string, argv ...s
 	}) {
 		env = asCaller(t, env, "coordinator")
 	}
+	// a preflight reads the specs of frame and of every checkout under ~/projects: never the real ones
+	if len(argv) > 1 && argv[0] == "brief" && argv[1] == "preflight" {
+		env = append([]string{"HOME=" + t.TempDir(), "X_FRAME_ROOT=" + t.TempDir()}, env...)
+	}
 	got := runAs(t, append([]string{"X_KEYS=" + linearKeys(t), "X_LINEAR_URL=" + server.URL}, env...), argv...)
 	var envelope map[string]any
 	_ = json.Unmarshal([]byte(got.stdout), &envelope)
