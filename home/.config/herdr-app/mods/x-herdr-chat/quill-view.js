@@ -561,7 +561,11 @@ export function createQuill({
             skills = new Map();
             diskSkills = new Map();
         },
-        focus: () => box?.focus(),
+        /** @param {boolean} [isSending] under a ⌘Enter that sent another box's words: its repeats here are that press's */
+        focus(isSending) {
+            box?.focus();
+            if (isSending) quillKeys.pressed();
+        },
         isFocused: () => isQuillFocused,
         learnSkills,
         quills,

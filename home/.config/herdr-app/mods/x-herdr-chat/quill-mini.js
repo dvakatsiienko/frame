@@ -4,8 +4,10 @@
 
 import { Textarea, TextareaState, h_flex, v_flex } from 'gpui-base';
 import { div } from 'gpui-kit';
+import { settings } from 'herdr';
 
 import { focusBorder } from './focus-ring.js';
+import { JOIN_TAKE_MS } from './joins.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
 import { retextWait } from './magic.js';
 import { isLocked } from './note-states.js';
@@ -27,6 +29,8 @@ const WIDTH = 420;
 const GAP = 12;
 // the box before its height was ever measured
 const FIRST_HEIGHT = 130;
+// an F6 this soon after the one before is a held key's: this mac repeats every 15 ms, the first after 150 ms
+const F6_REPEAT_MS = 200;
 /** its one stop in the Tab loop */
 export const MINI_STOP = 'quill-mini';
 
@@ -64,13 +68,14 @@ export const noteWord = (note) =>
  * @param {ReturnType<typeof import('./notes.js').createNotes>} deps.notes
  * @param {() => string | null} deps.thread the shown thread's transcript
  * @param {() => string} deps.threadName
+ * @param {(id: string) => string} deps.rowOf the row that holds a message's line now: an older page may join it
  * @param {(id: string) => number} deps.back how many replies stand below a message
- * @param {() => import('./magic.js').Joins | null} deps.joins what the shown thread's state lists of its joins
  * @param {(id: string, back: number) => Promise<string | null>} deps.sendNote why it did not go
+ * @param {(cx: Context) => void} deps.settle the shown thread's notes stand by its state
  * @param {() => { width: number, height: number }} deps.room the list's size
  * @param {ReturnType<typeof import('./tab-loop.js').createTabMember>} deps.tab
  * @param {(cx: Context) => void} deps.pressEscape what is on top of the chat closes
- * @param {() => void} deps.focusQuill
+ * @param {(isSending: boolean) => void} deps.focusQuill `isSending`: under the ⌘Enter that sent the note, still held
  */
 export function createQuillMini(deps) {
     /** the note in the box @type {{ thread: string, id: string, at: Point | null } | null} */
@@ -81,6 +86,11 @@ export function createQuillMini(deps) {
     let height = FIRST_HEIGHT;
     /** a typing's serial: a newer key's rest wins */
     let typed = 0;
+    let lastF6 = Number.NEGATIVE_INFINITY;
+    /** notes under way to their thread, until herdr answers: the box keeps the keyboard, and no second press sends one @type {Set<string>} */
+    const sending = new Set();
+    /** the ⌘ of a ⌘Enter is down */
+    let isCmdDown = false;
     /** why the last press did nothing @type {string | null} */
     let said = null;
     const enter = createKeyPress();
@@ -92,21 +102,27 @@ export function createQuillMini(deps) {
               null)
             : null;
 
+    /** the thread has it, or herdr may be handing it over now @param {Note} note */
+    const isClosed = (note) => isLocked(note) || sending.has(note.id);
+
     /** the box shut, its draft kept; an empty one leaves no record */
     function reset() {
         if (!open) return;
-        const { thread } = open;
+        const { id, thread } = open;
+        typed += 1;
+        deps.notes.write(thread, id);
         open = null;
         said = null;
-        typed += 1;
+        isCmdDown = false;
         deps.notes.tidy(thread);
     }
 
     /** @param {Context} cx */
     function close(cx) {
         if (!open) return;
+        const isSending = isCmdDown;
         reset();
-        deps.focusQuill();
+        deps.focusQuill(isSending);
         cx.notify();
     }
 
@@ -115,7 +131,7 @@ export function createQuillMini(deps) {
         const thread = deps.thread();
         if (!thread || !box) return;
         reset();
-        const note = deps.notes.open(thread, passage);
+        const note = deps.notes.open(thread, passage, deps.rowOf);
         open = { at, id: note.id, thread };
         box.set_value(note.text);
         box.set_selected_range({
@@ -128,8 +144,11 @@ export function createQuillMini(deps) {
         cx.notify();
     }
 
-    /** F6: the box on what stood selected, or shut @param {() => SelectedAt | null} selected @param {Context} cx */
-    function toggle(selected, cx) {
+    /** F6: the box on what stood selected, or shut @param {() => SelectedAt | null} selected @param {number} at when it was pressed @param {Context} cx */
+    function toggle(selected, at, cx) {
+        const isRepeat = at - lastF6 < F6_REPEAT_MS;
+        lastF6 = at;
+        if (isRepeat) return;
         if (open) return close(cx);
         const now = selected();
         if (now) show(now, cx);
@@ -147,52 +166,61 @@ export function createQuillMini(deps) {
         if (!open || !note) return;
         const at = open;
         const isWaiting = note.state === 'waiting';
+        if (sending.has(note.id)) return;
         if (!isWaiting && (isLocked(note) || !note.text.trim())) return;
         const answer = isWaiting
-            ? deps.notes.takeBack(at.thread, at.id, deps.joins())
-            : deps.notes.join(
-                  at.thread,
-                  at.id,
-                  deps.joins(),
-                  deps.back(note.passage.row.id),
-              );
+            ? deps.notes.takeBack(at.thread, at.id)
+            : deps.notes.join(at.thread, at.id, deps.back(note.passage.row.id));
         say(null, at, cx);
-        cx.spawn(async (cx) => say(await answer, at, cx));
+        // a note no turn takes in a minute is his again by itself
+        if (!isWaiting)
+            cx.timer.after(JOIN_TAKE_MS + 500, (later) => deps.settle(later));
+        cx.spawn(async (cx) => say(await answer.catch(String), at, cx));
     }
 
     /** ⌘Enter: the note goes now, and the box with it @param {Context} cx */
     function sendNow(cx) {
         const note = noteNow();
-        if (!open || !note || isLocked(note) || !note.text.trim()) return;
+        if (!open || !note || isClosed(note) || !note.text.trim()) return;
         const at = open;
+        sending.add(at.id);
         const answer = deps.sendNote(at.id, deps.back(note.passage.row.id));
         cx.spawn(async (cx) => {
-            const reason = await answer;
-            const isSent =
-                deps.notes.of(at.thread).find((n) => n.id === at.id)?.state ===
-                'sent';
-            if (isSent && open?.id === at.id) close(cx);
-            else say(reason, at, cx);
+            const reason = await answer.catch(String);
+            sending.delete(at.id);
+            if (open?.id !== at.id) return;
+            if (noteNow()?.state === 'sent') return close(cx);
+            say(reason, at, cx);
+            noteChanged(cx);
         });
+        cx.notify();
     }
 
-    /** his typing: a draft keeps it at once, a waiting note's row once his keys rest @param {string} text @param {Context} cx */
+    /** the note in the box moved by itself: one the thread has by now leaves the keyboard to the quill @param {Context} cx */
+    function noteChanged(cx) {
+        const note = noteNow();
+        if (!note || sending.has(note.id)) return cx.notify();
+        if (box && box.value() !== note.text) box.set_value(note.text);
+        if (isFocused && isLocked(note)) deps.focusQuill(isCmdDown);
+        cx.notify();
+    }
+
+    /** his typing: the note keeps it at once, a waiting note's row once his keys rest @param {string} text @param {Context} cx */
     function type(text, cx) {
         const note = noteNow();
         if (!open || !note || note.text === text) return;
+        // no word is taken that would go nowhere
+        if (isClosed(note)) return box?.set_value(note.text);
         const at = open;
-        const serial = ++typed;
         said = null;
-        const write = () =>
-            deps.notes.typed(at.thread, at.id, text, deps.joins());
-        if (note.state === 'draft') write();
-        else
+        deps.notes.typed(at.thread, at.id, text);
+        const serial = ++typed;
+        if (note.state === 'waiting')
             cx.timer.after(retextWait(text), (later) => {
                 if (serial !== typed) return;
                 later.spawn(async (cx) => {
-                    if (!(await write()) && open?.id === at.id)
-                        said = 'It joined the turn first';
-                    cx.notify();
+                    const isWritten = await deps.notes.write(at.thread, at.id);
+                    say(isWritten ? null : 'Not in its row yet', at, cx);
                 });
             });
         cx.notify();
@@ -212,6 +240,7 @@ export function createQuillMini(deps) {
         });
         made.on('blur', (_event, cx) => {
             isFocused = false;
+            isCmdDown = false;
             enter.blurred();
             deps.tab.left(MINI_STOP, (run) => cx.timer.after(0, run));
             cx.notify();
@@ -258,7 +287,7 @@ export function createQuillMini(deps) {
             { h: room.height, w: room.width },
             { h: height, w: width },
         );
-        const isDim = isLocked(note) || !note.text.trim();
+        const isDim = isClosed(note) || !note.text.trim();
         const isWaiting = note.state === 'waiting';
         /** @param {string} id @param {string} label @param {string} hint @param {(cx: Context) => void} act */
         const button = (id, label, hint, act) =>
@@ -300,18 +329,24 @@ export function createQuillMini(deps) {
                 .shadow_lg()
                 .cursor_default()
                 .on_size_change((size, cx) => {
-                    if (Math.abs(size.height - height) < 1) return;
-                    height = size.height;
+                    // herdr's sizes are window px, the box's place is not
+                    const drawn = size.height / (Number(settings().zoom) || 1);
+                    if (Math.abs(drawn - height) < 1) return;
+                    height = drawn;
                     cx.notify();
                 })
                 // a press on the box is the box's, never the list's under it
                 .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
                 .on_mouse_down('right', (_e, cx) => cx.stop_propagation())
+                // herdr follows a link under the box on a mouse-up
+                .on_mouse_up('left', (_e, cx) => cx.stop_propagation())
+                .on_mouse_up('right', (_e, cx) => cx.stop_propagation())
                 .on_mouse_down_out((_e, cx) => close(cx))
                 .on_action(ENTER, (_e, cx) => {
                     if (enter.pressed() === 'act') join(cx);
                 })
                 .on_action(CMD_ENTER, (_e, cx) => {
+                    isCmdDown = true;
                     if (cmdEnter.pressed(Date.now()) === 'act') sendNow(cx);
                 })
                 .on_action(ESCAPE, (_e, cx) => deps.pressEscape(cx))
@@ -321,7 +356,9 @@ export function createQuillMini(deps) {
                     if (e.key === 'enter') enter.released();
                 })
                 .on_modifiers_changed((e) => {
-                    if (!e.modifiers.platform) enter.modifiersReleased();
+                    if (e.modifiers.platform) return;
+                    isCmdDown = false;
+                    enter.modifiersReleased();
                 })
                 .child(
                     h_flex()
@@ -340,7 +377,9 @@ export function createQuillMini(deps) {
                         .child(div().flex_none().child(deps.threadName())),
                 )
                 .child(
-                    isLocked(note) ? div().child(note.text) : Textarea.new(box),
+                    isLocked(note) && !sending.has(note.id)
+                        ? div().child(note.text)
+                        : Textarea.new(box),
                 )
                 .child(
                     h_flex()
@@ -382,6 +421,7 @@ export function createQuillMini(deps) {
         /** the Tab loop's turn */
         focus: () => box?.focus(),
         isOpen: () => open !== null,
+        noteChanged,
         reset,
         show,
         start,

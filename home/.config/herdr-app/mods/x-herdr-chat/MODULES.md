@@ -8,7 +8,7 @@ read this before a change: find the one module that owns the state you touch, an
 
 ## views — each owns its state and binds its own keys in `start`
 
-- `thread-feed.js` — which thread shows (the focused tab's Claude), its transcript read and watched, its state file, earlier pages, his place brought back after a reload
+- `thread-feed.js` — which thread shows (the focused tab's Claude), its transcript read and watched, its state file, both telling the notes, earlier pages, his place brought back after a reload
 - `message-list.js` — the list on screen, his reading place in it (scroll, sizes, width, the column), the measurer, the right-click menu
 - `message-body.js` — a nested view for each message and row of pictures near the screen, the one place herdr takes a selection, link or press handler in a list (until herdr-app#942)
 - `quill-mini.js` — the box he writes a note in, over the list: which note is open, where it sits, its keys

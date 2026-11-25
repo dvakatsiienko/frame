@@ -97,6 +97,8 @@ const doorTo = (file) => ({
  * @property {ReturnType<typeof import('./message-list.js').createMessageList>} list
  * @property {() => import('./look.js').Look} look
  * @property {ReturnType<typeof import('./row-model.js').createRowModel>} model
+ * @property {ReturnType<typeof import('./notes.js').createNotes>} notes
+ * @property {(cx: Context) => void} notesChanged a note of the thread shown moved by itself
  * @property {ReturnType<typeof import('./pickers.js').createPickers>} pickers
  * @property {ReturnType<typeof import('./quill-view.js').createQuill>} quill
  * @property {ReturnType<typeof import('./message-row.js').createMessageRows>} rows
@@ -115,6 +117,8 @@ export function createThreadFeed(deps) {
         isOpening: false,
         /** the open thread's transcript has been read once */
         isRead: false,
+        /** the open thread's state has been read once: what it lists nowhere is missing, not unread */
+        isStateRead: false,
         /** the pid the open thread was opened for; undefined before the first */
         opened: /** @type {number | null | undefined} */ (undefined),
         /** older history above what the reader handed on: the one door to its pages */
@@ -201,6 +205,7 @@ export function createThreadFeed(deps) {
         feed.stateTurn += 1;
         feed.error = null;
         feed.isRead = false;
+        feed.isStateRead = false;
         // nothing the views hold of the old thread may act on the new one; read after the fields above, so a
         // draft shown is the one of no thread
         deps.clearShown();
@@ -313,11 +318,13 @@ export function createThreadFeed(deps) {
         const arrived = deps.model.rows
             .filter((r) => added.has(r.id) && r.kind === 'mine' && !r.isWaiting)
             .map((r) => ({ at: r.at, text: r.text }));
-        if (arrived.length && feed.file)
+        if (arrived.length && feed.file) {
             deps.sendPath.showSettled(
                 deps.sendPath.magic.arrived(feed.file, arrived),
                 cx,
             );
+            if (deps.notes.arrived(feed.file, arrived)) deps.notesChanged(cx);
+        }
         // a reply that grew may hold more matches
         if (
             (changed.length || removed || isRestart) &&
@@ -329,8 +336,20 @@ export function createThreadFeed(deps) {
         if (changed.length || removed || isRestart || hadError) cx.notify();
     }
 
+    /** the shown thread's waiting notes, by its state as last read @param {Context} cx */
+    function settleNotes(cx) {
+        const { file, stateTurn } = feed;
+        if (!file) return;
+        cx.spawn(async (cx) => {
+            const isChanged = await deps.notes.settle(file);
+            if (isChanged && feed.stateTurn === stateTurn)
+                deps.notesChanged(cx);
+        });
+    }
+
     /**
-     * the shown thread's state, read at each change of the state folder: its joins settle the quill's mark
+     * the shown thread's state, read at each change of the state folder: its joins settle the quill's mark and
+     * the notes
      * @param {string} file the thread's transcript
      * @param {number} turn the opening this watch belongs to
      * @param {Context} cx
@@ -353,6 +372,7 @@ export function createThreadFeed(deps) {
             ]);
             if (feed.stateTurn !== turn) return;
             deps.sendPath.takeJoins(state?.joins ?? null);
+            feed.isStateRead = true;
             const band = {
                 fleet,
                 thread: state
@@ -366,6 +386,7 @@ export function createThreadFeed(deps) {
                 cx.notify();
             }
             deps.sendPath.settle(cx);
+            settleNotes(cx);
             await watch;
         }
     }
@@ -495,9 +516,15 @@ export function createThreadFeed(deps) {
         isOpening: () => feed.isOpening,
         isRead: () => feed.isRead,
         isStart: () => feed.pages?.isStart() ?? false,
+        /** what the shown thread's state lists of its joins, undefined for any other and until it is read @param {string} file */
+        joinsOf: (file) =>
+            file === feed.file && feed.isStateRead
+                ? deps.sendPath.joins()
+                : undefined,
         loadEarlier,
         pid: () => feed.pid,
         reader: () => feed.reader,
+        settleNotes,
         shownAddress: () => feed.shownAddress,
         /**
          * the thread is looked up again on a timer (a Claude whose session file came after its tab, or a /resume in

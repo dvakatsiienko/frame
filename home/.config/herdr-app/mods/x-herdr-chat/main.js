@@ -164,6 +164,7 @@ export default class Chat extends View {
     sendPath = createSendPath({
         attachments: this.quill.attachments,
         editorMode: () => this.claudeSettings?.editorMode,
+        notePulled: (file, words) => this.notes.pulled(file, words),
         popped: () => this.model.popped(),
         pushed: (text, at) => this.model.pushed(text, at),
         quillBox: () => this.quill.box(),
@@ -178,6 +179,7 @@ export default class Chat extends View {
     notes = createNotes({
         dir: `${home()}/${JOINS_DIR}`,
         io: joinIo,
+        joinsOf: (thread) => this.feed.joinsOf(thread),
         linesWith,
         logTrial,
         newId,
@@ -185,13 +187,14 @@ export default class Chat extends View {
     });
     /** the box a note is written in, over the list */
     quillMini = createQuillMini({
-        back: (id) => repliesBelow(this.model.rows, id),
-        focusQuill: () => this.quill.focus(),
-        joins: () => this.sendPath.joins(),
+        back: (id) => repliesBelow(this.model.rows, this.rowOf(id)),
+        focusQuill: (isSending) => this.quill.focus(isSending),
         notes: this.notes,
         pressEscape: (cx) => this.closeTop(cx),
         room: () => this.list.size(),
+        rowOf: (id) => this.rowOf(id),
         sendNote: (id, back) => this.sendPath.sendNote(this.notes, id, back),
+        settle: (cx) => this.feed.settleNotes(cx),
         tab: this.tab,
         thread: () => this.feed.file(),
         threadName: () => this.threadName(),
@@ -280,12 +283,19 @@ export default class Chat extends View {
         list: this.list,
         look: () => this.look,
         model: this.model,
+        notes: this.notes,
+        notesChanged: (cx) => this.quillMini.noteChanged(cx),
         pickers: this.pickers,
         quill: this.quill,
         rows: this.rows,
         sendPath: this.sendPath,
         sent: this.sent,
     });
+
+    /** the row that holds a message's line now: an older page may join it under its own id @param {string} id */
+    rowOf(id) {
+        return this.model.rows[this.model.indexOf(id)]?.id ?? id;
+    }
 
     /** every view lets go of the thread it showed: nothing of the old one may act on the next */
     clearShown() {
@@ -390,6 +400,7 @@ export default class Chat extends View {
         const isHeldElsewhere =
             typeof heldStop === 'string' &&
             heldStop !== 'quill' &&
+            heldStop !== MINI_STOP &&
             loopOf(shared, layout()).includes(heldStop);
         const acts = asksActedOn({
             annotateAsk,
@@ -423,6 +434,7 @@ export default class Chat extends View {
             _cx.timer.after(0, (later) =>
                 this.quillMini.toggle(
                     () => this.list.selectedAt(Number(annotateAsk)),
+                    Number(annotateAsk),
                     later,
                 ),
             );

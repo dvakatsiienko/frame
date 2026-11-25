@@ -257,22 +257,16 @@ describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () =
         ['one acted on', { lastAnnotate: 9_500 }, false],
         ['one 3 s old', { annotateAsk: 7_000 }, false],
         ['one under Terminal view', { isShown: false }, false],
+        ['one as the chat comes back on screen', { wasShown: false }, false],
     ])('%s', (_what, over, isAnnotate) => {
         expect(
             asksActedOn({ ...at, annotateAsk: 9_500, ...over }).isAnnotate,
         ).toBe(isAnnotate);
     });
 
-    test('a F6 under Terminal view is not acted on at the next draw as seen', () => {
-        const hidden = asksActedOn({
-            ...at,
-            annotateAsk: 9_500,
-            isShown: false,
-        });
-        expect(hidden.lastAnnotate).toBeNull();
-        expect(asksActedOn({ ...at, annotateAsk: 9_500 }).lastAnnotate).toBe(
-            9_500,
-        );
+    test('a F6 under Terminal view is over', () => {
+        const hidden = { ...at, annotateAsk: 9_500, isShown: false };
+        expect(asksActedOn(hidden).lastAnnotate).toBe(9_500);
     });
 
     test('a quiet draw takes nothing', () => {

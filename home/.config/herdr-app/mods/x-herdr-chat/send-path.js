@@ -52,9 +52,11 @@ function isWindowActive() {
  *   popped: () => string[],
  *   resetPopped: () => void,
  *   editorMode: () => unknown,
+ *   notePulled: (file: string, words: string) => boolean,
  * }} deps the shown thread's transcript and terminal, the quill's box, every thread's quill and its waiting files,
  *   the row model told of a slash command it will see queued, the note under the quill, and the threads a send or a
- *   pick types into now (one owner: the chat), and whether the shown thread is in a turn
+ *   pick types into now (one owner: the chat), whether the shown thread is in a turn, and whether a message pulled out of
+ *   its queue was a note, his draft again
  */
 export function createSendPath({
     shownFile,
@@ -68,6 +70,7 @@ export function createSendPath({
     popped,
     resetPopped,
     editorMode,
+    notePulled,
 }) {
     /** the marks of the magic send: words waiting in the quill to join a turn */
     const magic = createMagic({
@@ -191,7 +194,7 @@ export function createSendPath({
         if (!address || !file) return NOT_IN_HERDR;
         const blocked = sendBlocked(address, typingInto);
         if (blocked) return blocked;
-        const out = await notes.release(file, id, joins, back);
+        const out = await notes.release(file, id, back);
         if ('reason' in out) return out.reason;
         const reason = await deliver(address, out.line);
         if (reason) notes.returned(file, id, reason);
@@ -295,7 +298,8 @@ export function createSendPath({
                     );
                 }
                 const { rest, words } = pulledBack(pulled, queued);
-                if (words) toQuill([words]);
+                const isNote = words !== null && notePulled(file, words);
+                if (words && !isNote) toQuill([words]);
                 for (const [n, text] of rest.entries()) {
                     const sent = await hc(sendArgs(address, text)).catch(
                         () => ({ code: 1 }),
@@ -308,7 +312,8 @@ export function createSendPath({
                         cx,
                     );
                 }
-                say(words ? null : 'It joined the turn first', cx);
+                const none = words ? null : 'It joined the turn first';
+                say(isNote ? 'Back in its note' : none, cx);
             } catch (error) {
                 say(`Not taken back: ${String(error)}`, cx);
             } finally {
