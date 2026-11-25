@@ -1,6 +1,7 @@
 ---
 status: live
 until: 2026-12-05
+kill-read: 2026-11-30
 dies-when: the verdict line below is written
 ---
 

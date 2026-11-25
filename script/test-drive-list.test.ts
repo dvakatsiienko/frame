@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -17,7 +17,7 @@ beforeAll(() => {
     );
     writeFileSync(
         path.join(root, 'docs/test-drive/fixture-trial.md'),
-        '---\nstatus: live\nuntil: 2099-01-01\nfits: codie\n---\nright if\n',
+        '---\nstatus: live\nuntil: 2099-01-01\nkill-read: 2098-01-01\nfits: codie\n---\nright if\n',
     );
     copy = path.join(root, 'script/test-drive-list.ts');
 });
@@ -71,5 +71,51 @@ describe('--spawn-hook', () => {
 
     it('ignores a claude run with neither flag', () => {
         expect(gate(`claude -p "/x:crew-codie FRM-1"`)).toBe('');
+    });
+});
+
+describe('--check', () => {
+    beforeAll(() => {
+        const root = path.dirname(path.dirname(copy));
+        for (const dir of [
+            'home/.claude/rules',
+            'home/.claude/plugin-x/skills',
+            '_clio/plugin-clio/skills',
+            '_clio/memory',
+            'recipes',
+        ])
+            mkdirSync(path.join(root, dir), { recursive: true });
+        for (const file of ['home/.claude/CLAUDE.md', 'AGENTS.md'])
+            writeFileSync(path.join(root, file), '');
+    });
+
+    const check = (head: string) => {
+        const file = path.join(
+            path.dirname(copy),
+            '../docs/test-drive/fixture-kill.md',
+        );
+        writeFileSync(
+            file,
+            `---\nstatus: live\nuntil: 2099-01-01\n${head}---\nright if\n`,
+        );
+        return spawnSync('node', [copy, '--check'], { encoding: 'utf8' })
+            .stdout;
+    };
+
+    it('reds a trial with no kill-read date', () => {
+        expect(check('')).toContain('fixture-kill: no kill-read date');
+    });
+
+    it('reds a date reached with nothing written after it', () => {
+        expect(check('kill-read: 2020-01-01\n')).toContain(
+            'was due a read on 2020-01-01',
+        );
+    });
+
+    it('is calm on a read date with its result, and on a date ahead', () => {
+        expect(
+            check('kill-read: 2020-01-01 not fired, 1 of 2\n'),
+        ).not.toContain('fixture-kill');
+        expect(check('kill-read: 2098-01-01\n')).not.toContain('fixture-kill');
     });
 });

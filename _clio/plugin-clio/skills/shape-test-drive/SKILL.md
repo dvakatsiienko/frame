@@ -12,7 +12,7 @@ dima, 2026-10-14: «a shape-test-drive skill that sets the test drive flow prope
 
 - the file from the template below, status `live`, `until:` a real date (14 days by default; no «standing», no «three runs» — a count becomes the date it will likely reach)
 - **the test card**, four lines: we believe <the gain> · we test it by <the real asks it will meet> · we measure <seconds, cost, tokens, hit or miss, against the usual door> · we're right if <the threshold that means adopt>
-- **a kill rule**: what drops it early
+- **a kill rule**: what drops it early, countable; its `kill-read:` line is the day it is read, what it said written after the date (dima, 2026-11-25)
 - no ⏰ line or pocket item for the trial; a member on trial points at the file from its own contract
 - done: `pnpm test-drive:check` exits 0 and lists it
 
@@ -32,7 +32,7 @@ two passes, both wide (dima, 2026-09-28: «encourage yourself to proactively use
 
 ## 4. due — done when each due trial has its verdict ask in orbit
 
-`pnpm test-drive:check` (the boot digest runs it) names what is due within 3 days and reds what is overdue or undated. for each:
+`pnpm test-drive:check` (the boot digest runs it) names what is due within 3 days and reds what is overdue, undated or past its `kill-read:`. for each:
 - read the file's rounds against its «we're right if»
 - one orbit ask per trial: **adopt** · **drop** · **extend once** with the reason and a new date; a second extension needs a new test card
 - the reply beside the ask tells each deciding number as one plain sentence (`rules/fleet-output-format.md` § shapes) and one verdict line; a verdict ask with no numbers is not ready (PK-349:W1296)
@@ -51,6 +51,7 @@ two passes, both wide (dima, 2026-09-28: «encourage yourself to proactively use
 ---
 status: live
 until: YYYY-MM-DD
+kill-read: YYYY-MM-DD
 dies-when: the verdict line below is written
 ---
 

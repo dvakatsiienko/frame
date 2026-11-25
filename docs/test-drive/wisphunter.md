@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-27
 dies-when: the verdict line below is written
 fits: codie sixth-sense
@@ -108,4 +108,12 @@ group by 1 order by 2 desc;
 - 0 false hits; the suite had gone green on both bugs, so the card caught what the tests could not
 - 2026-11-18 overdue read (a helper card): not enough rounds — one benchmark run found 3.5 of 6 known slips vs the bar 5 of 6 in 2 of 3 runs; the kill rule (two runs under 4) not fired; false-hit rate and spawn count never counted · extended to 11-25 for two more benchmark runs
 
+### round 11 — the benchmark's runs 2 and 3, 2026-11-25 (clio wing 1, Opus 5.5 medium)
+- the set and the briefs as round 6, on copies in a fresh scratch folder; scored by wing 1 alone against FRM-425's findings, the false hits of these runs not counted
+- run 2: plain 14 findings (179k tokens, 245 s) caught S1 S2 S3 S4 S5, S6 half (the quote part); spec 8 (120k, 185 s) S1 S2, S6 half; standards 15 (146k, 123 s) none
+- run 3: plain 14 (166k, 206 s) S1 S2 S4, S5 half as a question; spec 11 (141k, 154 s) S1 S2, S6 half; standards 15 (154k, 181 s) S4
+- the union per run: both axes, the card's words, 2.5, 2.5, 3.5; with the plain card 3.5, 6, 4. plain alone 2, 5.5, 3.5. wishkeeper regraded S6 from 2, 2, 3
+- read outside the diff: run 2's spec a flawlog and `craft-pm`, run 2's plain railway completions and two binaries' strings, run 3's plain live `--help` runs, run 3's standards `shape-lane-dispatch`; each says no finding rests on it
+
 ## verdict
+2026-11-25, adopted on dima's word (his 16:40 tick, «let's keep wisphunter he is fine» 16:43), against its card: the bar, 5 of 6 in 2 of 3 runs, was missed on both readings (axes 2.5, 2.5, 3.5; with the plain card 3.5, 6, 4). the kill rule names no reader: on the axes it fired (two runs in a row under 4), on the count this file used for run 1 and on 18 Nov, the three-reader union, it did not (3.5, 6, 4). what keeps it: 70 graded reviews, 85 % held by our own grade (1 in 4 or more not held on 16 of 68), 712 runs, no code review on the old cards in its first two weeks by the job names. cheaper than the old cards: not met, about 2–3 times the tokens and time, not like for like. the standards axis is cut (0, 0, 1); the spec axis stays: the held-out slip and the half of S6 the plain runs missed. judged by clio, regraded by wishkeeper; the kill rule was read 16 days late.

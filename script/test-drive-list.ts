@@ -1,5 +1,6 @@
 // the one list of trials (o139): each docs/test-drive file's own status and until, grouped, live ones by date.
-// --check (clio:shape-test-drive): reds what a trial forgets — past due, undated, a date copied outside its file
+// --check (clio:shape-test-drive): reds what a trial forgets — past due, undated, its kill rule not read by its date,
+// a date copied outside its file
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
@@ -31,6 +32,7 @@ const drives = readdirSync(dir)
             blind: field('blind') === 'true',
             card: /right if/i.test(text),
             fits: field('fits').split(/\s+/).filter(Boolean),
+            killRead: field('kill-read'),
             name: f.slice(0, -3),
             status: field('status') || 'missing',
             until: field('until'),
@@ -208,6 +210,16 @@ if (!process.argv.includes('--check')) {
             );
         else if (d.until < today)
             reds.push(`${d.name}: overdue since ${d.until}, a verdict is owed`);
+        if (d.status !== 'live') continue;
+        const [killDay = '', ...killRead] = d.killRead.split(' ');
+        if (!DATE.test(killDay))
+            reds.push(
+                `${d.name}: no kill-read date, the day its kill rule is read`,
+            );
+        else if (killDay <= today && !killRead.length)
+            reds.push(
+                `${d.name}: its kill rule was due a read on ${killDay} — write what it said after the date`,
+            );
     }
     for (const f of POINTERS.flatMap(markdownUnder)) {
         readFileSync(path.join(root, f), 'utf8')
