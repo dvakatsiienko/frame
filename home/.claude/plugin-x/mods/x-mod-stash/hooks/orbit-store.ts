@@ -100,7 +100,7 @@ export async function saveOrbit(
                     ...(a.mark ? { mark: a.mark } : {}),
                     ...(a.steer ? { steer: a.steer } : {}),
                     ...(a.isLocked ? { isLocked: true } : {}),
-                    ...(isGuardGated(a.text) ? { isGated: true } : {}),
+                    ...(isGuardGated(a) ? { isGated: true } : {}),
                 })),
                 label: identity.label,
                 name: await sessionName($),

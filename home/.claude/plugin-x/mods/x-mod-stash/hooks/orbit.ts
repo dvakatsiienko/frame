@@ -62,6 +62,8 @@ export const isAllAsksMarkable = (a: OrbitAsk) =>
 
 const quoted = (s: string) =>
     [...s.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string);
+// one word is a name, never a command
+const quotesCommand = (s: string) => quoted(s).some((q) => /\s/.test(q.trim()));
 
 // the record x-mod-guard reads as dima's word, one per ask his press marks, as it stands at the press: what its pick
 // quotes, a command of any length (FRM-661), so one the body turns down is no word of his (his o9 tick, 25 Nov); a pick
@@ -73,7 +75,7 @@ export const allAsksTicks = (
     asks.map(({ id, pick, text }) => ({
         at,
         id,
-        targets: quoted(pick).some((q) => /\s/.test(q.trim()))
+        targets: quotesCommand(pick)
             ? [
                   ...quoted(text).filter((q) => /^~?\/\S+$/.test(q)),
                   ...quoted(pick),
@@ -302,11 +304,12 @@ export function joinText(asks: OrbitAsk[], sentence = TICK_SENTENCE) {
     ].join('\n');
 }
 
-// an ask whose tick x-mod-guard reads as dima's word — a sign, a ⚠️ or merge ask, one quoting a command; published as
+// an ask whose tick x-mod-guard reads as dima's word — a sign, a ⚠️ or merge ask, one quoting a command, in its pick too; published as
 // `isGated` beside the ask, so x-herdr-deck draws the mark instead of keeping its own copy of the pattern (FRM-544 slice 1)
-export const isGuardGated = (text: string) =>
+export const isGuardGated = ({ pick, text }: Pick<OrbitAsk, 'pick' | 'text'>) =>
     /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|`[^`]+`/iu.test(text) ||
-    MERGE_ASK.test(text);
+    MERGE_ASK.test(text) ||
+    quotesCommand(pick);
 const named = (x: string) => `«${[...x].slice(0, 40).join('')}»`;
 const overCapText = (x: string) =>
     [...x].length > ORBIT_TEXT_MAX
