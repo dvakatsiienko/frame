@@ -31,6 +31,11 @@ export const OUR_KEYS = [
         title: 'Find in the chat',
     },
     {
+        action: 'x-herdr-status.annotate',
+        key: 'f6',
+        title: 'Write a note on the selected words',
+    },
+    {
         action: 'x-herdr-status.settings',
         key: 'cmd-shift-,',
         title: 'Open the settings',

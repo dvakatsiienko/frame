@@ -102,6 +102,13 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and a selection across two messages copies the part in the one he right-clicked; two blocks of one message join with an empty line
   - and a selection lives while any line of its message is on screen, and is gone once the whole message left it or the chat was hidden (herdr's own, dima's look 25 Nov)
   - and a reply that grows under his selection loses it, and then copies whole
+- ⬜ F6, or «Annotate» in the right-click menu, opens the quill-mini: a small box for a note on the words he selected (FRM-585:W3, W12, W35; not live yet)
+  - given words selected in a reply, or in a message of his the thread has
+  - when he presses F6 from anywhere in the window, then the box opens under the words' end with the cursor in it, the words over it cut as the thread will get them, the thread's name beside; F6 again, Esc or a press outside closes it and keeps the note as his draft, and the same words bring the draft back (W5, W6)
+  - and the words are those that stood selected at the press; with none, in a message still waiting, in one scrolled away, or with the picture viewer open, F6 does nothing, and no view moves (W4)
+  - and the menu shows «Annotate» only on the message that holds the words
+  - and Enter joins the note, again takes it back; ⌘Enter sends it now and the box goes; Shift+Enter breaks the line; Tab walks the loop, where the box has a stop while open; an empty note does neither
+  - and Esc closes the viewer first, then the box, then find; a thread switch closes the box, its draft kept in its own thread; an emptied draft leaves no record
 - 🧭 Reply quotes only the words he selected, never a whole message (dima, 20:35; FRM-585)
   - decision: Reply left the menu (dima, 20:35: «whole message quoting isn't useful»)
 

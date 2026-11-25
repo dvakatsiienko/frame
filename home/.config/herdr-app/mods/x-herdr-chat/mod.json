@@ -16,7 +16,8 @@
         "joined.js",
         "keypress.js",
         "open-path.js",
-        "tab-loop.js"
+        "tab-loop.js",
+        "thread-keys.js"
     ],
     "title": "Chat"
 }

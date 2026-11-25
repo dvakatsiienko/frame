@@ -95,7 +95,6 @@ export function createGlide(block) {
             .border_color(t.border)
             .cursor_pointer()
             .hover((st) => st.bg(t.hover))
-            .tooltip(isOpen ? 'collapse' : 'show every step')
             .on_click((_e, cx) => {
                 isOpen ? open.delete(key) : open.add(key);
                 cx.notify();
@@ -120,7 +119,6 @@ export function createGlide(block) {
                                 .hover((st) =>
                                     st.text_color(t.foreground).underline(),
                                 )
-                                .tooltip(`open ${ticketId} in linear`)
                                 .on_mouse_down('left', (_e, cx) =>
                                     cx.stop_propagation(),
                                 )
@@ -181,7 +179,6 @@ export function createGlide(block) {
                       .py(8)
                       .text_size(SIZE.secondary)
                       .text_color(t.foreground)
-                      .tooltip(`glide: ${lanes.length} running`)
                       .child(`🛼 ${lanes.length}`)
                 : div()
                       .mx(12)

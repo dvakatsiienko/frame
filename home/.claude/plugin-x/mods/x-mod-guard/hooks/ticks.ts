@@ -28,8 +28,8 @@ export type Tick = {
     at: number;
     markAt?: number;
 };
-// his presses on x-herdr-deck for this session (FRM-544 slice 1, reversing FRM-552's decision 4 on his word): the ticks-write
-// rule keeps every seat's tool call out of that folder, so only x-herdr-deck writes it; a file that cannot be read is no tick
+// his presses on x-herdr-deck for this session (FRM-544 slice 1, reversing FRM-552's decision 4 on his word); no rule
+// keeps an agent's write out of that folder since FRM-581, the check below is what stands; a file that cannot be read is no tick
 async function herdrTicks($: EngineInterface): Promise<Tick[]> {
     const sid = await $.session.id().catch(() => undefined);
     const home = await $.env.get('HOME').catch(() => undefined);

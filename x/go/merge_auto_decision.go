@@ -84,6 +84,49 @@ func decide(brake, selfWait string, checks ...mergeCheck) (decision, wait string
 	return "merge", ""
 }
 
+// the branch the merge lands on: a stack's trunk once every layer under the pr passed, else the pr's own base
+func gateLayers(r *Run, d *mergeDecision, read mergeRead) (trunk string, err error) {
+	if read.layers == nil {
+		r.skip("layers")
+		return read.pr.Base.Ref, nil
+	}
+	api := githubBase() + "/repos/" + d.Repo
+	trunk, d.layered = read.layers.trunk, true
+	d.heads = map[string]string{d.PR: d.Head}
+	if err := r.Step("layers", "gating every layer under the pr", func() (string, error) {
+		for _, below := range read.layers.below {
+			if stop := holdStop(d.Repo, below, read.held, read.holdErr); stop != "" && !d.dimaOK {
+				return "", holdRefusal(d.PR, stop+" — a stack merges all of its layers at once")
+			}
+			if d.Override != nil {
+				var layer pullHead
+				if _, err := ghFetch(asDima, api+"/pulls/"+below, &layer); err != nil {
+					return "", err
+				}
+				d.heads[below] = layer.Head.Sha
+				continue
+			}
+			wait, err := layerWait(d.Repo, api, trunk, below, d)
+			if err != nil {
+				return "", err
+			}
+			if wait != "" {
+				return "", &Fail{Refused: true, Msg: "wait: " + wait + " — a stack merges all of its layers at once", Next: "x lane merge-auto " + d.PR}
+			}
+		}
+		if d.Override != nil {
+			return "under the override, no layer's checks read", nil
+		}
+		if len(read.layers.below) == 0 {
+			return "the bottom layer, onto " + trunk, nil
+		}
+		return "#" + strings.Join(read.layers.below, ", #") + " clean, green, threadless", nil
+	}); err != nil {
+		return "", err
+	}
+	return trunk, nil
+}
+
 // why a layer under the merged pr holds the merge, as the same gate reads it; "" when it passes
 func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	var pr pullHead

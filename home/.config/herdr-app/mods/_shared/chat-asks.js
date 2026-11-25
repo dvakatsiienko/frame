@@ -2,6 +2,7 @@
 // a fresh one; the chat writes back which thread it shows under `chat.shown`
 
 export const CHAT_ASK = /** @type {const} */ ({
+    annotate: 'chat.annotate',
     effort: 'chat.effort',
     escape: 'chat.escape',
     find: 'chat.find',

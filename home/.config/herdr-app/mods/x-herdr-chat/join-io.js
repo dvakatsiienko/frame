@@ -23,6 +23,26 @@ export const joinIo = {
     write: (path, body, expected) => writeTextFile(path, body, expected),
 };
 
+/** the lines of a transcript that hold the words: a search, for a whole long one is past what herdr reads @param {string} path @param {string} words */
+export async function linesWith(path, words) {
+    const out = await exec('grep', ['-F', '--', words, path]).catch(() => null);
+    return out?.code === 0 ? out.stdout.split('\n').filter(Boolean) : [];
+}
+
+// outside the shelf: frame is public, and what stands under the shelf is tracked
+const TRIAL_DIR = '.local/state/x/herdr-notes';
+
+/** @param {string} line */
+export function logTrial(line) {
+    exec('/bin/sh', [
+        '-c',
+        'mkdir -p "$1" && printf "%s\\n" "$2" >> "$1/trial.jsonl"',
+        'sh',
+        `${home()}/${TRIAL_DIR}`,
+        line,
+    ]).catch(() => {});
+}
+
 export const newId = () =>
     'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) =>
         (c === 'x'

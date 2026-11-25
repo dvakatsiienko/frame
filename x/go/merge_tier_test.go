@@ -315,3 +315,39 @@ func TestMergeAutoRefusesWhenTheHeadMovesWhileItsPathsAreRead(t *testing.T) {
 		t.Fatalf("exit %d, error %q, want a refusal naming the moved head:\n%s", got.code, e, got.stdout)
 	}
 }
+
+// a refusal carries what was read by then: the tier before a decision stands, the decision after
+func TestMergeAutoRefusalCarriesWhatItRead(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name       string
+		plant      func(w *mergeWorld)
+		says       string
+		isDecision bool
+	}{
+		{"a merged pr carries its tier", func(w *mergeWorld) {
+			w.hub.pages[repoPath+"/pulls/7"] = strings.Replace(w.hub.pages[repoPath+"/pulls/7"], `"state":"open","merged":false`, `"state":"closed","merged":true`, 1)
+		}, "nothing to merge", false},
+		{"threads that do not read carry the decision", func(w *mergeWorld) {
+			w.hub.pages["graphql"] = `{"data":{"repository":{"pullRequest":null}},"errors":[{"message":"Resource not accessible by integration"}]}`
+		}, "Resource not accessible", true},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, ".github/workflows/ci.yml")
+			w.hub.mu.Lock()
+			c.plant(w)
+			w.hub.mu.Unlock()
+
+			got := w.run(t, "7")
+
+			if got.code != 1 || !strings.Contains(envelopeOf(got).Error, c.says) || tierRead(got).Tier != "risky" {
+				t.Fatalf("exit %d, tier %q, want %q beside the tier:\n%s", got.code, tierRead(got).Tier, c.says, got.stdout)
+			}
+			if strings.Contains(got.stdout, `"head":"`+w.head+`"`) != c.isDecision {
+				t.Errorf("the decision is there: %v, want %v:\n%s", !c.isDecision, c.isDecision, got.stdout)
+			}
+		})
+	}
+}

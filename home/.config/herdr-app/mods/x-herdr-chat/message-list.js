@@ -17,7 +17,7 @@ import { createMessageBodies } from './message-body.js';
 import { openPath } from './open-path.js';
 import { pathOf } from './path-links.js';
 import { END_GLIDE_MS, createPlace } from './place.js';
-import { createSelections } from './selection.js';
+import { createSelections, passageOf, wordsOf } from './selection.js';
 import { missingNote } from './viewer.js';
 
 /** @typedef {import('./chat-types.js').Context} Context */
@@ -33,8 +33,8 @@ const PLACE_SAVE_MS = 600;
 const SETTLE_MS = 120;
 // the list's end is looked at this often: after a draw till the list stands still, after his wheel step for a glide
 const END_LOOK_MS = 50;
-// the right-click menu's size, one row
-const MENU_SIZE = { h: 34, w: 200 };
+// the right-click menu's width, its one row's height and one more's
+const MENU = { more: 26, one: 34, w: 200 };
 // the rows past the view whose text views stand ready, so a row he scrolls to can report his selection at once
 const BODIES_AHEAD = 10;
 
@@ -43,9 +43,11 @@ export const placeKey = (file) => `place:${file}`;
 
 /**
  * @typedef {object} MessageListDeps
+ * @property {(selected: import('./selection.js').SelectedAt, cx: Context) => void} annotate the note box on words he selected
  * @property {() => string | null} audioApp the app his settings open audio in, null: the system's choice
  * @property {() => string | null} file the shown thread's transcript
  * @property {ReturnType<typeof import('./heights.js').createHeights>} heights
+ * @property {(t: Theme) => any} noteBox the note box over the list, null while it is shut
  * @property {(cx: Context) => void} loadEarlier the next older page, asked near the first row
  * @property {ReturnType<typeof import('./picture-viewer.js').createPictureViewer>} pictures
  * @property {() => unknown} reader the shown thread's reader: a save for an earlier opening is dropped
@@ -65,6 +67,8 @@ export function createMessageList(deps) {
     const selections = createSelections();
     const bodies = createMessageBodies();
     let isSyncing = false;
+    /** the list's corner in the window, read off a press in it, for herdr reports a selection in window px @type {{ x: number, y: number } | null} */
+    let origin = null;
     /** the square a left press is on, told before the list hears the press, and the one the last press was on @type {string | null} */
     let pressing = null;
     /** @type {string | null} */
@@ -212,23 +216,17 @@ export function createMessageList(deps) {
             .on_item_secondary_click((key, event) => {
                 const id = key.replace(/#(?:above|below)$/, '');
                 const row = rows.find((r) => r.id === id);
-                messageMenu.hit(
-                    event.position,
-                    copiedFrom(
-                        row,
-                        row
-                            ? selections.textFor(
-                                  key,
-                                  (k) =>
-                                      deps.rows.stampOf(
-                                          row,
-                                          preOf(keys.indexOf(k)),
-                                      ),
-                                  deps.rows.textsCount(row),
-                              )
-                            : null,
-                    ),
-                );
+                const parts = row
+                    ? selections.partsFor(
+                          key,
+                          (k) => deps.rows.stampOf(row, preOf(keys.indexOf(k))),
+                          deps.rows.textsCount(row),
+                      )
+                    : null;
+                messageMenu.hit(event.position, {
+                    copied: copiedFrom(row, parts && wordsOf(parts)),
+                    selected: noteOn(row, parts, parts?.at(-1)?.position),
+                });
             })
             // a file row opens its file in its app, a png in Preview (FRM-587)
             .on_item_click((key, cx) => {
@@ -243,12 +241,14 @@ export function createMessageList(deps) {
             .size_full();
         return div()
             .id('chat-list')
-            .on_mouse_down('left', (_event, cx) => {
+            .on_mouse_down('left', (event, cx) => {
+                readOrigin(event);
                 pressed = pressing;
                 pressing = null;
                 cx.stop_propagation();
             })
             .on_mouse_down('right', (event, cx) => {
+                readOrigin(event);
                 const local = event.local_position ?? { x: 0, y: 0 };
                 messageMenu.open(event.position, {
                     x: local.x / zoom,
@@ -309,6 +309,7 @@ export function createMessageList(deps) {
             .when(Boolean(messageMenu.state), (el) =>
                 el.child(messageMenuView(t)),
             )
+            .children([deps.noteBox(t)].filter(Boolean))
             .when(isNewestShown, (el) =>
                 el.child(
                     div()
@@ -350,6 +351,34 @@ export function createMessageList(deps) {
         });
     }
 
+    /** @param {{ position: { x: number, y: number }, local_position?: { x: number, y: number } | null }} press */
+    function readOrigin({ position, local_position: local }) {
+        if (local)
+            origin = { x: position.x - local.x, y: position.y - local.y };
+    }
+
+    /**
+     * what a note would be written on, and where the words end in the list
+     * @param {Row | undefined} row @param {readonly import('./selection.js').Part[] | null} parts
+     * @param {{ x: number, y: number } | null | undefined} end in window px
+     * @returns {import('./selection.js').SelectedAt | null}
+     */
+    function noteOn(row, parts, end) {
+        const passage = passageOf(row, parts);
+        if (!passage) return null;
+        const zoom = Number(settings().zoom) || 1;
+        return {
+            at:
+                end && origin
+                    ? {
+                          x: (end.x - origin.x) / zoom,
+                          y: (end.y - origin.y) / zoom,
+                      }
+                    : null,
+            passage,
+        };
+    }
+
     /** he follows the newest: the thread opens there again */
     function forgetPlace() {
         const file = deps.file();
@@ -357,7 +386,7 @@ export function createMessageList(deps) {
     }
 
     /** a message off the screen holds no selection */
-    const keepDrawn = () => selections.keep(new Set(drawnKeys));
+    const keepDrawn = () => selections.keep(new Set(drawnKeys), Date.now());
 
     /**
      * the messages near the view have their text views ready; after the draw, where a view may be made
@@ -397,8 +426,8 @@ export function createMessageList(deps) {
                     },
                     report: (
                         /** @type {number} */ block,
-                        /** @type {string | null} */ words,
-                    ) => selections.report(key, stamp, block, words),
+                        /** @type {import('./selection.js').Reported | null} */ part,
+                    ) => selections.report(key, stamp, block, part, Date.now()),
                 });
             }
             const made = bodies.sync(near, later);
@@ -434,10 +463,11 @@ export function createMessageList(deps) {
     function messageMenuView(t) {
         const menu = messageMenu.state;
         const copied = menu?.copied ?? null;
+        const selected = menu?.selected ?? null;
         const place = menuPlace(
             { x: menu?.x ?? 0, y: menu?.y ?? 0 },
             { h: viewH, w: width || NARROW },
-            MENU_SIZE,
+            { h: MENU.one + (selected ? MENU.more : 0), w: MENU.w },
         );
         /** @param {Context} cx */
         const close = (cx) => {
@@ -470,7 +500,7 @@ export function createMessageList(deps) {
             .absolute()
             .left(place.x)
             .top(place.y)
-            .w(MENU_SIZE.w)
+            .w(MENU.w)
             .p(4)
             .rounded(8)
             .bg(t.popover)
@@ -483,6 +513,13 @@ export function createMessageList(deps) {
                     'copy',
                     copied?.isSelection ? 'Copy text' : 'Copy message',
                     (cx) => cx.write_to_clipboard(copied?.text ?? ''),
+                ),
+            )
+            .when(selected !== null, (el) =>
+                el.child(
+                    item('annotate', 'Annotate', (cx) => {
+                        if (selected) deps.annotate(selected, cx);
+                    }),
                 ),
             );
     }
@@ -615,6 +652,22 @@ export function createMessageList(deps) {
             at.restore(id, offset, fromBottom);
         },
         room,
+        /** the words that stood selected at a press, for a note @param {number} time */
+        selectedAt(time) {
+            const selected = selections.current(time);
+            const i = selected ? (items?.keys.indexOf(selected.key) ?? -1) : -1;
+            const row = items?.rowOf(i);
+            if (!selected || !items || !row) return null;
+            if (deps.rows.stampOf(row, items.preOf(i)) !== selected.stamp)
+                return null;
+            // a fold leaves the rest of its message out, and they never say so
+            const blocks = deps.rows.textsCount(row);
+            return noteOn(
+                row,
+                selected.parts.filter((p) => p.block < blocks),
+                selected.at,
+            );
+        },
         /** the list's size for a view laid over it */
         /** the rows the list draws */
         shown: () => shownRows,

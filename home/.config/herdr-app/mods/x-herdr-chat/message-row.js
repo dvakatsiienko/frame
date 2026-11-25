@@ -196,6 +196,7 @@ export function createMessageRows(deps) {
                     source,
                 }),
                 block,
+                source,
             );
         const column = v_flex().gap(8);
         if (row.kind === 'mine')

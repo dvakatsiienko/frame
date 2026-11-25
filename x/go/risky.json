@@ -163,6 +163,8 @@
         "x/go/lane_landed_stay.go",
         "x/go/lane_landed_session.go",
         "x/go/lane_landed_closing.go",
-        "x/go/lane_plan_steps.go"
+        "x/go/lane_plan_steps.go",
+        "x/go/merge_auto_checks.go",
+        "x/go/merge_brake_step.go"
     ]
 }

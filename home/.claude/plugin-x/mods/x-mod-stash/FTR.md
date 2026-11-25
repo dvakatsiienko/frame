@@ -638,7 +638,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - ✅ a gated ask is published with its mark, for x-herdr-deck to draw (FRM-544 slice 1)
   - given an open ask whose tick x-mod-guard reads as dima's word — a `✍️ sign <id>` ask, a ⚠️ ask, a `merge`/`land` ask, one quoting a command in backticks, in its text or its pick (there a bare word is a name)
   - then its item under `asks:<sid>` in the store carries `isGated: true`, a plain ask none, so x-herdr-deck draws the mark instead of keeping its own copy of the pattern
-  - and x-herdr-deck's presses in `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, which this mod reads as marks, x-mod-guard now reads as his tick too, its `ticks-write` rule keeping every thread's tool call out of that folder (reversing FRM-552's decision 4 on his word)
+  - and x-herdr-deck's presses in `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, which this mod reads as marks, x-mod-guard now reads as his tick too, with no rule keeping a thread's write out of that folder since FRM-581 (reversing FRM-552's decision 4 on his word)
   - proof: tests/orbit.test.ts::a gated ask carries isGated in the store, a plain ask none
   - and a new x-herdr-deck press replaces the ask's mark, the newest press winning (within one read too), so his ↩️ then 🛎 ticks; a ↩️ that replaces an accepted mark takes its tick record with it, so x-mod-guard honours no tick the board no longer shows (sixth sense round 1 on FRM-544: the first press once won, which locked him out)
   - decision: the newest press wins over a thread-board mark made before it, reversing «the first press wins, a desktop one included» (his 16:26 rule «my ticks should have a priority over everything»)

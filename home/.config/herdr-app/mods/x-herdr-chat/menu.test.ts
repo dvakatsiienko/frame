@@ -6,32 +6,65 @@ import type { Row } from './row-model.js';
 const press = { x: 400, y: 300 };
 const local = { x: 120, y: 80 };
 const hello = { isSelection: false, text: 'hello' };
+const selected = {
+    at: { x: 1, y: 1 },
+    passage: {
+        parts: [{ block: 0, range: null, source: 'hello', words: 'hello' }],
+        row: { at: null, id: 'r1', kind: 'reply' as const },
+    },
+};
 
 describe('one right-click reported twice', () => {
     test('the item first, then the list: the menu holds the words', () => {
         const menu = createMessageMenu();
-        menu.hit(press, hello);
+        menu.hit(press, { copied: hello, selected: null });
         menu.open(press, local);
-        expect(menu.state).toEqual({ at: press, copied: hello, ...local });
+        expect(menu.state).toEqual({
+            at: press,
+            copied: hello,
+            selected: null,
+            ...local,
+        });
     });
 
     test('the list first, then the item: the menu holds the words', () => {
         const menu = createMessageMenu();
         menu.open(press, local);
-        menu.hit(press, hello);
+        menu.hit(press, { copied: hello, selected: null });
         expect(menu.state?.copied).toBe(hello);
     });
 
     test('an item half from another press gives the menu nothing to copy', () => {
         const menu = createMessageMenu();
-        menu.hit({ x: 1, y: 2 }, hello);
+        menu.hit({ x: 1, y: 2 }, { copied: hello, selected });
         menu.open(press, local);
         expect(menu.state?.copied).toBeNull();
     });
 
+    test.each([
+        ['item first', true],
+        ['list first', false],
+    ])(
+        'the words a note would be on come with the press: %s',
+        (_what, isItemFirst) => {
+            const menu = createMessageMenu();
+            if (isItemFirst) menu.hit(press, { copied: hello, selected });
+            menu.open(press, local);
+            if (!isItemFirst) menu.hit(press, { copied: hello, selected });
+            expect(menu.state?.selected).toBe(selected);
+        },
+    );
+
+    test('an item half from another press offers no note', () => {
+        const menu = createMessageMenu();
+        menu.hit({ x: 1, y: 2 }, { copied: hello, selected });
+        menu.open(press, local);
+        expect(menu.state?.selected).toBeNull();
+    });
+
     test('close leaves no menu and no waiting half', () => {
         const menu = createMessageMenu();
-        menu.hit(press, hello);
+        menu.hit(press, { copied: hello, selected: null });
         menu.close();
         menu.open(press, local);
         expect(menu.state?.copied).toBeNull();

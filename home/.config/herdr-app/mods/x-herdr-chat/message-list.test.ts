@@ -153,14 +153,19 @@ function createWindow(
         reports: new Map<string, Handler>(),
         /** a drawn square's press, by row */
         squares: new Map<string, Handler>(),
+        /** how many text views each message draws */
+        texts: 1,
     };
     const written: string[] = [];
     const earlier: number[] = [];
+    const annotated: unknown[] = [];
     const list = createMessageList({
+        annotate: (selected: unknown) => annotated.push(selected),
         audioApp: () => null,
         file: () => '/t.jsonl',
         heights: createHeights(),
         loadEarlier: () => earlier.push(1),
+        noteBox: () => null,
         pictures: {
             isOpen: () => bodies.isViewerOpen,
             show: (files: string[]) => bodies.opened.push(files.join()),
@@ -214,7 +219,7 @@ function createWindow(
                 return gpui.make();
             },
             stampOf: (row: { id: string }, pre: string) => `${pre}${row.id}`,
-            textsCount: () => 1,
+            textsCount: () => bodies.texts,
         },
         say: (note: string) => gpui.opened.push([note]),
         unsend: () => {},
@@ -382,11 +387,12 @@ function createWindow(
             (gpui.seen.list?.sizes ?? [])
                 .slice(0, row)
                 .reduce((sum, px) => sum + px, 0),
+        annotated,
         bodies,
         /** his left press and release on a row, on its second square or beside the squares */
         click(id: string, isOnSquare: boolean) {
             if (isOnSquare) (bodies.squares.get(id) as Handler)();
-            fire(root, 'on_mouse_down_left', {}, cx);
+            fire(root, 'on_mouse_down_left', { position: { x: 1, y: 2 } }, cx);
             gpui.opened.length = 0;
             fire(raw(gpui.seen.list?.el), 'on_item_click', id, cx);
             return answered();
@@ -424,6 +430,43 @@ function createWindow(
         land(id: string, offset: number) {
             list.land(id, offset);
             isDirty = true;
+        },
+        /** his left press at a place in the window, the list's corner at (453, 82) */
+        leftDown(x: number, y: number) {
+            fire(
+                root,
+                'on_mouse_down_left',
+                {
+                    local_position: { x: x - 453, y: y - 82 },
+                    position: { x, y },
+                },
+                cx,
+            );
+        },
+        /** the right-click menu's items after his right press on a message, and a press on one */
+        menu(id: string) {
+            const position = { x: 1, y: id.length + Number(id.slice(1)) };
+            const at = raw(gpui.seen.list?.el);
+            fire(at, 'on_item_secondary_click', id, { position }, cx);
+            fire(root, 'on_mouse_down_right', { position }, cx);
+            draw();
+            const items = under(root).filter(
+                (el): el is El =>
+                    typeof el !== 'string' &&
+                    Boolean(el.id?.startsWith('chat-message-menu-')),
+            );
+            return {
+                items: items.map((el) => el.children[0] as unknown),
+                press: (label: string) =>
+                    fire(
+                        items.find(
+                            (el) => (el.children[0] as unknown) === label,
+                        ) as El,
+                        'on_click',
+                        {},
+                        cx,
+                    ),
+            };
         },
         reset: () => list.reset(),
         /** his right press on a message, the menu left open */
@@ -470,6 +513,7 @@ function createWindow(
             scrollTop += dy;
             drawRows();
         },
+        selectedAt: (time: number) => list.selectedAt(time),
         /** the list's own height grows by `px`: the cards under it shrank */
         tall(px: number) {
             viewH += px;
@@ -833,5 +877,105 @@ describe('the ↓ is there only off the very bottom', () => {
         w.scroll(490);
         w.run(1_000);
         expect(w.isNewestShown()).toBe(true);
+    });
+});
+
+// FRM-585 A4
+describe('the words a note is written on', () => {
+    const words = (text: string, over: object = {}) => ({
+        position: { x: 653, y: 282 },
+        range: { end: text.length, start: 0 },
+        text,
+        ...over,
+    });
+    const rested = () => {
+        const w = createWindow(Array(200).fill(60), (px) => px);
+        w.run(1_000);
+        const [first = '', second = ''] = [...w.frame.keys()].slice(2);
+        return {
+            first,
+            second,
+            select: (id: string, selection: object | null) =>
+                (w.bodies.reports.get(id) as Handler)(selection as never),
+            w,
+        };
+    };
+    const passage = (id: string, text: string) => ({
+        parts: [
+            {
+                block: 0,
+                range: { end: text.length, start: 0 },
+                source: undefined,
+                words: text,
+            },
+        ],
+        row: { at: undefined, id, kind: 'reply' },
+    });
+
+    test('stood selected at a press, with the place they end at in the list', () => {
+        const { first, select, w } = rested();
+        w.leftDown(600, 200);
+        select(first, words('two words'));
+        expect(w.selectedAt(Date.now())).toEqual({
+            at: { x: 200, y: 200 },
+            passage: passage(first, 'two words'),
+        });
+    });
+
+    test('with no press in the list yet, or a select-all, no place', () => {
+        const { first, select, w } = rested();
+        select(first, words('two words'));
+        expect(w.selectedAt(Date.now())?.at).toBeNull();
+        w.leftDown(600, 200);
+        select(first, words('two words', { position: undefined }));
+        expect(w.selectedAt(Date.now())?.at).toBeNull();
+    });
+
+    test('let go by a press after F6 was pressed, they are still its', () => {
+        const { first, select, w } = rested();
+        select(first, words('two words'));
+        const pressed = Date.now();
+        w.run(16);
+        select(first, null);
+        expect(w.selectedAt(pressed)?.passage.parts[0]?.words).toBe(
+            'two words',
+        );
+        expect(w.selectedAt(Date.now())).toBeNull();
+    });
+
+    test('gone with the row he scrolled away', () => {
+        const { first, select, w } = rested();
+        select(first, words('two words'));
+        w.scroll(-900);
+        w.run(40);
+        expect(w.selectedAt(Date.now())).toBeNull();
+    });
+
+    test('in a text view its message’s fold left out, none', () => {
+        const { first, select, w } = rested();
+        select(first, words('two words'));
+        w.bodies.texts = 0;
+        expect(w.selectedAt(Date.now())).toBeNull();
+    });
+
+    test('in a message drawn anew since, none', () => {
+        const { first, select, w } = rested();
+        select(first, words('two words'));
+        w.wide(700);
+        w.run(40);
+        expect(w.selectedAt(Date.now())).toBeNull();
+    });
+
+    test('the menu offers Annotate on the message that holds them alone, and opens the box on them', () => {
+        const { first, second, select, w } = rested();
+        w.leftDown(600, 200);
+        select(first, words('two words'));
+        expect(w.menu(second).items).toEqual(['Copy message']);
+        const menu = w.menu(first);
+        expect(menu.items).toEqual(['Copy text', 'Annotate']);
+        menu.press('Annotate');
+        expect(w.annotated).toEqual([
+            { at: { x: 200, y: 200 }, passage: passage(first, 'two words') },
+        ]);
     });
 });

@@ -169,12 +169,14 @@ describe('a ⌘K or ⌘⇧E press is acted on only while fresh', () => {
 
 describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () => {
     const at = {
+        annotateAsk: null,
         effortAsk: null,
         escapeAsk: null,
         findAsk: null,
         isKept: false,
         isShown: true,
         isSwitched: false,
+        lastAnnotate: null,
         lastEffort: null,
         lastEscape: null,
         lastFind: null,
@@ -250,13 +252,38 @@ describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () =
         expect([first.isEffort, second.isEffort]).toEqual([true, false]);
     });
 
+    test.each([
+        ['a fresh F6 on the chat on screen', {}, true],
+        ['one acted on', { lastAnnotate: 9_500 }, false],
+        ['one 3 s old', { annotateAsk: 7_000 }, false],
+        ['one under Terminal view', { isShown: false }, false],
+    ])('%s', (_what, over, isAnnotate) => {
+        expect(
+            asksActedOn({ ...at, annotateAsk: 9_500, ...over }).isAnnotate,
+        ).toBe(isAnnotate);
+    });
+
+    test('a F6 under Terminal view is not acted on at the next draw as seen', () => {
+        const hidden = asksActedOn({
+            ...at,
+            annotateAsk: 9_500,
+            isShown: false,
+        });
+        expect(hidden.lastAnnotate).toBeNull();
+        expect(asksActedOn({ ...at, annotateAsk: 9_500 }).lastAnnotate).toBe(
+            9_500,
+        );
+    });
+
     test('a quiet draw takes nothing', () => {
         expect(asksActedOn(at)).toEqual({
+            isAnnotate: false,
             isEffort: false,
             isEscape: false,
             isFind: false,
             isFocus: false,
             isOpened: false,
+            lastAnnotate: null,
             lastEffort: null,
             lastEscape: null,
             lastFind: null,
@@ -267,12 +294,14 @@ describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () =
 
 describe('⌘F from anywhere in the window opens the chat on screen’s find (dima, 17:58)', () => {
     const at = {
+        annotateAsk: null,
         effortAsk: null,
         escapeAsk: null,
         findAsk: 9_500,
         isKept: false,
         isShown: true,
         isSwitched: false,
+        lastAnnotate: null,
         lastEffort: null,
         lastEscape: null,
         lastFind: null,
@@ -301,12 +330,14 @@ describe('⌘F from anywhere in the window opens the chat on screen’s find (di
 
 describe('Esc from anywhere in the window closes the chat’s viewer or find (dima, 18:18)', () => {
     const at = {
+        annotateAsk: null,
         effortAsk: null,
         escapeAsk: 9_500,
         findAsk: null,
         isKept: false,
         isShown: true,
         isSwitched: false,
+        lastAnnotate: null,
         lastEffort: null,
         lastEscape: null,
         lastFind: null,

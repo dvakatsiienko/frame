@@ -1,11 +1,11 @@
 // antenna's rows (FRM-618 slice A): every thread once, in his order; grouped, a space's threads sit under its name,
-// the spaces in the order his first thread of each takes. a row's dot is its status word, drawn still
+// the spaces in the order his first thread of each takes. a row's dot is busy.js's
 
 import { inOrder } from './order.js';
 
 /** @typedef {{ address: string, space: string, space_name: string, status: string }} Thread */
 /** @typedef {{ kind: 'pins' } | { kind: 'unpinned' } | { kind: 'space', name: string, space: string }
- *     | { kind: 'thread', address: string, dot: string, name: string, isPinned?: true }} Row */
+ *     | { kind: 'thread', address: string, name: string, isPinned?: true }} Row */
 
 /**
  * @param {Thread[]} threads herdr's `agents()`
@@ -19,7 +19,6 @@ export function antennaRows(threads, { isGrouped, names, order, pins = [] }) {
     /** @param {Thread} t @returns {Row} */
     const row = (t) => ({
         address: t.address,
-        dot: t.status,
         kind: 'thread',
         name: names[t.address] || t.address,
         ...(pinned.has(t.address) && { isPinned: /** @type {const} */ (true) }),

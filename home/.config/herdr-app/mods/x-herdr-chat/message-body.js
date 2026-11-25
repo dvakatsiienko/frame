@@ -4,7 +4,7 @@ import { View } from 'gpui-kit';
 
 /** @typedef {import('gpui-kit').Element} Element */
 /** @typedef {import('gpui-base').TextViewElement} TextViewElement */
-/** @typedef {(view: TextViewElement, block: number) => TextViewElement} Reporting a text view that reports his selection and his click on a link */
+/** @typedef {(view: TextViewElement, block: number, source: string) => TextViewElement} Reporting a text view that reports his selection and his click on a link */
 
 /** @typedef {(square: Element, picture: string) => Element} Pressing a picture's square that says it was pressed */
 /** @typedef {{ pressing: Pressing, reporting: Reporting }} Handlers */
@@ -17,7 +17,7 @@ import { View } from 'gpui-kit';
  * @property {(handlers: Handlers) => Element} draw
  * @property {(url: string, cx: import('gpui-kit').Context) => void} follow a click on a link in its text
  * @property {(picture: string) => void} press a left press on one of its squares, by the picture's id
- * @property {(block: number, words: string | null) => void} report his selection in one of them
+ * @property {(block: number, part: import('./selection.js').Reported | null) => void} report his selection in one of them
  */
 
 class MessageBody extends View {
@@ -43,10 +43,20 @@ const drawBody = (at) =>
     at.draw({
         pressing: (square, picture) =>
             square.on_mouse_down('left', () => at.press(picture)),
-        reporting: (view, block) =>
+        reporting: (view, block, source) =>
             view
                 .on_link_click((url, cx) => at.follow(url, cx))
-                .on_selection_change((s) => at.report(block, s?.text ?? null)),
+                .on_selection_change((s) =>
+                    at.report(
+                        block,
+                        s && {
+                            position: s.position ?? null,
+                            range: s.range ?? null,
+                            source,
+                            words: s.text,
+                        },
+                    ),
+                ),
     });
 
 export function createMessageBodies() {

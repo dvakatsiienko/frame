@@ -184,7 +184,7 @@ export type OrbitAsk = AskOrigin & {
     isLocked?: boolean;
     isChanged?: boolean;
     isResolved?: boolean;
-    // when a mark came in from another board: an idle session wakes once dima prompts anywhere after it
+    // when a mark came in from another board, which x-mod-guard reads as the press's time
     markedAt?: number;
     // the mark came from herdr's ticks file, which any agent can write: its turn reads it labelled, to weigh (FRM-552)
     isHerdrMark?: boolean;

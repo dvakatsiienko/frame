@@ -144,7 +144,12 @@ export function entryFor(prompt: string, at: Date) {
 }
 
 // what dima types in herdr mid-turn reaches the agent but never this hook; the chat app's mod keeps it in a joins file
-export function newJoins(joinsText: string, seen: ReadonlySet<string>) {
+// a row no turn took yet can still be edited or taken back, so it is logged only once `handed` holds it; no set logs all
+export function newJoins(
+    joinsText: string,
+    seen: ReadonlySet<string>,
+    handed?: ReadonlySet<string>,
+) {
     const known = new Set(seen);
     const fresh: { id: string; text: string }[] = [];
     for (const line of joinsText.split('\n')) {
@@ -157,7 +162,8 @@ export function newJoins(joinsText: string, seen: ReadonlySet<string>) {
                 typeof id === 'string' &&
                 typeof text === 'string' &&
                 text.trim() &&
-                !known.has(id)
+                !known.has(id) &&
+                (handed?.has(id) ?? true)
             ) {
                 known.add(id);
                 fresh.push({ id, text });
@@ -167,6 +173,21 @@ export function newJoins(joinsText: string, seen: ReadonlySet<string>) {
         }
     }
     return fresh;
+}
+
+// the rows a turn took or joined, as x-mod-stash publishes them for herdr; unreadable → undefined, so no word of his is lost
+export function handedJoins(sessionId: string) {
+    const dir = path.join(process.env.HOME ?? '', '.claude/shelf/herdr-state');
+    try {
+        const { joins } = JSON.parse(
+            readFileSync(path.join(dir, `${sessionId}.json`), 'utf8'),
+        ) as { joins?: { joined?: string[]; taken?: string[] } };
+        return (
+            joins && new Set([...(joins.joined ?? []), ...(joins.taken ?? [])])
+        );
+    } catch {
+        return undefined;
+    }
 }
 
 // herdr writes a message's files as its last lines, one backslash before each special character (attach.js `promptPath`);
@@ -211,7 +232,11 @@ function saveHerdrJoins(
             ? []
             : readFileSync(seenFile, 'utf8').split('\n').filter(Boolean);
         const fresh = existsSync(joinsFile)
-            ? newJoins(readFileSync(joinsFile, 'utf8'), new Set(seen))
+            ? newJoins(
+                  readFileSync(joinsFile, 'utf8'),
+                  new Set(seen),
+                  handedJoins(sessionId),
+              )
             : [];
         mkdirSync(path.dirname(seenFile), { recursive: true });
         if (!isFirstRun && fresh.length > 0) {
