@@ -7,8 +7,8 @@ import { div } from 'gpui-kit';
 import { focusBorder } from './focus-ring.js';
 import { SIZE } from './look.js';
 
-/** @typedef {import('./main.js').Theme} Theme */
-/** @typedef {import('./main.js').Context} Context */
+/** @typedef {import('./deck-types.js').Theme} Theme */
+/** @typedef {import('./deck-types.js').Context} Context */
 
 // Enter and ⌘Enter in a steer box are the deck's own actions, ahead of the box's submit (FRM-648 step 111)
 export const STEER_ENTER = 'x_herdr_deck_steer_enter';

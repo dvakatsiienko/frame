@@ -174,7 +174,7 @@ export function createCardFiles() {
 
     /**
      * the card's file lines, or none
-     * @param {import('./main.js').Theme} t @param {{ text: string, link: string | null }} ask @param {string} key
+     * @param {import('./deck-types.js').Theme} t @param {{ text: string, link: string | null }} ask @param {string} key
      */
     function view(t, ask, key) {
         const shown = cardFiles(attachmentsOf(ask, home()), found);

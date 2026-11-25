@@ -18,7 +18,7 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 - a choice gets its settings row, the essential knobs only; a preference never hides in code. chat settings (`x-herdr-chat-settings`, the header's gear) hold only how the chat reads; every other row goes to settings (`x-herdr-settings`, the band's 🎛️ or ⌘⇧,) (dima, 16:58)
 - slipstream first wherever he talks to a thread, with visible feedback that it worked
 - cheap to change stays cheap: one mod per block, placed by the layout json alone, plain JS, colours from `theme()`
-- a code file stays under `x:guide-code`'s cap (1,200 lines, `script/lib/code-size.test.ts` refuses past it); x-herdr-chat's `MODULES.md` shows a split
+- a new concern is its own module from line 1; a file near 1,000 splits before it grows; 1,200 reds `code-size.test.ts`; see deck, status `MODULES.md`
 - his word wins over every guard: none locks him out of any action, a merge and a delete just work; his tick and his override switch work from a guard's first commit
 - hot reload is smooth or not done: at once, no flicker, no shifted tabs, no lost text
 - he lives in the Chat view: a thing he must see or click is drawn there, never only in Terminal view
