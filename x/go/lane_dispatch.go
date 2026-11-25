@@ -508,12 +508,12 @@ func fiveHourWindow() string {
 
 func askDispatch(planned any) string {
 	plan := planned.(dispatchPlan)
-	ask := fmt.Sprintf("dispatch %d ticket(s): write their missing marks?", len(plan.Tickets))
+	lines := []string{fmt.Sprintf("dispatch %d ticket(s): write their missing marks?", len(plan.Tickets))}
 	// the warnings print on the terminal where the yes is asked, as they do in the json
 	for _, warning := range plan.Warnings {
-		ask += "\n  warning: " + warning
+		lines = append(lines, "  warning: "+warning)
 	}
-	return ask
+	return strings.Join(lines, "\n")
 }
 
 func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {

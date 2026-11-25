@@ -1289,9 +1289,10 @@
             "touches": [
                 "~/.claude/shelf/threads.json — the record's title or role, written ($X_THREADS in tests)",
                 "~/.local/state/clio/main-session — the main seat's pid and session, written by --role ($X_MAIN_SESSION in tests)",
+                "~/.local/state/clio/seat-notes/<session id> — each moved thread's line for its next prompt, written by --role (beside $X_MAIN_SESSION in tests)",
                 "~/.local/state/x/operator-override.json, its .log and seat-grants/ — read by --role from a thread, a grant taken, the move logged ($X_OVERRIDE_STORE in tests)",
                 "herdr-app — the thread's tab, renamed (a terminal with none gets one by terminal.keep)",
-                "hc — the thread's herdr terminal, sent /rename when idle"
+                "hc — the thread's herdr terminal, sent /rename when idle, and by --role its seat line"
             ]
         },
         {
