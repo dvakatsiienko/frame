@@ -151,6 +151,18 @@
         "x/go/merge_ci.go",
         "x/go/merge_deploy.go",
         "x/go/merge_round.go",
-        "x/go/merge_threads.go"
+        "x/go/merge_threads.go",
+        "x/go/lane_landed_ticket.go",
+        "x/go/lane_landed_spec.go",
+        "x/go/lane_landed_lines.go",
+        "x/go/lane_landed_warn.go",
+        "x/go/lane_landed_dispatch.go",
+        "x/go/lane_landed_wired.go",
+        "x/go/lane_landed_trees.go",
+        "x/go/lane_landed_lock.go",
+        "x/go/lane_landed_stay.go",
+        "x/go/lane_landed_session.go",
+        "x/go/lane_landed_closing.go",
+        "x/go/lane_plan_steps.go"
     ]
 }

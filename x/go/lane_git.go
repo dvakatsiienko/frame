@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"slices"
 	"strings"
 )
@@ -105,4 +106,11 @@ func remoteBranch(dir, ref string) (string, error) {
 	listed, err := mustGitIn(dir, "ls-remote", "ls-remote", "origin", "refs/heads/"+ref)
 	sha, _, _ := strings.Cut(listed, "\t")
 	return sha, err
+}
+
+func mainCheckout(dir string) string {
+	if common, linked, err := worktreeOf(dir); err == nil && linked {
+		return filepath.Dir(common)
+	}
+	return dir
 }
