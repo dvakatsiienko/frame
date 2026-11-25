@@ -73,12 +73,13 @@ describe("the deck's key commands", () => {
         expect(tickAsker(askers, { ...open, shownPid: 3 })).toBe(null);
     });
 
-    test('in Terminal view, where no chat is shown, it ticks the thread his keyboard is in', () => {
-        expect(tickAsker(askers, { ...open, focusedPid: 1 })).toBe('a');
-        // the chat's own word wins while it is shown
-        expect(tickAsker(askers, { ...open, focusedPid: 1, shownPid: 2 })).toBe(
+    // dima, 2026-11-25 14:12: «from terminal view, cmd+shift+k does not work at all»
+    test('in Terminal view it ticks the thread his keyboard is in, never the one the chat showed last', () => {
+        expect(tickAsker(askers, { ...open, focusedPid: 2, shownPid: 3 })).toBe(
             'b',
         );
+        // no thread holds the keyboard (the Files panel): the one the chat shows
+        expect(tickAsker(askers, { ...open, shownPid: 2 })).toBe('b');
     });
 
     test('a hover outlives no asks group: one that left the screen is no hover when it comes back', () => {

@@ -5,14 +5,15 @@ import { orbitSections, tickAllThread } from './orbit.js';
 
 /**
  * the asker ⌘⇧K ticks: none while the deck is hidden, since he could not see the asks go; else `tickAllThread`'s pick
- * among the threads with something to take, the open thread the one the chat shows, in Terminal view the focused one
+ * among the threads with something to take, the open thread the focused one, whose phases the deck shows:
+ * the chat's word is kept from before he went to Terminal view
  * @param {{ pid: number, sid: string, takes: number }[]} rows
  * @param {{ focusedPid: number | null, hovered: string | null, isShown: boolean, shownPid: number | null }} at
  * @returns {string | null}
  */
 export function tickAsker(rows, { focusedPid, hovered, isShown, shownPid }) {
     if (!isShown) return null;
-    const openPid = shownPid ?? focusedPid;
+    const openPid = focusedPid ?? shownPid;
     return tickAllThread(
         rows.filter((r) => r.takes > 0).map((r) => r.sid),
         {
