@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-24T11:46:00Z'
-updated_date: '2026-11-25T12:42:24Z'
+updated_date: '2026-11-25T13:24:04Z'
 labels:
   - s
   - clio-wing-1
@@ -427,4 +427,6 @@ PK-467:W194 (2026-11-24 16:16, dima): [the jev compaction plugin] I asked you to
 14:41 closed on his 14:41 word: «no, close. it was something different. dima-intervenes is OK overall»; W120–W125 answered by fleet-output-format § to dima, first
 
 close: 2026-11-25 14:42 — PK-467:W1–W194 closed on dima's 14:41 word («no, close»); all but two were accounted at the 24 Nov 19:14 handback (its list, the done lines f50–f70 in PK-346), spot-read today: W187–W189 gone from system-checkup, W194 is FRM-681 snoozed; the two left: the count is noted 14:39, W124–W125 answered by fleet-output-format § to dima, first
+
+15:24 the close line above corrected by wishkeeper's read: the 20:24 tick's second half (wing 1's read of what to shrink in x-mod-stash) came after the 19:14 handback and was not accounted; it moved to PK-346's flyway. «all but two were accounted» is an inference, the per-line verdicts were not read
 <!-- SECTION:NOTES:END -->
