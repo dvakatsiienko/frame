@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T15:15:54Z'
+updated_date: '2026-11-25T15:24:02Z'
 labels:
   - s
   - clio-wing-1
@@ -16,15 +16,15 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f92 x-mod-stash shrink read: 50,171 lines, 49 fixes in 7 days, what to cut (his o6 tick, 24 Nov 20:24) — parked: 2026-11-25
-- [ ] #2 f96 FRM-582 two reads before dispatch: edge cases, then prior art with dima — waits for: FRM-585 — parked: 2026-11-25
-- [ ] #3 f97 his own asks, one list for his order; source: the 14:48–15:08 lowtide list in the wing transcript — with: dima
-- [ ] #4 f98 ticks wake removal (wakeForMarks): main places it in the mods lane; confirm, spec line — waits for: FRM-689 — parked: 2026-11-25
-- [ ] #5 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
-- [ ] #6 f93 ⏳ bytes#176 github-actions pr: merge it once renovate stability-days goes green — waits for: bytes#176 release age
-- [ ] #7 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
-- [ ] #8 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
-- [ ] #9 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
+- [ ] #1 f96 FRM-582 two reads before dispatch: edge cases, then prior art with dima — waits for: FRM-585 — parked: 2026-11-25
+- [ ] #2 f97 his own asks, one list for his order; source: the 14:48–15:08 lowtide list in the wing transcript — with: dima
+- [ ] #3 f98 ticks wake removal (wakeForMarks): main places it in the mods lane; confirm, spec line — waits for: FRM-689 — parked: 2026-11-25
+- [ ] #4 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
+- [ ] #5 f93 ⏳ bytes#176 github-actions pr: merge it once renovate stability-days goes green — waits for: bytes#176 release age
+- [ ] #6 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
+- [ ] #7 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
+- [ ] #8 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
+- [ ] #9 f100 📅 FRM-706 lost-ping alarm: a true gap since the fix? none → the cut to dima — on: 2026-12-02
 - [ ] #10 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
 - [ ] #11 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
 - [ ] #12 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
@@ -141,4 +141,22 @@ done 2026-11-25 16:42: f89 trials: wisphunter, its verdict due 27 Nov (review-ro
 done 2026-11-25 17:08: f87 FRM-582 emoji reactions: its ten questions, three a batch — with: dima (FRM-582 Todo)
 
 17:15 flyway notes swept: old done notes of all four flyways moved whole to pocket/archive/notes (his 17:12 word, o1 tick); the code for it (flyway-done --sweep, pocket-check, wish-cover, --next readers) follows
+
+done 2026-11-25 17:23: f92 x-mod-stash shrink read: 50,171 lines, 49 fixes in 7 days, what to cut (his o6 tick, 24 Nov 20:24) — parked: 2026-11-25
+
+PK-346:W118 (2026-11-25 17:10, dima): pk-468 is done with you yesterday? ❓
+PK-346:W119 (2026-11-25 17:10, dima): can you fix your flyway cleaning habit? ❓
+PK-346:W120 (2026-11-25 17:10, dima): i see lots of stale/not-relevant-anymore implementation notes across all flyways.
+PK-346:W121 (2026-11-25 17:10, dima): can you clean them occasionally? ❓
+PK-346:W122 (2026-11-25 17:10, dima): which are good spots to clean them? ❓
+PK-346:W123 (2026-11-25 17:10, dima): i think at least at halt is a must.
+PK-346:W124 (2026-11-25 17:13, dima): i just opened the full flyway of main clio and it is fucking huge.
+PK-346:W125 (2026-11-25 17:13, dima): i was looking only from rex backlog view and never saw the full list (not scrolled).
+PK-346:W126 (2026-11-25 17:13, dima): fix the list immediately.
+PK-346:W127 (2026-11-25 17:13, dima): do you want main clio to open a 2k line flyway on each small edit?! ❓
+PK-346:W128 (2026-11-25 17:13, dima): flyways are intended to be slim and robust.
+PK-346:W129 (2026-11-25 17:13, dima): 2k file is not robust. 2.9k.
+PK-346:W130 (2026-11-25 17:13, dima): attached screenshot: /Users/dima/.local/state/clio/prompts/wing-1/2026-11-25-files/b57d068e-aab7-467b-8c63-b50e5da23cd8-2-CleanShot 2026-11-25 at 17.12.25.jpg
+
+17:24 W118–W130: PK-346:W118 answered 17:16 (built 24 Nov, open for its 1 Dec check); PK-346:W119–PK-346:W129 the lists moved 17:15 (01c1b805), the sweep in code is being built in clio-wing-1, run by every pocket write and the halt
 <!-- SECTION:NOTES:END -->
