@@ -159,6 +159,9 @@ function messageOf(said, content, rowId) {
     return { files: paths.filter((p) => !isImagePath(p)), pictures, text };
 }
 
+/** the words of a joined message's row @param {string} said the text its join row carried */
+export const joinedWords = (said) => messageOf(said, null, '').text;
+
 /** a message's inline pictures @param {unknown} content @returns {{ data: string, media: string }[]} */
 const inlinePictures = (content) =>
     (Array.isArray(content) ? content : [])
