@@ -572,6 +572,18 @@ describe('a landed claim with no git read (o185)', () => {
             expect(loggedAfter('my commit is waiting in the queue.', read('Read', { file_path: '/tmp/tasks/x.txt' }))).toContain('landed-unread\t');
         });
 
+        it('logs the real line of 25 Nov 18:41, a comma before «waiting»', () => {
+            expect(loggedAfter('sent.', sent('both files are in my commit, waiting in the gate queue since 18:39.'))).toContain('landed-unread\tmy commit, waiting');
+        });
+
+        it.each([
+            { command: 'timeout 900 x lane commit /tmp/m.txt -- a.md > /tmp/c.log 2>&1' },
+            { command: 'trash /tmp/c.log' },
+            { command: 'x lane push --apply' },
+        ])('counts %j as no read of the wait', (input) => {
+            expect(loggedAfter('my commit is waiting in the queue.', read('Bash', input))).toContain('landed-unread\t');
+        });
+
         it('keeps the old claim flagged after a job read, only git clears it', () => {
             expect(loggedAfter('everything is pushed.', read('Read', { file_path: '/tmp/tasks/x.output' }))).toContain('landed-unread\t');
         });

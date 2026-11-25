@@ -201,22 +201,26 @@ NEGATED_LANDED = re.compile(r"\b(?:not|never|nothing|n't)\s+(?:\w+\s+){0,2}?(?:s
 GIT_READ = re.compile(r"\bgit\s+(?:status|log|rev-parse|ls-remote|branch\s+-r)\b|\bx\s+lane\s+(?:push|commit)\b")
 # «my commit is waiting in the queue», «the push is still running»: a commit or push said to be in flight is read from git or the job's output
 # «my» or «the» right before the noun: «the codie's commit is waiting» and «waiting on the herdr lane» pass
-WAIT_CLAIM = re.compile(r"\b(?:my|the)\s+(?:commit|push)(?:es)?\s+(?:(?:is|are)\s+)?(?:still\s+)?(?:waiting|waits?|queued|running)\b", re.I)
-JOB_READ = re.compile(r"/tasks/\S*\.output\b|\.log\b")
+WAIT_CLAIM = re.compile(r"\b(?:my|the)\s+(?:commit|push)(?:es)?,?\s+(?:(?:is|are)\s+)?(?:still\s+)?(?:waiting|waits?|queued|running)\b", re.I)
+JOB_FILE = r"(?:/tasks/\S*\.output|\.log)\b"
+JOB_READ = re.compile(rf"\b(?:tail|head|cat|sed|rg|grep)\b[^|;&>\n]*{JOB_FILE}")
+# a launch of a commit or a push reads nothing of its wait
+GIT_STATE = re.compile(r"\bgit\s+(?:status|log|rev-parse|ls-remote|branch\s+-r)\b")
 
 
 def landed_unread(path: str, reply: str) -> list[str]:
     # a one-word span is a branch or path name that stays in the sentence («is on `main`»); a spaced span is a quoted claim
     prose = lambda text: INLINE_CODE.sub(lambda m: m.group(0).strip("`") if " " not in m.group(0) else "", FENCE.sub("", text))
     calls = turn_calls(path)
-    if any(name == "Bash" and GIT_READ.search(str(args.get("command", ""))) for name, args in calls):
-        return []
-    m = LANDED_CLAIM.search(NEGATED_LANDED.sub("", prose(reply)))
+    bash = [str(args.get("command", "")) for name, args in calls if name == "Bash"]
+    m = None if any(GIT_READ.search(c) for c in bash) else LANDED_CLAIM.search(NEGATED_LANDED.sub("", prose(reply)))
     if m:
         return [m.group(0).strip().lower()]
     texts = [prose(reply), *(prose(str(args.get("message", ""))) for name, args in calls if name == "SendMessage")]
     m = next((hit for text in texts for hit in [WAIT_CLAIM.search(text)] if hit), None)
-    if m and not any(name in ("Bash", "Read") and JOB_READ.search(str(args.get("command", "") or args.get("file_path", ""))) for name, args in calls):
+    files = [str(args.get("file_path", "")) for name, args in calls if name == "Read"]
+    is_read = any(GIT_STATE.search(c) or JOB_READ.search(c) for c in bash) or any(re.search(JOB_FILE, f) for f in files)
+    if m and not is_read:
         return [m.group(0).strip().lower()]
     return []
 
