@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T14:02:29Z'
+updated_date: '2026-11-25T14:08:12Z'
 labels:
   - s
   - clio-main
@@ -26,7 +26,7 @@ ordinal: 1000
 - [ ] #8 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
 - [ ] #9 f126 ⏳ kokoro engine upgrade: before and after sounds to dima, told when it lands — waits for: FRM-669
 - [ ] #10 f134 ⏳ herdr wisp: a triple click takes one visual line, fixed upstream, waits a herdr release — waits for: FRM-655
-- [ ] #11 f135 ⏳ two old speak verify trees (FRM-683, FRM-406) with env files of their own go — waits for: FRM-669
+- [ ] #11 f136 ⏳ the two old speak verify trees go, their env files moved first — waits for: FRM-669
 - [ ] #12 f131 📅 FRM-645: a shot dima sent through herdr on 25 Nov still opens — on: 2026-11-26
 - [ ] #13 f132 📅 read the first week's typed look and test asks (mods spec after-merge) — on: 2026-12-02
 - [ ] #14 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
@@ -2905,4 +2905,6 @@ PK-349:W2466 (2026-11-25 16:00, dima, on crow's rule written into its skill): do
 PK-349:W2467 (2026-11-25 16:00, dima): what i want: when nothing is planned at all and nothing is pending, a thread should auto second wind right away at 55 %.
 PK-349:W2468 (2026-11-25 16:00, dima): anyone else who has been working on something, a lane or you, with pending items, picks a good point, and has a wide context range for a second wind, up to 65 %.
 → crew-adviser reworded; the 55 % notice's own words are a rider on the mods lane (mods-lane-9/lane-plan.md, not greenlit)
+
+done 2026-11-25 16:08: f135 ⏳ two old speak verify trees (FRM-683, FRM-406) with env files of their own go — waits for: FRM-669 (FRM-683 Done, FRM-406 Done, FRM-669 In Progress)
 <!-- SECTION:NOTES:END -->
