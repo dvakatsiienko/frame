@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T11:18:29Z'
+updated_date: '2026-11-25T11:36:44Z'
 labels:
   - s
   - clio-wing-1
@@ -22,7 +22,7 @@ ordinal: 1001
 - [ ] #4 f71 FRM-639 events piece 2: six questions, the draft in mods-lane-9/frm-639-section.md — with: dima
 - [ ] #5 f72 github event streams: is gh event listen worth it for our ci and pr watches — after everything pending — with: dima
 - [ ] #6 f73 trials, one topic at a time with dima after evergreen: gate-speed, review-rounds, wisphunter verdicts — with: dima
-- [ ] #7 f52 FRM-465 exit 5, two reads tonight: frame (raycast held for it), bytes; then raycast by hand — parked: 2026-11-25
+- [ ] #7 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
 - [ ] #8 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
 - [ ] #9 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
 - [ ] #10 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
@@ -826,4 +826,6 @@ his o4 steer (2026-11-25 13:11, dima): me with wing 1 after evergreen, one topic
 PK-346:W94 (2026-11-25 13:11, dima, o4 steer): me with wing 1 after evergreen, one topic at a time, not all at once.
 
 PK-346:W94 stamp corrected: his o4 steer was at 13:08 (the packet), not 13:11
+
+13:36 f52: my 13:23 dispatch (force off, both repos) proved the window opens a minors pr when a run lands in it: frame 184, bytes 178. not proven: a scheduled run landing in it unaided (none since 07:00); that half moves to 12-02, exit 5 stays open. raycast comes by merging frame 184 after main's push
 <!-- SECTION:NOTES:END -->
