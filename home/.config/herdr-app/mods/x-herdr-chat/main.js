@@ -40,6 +40,7 @@ import { JOINS_DIR } from './joins.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { createMessageList } from './message-list.js';
 import { createMessageRows } from './message-row.js';
+import { createNotesByRow } from './note-rows.js';
 import { repliesBelow } from './note-text.js';
 import { createNotes } from './notes.js';
 import { audioAppOf } from './open-path.js';
@@ -185,6 +186,7 @@ export default class Chat extends View {
         newId,
         store: localStorage,
     });
+    notesUnder = createNotesByRow((id) => this.rowOf(id));
     /** the box a note is written in, over the list */
     quillMini = createQuillMini({
         back: (id) => repliesBelow(this.model.rows, this.rowOf(id)),
@@ -268,6 +270,7 @@ export default class Chat extends View {
         heights: this.heights,
         loadEarlier: (cx) => this.feed.loadEarlier(cx),
         noteBox: (t) => this.quillMini.view(t),
+        openNote: (id, at, cx) => this.quillMini.openNote(id, at, cx),
         pictures: this.pictures,
         reader: () => this.feed.reader(),
         rows: this.rows,
@@ -301,11 +304,11 @@ export default class Chat extends View {
     /** his notes on a row of the thread shown @param {Row} row */
     notesOn(row) {
         const file = this.feed.file();
-        return file
-            ? this.notes
-                  .of(file)
-                  .filter((n) => this.rowOf(n.passage.row.id) === row.id)
-            : [];
+        return this.notesUnder(
+            row.id,
+            file ? this.notes.of(file) : [],
+            this.model.rows,
+        );
     }
 
     /** every view lets go of the thread it showed: nothing of the old one may act on the next */

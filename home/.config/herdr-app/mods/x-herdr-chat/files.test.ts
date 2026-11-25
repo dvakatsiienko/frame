@@ -7,6 +7,12 @@ import {
     replyIdOf,
     withFileRows,
 } from './files.js';
+import {
+    createNotesByRow,
+    noteIdOf,
+    noteRows,
+    notesBefore,
+} from './note-rows.js';
 import type { Row } from './row-model.js';
 
 const HOME = '/Users/dima';
@@ -175,4 +181,105 @@ describe("a message still in Claude Code's queue carries a × row under it (FRM-
         expect(ids).toEqual(['w1', 'w1#unsend', 'm1']);
         expect(isUnsendRow('w1#unsend')).toBe(true);
     });
+});
+
+describe('a message has a quiet row for each note on it (FRM-585 B2)', () => {
+    const row = (id: string, over: Partial<Row> = {}): Row => ({
+        at: null,
+        delivery: null,
+        files: [],
+        id,
+        isTurnStart: false,
+        isWaiting: false,
+        kind: 'reply',
+        pictures: [],
+        replyId: null,
+        text: 'see ~/a.md',
+        tools: [],
+        version: 1,
+        ...over,
+    });
+    const note = (id: string, text: string, state = 'waiting') =>
+        ({ id, state, text }) as never;
+    const notes = [
+        note('n1', 'one\nline'),
+        note('n2', 'two', 'taken'),
+        note('n3', '  '),
+        note('n4', 'four', 'joined'),
+    ];
+    const drawn = () =>
+        withFileRows(
+            [row('r1'), row('tool', { kind: 'tool', text: 'Read' }), row('r2')],
+            HOME,
+            new Map(),
+            (r) => (r.id === 'r1' ? noteRows(r, notes) : []),
+        );
+
+    test('after its files, in the order he made them; one not typed yet has none', () => {
+        expect(drawn().map((r) => r.id)).toEqual([
+            'r1',
+            'r1#file-0',
+            'r1#note-n1',
+            'r1#note-n2',
+            'r1#note-n4',
+            'tool',
+            'r2',
+            'r2#file-0',
+        ]);
+        expect(
+            drawn()
+                .filter((r) => r.kind === 'note')
+                .map((r) => [r.text, r.note?.word]),
+        ).toEqual([
+            ['one line', 'waiting'],
+            ['two', 'waiting'],
+            ['four', 'joined'],
+        ]);
+    });
+
+    test('each names its note, a saved place on one its message', () => {
+        expect(
+            drawn()
+                .map((r) => noteIdOf(r.id))
+                .filter(Boolean),
+        ).toEqual(['n1', 'n2', 'n4']);
+        expect(replyIdOf('r1#note-0b5c-4d')).toBe('r1');
+    });
+
+    test('its row stands where his message does', () => {
+        const [mine] = noteRows(row('m', { kind: 'mine' }), notes);
+        const [reply] = noteRows(row('r'), notes);
+        expect([mine?.note?.isMine, reply?.note?.isMine]).toEqual([
+            true,
+            false,
+        ]);
+    });
+
+    test('how many stand before a row', () => {
+        expect([
+            notesBefore(drawn(), 'r1'),
+            notesBefore(drawn(), 'r2'),
+            notesBefore(drawn(), 'gone'),
+        ]).toEqual([0, 3, -1]);
+    });
+});
+
+test('a row’s notes follow it as a page changes its id, and go with their thread (FRM-585 B2)', () => {
+    const on = (id: string, line: string) =>
+        ({ id, passage: { row: { id: line } } }) as never;
+    const at = { row: 'l1' };
+    const under = createNotesByRow((line) => (line === 'l1' ? at.row : line));
+    const notes = [on('n1', 'l1'), on('n2', 'l2')];
+    const ids = (id: string, of = notes, rows = [{ id: at.row }]) =>
+        under(id, of, rows).map((n) => (n as { id: string }).id);
+    expect([ids('l1'), ids('l2')]).toEqual([['n1'], ['n2']]);
+    at.row = 'page';
+    expect([ids('l1'), ids('page')]).toEqual([[], ['n1']]);
+    // a page that landed with the first row's id kept
+    at.row = 'l3';
+    expect(ids('l3', notes, [{ id: 'page' }, { id: 'l3' }])).toEqual(['n1']);
+    expect(ids('l3', [on('n3', 'l1')], [{ id: 'page' }, { id: 'l3' }])).toEqual(
+        ['n3'],
+    );
+    expect(ids('l3', [])).toEqual([]);
 });

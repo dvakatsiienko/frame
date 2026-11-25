@@ -67,6 +67,10 @@ export const isLocked = (note) =>
 /** a note not yet on its way for good @param {Note} note */
 export const isUnsent = (note) => !isLocked(note);
 
+/** where it stands, in his words @param {Note} note */
+export const stateWord = (note) =>
+    note.state === 'taken' ? 'waiting' : note.state;
+
 /** the line the thread gets of it @param {Note} note */
 export const lineOf = (note) =>
     noteLine({

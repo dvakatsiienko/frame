@@ -123,7 +123,7 @@ function createWindow(
     shortFrames = 1,
     frameMs = FRAME_MS,
 ) {
-    const rows = real.map((_, i) => ({
+    let rows = real.map((_, i) => ({
         id: `r${i}`,
         kind: i === 3 ? 'mine' : 'reply',
         links: [
@@ -166,6 +166,7 @@ function createWindow(
         heights: createHeights(),
         loadEarlier: () => earlier.push(1),
         noteBox: () => null,
+        openNote: (id: string, at: unknown) => annotated.push([id, at]),
         pictures: {
             isOpen: () => bodies.isViewerOpen,
             show: (files: string[]) => bodies.opened.push(files.join()),
@@ -204,6 +205,7 @@ function createWindow(
             markTurn: () => {},
             press: (_rows: unknown, key: string, picture: string | null) => {
                 bodies.opened.push(picture);
+                if (key === 'r4') return { id: 'n1', kind: 'note' };
                 return key === 'r2'
                     ? { kind: 'file', path: '/tmp/x.command' }
                     : null;
@@ -422,6 +424,9 @@ function createWindow(
             under(root).some(
                 (el) => typeof el !== 'string' && el.id === 'chat-newest',
             ),
+        /** the release of his left press on a row */
+        itemClick: (id: string) =>
+            fire(raw(gpui.seen.list?.el), 'on_item_click', id, cx),
         /** somewhere else in the list at once, in one redraw */
         jump(px: number) {
             scrollTop = px;
@@ -467,6 +472,19 @@ function createWindow(
                         cx,
                     ),
             };
+        },
+        /** a note row of 28 px comes after a row, or goes */
+        noteAfter(row: number | null) {
+            rows = rows.filter((r) => r.kind !== 'note');
+            if (row !== null) {
+                real[90] = 28;
+                rows.splice(row + 1, 0, {
+                    ...(rows[0] as (typeof rows)[number]),
+                    id: 'r90',
+                    kind: 'note',
+                });
+            }
+            isDirty = true;
         },
         reset: () => list.reset(),
         /** his right press on a message, the menu left open */
@@ -978,4 +996,35 @@ describe('the words a note is written on', () => {
             { at: { x: 200, y: 200 }, passage: passage(first, 'two words') },
         ]);
     });
+});
+
+// FRM-585 B3: a note row is written while he reads further down, or taken away
+test.each([
+    ['lands above him', 1, 0],
+    ['lands under him', 6, 0],
+])(
+    'a note row that %s, and goes again, moves nothing he reads',
+    (_how, after) => {
+        const w = createWindow([...thread], (px) => px);
+        w.run(1_000);
+        w.land('r4', 60);
+        w.run(2_000);
+        w.scroll(5);
+        w.run(2_000);
+        const was = w.above(4);
+        w.noteAfter(after);
+        w.run(2_000);
+        expect(w.above(after < 4 ? 5 : 4)).toBe(was);
+        w.noteAfter(null);
+        w.run(2_000);
+        expect(w.above(4)).toBe(was);
+    },
+);
+
+test('a press on a note’s row opens it where he pressed', () => {
+    const w = createWindow([...thread], (px) => px);
+    w.run(1_000);
+    w.leftDown(600, 200);
+    w.itemClick('r4');
+    expect(w.annotated).toEqual([['n1', { x: 147, y: 118 }]]);
 });
