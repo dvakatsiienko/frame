@@ -33,10 +33,6 @@ const caps = {
         cap: 1_540,
         why: 'the siesta gate, one file of cases; +9 the queue-run case (dima o7, 2026-11-20)',
     },
-    'home/.config/herdr-app/mods/x-herdr-status/main.js': {
-        cap: 1_463,
-        why: 'the status mod, one view',
-    },
     'x/go/brief_summon_test.go': {
         cap: 1_312,
         why: 'brief summon, one file of cases',
