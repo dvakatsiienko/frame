@@ -6,7 +6,7 @@ import { div } from 'gpui-kit';
 import { literalAngles } from './orbit.js';
 
 /** @typedef {import('gpui-kit').Color} Color */
-/** @typedef {import('./main.js').Theme} Theme */
+/** @typedef {import('./deck-types.js').Theme} Theme */
 
 // the system font: herdr's own UI font (Geist) ships one face, so markdown's **bold** drew flat in it
 export const SANS = '.AppleSystemUIFont';
