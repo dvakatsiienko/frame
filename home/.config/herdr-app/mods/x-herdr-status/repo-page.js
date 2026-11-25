@@ -1,5 +1,5 @@
-// a repo's page, the popup above the git item: its status, PR and Sync, its branches and «New branch…». it owns what only
-// the page reads; what the bar reads too stays on the bar (main.js) and comes through `deps`
+// a repo's page, the popup above the git item: its status, PR and Sync, its branches and «New branch…». it owns what
+// only its own code reads; what main.js reads, writes or makes stays there and comes through `deps`
 
 import { Input, h_flex, v_flex } from 'gpui-base';
 import { div, svg } from 'gpui-kit';
