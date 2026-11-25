@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -223,4 +224,29 @@ func packageScripts(tree string) map[string]string {
 	raw, _ := os.ReadFile(filepath.Join(tree, "package.json"))
 	_ = json.Unmarshal(raw, &manifest)
 	return manifest.Scripts
+}
+
+// the copy the commit reads in the message's place, when it stamps ftr: none; the caller removes it
+func ftrMessage(r *Run, tree, message string, paths []string) (copied string, err error) {
+	err = r.Step("ftr", "an app's code staged without its FTR.md", func() (string, error) {
+		raw, err := os.ReadFile(message)
+		if err != nil {
+			return "", err
+		}
+		missing := ftrMissing(tree, paths)
+		if len(missing) == 0 || ftrNone.Match(raw) {
+			return "nothing to add", nil
+		}
+		// the caller's file stays as written; the commit reads a copy beside the index
+		gitDir, err := mustGitIn(tree, "rev-parse", "rev-parse", "--path-format=absolute", "--git-dir")
+		if err != nil {
+			return "", err
+		}
+		copied = filepath.Join(gitDir, fmt.Sprintf("x-msg-%d", os.Getpid()))
+		if err := os.WriteFile(copied, []byte(withFtrNone(string(raw))), 0o600); err != nil {
+			return "", err
+		}
+		return "ftr: none added, " + strings.Join(missing, ", ") + " unchanged", nil
+	})
+	return copied, err
 }

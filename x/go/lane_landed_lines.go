@@ -65,7 +65,7 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 	return lines, nil
 }
 
-// the merged line and what it read on the way; every later line leans on it
+// the merged line and what it read on the way
 type mergedRead struct {
 	laneRefs
 	line   landedLine
@@ -157,7 +157,7 @@ func roundsLine(frame, id string) landedLine {
 	return rounds
 }
 
-// sets the clean trees the branch lines read
+// sets plan.clean, which mergedBranchesLine reads, and plan.unlocks
 func treesLine(repo string, plan *landedPlan, refs laneRefs) landedLine {
 	id, main := plan.id, plan.main
 	trees := landedLine{name: "trees", ok: true, detail: "no lane tree under .claude/worktrees/"}

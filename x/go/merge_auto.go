@@ -139,7 +139,7 @@ func mergeAutoForm(r *Run, args []string, flags Flags) (mergeForm, error) {
 	return mergeForm{repo: repo, pr: n, word: word}, err
 }
 
-// what github and this mac said of the pr, before anything is judged
+// what the tier and pr steps read, for the steps after
 type mergeRead struct {
 	pr       pullHead
 	paths    []string

@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T16:29:46Z'
+updated_date: '2026-11-25T16:38:02Z'
 labels:
   - s
   - clio-wing-1
@@ -168,4 +168,6 @@ PK-346:W131 (2026-11-25 17:52, dima, o3 steer): no, do only FRM-630, and nothing
 
 PK-346:W132 (2026-11-25 17:57, dima): lowtide fix: do not use the lowtide next catch shape to tell your next steps in the current thing we do right now.
 PK-346:W133 (2026-11-25 17:57, dima): the next catch block is only for cases when you propose the next big item in your list. for example the next item in your list should be FRM-630, so next catch shouldn't tell about the next substeps of the current task that you do now. only next big solvable items like FRM-630 or similar ones.
+
+18:38 f99: dima ticked «a) no fence, closed for good» on the folder his ticks live in (main, 18:37; FRM-582's comment), so the guard grill never raises it
 <!-- SECTION:NOTES:END -->
