@@ -94,3 +94,140 @@ test.each(Object.entries(caps))('%s stays within its cap', (file, { cap }) => {
         `${file}: now under ${limit} lines — drop its row`,
     ).toBeGreaterThan(limit);
 });
+
+// go functions: the same shape as the files above, one cap a function (dima, 2026-11-25)
+const goFuncLimit = 120;
+
+// functions over the limit, each capped at its size: a cap goes down by hand as the function shrinks;
+// a raise names dima's word and its date in the why
+const goFuncCaps: Readonly<Record<string, { cap: number; why: string }>> = {
+    'x/go/brief_summon.go briefSummonPlan': {
+        cap: 228,
+        why: 'its size on 2026-11-25, not cut yet',
+    },
+    'x/go/fleet_growth.go fleetGrowth': {
+        cap: 138,
+        why: 'its size on 2026-11-25, not cut yet',
+    },
+    'x/go/linear_set.go linearSet': {
+        cap: 260,
+        why: 'its size on 2026-11-25, not cut yet',
+    },
+    'x/go/verify_red.go verifyRed': {
+        cap: 125,
+        why: 'its size on 2026-11-25, not cut yet',
+    },
+    'x/go/verify_tree.go verifyTree': {
+        cap: 132,
+        why: 'its size on 2026-11-25, not cut yet',
+    },
+};
+
+// text that is no code: a `"` string, a rune, a comment on its line, a raw string whole, so a `}` at column 0 in one ends nothing
+const goNotCode =
+    /"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)+'|\/\/.*|\/\*[\s\S]*?\*\/|`[^`]*`/g;
+
+// gofmt puts a top-level func at column 0 and its closing brace alone on a line; the commit gate holds gofmt
+const goFuncs = (file: string, text: string) => {
+    const blanked = text.replace(goNotCode, (found) =>
+        found.replace(/[^\n]/g, ' '),
+    );
+    const heads = blanked.matchAll(
+        /^func (?:\((?:\w+ )?\*?(\w+)(?:\[[^\]]*\])?\) )?(\w+)/gm,
+    );
+    return [...heads].flatMap(({ index, 1: receiver, 2: name }) => {
+        const body = blanked.slice(index);
+        const isOneLine = /\}\s*$/.test(body.split('\n', 1)[0] ?? '');
+        const end = isOneLine ? 0 : body.search(/^\}/m);
+        if (end < 0) return [];
+        return [
+            {
+                lines: body.slice(0, end).split('\n').length,
+                name: `${file} ${receiver ? `${receiver}.` : ''}${name}`,
+            },
+        ];
+    });
+};
+
+type GoFunc = ReturnType<typeof goFuncs>[number];
+
+const goFuncOffenders = (
+    funcs: readonly GoFunc[],
+    capped: typeof goFuncCaps,
+) => [
+    ...funcs
+        .filter(({ lines, name }) => lines > goFuncLimit && !(name in capped))
+        .map(
+            ({ lines, name }) =>
+                `${name}: ${lines} lines, past ${goFuncLimit} — break it into named parts`,
+        ),
+    ...Object.entries(capped).flatMap(([name, { cap }]) => {
+        const lines = funcs.find((func) => func.name === name)?.lines ?? 0;
+        if (lines > cap)
+            return [
+                `${name}: ${lines} lines, past its cap of ${cap} — a raise is dima's word`,
+            ];
+        return lines <= goFuncLimit
+            ? [
+                  `${name}: now ${lines} lines, within ${goFuncLimit} — drop its row`,
+              ]
+            : [];
+    }),
+];
+
+const goFuncOf = (lines: number, head = 'func big() {') =>
+    `package main\n\n${head}\n${'\twork()\n'.repeat(lines - 2)}}\n`;
+const goFuncRow = (cap: number) => ({ 'a.go big': { cap, why: 'planted' } });
+
+test.each([
+    ['a func at the limit', goFuncOf(120), {}, []],
+    [
+        'a new 121-line func',
+        goFuncOf(121),
+        {},
+        ['a.go big: 121 lines, past 120 — break it into named parts'],
+    ],
+    ['a capped func at its cap', goFuncOf(130), goFuncRow(130), []],
+    [
+        'a capped func that grew',
+        goFuncOf(131),
+        goFuncRow(130),
+        ["a.go big: 131 lines, past its cap of 130 — a raise is dima's word"],
+    ],
+    [
+        'a capped func that shrank under the limit, its row left',
+        goFuncOf(120),
+        goFuncRow(130),
+        ['a.go big: now 120 lines, within 120 — drop its row'],
+    ],
+    [
+        'a method',
+        goFuncOf(121, 'func (d *plan) big() error {'),
+        {},
+        ['a.go plan.big: 121 lines, past 120 — break it into named parts'],
+    ],
+    [
+        'a brace at column 0 in a raw string',
+        goFuncOf(121).replace('\twork()\n', '\tx := `\n}\n`\n'),
+        {},
+        ['a.go big: 123 lines, past 120 — break it into named parts'],
+    ],
+    [
+        'a one-line func before a long one',
+        `package main\n\nfunc small() {}\n\n${goFuncOf(121).slice(14)}`,
+        {},
+        ['a.go big: 121 lines, past 120 — break it into named parts'],
+    ],
+] as const)('%s reads as its size', (_, text, capped, offenders) => {
+    expect(goFuncOffenders(goFuncs('a.go', text), capped)).toEqual(offenders);
+});
+
+test('no go function grows past 120 lines, tests out', () => {
+    const funcs = codeFiles
+        .filter((file) => file.endsWith('.go') && !file.endsWith('_test.go'))
+        .flatMap((file) => goFuncs(file, readText(file) ?? ''));
+    expect(
+        goFuncOffenders(funcs, goFuncCaps),
+        'x:guide-code § file size',
+    ).toEqual([]);
+});
