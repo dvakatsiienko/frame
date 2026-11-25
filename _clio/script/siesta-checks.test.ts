@@ -163,6 +163,7 @@ describe('siesta-checks', () => {
             '## gate budget',
             '## retros',
             '## lane pace',
+            '## part growth',
         ]);
         expect(heads.filter((h) => !h.endsWith('exit 0'))).toEqual([]);
     });
@@ -380,9 +381,12 @@ describe('siesta-checks', () => {
     const auditVerb = (home: string, exit: number, misses: unknown[]) => {
         const bin = join(home, '.local/bin');
         mkdirSync(bin, { recursive: true });
+        // one stub answers every x call, so it carries the growth verb's empty answer too
         const data = {
             data: {
+                crossings: [],
                 misses,
+                parts: 0,
                 summary: 'how-you-work.md 1 of 2',
             },
         };
@@ -564,6 +568,62 @@ describe('siesta-checks', () => {
                     }),
                 ]),
             ).toEqual({ breaches: [], children: 0, parents: 0 });
+        });
+    });
+
+    describe('part growth', () => {
+        const growthVerb = (home: string, data: object) => {
+            const bin = join(home, '.local/bin');
+            mkdirSync(bin, { recursive: true });
+            writeFileSync(
+                join(bin, 'x'),
+                `#!/bin/sh\ncase "$2" in\ngrowth) echo '${JSON.stringify({ data })}';;\n*) exit 1;;\nesac\n`,
+            );
+            chmodSync(join(bin, 'x'), 0o755);
+        };
+
+        const sizeAndFixes = [
+            { ask: 'x-mod-stash crossed on size', trigger: 'size' },
+            { ask: 'x-mod-stash crossed on fixes', trigger: 'fixes' },
+        ];
+
+        test('a part that cost him 3 turns reds the section, size and fixes stay unprinted', () => {
+            const home = fixtureHome();
+            growthVerb(home, {
+                crossings: [
+                    ...sizeAndFixes,
+                    {
+                        ask: 'x-mod-guard crossed on turns',
+                        trigger: 'turns (rough)',
+                    },
+                ],
+                parts: 97,
+                seeded: false,
+            });
+            const out = section(run(home).stdout, 'part growth');
+            expect(out).toMatch(/· exit 1\n/);
+            expect(out).toContain('x-mod-guard crossed on turns');
+            expect(out).not.toContain('x-mod-stash');
+        });
+
+        test('size and fixes alone stay green', () => {
+            const home = fixtureHome();
+            growthVerb(home, {
+                crossings: sizeAndFixes,
+                parts: 97,
+                seeded: false,
+            });
+            const out = section(run(home).stdout, 'part growth');
+            expect(out).toMatch(/· exit 0\n/);
+            expect(out).not.toContain('x-mod-stash');
+        });
+
+        test('the first seed names nothing and stays green', () => {
+            const home = fixtureHome();
+            growthVerb(home, { crossings: [], parts: 97, seeded: true });
+            const out = section(run(home).stdout, 'part growth');
+            expect(out).toMatch(/· exit 0\n/);
+            expect(out).toContain('seeded 97 parts');
         });
     });
 
