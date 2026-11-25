@@ -3,13 +3,13 @@
 
 import { h_flex, v_flex } from 'gpui-base';
 import { div } from 'gpui-kit';
-import { exec, run, theme, watchFolder } from 'herdr';
+import { exec, run, theme } from 'herdr';
 
 import { GLIDE_MAX_PX, glideResize } from './glide-size.js';
 import { lanesShown, stepMark } from './lanes.js';
 import { SANS, SIZE, bar, line } from './look.js';
 import { ticketUrl } from './orbit.js';
-import { CLAUDE, LANES, json } from './shelf.js';
+import { LANES, json, onShelfWrite } from './shelf.js';
 
 /** @typedef {import('./main.js').Theme} Theme */
 /** @typedef {import('./main.js').Context} Context */
@@ -33,7 +33,10 @@ export function createGlide(block) {
     /** @param {Context} cx */
     const read = (cx) =>
         cx.spawn(async (cx) => {
-            lanes = lanesShown(await json(LANES));
+            const body = await json(LANES);
+            // a read in the middle of a write parses to nothing: the cards stay, the write's end is read next
+            if (!body) return;
+            lanes = lanesShown(body);
             cx.notify();
         });
 
@@ -155,24 +158,7 @@ export function createGlide(block) {
         /** @param {Context} cx */
         init(cx) {
             read(cx);
-            cx.spawn(async (cx) => {
-                for (;;) {
-                    const changed = await watchFolder(`${CLAUDE}/shelf`).catch(
-                        () =>
-                            /** @type {Promise<string[]>} */ (
-                                new Promise((done) =>
-                                    cx.timer.after(5000, () => done([LANES])),
-                                )
-                            ),
-                    );
-                    // a batch holding the folder itself is herdr's «refresh everything»
-                    if (
-                        changed.includes(LANES) ||
-                        changed.includes(`${CLAUDE}/shelf`)
-                    )
-                        read(cx);
-                }
-            });
+            onShelfWrite(cx, LANES, read);
         },
 
         render() {

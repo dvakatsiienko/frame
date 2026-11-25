@@ -2,7 +2,7 @@
 // store with each one's state file (x-mod-stash's), read whole into the deck's rows
 
 import { readdir } from 'fs/promises';
-import { exec, home, readTextFile } from 'herdr';
+import { exec, home, readTextFile, watchFolder } from 'herdr';
 
 import { rejoin } from './joined.js';
 import {
@@ -19,7 +19,7 @@ import {
 
 /** @typedef {{ activity: import('./orbit.js').Activity | null, asks: Ask[], context: number | null, hot: { since: number } | null, model: string | null, name: string, pending: Map<string, import('./orbit.js').Press['verdict']>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
 
-export const CLAUDE = `${home()}/.claude`;
+const CLAUDE = `${home()}/.claude`;
 export const STATES = `${CLAUDE}/shelf/herdr-state`;
 export const LANES = `${CLAUDE}/shelf/lanes.json`;
 export const USAGE = `${CLAUDE}/shelf/cc-usage-window.json`;
@@ -40,6 +40,39 @@ export async function json(path) {
     } catch {
         return null;
     }
+}
+
+// `~/.claude/shelf` is a link into frame, and herdr names a change by the real path behind it: a path is matched by its
+// end, never whole. the folder alone, or an empty list, is herdr's «refresh everything» and a watch it let go
+/** @param {string[]} changed @param {string} file a file right under the shelf */
+const reachesShelf = (changed, file) =>
+    changed.length === 0 ||
+    changed.some(
+        (p) => p.endsWith('/shelf') || p.endsWith(file.slice(CLAUDE.length)),
+    );
+
+const SHELF = `${CLAUDE}/shelf`;
+const WATCH_RETRY_MS = 5000;
+
+/**
+ * runs `act` at each write of a shelf file
+ * @param {import('gpui-kit').Context} cx @param {string} file
+ * @param {(cx: import('gpui-kit').Context) => void} act
+ */
+export function onShelfWrite(cx, file, act) {
+    cx.spawn(async (cx) => {
+        for (;;) {
+            const changed = await watchFolder(SHELF).catch(
+                () =>
+                    /** @type {Promise<string[]>} */ (
+                        new Promise((done) =>
+                            cx.timer.after(WATCH_RETRY_MS, () => done([])),
+                        )
+                    ),
+            );
+            if (reachesShelf(changed, file)) act(cx);
+        }
+    });
 }
 
 // each session's state file x-mod-stash writes (`fleet.json` beside them holds the fleet-wide states)

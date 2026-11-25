@@ -38,4 +38,6 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when dima opens its card
   - then a step ticked done reads ✓, the step the lane is on reads ▸, the rest ·, and the ✓ count matches the card's done count (FRM-656: card l96 drew 49 ✓ under 115/116)
   - and an ended lane leaves the deck at the next read
+  - and a step ticked in its lane's plan moves the card within 5 s, no restart, a rename of the file included; the week meter over the quill follows its usage file the same way (FRM-620:W58)
+  - decision: `~/.claude/shelf` is a link into frame and herdr names a change by the real path, so `onShelfWrite` (shelf.js) matches a path's end, one reader for glide and the usage file
   - decision: the deck and x-mod-stash test one fixture of the file (`x-mod-stash/tests/lanes-shelf.ts`), the writer that every field it writes is there, the deck that every field it reads is (FRM-659)

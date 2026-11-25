@@ -72,7 +72,6 @@ import {
 import { askText, isPictureName } from './pictures.js';
 import { SENT_MS, next, pressState, untickDoor } from './press.js';
 import {
-    CLAUDE,
     SESSIONS,
     SETTINGS,
     SETTINGS_DIR,
@@ -80,6 +79,7 @@ import {
     TICKS,
     USAGE,
     json,
+    onShelfWrite,
     sessions,
     states,
 } from './shelf.js';
@@ -232,18 +232,17 @@ export default class Deck extends View {
         this.pin = 'top';
         cx.timer.every(THREADS_BEAT_MS, (cx) => this.reload(cx));
         this.reload(cx);
-        // the press folder too: a 🔥 pressed on the band above a chat draws on its row at once; the settings folder
-        // on its own, as the tab pills watch it, since a nested path under the linked shelf never matched (13:27 probe)
+        onShelfWrite(cx, USAGE, (cx) => this.reload(cx));
+        // the press folder too: a 🔥 pressed on the band above a chat draws on its row at once
         for (const folder of [
             SESSIONS,
             STATES,
-            `${CLAUDE}/shelf`,
             `${home()}/${PRESS_DIR}`,
             SETTINGS_DIR,
         ]) {
             cx.spawn(async (cx) => {
                 for (;;) {
-                    const changed = await watchFolder(folder).catch(
+                    await watchFolder(folder).catch(
                         () =>
                             /** @type {Promise<string[]>} */ (
                                 new Promise((done) =>
@@ -251,11 +250,6 @@ export default class Deck extends View {
                                 )
                             ),
                     );
-                    if (
-                        folder.endsWith('/shelf') &&
-                        !changed.some((p) => p === USAGE || p === folder)
-                    )
-                        continue;
                     this.reload(cx);
                 }
             });
