@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T15:05:21Z'
+updated_date: '2026-11-25T15:35:36Z'
 labels:
   - s
   - clio-main
@@ -18,20 +18,19 @@ ordinal: 1000
 <!-- AC:BEGIN -->
 - [ ] #1 f120 the plan over all herdr work (FRM-616): talk it through — with: dima
 - [ ] #2 f121 FRM-678: the queue's free-CPU number from two days of rows, one number to dima — waits for: FRM-678 — parked: 2026-11-25
-- [ ] #3 f129 FRM-700 close: its 141 rider (12ad6787) is on main, one live refusal seen, then the close — parked: 2026-11-25
-- [ ] #4 f130 FRM-596: the seat switch tested with a live wing, by 27 Nov (both halves on main) — parked: 2026-11-25
-- [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #6 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
-- [ ] #7 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
-- [ ] #8 f126 ⏳ kokoro engine upgrade: before and after sounds to dima, told when it lands — waits for: FRM-669
-- [ ] #9 f134 ⏳ herdr wisp: a triple click takes one visual line, fixed upstream, waits a herdr release — waits for: FRM-655
-- [ ] #10 f136 ⏳ the two old speak verify trees go, their env files moved first — waits for: FRM-669
-- [ ] #11 f138 ⏳ your one listening session on speak: cut-off sound, double read, pauses (FRM-288:W22) — waits for: FRM-669
-- [ ] #12 f131 📅 FRM-645: a shot dima sent through herdr on 25 Nov still opens — on: 2026-11-26
-- [ ] #13 f132 📅 read the first week's typed look and test asks (mods spec after-merge) — on: 2026-12-02
-- [ ] #14 f137 📅 orbit asks: 7 days of real ones hold a title, a body and a pick (FRM-695 exit 10) — on: 2026-12-02
-- [ ] #15 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
-- [ ] #16 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #3 f130 FRM-596: the seat switch tested with a live wing, by 27 Nov (both halves on main) — parked: 2026-11-25
+- [ ] #4 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #5 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
+- [ ] #6 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
+- [ ] #7 f126 ⏳ kokoro engine upgrade: before and after sounds to dima, told when it lands — waits for: FRM-669
+- [ ] #8 f134 ⏳ herdr wisp: a triple click takes one visual line, fixed upstream, waits a herdr release — waits for: FRM-655
+- [ ] #9 f136 ⏳ the two old speak verify trees go, their env files moved first — waits for: FRM-669
+- [ ] #10 f138 ⏳ your one listening session on speak: cut-off sound, double read, pauses (FRM-288:W22) — waits for: FRM-669
+- [ ] #11 f131 📅 FRM-645: a shot dima sent through herdr on 25 Nov still opens — on: 2026-11-26
+- [ ] #12 f132 📅 read the first week's typed look and test asks (mods spec after-merge) — on: 2026-12-02
+- [ ] #13 f137 📅 orbit asks: 7 days of real ones hold a title, a body and a pick (FRM-695 exit 10) — on: 2026-12-02
+- [ ] #14 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
+- [ ] #15 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -146,4 +145,6 @@ done 2026-11-25 16:55: f133 FRM-689 starts in the mods lane: dispatch marks, ste
 PK-349:W2469 (2026-11-25 17:00, dima): i want everyone to do as much as possible before we wind down.
 PK-349:W2470 (2026-11-25 17:00, dima): i want the wind-down to be notice-based (informative), not stopping immediately.
 PK-349:W2471 (2026-11-25 17:00, dima): while we wind down i also plan the next day, so until we finish planning the next day with your wing, everyone should still be active.
+
+PK-349:W2472 (2026-11-25 17:21, dima): comms wisp: herdr codie was parked for 14m waiting for an empty quill. it is not allowed. when herdr codie wants me an empty quill he can just post an orbit ask. → the herdr mods AGENTS.md line, ed5d8023
 <!-- SECTION:NOTES:END -->
