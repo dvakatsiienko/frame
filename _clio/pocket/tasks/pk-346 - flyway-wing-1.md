@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T13:57:14Z'
+updated_date: '2026-11-25T14:05:37Z'
 labels:
   - s
   - clio-wing-1
@@ -22,17 +22,16 @@ ordinal: 1001
 - [ ] #4 f92 x-mod-stash shrink read: 50,171 lines, 49 fixes in 7 days, what to cut (his o6 tick, 24 Nov 20:24) — parked: 2026-11-25
 - [ ] #5 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
 - [ ] #6 f93 ⏳ bytes#176 github-actions pr: merge it once renovate stability-days goes green — waits for: bytes#176 release age
-- [ ] #7 f95 ⏳ FRM-690 and FRM-704 close once CI of their push (7a852ebf or newer) is green — waits for: CI
-- [ ] #8 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
-- [ ] #9 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
-- [ ] #10 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
-- [ ] #11 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #12 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #13 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #14 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
-- [ ] #15 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
-- [ ] #16 f84 🦥 FRM-696 hang-heal: the full shape-idea grill — later: dima 15:08
-- [ ] #17 f85 🦥 github event streams: is gh event listen worth it for our ci and pr watches — later: dima 15:08
+- [ ] #7 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
+- [ ] #8 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
+- [ ] #9 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
+- [ ] #10 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #11 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #12 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #13 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #14 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
+- [ ] #15 f84 🦥 FRM-696 hang-heal: the full shape-idea grill — later: dima 15:08
+- [ ] #16 f85 🦥 github event streams: is gh event listen worth it for our ci and pr watches — later: dima 15:08
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -911,4 +910,6 @@ PK-346:W117 (2026-11-25 15:46, dima): after SW? ❓
 15:57 the lines above: events is the first thing after the reset, the lab and portfolio rule is in shapes.md, wisphunter after events
 
 done 2026-11-25 15:57: f94 ⏳ FRM-690 and FRM-704 close once the checks of their push are green — waits for: CI d5761785 (FRM-690 In Progress, FRM-704 In Progress)
+
+done 2026-11-25 16:05: f95 ⏳ FRM-690 and FRM-704 close once CI of their push (7a852ebf or newer) is green — waits for: CI (FRM-690 Done, FRM-704 Done)
 <!-- SECTION:NOTES:END -->
