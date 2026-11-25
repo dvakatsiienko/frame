@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T12:49:24Z'
+updated_date: '2026-11-25T12:53:27Z'
 labels:
   - s
   - clio-wing-1
@@ -21,17 +21,19 @@ ordinal: 1001
 - [ ] #3 f61 PK-468 ticket flow: where we stand and his next step — with: dima
 - [ ] #4 f71 FRM-639 events piece 2: six questions, the draft in mods-lane-9/frm-639-section.md — with: dima
 - [ ] #5 f72 github event streams: is gh event listen worth it for our ci and pr watches — after everything pending — with: dima
-- [ ] #6 f73 trials, one topic at a time with dima after evergreen: gate-speed, review-rounds, wisphunter verdicts — with: dima
-- [ ] #7 f75 lowtide run: the false-open hunt first, then the tails (PK-346:W95) — waits for: perf and bytes — parked: 2026-11-25
+- [ ] #6 f78 trials, one at a time: review-rounds, then wisphunter, verdicts due 27 Nov (gate-speed closed) — with: dima
+- [ ] #7 f79 lowtide run: the list is with dima, his go and order on o3 — with: dima
 - [ ] #8 f74 ⏳ bytes prod: rerun the five failed deploys at 15:25, read every app Ready — waits for: pnpm 12.23 release age
 - [ ] #9 f77 ⏳ FRM-704 the cited-docs check at commit: built in my tree after the rerun, main pulled first — waits for: FRM-596
-- [ ] #10 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
-- [ ] #11 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
-- [ ] #12 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #13 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #14 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #15 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
-- [ ] #16 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
+- [ ] #10 f80 ⏳ evergreen tail: PK-469 closes once bytes#176 merges — waits for: PK-469
+- [ ] #11 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
+- [ ] #12 f76 📅 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — on: 2026-11-26
+- [ ] #13 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
+- [ ] #14 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #15 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #16 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #17 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #18 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -848,4 +850,12 @@ PK-346:W101 (2026-11-25 14:41, dima): how to have it? is any other skill would b
 PK-346:W102 (2026-11-25 14:41, dima): or its better to extend/fix lowtide itself? ❓
 14:49 the four lines above: the snooze done, the rest answered and built into lowtide, landing
 PK-346:W103 (2026-11-25 14:46, dima, o2 steer): ok. you list all possible tails: ones you can solve yourself next step (mechanical) on my plain «go» (first to solve), and list of other items — everything inside your flyway and pocket parks, and non-lane-linear stuff, not-snoozed, not someday. if i query you to hunt over snoozed/someday - we switch to that filter (lowtide is flexible with non-snoozelike default mode)
+
+done 2026-11-25 14:53: f73 trials, one topic at a time with dima after evergreen: gate-speed, review-rounds, wisphunter verdicts — with: dima
+
+done 2026-11-25 14:53: f75 lowtide run: the false-open hunt first, then the tails (PK-346:W95) — waits for: perf and bytes — parked: 2026-11-25 (PK-346 open)
+
+done 2026-11-25 14:53: f81 ⏳ FRM-702 the two slow test files split, after gate-queue.test.ts goes quiet — waits for: FRM-645 (FRM-702 Triage, FRM-645 Done)
+
+14:53 f81 was reworded (FRM-645 is Done), not done: FRM-702 waits on FRM-596 now; f73 and f75 became f78 and f79
 <!-- SECTION:NOTES:END -->

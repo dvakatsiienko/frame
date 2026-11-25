@@ -10,6 +10,7 @@
         "attach-row.js",
         "band-press.js",
         "chat-asks.js",
+        "deck-block.js",
         "file-links.js",
         "focus-ring.js",
         "joined.js",

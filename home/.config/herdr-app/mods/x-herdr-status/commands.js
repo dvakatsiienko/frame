@@ -3,8 +3,8 @@
 
 import { exec, layout, nextCommand, openOverlay, run, setShared } from 'herdr';
 
-import { deckToggleId } from './blocks.js';
-import { DECK_TOGGLED, chatSelectArgs, settingsOverlay } from './chat-asks.js';
+import { chatSelectArgs, settingsOverlay } from './chat-asks.js';
+import { toggleDeck } from './deck-block.js';
 
 /** whether a window, dialog or popup sits over the layout: no mod api lists them, the window's status does */
 async function isOverlayOpen() {
@@ -15,8 +15,6 @@ async function isOverlayOpen() {
         return false;
     }
 }
-
-const shownTree = () => /** @type {any} */ (layout())?.root ?? layout();
 
 /** every x-herdr key's command, for the mod's life */
 export async function takeCommands() {
@@ -37,11 +35,7 @@ export async function takeCommands() {
             // «anything open?» gate: after a herdr restart it kept ⌘⇧, dead until settings opened once (dima, 19:11)
             openOverlay(settingsOverlay('general'));
         } else if (command === 'deck') {
-            const id = deckToggleId(shownTree());
-            if (id) {
-                setShared(DECK_TOGGLED, Date.now());
-                run('layout.toggle', { id });
-            }
+            toggleDeck({ layout, run, setShared });
         }
     }
 }
