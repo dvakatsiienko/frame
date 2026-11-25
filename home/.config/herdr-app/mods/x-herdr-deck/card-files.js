@@ -81,13 +81,14 @@ async function dropCopy(got) {
  * @param {string[]} paths @returns {Promise<Map<string, string>>}
  */
 async function changeTimes(paths) {
-    const r = await exec('stat', ['-L', '-f', '%m\t%N', ...paths]).catch(
+    const r = await exec('stat', ['-L', '-f', '%m\t%HT\t%N', ...paths]).catch(
         /** @returns {null} */ () => null,
     );
     const times = new Map();
     for (const line of (r?.stdout ?? '').split('\n')) {
-        const tab = line.indexOf('\t');
-        if (tab > 0) times.set(line.slice(tab + 1), line.slice(0, tab));
+        const [, time, kind, path] = /^(\d+)\t([^\t]+)\t(.+)$/.exec(line) ?? [];
+        // -L reads a link's target; a link to none it reads as the link itself
+        if (time && path && kind !== 'Symbolic Link') times.set(path, time);
     }
     return times;
 }
