@@ -344,6 +344,8 @@ describe('Esc in the quill', () => {
 // FRM-620:W84: the quill is not drawn while the thread opens, so a focus given at the switch was lost with it
 describe('a thread he switches to', () => {
     type Over = {
+        file?: string;
+        hasPicker?: boolean;
         hasViewer?: boolean;
         held?: string;
         isHere?: boolean;
@@ -353,9 +355,10 @@ describe('a thread he switches to', () => {
     const open = (over: Over = {}) => {
         const focused: string[] = [];
         const state = {
-            file: null as string | null,
+            file: over.file ?? null,
             isFresh: true,
             isOpening: true,
+            isPickerOpen: Boolean(over.hasPicker),
             isViewerOpen: Boolean(over.hasViewer),
         };
         at.shared.set('tab.held', over.held ?? null);
@@ -382,6 +385,12 @@ describe('a thread he switches to', () => {
             isLoaded: over.isLoaded ?? true,
             keys: 'none',
             openedCount: 0,
+            pickers: quiet({
+                clear: () => {
+                    state.isPickerOpen = false;
+                },
+                isOpen: () => state.isPickerOpen,
+            }),
             pictures: quiet({
                 close: () => {
                     state.isViewerOpen = false;
@@ -450,8 +459,21 @@ describe('a thread he switches to', () => {
         expect(w.focused).toEqual(['chat', 'quill']);
     });
 
-    test('from one with the viewer open: the viewer goes with it', () => {
-        const w = open({ hasViewer: true });
+    test('with the one he left still under it: its quill, about to go, gets nothing', () => {
+        const w = open({ file: '/left.jsonl' });
+        w.draw();
+        w.draw();
+        expect(w.focused).toEqual(['chat']);
+        w.there();
+        w.draw();
+        expect(w.focused).toEqual(['chat', 'quill']);
+    });
+
+    test.each([
+        ['viewer', { hasViewer: true }],
+        ['picker', { hasPicker: true }],
+    ])('from one with the %s open: it goes with it', (_what, over) => {
+        const w = open(over);
         w.draw();
         w.there();
         w.draw();
@@ -469,15 +491,21 @@ describe('a thread he switches to', () => {
         expect(cx.notify).toHaveBeenCalled();
     });
 
-    test('the chat on screen again with its viewer open leaves the keyboard to the viewer', () => {
-        const w = open({ hasViewer: true });
-        w.state.isFresh = false;
-        w.there();
-        w.comeBack();
-        w.draw();
-        expect(w.focused).toEqual([]);
-        expect(w.state.isViewerOpen).toBe(true);
-    });
+    test.each([
+        ['viewer', { hasViewer: true }, 'isViewerOpen' as const],
+        ['picker', { hasPicker: true }, 'isPickerOpen' as const],
+    ])(
+        'the chat on screen again with its %s open leaves the keyboard to it',
+        (_what, over, isOpen) => {
+            const w = open(over);
+            w.state.isFresh = false;
+            w.there();
+            w.comeBack();
+            w.draw();
+            expect(w.focused).toEqual([]);
+            expect(w.state[isOpen]).toBe(true);
+        },
+    );
 
     test('a steer box he typed in before a switch keeps nothing', () => {
         const w = open({
