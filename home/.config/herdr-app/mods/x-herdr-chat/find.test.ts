@@ -237,8 +237,8 @@ describe('the stepped row reads clean, no markdown marks (dima o14)', () => {
         ['a link’s definition', '[ref]: https://secret.io\nb', 'b'],
         [
             'but a footnote and a note that only looks like one are read',
-            '[^1]: the flicker\n[note]: the list flickers',
-            '[^1]: the flicker\n[note]: the list flickers',
+            '[^1]: flicker\n[note]: the list flickers',
+            '[^1]: flicker\n[note]: the list flickers',
         ],
         ['a struck word’s marks', '~~gone~~ and a ~ b', 'gone and a ~ b'],
         ['an entity’s spelling', 'a &amp; b &lt;c&gt;', 'a & b <c>'],
