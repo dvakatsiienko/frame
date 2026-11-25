@@ -205,7 +205,7 @@ const unsteer = <T extends { steer?: string }>(x: T): T => {
     return rest as T;
 };
 
-// the asks a turn takes are locked to it until it ends; a remote mark's wake time is spent
+// the asks a turn takes are locked to it until it ends; a remote mark's press time is spent
 export function lockJoined(o: StashOrbit, asks: OrbitAsk[]): StashOrbit {
     const ids = new Set(asks.map((a) => a.id));
     return {
@@ -224,7 +224,7 @@ export function lockJoined(o: StashOrbit, asks: OrbitAsk[]): StashOrbit {
 }
 
 // a turn that never ran gives his marks back as it took them, unheard, also after another turn's end spent them; one
-// followed, resolved or marked again since stays as it is. with no wake time, so no poll tries again by itself
+// followed, resolved or marked again since stays as it is, with no press time
 export function marksGivenBack(o: StashOrbit, asks: OrbitAsk[]): StashOrbit {
     return {
         ...o,

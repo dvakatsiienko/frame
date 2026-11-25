@@ -267,7 +267,7 @@ export async function startOrbit(
 }
 
 // herdr's presses for this session past what it read last; the file is herdr's board's alone, so this side only reads
-// and keeps its own watermark. x-mod-guard reads the same file as his tick, its ticks-write rule keeping seats out (FRM-544)
+// and keeps its own watermark. x-mod-guard reads the same file as his tick (FRM-544); no rule keeps an agent's write out of it
 async function herdrMarksOf($: EngineInterface, sid: string) {
     const home = await $.env.get('HOME').catch(() => undefined);
     const text = await $.fs

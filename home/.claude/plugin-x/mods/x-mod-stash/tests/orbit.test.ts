@@ -417,7 +417,7 @@ test('a herdr press made on the old question never marks the new one a follow pu
 });
 
 // FRM-552's decision 4 (no record from a herdr tick) is reversed: x-mod-guard already read the press file as his word
-// since FRM-544 slice 1, behind the ticks-write fence, and the press is gone from the file after his next one
+// since FRM-544 slice 1, and the press is gone from the file after his next one
 test('a herdr tick on an ask quoting a command writes the record x-mod-guard reads as his word', async ($, on) => {
     const files: Record<string, string> = {};
     const w = world(on, files);
