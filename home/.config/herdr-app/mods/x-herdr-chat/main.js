@@ -211,6 +211,7 @@ export default class Chat extends View {
         pictures: this.pictures,
         reader: () => this.feed.reader(),
         rows: this.rows,
+        say: (note, cx) => this.say(note, cx),
         unsend: (queued, cx) => this.sendPath.unsend(queued, cx),
     });
     /** the thread shown: its Claude, its transcript read and watched, its earlier pages */
@@ -344,7 +345,6 @@ export default class Chat extends View {
         this.effortAsk = acts.lastEffort;
         this.findAsk = acts.lastFind;
         this.escapeAsk = acts.lastEscape;
-        if (!isShown) this.list.hidden();
         this.wasShown = isShown;
         // Esc pressed anywhere in the window closes the viewer, or find when no viewer shows (dima, 18:18)
         if (

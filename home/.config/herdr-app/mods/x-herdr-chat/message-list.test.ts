@@ -59,6 +59,10 @@ const gpui = vi.hoisted(() => {
     const folders = ['/Users/me/frame'];
     const exec = async (program: string, args: string[]) => {
         if (program === 'open') opened.push(args);
+        if (program === '/bin/realpath')
+            return args[0] === '/tmp/gone.md'
+                ? { code: 1, stdout: '' }
+                : { code: 0, stdout: `${args[0]}\n` };
         return { code: folders.includes(args[1] ?? '') ? 0 : 1, stdout: '' };
     };
     return { exec, make, opened, seen };
@@ -110,7 +114,13 @@ function createWindow(real: number[], first: (px: number) => number) {
     const rows = real.map((_, i) => ({
         id: `r${i}`,
         kind: i === 3 ? 'mine' : 'reply',
-        links: ['~/frame', '~/a.md', '/tmp/x.command', '/tmp/a.png'],
+        links: [
+            '~/frame',
+            '~/a.md',
+            '/tmp/x.command',
+            '/tmp/a.png',
+            '/tmp/gone.md',
+        ],
         text: 'x',
         version: 1,
     }));
@@ -189,6 +199,7 @@ function createWindow(real: number[], first: (px: number) => number) {
             stampOf: (row: { id: string }, pre: string) => `${pre}${row.id}`,
             textsCount: () => 1,
         },
+        say: (note: string) => gpui.opened.push([note]),
         unsend: () => {},
     } as never);
     let isDirty = true;
@@ -353,11 +364,10 @@ function createWindow(real: number[], first: (px: number) => number) {
         async follow(id: string, url: string) {
             gpui.opened.length = 0;
             (bodies.links.get(id) as Handler)(url as never, cx as never);
-            for (let i = 0; i < 9; i++) await Promise.resolve();
+            for (let i = 0; i < 30; i++) await Promise.resolve();
             return gpui.opened;
         },
         frame,
-        hidden: () => list.hidden(),
         /** somewhere else in the list at once, in one redraw */
         jump(px: number) {
             scrollTop = px;
@@ -402,6 +412,9 @@ function createWindow(real: number[], first: (px: number) => number) {
             scrollTop += dy;
             drawRows();
         },
+        /** herdr tells the list its size: at a change, and once it is back on the screen */
+        told: (height: number) =>
+            fire(root, 'on_size_change', { height, width: 900 }, cx),
     };
 }
 
@@ -544,6 +557,7 @@ test.each([
     ['a file that would run is revealed', 'path:2', [['-R', '/tmp/x.command']]],
     ['a web link opens in his browser', 'https://x.dev', [['https://x.dev']]],
     ['any other address opens nothing', 'javascript:x', []],
+    ['one gone since says so', 'path:4', [['gone.md is no longer in /tmp']]],
 ])('a click on a link in a reply: %s', async (_what, url, opened) => {
     const w = createWindow(Array(5).fill(60), (px) => px);
     w.run(500);
@@ -567,7 +581,10 @@ test.each([
             w.run(40);
         },
     ],
-    ['the chat was hidden', (w: ReturnType<typeof createWindow>) => w.hidden()],
+    [
+        'the chat came back on the screen',
+        (w: ReturnType<typeof createWindow>) => w.told(600),
+    ],
     [
         'the thread was read anew',
         (w: ReturnType<typeof createWindow>) => {
@@ -583,4 +600,13 @@ test.each([
     expect(w.rightPress(id).label).toBe('Copy text');
     leave(w);
     expect(w.rightPress(id).label).toBe('Copy message');
+});
+
+test('what he selected stays when the list grows or shrinks', () => {
+    const w = createWindow(Array(5).fill(60), (px) => px);
+    w.run(500);
+    (w.bodies.reports.get('r1') as Handler)({ text: 'two words' } as never);
+    w.told(VIEW - 40);
+    w.run(100);
+    expect(w.rightPress('r1').label).toBe('Copy text');
 });

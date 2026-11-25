@@ -1,3 +1,13 @@
+import { spawnSync } from 'node:child_process';
+import {
+    mkdirSync,
+    mkdtempSync,
+    realpathSync,
+    symlinkSync,
+    writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import {
@@ -5,7 +15,7 @@ import {
     isSentRow,
     isUnsendRow,
     openArgs,
-    openFolderArgs,
+    openPath,
     replyIdOf,
     withFileRows,
 } from './files.js';
@@ -97,29 +107,103 @@ describe("a reply's files are rows of their own in the list, so a click on one c
     });
 });
 
-describe('a file that would run is shown in Finder, never opened (wisphunter 14:30)', () => {
+describe('only what he reads, looks at or hears opens; the rest is shown in Finder', () => {
     test.each([
-        '/tmp/x.command',
-        '/Applications/Mail.app',
-        '/tmp/run.tool',
-        '/tmp/a.pkg',
-    ])('%s is revealed', (path) =>
-        expect(openArgs(path)).toEqual(['-R', path]),
+        'x.command',
+        'x.COMMAND',
+        'x.jar',
+        'x.dmg',
+        'x.fileloc',
+        'x.webloc',
+        'x.shortcut',
+        'x.mobileconfig',
+        'x.py',
+        'x.sh',
+        'x.zip',
+        'x',
+        '.x',
+        'x.md.command',
+    ])('%s is revealed', (name) =>
+        expect(openArgs(`/tmp/${name}`, false)).toEqual(['-R', `/tmp/${name}`]),
     );
 
-    test('a picture or a document opens in its app', () => {
-        expect(openArgs('/tmp/a.png')).toEqual(['/tmp/a.png']);
-        expect(openArgs('/tmp/notes.md')).toEqual(['/tmp/notes.md']);
-    });
+    test.each([
+        'a.png',
+        'notes.md',
+        'A.MD',
+        'a.b.json',
+        'a.ts',
+        'a.html',
+        'a.pdf',
+        'a.mov',
+    ])('%s opens in its app', (name) =>
+        expect(openArgs(`/tmp/${name}`, false)).toEqual([`/tmp/${name}`]),
+    );
 
     // dima, 19 Nov 17:53: «they open in apple music»
     test.each(['/tmp/A.mp3', '/tmp/b.M4A', '/tmp/c.wav', '/tmp/d.flac'])(
         '%s opens in the audio app his settings name',
-        (path) => expect(openArgs(path, 'IINA')).toEqual(['-a', 'IINA', path]),
+        (path) =>
+            expect(openArgs(path, false, 'IINA')).toEqual(['-a', 'IINA', path]),
     );
 
     test('audio with no app named opens in the system’s choice', () => {
-        expect(openArgs('/tmp/A.mp3', null)).toEqual(['/tmp/A.mp3']);
+        expect(openArgs('/tmp/A.mp3', false, null)).toEqual(['/tmp/A.mp3']);
+    });
+
+    test.each(['herdr', '.claude'])('a folder named %s opens', (name) =>
+        expect(openArgs(`/tmp/${name}`, true)).toEqual([`/tmp/${name}`]),
+    );
+
+    test.each(['Evil.app', 'a.workflow', 'a.prefPane', 'notes.md', '.x.app'])(
+        'a folder named %s is revealed',
+        (name) =>
+            expect(openArgs(`/tmp/${name}`, true)).toEqual([
+                '-R',
+                `/tmp/${name}`,
+            ]),
+    );
+});
+
+// sixth sense, round 2: a closing slash, «//», «..» or a symlink hid an app from the check
+describe('what he clicked is judged by what it resolves to', () => {
+    const dir = realpathSync(mkdtempSync(join(tmpdir(), 'open-path-')));
+    mkdirSync(join(dir, 'Evil.app/inside'), { recursive: true });
+    mkdirSync(join(dir, 'plain'));
+    for (const name of ['a.md', 'x.command', 'bare'])
+        writeFileSync(join(dir, name), '');
+    symlinkSync(join(dir, 'Evil.app'), join(dir, 'notes.md'));
+    symlinkSync(join(dir, 'x.command'), join(dir, 'log.txt'));
+    const opened: string[][] = [];
+    const exec = async (program: string, args: string[]) => {
+        if (program === 'open') opened.push(args);
+        if (program === 'open') return { code: 0, stdout: '' };
+        const ran = spawnSync(program, args, { encoding: 'utf8' });
+        return { code: ran.status ?? 1, stdout: ran.stdout };
+    };
+
+    test.each([
+        ['a file', 'a.md', ['a.md']],
+        ['a folder with a closing slash', 'plain/', ['plain']],
+        ['an app with a closing slash', 'Evil.app/', ['-R', 'Evil.app']],
+        ['an app with two', 'Evil.app//', ['-R', 'Evil.app']],
+        ['an app behind «..»', 'plain/../Evil.app', ['-R', 'Evil.app']],
+        ['an app from its inside', 'Evil.app/inside/..', ['-R', 'Evil.app']],
+        ['a symlink to an app', 'notes.md', ['-R', 'Evil.app']],
+        ['a symlink to a command', 'log.txt', ['-R', 'x.command']],
+        ['a file with no suffix', 'bare', ['-R', 'bare']],
+    ])('%s', async (_what, path, want) => {
+        opened.length = 0;
+        expect(await openPath(`${dir}/${path}`, null, exec)).toBe(true);
+        expect(opened).toEqual([
+            want.map((w) => (w === '-R' ? w : `${dir}/${w}`)),
+        ]);
+    });
+
+    test('one gone since he saw it opens nothing', async () => {
+        opened.length = 0;
+        expect(await openPath(`${dir}/gone.md`, null, exec)).toBe(false);
+        expect(opened).toEqual([]);
     });
 });
 
@@ -202,22 +286,5 @@ describe("a message still in Claude Code's queue carries a × row under it (FRM-
         );
         expect(ids).toEqual(['w1', 'w1#unsend', 'm1']);
         expect(isUnsendRow('w1#unsend')).toBe(true);
-    });
-});
-
-describe('a folder he clicked', () => {
-    test.each([
-        '/Users/dima/frame/herdr',
-        '/Users/dima/.claude',
-        '/Users/dima/v1.2',
-    ])('%s opens in Finder', (path) => {
-        expect(openFolderArgs(path)).toEqual([path]);
-    });
-
-    test('an app is revealed, never run', () => {
-        expect(openFolderArgs('/Users/dima/x.app')).toEqual([
-            '-R',
-            '/Users/dima/x.app',
-        ]);
     });
 });

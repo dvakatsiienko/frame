@@ -10,7 +10,7 @@ import { div } from 'gpui-kit';
 import { exec, home, settings } from 'herdr';
 
 import { isPicture } from './file-links.js';
-import { openArgs, openFolderArgs } from './files.js';
+import { openPath } from './files.js';
 import { guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
 import { copiedFrom, createMessageMenu, menuPlace } from './menu.js';
@@ -18,6 +18,7 @@ import { createMessageBodies } from './message-body.js';
 import { pathOf } from './path-links.js';
 import { createPlace } from './place.js';
 import { createSelections } from './selection.js';
+import { missingNote } from './viewer.js';
 
 /** @typedef {import('./chat-types.js').Context} Context */
 /** @typedef {import('./row-model.js').Row} Row */
@@ -47,6 +48,7 @@ export const placeKey = (file) => `place:${file}`;
  * @property {ReturnType<typeof import('./picture-viewer.js').createPictureViewer>} pictures
  * @property {() => unknown} reader the shown thread's reader: a save for an earlier opening is dropped
  * @property {ReturnType<typeof import('./message-row.js').createMessageRows>} rows
+ * @property {(note: string, cx: Context) => void} say a note under the quill
  * @property {(queued: string, cx: Context) => void} unsend a waiting message's ×: back out of Claude Code's queue
  */
 
@@ -228,10 +230,7 @@ export function createMessageList(deps) {
                     deps.pictures.show(press.files, press.at, cx);
                 else if (press?.kind === 'unsend')
                     deps.unsend(press.queued, cx);
-                else if (press?.kind === 'file')
-                    exec('open', openArgs(press.path, deps.audioApp())).catch(
-                        () => {},
-                    );
+                else if (press?.kind === 'file') openFile(press.path, cx);
             })
             .size_full();
         return div()
@@ -257,6 +256,11 @@ export function createMessageList(deps) {
             .on_size_change((size, cx) => {
                 const drawnWidth = size.width / zoom;
                 const height = size.height / zoom;
+                // told again with nothing changed: the chat was off the screen, where herdr drops every selection unsaid
+                if (Math.abs(drawnWidth - width) <= 1 && height === viewH) {
+                    drawnKeys = [];
+                    keepDrawn();
+                }
                 if (Math.abs(drawnWidth - width) > 1) {
                     width = drawnWidth;
                     widthGen += 1;
@@ -378,15 +382,14 @@ export function createMessageList(deps) {
             return;
         }
         if (isPicture(path)) return deps.pictures.show([path], 0, cx);
-        cx.spawn(async () => {
-            const folder = await exec('test', ['-d', path]).catch(
-                /** @returns {null} */ () => null,
-            );
-            const args =
-                folder?.code === 0
-                    ? openFolderArgs(path)
-                    : openArgs(path, deps.audioApp());
-            await exec('open', args).catch(() => {});
+        openFile(path, cx);
+    }
+
+    /** a file or folder he clicked; one gone since is said so @param {string} path @param {Context} cx */
+    function openFile(path, cx) {
+        cx.spawn(async (cx) => {
+            if (!(await openPath(path, deps.audioApp(), exec)))
+                deps.say(missingNote(path, false), cx);
         });
     }
 
@@ -543,11 +546,6 @@ export function createMessageList(deps) {
 
     return {
         column,
-        /** the chat left the screen: herdr drops every selection, and no text view says so */
-        hidden() {
-            drawnKeys = [];
-            keepDrawn();
-        },
         /** a restored place lands unseen: its frames would show him other rows first @param {string} id @param {number} offset */
         land(id, offset) {
             at.restore(id, offset);

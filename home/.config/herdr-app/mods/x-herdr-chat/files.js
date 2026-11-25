@@ -141,30 +141,52 @@ export function fileAt(rows, key) {
     return row?.kind === 'file' ? (row.path ?? null) : null;
 }
 
-// a file that would run, or a folder that is an app: a click shows it in Finder instead of opening it
-const RUNS =
-    /(?:\.(?:app|command|terminal|tool|workflow|pkg|mpkg|scpt|sh)|\/[^/.]+)$/i;
-
 const AUDIO = /\.(?:mp3|m4a|aac|wav|aiff?|flac|ogg|opus)$/i;
 
-/**
- * the `open` arguments for a file row's click: a file that would run is revealed in Finder, audio opens in the app
- * his settings name (`chatter.audio.app`; null: the system's choice)
- * @param {string} path @param {string | null} [audioApp]
- */
-export const openArgs = (path, audioApp = null) =>
-    RUNS.test(path)
-        ? ['-R', path]
-        : audioApp && AUDIO.test(path)
-          ? ['-a', audioApp, path]
-          : [path];
+// the kinds a click opens: what he reads, looks at or hears, never what may run, install or mount. any other is shown in
+// Finder
+const OPENS = new RegExp(
+    String.raw`\.(?:${[
+        'md|markdown|mdx|txt|text|log|rtf|csv|tsv|json|jsonl|json5|jsonc|yaml|yml|toml|ini|conf|xml|html|htm|diff|patch',
+        'ts|tsx|mts|cts|js|jsx|mjs|cjs|css|scss|go|rs|swift|c|h|cpp|hpp|java|kt|lua|sql|graphql|vue|svelte|mod|sum|lock',
+        'png|jpe?g|gif|webp|heic|svg|tiff?|bmp|avif|ico',
+        'mp4|m4v|mov|mkv|webm|avi',
+        'pdf|epub|docx?|xlsx?|pptx?|pages|numbers|key',
+    ].join('|')})$`,
+    'i',
+);
+// a folder's own name: one with a suffix may be an app or an installer that only looks like a folder
+const PLAIN_FOLDER = /^\.?[^.]+$/;
 
 /**
- * the `open` arguments for a folder he clicked: Finder shows its inside; one that is an app is revealed instead
- * @param {string} path
+ * the `open` arguments for what he clicked, by what it resolves to: a symlink, a `..` or a closing slash hides nothing
+ * @param {string} path resolved, `isFolder` of it @param {boolean} isFolder
+ * @param {string | null} [audioApp] the app his settings open audio in (`chatter.audio.app`); null: the system's choice
  */
-export const openFolderArgs = (path) =>
-    /[^/]\.[^/.]+$/.test(path) ? openArgs(path) : [path];
+export function openArgs(path, isFolder, audioApp = null) {
+    const name = path.slice(path.lastIndexOf('/') + 1);
+    if (isFolder) return PLAIN_FOLDER.test(name) ? [path] : ['-R', path];
+    if (AUDIO.test(name)) return audioApp ? ['-a', audioApp, path] : [path];
+    return OPENS.test(name) ? [path] : ['-R', path];
+}
+
+/**
+ * opens what he clicked, looked at on disk first
+ * @param {string} path @param {string | null} audioApp
+ * @param {(program: string, args: string[]) => Promise<{ code: number, stdout: string }>} exec
+ * @returns {Promise<boolean>} false: it is not there
+ */
+export async function openPath(path, audioApp, exec) {
+    const none = () => ({ code: 1, stdout: '' });
+    const real = await exec('/bin/realpath', [path]).catch(none);
+    const target = real.stdout.replace(/\n$/, '');
+    if (real.code !== 0 || !target.startsWith('/')) return false;
+    const folder = await exec('/bin/test', ['-d', target]).catch(none);
+    await exec('open', openArgs(target, folder.code === 0, audioApp)).catch(
+        none,
+    );
+    return true;
+}
 
 /** the row a saved reading place names: a file row's or a tool call's place is found through its own row @param {string} id */
 export const replyIdOf = (id) => id.replace(/#(?:file|call)-\d+$/, '');
