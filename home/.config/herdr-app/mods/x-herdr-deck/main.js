@@ -30,7 +30,13 @@ import {
     withBandPress,
 } from './band-press.js';
 import { createCardFiles } from './card-files.js';
-import { isDeckShown, takeCommands, tickAsker } from './deck-commands.js';
+import { CHAT_SHOWN, chatShownOf } from './chat-asks.js';
+import {
+    hoverKept,
+    isDeckShown,
+    takeCommands,
+    tickAsker,
+} from './deck-commands.js';
 import { deckParts, orbitHeader } from './deck-parts.js';
 import { createGlide } from './glide-view.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
@@ -121,8 +127,6 @@ export default class Deck extends View {
     hoverSid = null;
     /** the copy drawing glide under antenna, `view: 'glide'` @type {ReturnType<typeof createGlide> | null} */
     glide = null;
-    /** the asker he clicked last, ringed @type {string | null} */
-    pickedSid = null;
     // the ticks files, one write at a time
     turns = createTurns();
     // his presses, one record per ask by `sid:id` (press.js); an in-flight press owns the timer that gives it up
@@ -157,7 +161,6 @@ export default class Deck extends View {
         hoverSid: () => this.hoverSid,
         keyNotes: () => this.keyNotes,
         passedOver: () => this.passedOver,
-        pickedSid: () => this.pickedSid,
         pin: () => this.pin,
         press: (cx, s, ask, verdict) => this.press(cx, s, ask, verdict),
         pressAll: (cx, s) => this.pressAll(cx, s),
@@ -169,9 +172,6 @@ export default class Deck extends View {
         },
         setOrbitStops: (stops) => {
             this.orbitStops = stops;
-        },
-        setPickedSid: (sid) => {
-            this.pickedSid = sid;
         },
         setTabAt: (tabAt) => {
             this.tabAt = tabAt;
@@ -648,8 +648,17 @@ export default class Deck extends View {
         });
     }
 
-    // ⌘⇧K (FRM-589): the asker under the pointer, else the one he picked, else the thread the chat shows; a hidden
-    // deck's copy stays alive in its block, so it checks its own block is shown
+    /** the focused thread's pid, by antenna's address → pid map @returns {number | null} */
+    focusedPid() {
+        const address = agents().find((a) => a.focused)?.address;
+        const pids = /** @type {Record<string, number> | null} */ (
+            shared(PIDS_KEY)
+        );
+        return address ? (pids?.[address] ?? null) : null;
+    }
+
+    // ⌘⇧K (FRM-589): the asker under the pointer, else the thread open on screen; a hidden deck's copy stays alive in
+    // its block, so it checks its own block is shown
     /** @param {Context} cx */
     tickShown(cx) {
         const sid = tickAsker(
@@ -660,12 +669,10 @@ export default class Deck extends View {
                     .length,
             })),
             {
-                hovered: this.hoverSid ?? null,
+                focusedPid: this.focusedPid(),
+                hovered: this.hoverSid,
                 isShown: isDeckShown(layout()),
-                picked: this.pickedSid ?? null,
-                pid: /** @type {{ pid?: number } | null} */ (
-                    shared('chat.shown')
-                )?.pid,
+                shownPid: chatShownOf(shared(CHAT_SHOWN)).pid,
             },
         );
         const asker = this.rows.find((r) => r.sid === sid);
@@ -836,6 +843,7 @@ export default class Deck extends View {
         // orbit draws its steer boxes as Tab stops and focuses the one the loop asks for; with no asks it draws none
         this.orbitStops = [];
         this.tabAt = new Map();
+        this.hoverSid = hoverKept(this.rows, this.hoverSid);
         const orbitRows = asks > 0 ? this.orbitView.orbit(t) : [];
         // one head for every section: a hairline above, its emoji, its name and its count in words
         /** @param {string} text */
@@ -851,14 +859,9 @@ export default class Deck extends View {
                 .font_semibold()
                 .text_color(t.foreground)
                 .child(text);
-        // antenna lists the threads; the deck scrolls orbit and pins the focused thread's phases to its bottom, its pid
-        // by antenna's address → pid map
-        const focusedAt = agents().find((a) => a.focused)?.address;
-        const pids = /** @type {Record<string, number> | null} */ (
-            shared(PIDS_KEY)
-        );
+        // antenna lists the threads; the deck scrolls orbit and pins the focused thread's phases to its bottom
         const parts = deckParts(this.rows, {
-            focusedPid: focusedAt ? (pids?.[focusedAt] ?? null) : null,
+            focusedPid: this.focusedPid(),
             order: /** @type {number[] | null} */ (shared(ORDER_KEY)),
         });
         // the phases' steer box is the Tab stop right after orbit's (rider 4d); it shows for one thread's plan only
