@@ -877,17 +877,6 @@ export function hotPresses(text) {
     return presses;
 }
 
-/**
- * the asker ⌘⇧K ticks: the one under the pointer, else the thread open on screen (FRM-620:W61, W62); one whose asks all
- * left is passed over (dima, 21:42: «tick all asks of an asker that the pointer currently hovers»)
- * @param {string[]} sids the askers with open asks
- * @param {{ hovered: string | null, shown: string | null }} at
- * @returns {string | null}
- */
-export function tickAllThread(sids, { hovered, shown }) {
-    return [hovered, shown].find((sid) => sid && sids.includes(sid)) ?? null;
-}
-
 /** @typedef {{ getItem: (key: string) => string | null, setItem: (key: string, value: string) => void, removeItem: (key: string) => void }} KeptStore */
 
 /** a value kept in the copy's store (herdr's localStorage, which outlives a reload); null when missing or refused @param {KeptStore} store @param {string} key */

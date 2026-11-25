@@ -30,10 +30,12 @@ import {
     withBandPress,
 } from './band-press.js';
 import { createCardFiles } from './card-files.js';
-import { CHAT_SHOWN, chatShownOf } from './chat-asks.js';
+import { CHAT_SHOWN, DECK_TOGGLED, chatShownOf } from './chat-asks.js';
 import {
     hoverKept,
+    isChatShown,
     isDeckShown,
+    openThreadPid,
     takeCommands,
     tickAsker,
 } from './deck-commands.js';
@@ -123,8 +125,8 @@ const RANK = { blocked: 0, working: 1 };
 /** blocked threads first, then working, then the rest @param {string} status */
 const rankOf = (status) => RANK[STATE[status] ?? ''] ?? 2;
 export default class Deck extends View {
-    /** the asker under the pointer, which ⌘⇧K ticks first @type {string | null} */
-    hoverSid = null;
+    /** the asker under the pointer, which ⌘⇧K ticks first @type {{ at: number, sid: string } | null} */
+    hover = null;
     /** the copy drawing glide under antenna, `view: 'glide'` @type {ReturnType<typeof createGlide> | null} */
     glide = null;
     // the ticks files, one write at a time
@@ -158,7 +160,7 @@ export default class Deck extends View {
         addSteerFiles: (cx, key, paths) => this.addSteerFiles(cx, key, paths),
         chipsOf: (t, key, isLocked) => this.chipsOf(t, key, isLocked),
         files: () => this.files,
-        hoverSid: () => this.hoverSid,
+        hoverSid: () => this.hover?.sid ?? null,
         keyNotes: () => this.keyNotes,
         passedOver: () => this.passedOver,
         pin: () => this.pin,
@@ -168,7 +170,7 @@ export default class Deck extends View {
         presses: () => this.presses,
         rows: () => this.rows,
         setHoverSid: (sid) => {
-            this.hoverSid = sid;
+            this.hover = sid ? { at: Date.now(), sid } : null;
         },
         setOrbitStops: (stops) => {
             this.orbitStops = stops;
@@ -267,28 +269,28 @@ export default class Deck extends View {
         cx.timer.after(0, (cx) => {
             this.reload(cx);
             onShelfWrite(cx, USAGE, (cx) => this.reload(cx));
+            // the press folder too: a 🔥 pressed on the band above a chat draws on its row at once
+            for (const folder of [
+                SESSIONS,
+                STATES,
+                `${home()}/${PRESS_DIR}`,
+                SETTINGS_DIR,
+            ]) {
+                cx.spawn(async (cx) => {
+                    for (;;) {
+                        await watchFolder(folder).catch(
+                            () =>
+                                /** @type {Promise<string[]>} */ (
+                                    new Promise((done) =>
+                                        cx.timer.after(5000, () => done([])),
+                                    )
+                                ),
+                        );
+                        this.reload(cx);
+                    }
+                });
+            }
         });
-        // the press folder too: a 🔥 pressed on the band above a chat draws on its row at once
-        for (const folder of [
-            SESSIONS,
-            STATES,
-            `${home()}/${PRESS_DIR}`,
-            SETTINGS_DIR,
-        ]) {
-            cx.spawn(async (cx) => {
-                for (;;) {
-                    await watchFolder(folder).catch(
-                        () =>
-                            /** @type {Promise<string[]>} */ (
-                                new Promise((done) =>
-                                    cx.timer.after(5000, () => done([])),
-                                )
-                            ),
-                    );
-                    this.reload(cx);
-                }
-            });
-        }
     }
 
     /** @param {Context} cx */
@@ -652,19 +654,30 @@ export default class Deck extends View {
         });
     }
 
-    /** the focused thread's pid, by antenna's address → pid map @returns {number | null} */
-    focusedPid() {
-        const address = agents().find((a) => a.focused)?.address;
+    /** the focused thread, its pid by antenna's address → pid map */
+    focusedThread() {
+        const address = agents().find((a) => a.focused)?.address ?? null;
         const pids = /** @type {Record<string, number> | null} */ (
             shared(PIDS_KEY)
         );
-        return address ? (pids?.[address] ?? null) : null;
+        return {
+            address,
+            pid: address ? (pids?.[address] ?? null) : null,
+            pids,
+        };
+    }
+
+    /** the hover ⌘⇧K may still act on */
+    hoverNow() {
+        return hoverKept(this.rows, this.hover, shared(DECK_TOGGLED));
     }
 
     // ⌘⇧K (FRM-589): the asker under the pointer, else the thread open on screen; a hidden deck's copy stays alive in
     // its block, so it checks its own block is shown
     /** @param {Context} cx */
     tickShown(cx) {
+        const tree = layout();
+        const { address, pids } = this.focusedThread();
         const sid = tickAsker(
             this.rows.map((r) => ({
                 pid: r.pid,
@@ -673,10 +686,14 @@ export default class Deck extends View {
                     .length,
             })),
             {
-                focusedPid: this.focusedPid(),
-                hovered: this.hoverSid,
-                isShown: isDeckShown(layout()),
-                shownPid: chatShownOf(shared(CHAT_SHOWN)).pid,
+                hovered: this.hoverNow()?.sid ?? null,
+                isShown: isDeckShown(tree),
+                openPid: openThreadPid({
+                    address,
+                    chat: chatShownOf(shared(CHAT_SHOWN)),
+                    isChatShown: isChatShown(tree),
+                    pids,
+                }),
             },
         );
         const asker = this.rows.find((r) => r.sid === sid);
@@ -847,7 +864,7 @@ export default class Deck extends View {
         // orbit draws its steer boxes as Tab stops and focuses the one the loop asks for; with no asks it draws none
         this.orbitStops = [];
         this.tabAt = new Map();
-        this.hoverSid = hoverKept(this.rows, this.hoverSid);
+        this.hover = this.hoverNow();
         const orbitRows = asks > 0 ? this.orbitView.orbit(t) : [];
         // one head for every section: a hairline above, its emoji, its name and its count in words
         /** @param {string} text */
@@ -865,7 +882,7 @@ export default class Deck extends View {
                 .child(text);
         // antenna lists the threads; the deck scrolls orbit and pins the focused thread's phases to its bottom
         const parts = deckParts(this.rows, {
-            focusedPid: this.focusedPid(),
+            focusedPid: this.focusedThread().pid,
             order: /** @type {number[] | null} */ (shared(ORDER_KEY)),
         });
         // the phases' steer box is the Tab stop right after orbit's (rider 4d); it shows for one thread's plan only

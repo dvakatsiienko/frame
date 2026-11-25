@@ -10,6 +10,9 @@ export const CHAT_ASK = /** @type {const} */ ({
 
 export const CHAT_SHOWN = 'chat.shown';
 
+// the status bar takes ⌘E and writes its time here; the deck forgets a hover made before it
+export const DECK_TOGGLED = 'deck.toggled';
+
 // a picture another mod asks the chat's viewer to open (orbit's previews, FRM-676): a `ChatView`, its time the press's
 export const CHAT_VIEW = 'chat.view';
 

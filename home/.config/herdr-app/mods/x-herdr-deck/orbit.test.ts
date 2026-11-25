@@ -31,7 +31,6 @@ import {
     threadFacts,
     tickAll,
     tickAllTakes,
-    tickAllThread,
     ticketUrl,
     waitOf,
     withPending,
@@ -785,32 +784,6 @@ describe('a key that does nothing says why under the steer box', () => {
     });
     test('a locked ask stays quiet, its lock already shown', () => {
         expect(steerKeyNote('locked', false, true)).toBeNull();
-    });
-});
-
-describe('⌘⇧K picks the asker it ticks', () => {
-    const sids = ['clio', 'codie'];
-    test('the asker under the pointer wins (dima, 21:42)', () => {
-        expect(
-            tickAllThread(sids, {
-                hovered: 'codie',
-                shown: 'clio',
-            }),
-        ).toBe('codie');
-    });
-    test('no hover: the thread open on screen', () => {
-        expect(tickAllThread(sids, { hovered: null, shown: 'clio' })).toBe(
-            'clio',
-        );
-    });
-    test('an asker whose asks left is skipped for the next', () => {
-        expect(
-            tickAllThread(['clio'], {
-                hovered: 'gone',
-                shown: 'clio',
-            }),
-        ).toBe('clio');
-        expect(tickAllThread([], { hovered: null, shown: 'clio' })).toBe(null);
     });
 });
 

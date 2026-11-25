@@ -4,7 +4,7 @@
 import { exec, layout, nextCommand, openOverlay, run, setShared } from 'herdr';
 
 import { deckToggleId } from './blocks.js';
-import { chatSelectArgs, settingsOverlay } from './chat-asks.js';
+import { DECK_TOGGLED, chatSelectArgs, settingsOverlay } from './chat-asks.js';
 
 /** whether a window, dialog or popup sits over the layout: no mod api lists them, the window's status does */
 async function isOverlayOpen() {
@@ -38,7 +38,10 @@ export async function takeCommands() {
             openOverlay(settingsOverlay('general'));
         } else if (command === 'deck') {
             const id = deckToggleId(shownTree());
-            if (id) run('layout.toggle', { id });
+            if (id) {
+                setShared(DECK_TOGGLED, Date.now());
+                run('layout.toggle', { id });
+            }
         }
     }
 }
