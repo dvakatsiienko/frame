@@ -95,5 +95,4 @@ func runCmd(c *exec.Cmd) (result, error) {
 
 func ok(got result, _ error) bool { return got.ok }
 
-/* Helpers */
 func exists(path string) bool { _, err := os.Stat(path); return err == nil }

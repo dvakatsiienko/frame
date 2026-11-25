@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-/* Verbs */
 func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	leaveTurn := func(error) {}
 	defer func() { leaveTurn(err) }()

@@ -11,7 +11,6 @@ import (
 
 var modDir = regexp.MustCompile(`^home/\.claude/plugin-x/mods/[^/]+/`)
 
-/* Steps */
 // the commit hook only reports (lefthook must never rewrite files it holds aside), so the
 // format runs here, before staging, on the named paths alone; a failure is left for the hook to name
 func format(tree string, paths []string) string {

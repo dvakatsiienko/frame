@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-/* Git */
 // a worktree codie's other-repo half lands on that repo's main and nowhere else
 func enterMain(repo string) error {
 	root, _ := gitIn(repo, "rev-parse", "--show-toplevel")
