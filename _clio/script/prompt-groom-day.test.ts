@@ -67,8 +67,10 @@ describe('--day', () => {
                 ['pocket', opts.pocket],
             ] as const) {
                 mkdirSync(join(root, dir));
-                for (const [name, text] of Object.entries(files ?? {}))
+                for (const [name, text] of Object.entries(files ?? {})) {
+                    mkdirSync(join(root, dir, name, '..'), { recursive: true });
                     writeFileSync(join(root, dir, name), text);
+                }
             }
             mkdirSync(join(root, 'prompts'));
             writeFileSync(
@@ -162,6 +164,16 @@ describe('--day', () => {
                     '- W1 has no bold title in his file\n',
             },
             pocket: { 'a.md': 'W1 ship it' },
+        });
+        expect(out.status).toBe(0);
+    });
+
+    test('a W-line whose only home is a flyway notes archive has one', () => {
+        const out = run({
+            grooms: groomed(),
+            pocket: {
+                'archive/notes/pk-1.md': `W1 (${day} 10:00, dima): ship it\n`,
+            },
         });
         expect(out.status).toBe(0);
     });

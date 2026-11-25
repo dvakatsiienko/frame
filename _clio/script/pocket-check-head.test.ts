@@ -88,6 +88,7 @@ describe('auditAgainstHead', () => {
     ) => ({
         archiveNames,
         names,
+        noteNames: [],
         text: (dir: string, name: string) => texts[`${dir}/${name}`] ?? '',
     });
     const left =

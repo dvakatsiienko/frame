@@ -95,6 +95,7 @@ describe('the closed-ticket net, with linear unreachable', () => {
             for (const file of [
                 'chat-lines.ts',
                 'flyway-done.ts',
+                'flyway-notes.ts',
                 'pocket-check.ts',
                 'prompt-groom.ts',
                 'session-registry.ts',

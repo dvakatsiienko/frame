@@ -23,6 +23,13 @@ thread_label=""
 main_session="$(sed -n 's/^session=//p' "${HOME:-/nonexistent}/.local/state/clio/main-session" 2>/dev/null)"
 [ -z "$thread_label" ] && [ -n "$main_session" ] && [ "$main_session" != "$sid" ] && exit 0
 
+# the sweep moves a flyway's old note blocks to its archive before the check reads the file size; the runner twin's empty HOME skips it
+sweep_red=""
+if [ -n "${HOME:-}" ]; then
+	sweep="${POCKET_SWEEP_CMD:-node $(dirname "$0")/../../script/flyway-done.ts --sweep}"
+	sweep_out="$($sweep 2>&1)" || sweep_red="🔴 flyway sweep failed: $(tr '\n' ' ' <<<"$sweep_out" | cut -c1-300)"
+fi
+
 check="${POCKET_CHECK_CMD:-node $(dirname "$0")/../../script/pocket-check.ts}"
 out="$($check 2>&1)"
 status=$?
@@ -59,6 +66,7 @@ if [ "${#paths[@]}" -gt 0 ] && [ -n "$state" ]; then
 	# the whole list is redirected: a background `a && b >/dev/null` keeps the hook's stdout open until b ends, and cc then drops the block
 	(cd "$root" && nohup bash -c 'state=$1; m=$2; shift 2; out=$("$@" 2>&1 </dev/null); code=$?; printf "%s\n" "$out" >>"$state/log.txt"; if [ "$code" = 0 ] || grep -q "empty diff, no commit" <<<"$out"; then echo ok >"$state/last"; else echo "refused $(date "+%F %H:%M")" >"$state/last"; fi; rm -f -- "$m"' _ "$state" "$msg" ${POCKET_COMMIT_CMD:-x lane commit} "$msg" -- "${paths[@]}") >/dev/null 2>&1 </dev/null &
 fi
+[ -n "$sweep_red" ] && refused="${refused:+$refused$'\n'}$sweep_red"
 
 [ "$status" = 0 ] && [ -z "$refused" ] && exit 0
 reds="$( [ "$status" = 0 ] || grep '^🔴' <<<"$out" || printf '%s' "$out")"

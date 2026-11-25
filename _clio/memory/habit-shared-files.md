@@ -1,6 +1,6 @@
 # shared-files hygiene — inbox, pocket, scratch
 
-Shared files are Dima's living space; leftovers cost him attention and blur what is pending.
+Shared files are Dima's living space.
 
 ## the obsidian channel — his drops from mobile, in the vault's `_hq/`
 
@@ -29,7 +29,7 @@ one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved betwe
 
 - one pocket item per thread, always live: `flyway: main` + `clio-main`, `flyway: wing 2` + `clio-wing-2`; none yet: `node script/pocket-add.ts "flyway: wing 2" --wing 2`
 - order: open lines (most important first; one that needs him ends `— with: dima`), then ⏳ near (`— waits for: <one thing>`), then 📅 dated (`— on: YYYY-MM-DD`, by date), then 🦥 (`— later: dima <time>`); a cleared wait moves up
-- a finished line leaves the turn it ticks: `node script/flyway-done.ts <PK> <fN>`; a line joins by `--add '<line>'`, a stray order by `--sort`; the pass: `clio:lowtide-flyway-sync`
+- a finished line leaves the turn it ticks: `node script/flyway-done.ts <PK> <fN>`, its note to `pocket/archive/notes/`, where a hook sweeps every older note; a line joins by `--add '<line>'`, a stray order by `--sort`; the pass: `clio:lowtide-flyway-sync`
 - **a line reads in one glance** (dima, 2026-11-12: «make flyway more readable for me»): ≤120 chars, subject first, one outcome, the detail in the item's notes; a dima wait ends `— waits for: dima oN`; chores go to a wing's flyway. pocket-check reds the breaks each prompt
 - a parked wing's flyway waits for the next wing of its number; dima may flip its number
 - an action that folds an item into another area reads every flyway for its id and yanks the line that turn (dima, 2026-11-07: «sanity check across flyways, yank it out of flyway plan so no confusions»); `pocket-check` reds a PK id left behind
@@ -44,7 +44,7 @@ PK-356:W10 (2026-11-09 inbox, dima): correction of W3: a main clio ask joins the
 
 ## the stash hierarchy — dima's, 2026-09-27
 
-Keep-in-mind stashes, all with one job: nothing he wants solved lands on a long shelf and gets
+Stashes, one job: nothing he wants solved lands on a long shelf and gets
 forgotten. Linear is the long shelf, in front of clio at every boot through the milestone queue; a
 ticket outside any milestone is the one that goes unseen.
 

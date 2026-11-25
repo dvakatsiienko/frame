@@ -22,6 +22,7 @@ import path from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 
 import { steersOf } from './chat-lines.ts';
+import { readArchive } from './flyway-notes.ts';
 import { threadOf } from './session-registry.ts';
 import { normalize, prefixWish, repeatedIds, unwrapIds } from './wish-cover.ts';
 
@@ -812,7 +813,8 @@ const homeText = (home: string): string => {
             { cwd: pocketDir },
         );
         if (!file) throw new Error(`no pocket item ${home}`);
-        return readFileSync(path.join(pocketDir, file), 'utf8');
+        // a flyway's old notes sit in its archive: their W-lines still count
+        return `${readFileSync(path.join(pocketDir, file), 'utf8')}\n${readArchive(pocketDir, home)}`;
     }
     const out = JSON.parse(
         execFileSync('x', ['linear', 'body', home], { encoding: 'utf8' }),

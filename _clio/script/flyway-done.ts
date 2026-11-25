@@ -1,17 +1,28 @@
 // keeps a flyway readable: a finished line leaves into the done note, a new line lands in its kind's place.
-// usage: node flyway-done.ts <PK-N> <n> | <PK-N> --add '<line>' [--his-word] | <PK-N> --sort | <PK-N> --check
+// usage: node flyway-done.ts <PK-N> <n> | <PK-N> --add '<line>' [--his-word] | <PK-N> --sort | <PK-N> --check | --sweep [--today YYYY-MM-DD]
 import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+
+import {
+    appendArchive,
+    archivePath,
+    lineSet,
+    notesOf,
+    readArchive,
+    splitNotes,
+} from './flyway-notes.ts';
 
 const pocket =
     process.env.FLYWAY_POCKET ?? path.resolve(import.meta.dirname, '..');
+const pocketDir = path.join(pocket, 'pocket');
+const FLYWAY_ITEM = /^title: ['"]?flyway: /m;
 const kinds = ['open', 'waits', 'dated', 'later'] as const;
 const DATED_ON = / — on: (\d{4}-\d{2}-\d{2})\b/;
 const NAMED_ID = /\b(?:PK|FRM|BYT)-\d+\b/g;
 const CLOSED_STATES = new Set(['done', 'Done', 'Canceled', 'Duplicate']);
 const usage =
-    "usage: node flyway-done.ts <PK-N> <n> | <PK-N> --add '<line>' | <PK-N> --sort | <PK-N> --check";
+    "usage: node flyway-done.ts <PK-N> <n> | <PK-N> --add '<line>' | <PK-N> --sort | <PK-N> --check | --sweep [--today YYYY-MM-DD]";
 
 export function flywayKind(text: string): (typeof kinds)[number] {
     const body = text.replace(LINE_ID, '');
@@ -51,10 +62,10 @@ export function parkedTails(lines: FlywayLine[]): FlywayLine[] {
     return lines.filter((line) => !line.done && isTail(line.text));
 }
 
-// the next id: one past every id a line or a done note of this item ever carried
-export function nextLineId(item: string): number {
+// the next id: one past every id a line or a done note of this item ever carried, the notes moved to its archive included
+export function nextLineId(item: string, archive = ''): number {
     const used = [
-        ...item.matchAll(
+        ...`${item}\n${archive}`.matchAll(
             /^- \[[ x]\] #\d+ f(\d+) |^\s*done [^:]+:\d{2}: f(\d+) /gm,
         ),
     ].map(([, line, done]) => Number(line ?? done));
@@ -114,11 +125,69 @@ export function flywaySorted(lines: string[]): string[] {
         .map(({ line }) => line);
 }
 
+// moves the note blocks dated before today into the item's archive and returns how many moved; 0 when the file changed meanwhile
+export function sweepFlyway(
+    file: string,
+    today: string,
+    afterAppend: () => void = () => {},
+): number {
+    const text = readFileSync(file, 'utf8');
+    const { kept, moved } = splitNotes(text, today);
+    if (moved.length === 0) return 0;
+    const id = path.basename(file).match(/^pk-\d+/i)?.[0] ?? '';
+    // the item sits in the pocket's tasks/, so the pocket is two levels up
+    const dir = path.dirname(path.dirname(file));
+    appendArchive(dir, id, moved);
+    // every note line lives in the item or its archive before the item is cut
+    const held = [kept, readArchive(dir, id)].map(lineSet);
+    const lost = [...lineSet(notesOf(text))].filter(
+        (line) => !held.some((lines) => lines.has(line)),
+    );
+    if (lost.length > 0)
+        throw new Error(
+            `${id}: ${lost.length} note line(s) in neither the item nor its archive, left whole`,
+        );
+    afterAppend();
+    // another thread wrote the item since it was read: the next sweep gets it
+    if (readFileSync(file, 'utf8') !== text) return 0;
+    const temp = path.join(path.dirname(file), `.sweep-${process.pid}`);
+    writeFileSync(temp, kept);
+    renameSync(temp, file);
+    return moved.length;
+}
+
+function sweepAll(today: string) {
+    const dir = path.join(pocketDir, 'tasks');
+    for (const name of readdirSync(dir).filter((f) => f.endsWith('.md'))) {
+        const file = path.join(dir, name);
+        if (!FLYWAY_ITEM.test(readFileSync(file, 'utf8'))) continue;
+        const id = name.match(/^pk-\d+/i)?.[0] ?? '';
+        try {
+            const moved = sweepFlyway(file, today);
+            if (moved)
+                console.log(
+                    `${id.toUpperCase()}: ${moved} note block(s) moved to ${path.relative(pocket, archivePath(pocketDir, id))}`,
+                );
+        } catch (error) {
+            console.error((error as Error).message);
+            process.exitCode = 1;
+        }
+    }
+}
+
 if (import.meta.main) {
     const [rawId, mode, value] = process.argv.slice(2);
     const id = rawId?.toUpperCase() ?? '';
-    if (!/^PK-\d+$/.test(id) || !mode) fail(usage);
-    if (mode === '--add') {
+    if (rawId !== '--sweep' && (!/^PK-\d+$/.test(id) || !mode)) fail(usage);
+    if (rawId === '--sweep') {
+        const today = mode
+            ? mode === '--today'
+                ? (value ?? '')
+                : ''
+            : new Date().toLocaleDateString('sv');
+        if (!/^\d{4}-\d\d-\d\d$/.test(today)) fail(usage);
+        sweepAll(today);
+    } else if (mode === '--add') {
         if (!value) fail(usage);
         // dima's tick, 2026-11-24: at the cap a tail is closed before another is parked; his word lifts it
         const parked = parkedTails(flywayLines(read(id)));
@@ -138,7 +207,7 @@ if (import.meta.main) {
                 id: f.match(/^pk-\d+/i)?.[0].toUpperCase() ?? '',
                 text: readFileSync(path.join(dir, f), 'utf8'),
             }))
-            .filter(({ text }) => /^title: ['"]?flyway: /m.test(text));
+            .filter(({ text }) => FLYWAY_ITEM.test(text));
         for (const similar of similarLines(value, flyways))
             console.log(similar);
         rewrite(id, [value]);
@@ -155,8 +224,9 @@ if (import.meta.main) {
             fail(
                 `${closed} line(s) name a closed home: clear each with node flyway-done.ts ${id} <n>, or reword it to its live step`,
             );
-    } else {
-        const line = flywayLines(read(id)).find((l) =>
+    } else if (mode) {
+        const item = read(id);
+        const line = flywayLines(item).find((l) =>
             /^f\d+$/.test(mode) ? l.ref === mode : l.n === Number(mode),
         );
         if (!line) fail(`${id} has no line ${mode}`);
@@ -164,11 +234,14 @@ if (import.meta.main) {
         const proof = states.length
             ? ` (${states.map((s) => `${s.id} ${s.state}`).join(', ')})`
             : '';
+        const note = `done ${stamp()}: ${line.text}${proof}`;
+        // a flyway's done note goes to its archive first: if the edit fails the note is kept, never lost
+        const isFlyway = FLYWAY_ITEM.test(item);
+        if (isFlyway) appendArchive(pocketDir, id, [note]);
         edit(id, [
             '--remove-ac',
             String(line.n),
-            '--append-notes',
-            `done ${stamp()}: ${line.text}${proof}`,
+            ...(isFlyway ? [] : ['--append-notes', note]),
         ]);
         console.log(`${id} ${line.ref} → done note${proof}`);
         for (const s of states.filter((s) => !CLOSED_STATES.has(s.state)))
@@ -188,7 +261,7 @@ function rewrite(id: string, added: string[]) {
             `${id} ${ticked.ref} is ticked: move it first, node flyway-done.ts ${id} ${ticked.ref}`,
         );
     const open = lines.map((l) => l.text);
-    let next = nextLineId(item);
+    let next = nextLineId(item, readArchive(pocketDir, id));
     const withId = (line: string) =>
         LINE_ID.test(line) ? line : `f${next++} ${line}`;
     // a tail parked before the stamp existed gets today's at the first write, so none stays unseen

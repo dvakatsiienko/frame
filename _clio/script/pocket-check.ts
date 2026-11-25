@@ -18,6 +18,7 @@ import {
     flywaySorted,
     isTail,
 } from './flyway-done.ts';
+import { notesOf } from './flyway-notes.ts';
 import {
     type Groomed,
     groomStep,
@@ -50,6 +51,8 @@ const POCKET_ID = /\bPK-\d+\b/g;
 const ORBIT_ID = /\bo\d+\b/g;
 // a flyway line is read at a glance: past this the detail belongs in the item's notes
 const FLYWAY_LINE_MAX = 120;
+// a flyway file past this is swept: the old note blocks move to pocket/archive/notes/pk-N.md
+const FLYWAY_FILE_MAX_LINES = 300;
 // the wish-accounting reds apply to items born or touched from this day on
 const WISH_RULES_FROM = '2026-10-22';
 const CLOSE_LINE = /^close:/;
@@ -141,6 +144,11 @@ export function checkPocket(
             if (flywayTitles.has(title))
                 report(`a second «${title}»: one flyway per thread`);
             flywayTitles.add(title);
+            const fileLines = text.split('\n').length - 1;
+            if (fileLines > FLYWAY_FILE_MAX_LINES)
+                report(
+                    `flyway is ${fileLines} lines, the cap is ${FLYWAY_FILE_MAX_LINES}: node script/flyway-done.ts --sweep`,
+                );
             // dima, 2026-11-09 (o66, o68): open lines, then ⏳ waits, then 📅 dated, then 🦥 later; a finished line leaves that turn
             const lines = flywayLines(text);
             const leave = (ref: string) =>
@@ -541,12 +549,14 @@ function frontmatter(text: string) {
 }
 
 // a close with `backlog task edit --notes` replaces every note, dima's quoted steers included
+// a line the flyway sweep moved to the item's archive (pocket/archive/notes/pk-N.md) is kept, not lost
 export function lostNoteLines(
     current: string,
     head: string,
     home = '',
+    archived = '',
 ): string[] {
-    const kept = new Set(noteLines(current));
+    const kept = new Set([...noteLines(current), ...bodyLines(archived)]);
     return noteLines(head).filter(
         (line) =>
             !kept.has(line) && !(home && kept.has(prefixWish(line, home))),
@@ -554,11 +564,11 @@ export function lostNoteLines(
 }
 
 function noteLines(text: string): string[] {
-    const body =
-        text
-            .split('<!-- SECTION:NOTES:BEGIN -->\n')[1]
-            ?.split('<!-- SECTION:NOTES:END -->')[0] ?? '';
-    // a joiner stripped for Backlog.md #949 keeps the line
+    return bodyLines(notesOf(text));
+}
+
+// a joiner stripped for Backlog.md #949 keeps the line
+function bodyLines(body: string): string[] {
     return body
         .split('\n')
         .map((line) => line.replaceAll(ZERO_WIDTH_JOINER, '').trim())
@@ -570,6 +580,7 @@ export function auditAgainstHead(
     tasks: Task[],
     archive: Task[],
     head: Head,
+    notes: Task[] = [],
 ): string[] {
     const problems: string[] = [];
     const idOf = (name: string) => name.split(' ')[0];
@@ -620,12 +631,27 @@ export function auditAgainstHead(
                         ? head.text('tasks', before)
                         : ''),
                 prefix?.trim().toUpperCase(),
+                notes.find((file) => file.name === `${prefix?.trim()}.md`)
+                    ?.text,
             );
             if (lost.length > 0)
                 problems.push(
                     `${idOf(name)}: ${lost.length} note line(s) gone since HEAD — a close appends (\`--append-notes\`); restore from \`git show HEAD:\``,
                 );
         }
+    // the archive only grows: a line of it at HEAD is on disk still
+    for (const name of head.noteNames) {
+        const now = new Set(
+            bodyLines(notes.find((file) => file.name === name)?.text ?? ''),
+        );
+        const gone = bodyLines(head.text('notes', name)).filter(
+            (line) => !now.has(line),
+        );
+        if (gone.length > 0)
+            problems.push(
+                `${name.replace(/\.md$/, '').toUpperCase()}: ${gone.length} archived note line(s) gone since HEAD — the notes archive only grows; restore from \`git show HEAD:\``,
+            );
+    }
     const here = new Set(tasks.map((file) => file.name));
     const startsWithPrefix = (files: Task[], prefix: string) =>
         files.some((file) => file.name.toLowerCase().startsWith(prefix));
@@ -759,7 +785,11 @@ export function headFromGit(
             return Buffer.alloc(0);
         }
     };
-    const dirs = { archive: 'archive/tasks', tasks: 'tasks' } as const;
+    const dirs = {
+        archive: 'archive/tasks',
+        notes: 'archive/notes',
+        tasks: 'tasks',
+    } as const;
     const namesIn = (dir: keyof typeof dirs) =>
         git([
             'ls-tree',
@@ -774,9 +804,11 @@ export function headFromGit(
             .filter((name) => name.endsWith('.md'));
     const names = namesIn('tasks');
     const archiveNames = namesIn('archive');
+    const noteNames = namesIn('notes');
     const wanted = [
         ...names.map((name) => ['tasks', name] as const),
         ...archiveNames.map((name) => ['archive', name] as const),
+        ...noteNames.map((name) => ['notes', name] as const),
     ];
     const reply = git(
         ['cat-file', '--batch'],
@@ -800,6 +832,7 @@ export function headFromGit(
     return {
         archiveNames,
         names,
+        noteNames,
         text: (dir, name) => blobs.get(`${dir}/${name}`) ?? '',
     };
 }
@@ -918,6 +951,7 @@ if (import.meta.main) {
             tasks,
             readDir(join(root, 'pocket', 'archive', 'tasks')),
             head,
+            readDir(join(root, 'pocket', 'archive', 'notes')),
         ),
         ...closeOnDone(tasks, root),
     );
@@ -938,7 +972,8 @@ interface OrbitAsk {
 interface Head {
     archiveNames: string[];
     names: string[];
-    text: (dir: 'tasks' | 'archive', name: string) => string;
+    noteNames: string[];
+    text: (dir: 'tasks' | 'archive' | 'notes', name: string) => string;
 }
 
 interface LinearRead {

@@ -255,6 +255,7 @@ describe('wish-cover', () => {
                 for (const file of [
                     'wish-cover.ts',
                     'flyway-done.ts',
+                    'flyway-notes.ts',
                     'pocket-check.ts',
                     'prompt-groom.ts',
                     'chat-lines.ts',
@@ -600,6 +601,7 @@ describe('the cli on a moved wish, with an x that answers by ticket', () => {
             for (const file of [
                 'wish-cover.ts',
                 'flyway-done.ts',
+                'flyway-notes.ts',
                 'pocket-check.ts',
                 'prompt-groom.ts',
                 'chat-lines.ts',
@@ -732,6 +734,7 @@ describe('the cli on a ticket whose wish block holds PK-prefixed lines', () => {
             for (const file of [
                 'wish-cover.ts',
                 'flyway-done.ts',
+                'flyway-notes.ts',
                 'pocket-check.ts',
                 'prompt-groom.ts',
                 'chat-lines.ts',
@@ -867,5 +870,57 @@ describe('the cli on a ticket whose wish block holds PK-prefixed lines', () => {
             'FRM-7:W1 a',
         );
         expect(done.stdout).toContain('W1 numbered twice');
+    });
+});
+
+describe('the cli on a pocket item whose notes moved to its archive', () => {
+    const here = import.meta.dirname;
+    const run = (draft: string) => {
+        const root = mkdtempSync(join(tmpdir(), 'wish-archived-'));
+        try {
+            mkdirSync(join(root, 'script'));
+            for (const file of [
+                'wish-cover.ts',
+                'flyway-done.ts',
+                'flyway-notes.ts',
+                'pocket-check.ts',
+                'prompt-groom.ts',
+                'chat-lines.ts',
+                'session-registry.ts',
+            ])
+                copyFileSync(join(here, file), join(root, 'script', file));
+            for (const dir of ['tasks', 'archive/tasks', 'archive/notes'])
+                mkdirSync(join(root, 'pocket', dir), { recursive: true });
+            writeFileSync(
+                join(root, 'pocket', 'tasks', 'pk-1 - flyway.md'),
+                'PK-1:W1 (2026-11-25 10:00, dima): live words\n',
+            );
+            writeFileSync(
+                join(root, 'pocket', 'archive', 'notes', 'pk-1.md'),
+                'PK-1:W2 (2026-11-20 10:00, dima): archived words\n',
+            );
+            writeFileSync(join(root, 'draft.md'), draft);
+            return spawnSync(
+                process.execPath,
+                [
+                    join(root, 'script', 'wish-cover.ts'),
+                    'PK-1',
+                    join(root, 'draft.md'),
+                ],
+                { encoding: 'utf8', timeout: 10_000 },
+            );
+        } finally {
+            rmSync(root, { force: true, recursive: true });
+        }
+    };
+
+    test('an archived W-line is found, and a draft that drops its words reds', () => {
+        const red = run('PK-1:W2 other words');
+        expect(red.stdout).toContain('PK-1:W2 text missing');
+        expect(red.status).toBe(1);
+    });
+
+    test('a draft carrying the archived words is green', () => {
+        expect(run('PK-1:W2 archived words').status).toBe(0);
     });
 });

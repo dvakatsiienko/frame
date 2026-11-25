@@ -1,3 +1,7 @@
+import { spawnSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 describe('full wish ids in the groom checks', () => {
@@ -55,6 +59,50 @@ describe('the next wish id of a home (PK-312)', () => {
     ])('a %s home numbers on from its highest', async (_name, text) => {
         const { nextWishId } = await import('./prompt-groom.ts');
         expect(nextWishId(text, 'PK-3')).toBe('PK-3:W13');
+    });
+});
+
+describe('--next reads the notes a flyway moved to its archive', () => {
+    test('an archived W-line is counted', () => {
+        const root = mkdtempSync(join(tmpdir(), 'wish-next-'));
+        try {
+            mkdirSync(join(root, 'grooms'));
+            mkdirSync(join(root, 'pocket', 'tasks'), { recursive: true });
+            mkdirSync(join(root, 'pocket', 'archive', 'notes'), {
+                recursive: true,
+            });
+            writeFileSync(
+                join(root, 'pocket', 'tasks', 'pk-1 - flyway.md'),
+                'PK-1:W3 (2026-11-25 10:00, dima): live\n',
+            );
+            writeFileSync(
+                join(root, 'pocket', 'archive', 'notes', 'pk-1.md'),
+                'PK-1:W41 (2026-11-20 10:00, dima): moved\n',
+            );
+            const out = spawnSync(
+                process.execPath,
+                [
+                    join(import.meta.dirname, 'prompt-groom.ts'),
+                    '--next',
+                    'PK-1',
+                ],
+                {
+                    encoding: 'utf8',
+                    env: {
+                        ...process.env,
+                        CLAUDE_CODE_SESSION_ID: '',
+                        CLIO_THREAD: '',
+                        HOME: root,
+                        POCKET_DIR: join(root, 'pocket'),
+                        PROMPT_GROOM_DIR: join(root, 'grooms'),
+                    },
+                    timeout: 10_000,
+                },
+            );
+            expect(out.stdout.trim()).toBe('PK-1:W42');
+        } finally {
+            rmSync(root, { force: true, recursive: true });
+        }
     });
 });
 

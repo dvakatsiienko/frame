@@ -59,6 +59,7 @@ function run(
     commit = commitStub,
     home = fixtures,
     isFirstRed = true,
+    sweep = 'true',
 ) {
     rmSync(argvLog, { force: true });
     // each id blocks once, so a test starts from an empty seen file unless it is the repeat
@@ -70,6 +71,7 @@ function run(
             HOME: home,
             POCKET_CHECK_CMD: check,
             POCKET_COMMIT_CMD: commit,
+            POCKET_SWEEP_CMD: sweep,
         },
         input: JSON.stringify(event),
         timeout: 10_000,
@@ -374,5 +376,83 @@ describe('the pocket hook commits every pocket write', () => {
         );
         // the commit step makes this dir before it detaches, so its absence is proof with no wait
         expect(existsSync(state)).toBe(false);
+    });
+});
+
+describe('the flyway sweep before the check', () => {
+    const marker = join(fixtures, 'swept');
+    const sweepStub = join(fixtures, 'sweep-stub.sh');
+    writeFileSync(sweepStub, `#!/bin/sh\ntouch "${marker}"\n`, { mode: 0o755 });
+    const failingSweep = join(fixtures, 'sweep-failing.sh');
+    writeFileSync(failingSweep, '#!/bin/sh\necho "boom: no pocket"\nexit 1\n', {
+        mode: 0o755,
+    });
+    // the check is green only when the sweep already ran
+    const needsSweep = join(fixtures, 'needs-sweep.sh');
+    writeFileSync(needsSweep, `#!/bin/sh\n[ -f "${marker}" ]\n`, {
+        mode: 0o755,
+    });
+    const write = bash('backlog task edit 3 -s done');
+
+    test('it runs on a pocket write, before the check reads', () => {
+        rmSync(marker, { force: true });
+        expect(
+            run(write, needsSweep, commitStub, fixtures, true, sweepStub),
+        ).toBe(undefined);
+        expect(existsSync(marker)).toBe(true);
+    });
+
+    test('a failing sweep reds one line even on a green pocket', () => {
+        const out = run(
+            write,
+            'true',
+            commitStub,
+            fixtures,
+            true,
+            failingSweep,
+        );
+        expect(out?.decision).toBe('block');
+        expect(out?.reason).toContain(
+            '🔴 flyway sweep failed: boom: no pocket',
+        );
+    });
+
+    test('an empty HOME skips it', () => {
+        rmSync(marker, { force: true });
+        run(write, 'true', commitStub, '', true, sweepStub);
+        expect(existsSync(marker)).toBe(false);
+    });
+
+    test('a read of the pocket never runs it', () => {
+        rmSync(marker, { force: true });
+        run(
+            bash('grep -c x _clio/pocket/tasks/*.md'),
+            'true',
+            commitStub,
+            fixtures,
+            true,
+            sweepStub,
+        );
+        expect(existsSync(marker)).toBe(false);
+    });
+
+    test('a parked sidecar never runs it', () => {
+        const sessions = join(fixtures, '.claude/sessions');
+        mkdirSync(sessions, { recursive: true });
+        writeFileSync(
+            join(sessions, 'thread.json'),
+            JSON.stringify({ kind: 'bg', name: 'helga', sessionId: 'sid-bg' }),
+        );
+        rmSync(marker, { force: true });
+        run(
+            { ...write, session_id: 'sid-bg' },
+            'true',
+            commitStub,
+            fixtures,
+            true,
+            sweepStub,
+        );
+        rmSync(sessions, { recursive: true });
+        expect(existsSync(marker)).toBe(false);
     });
 });

@@ -14,6 +14,7 @@ import {
 import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
 
+import { readArchive } from './flyway-notes.ts';
 import { TICKET_LINE } from './pocket-check.ts';
 
 const pocketDirs = ['pocket/tasks', 'pocket/archive/tasks'];
@@ -261,12 +262,13 @@ export function uncovered(
     );
 }
 
+// a flyway's old notes sit in its archive: the item reads with them
 function pocketItems(root: string) {
     return pocketDirs.flatMap((dir) => {
         const abs = path.join(root, dir);
         return readdirSync(abs).map((file): [string, string] => [
             file,
-            readFileSync(path.join(abs, file), 'utf8'),
+            `${readFileSync(path.join(abs, file), 'utf8')}\n${readArchive(path.join(root, 'pocket'), file.match(/^pk-\d+/i)?.[0] ?? '')}`,
         ]);
     });
 }

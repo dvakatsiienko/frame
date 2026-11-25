@@ -5,8 +5,8 @@ set -u
 t=$(jq -r '.transcript_path // empty' 2>/dev/null)
 # a lane past its round cap: its stop survives this compact, read from the mod's shelf store (FRM-504)
 s="$HOME/.claude/shelf/lane-rounds.json"
-[ -r "$s" ] && jq -r '.rounds | to_entries[]? | select((.value.count? // 0) >= 3)
-  | "📌 \(.key): round \(.value.count), at or past the cap of 3"' "$s" 2>/dev/null
+[ -r "$s" ] && jq -r '.rounds | to_entries[]? | ((.value.count? // 0) - (.value.clean? // 0)) as $open | select($open >= 3)
+  | "📌 \(.key): \($open) open rounds, at or past the cap of 3"' "$s" 2>/dev/null
 [ -r "$t" ] || exit 0
 last=$(jq -r 'select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text | @json' "$t" 2>/dev/null \
   | grep -F '⏳ waiting on your word' | tail -1 | jq -r .)

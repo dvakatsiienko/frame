@@ -5,6 +5,7 @@ import {
     mkdirSync,
     mkdtempSync,
     readFileSync,
+    readdirSync,
     writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
@@ -17,8 +18,10 @@ import {
     flywayLines,
     flywaySorted,
     isTail,
+    nextLineId,
     parkedTails,
     similarLines,
+    sweepFlyway,
 } from './flyway-done.ts';
 
 const today = new Date().toLocaleDateString('sv');
@@ -30,7 +33,7 @@ const hasBacklog = (process.env.PATH ?? '')
     .some((dir) => existsSync(path.join(dir, 'backlog')));
 
 // a temp pocket holding one flyway, run through the real backlog cli
-function pocketWith(lines: string[]) {
+function pocketWith(lines: string[], notes = '') {
     const root = mkdtempSync(
         path.join(process.env.TMPDIR ?? '/tmp', 'flyway-'),
     );
@@ -39,7 +42,7 @@ function pocketWith(lines: string[]) {
     const file = path.join(root, 'pocket', 'tasks', 'pk-1 - flyway-wing-9.md');
     writeFileSync(
         file,
-        `---\nid: PK-1\ntitle: 'flyway: wing 9'\nstatus: open\nlabels:\n  - clio-wing-9\npriority: now\ntype: task\n---\n\n## Acceptance Criteria\n<!-- AC:BEGIN -->\n${lines.map((l, i) => `- [ ] #${i + 1} ${l}`).join('\n')}\n<!-- AC:END -->\n`,
+        `---\nid: PK-1\ntitle: 'flyway: wing 9'\nstatus: open\nlabels:\n  - clio-wing-9\npriority: now\ntype: task\n---\n\n## Acceptance Criteria\n<!-- AC:BEGIN -->\n${lines.map((l, i) => `- [ ] #${i + 1} ${l}`).join('\n')}\n<!-- AC:END -->\n${notes ? `\n## Implementation Notes\n\n<!-- SECTION:NOTES:BEGIN -->\n${notes}\n<!-- SECTION:NOTES:END -->\n` : ''}`,
     );
     const run = (...args: string[]) =>
         execFileSync('node', [script, 'PK-1', ...args], {
@@ -47,9 +50,16 @@ function pocketWith(lines: string[]) {
             env: { ...process.env, FLYWAY_POCKET: root },
             timeout: 10_000,
         });
+    const sweep = (day: string) =>
+        execFileSync('node', [script, '--sweep', '--today', day], {
+            encoding: 'utf8',
+            env: { ...process.env, FLYWAY_POCKET: root },
+            timeout: 10_000,
+        });
     const read = () =>
         flywayLines(readFileSync(file, 'utf8')).map((l) => l.text);
-    return { read, run };
+    const archive = path.join(root, 'pocket', 'archive', 'notes', 'pk-1.md');
+    return { archive, file, read, run, sweep };
 }
 
 describe('flyway-done', () => {
@@ -112,6 +122,75 @@ describe('flyway-done', () => {
             ]);
         },
     );
+
+    test.skipIf(!hasBacklog)(
+        "a flyway's cleared line goes to its archive, and its id is never minted again",
+        () => {
+            const { archive, file, read, run } = pocketWith(
+                ['f1 one', 'f2 two', 'f3 three'],
+                'kept note',
+            );
+            run('f3');
+            expect(readFileSync(archive, 'utf8')).toMatch(
+                /^# pk-1: notes moved out of the flyway, oldest first\n\ndone \d{4}-\d\d-\d\d \d\d:\d\d: f3 three\n\n$/,
+            );
+            expect(readFileSync(file, 'utf8')).not.toContain('done 20');
+            run('--add', 'four');
+            expect(read()).toContain(`f4 four — parked: ${today}`);
+        },
+    );
+
+    test('the next id counts the ids an archive holds', () => {
+        expect(
+            nextLineId('- [ ] #1 f2 two', 'done 2026-11-25 10:00: f7 x'),
+        ).toBe(8);
+    });
+
+    describe('--sweep', () => {
+        const notes = [
+            'PK-1:W1 (2026-11-24 10:00, dima): old wish',
+            'done 2026-11-24 11:00: f1 old',
+            'undated, dated by the block before',
+            'PK-1:W2 (2026-11-25 09:00, dima): today wish',
+        ].join('\n\n');
+        const world = () => pocketWith(['f1 one'], notes);
+
+        test('a block of an earlier day moves and the next sweep moves nothing', () => {
+            const { archive, file, sweep } = world();
+            expect(sweep('2026-11-25')).toBe(
+                'PK-1: 3 note block(s) moved to pocket/archive/notes/pk-1.md\n',
+            );
+            const archived = readFileSync(archive, 'utf8');
+            expect(archived).toContain('undated, dated by the block before');
+            expect(readFileSync(file, 'utf8')).toContain('today wish');
+            expect(readFileSync(file, 'utf8')).not.toContain('old wish');
+            expect(sweep('2026-11-25')).toBe('');
+            expect(readFileSync(archive, 'utf8')).toBe(archived);
+        });
+
+        test('a file written by another thread mid-way is left alone, and its blocks are not appended twice', () => {
+            const { archive, file } = world();
+            const before = readFileSync(file, 'utf8');
+            expect(
+                sweepFlyway(file, '2026-11-25', () =>
+                    writeFileSync(file, `${before}\nlate note`),
+                ),
+            ).toBe(0);
+            expect(readFileSync(file, 'utf8')).toBe(`${before}\nlate note`);
+            const archived = readFileSync(archive, 'utf8');
+            expect(sweepFlyway(file, '2026-11-25')).toBe(3);
+            expect(readFileSync(archive, 'utf8')).toBe(archived);
+            expect(readFileSync(file, 'utf8')).toContain('late note');
+        });
+
+        test('no dot-temp file stays behind', () => {
+            const { file, sweep } = world();
+            sweep('2026-11-25');
+            expect(readdirSync(path.dirname(file))).toEqual([
+                path.basename(file),
+            ]);
+        });
+    });
 
     test('a kind reads past the id', () => {
         expect(flywayKind('f12 ⏳ a — waits for: x')).toBe('waits');
