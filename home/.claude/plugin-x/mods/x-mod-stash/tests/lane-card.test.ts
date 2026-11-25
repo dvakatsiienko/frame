@@ -326,6 +326,88 @@ for (const [name, endedAt, plan, open] of [
         expect(kept(w).filter((l) => !l.endedAt).length).toBe(open);
     });
 
+// FRM-527:W139: one lane, one card. a hand card linked to the dispatched codie takes the plan once the dispatch (200) is
+// newer than her last move of it; a link is no move of hers
+for (const [name, over, want] of [
+    [
+        'her last move older takes the plan, its title kept',
+        [{ id: 'l1', movedByHand: 100 }],
+        [['l1', true, 'speak — by hand']],
+    ],
+    [
+        'her last move newer stays a hand card, alone',
+        [{ id: 'l1', movedByHand: 300 }],
+        [['l1', false, 'speak — by hand']],
+    ],
+    [
+        'linked to another codie is left, and the lane opens its own',
+        [{ codie: 'd0d0d0d0-other', id: 'l1', movedByHand: 100 }],
+        [
+            ['l1', false, 'speak — by hand'],
+            ['l2', true, 'mods lane 9'],
+        ],
+    ],
+    [
+        'two of them: the newest takes the plan',
+        [
+            { id: 'l1', movedByHand: 100 },
+            { id: 'l2', movedByHand: 100, title: 'stray — by hand' },
+        ],
+        [
+            ['l1', false, 'speak — by hand'],
+            ['l2', true, 'stray — by hand'],
+        ],
+    ],
+    [
+        'ended is never taken',
+        [{ endedAt: 150, id: 'l1', movedByHand: 100 }],
+        [['l2', true, 'mods lane 9']],
+    ],
+    [
+        "of a wing is the wing's",
+        [{ id: 'l1', movedByHand: 100, runner: '🦉🪽 clio: wing 1' }],
+        [
+            ['l1', false, 'speak — by hand'],
+            ['l2', true, 'mods lane 9'],
+        ],
+    ],
+] as const)
+    test(`a dispatch and a hand card ${name}`, async ($, on) => {
+        const d = dispatched([
+            {
+                at: 400,
+                dispatchedAt: 200,
+                lane: 'mods-lane-9',
+                pid: 5001,
+                sessionId: CODIE,
+            },
+        ]);
+        const cards = over.map(({ codie, movedByHand, ...rest }: HandCard) =>
+            keptLane({
+                history: [
+                    { act: 'create', at: movedByHand, current: 0, done: 0 },
+                    { act: 'link codie', at: 900, current: 0, done: 0 },
+                ],
+                linkedIds: { codie: codie ?? CODIE },
+                title: 'speak — by hand',
+                ...rest,
+            }),
+        );
+        const w = world(on, {
+            ...d,
+            files: { ...d.files, ...shelf(...cards) },
+        });
+        titled(w, marked('x  '));
+        await start($);
+        await poll(w);
+        await poll(w);
+        expect(
+            kept(w)
+                .filter((l) => !l.endedAt)
+                .map((l) => [l.id, !!l.plan, l.title]),
+        ).toEqual(want as never);
+    });
+
 test('a dispatch opens no card for a gone codie, a record with no lane, or a lane with no plan', async ($, on) => {
     const w = world(on, {
         ...dispatched([
@@ -490,3 +572,14 @@ test('a codie a summon recorded with a lane but no dispatching clio opens no car
     await poll(w);
     expect(kept(w)).toEqual([]);
 });
+
+/* Types */
+
+type HandCard = {
+    id: string;
+    movedByHand: number;
+    codie?: string;
+    endedAt?: number;
+    runner?: string;
+    title?: string;
+};

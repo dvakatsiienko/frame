@@ -197,8 +197,9 @@ async function startPoll($: EngineInterface, view: ViewDoors) {
                     orbitCall($, input, false),
                 ).catch(() => undefined);
                 await showClioAsks($).catch(() => undefined);
-                await followPlans($).catch(() => undefined);
             }
+            // a plan's tick reaches the card while main is idle too (FRM-527:W135): an unmoved file costs its mtime's read
+            await followPlans($).catch(() => undefined);
             // a fold or mobile mode is kept within one poll of its change
             await keepState($).catch(() => undefined);
             // speak's own controls move its play state: a press reads it fresh

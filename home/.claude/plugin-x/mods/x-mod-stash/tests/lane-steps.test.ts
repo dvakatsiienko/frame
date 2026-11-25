@@ -572,6 +572,20 @@ test('an untouched plan file spawns no x lane plan-steps on the next poll', asyn
     expect(w.planRuns.length - runs).toBe(1);
 });
 
+// FRM-527:W135: 5 min past main's last event the bookkeeping ticks every 30 s; a plan's tick is on the card within 5 s
+test("a plan's tick reaches an idle main's card within 5 s", async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w, 'x  ');
+    await w.clock.advance(6 * 60_000);
+    // settle on one read, so the next idle pass is far past the 5 s the second one gets
+    plant(w, marked('xx '));
+    for (let i = 0; i < 10 && kept(w)[0]?.current !== 2; i++) await poll(w);
+    plant(w, marked('xxx'));
+    await poll(w);
+    expect(kept(w)[0]?.current).toBe(3);
+});
+
 test('a failed x lane plan-steps keeps the last steps marked stale', async ($, on) => {
     const w = world(on);
     await start($);
