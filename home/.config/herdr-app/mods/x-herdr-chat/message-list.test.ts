@@ -254,3 +254,16 @@ test.each([
         expect(w.above(4)).toBe(188);
     },
 );
+
+// the rows under the held one come on screen with it: measured with it, or each lands a frame late and moves the place
+test('a place among many short rows comes to rest', () => {
+    const w = createWindow(Array(60).fill(28), () => 1);
+    w.land('r20', 10);
+    const early = w.run(1_500).drawn;
+    const late = w.run(1_500);
+    expect({
+        isLast: late.opacities.at(-1),
+        more: late.drawn - early,
+    }).toEqual({ isLast: 1, more: 0 });
+    expect(w.above(20)).toBe(10);
+});
