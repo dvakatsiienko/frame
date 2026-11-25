@@ -35,13 +35,18 @@ import { readableTheme } from './contrast.js';
 import { onDisk } from './disk.js';
 import { createFindBar } from './find-bar.js';
 import { createHeights } from './heights.js';
+import { joinIo, linesWith, logTrial, newId } from './join-io.js';
+import { JOINS_DIR } from './joins.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { createMessageList } from './message-list.js';
 import { createMessageRows } from './message-row.js';
+import { repliesBelow } from './note-text.js';
+import { createNotes } from './notes.js';
 import { audioAppOf } from './open-path.js';
 import { createPathLinks } from './path-links.js';
 import { createPickers } from './pickers.js';
 import { createPictureViewer } from './picture-viewer.js';
+import { MINI_STOP, createQuillMini } from './quill-mini.js';
 import { createQuill } from './quill-view.js';
 import { createRowModel } from './row-model.js';
 import { createSendPath } from './send-path.js';
@@ -59,6 +64,7 @@ import {
 } from './shown.js';
 import { TAB_HELD, createTabMember, loopOf } from './tab-loop.js';
 import { START_ROW, createThreadFeed } from './thread-feed.js';
+import { NAMES_KEY } from './thread-keys.js';
 
 /** @typedef {import('./chat-types.js').Color} Color */
 /** @typedef {import('./chat-types.js').Context} Context */
@@ -102,6 +108,8 @@ export default class Chat extends View {
     heights = createHeights();
     /** ⌘K's last ask (the status bar takes the key and writes the time) @type {unknown} */
     quillAsk = null;
+    /** F6's last ask: the time he pressed it (the status bar takes the key and writes it) @type {unknown} */
+    annotateAsk = null;
     /** ⌘F's last ask, pressed anywhere in the window (the status bar takes the key and writes the time) @type {unknown} */
     findAsk = null;
     /** Esc's last ask from outside the chat (the status bar takes the key and writes the time) @type {unknown} */
@@ -139,8 +147,7 @@ export default class Chat extends View {
                 .map((r) => r.text),
         pickersView: (t) => this.pickers.view(t),
         pressEscape: (cx) => {
-            if (this.pictures.isOpen()) this.closeTop(cx);
-            else this.leaveQuill(cx);
+            if (!this.closeTop(cx)) this.chatKeys?.focus();
         },
         say: (note, cx) => this.say(note, cx),
         sendPath: () => this.sendPath,
@@ -166,6 +173,28 @@ export default class Chat extends View {
         shownAddress: () => this.feed.address(),
         shownFile: () => this.feed.file(),
         typingInto,
+    });
+    /** the notes he writes on words he selected (FRM-585) */
+    notes = createNotes({
+        dir: `${home()}/${JOINS_DIR}`,
+        io: joinIo,
+        linesWith,
+        logTrial,
+        newId,
+        store: localStorage,
+    });
+    /** the box a note is written in, over the list */
+    quillMini = createQuillMini({
+        back: (id) => repliesBelow(this.model.rows, id),
+        focusQuill: () => this.quill.focus(),
+        joins: () => this.sendPath.joins(),
+        notes: this.notes,
+        pressEscape: (cx) => this.closeTop(cx),
+        room: () => this.list.size(),
+        sendNote: (id, back) => this.sendPath.sendNote(this.notes, id, back),
+        tab: this.tab,
+        thread: () => this.feed.file(),
+        threadName: () => this.threadName(),
     });
     /** the band over the quill and the bar under it */
     band = createBand({
@@ -229,10 +258,12 @@ export default class Chat extends View {
     });
     /** the list on screen and his reading place in it */
     list = createMessageList({
+        annotate: (selected, cx) => this.quillMini.show(selected, cx),
         audioApp: () => this.audioApp,
         file: () => this.feed.file(),
         heights: this.heights,
         loadEarlier: (cx) => this.feed.loadEarlier(cx),
+        noteBox: (t) => this.quillMini.view(t),
         pictures: this.pictures,
         reader: () => this.feed.reader(),
         rows: this.rows,
@@ -267,6 +298,7 @@ export default class Chat extends View {
         // the viewer and find belong to the thread they opened on
         this.pictures.close();
         this.findBar.reset();
+        this.quillMini.reset();
         this.sendPath.takeJoins(null);
         // no button shows or presses a thread no longer on screen; the fleet's facts stay
         this.band.clear();
@@ -308,6 +340,7 @@ export default class Chat extends View {
         });
         this.chatKeys = cx.focus_handle();
         this.quill.start(cx);
+        this.quillMini.start(cx);
         this.pickers.start(cx);
         this.pictures.start(cx);
         this.findBar.start(cx);
@@ -349,6 +382,7 @@ export default class Chat extends View {
         // gives it to that tab's hidden terminal. ⌘⇧E opens the picker on the effort, a second press applies it. a press
         // the chat slept through is dropped, never acted on late
         const quillAsk = shared('chat.quill') ?? null;
+        const annotateAsk = shared('chat.annotate') ?? null;
         const effortAsk = shared('chat.effort') ?? null;
         const findAsk = shared('chat.find') ?? null;
         const escapeAsk = shared('chat.escape') ?? null;
@@ -358,6 +392,7 @@ export default class Chat extends View {
             heldStop !== 'quill' &&
             loopOf(shared, layout()).includes(heldStop);
         const acts = asksActedOn({
+            annotateAsk,
             effortAsk,
             escapeAsk,
             findAsk,
@@ -365,6 +400,7 @@ export default class Chat extends View {
             isKept: !this.isLoaded && isHeldElsewhere,
             isShown,
             isSwitched,
+            lastAnnotate: this.annotateAsk,
             lastEffort: this.effortAsk,
             lastEscape: this.escapeAsk,
             lastFind: this.findAsk,
@@ -374,17 +410,22 @@ export default class Chat extends View {
             wasShown: this.wasShown,
         });
         this.quillAsk = acts.lastQuill;
+        this.annotateAsk = acts.lastAnnotate;
         this.effortAsk = acts.lastEffort;
         this.findAsk = acts.lastFind;
         this.escapeAsk = acts.lastEscape;
         this.wasShown = isShown;
         this.isLoaded = true;
-        // Esc pressed anywhere in the window closes the viewer, or find when no viewer shows (dima, 18:18)
-        if (
-            acts.isEscape &&
-            (this.pictures.isOpen() || this.findBar.find.state.isOpen)
-        )
-            _cx.timer.after(0, (later) => this.closeTop(later));
+        // Esc pressed anywhere in the window closes what is on top (dima, 18:18)
+        if (acts.isEscape) _cx.timer.after(0, (later) => this.closeTop(later));
+        // F6: the words that stood selected at its press, since a press in between lets them go
+        if (acts.isAnnotate && !this.pictures.isOpen())
+            _cx.timer.after(0, (later) =>
+                this.quillMini.toggle(
+                    () => this.list.selectedAt(Number(annotateAsk)),
+                    later,
+                ),
+            );
         // a click on an orbit preview brings the chat into view and asks its viewer here (FRM-676)
         const viewAsk = chatViewOf(shared(CHAT_VIEW));
         if (
@@ -417,11 +458,17 @@ export default class Chat extends View {
         }
         if (acts.isFind && !this.pictures.isOpen())
             _cx.timer.after(0, (later) => this.findBar.open(later));
-        // the quill is the chat's one Tab stop while the chat shows; the loop asks for it, or a reload hands it back
-        const isTabbed =
-            this.tab.draw(isShown ? ['quill'] : [], (run) =>
-                _cx.timer.after(0, run),
-            ) === 'quill';
+        // the quill is the chat's Tab stop while the chat shows, the note box one more while open; the loop asks for one, or
+        // a reload hands it back
+        const stops = this.quillMini.isOpen()
+            ? ['quill', MINI_STOP]
+            : ['quill'];
+        const tabbed = this.tab.draw(isShown ? stops : [], (run) =>
+            _cx.timer.after(0, run),
+        );
+        const isTabbed = tabbed === 'quill';
+        if (tabbed === MINI_STOP)
+            _cx.timer.after(0, () => this.quillMini.focus());
         const isAsked = isTabbed || (acts.isFocus && !this.pictures.isOpen());
         // a quill the next opening takes off the screen is no place for the keyboard
         if (isAsked && !this.isOpening())
@@ -672,16 +719,33 @@ export default class Chat extends View {
         else if (focus === 'chat') this.chatKeys?.focus();
     }
 
-    /** the keyboard leaves the quill: find closes, else the chat takes it @param {Context} cx */
+    /** a press outside the quill: find closes, else the chat takes the keyboard, unless the note box has it @param {Context} cx */
     leaveQuill(cx) {
         if (this.findBar.find.state.isOpen) this.findBar.close(cx);
-        else this.chatKeys?.focus();
+        else if (!this.quillMini.isOpen()) this.chatKeys?.focus();
     }
 
-    /** Esc over the chat: the viewer closes, or find when no viewer shows (dima, 18:18) @param {Context} cx */
+    /** Esc over the chat: the viewer closes, else the note box, else find (dima, 18:18) @param {Context} cx @returns {boolean} whether one did */
     closeTop(cx) {
+        const isFind = this.findBar.find.state.isOpen;
         if (this.pictures.isOpen()) this.pictures.step('close', cx);
-        else if (this.findBar.find.state.isOpen) this.findBar.close(cx);
+        else if (this.quillMini.isOpen()) this.quillMini.close(cx);
+        else if (isFind) this.findBar.close(cx);
+        else return false;
+        return true;
+    }
+
+    /** the shown thread as antenna names it */
+    threadName() {
+        const address = this.feed.address();
+        const names = /** @type {Record<string, string> | null} */ (
+            shared(NAMES_KEY)
+        );
+        return (
+            (address && names?.[address]) ??
+            agents().find((agent) => agent.address === address)?.title ??
+            ''
+        );
     }
 
     /** his settings rows as the chat uses them @param {Record<string, unknown>} values */

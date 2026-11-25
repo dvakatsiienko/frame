@@ -440,6 +440,8 @@ export function createSendPath({
         hold: () => hold,
         holdFill: () => holdFill,
         holdStep,
+        /** what the shown thread's state lists of its joins */
+        joins: () => joins,
         magic,
         press,
         push,

@@ -1,12 +1,14 @@
 // the right-click menu on a message (FRM-638 slice 7): «Copy text» copies the words he selected in it (FRM-699),
-// «Copy message» the whole as written. herdr reports one
+// «Copy message» the whole as written; «Annotate» opens the note box on the words he selected in it (FRM-585). herdr reports one
 // right-click twice, on the list's item (which row) and on the list (where, in the list's own px), in either order:
 // whichever lands second completes the menu
 
 /** @typedef {import('./row-model.js').Row} Row */
 /** @typedef {{ x: number, y: number }} Point */
 /** @typedef {{ isSelection: boolean, text: string }} Copied what the menu's item copies, as it stood at the press */
-/** @typedef {{ at: Point, copied: Copied | null, x: number, y: number }} Menu `at` the press in window px, x and y in the list's */
+/** @typedef {import('./selection.js').SelectedAt} SelectedAt */
+/** @typedef {{ copied: Copied | null, selected: SelectedAt | null }} Pressed what the row pressed has for the menu, as it stood at the press */
+/** @typedef {Pressed & { at: Point, x: number, y: number }} Menu `at` the press in window px, x and y in the list's */
 
 /** @param {Point} a @param {Point} b */
 const isSame = (a, b) => a.x === b.x && a.y === b.y;
@@ -14,23 +16,29 @@ const isSame = (a, b) => a.x === b.x && a.y === b.y;
 export function createMessageMenu() {
     /** @type {Menu | null} */
     let menu = null;
-    /** @type {{ at: Point, copied: Copied | null } | null} */
+    /** @type {(Pressed & { at: Point }) | null} */
     let hit = null;
     return {
         close() {
             menu = null;
             hit = null;
         },
-        /** the item's half: what the row pressed copies @param {Point} at @param {Copied | null} copied */
-        hit(at, copied) {
-            if (menu && isSame(menu.at, at)) menu = { ...menu, copied };
-            else hit = { at, copied };
+        /** the item's half @param {Point} at @param {Pressed} pressed */
+        hit(at, pressed) {
+            if (menu && isSame(menu.at, at)) menu = { ...menu, ...pressed };
+            else hit = { at, ...pressed };
         },
         /** the list's half: where the press was @param {Point} at @param {Point} local */
         open(at, local) {
-            const copied = hit && isSame(hit.at, at) ? hit.copied : null;
+            const pressed = hit && isSame(hit.at, at) ? hit : null;
             hit = null;
-            menu = { at, copied, x: local.x, y: local.y };
+            menu = {
+                at,
+                copied: pressed?.copied ?? null,
+                selected: pressed?.selected ?? null,
+                x: local.x,
+                y: local.y,
+            };
         },
         get state() {
             return menu;

@@ -20,6 +20,7 @@ async function isOverlayOpen() {
 export async function takeCommands() {
     for (;;) {
         const command = await nextCommand();
+        const pressed = Date.now();
         // ⌘F over an open window or dialog does nothing: find opens only on the chat in view (dima, 18:28)
         if (command === 'find' && (await isOverlayOpen())) continue;
         // ⌘F from any focus opens the chat's find; a terminal keeps its own ⌘F (keys.json's terminal section)
@@ -27,6 +28,9 @@ export async function takeCommands() {
             const chat = chatSelectArgs(layout());
             if (chat) run('layout.select', chat);
             setShared(`chat.${command}`, Date.now());
+        } else if (command === 'annotate') {
+            // F6 acts on words he selected in the chat on screen: with none it moves no view (FRM-585:W4)
+            setShared('chat.annotate', pressed);
         } else if (command === 'escape') {
             // the chat on screen closes its viewer or find; no view is switched for it
             setShared('chat.escape', Date.now());

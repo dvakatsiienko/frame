@@ -36,6 +36,8 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **x-herdr-deck** — our deck mod: orbit, glide and phases; it publishes each thread's facts for antenna and the chat
 - **draft** — what dima has typed in the quill and not yet sent; kept per thread across a reload
 - **mark** — the quill's words marked to join a thread's turn (🍕), kept with the draft by one owner (`quill.js`) until a turn takes them or he takes the mark off
+- **note** — what dima writes on words he selected in a message (FRM-585), one per passage, kept by `notes.js` until a turn takes it or it goes by itself
+- **quill-mini** — the small box over the chat's list a note is written in, opened by F6 or «Annotate»
 - **press** — dima's tick, replay or untick on an ask, one record each in the deck (`createPresses`) until the thread's shelf shows it
 - **ask** — an orbit ask a thread put on his deck (and on cc's own board); a **tick** (🛎️) accepts it, a **replay** (🔁) sends it back with his steer
 - **look card** — an ask opening «look:» (a 👀 before it allowed), a thread's request that dima looks at a finished change

@@ -120,6 +120,7 @@ const loaded = () => {
         pickers: { start: Handler };
         pictures: unknown;
         quill: { start: Handler };
+        quillMini: unknown;
     };
     const starting = {
         ...cx,
@@ -134,6 +135,7 @@ const loaded = () => {
 /** the chat as it draws a thread, its parts quiet but the quill */
 const chat = (over: Record<string, unknown> = {}) => {
     const view = Object.assign(Object.create(Chat.prototype), {
+        annotateAsk: null,
         band: quiet(),
         blocked: quiet(),
         chatKeys: null,
@@ -158,6 +160,7 @@ const chat = (over: Record<string, unknown> = {}) => {
         }),
         pictures: quiet({ isOpen: () => false }),
         quill: quiet({ addFiles, box: () => ({}) }),
+        quillMini: quiet({ isOpen: () => false }),
         rows: quiet({ shown: () => [] }),
         settingsWindow: null,
         tab: quiet({ draw: () => null }),
@@ -192,6 +195,10 @@ describe('a file dropped on the chat', () => {
         [
             'with the viewer over it',
             { pictures: quiet({ isOpen: () => true }) },
+        ],
+        [
+            'with the note box open',
+            { quillMini: quiet({ isOpen: () => true }) },
         ],
     ])('joins the quill, %s, by the pane’s one handler', (_how, over) => {
         const view = chat(over);
@@ -312,25 +319,33 @@ describe('Esc over the chat', () => {
 describe('Esc in the quill', () => {
     test.each([
         [
-            'closes the viewer, find under it left as it is',
-            true,
-            true,
+            'closes the viewer, the note box and find left as they are',
+            { find: true, mini: true, viewer: true },
             ['viewer'],
         ],
-        ['closes the viewer alone', true, false, ['viewer']],
-        ['closes find with no viewer open', false, true, ['find']],
-        ['else hands the keyboard to the chat', false, false, ['chat']],
-    ])('%s', (_how, isViewerOpen, isFindOpen, closed) => {
+        [
+            'closes the note box, find left as it is',
+            { find: true, mini: true },
+            ['mini'],
+        ],
+        ['closes the viewer alone', { viewer: true }, ['viewer']],
+        ['closes find with nothing over it', { find: true }, ['find']],
+        ['else hands the keyboard to the chat', {}, ['chat']],
+    ])('%s', (_how, isOpen: Record<string, boolean>, closed) => {
         const done: string[] = [];
         const view = loaded();
         view.chatKeys = { focus: () => done.push('chat') };
         view.findBar = {
             close: () => done.push('find'),
-            find: { state: { isOpen: isFindOpen } },
+            find: { state: { isOpen: Boolean(isOpen.find) } },
         };
         view.pictures = {
-            isOpen: () => isViewerOpen,
+            isOpen: () => Boolean(isOpen.viewer),
             step: () => done.push('viewer'),
+        };
+        view.quillMini = {
+            close: () => done.push('mini'),
+            isOpen: () => Boolean(isOpen.mini),
         };
         at.made.length = 0;
         (view.quill as never as { view: Handler }).view({});
@@ -339,6 +354,107 @@ describe('Esc in the quill', () => {
             ?.handlers.get('x_herdr_chat_quill_escape')?.({}, cx);
         expect(done).toEqual(closed);
     });
+});
+
+// FRM-585 A4, A5: the note box in the chat
+describe('the note box', () => {
+    /** the chat drawn with F6 asked for at its time, and what that did */
+    const asked = (over: Record<string, unknown> = {}, time = Date.now()) => {
+        const opened: unknown[] = [];
+        const stops: unknown[] = [];
+        at.shared.set('chat.annotate', time);
+        const view = chat({
+            list: quiet({ selectedAt: (pressed: number) => `at ${pressed}` }),
+            quillMini: quiet({
+                focus: () => opened.push('focus'),
+                isOpen: () => false,
+                toggle: (selected: () => unknown) => opened.push(selected()),
+            }),
+            tab: quiet({
+                draw: (drawn: unknown) => {
+                    stops.push(drawn);
+                    return null;
+                },
+            }),
+            ...over,
+        });
+        const draw = () => {
+            view.render(cx);
+            for (const run of at.timers.splice(0)) run();
+        };
+        draw();
+        draw();
+        return { opened, stops: stops[0] };
+    };
+
+    test('F6 takes the words that stood at its press, once', () => {
+        const time = Date.now() - 20;
+        expect(asked({}, time).opened).toEqual([`at ${time}`]);
+    });
+
+    test.each([
+        ['3 s old', {}, 3000],
+        [
+            'with the viewer open',
+            { pictures: quiet({ isOpen: () => true }) },
+            0,
+        ],
+    ])('F6 %s does nothing', (_how, over, age) => {
+        expect(asked(over, Date.now() - age).opened).toEqual([]);
+    });
+
+    test('F6 over an open find bar works', () => {
+        const findBar = quiet({ find: { state: { isOpen: true } } });
+        expect(asked({ findBar }).opened).toHaveLength(1);
+    });
+
+    test('F6 with the chat not on screen does nothing', () => {
+        at.props = { self: 'chat', stack: 'main' };
+        at.layout = {
+            children: [{ active: 'terminal', children: [], id: 'main' }],
+        };
+        expect(asked().opened).toEqual([]);
+        at.layout = null;
+    });
+
+    test('its stop is in the Tab loop only while it is open', () => {
+        expect(asked().stops).toEqual(['quill']);
+        const quillMini = quiet({ isOpen: () => true });
+        expect(asked({ quillMini }).stops).toEqual(['quill', 'quill-mini']);
+    });
+
+    test('the loop’s turn gives it the keyboard', () => {
+        const tab = quiet({ draw: () => 'quill-mini' });
+        expect(asked({ tab }, 0).opened).toContain('focus');
+    });
+
+    test('a thread switched from shuts it', () => {
+        const reset = vi.fn();
+        const view = chat({
+            heights: quiet(),
+            model: { clear: () => {}, rows: [] },
+            quillMini: quiet({ reset }),
+            sendPath: quiet(),
+        }) as never as { clearShown: () => void };
+        view.clearShown();
+        expect(reset).toHaveBeenCalledTimes(1);
+    });
+
+    test.each([
+        ['stays with it', true, []],
+        ['goes to the chat without it', false, ['chat']],
+    ])(
+        'a press from the quill into it: the keyboard %s',
+        (_how, isOpen, focused) => {
+            const done: string[] = [];
+            const view = chat({
+                chatKeys: { focus: () => done.push('chat') },
+                quillMini: quiet({ isOpen: () => isOpen }),
+            }) as never as { leaveQuill: (c: unknown) => void };
+            view.leaveQuill(cx);
+            expect(done).toEqual(focused);
+        },
+    );
 });
 
 // FRM-620:W84: the quill is not drawn while the thread opens, so a focus given at the switch was lost with it
