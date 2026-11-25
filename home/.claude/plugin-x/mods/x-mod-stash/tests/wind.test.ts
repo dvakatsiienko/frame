@@ -604,20 +604,21 @@ test('past 55 % a session hears once that 65 % is the upper boundary', async ($,
     ]);
 });
 
-test('the notice says to finish the meaningful part, commit and hand off before the wind, never mid-build', async ($, on) => {
+test('the notice says wind now with nothing in hand, else finish the meaningful part, commit and hand off first, never mid-build', async ($, on) => {
     const w = world(on);
     await start($);
     await turnAt($, w, 56);
     const said = noticesOf(w.lines).join('');
     expect(
         [
-            'do not compact now',
+            'nothing planned and nothing pending: take it now',
+            'work in hand: wind at a good point of your own',
             'finish the meaningful part',
             'commit',
             'handoff',
             'never mid-build or mid-step',
-        ].map((t) => said.includes(t)),
-    ).toEqual([true, true, true, true, true]);
+        ].filter((t) => !said.includes(t)),
+    ).toEqual([]);
 });
 
 test('a long turn hears the notice at its next tool step, from the live fill', async ($, on) => {

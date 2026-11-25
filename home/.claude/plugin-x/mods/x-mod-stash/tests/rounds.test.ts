@@ -491,6 +491,45 @@ test('two chunks a round line names count apart, the record trailing both, and t
     ]);
 });
 
+// 41 entries on 25 Nov, 1 with its time: each write dropped the others', and a lone slice sorts by it
+test("a round in one lane keeps another lane's time, and a lone slice joins the later of two keys", async ($, on) => {
+    const w = roundWorld(on, {
+        files: {
+            [ROUNDS_FILE]: JSON.stringify({
+                rounds: {
+                    'herdr-lane-2 | FRM-1': { at: 7, count: 1, shas: ['a1'] },
+                    'mods-lane-5 | FRM-3 slice 6': {
+                        at: 5,
+                        count: 1,
+                        shas: ['b2'],
+                    },
+                    'mods-lane-5 | FRM-4 slice 6': {
+                        at: 9,
+                        count: 1,
+                        shas: ['c3'],
+                    },
+                },
+                v: 1,
+            }),
+        },
+    });
+    await start($);
+    await send($, ROUND_SENSE, 'round 2 on d4d4d4d (slice 6)');
+    const after = roundsRaw(w.files) as Record<
+        string,
+        { at?: number; count: number }
+    >;
+    expect(
+        Object.entries(after)
+            .slice(0, 2)
+            .map(([k, r]) => [k, r.at]),
+    ).toEqual([
+        ['herdr-lane-2 | FRM-1', 7],
+        ['mods-lane-5 | FRM-3 slice 6', 5],
+    ]);
+    expect(after['mods-lane-5 | FRM-4 slice 6']?.count).toBe(2);
+});
+
 test('a lone slice joins the key a fuller line gave it, and a ticket the line only mentions keys nothing', async ($, on) => {
     const w = roundWorld(on, { record: { ticket: 'FRM-625' } });
     await start($);

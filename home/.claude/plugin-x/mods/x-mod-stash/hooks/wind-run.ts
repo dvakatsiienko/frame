@@ -86,7 +86,7 @@ type FillMark = {
     windAt?: number;
     overrun?: true;
 };
-const FILL_NOTICE = `🐦‍🔥 context at {fill} %: a second wind is coming. {wind} % is the upper boundary, where the mod asks for it; nothing is urgent. do not compact now: plan your nearest steps so you finish the meaningful part you are in, commit it, solve its tails, write your handoff with x:handoff (or \`x handoff write\` where that skill is missing), then take the wind through ${ORBIT_TOOL} op second-wind. never mid-build or mid-step.`;
+const FILL_NOTICE = `🐦‍🔥 context at {fill} %: a second wind is coming. nothing planned and nothing pending: take it now. work in hand: wind at a good point of your own, nothing is urgent, {wind} % is the upper boundary, where the mod asks for it; finish the meaningful part you are in, commit it and solve its tails, never mid-build or mid-step. the wind: write your handoff with x:handoff (or \`x handoff write\` where that skill is missing), then ${ORBIT_TOOL} op second-wind.`;
 const FILL_PROPOSE =
     "🐦‍🔥 second wind due at {fill} %: past the {wind} % boundary, and this thread's 🍃 second wind auto is off: propose the wind to dima in orbit at your next good stop, never take it yourself.";
 const WIND_NOTE_AUTO = `🐦‍🔥 second wind: the mod asks you for it, your context is past {wind} %: a must, never a rush. finish the step you are on and commit it, nothing interrupts it; never wind mid-build. then ${WIND_HOW}`;

@@ -46,6 +46,7 @@ export function roundsOf(kept: unknown): LaneRounds {
         };
     const v = kept as Partial<LaneRounds> | undefined;
     return {
+        ...(typeof v?.at === 'number' ? { at: v.at } : {}),
         ...(typeof v?.clean === 'number' && v.clean > 0
             ? { clean: v.clean }
             : {}),
