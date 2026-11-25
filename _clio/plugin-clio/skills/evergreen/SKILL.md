@@ -14,16 +14,16 @@ prefix (renovate writes it), 🧬 her voice here. cadence: **wednesday, plus any
 
 ## the day — four turns
 
-the boot digest seeds «🧬 evergreen turn» first under the flyways (`boot-prefetch.sh`), so the board's order carries it as the first work item (dima's o77).
+the boot digest seeds «🧬 evergreen turn» first under the flyways (`boot-prefetch.sh`, dima's o77).
 
-1. **upgrade, no ask** — first the before-snapshots into `~/.local/state/clio/evergreen/<today>/`: `pnpm outdated -g --json > pnpm-g-outdated.json`, `uv tool list --outdated > uv-outdated.txt`; then in the background: `timeout 2400 brew upgrade > brew-upgrade.log 2>&1` (pinned never), then `open -g -a 1Password` and `ssh-add -l` on its socket (an upgrade once left signing refused); `pnpm update -g --latest`, every uv tool but `mlx-audio` (`uv tool list | awk '/^[a-z]/{print $1}' | grep -vx mlx-audio | xargs -n1 uv tool upgrade`; kokoro's engine moves only on dima's word until FRM-669 lands); the merge round, [references/merge-round.md](references/merge-round.md): every green renovate pr, then one stray batch for the reds, the sweep and the no-break majors, both repos and the go modules; done = its finish line
+1. **upgrade, no ask** — first the before-snapshots into `~/.local/state/clio/evergreen/<today>/`: `pnpm outdated -g --json > pnpm-g-outdated.json`, `uv tool list --outdated > uv-outdated.txt`; then in the background: `timeout 2400 brew upgrade > brew-upgrade.log 2>&1` (pinned never), then `open -g -a 1Password` and `ssh-add -l` on its socket (an upgrade once left signing refused); `pnpm update -g --latest`, every uv tool but `mlx-audio` (`uv tool list | awk '/^[a-z]/{print $1}' | grep -vx mlx-audio | xargs -n1 uv tool upgrade`; an outdated `mlx-audio`: `pnpm -C ~/projects/bytes speak:kokoro-backup --candidate --silent`, the pairs in the report, `--check` for his ear, `--switch` and both restarts, kokoro's and x-speak's, on his tick); the merge round, [references/merge-round.md](references/merge-round.md): every green renovate pr, then one stray batch for the reds, the sweep and the no-break majors, both repos and the go modules; done = its finish line
 2. **read the delta** — `node script/evergreen-delta.ts > <today's dir>/delta.md` writes the delta file (read.md § 1), before `--mark`; then `researcher` cards (Opus 5.5), one per area, each briefed with [references/read.md](references/read.md) and [references/the-want.md](references/the-want.md); `wishkeeper` reads the joined report for its picks
-3. **the report** — whole in the chat in read.md § 4's shape, checked against the-want, the standing page republished, an action item only where it helps; then `pnpm skill:evergreen-apps --mark`; the 🧬 pocket item is done once both repos are pushed and `node script/evergreen-delta.ts --save-heads` ran
+3. **the report** — whole in the chat in read.md § 4's shape, the standing page republished, an action item only where it helps; then `pnpm skill:evergreen-apps --mark`; the 🧬 pocket item is done once both repos are pushed and `node script/evergreen-delta.ts --save-heads` ran
 4. **his feedback** — he steers line by line; each action he picks is done in place, a ticket or a lane rider, the page's chip at its landing
 
 ## the report — what clio does with the cards' replies
 
-- 📖 the report's shape and every judge rule live in [references/read.md](references/read.md) §§ 3–4; clio reads it before printing or reworking a report, never prints from memory
+- 📖 the report's shape and every judge rule live in [references/read.md](references/read.md) §§ 3–4; read before printing or reworking a report
 - **every digest is also the artifact** (dima 2026-09-28: «let's have it as a habit part») —
   one standing page, [Evergreen](https://claude.ai/artifact/Vgx13BgNQyieSfcTNvsi4p), republished
   by `url` each run with that run's date in its header: 🌟 cards with a borrow line and a status
@@ -41,7 +41,7 @@ weekly, the skills and plugins lanes join the digest: read [references/weekly-la
 
 ## a green run with no prs
 
-- first count prs by title (`gh pr list --search 'evergreen in:title'`): the bot is `app/x-renovate`, so an author filter misses them; none opened past a due window → `gh workflow run renovate.yml -f logLevel=debug`, then read `RENOVATE_FORCE` and the branch summary in `gh run view <id> --log`
+- first count prs by title (`gh pr list --search 'evergreen in:title'`; the bot is `app/x-renovate`); none opened past a due window → `gh workflow run renovate.yml -f logLevel=debug`, then read `RENOVATE_FORCE` and the branch summary in `gh run view <id> --log`
 - a preset in doubt: a renovate dry run on a committed scratch repo extending that ref
 
 ## completion criterion
