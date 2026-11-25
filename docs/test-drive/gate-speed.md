@@ -1,5 +1,5 @@
 ---
-status: live
+status: adopted
 until: 2026-11-27
 dies-when: the verdict line below is written
 ---
@@ -107,3 +107,5 @@ dima explores how to balance the load across clio main and her wings; FRM-521 is
 - 2026-11-18 overdue read (a helper card): not enough rounds — gate wait p90 636 → 31 s meets its row; the commit test step p50 18 s misses <5 s; the red-proof p90 and the safety rows never read · extended to 11-25 to read those rows
 
 ## verdict
+
+- 2026-11-25 · **adopted** (dima's tick, 13:32) — gate wait p90 636 → 93 s (target 60, missed by a little), red-proof p90 391 → 95 s, go suite 308 → 178 cpu-s p50, commit test step 13 → 1–2 s on `main`, 7 s on `clio-wing-*`; pushes to main red 1 per 45 commits against a kill line of 1 per 10. not met: load peak over 60 on 9 of 13 days, the push twin p50 33 → 64 s, commit-call minutes per 10 commits for other sessions 5.2 → 17.9 (cause being read); 33 red CI runs sit on `related` commits, seven opened, none clearly the gate's. unmeasured: mods lanes, `worktree-*`, vitest false reds. the numbers: wing 1 tree `.scratch/trials/gate-speed.md`
