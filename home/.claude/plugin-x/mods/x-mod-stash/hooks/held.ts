@@ -224,17 +224,24 @@ export const quietLocked = serial();
 export async function heldStuckMs($: EngineInterface) {
     return (await readNumber($, 'quietWait')) * 60_000 + QUIET_STUCK_MS;
 }
+// a 🌀 row older than a compact's longest run was left by a run a hot reload lost, and holds nothing (the herdr codie,
+// 17:22–18:13); an ask or a wind still being written has no such age
+async function windNow($: EngineInterface, sid: string) {
+    const row = await windOf($, sid);
+    const isLost =
+        row?.state === 'refreshing' &&
+        (await $.clock.now()) - row.at >= COMPACT_MAX_MS;
+    return isLost ? undefined : row?.state;
+}
 // a compact is running: from its 🌀 or the compact's start until it ends
 export async function isCompactingNow(
     $: EngineInterface,
     sid: string,
     isWindOn: boolean,
 ) {
-    // a 🌀 row is second wind's: switched off, a row left behind holds nothing, only a real compact does; a row older than
-    // a compact's longest run was left by a run a hot reload lost, and holds nothing either (the herdr codie, 17:22–18:13)
-    const wind = isWindOn ? await windOf($, sid) : undefined;
+    // a 🌀 row is second wind's: switched off, a row left behind holds nothing, only a real compact does
+    const was = isWindOn ? await windNow($, sid) : undefined;
     const now = await $.clock.now();
-    const was = wind && now - wind.at < COMPACT_MAX_MS ? wind.state : undefined;
     const since = await $.store.get(COMPACTING + sid).catch(() => undefined);
     // a process that died mid-compact never cleared its key, so the key counts only inside a compact's longest run
     return (
@@ -380,7 +387,7 @@ export async function takeSteers($: EngineInterface, isOn: IsPartOn) {
     const keys = await heldKeys($);
     const sid = await currentId($);
     if (!keys || !sid) return [];
-    const was = (await windOf($, sid))?.state;
+    const was = await windNow($, sid);
     // quiet comms' own went first, to this prompt's quiet note
     const steers = await takeHeld(
         $,

@@ -17,6 +17,7 @@ function world(on: On, compactMs = 0) {
     const clock = mock.clock(on, { now: NOW });
     const store = new Map<string, unknown>();
     const commands: string[] = [];
+    const contexts: string[][] = [];
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
     on('store.set', (_$, e) => {
         store.set(e.key, e.value);
@@ -67,7 +68,10 @@ function world(on: On, compactMs = 0) {
     on('tool.register', (_$, e) => ({
         value: { tool: `mcp__x-mod-stash__${e.name}` },
     }));
-    on('prompt.submit', (_$, e) => ({ text: e.text }));
+    on('prompt.submit', (_$, e) => {
+        contexts.push([...(e.context ?? [])]);
+        return { text: e.text };
+    });
     on('command.list', () => ({
         value: [
             { description: '', name: 'compact', source: 'builtin' as const },
@@ -87,7 +91,7 @@ function world(on: On, compactMs = 0) {
     });
     on('session.compact', (_$, e) => ({ messages: e.messages }));
     on('turn.complete', () => ({ text: '' }));
-    return { clock, commands, store };
+    return { clock, commands, contexts, store };
 }
 
 // a reload is a fresh copy of the module started on the store the old one left
@@ -191,4 +195,21 @@ for (const [age, isHeld] of [
         await start($);
         const r = await fromPeer($, 'round 4 on abc1234');
         expect(r.consumed !== undefined).toBe(isHeld);
+    });
+for (const [wait, state, isTaken] of [
+    [9 * 60_000, 'refreshing', false],
+    [11 * 60_000, 'refreshing', true],
+    [11 * 60_000, 'writing', false],
+] as const)
+    test(`a message held early by a wind row now ${wait / 60_000} min old and ${state} ${isTaken ? 'joins' : 'waits past'} the next prompt`, async ($, on) => {
+        const w = world(on);
+        on('session.receive', (_$, e) => ({ text: e.text }));
+        on('session.send', () => ({ isDelivered: true }));
+        await start($);
+        w.store.set(`wind:${SID}`, { at: NOW, state: 'refreshing' });
+        await fromPeer($, 'early note');
+        w.store.set(`wind:${SID}`, { at: NOW, state });
+        await w.clock.advance(wait);
+        await say($);
+        expect(JSON.stringify(w.contexts).includes('early note')).toBe(isTaken);
     });
