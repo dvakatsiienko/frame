@@ -4,7 +4,7 @@ read this before a change: find the one module that owns the state you touch, an
 
 ## main.js — the view herdr loads
 
-- `main.js` — the class herdr loads, the bar itself or one of its popups by its props: reads the bar's folder and its PR (`readGit`, `lookup`), syncs a repo (`sync`), holds what the bar and a popup share (the PRs, the folders being synced, the last usage read, the new branch's name box), opens a folder, and draws the bar in `render`
+- `main.js` — the class herdr loads, the bar itself or one of its popups by its props: reads the bar's folder and its PR (`readGit`, `lookup`), syncs a repo (`sync`), holds what the bar and a popup share (the PRs, the folders being synced, the last usage read), makes the repo page's name box in `init`, opens a folder, and draws the bar in `render`
 
 ## views — each owns its state
 

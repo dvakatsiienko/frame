@@ -1,6 +1,6 @@
 // x-herdr-deck: the live sessions from Claude Code's registry with what each waits on and its phases, the open
 // orbit asks x-mod-stash keeps on disk, ticked here into each session's ticks file; a `view: 'glide'` copy draws each
-// lane's glide card under antenna (glide-view.js).
+// lane's glide card under antenna (glide-view.js). MODULES.md names the module that owns each part.
 
 import { unlink } from 'fs/promises';
 import { InputState, v_flex } from 'gpui-base';

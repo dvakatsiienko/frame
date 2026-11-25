@@ -32,6 +32,7 @@ import { ago, createUsageView, resetText, usageWindows } from './usage.js';
 
 // x-herdr-status: the status bar, a clone of Herdr's workspace-status (0.1.10); changes: no agents count (the agents
 // list shows them; the "N sub-agents working" item went too, 2026-11-05: the chat's chips show them).
+// MODULES.md names the module that owns each part.
 // Also: "Folder" and "VS Code" open the focused terminal's folder (else the space's), on this
 // computer only (`open`).
 // The branch name opens a list of the repo's branches to `git switch` to; "PR #N" opens its PR.

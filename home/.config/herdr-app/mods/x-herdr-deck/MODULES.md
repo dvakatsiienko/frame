@@ -1,10 +1,10 @@
 # x-herdr-deck — which module owns what
 
-read this before a change: find the one module that owns the state you touch, and change it there. a view module is a factory, `create<View>(deps)`, that owns its state and takes the rest as getters and named setters in one `deps` object, each read at use; no module imports `main.js`, types included, and the shared typedefs live in `deck-types.js`.
+read this before a change: find the one module that owns the state you touch, and change it there. a view module is a factory that owns its state; `orbit-view.js` and `phases-view.js` take the rest as getters and named setters in one `deps` object, each read at use; no module imports `main.js`, types included, and the shared typedefs live in `deck-types.js`.
 
 ## main.js — the view herdr loads
 
-- `main.js` — the class herdr loads: reads and watches the shelf (`init`, `reload`, `read`), holds what two views share (the rows, the steer boxes and their keys, the Tab stops, the presses and their writes), builds each view with its deps and composes them in `render`
+- `main.js` — the class herdr loads: reads and watches the shelf (`init`, `reload`, `read`), holds what two views share (the rows, the steer boxes and their keys, the Tab stops, the presses and their writes, 🔥 and ⌘⇧K among them), publishes the threads, builds each view with its deps and composes them in `render`
 
 ## views — each owns its state
 
@@ -12,6 +12,9 @@ read this before a change: find the one module that owns the state you touch, an
 - `phases-view.js` — the phases pinned at the deck's bottom, their header with «tick», the press that ticks a plan; owns the lines' widths and the presses being written
 - `glide-view.js` — glide, a `view: 'glide'` copy of the deck: each running lane's card, its block sized to them
 - `card-files.js` — an orbit card's pictures and file rows
+
+## state, not drawn
+
 - `steer-files.js` — the files each steer box carries
 
 ## drawing parts, no state
