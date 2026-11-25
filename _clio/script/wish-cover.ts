@@ -1,5 +1,5 @@
 // usage: node script/wish-cover.ts --audit-week   the weekly wish-loss audit: every grill, brief and spec under a .scratch of frame and bytes touched in 7 days, checked against each home its wish: line names; exits 1 on a red
-//        node script/wish-cover.ts <PK-N|FRM-N|BYT-N> [--all] <draft…> — an FRM id resolves to the ticket's «## wish» block (x linear read), else to the one pocket item whose «ticket:» or «moved to linear:» line names it; a block with no W-lines exits 2; reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
+//        node script/wish-cover.ts <PK-N|FRM-N|BYT-N> [--all] <draft…> — an FRM id resolves to the ticket's «## wish» block (x linear read), else to the one pocket item whose «ticket:» or «moved to linear:» line names it; a block with no W-lines exits 2; reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites; --since <YYYY-MM-DD> instead prints one «• not in the draft: <ids>» line for the uncited, unsettled W-lines stamped «(YYYY-MM-DD» on or after the date, and exits 0
 import { execFileSync, spawnSync } from 'node:child_process';
 import {
     existsSync,
@@ -51,6 +51,17 @@ export function wishLines(
     homes: string[] = [],
     joined: string[] = [],
 ) {
+    // a leading «(Q1)» or «(band 4)» is clio's source tag, never his words
+    return new Map(
+        [...wishRaw(item, homes, joined)].map(([key, raw]) => [
+            key,
+            raw.replace(/^\(.*?\)\s*:?\s*/, '').trim(),
+        ]),
+    );
+}
+
+// each line's first text as written, its leading «(YYYY-MM-DD …)» stamp still on
+function wishRaw(item: string, homes: string[], joined: string[]) {
     const lines = new Map<string, string>();
     for (const match of item.matchAll(
         /^\s*[-*]?\s*(?:((?:PK|FRM|BYT)-\d+):)?(W\d+)\b[ \t]*(.*)$/gm,
@@ -63,9 +74,7 @@ export function wishLines(
         )
             continue;
         const key = keyOf(prefix, id, joined);
-        // a leading «(Q1)» or «(band 4)» is clio's source tag, never his words
-        if (!lines.has(key))
-            lines.set(key, (text ?? '').replace(/^\(.*?\)\s*:?\s*/, '').trim());
+        if (!lines.has(key)) lines.set(key, text ?? '');
     }
     return lines;
 }
@@ -262,6 +271,24 @@ export function uncovered(
     );
 }
 
+// the uncovered ids whose own stamp «(YYYY-MM-DD» is on or after the date; a line with no stamp is no recent wish
+export function uncoveredSince(
+    since: string,
+    item: string,
+    drafts: string[],
+    homes: string[] = [],
+    joined: string[] = [],
+) {
+    const raw = wishRaw(item, homes, joined);
+    return uncovered(item, drafts, homes, joined)
+        .map(([id]) => id)
+        .filter(
+            (id) =>
+                (raw.get(id)?.match(/^\((\d{4}-\d{2}-\d{2})/)?.[1] ?? '') >=
+                since,
+        );
+}
+
 // a flyway's old notes sit in its archive: the item reads with them
 function pocketItems(root: string) {
     return pocketDirs.flatMap((dir) => {
@@ -390,10 +417,17 @@ if (import.meta.main) {
     const args = process.argv.slice(2);
     if (args[0] === '--audit-week') auditWeek();
     const all = args.includes('--all');
-    const [id, ...draftPaths] = args.filter((arg) => arg !== '--all');
+    const sinceAt = args.indexOf('--since');
+    const since = sinceAt < 0 ? undefined : args[sinceAt + 1];
+    const [id, ...draftPaths] = args.filter(
+        (arg, at) =>
+            arg !== '--all' &&
+            at !== sinceAt &&
+            (sinceAt < 0 || at !== sinceAt + 1),
+    );
     if (!id || draftPaths.length === 0) {
         console.error(
-            'usage: node script/wish-cover.ts <PK-N|FRM-N> [--all] <draft…>',
+            'usage: node script/wish-cover.ts <PK-N|FRM-N> [--all] [--since <YYYY-MM-DD>] <draft…>',
         );
         process.exit(2);
     }
@@ -417,7 +451,8 @@ if (import.meta.main) {
                     ticket.stateType,
                 )
             ) {
-                console.log(`✓ ${id}: ${ticket.state}, skipped`);
+                if (since === undefined)
+                    console.log(`✓ ${id}: ${ticket.state}, skipped`);
                 process.exit(0);
             }
             item = wishBlock(ticket.description ?? '');
@@ -425,6 +460,7 @@ if (import.meta.main) {
             // pocket item standing in for an empty block quotes other homes' lines, which stay quotes
             joined = joinedPrefixes(item, homes);
         } catch (error) {
+            if (since !== undefined) process.exit(0);
             console.error(`${id}: x linear read failed — ${error}`);
             process.exit(2);
         }
@@ -443,12 +479,20 @@ if (import.meta.main) {
         item = readItem(items, id);
     }
     if (item === undefined) {
+        if (since !== undefined) process.exit(0);
         console.error(`${id}: no pocket item`);
         process.exit(2);
     }
     const drafts = draftPaths.map((p) =>
         sectionsFor(readFileSync(p, 'utf8'), id),
     );
+    // the since mode only flags: the hook reds nothing from it
+    if (since !== undefined) {
+        const left = uncoveredSince(since, item, drafts, homes, joined);
+        if (left.length > 0)
+            console.log(`• not in the draft: ${left.join(', ')}`);
+        process.exit(0);
+    }
     // a moved item replaces a red only: a check that still passes stays green
     const movedHome = movedWhole(item, id);
     const stopIfMoved = () => {

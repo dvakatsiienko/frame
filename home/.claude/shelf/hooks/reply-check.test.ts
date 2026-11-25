@@ -537,6 +537,60 @@ describe('a landed claim with no git read (o185)', () => {
     it.each(['it is not pushed yet.', 'nothing is committed.', 'it was never pushed.'])('passes the negated «%s»', (reply) => {
         expect(loggedAfter(reply, noCalls)).toBe('');
     });
+
+    describe('a commit or push said to be waiting', () => {
+        const sent = (message: string) => turnWith({ calls: [{ input: { message, to: 'codie' }, name: 'SendMessage' }], id: 'm1' });
+        const read = (name: string, input: object) => turnWith({ calls: [{ input, name }], id: 'm1' });
+
+        it.each(['my commit is waiting in the queue.', 'the push is still running.', 'my commit waits in the gate queue.', 'the commit is queued.'])(
+            'logs «%s» in the reply with no read',
+            (reply) => {
+                expect(loggedAfter(reply, noCalls)).toContain('landed-unread\t');
+            },
+        );
+
+        it('logs the phrase lowercased', () => {
+            expect(loggedAfter('My Commit is waiting in the queue.', noCalls)).toContain('landed-unread\tmy commit is waiting');
+        });
+
+        it('logs the claim in a SendMessage text', () => {
+            expect(loggedAfter('sent.', sent('my commit is waiting in the queue, then the push.'))).toContain('landed-unread\tmy commit is waiting');
+        });
+
+        it.each([
+            ['Read', { file_path: '/private/tmp/claude/x/tasks/x.output' }],
+            ['Bash', { command: 'tail -5 /private/tmp/claude/x/tasks/x.output' }],
+            ['Read', { file_path: '/tmp/gate.log' }],
+            ['Bash', { command: 'git log --oneline -1' }],
+        ])('passes the claim after a %s read of %j', (name, input) => {
+            expect(loggedAfter('my commit is waiting in the queue.', read(name, input))).toBe('');
+            const both = turnWith({ calls: [{ input, name }, { input: { message: 'the push is still running' }, name: 'SendMessage' }], id: 'm1' });
+            expect(loggedAfter('sent.', both)).toBe('');
+        });
+
+        it('counts a Read of a file that is no job output as no read', () => {
+            expect(loggedAfter('my commit is waiting in the queue.', read('Read', { file_path: '/tmp/tasks/x.txt' }))).toContain('landed-unread\t');
+        });
+
+        it('keeps the old claim flagged after a job read, only git clears it', () => {
+            expect(loggedAfter('everything is pushed.', read('Read', { file_path: '/tmp/tasks/x.output' }))).toContain('landed-unread\t');
+        });
+
+        it.each([
+            'waiting on the herdr lane.',
+            "the codie's commit is waiting in the queue.",
+            'a commit is waiting in the queue.',
+            'the commit hook is running.',
+            'the push is not running.',
+        ])('passes «%s», no my or the right before commit or push', (reply) => {
+            expect(loggedAfter(reply, noCalls)).toBe('');
+        });
+
+        it('passes the claim inside a fence or inline code, and a SendMessage that holds no claim', () => {
+            expect(loggedAfter('```\nmy commit is waiting\n```\nsee `the push is running`.', noCalls)).toBe('');
+            expect(loggedAfter('sent.', sent('waiting on the herdr lane'))).toBe('');
+        });
+    });
 });
 
 describe('an ask that points at a reply not written yet', () => {

@@ -1,5 +1,5 @@
 #!/bin/bash
-# a .scratch spec or -proposal write that carries «wish: PK-N» or «wish: FRM-N» runs wish-cover and hands a red back to the session; a red, a missing wish line or a failed run blocks the write
+# a .scratch spec or -proposal write that carries «wish: PK-N» or «wish: FRM-N» runs wish-cover and hands a red back to the session; a red, a missing wish line or a failed run blocks the write; a section that is not red and leaves out a wish stamped in the last 7 days gets a note, never a block
 set -uo pipefail
 event="$(cat)"
 watched() {
@@ -39,6 +39,7 @@ fi
 command -v node >/dev/null || { jq -n '{systemMessage: "wish-cover: node missing, skipped"}'; exit 0; }
 # a lane spec holds a wish line per chunk section: every id in the file is checked against its own section
 reds=""
+notes=""
 sections="$(mktemp -d "${TMPDIR:-/tmp}/wish-cover.XXXXXX")"
 trap 'rm -rf "$sections"' EXIT
 # the lines above the first wish line join the first section
@@ -51,9 +52,20 @@ for id in $(grep -iE "$idline" "$file" | grep -iEo '(PK|FRM|BYT)-[0-9]+' | tr a-
 	# an id named beside another on one wish line has no section of its own: the whole file is its draft
 	draft="$sections/$id.md"
 	[ -f "$draft" ] || draft="$file"
-	out="$(node "$(dirname "$0")/../../script/wish-cover.ts" "$id" "$draft" 2>&1)" && continue
-	[ $? -eq 1 ] || { jq -n --arg reason "wish-cover: could not run for $id on $file — ${out}" '{decision: "block", reason: $reason}'; exit 0; }
+	cover="$(dirname "$0")/../../script/wish-cover.ts"
+	if out="$(node "$cover" "$id" "$draft" 2>&1)"; then
+		# not red: a recent wish (7 days) the draft neither cites nor settles is flagged, never blocked
+		late="$(node "$cover" "$id" --since "$(date -v-7d +%F)" "$draft" 2>/dev/null)"
+		[ -z "$late" ] || notes+="wish-cover: $id $late. name each left-out wish in the spec's out or tell dima"$'\n'
+		continue
+	else
+		[ $? -eq 1 ] || { jq -n --arg reason "wish-cover: could not run for $id on $file — ${out}" '{decision: "block", reason: $reason}'; exit 0; }
+	fi
 	reds+="$(grep '^✗' <<<"$out")"$'\n'
 done
-[ -n "${reds//$'\n'/}" ] || exit 0
+# a red blocks exactly as before and wins over the notes
+if [ -z "${reds//$'\n'/}" ]; then
+	[ -z "$notes" ] || jq -n --arg note "${notes%$'\n'}" '{hookSpecificOutput: {hookEventName: "PostToolUse", additionalContext: $note}}'
+	exit 0
+fi
 jq -n --arg reason "wish-cover is red on $file — copy the wish's words verbatim: $reds" '{decision: "block", reason: $reason}'

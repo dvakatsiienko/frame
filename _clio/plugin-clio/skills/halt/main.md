@@ -32,7 +32,7 @@ execute the «can land now» list, under this skill's small-work rule.
 ## phase 1.5 — the inbox, cleared unasked 📬
 every halt, both lanes, no confirmation: re-read `inbox.md`, confirm each item has a home
 (a pocket item, a ticket, an answer given, a fold), then the reset is `halt-sweep.ts`'s inbox part (his template copied over `inbox.md`, never a hand clear; helga's prepped `inbox-helga.md` trashed, rebuilt at the next boot): read its dry run now (`node ~/frame/_clio/script/halt-sweep.ts`), and right after the home check run `node ~/frame/_clio/script/halt-sweep.ts --apply --only inbox` (it refuses and exits 1, printing the lines, when `inbox.md` holds a line without a ✅: a drop that came in after the read). the template
-is his: read-only, never edited. an item without a home is not deleted: it gets its pocket item first, then
+is his: read-only. an item without a home is not deleted: it gets its pocket item first, then
 goes. dima, 2026-09-07: «cleaning inbox is your default habit each halt without re-confirming».
 **each flyway is cleaned here, never closed** (`habit-shared-files` § the flyway): finished lines moved into the done note (`node script/flyway-done.ts <PK> <fN>`), the rest groomed and sorted (`--sort`) to the live picture and left for the next boot; a wing does its own, main a parked wing's.
 the same pass sorts the day's inbox landings by the birth test (`habit-shared-files` § the pocket): each stays as ticketless work of main's flyway, folds into the linear ticket that owns it, or becomes one; the day's `done` items stay listed for the gazette post (phase 4.5), which carries them and the numbers of `x fleet ops --days 1`, run here as a step (cost per ticket, clio code edits, boot cost); then the
@@ -82,7 +82,7 @@ sixth senses only suggest; the recipe stays short (commands that worked, flows w
 **notes expire:** the sweep's `until-notes` part lists them (`halt-sweep.ts`, dry run); check each id's state; a line whose ticket closed goes into the proposal for deletion.
 **the flow numbers, before the proposal:** `x fleet flow --days 14` in `~/frame` — the
 `habit-cto` halt read; name one inefficiency from it, fixed in place or ticketed in the flush.
-**the self-grill, with the log still open:** with the day's log still open, name the ONE weakest part of clio
+**the self-grill, with the log still open:** name the ONE weakest part of clio
 as coordinator or pm, with the fix — `🥊 <issue>` + `➡️ <approach>`, one line each — and write the
 pair into the CST META. the next boot prints it and reads no flawlog. grounded in this log or
 absent, never invented.
@@ -99,7 +99,7 @@ names is being dropped by default.
 
 ## phase 3.5 — milestones, before the board
 
-the boot prints every open milestone with the roadmap block, so a stale one misinforms the next session directly. before writing the CST:
+the boot prints every open milestone with the roadmap block, so a stale one misinforms the next session. before writing the CST:
 
 - attach anything finished this session to its milestone, and anything newly started
 - a milestone linear marked done gets one informative line to dima, never an approval ask (dima, 2026-10-22, PK-103 W146)
@@ -147,7 +147,7 @@ the draft gets wishkeeper's checkpoint read before it is saved, the day's backst
 - **then archive her desktop card** (by the surface leaf's door, desktop only; the stop ends the process but leaves the card in the sidebar, dima 2026-10-07: «archive yourself each time»)
 - note-vet: before the stop, every note id with no verdict is printed and vetted (`pnpm --silent crow:note-vet ok|miss <id> "<why>" --changed file|reply|ask|ticket|none --ref <path|id>`) — an unvetted note is a lost data point for the trial
 - crow-receipts trial, until 2026-11-17: each `#dima-caught` line of today's flawlog is checked against `notes.jsonl` for a crow note on it that came first; the count goes as a round in `docs/test-drive/crow-receipts.md`
-a first-act that is a memory line is applied now, by this halt — never left for a boot.
+a first-act that is a memory line is applied now, never left for a boot.
 **his word on wings at the next boot** (PK-351:W80) goes in as a first-act, `summon wings: <which>`; no word, no line.
 🌔 **the last act: phases reset to the next session's moves** (orbit op `plan`), the CST's first-acts as `tomorrow:` lines, so dima sees the plan on the board, never today's finished steps.
 
@@ -165,4 +165,4 @@ adds ~5k resident tokens and re-fires the prefetch hook (measured 2026-09-11).
 done when: every live wing's report is folded and the wing archived or named to him, the CST slug is in the store, crow is stopped and her card archived, orbit holds the `tomorrow:` lines, the joke closed the reply.
 
 ## standing rules
-- reminders queued for the halt fire before the CST
+- every reminder line holding «halt» fires before the CST: `grep -n halt memory/_reminders.md`, each in phase 0's plan

@@ -24,6 +24,7 @@ import {
     repeatedIds,
     sectionsFor,
     uncovered,
+    uncoveredSince,
     unwrapIds,
     weekDrafts,
     wishBlock,
@@ -165,6 +166,40 @@ describe('wish-cover', () => {
         ).toEqual(red);
     });
 
+    describe('--since', () => {
+        const block = [
+            '- W1 (2026-11-20 inbox, dima) cited words',
+            '- W2 (2026-11-25 12:32, dima): recent words',
+            '- W3 (2026-11-10 inbox, dima) old words',
+            '- W4 (2026-11-25 inbox, dima) settled words → FRM-1',
+            '- W5 no stamp words',
+            '- W6 (2026-11-18, dima) edge words',
+        ].join('\n');
+        const left = (draft: string, since = '2026-11-18') =>
+            uncoveredSince(since, block, [draft]);
+
+        test('an uncited line stamped on or after the date is named', () => {
+            expect(left('W1')).toEqual(['W2', 'W6']);
+        });
+
+        test('an uncited line stamped before the date is not', () => {
+            expect(left('W1')).not.toContain('W3');
+            expect(left('W1', '2026-11-26')).toEqual([]);
+        });
+
+        test('a line settled elsewhere is not', () => {
+            expect(left('W1')).not.toContain('W4');
+        });
+
+        test('a cited line is not', () => {
+            expect(left('W1 W2 W6')).toEqual([]);
+        });
+
+        test('a line with no stamp is not a recent wish', () => {
+            expect(left('W1')).not.toContain('W5');
+        });
+    });
+
     test('an FRM id finds the pocket items whose ticket line names it', () => {
         const items: [string, string][] = [
             ['pk-7 - a.md', 'ticket: FRM-40 (lane 1)'],
@@ -248,7 +283,12 @@ describe('wish-cover', () => {
         const here = import.meta.dirname;
         const ticketItem = (n: number, ticket: string, wish: string) =>
             `---\nid: PK-${n}\n---\nticket: ${ticket}\n- ${wish}\n`;
-        const run = (ticketBody: string, draft: string, owners = 2) => {
+        const run = (
+            ticketBody: string,
+            draft: string,
+            owners = 2,
+            flags: string[] = [],
+        ) => {
             const root = mkdtempSync(join(tmpdir(), 'wish-cover-'));
             try {
                 mkdirSync(join(root, 'script'));
@@ -288,6 +328,7 @@ describe('wish-cover', () => {
                     [
                         join(root, 'script', 'wish-cover.ts'),
                         'FRM-9',
+                        ...flags,
                         join(root, 'draft.md'),
                     ],
                     {
@@ -319,6 +360,27 @@ describe('wish-cover', () => {
                 1,
             );
             expect(result.status).toBe(0);
+        });
+
+        test('--since prints one line naming the recent uncited ids and exits 0', () => {
+            const body =
+                '## wish\n\n* W1 (2026-11-01 inbox, dima) cited\n* W2 (2026-11-24 inbox, dima) left\n* W3 (2026-11-25 inbox, dima) left too\n* W4 (2026-10-01 inbox, dima) old\n';
+            const result = run(body, 'W1 cited', 2, ['--since', '2026-11-18']);
+            expect(result.status).toBe(0);
+            expect(result.stdout).toBe('• not in the draft: W2, W3\n');
+        });
+
+        test('--since prints nothing and exits 0 when none is left out, or the ticket has no W-lines', () => {
+            const body = '## wish\n\n* W1 (2026-11-25 inbox, dima) cited\n';
+            const since = ['--since', '2026-11-18'];
+            expect(run(body, 'W1 cited', 2, since)).toMatchObject({
+                status: 0,
+                stdout: '',
+            });
+            expect(run('## wish\n\nnone\n', 'plain', 0, since)).toMatchObject({
+                status: 0,
+                stdout: '',
+            });
         });
 
         test('a block with no W-lines exits 2 even when the draft cites none', () => {

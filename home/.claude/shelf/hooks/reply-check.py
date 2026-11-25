@@ -199,15 +199,26 @@ LANDED_CLAIM = re.compile(
 )
 NEGATED_LANDED = re.compile(r"\b(?:not|never|nothing|n't)\s+(?:\w+\s+){0,2}?(?:saved|pushed|committed|landed|on\s+(?:origin|main))\b", re.I)
 GIT_READ = re.compile(r"\bgit\s+(?:status|log|rev-parse|ls-remote|branch\s+-r)\b|\bx\s+lane\s+(?:push|commit)\b")
+# «my commit is waiting in the queue», «the push is still running»: a commit or push said to be in flight is read from git or the job's output
+# «my» or «the» right before the noun: «the codie's commit is waiting» and «waiting on the herdr lane» pass
+WAIT_CLAIM = re.compile(r"\b(?:my|the)\s+(?:commit|push)(?:es)?\s+(?:(?:is|are)\s+)?(?:still\s+)?(?:waiting|waits?|queued|running)\b", re.I)
+JOB_READ = re.compile(r"/tasks/\S*\.output\b|\.log\b")
 
 
 def landed_unread(path: str, reply: str) -> list[str]:
     # a one-word span is a branch or path name that stays in the sentence («is on `main`»); a spaced span is a quoted claim
-    prose = INLINE_CODE.sub(lambda m: m.group(0).strip("`") if " " not in m.group(0) else "", FENCE.sub("", reply))
-    m = LANDED_CLAIM.search(NEGATED_LANDED.sub("", prose))
-    if not m or any(name == "Bash" and GIT_READ.search(str(args.get("command", ""))) for name, args in turn_calls(path)):
+    prose = lambda text: INLINE_CODE.sub(lambda m: m.group(0).strip("`") if " " not in m.group(0) else "", FENCE.sub("", text))
+    calls = turn_calls(path)
+    if any(name == "Bash" and GIT_READ.search(str(args.get("command", ""))) for name, args in calls):
         return []
-    return [m.group(0).strip().lower()]
+    m = LANDED_CLAIM.search(NEGATED_LANDED.sub("", prose(reply)))
+    if m:
+        return [m.group(0).strip().lower()]
+    texts = [prose(reply), *(prose(str(args.get("message", ""))) for name, args in calls if name == "SendMessage")]
+    m = next((hit for text in texts for hit in [WAIT_CLAIM.search(text)] if hit), None)
+    if m and not any(name in ("Bash", "Read") and JOB_READ.search(str(args.get("command", "") or args.get("file_path", ""))) for name, args in calls):
+        return [m.group(0).strip().lower()]
+    return []
 
 
 # an orbit ask added for a grill round (its text names «Q<n>» or a round) with no «❓ **Q<n>**» line in the reply: dima sees the ask
@@ -725,7 +736,7 @@ def main() -> None:
     for said in by_rule("empty-promise"):
         reminds.append(f"the reply says «{said}» with no {'orbit add' if said == 'proposed in orbit' else 'command'} that turn — a promise lands with its call")
     if by_rule("landed-unread"):
-        reminds.append(f"«{by_rule('landed-unread')[0]}» with no git read that turn — run `git log` or `git status -sb` before saying it landed")
+        reminds.append(f"«{by_rule('landed-unread')[0]}» with no git or job read that turn — read `git log` or the job's output before saying it")
     if by_rule("empty-reply"):
         reminds.append("the answer sat in a mid-turn block dima never sees — open this reply with it in full")
     if by_rule("wait-on-crow"):

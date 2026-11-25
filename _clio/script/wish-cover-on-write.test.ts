@@ -20,7 +20,13 @@ const root = mkdtempSync(join(tmpdir(), 'wish-cover-hook-'));
 afterAll(() => rmSync(root, { force: true, recursive: true }));
 
 // a stubbed x answers `x linear read <id>` with a ticket whose wish block holds one W-line
+const stamp = (daysAgo: number) =>
+    new Date(Date.now() - daysAgo * 86_400_000).toISOString().slice(0, 10);
 const wishes: Record<string, string> = {
+    'FRM-10': `first words\n* W2 (${stamp(30)} 09:00, dima) left out long ago`,
+    'FRM-11': `first words\n* W2 (${stamp(1)} 09:00, dima) moved on → FRM-585`,
+    'FRM-6': `first words\n* W2 (${stamp(0)} 09:00, dima) cited too`,
+    'FRM-7': `first words\n* W2 (${stamp(1)} 09:00, dima) left out`,
     'FRM-8': 'other words',
     'FRM-9': 'the exact words',
 };
@@ -52,7 +58,14 @@ function runOn(spec: string, name = 'spec.md') {
         timeout: 10_000,
     }).stdout.trim();
     return out
-        ? (JSON.parse(out) as { decision?: string; reason: string })
+        ? (JSON.parse(out) as {
+              decision?: string;
+              hookSpecificOutput?: {
+                  additionalContext: string;
+                  hookEventName: string;
+              };
+              reason: string;
+          })
         : undefined;
 }
 
@@ -118,6 +131,46 @@ describe('wish-cover on a .scratch spec write', () => {
         expect(runOn(linked('reworded'))?.reason).toContain(
             ':W1 text missing: other words',
         );
+    });
+
+    describe('a wish left out of the draft', () => {
+        test('a recent uncited line is named beside the id, never blocking', () => {
+            const out = runOn('wish: FRM-7\nW1 first words\n');
+            expect(out?.decision).toBeUndefined();
+            expect(out?.hookSpecificOutput).toEqual({
+                additionalContext:
+                    "wish-cover: FRM-7 • not in the draft: W2. name each left-out wish in the spec's out or tell dima",
+                hookEventName: 'PostToolUse',
+            });
+        });
+
+        test.each([
+            ['an older line', 'wish: FRM-10\nW1 first words\n'],
+            ['a settled line', 'wish: FRM-11\nW1 first words\n'],
+            ['a cited line', 'wish: FRM-6\nW1 first words\nW2 cited too\n'],
+        ])('%s is silent', (_name, spec) => {
+            expect(runOn(spec)).toBeUndefined();
+        });
+
+        test('a red wins over a note in another section', () => {
+            const out = runOn(
+                'wish: FRM-7\nW1 first words\n\nwish: FRM-9\nW1 reworded\n',
+            );
+            expect(out?.decision).toBe('block');
+            expect(out?.hookSpecificOutput).toBeUndefined();
+        });
+
+        test('two sections with a note each give one json', () => {
+            const out = runOn(
+                'wish: FRM-7\nW1 first words\n\nwish: FRM-6\nW1 first words\n',
+            );
+            expect(out?.hookSpecificOutput?.additionalContext).toContain(
+                'FRM-7 • not in the draft: W2',
+            );
+            expect(out?.hookSpecificOutput?.additionalContext).toContain(
+                'FRM-6 • not in the draft: W2',
+            );
+        });
     });
 
     test('a spec copying W1 verbatim is silent', () => {
