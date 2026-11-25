@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T11:37:27Z'
+updated_date: '2026-11-25T11:37:55Z'
 labels:
   - s
   - clio-main
@@ -2849,4 +2849,6 @@ PK-349:W2443 (2026-11-25 13:34, dima): put 1 probe ask on orbit (i tell when to 
 PK-349:W2444 (2026-11-25 13:37, dima, herdr-typed): also - do you see auto-sw notice? why not second winding? waiting for anything? ❓
 PK-349:W2445 (2026-11-25 13:37, dima, herdr-typed): cmd+shift+k wisp: when i am in your thread and press this, wing 1 asks get ticked. instead cmd+shift+k should tick all asks of a thread i currently see opened. → FRM-620:W61
 PK-349:W2446 (2026-11-25 13:37, dima, herdr-typed): note: there is a trick, when i hover the asks area and cmd+shift+k, it ticks the hovered area asks, this should still work, if i want a targeted asks group tick while being in a certain thread. → FRM-620:W62
+
+PK-349:W2447 (2026-11-25 13:40, dima, herdr-typed): remove probes now. when it is fixed bring back same probes so i testt out
 <!-- SECTION:NOTES:END -->
