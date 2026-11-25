@@ -76,79 +76,83 @@ footer{padding-top:16px;font-size:13px;color:var(--muted);border-top:1px solid v
 
 <div class="wrap">
 <header>
-  <span class="eyebrow">🧬 evergreen · wed 18 nov 2026 · the two weeks since 04 nov</span>
+  <span class="eyebrow">🧬 evergreen · wed 25 nov 2026 · the week since 18 nov</span>
   <h1>What updated, and what it does for you</h1>
-  <p class="lede">The first run on the new shape. Everything was upgraded first, then three readers on Opus 5.5 went through every release in between, judged against your own want list.</p>
+  <p class="lede">Your machine and frame were upgraded first, then three readers on Opus 5.5 went through the releases and a fourth checked their report against your want list. Bytes follows once speak is swapped.</p>
   <div class="counts">
-    <span class="count"><b>~200</b> packages moved</span>
-    <span class="count"><b>7</b> renovate PRs merged</span>
-    <span class="count"><b>0</b> pno rows left in frame</span>
-    <span class="count"><b>2</b> held in bytes</span>
-    <span class="count"><b>20</b> apps read</span>
+    <span class="count"><b>87</b> packages moved</span>
+    <span class="count"><b>1</b> minor waits in frame</span>
+    <span class="count"><b>14</b> rows wait in bytes</span>
+    <span class="count"><b>4</b> held</span>
   </div>
 </header>
 
 <section>
-  <div class="sec-head"><h2>🤖 Claude Code and the agent tools</h2><p>2.1.319 → 2.1.327</p></div>
+  <div class="sec-head"><h2>🤖 Claude Code and the agent tools</h2><p>2.1.327 → 2.1.332</p></div>
   <div class="rows">
-    <div class="row"><div class="name">🌟 Code Mode</div><div><p>Claude writes a small script that makes many tool calls in one step: parallel commands, a filtered grep, one edit across files. Experimental, terminal only, and off while OpenTelemetry export is on. <a href="https://code.claude.com/docs/en/code-mode">docs</a></p></div></div>
-    <div class="row"><div class="name">🌟 Fable 5.2</div><div><p>The new default Fable: 1M context, $8 / $40 per million tokens. <a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md#21321">notes</a></p></div></div>
-    <div class="row"><div class="name">Sessions talk freely</div><div><p>The cap on messages one session sends another went from about 20 to 100,000, so the fleet no longer stalls on its own chatter.</p></div></div>
-    <div class="row"><div class="name"><code>/status</code> health check</div><div><p>Lists broken skill, agent and command files, ignored settings and hooks that never match.</p></div></div>
-    <div class="row"><div class="name">Snappier</div><div><p>First command starts sooner, lower idle CPU, and <code>/update-config</code> drops from 93k to 13k tokens of context.</p></div></div>
-    <div class="row"><div class="name">gh 2.105</div><div><p><code>gh event listen</code> waits for a review or a check to finish instead of polling. Preview behind a waitlist. <a href="https://github.com/cli/cli/releases/tag/v2.105.0">notes</a></p></div></div>
+    <div class="row"><div class="name">🌟 easel</div><div><p>A built-in mod that draws a chart when you ask, or under a connector's numbers. The automatic ones turn off in <code>/config</code>. <a href="https://github.com/anthropics/claude-code/releases/tag/v2.1.330">notes</a></p></div></div>
+    <div class="row"><div class="name">Also in Claude Code</div><div><p><code>/loop</code> lives 30 days instead of 7 while its session runs, <code>/tasks</code> lists its wakeups, a held message from another thread gets “Always deliver”, and Code Mode lost its pause after most scripts.</p></div></div>
+    <div class="row"><div class="name">🌟 herdr 0.1.18</div><div><p>Shift+click extends a selection, panes get names and keyboard resize, the Files and Changes panels use far less CPU on big repos. Mods can take over ⌘-clicks in terminals and read or highlight selected text. <a href="https://github.com/herdrdev/herdr-app/blob/v0.1.18/CHANGELOG.md">changelog</a></p></div></div>
+    <div class="row"><div class="name">agent-browser 0.44</div><div><p>A background tab can be kept at full speed, and a click at the window's edge no longer misses while reporting success. <a href="https://github.com/vercel-labs/agent-browser/releases/tag/v0.44.0">notes</a></p></div></div>
+    <div class="row"><div class="name">coderabbit 0.9.7</div><div><p><code>coderabbit verify</code> runs your app in a sandbox before there is a PR, free in beta. <a href="https://docs.coderabbit.ai/changelog">notes</a></p></div></div>
+    <div class="row"><div class="name">worktrunk 0.83</div><div><p>Removing a worktree refuses when another sits inside it; it used to delete it. <a href="https://github.com/max-sixty/worktrunk/releases/tag/v0.83.0">notes</a></p></div></div>
+    <div class="row"><div class="name">t3-code 0.1.12</div><div><p>Projects over several repos, workflows in beta, local Apple dictation. <a href="https://github.com/pingdotgg/t3code/releases/tag/v0.1.12">notes</a></p></div></div>
   </div>
 </section>
 
 <section>
   <div class="sec-head"><h2>⚡ The frontend stack</h2><p>frame and bytes</p></div>
   <div class="rows">
-    <div class="row"><div class="name">🌟 react-resizable-panels 4.23</div><div><p>Now a full docking layout: draggable tabs, floating panels, pop-out windows, a saveable layout. Fits atelier. <a href="https://github.com/bvaughn/react-resizable-panels/releases/tag/4.16.0">notes</a></p></div></div>
-    <div class="row"><div class="name">🌟 motion 14.14</div><div><p>Pinch-and-rotate gestures, and press handles double, long and repeat on its own. <a href="https://github.com/motiondivision/motion/blob/main/CHANGELOG.md">notes</a></p></div></div>
-    <div class="row"><div class="name">🌟 vitest 5.1</div><div><p><code>--last-failed</code> reruns only what broke, and failed browser tests show a trace timeline. <a href="https://github.com/vitest-dev/vitest/releases/tag/v5.1.0">notes</a></p></div></div>
-    <div class="row"><div class="name">playwright 1.65</div><div><p>Runs under Bun, and a <code>failures</code> reporter prints only what broke. <a href="https://github.com/microsoft/playwright/releases/tag/v1.65.0">notes</a></p></div></div>
-    <div class="row"><div class="name">vite react plugin 6.3</div><div><p>The React Compiler preset now runs on the parallel workers.</p></div></div>
-    <div class="row"><div class="name">biome 2.6.8</div><div><p>About 40 new rules, linting up to 61 % faster.</p></div></div>
-    <div class="row"><div class="name">tailwind 4.3.5</div><div><p>A native Turbopack loader for Next.</p></div></div>
-    <div class="row"><div class="name">prettier 3.10</div><div><p>An opt-in parser written in Zig.</p></div></div>
-    <div class="row"><div class="name">clerk 7.10</div><div><p>Signed-in sessions for AI agents.</p></div></div>
-  </div>
-  <p class="quiet">Three majors went in with nothing to migrate: graphql-codegen 8, @hookform/resolvers 7 (only TypeBox changed, the login form validates on prod) and string-width 9. turbo moved only a patch: its 2.11 features came before this window.</p>
-</section>
-
-<section>
-  <div class="sec-head"><h2>🧰 Tools and apps</h2><p>brew, the clis, the self-updating apps</p></div>
-  <div class="rows">
-    <div class="row"><div class="name">🌟 Raycast 2.13</div><div><p>Its own MCP server for clipboard, snippets and tabs, and a calculator 60× faster. <a href="https://www.raycast.com/changelog">notes</a></p></div></div>
-    <div class="row"><div class="name">🌟 homerow 3.0</div><div><p>An on-device vision model labels buttons apps hide; labels keep the same keys. <a href="https://www.homerow.app/changelog">notes</a></p></div></div>
-    <div class="row"><div class="name">🌟 herdr 0.1.16</div><div><p>Find over a terminal's scrollback, and mods can scroll, set the title and badge the Dock.</p></div></div>
-    <div class="row"><div class="name">ctx7 0.12</div><div><p>Upgrade guides between two versions of a library.</p></div></div>
-    <div class="row"><div class="name">changedetection 0.70</div><div><p>An MCP server, with Claude Code sign-in.</p></div></div>
-    <div class="row"><div class="name">pnpm 12.21</div><div><p>Cold installs about 29 % faster on this mac.</p></div></div>
-    <div class="row"><div class="name">Obsidian 1.15.1</div><div><p>Relevance sort, accent-blind search, much faster search. URI callbacks need re-enabling per device.</p></div></div>
-    <div class="row"><div class="name">Superwhisper 3.3</div><div><p>Menu-bar app now, imports meetings from Wispr Flow and Granola.</p></div></div>
+    <div class="row"><div class="name">🌟 turbo 2.11.13</div><div><p>An experimental <code>turbo trace affected</code> lists only the test files a change can reach, Go included. Off until a flag is set. <a href="https://github.com/vercel/turborepo/blob/main/apps/docs/content/docs/reference/trace.mdx">docs</a></p></div></div>
+    <div class="row"><div class="name">recharts 3.11</div><div><p>One theme for every chart, following light and dark by itself. <a href="https://recharts.github.io/en-US/guide/theming/">guide</a></p></div></div>
   </div>
 </section>
 
 <section>
-  <div class="sec-head"><h2>🔒 Security</h2><p>all already applied</p></div>
+  <div class="sec-head"><h2>🧰 Brew and the CLIs</h2><p>55 brew rows</p></div>
   <div class="rows">
-    <div class="row"><div class="name">node 26.13.1</div><div><p>9 high CVEs in http2 and TLS.</p></div></div>
-    <div class="row"><div class="name">Chrome 158</div><div><p>Fixes an exploit in the wild. Relaunch it.</p></div></div>
-    <div class="row"><div class="name">Claude Code</div><div><p>MCP sign-in token leak and a sandbox escape closed.</p></div></div>
-    <div class="row"><div class="name">next, git, go, undici</div><div><p>Patched; none of the next cache bugs touch bytes.</p></div></div>
+    <div class="row"><div class="name">🌟 git-delta 0.22</div><div><p><code>delta --tui</code> is a git client drawn in delta: fold, stage, reorder and fixup commits. <a href="https://github.com/dandavison/delta/releases/tag/0.21.1">notes</a></p></div></div>
+    <div class="row"><div class="name">pnpm 12.23</div><div><p><code>pnpm edit</code>, <code>pnpm catalog migrate</code>, a glob in <code>pnpm remove</code>. <a href="https://github.com/pnpm/pnpm/releases/tag/v12.23.0">notes</a></p></div></div>
+    <div class="row"><div class="name">ripgrep 16</div><div><p>A major, 13 months after the last: <code>-G '*.toml'</code> excludes without the <code>!</code>, <code>--in</code> reads a file list. <a href="https://github.com/BurntSushi/ripgrep/blob/master/CHANGELOG.md">changelog</a></p></div></div>
+    <div class="row"><div class="name">ffmpeg 9.1</div><div><p>A much better AAC encoder (unmeasured), images inline in iTerm2. <a href="https://github.com/FFmpeg/FFmpeg/blob/release/9.1/Changelog">changelog</a></p></div></div>
+    <div class="row"><div class="name">backlog 1.57</div><div><p>Exports a read-only site, decisions from the CLI. <a href="https://github.com/MrLesk/Backlog.md/releases/tag/v1.57.0">notes</a></p></div></div>
+    <div class="row"><div class="name">kokoro unchanged</div><div><p>The voice model is the same. Its engine 0.6.8 waits for an ear test: 13–17 % <a href="https://github.com/Neywa-Labs/mlx-audio/pull/1210">faster</a>, timing closer to the reference, 92 → 97 of 100 <a href="https://github.com/Neywa-Labs/mlx-audio/pull/1229">sentences</a> (both its authors' numbers). <span class="chip wait">dima's word</span></p></div></div>
   </div>
 </section>
 
 <section>
-  <div class="sec-head"><h2>💡 Worth doing</h2><p>your word each</p></div>
+  <div class="sec-head"><h2>📲 The apps</h2></div>
   <div class="rows">
-    <div class="row"><div class="name">model card</div><div><p>Fable 5.2's price to $8 / $40. <span class="chip next">apply</span></p></div></div>
-    <div class="row"><div class="name">oxc peer range</div><div><p>bytes' React Compiler plugin is newer than its peer range allows. <span class="chip wait">dima's word</span></p></div></div>
-    <div class="row"><div class="name">Code Mode</div><div><p>Try it once on a repetitive edit. <span class="chip wait">dima's word</span></p></div></div>
-    <div class="row"><div class="name">gh event listen</div><div><p>Join the waitlist; our PR waits stop polling. <span class="chip wait">dima's word</span></p></div></div>
+    <div class="row"><div class="name">🌟 Wispr Flow</div><div><p>The new Canto-2 model gets 69 % of the hardest names right (was 41 %), errors 9.9 → 6.3 %. Their tests, Americas first. <a href="https://wisprflow.ai/whats-new">notes</a></p></div></div>
+    <div class="row"><div class="name">🌟 Claude desktop</div><div><p>An artifact installs as a Mac app (beta), and the monthly recap can draw on Claude Code sessions. <a href="https://support.claude.com/en/articles/12138966-release-notes">notes</a></p></div></div>
+    <div class="row"><div class="name">vorssaint 3.4.5</div><div><p>Unit maths in the Command Bar, a faster window switcher. <a href="https://github.com/vorssaint/vorssaint-utils/releases/tag/v3.4.5">notes</a></p></div></div>
+    <div class="row"><div class="name">BetterDisplay 5.3.3</div><div><p>Brightness keys follow the focused screen. <a href="https://github.com/waydabber/BetterDisplay/releases/tag/v5.3.3">notes</a></p></div></div>
+    <div class="row"><div class="name">Superwhisper 3.4</div><div><p>Double-tap shortcuts, less memory. <a href="https://superwhisper.com/changelog">notes</a></p></div></div>
+    <div class="row"><div class="name">CleanShot 5.0.4</div><div><p>Space works after a shot again, arrow keys in Capture Area. <a href="https://cleanshot.com/changelog">notes</a></p></div></div>
   </div>
 </section>
 
-<footer>Read 18-11-2026 by three researcher cards on Opus 5.5, over the release notes of every version between the old and the new one.</footer>
+<section>
+  <div class="sec-head"><h2>🔒 Security</h2><p>applied, except where bytes waits</p></div>
+  <div class="rows">
+    <div class="row"><div class="name">iTerm2 3.7.9</div><div><p>A <code>cat</code> of a crafted file could run commands. <a href="https://iterm2.com/downloads/stable/iTerm2-3_7_9.changelog">notes</a></p></div></div>
+    <div class="row"><div class="name">Chrome 158</div><div><p>One critical; your running build has the fix. <a href="https://chromereleases.googleblog.com/2026/11/stable-channel-update-for-desktop_01734282054.html">notes</a></p></div></div>
+    <div class="row"><div class="name">agent-browser 0.44</div><div><p>Another local page could watch and steer the agent's browser; closed. <a href="https://github.com/vercel-labs/agent-browser/releases/tag/v0.44.0">notes</a></p></div></div>
+    <div class="row"><div class="name">bubbletea 2.1.3</div><div><p>Crafted text could crash the <code>x</code> screens; idle screens also stop redrawing. <a href="https://github.com/charmbracelet/bubbletea/releases/tag/v2.1.3">notes</a></p></div></div>
+    <div class="row"><div class="name">pnpm 12.23</div><div><p>Registry and one-time-code leaks closed; bytes follows with the speak swap. <a href="https://github.com/pnpm/pnpm/releases/tag/v12.23.0">notes</a></p></div></div>
+    <div class="row"><div class="name">bun, zstd, gnutls, uv, Firefox, docker, better-auth</div><div><p>Patched. Whether docker's brew CLI was affected is unread.</p></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><h2>💡 Worth doing</h2></div>
+  <div class="rows">
+    <div class="row"><div class="name">herdr chat</div><div><p>A click on a file path opens it, your open wish: herdr has a link hook for chat text now worth a try on the herdr lane. <span class="chip next">queued</span></p></div></div>
+    <div class="row"><div class="name">kokoro's engine</div><div><p>mlx-audio 0.6.8, after your ear test. <span class="chip wait">dima's word</span></p></div></div>
+    <div class="row"><div class="name">oxc in bytes</div><div><p>The React Compiler plugin sits at 0.158, one step past its allowed range; CI is green. <span class="chip wait">dima's word</span></p></div></div>
+    <div class="row"><div class="name">Global installs</div><div><p>A 3-day wait before a fresh release goes in, as the repos have; n8n went in younger than that. <span class="chip wait">dima's word</span></p></div></div>
+  </div>
+</section>
+
+<footer>Read 25-11-2026 by three researcher cards on Opus 5.5 and checked by wishkeeper. Held: mlx-audio (your ear), graphql 17 (Apollo wants 16), prisma 8 (release candidate), and one Raycast minor in frame until tonight's renovate window is read.</footer>
 </div>
