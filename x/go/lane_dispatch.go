@@ -255,7 +255,10 @@ func ticketSpecOf(id string, named ...string) ticketSpec {
 	type source struct{ root, path string }
 	read := map[string]source{}
 	var spec ticketSpec
-	for _, root := range roots {
+	for i, root := range roots {
+		if slices.Contains(roots[:i], root) {
+			continue
+		}
 		for _, hit := range specSections(root, id) {
 			file, from := hit.path, source{root, hit.path}
 			if real, err := filepath.EvalSymlinks(file); err == nil {

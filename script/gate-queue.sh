@@ -14,6 +14,9 @@
 # a turn is a mkdir, atomic on any disk, holding the holder's pid and start time, so a dead holder or a reused pid frees it.
 # waiters line up first come, first served inside their class: one ticket file each, named <epoch>.<pid>, a suite's 0.<epoch>.<pid>, a run the load gates <epoch>.m.<pid> after its class.
 set -u
+# a closed stderr or stdout would be the next substitution's own pipe
+: >&2 || exec 2>/dev/null
+: >&1 || exec >/dev/null
 # bash 3.2, the mac's, keeps a write that failed (a closed pane, a dead x's pipe) and every fork writes it again, into a substitution
 # too, where it breaks the arithmetic: the empty echo drops it
 drop_unwritten() { echo >/dev/null; }
@@ -290,8 +293,7 @@ trap 'leave; drop_sample' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 next_say=0
-has_turn=
-until first_in_line past-load && is_calm && mkdir "$turn" 2>/dev/null && has_turn=1; do
+until first_in_line past-load && is_calm && mkdir "$turn" 2>/dev/null; do
     # only the first in line frees a stale turn, so it never takes a turn a newer run just made
     if first_in_line && is_stale; then
         freed
@@ -314,20 +316,13 @@ until first_in_line past-load && is_calm && mkdir "$turn" 2>/dev/null && has_tur
     sleep "${GATE_QUEUE_POLL:-2}"
     waited=$(($(date +%s) - began))
 done
-# a broken wait ends its loop with no turn: going on would free the holder's
-if [ -z "$has_turn" ]; then
-    say "the wait broke, nothing ran. $(holder)"
-    log_run - 75
-    log_cpu -
-    exit 75
-fi
 
 took=$(date +%s)
 times >"$sample.times-before"
 release() {
     local code=$? ran
     # a signal that ended it here would leave the turn taken
-    trap '' INT TERM
+    trap '' HUP INT TERM
     drop_unwritten
     ran=$(($(date +%s) - took))
     times >"$sample.times-after"

@@ -474,43 +474,60 @@ describe('gate-queue --long', () => {
         expect(long(state, ['sh', '-c', 'exit 6']).status).toBe(6);
     });
 
-    test('a waiter whose words cannot be written waits on, and the holder keeps its turn', async () => {
-        const { state, turn } = fixture();
-        plantHolder(turn, String(process.pid), liveSince());
-        const ran = join(state, 'ran');
+    test.each([
         // a pipe nobody reads, and no signal for it: the write fails and the script lives on
-        const child = spawn(
-            'sh',
-            ['-c', `trap "" PIPE; exec ${script} --long touch ${ran}`],
-            { env: queueEnv(state, '1'), stdio: ['ignore', 'ignore', 'pipe'] },
-        );
-        child.stderr.destroy();
-        const code = await new Promise((done) => child.on('exit', done));
-        expect([code, existsSync(ran)]).toEqual([75, false]);
-        expect(readFileSync(join(turn, 'holder'), 'utf8')).toContain('old run');
-    });
+        ['cannot be written', ''],
+        ['have nowhere to go', ' >&- 2>&-'],
+    ])(
+        'a waiter whose words %s waits on, and the holder keeps its turn',
+        async (_name, closed) => {
+            const { state, turn } = fixture();
+            plantHolder(turn, String(process.pid), liveSince());
+            const ran = join(state, 'ran');
+            const child = spawn(
+                'sh',
+                [
+                    '-c',
+                    `trap "" PIPE; exec ${script} --long touch ${ran}${closed}`,
+                ],
+                {
+                    env: queueEnv(state, '1'),
+                    stdio: ['ignore', 'ignore', 'pipe'],
+                },
+            );
+            child.stderr.destroy();
+            const code = await new Promise((done) => child.on('exit', done));
+            expect([code, existsSync(ran)]).toEqual([75, false]);
+            expect(readFileSync(join(turn, 'holder'), 'utf8')).toContain(
+                'old run',
+            );
+        },
+    );
 
-    test('a TERM while it frees its turn leaves no turn and keeps its row', async () => {
-        const { state, turn } = fixture();
-        const bin = join(state, 'bin');
-        const freeing = join(state, 'freeing');
-        mkdirSync(bin);
-        writeFileSync(
-            join(bin, 'rm'),
-            `#!/bin/sh\ncase "$*" in *long.turn) touch ${freeing}; sleep 0.5 ;; esac\nexec /bin/rm "$@"\n`,
-            { mode: 0o755 },
-        );
-        const child = spawn(script, ['--long', 'true'], {
-            env: { ...queueEnv(state), PATH: `${bin}:${process.env.PATH}` },
-            stdio: 'ignore',
-        });
-        const ended = new Promise((done) => child.on('exit', done));
-        while (!existsSync(freeing)) await sleep(20);
-        child.kill('SIGTERM');
-        await ended;
-        expect(existsSync(turn)).toBe(false);
-        expect(logRows(state).map((row) => row[5])).toEqual(['0']);
-    });
+    test.each(['SIGTERM', 'SIGHUP'] as const)(
+        'a %s while it frees its turn leaves no turn and keeps its row',
+        async (signal) => {
+            const { state, turn } = fixture();
+            const bin = join(state, 'bin');
+            const freeing = join(state, 'freeing');
+            mkdirSync(bin);
+            writeFileSync(
+                join(bin, 'rm'),
+                `#!/bin/sh\ncase "$*" in *long.turn) touch ${freeing}; sleep 0.5 ;; esac\nexec /bin/rm "$@"\n`,
+                { mode: 0o755 },
+            );
+            const child = spawn(script, ['--long', 'true'], {
+                env: { ...queueEnv(state), PATH: `${bin}:${process.env.PATH}` },
+                stdio: 'ignore',
+            });
+            const ended = new Promise((done) => child.on('exit', done));
+            while (!existsSync(freeing)) await sleep(20);
+            child.kill(signal);
+            await ended;
+            expect(existsSync(turn)).toBe(false);
+            expect(logRows(state).map((row) => row[5])).toEqual(['0']);
+        },
+    );
 
     test('a waiter behind the line never frees a stale turn', () => {
         const { state, turn } = fixture();

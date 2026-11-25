@@ -31,9 +31,8 @@ import {
     nextChange,
     tabStatusIn,
 } from './tab-status.js';
+import { NAMES_KEY } from './thread-keys.js';
 
-// the agents list reads each session name and publishes it here (address → name); one reader, one naming rule
-const NAMES_KEY = 'x-herdr-antenna.names';
 // antenna's knobs as it saves them; «show tabs» off draws the focused thread in place of the pills
 const ANTENNA_SETTINGS = 'antenna.settings';
 const PIDS_KEY = 'x-herdr-antenna.pids';
