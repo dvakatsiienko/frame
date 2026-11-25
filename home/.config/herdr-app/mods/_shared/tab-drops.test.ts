@@ -7,7 +7,7 @@ import { run } from 'herdr';
 import { createDrag } from './drag.js';
 import { type DraggedTab, tabDrops } from './tab-drops.js';
 
-// FRM-664: the top tabs (x-herdr-tab-pills, x-herdr-tabs) drag through the shared drag
+// FRM-664: the top tabs (x-herdr-tab-pills) drag through the shared drag
 const at = (x: number) => ({ x, y: 0 });
 
 beforeEach(() => vi.mocked(run).mockClear());

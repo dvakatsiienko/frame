@@ -1,9 +1,0 @@
-{
-    "cloned_from": {
-        "name": "tabs",
-        "version": "0.1.9"
-    },
-    "place": "none",
-    "shared": ["drag-view.js", "drag.js", "tab-drops.js"],
-    "title": "Tabs"
-}

@@ -1,4 +1,4 @@
-// what a drag of a top tab does (FRM-664), for the pills and x-herdr-tabs alike: a drop moves the tab to the place it
+// what a drag of a top tab does (FRM-664): a drop moves the tab to the place it
 // landed on, herdr's index 1-based; a press with no drag selects it.
 
 import { run } from 'herdr';

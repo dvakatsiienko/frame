@@ -14,16 +14,6 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: dima, 00:13 «currently not needed and wastes space»; the 20:03 rule (hide only with one space) brought it back when the «test» space appeared
   - decision: the order is never trimmed on a read; past 200 addresses the oldest gone ones leave (dima, 19:59: «do not break or change under any circumstances»)
   - not checked: the drag itself, by his hand; a herdr restart with the new code
-- ⬜ each tab shows its thread's emoji and session name, with no zoo creature (x-herdr-tabs, FRM-567)
-  - given x-herdr-tabs is placed in the layout
-  - then every agent tab reads as that thread's row in the agents list and on the deck, a long name cut with an ellipsis and whole on hover; the dots and the tick match the agents list's
-  - and the tab drops the member word after the badges, «⚡ 🔧 codie: herdr lane | PK-363» → «⚡ 🔧 herdr lane | PK-363», so a cut tab keeps what tells it apart (shot 2025)
-  - and an inactive tab shrinks to 110 px at least, so its badge and a readable name both stay (dima's tick, 20:28; shot 2028)
-  - and past the bar's width a sideways swipe moves it one tab, and a newly active tab is brought into view (his word, 20:52: the scroll was too fast)
-  - and a click, the ×, the + menu and a right-click do what they did under zoo's tabs
-  - decision: the agents list reads each session name once and publishes it (`x-herdr-antenna.names`); the tab bar reads that, never a second naming rule
-  - and a thread with a record shows its pretty name, `🌗 🔧 cli | FRM-436`, drawn by x from the record in `~/.claude/shelf/threads.json`; a thread with none («unknown») keeps its registry name, which a live session can never change (`x-herdr-antenna/thread-names.js`, dima 01:02 «why i see old names in herdr's agent list?»)
-  - not checked: in his tab bar, until the layout switch his tick allows (shots 1942 before and after, drawn as an overlay)
 - ✅ a sidecar thread starts in its own named tab
   - given helga or crow starts in herdr
   - then it shows in the agents list in a tab named after it, never a number
@@ -50,7 +40,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a wheel scroll or a swipe over the bar switches no tab, and a press and drag on a pill never moves the window
   - and the × on a pill asks first when the tab holds anything but an idle shell (an agent, a program started as the tab's own, a shell with a program running in it, or a terminal herdr could not read), and closes an idle shell's tab at once; the × takes a click only while it shows
   - and every colour comes from the theme: the layout's `colors` block sets `chrome`, `selected` and `input` for the tray, the shown pill and its edge
-  - decision: a clone of herdr's shipped `terminals-bar`, his pick after an A/B (dima, 2026-11-16: «tabs look better in the Terminals layout»); at his swap word it is renamed `x-herdr-tabs` and the old folder goes
+  - and a thread with a record shows its pretty name, `🌗 🔧 cli | FRM-436`, drawn by x from the record in `~/.claude/shelf/threads.json`; a thread with none («unknown») keeps its registry name, which a live session can never change (`x-herdr-antenna/thread-names.js`, dima 01:02 «why i see old names in herdr's agent list?»)
+  - decision: the agents list reads each session name once and publishes it (`x-herdr-antenna.names`); the tab bar reads that, never a second naming rule
+  - decision: a clone of herdr's shipped `terminals-bar`, his pick after an A/B (dima, 2026-11-16: «tabs look better in the Terminals layout»); at his swap word it takes the old tab bar's name; that bar's folder went on his tick, 2026-11-25
 - ⬜ the top tabs reorder by drag (FRM-664)
   - given more than one pill in the tray
   - when he presses a pill, it lifts at once; past 4 px a copy of the pill (tile, dot, name) follows the pointer and the pills between slide one slot
