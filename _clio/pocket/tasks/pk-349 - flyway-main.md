@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T13:29:33Z'
+updated_date: '2026-11-25T13:29:59Z'
 labels:
   - s
   - clio-main
@@ -2886,5 +2886,7 @@ reopened 2026-11-25 14:40: f125 cleared by a --help mistake, re-added as a new l
 
 done 2026-11-25 15:20: f107 ⏳ herdr wisp: a triple click selects one visual run, not the bullet (shot 24 Nov) — waits for: FRM-620 (FRM-620 In Progress)
 
-PK-349:W2463 (2026-11-25 15:28, dima): how does crow do its second wind? does it see auto second wind? i expected crow to auto second wind before 60 % (it has nothing to do except advising and being parked), but i often saw it at ~60 % context. ❓ → answered 15:29: sees the 55 % notice, waited for 65 %; crew-adviser now says the wind is the next act
+PK-349:W2463 (2026-11-25 15:28, dima): how does crow do its second wind? does it see auto second wind? i expected crow to auto second wind before 60  → answered 15:29: sees the 55 % notice, waited for 65 %; crew-adviser now says the wind is the next act
+
+(the W2463 line above lost its tail; whole:) PK-349:W2463 (2026-11-25 15:28, dima): how does crow do its second wind? does it see auto second wind? i expected crow to auto second wind before 60 % (it has nothing to do except advising and being parked), but i often saw it at ~60 % context. ❓
 <!-- SECTION:NOTES:END -->
