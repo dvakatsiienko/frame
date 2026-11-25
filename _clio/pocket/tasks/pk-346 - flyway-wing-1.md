@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T11:49:32Z'
+updated_date: '2026-11-25T11:49:51Z'
 labels:
   - s
   - clio-wing-1
@@ -835,5 +835,5 @@ PK-346:W95 (2026-11-25 13:29, dima): let's see what we have to solve.
 PK-346:W96 (2026-11-25 13:29, dima): and btw: refresh lowtide to also hunt stray tickets everywhere that are in false non-closed state: hung in progress, and others just done but forgotten to close.
 PK-346:W97 (2026-11-25 13:29, dima): it is the first step of lowtide always, start with it.
 PK-346:W98 (2026-11-25 13:29, dima): (after your gate-speed proposal)
-W96 and W97 landed in lowtide's SKILL.md and references/false-open-hunt.md; W95 and W98 wait behind his 13:34 «perf and bytes first»
+13:49 the 13:29 groom: PK-346:W96 and PK-346:W97 landed in lowtide's SKILL.md and references/false-open-hunt.md; PK-346:W95 and PK-346:W98 wait behind his 13:34 «perf and bytes first»
 <!-- SECTION:NOTES:END -->
