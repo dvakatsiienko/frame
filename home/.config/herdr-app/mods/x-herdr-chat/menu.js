@@ -1,4 +1,4 @@
-// the right-click menu on a message (FRM-638 slice 7): «Copy selection» copies the words he selected in it (FRM-699),
+// the right-click menu on a message (FRM-638 slice 7): «Copy text» copies the words he selected in it (FRM-699),
 // «Copy message» the whole as written. herdr reports one
 // right-click twice, on the list's item (which row) and on the list (where, in the list's own px), in either order:
 // whichever lands second completes the menu

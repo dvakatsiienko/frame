@@ -62,8 +62,11 @@ describe('what a right-click copies', () => {
         expect(copiedFrom(at, null)).toEqual({ isSelection: false, text });
     });
 
-    test('the words he selected in it', () => {
-        expect(copiedFrom(row({}), 'bold')).toEqual({
+    test.each([
+        ['a reply', row({})],
+        ['his own message', row({ kind: 'mine' })],
+    ])('the words he selected in %s', (_what, at) => {
+        expect(copiedFrom(at, 'bold')).toEqual({
             isSelection: true,
             text: 'bold',
         });

@@ -217,6 +217,12 @@ export function createMessageRows(deps) {
         );
     }
 
+    /** how many text views a message draws @param {Row} row */
+    const textsCount = (row) =>
+        row.kind === 'reply'
+            ? (foldOf(row)?.shown ?? replyBlocks(row)).length
+            : 1;
+
     /** what a message's text views draw from: while it stays the same, so does what they draw @param {Row} row @param {Theme} t @param {string} pre */
     function textsLook(row, t, pre) {
         const find = deps.find();
@@ -546,6 +552,7 @@ export function createMessageRows(deps) {
             ),
         stampOf,
         texts,
+        textsCount,
         textsLook,
     };
 }

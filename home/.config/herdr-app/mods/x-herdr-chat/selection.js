@@ -14,12 +14,13 @@ export function createSelections() {
     /** by list item: the drawing it was reported from, and its words by text view @type {Map<string, { stamp: string, parts: Map<number, string> }>} */
     const items = new Map();
 
-    /** @param {string} key @param {string} stamp */
-    const wordsOf = (key, stamp) => {
+    /** @param {string} key @param {string} stamp @param {number} blocks */
+    const wordsOf = (key, stamp, blocks) => {
         const item = items.get(key);
         if (item?.stamp !== stamp) return null;
         return (
             [...item.parts]
+                .filter(([block]) => block < blocks)
                 .sort(([a], [b]) => a - b)
                 .map(([, words]) => words)
                 .join('\n\n') || null
@@ -48,12 +49,16 @@ export function createSelections() {
             if (words) item.parts.set(block, words);
             else item.parts.delete(block);
         },
-        /** the words selected in a list item, else in the other half of its message @param {string} key @param {(key: string) => string} stampOf */
-        textFor(key, stampOf) {
+        /**
+         * the words selected in a list item, else in the other half of its message
+         * @param {string} key @param {(key: string) => string} stampOf
+         * @param {number} blocks how many text views its message draws: a fold leaves the rest out, and they never say so
+         */
+        textFor(key, stampOf, blocks) {
             const twin = twinOf(key);
             return (
-                wordsOf(key, stampOf(key)) ??
-                (twin && wordsOf(twin, stampOf(twin)))
+                wordsOf(key, stampOf(key), blocks) ??
+                (twin && wordsOf(twin, stampOf(twin), blocks))
             );
         },
     };

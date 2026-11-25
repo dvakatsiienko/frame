@@ -28,10 +28,8 @@ const PLACE_SAVE_MS = 600;
 // how long after a held place was last asked for the list stays unseen: its landing takes two frames, and a
 // reload asks again as each real height arrives
 const SETTLE_MS = 120;
-// the right-click menu's size, one row; its note under the quill once a message is copied
+// the right-click menu's size, one row
 const MENU_SIZE = { h: 34, w: 200 };
-const COPIED_NOTE = 'Message copied';
-const SELECTION_COPIED_NOTE = 'Selection copied';
 // the rows past the view whose text views stand ready, so a row he scrolls to can report his selection at once
 const BODIES_AHEAD = 10;
 
@@ -42,7 +40,6 @@ export const placeKey = (file) => `place:${file}`;
  * @typedef {object} MessageListDeps
  * @property {() => string | null} audioApp the app his settings open audio in, null: the system's choice
  * @property {() => string | null} file the shown thread's transcript
- * @property {(note: string, cx: Context) => void} flash a note under the quill that leaves on its own
  * @property {ReturnType<typeof import('./heights.js').createHeights>} heights
  * @property {(cx: Context) => void} loadEarlier the next older page, asked near the first row
  * @property {ReturnType<typeof import('./picture-viewer.js').createPictureViewer>} pictures
@@ -158,12 +155,20 @@ export function createMessageList(deps) {
                         drawnItems.push(box);
                         continue;
                     }
+                    const body = deps.rows.hasTexts(row)
+                        ? bodies.of(
+                              keys[i] ?? '',
+                              deps.rows.textsLook(row, t, preOf(i)),
+                          )
+                        : null;
+                    // the older text of one frame stays in its own row
+                    if (body?.isStale) box.overflow_hidden();
                     const drawnRow = deps.rows.row(
                         row,
                         t,
                         preOf(i),
                         true,
-                        bodies.of(keys[i] ?? ''),
+                        body?.entity ?? null,
                     );
                     if (i === cutAt)
                         drawnItems.push(box.overflow_hidden().child(drawnRow));
@@ -195,11 +200,14 @@ export function createMessageList(deps) {
                     copiedFrom(
                         row,
                         row
-                            ? selections.textFor(key, (k) =>
-                                  deps.rows.stampOf(
-                                      row,
-                                      preOf(keys.indexOf(k)),
-                                  ),
+                            ? selections.textFor(
+                                  key,
+                                  (k) =>
+                                      deps.rows.stampOf(
+                                          row,
+                                          preOf(keys.indexOf(k)),
+                                      ),
+                                  deps.rows.textsCount(row),
                               )
                             : null,
                     ),
@@ -389,16 +397,8 @@ export function createMessageList(deps) {
             .child(
                 item(
                     'copy',
-                    copied?.isSelection ? 'Copy selection' : 'Copy message',
-                    (cx) => {
-                        cx.write_to_clipboard(copied?.text ?? '');
-                        deps.flash(
-                            copied?.isSelection
-                                ? SELECTION_COPIED_NOTE
-                                : COPIED_NOTE,
-                            cx,
-                        );
-                    },
+                    copied?.isSelection ? 'Copy text' : 'Copy message',
+                    (cx) => cx.write_to_clipboard(copied?.text ?? ''),
                 ),
             );
     }

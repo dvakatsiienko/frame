@@ -110,6 +110,46 @@ describe('find moves no row (FRM-699:W3)', () => {
     });
 });
 
+// FRM-699 exit 5: a reply and his own message alike
+test.each([
+    ['a reply', 'reply', 2],
+    ['his own message', 'mine', 1],
+])('each text view of %s can report his selection', (_what, kind, count) => {
+    const { view } = createRows();
+    const at = {
+        ...(reply('a', 'one\n```\ntwo\n```') as object),
+        kind,
+    } as never;
+    const blocks: number[] = [];
+    expect(view.hasTexts(at)).toBe(true);
+    view.texts(at, t, 'p', true, (drawn, block) => {
+        blocks.push(block);
+        return drawn;
+    });
+    expect(blocks).toEqual([0, 1].slice(0, count));
+    expect(view.textsCount(at)).toBe(count);
+});
+
+test('a message’s look changes with what its text views draw, and only then', () => {
+    const { find, view } = createRows();
+    view.markTurn([]);
+    const look = (i: number) => view.textsLook(rows[i] as never, t, 'p');
+    const before = [look(0), look(1)];
+    find.open();
+    // the newest row is the one shown; the oldest is a match, the long one none
+    find.search(rows, 'e viewer');
+    expect(look(0)).not.toBe(before[0]);
+    expect(look(1)).toBe(before[1]);
+    const first = look(0);
+    find.step('older');
+    expect(look(0)).not.toBe(first);
+    view.markTurn([
+        { ...(LONG as object), isTurnStart: true, kind: 'mine' } as never,
+        LONG as never,
+    ]);
+    expect(look(1)).not.toBe(before[1]);
+});
+
 describe('each match painted in the drawn message (FRM-699:W3)', () => {
     const draw = (i: number, isShown = true) => {
         gpui.painted.length = 0;
