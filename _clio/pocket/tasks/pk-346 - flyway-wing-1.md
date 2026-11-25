@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T12:34:52Z'
+updated_date: '2026-11-25T12:49:24Z'
 labels:
   - s
   - clio-wing-1
@@ -840,4 +840,12 @@ PK-346:W98 (2026-11-25 13:29, dima): (after your gate-speed proposal)
 13:49 the 13:29 groom: PK-346:W96 and PK-346:W97 landed in lowtide's SKILL.md and references/false-open-hunt.md; PK-346:W95 and PK-346:W98 wait behind his 13:34 «perf and bytes first»
 
 14:34 the false-open hunt (his o16 tick, 14:29): 136 open FRM and BYT tickets read, 37 of them someday or snoozed and skipped, 0 falsely open; FRM-497 is built, its look left, sent to main; gate-speed verdict closed (his o15), FRM-704 its fix
+
+14:49 the 14:41 groom:
+PK-346:W99 (2026-11-25 14:41, dima): FRM-26 slightly later, snooze it.
+PK-346:W100 (2026-11-25 14:41, dima): i expected that at the start if lowtide you would first print me a list of your tails. then we set the order to solve them and then hunt.
+PK-346:W101 (2026-11-25 14:41, dima): how to have it? is any other skill would be needed to run first to have that list/plan? ❓
+PK-346:W102 (2026-11-25 14:41, dima): or its better to extend/fix lowtide itself? ❓
+14:49 the four lines above: the snooze done, the rest answered and built into lowtide, landing
+PK-346:W103 (2026-11-25 14:46, dima, o2 steer): ok. you list all possible tails: ones you can solve yourself next step (mechanical) on my plain «go» (first to solve), and list of other items — everything inside your flyway and pocket parks, and non-lane-linear stuff, not-snoozed, not someday. if i query you to hunt over snoozed/someday - we switch to that filter (lowtide is flexible with non-snoozelike default mode)
 <!-- SECTION:NOTES:END -->
