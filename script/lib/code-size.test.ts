@@ -138,7 +138,7 @@ const goFuncs = (file: string, text: string) => {
     return [...heads].flatMap(({ index, 1: receiver, 2: name }) => {
         const body = blanked.slice(index);
         const isOneLine = /\}\s*$/.test(body.split('\n', 1)[0] ?? '');
-        const end = isOneLine ? 0 : body.search(/^\}/m);
+        const end = isOneLine ? 0 : body.search(/^\}[ \t]*$/m);
         if (end < 0) return [];
         return [
             {
@@ -162,7 +162,11 @@ const goFuncOffenders = (
                 `${name}: ${lines} lines, past ${goFuncLimit} — break it into named parts`,
         ),
     ...Object.entries(capped).flatMap(([name, { cap }]) => {
-        const lines = funcs.find((func) => func.name === name)?.lines ?? 0;
+        // go takes many `init` in one file: the longest of a name is its size
+        const lines = Math.max(
+            0,
+            ...funcs.filter((func) => func.name === name).map((f) => f.lines),
+        );
         if (lines > cap)
             return [
                 `${name}: ${lines} lines, past its cap of ${cap} — a raise is dima's word`,
@@ -211,6 +215,48 @@ test.each([
         goFuncOf(121).replace('\twork()\n', '\tx := `\n}\n`\n'),
         {},
         ['a.go big: 123 lines, past 120 — break it into named parts'],
+    ],
+    [
+        'a signature closed at column 0',
+        goFuncOf(121, 'func big() []struct {\n\tname string\n} {'),
+        {},
+        ['a.go big: 123 lines, past 120 — break it into named parts'],
+    ],
+    [
+        'a brace in a string',
+        goFuncOf(121).replace('\twork()\n', '\tx := "}\\n"\n'),
+        {},
+        ['a.go big: 121 lines, past 120 — break it into named parts'],
+    ],
+    [
+        'a quote in a rune',
+        goFuncOf(121).replace('\twork()\n', "\tx := '\"'\n"),
+        {},
+        ['a.go big: 121 lines, past 120 — break it into named parts'],
+    ],
+    [
+        'a brace at column 0 in a block comment',
+        goFuncOf(121).replace('\twork()\n', '\t/*\n}\n*/\n'),
+        {},
+        ['a.go big: 123 lines, past 120 — break it into named parts'],
+    ],
+    [
+        'a backtick in a line comment',
+        goFuncOf(121).replace('\twork()\n', '\t// a ` alone\n'),
+        {},
+        ['a.go big: 121 lines, past 120 — break it into named parts'],
+    ],
+    [
+        'a generic receiver',
+        goFuncOf(121, 'func (s *set[T]) big() {'),
+        {},
+        ['a.go set.big: 121 lines, past 120 — break it into named parts'],
+    ],
+    [
+        'the longest of two of one name',
+        `${goFuncOf(125, 'func init() {')}${goFuncOf(131, 'func init() {').slice(13)}`,
+        { 'a.go init': { cap: 130, why: 'planted' } },
+        ["a.go init: 131 lines, past its cap of 130 — a raise is dima's word"],
     ],
     [
         'a one-line func before a long one',

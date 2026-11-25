@@ -344,10 +344,16 @@ type PlanSteps = {
     ticket?: string;
 }[];
 type PlanRead = { steps: PlanSteps } | { state: 'gone' | 'stale' };
-const planParses = new Map<string, { mtimeMs: number; steps: unknown }>();
+const planParses = new Map<
+    string,
+    { mtimeMs: number; steps?: unknown; failedAt?: number }
+>();
+// a poll tries a failing x again on an unmoved file this often, so one that fails costs no spawn every 4 s
+const PLAN_RETRY_MS = 30_000;
 export async function readPlanSteps(
     $: EngineInterface,
     path: string,
+    retryMs = 0,
 ): Promise<PlanRead> {
     const cut = path.lastIndexOf('/');
     const entry = (await $.fs.list(path.slice(0, cut)).catch(() => [])).find(
@@ -357,15 +363,24 @@ export async function readPlanSteps(
     const kept = planParses.get(path);
     if (kept?.mtimeMs === entry.mtimeMs && Array.isArray(kept.steps))
         return { steps: kept.steps };
+    const now = await $.clock.now();
+    if (
+        kept?.mtimeMs === entry.mtimeMs &&
+        now - (kept.failedAt ?? Number.NEGATIVE_INFINITY) < retryMs
+    )
+        return { state: 'stale' };
     const read = await xRead($, ['lane', 'plan-steps', path]);
     const steps = (read?.data as { steps?: unknown } | undefined)?.steps;
-    if (!Array.isArray(steps)) return { state: 'stale' };
+    if (!Array.isArray(steps)) {
+        planParses.set(path, { failedAt: now, mtimeMs: entry.mtimeMs });
+        return { state: 'stale' };
+    }
     planParses.set(path, { mtimeMs: entry.mtimeMs, steps });
     return { steps };
 }
 
 // FRM-649 (FRM-616:W36–W38): a lane card's title is x's lane record, «<scope> — <what>», read once per change of the lane's
-// records in x's thread store (a dispatch, a sixth sense joining), never each poll, and a failed read is tried again next
+// records in x's thread store (a dispatch, a sixth sense joining; `at` moves with every x sync), never each poll, and a failed read is tried again next
 // poll; title undefined when x has no record or it names no what; sixth: the sixth sense x's record names, linked beside
 // the codie; isFresh: read on this call, the one time a card takes the title, so a hand retitle stands
 type LaneShown = { isFresh?: boolean; title?: string; sixth?: string };
@@ -376,7 +391,10 @@ async function laneShown(
 ): Promise<LaneShown> {
     const key = (await threadRecords($))
         .filter((t) => t.lane === codie.lane)
-        .map((t) => `${t.sessionId}|${t.role}|${t.at ?? 0}|${t.ticket ?? ''}`)
+        .map(
+            (t) =>
+                `${t.sessionId}|${t.role}|${t.dispatchedAt ?? 0}|${t.ticket ?? ''}`,
+        )
         .sort()
         .join(',');
     const kept = laneShowns.get(codie.lane);
@@ -402,30 +420,36 @@ async function laneShown(
     return { isFresh: true, sixth, title };
 }
 
-// the live hand card linked to a dispatched codie, its runner's own, the newest of two: it is the lane's card, so the
-// dispatch opens no second one beside it (FRM-527:W139)
+// the live hand card linked to a codie dispatched into the lane, its runner's own, the newest of two: it is the lane's
+// card, so the dispatch opens no second one beside it, a resummoned codie's included (FRM-527:W139)
 async function handCardOf(
     $: EngineInterface,
     lanes: StashLane[],
-    codie: string,
+    codies: string[],
     runner: string,
+    live: Registered[],
 ) {
     let hand: StashLane | undefined;
     for (const l of lanes) {
-        const linked = l.linkedIds?.codie;
-        if (!linked || l.endedAt || l.plan) continue;
+        if (l.endedAt || l.plan) continue;
         if (bare(l.runner ?? '') !== bare(runner)) continue;
-        if ((await successorOf($, linked)) === codie) hand = l;
+        const linked = l.linkedIds?.codie;
+        const sid = linked && (await successorOf($, linked));
+        // a link made before its registry row, or an old card, holds a name alone: read as the board reads a member
+        const row = laneMemberRow(live, l.members.codie, sid);
+        if ([sid, row?.base.sid].some((id) => id && codies.includes(id)))
+            hand = l;
     }
     return hand;
 }
 
-// her own last move of a card; one at or past the dispatch keeps it a hand card till the lane's next one
+// her own last move of a card, a codie's followed step (`by`) left out; one at or past the dispatch keeps it a hand card
+// till the lane's next one
 const handMovedAt = (lane: StashLane) =>
     Math.max(
         0,
         ...lane.history
-            .filter((h) => ['create', 'edit', 'step'].includes(h.act))
+            .filter((h) => !h.by && ['create', 'edit', 'step'].includes(h.act))
             .map((h) => h.at),
     );
 
@@ -473,7 +497,17 @@ export async function openDispatchedLanes(
         const onPlan = lanes.filter((l) => expandHome(l.plan, home) === path);
         const open = onPlan.find((l) => !l.endedAt);
         const shown = await laneShown($, codie);
-        if (open && shown.isFresh && shown.title && open.title !== shown.title)
+        // a card that took this dispatch's plan keeps the title she gave it, a reload's fresh read included
+        const isTaken = open?.history.some(
+            (h) => h.act === 'take' && h.at >= (codie.dispatchedAt ?? 0),
+        );
+        if (
+            open &&
+            !isTaken &&
+            shown.isFresh &&
+            shown.title &&
+            open.title !== shown.title
+        )
             await glide({
                 act: 'edit',
                 id: open.id,
@@ -511,13 +545,47 @@ export async function openDispatchedLanes(
             continue;
         const text = await $.fs.read(path).catch(() => undefined);
         if (text === undefined) continue;
-        const hand = await handCardOf($, lanes, codie.sessionId, runner);
+        const steps = await readPlanSteps($, path);
+        // read again: a move of hers may have landed while x answered
+        const fresh = await laneStore($);
+        if (!fresh) return;
+        const codies = dispatched.filter((t) => t.lane === codie.lane);
+        const hand = await handCardOf(
+            $,
+            fresh,
+            codies.map((t) => t.sessionId),
+            runner,
+            live,
+        );
         if (hand) {
-            if ((codie.dispatchedAt ?? 0) > handMovedAt(hand))
+            const at = await $.clock.now();
+            // the plan create refuses (no step, one with no ticket) would freeze the card, so it stays by hand
+            const isFollowable =
+                'steps' in steps &&
+                steps.steps.length > 0 &&
+                steps.steps.every((x) => x.ticket);
+            if (isFollowable && (codie.dispatchedAt ?? 0) > handMovedAt(hand))
                 await changeLanes(
                     $,
-                    lanes,
-                    lanes.map((l) => (l.id === hand.id ? { ...l, plan } : l)),
+                    fresh,
+                    fresh.map((l) =>
+                        l.id === hand.id
+                            ? {
+                                  ...l,
+                                  history: [
+                                      ...l.history,
+                                      {
+                                          act: 'take',
+                                          at,
+                                          current: l.current,
+                                          done: l.items.filter((x) => x.isDone)
+                                              .length,
+                                      },
+                                  ],
+                                  plan,
+                              }
+                            : l,
+                    ),
                 );
             continue;
         }
@@ -561,7 +629,11 @@ export async function followPlans($: EngineInterface) {
             next.push(lane);
             continue;
         }
-        const read = await readPlanSteps($, expandHome(lane.plan, home));
+        const read = await readPlanSteps(
+            $,
+            expandHome(lane.plan, home),
+            PLAN_RETRY_MS,
+        );
         if ('state' in read) {
             const isMarked =
                 read.state === 'gone' ? lane.isPlanGone : lane.isPlanStale;

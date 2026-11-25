@@ -586,6 +586,20 @@ test("a plan's tick reaches an idle main's card within 5 s", async ($, on) => {
     expect(kept(w)[0]?.current).toBe(3);
 });
 
+test('a failing x lane plan-steps is tried again on an unmoved file every 30 s, not every poll', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w, 'x  ');
+    w.files[PLAN] = `${w.files[PLAN]}\n`;
+    w.steps[PLAN] = undefined;
+    await poll(w);
+    const runs = w.planRuns.length;
+    for (let i = 0; i < 3; i++) await poll(w);
+    const early = w.planRuns.length - runs;
+    for (let i = 0; i < 5; i++) await poll(w);
+    expect([early, w.planRuns.length - runs]).toEqual([0, 1]);
+});
+
 test('a failed x lane plan-steps keeps the last steps marked stale', async ($, on) => {
     const w = world(on);
     await start($);
