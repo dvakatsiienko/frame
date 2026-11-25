@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 // FRM-620:W84: a thread he switches to is opening until it can be written to, and his caret waits where he left it
 const at = vi.hoisted(() => ({
     isPsDown: false,
+    isReadDown: false,
+    notified: 0,
     /** each terminal's Claude, as its environment names it */
     pids: new Map<number, string>(),
     sessions: new Map<string, string>(),
@@ -51,8 +53,10 @@ vi.mock('herdr', () => ({
         };
     },
     home: () => '/h',
-    readTextFile: async (path: string) =>
-        at.sessions.get(path.split('/').at(-1) ?? '') ?? null,
+    readTextFile: async (path: string) => {
+        if (at.isReadDown) throw new Error('read');
+        return at.sessions.get(path.split('/').at(-1) ?? '') ?? null;
+    },
     watchFolder: () =>
         Object.assign(new Promise(() => {}), { cancel: () => {} }),
 }));
@@ -74,7 +78,9 @@ const settle = async () => {
 const cx = {
     bind_keys: () => {},
     focus_handle: () => quiet(),
-    notify: () => {},
+    notify: () => {
+        at.notified += 1;
+    },
     spawn: (job: (c: unknown) => unknown) => job(cx),
     timer: {
         after: (_ms: number, run: (c: unknown) => void) => run(cx),
@@ -84,6 +90,7 @@ const cx = {
 
 beforeEach(() => {
     at.isPsDown = false;
+    at.isReadDown = false;
     at.pids = new Map([
         [11, 't1'],
         [22, 't2'],
@@ -141,6 +148,14 @@ describe('a thread he switches to is opening', () => {
         expect(made.isOpening()).toBe(false);
     });
 
+    test('not for good once its session file cannot be read', async () => {
+        const made = feed();
+        at.isReadDown = true;
+        made.follow('t1', cx as never);
+        await settle();
+        expect([made.isOpening(), made.file()]).toEqual([false, null]);
+    });
+
     test('still, while its Claude cannot be looked up', async () => {
         const made = feed();
         at.isPsDown = true;
@@ -166,8 +181,11 @@ describe('a thread he switches to is opening', () => {
         await settle();
         made.follow('t2', cx as never);
         made.follow('t1', cx as never);
+        const drawn = at.notified;
         await settle();
         expect(made.isOpening()).toBe(false);
+        // and the chat draws again, or its quill never hears of it
+        expect(at.notified).toBeGreaterThan(drawn);
     });
 });
 

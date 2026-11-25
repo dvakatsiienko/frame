@@ -9,7 +9,7 @@ const at = vi.hoisted(() => ({
     made: [] as { handlers: Map<string, Handler>; kids: unknown[] }[],
     props: {} as Record<string, unknown>,
     shared: new Map<string, unknown>(),
-    timers: [] as (() => void)[],
+    timers: [] as ((() => void) & { ms: number })[],
 }));
 const { element } = vi.hoisted(() => ({
     element: (): unknown => {
@@ -106,8 +106,8 @@ const { default: ChatHeader } = await import('../x-herdr-chat-header/main.js');
 const cx = {
     notify: vi.fn(),
     timer: {
-        after: (_ms: number, run: (c: unknown) => void) =>
-            at.timers.push(() => run(cx)),
+        after: (ms: number, run: (c: unknown) => void) =>
+            at.timers.push(Object.assign(() => run(cx), { ms })),
     },
 };
 const addFiles = vi.fn();
@@ -400,6 +400,10 @@ describe('a thread he switches to', () => {
             for (const run of at.timers.splice(0)) run();
         };
         return {
+            /** Terminal view was shown since */
+            comeBack() {
+                Object.assign(view, { wasShown: false });
+            },
             draw() {
                 view.render(cx);
                 timers();
@@ -440,6 +444,7 @@ describe('a thread he switches to', () => {
         w.draw();
         w.state.isOpening = false;
         w.draw();
+        expect(w.focused).toEqual(['chat']);
         w.there();
         w.draw();
         expect(w.focused).toEqual(['chat', 'quill']);
@@ -453,13 +458,48 @@ describe('a thread he switches to', () => {
         expect(w.focused).toEqual(['chat', 'quill']);
     });
 
+    test('asks for a draw once herdr’s focus is past: no other may come', () => {
+        const w = open();
+        w.state.isFresh = false;
+        w.comeBack();
+        w.render();
+        w.there();
+        cx.notify.mockClear();
+        w.timers();
+        expect(cx.notify).toHaveBeenCalled();
+    });
+
+    test('the chat on screen again with its viewer open leaves the keyboard to the viewer', () => {
+        const w = open({ hasViewer: true });
+        w.state.isFresh = false;
+        w.there();
+        w.comeBack();
+        w.draw();
+        expect(w.focused).toEqual([]);
+        expect(w.state.isViewerOpen).toBe(true);
+    });
+
+    test('a steer box he typed in before a switch keeps nothing', () => {
+        const w = open({
+            held: 'steer-a:o1',
+            isLoaded: false,
+            stops: ['steer-a:o1'],
+        });
+        w.draw();
+        w.there();
+        w.state.isFresh = true;
+        w.draw();
+        expect(w.focused).toEqual(['quill']);
+    });
+
     test('and from there to a third at once: the first one’s landing is not its', () => {
         const w = open();
         w.render();
         w.state.isFresh = true;
         w.render();
-        const [first] = at.timers.splice(1, 1);
-        first?.();
+        const landings = at.timers.filter((run) => run.ms === 50);
+        expect(landings).toHaveLength(2);
+        landings[0]?.();
         expect(w.focused).toEqual([]);
         w.timers();
         expect(w.focused).toEqual(['chat']);
