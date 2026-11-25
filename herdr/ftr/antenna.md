@@ -12,6 +12,12 @@ wish: FRM-618 · legend and the other areas: [FTR.md](../FTR.md)
   - when he clicks ⚙️
   - then a small popup opens (never the settings window) with Group by space, Show tabs, Idle time, Context fill, Wait line (on by default, his o2), Keep hot 🔥, Model and Row height; each flip redraws antenna while the popup stays open, and the values live in `~/.claude/shelf/herdr-settings/settings.json` (PK-349:W1270, PK-349:W1271)
   - and with Group by space off the rows list ungrouped in his one order; each detail off leaves that detail alone (PK-349:W1267)
+- ⬜ antenna's head counts the threads, busy of all
+  - given ten threads, four of them working
+  - when antenna draws
+  - then a pill left of ⚙️ reads «4/10», every thread listed counted once, a pinned one too; a hover says «4 working of 10 threads»; nothing running reads «0/10», no thread draws no pill (FRM-620:W86; shots `~/.local/state/looks/FRM-620/1809-antenna-busy-wide.png` and the two `1815-antenna-busy-*.png`)
+  - and grouped by space, each space's name carries its own «2/5», pinned threads in their own space; a space whose threads are all pinned has no name to carry one (FRM-620:W87)
+  - and a thread that stops working moves its dot and the counts in one redraw: `busy.js` reads each dot once; a thread that asks him, «Needs you», is not counted as working
 - ⬜ a row carries keep hot 🔥 and the model, once the deck's
   - given Keep hot 🔥 on (its default) and Model off (its default)
   - when antenna draws
@@ -20,7 +26,7 @@ wish: FRM-618 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ a drag orders the rows, no sort and no sound button
   - given antenna's rows
   - when he drags one within its space
-  - then it lands where dropped and stays after a restart; the header holds only ⚙️ (PK-349:W1265)
+  - then it lands where dropped and stays after a restart; the header holds only the busy count and ⚙️ (PK-349:W1265, FRM-620:W86)
   - decision: a row moves within its own space, so a space header never sits between a row and its slot
 - ⬜ Tab reaches the threads, Enter opens one
   - given the keyboard in the quill or orbit

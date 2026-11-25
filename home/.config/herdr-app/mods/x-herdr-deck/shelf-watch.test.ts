@@ -148,6 +148,51 @@ test('glide redraws at each write of lanes.json, a half-written read kept out', 
     expect(seen).toEqual([1, 2, 2, 3]);
 });
 
+test('glide reads an unread lanes.json again, with no write to wake it', async () => {
+    const waits: number[] = [];
+    let redraws = 0;
+    const cx = {
+        notify: () => redraws++,
+        spawn: (run: (cx: unknown) => Promise<void>) => void run(cx),
+        timer: {
+            after: (ms: number, fire: (cx: unknown) => void) => {
+                waits.push(ms);
+                fire(cx);
+            },
+        },
+    };
+    herdr.readTextFile
+        .mockReset()
+        .mockResolvedValue('{"lanes":[]}')
+        .mockRejectedValueOnce(new Error('too many open files'));
+    createGlide('glide').init(cx as never);
+    await settle();
+    expect({ redraws, waits }).toEqual({ redraws: 1, waits: [2000] });
+});
+
+test('a read again, waited for while a write was read, reads nothing', async () => {
+    const waiting: ((cx: unknown) => void)[] = [];
+    const cx = {
+        notify: vi.fn(),
+        spawn: (run: (cx: unknown) => Promise<void>) => void run(cx),
+        timer: {
+            after: (_ms: number, fire: (typeof waiting)[0]) =>
+                waiting.push(fire),
+        },
+    };
+    herdr.readTextFile
+        .mockReset()
+        .mockResolvedValue('{"lanes":[]}')
+        .mockResolvedValueOnce('{"lanes":[');
+    createGlide('glide').init(cx as never);
+    await settle();
+    herdr.watches.shift()?.([`${REAL}/lanes.json`]);
+    await settle();
+    waiting[0]?.(cx);
+    await settle();
+    expect(herdr.readTextFile).toHaveBeenCalledTimes(2);
+});
+
 test('a glide read that answers late never draws over a newer one', async () => {
     let redraws = 0;
     const cx = { ...fakeCx(), notify: () => redraws++ };

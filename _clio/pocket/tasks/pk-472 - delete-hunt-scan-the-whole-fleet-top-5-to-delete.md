@@ -4,7 +4,7 @@ title: 'delete hunt: scan the whole fleet, top 5 to delete'
 status: open
 assignee: []
 created_date: '2026-11-25T15:33:41Z'
-updated_date: '2026-11-25T16:02:34Z'
+updated_date: '2026-11-25T16:09:51Z'
 labels:
   - s
   - clio-wing-1
@@ -54,4 +54,15 @@ PK-472:W22 (2026-11-25 17:52, dima): we reshape cuts and run it via my initial a
 PK-472:W23 (2026-11-25 17:52, dima): after you update this cut skill, how does it work now by default when i run bare cuts with no text and arguments? ❓
 
 PK-472:W24 (2026-11-25 18:00, dima): note: after we scan deletion candidates and decide what to delete, we should also decide who does the deletion and when. (skill upd)
+
+PK-472:W25 (2026-11-25 18:07, dima): the fleet upkeep recipe: where is it? filename please. ❓
+PK-472:W26 (2026-11-25 18:07, dima): the pocket recipe: yes, rare, but i can't tell that i am fully satisfied with your pocket. it is much better now, but not solved yet. let's keep it.
+PK-472:W27 (2026-11-25 18:07, dima): the system checkup recipe: i thought system checkup is a skill? why do we have a skill and a recipe both? the recipe refreshes the checkup? if yes, then keep the recipe for now. i am not sure that our skill is actually a good system checkup skill. ❓
+PK-472:W28 (2026-11-25 18:07, dima): the headless browser recipe: same, it is useful but no time to run it.
+PK-472:W29 (2026-11-25 18:07, dima): the code hosting recipe: recipe name please, can't find it. ❓
+
+PK-472:W30 (2026-11-25 18:09, dima): in the next batch: 10 recipes per reply please.
+PK-472:W31 (2026-11-25 18:09, dima): refresh-fleet-ops: yes delete it fully, not relevant anymore.
+PK-472:W32 (2026-11-25 18:09, dima): refresh-code-storage: delete too. i ask for it once per 6 months maybe.
+PK-472:W33 (2026-11-25 18:09, dima): next batch
 <!-- SECTION:NOTES:END -->
