@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-25T11:02:42Z'
+updated_date: '2026-11-25T11:09:12Z'
 labels:
   - s
   - clio-wing-1
@@ -22,11 +22,12 @@ ordinal: 1001
 - [ ] #4 f71 FRM-639 events piece 2: six questions, the draft in mods-lane-9/frm-639-section.md — with: dima
 - [ ] #5 f72 github event streams: is gh event listen worth it for our ci and pr watches — after everything pending — with: dima
 - [ ] #6 f52 FRM-465 exit 5: tonight, did both repos get a minors pr; then frame raycast by hand — parked: 2026-11-25
-- [ ] #7 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #8 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #9 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #10 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
-- [ ] #11 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
+- [ ] #7 f73 trials, one topic at a time with dima after evergreen: gate-speed, review-rounds, wisphunter verdicts — with: dima
+- [ ] #8 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #9 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #10 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #11 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #12 f60 🦥 the picture: one grill over blueprint v2 (FRM-614) and the mods big picture (FRM-611) — later: dima 14:34
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -819,4 +820,6 @@ his o3 steer (2026-11-25 12:46, dima): discuss with wing, after everything pendi
 PK-346:W93 (2026-11-25 12:46, dima, o3 steer): discuss with wing, after everything pending solved
 
 13:02 f52: frame's only minor, @raycast/api 2.13.1, kept out of the evergreen landing (crow) so the window can be read; no renovate run inside the 07:00–23:59 window yet at 13:02; taken by hand at the window's end if it never wakes
+
+his o4 steer (2026-11-25 13:11, dima): me with wing 1 after evergreen, one topic at a time, not all at once.
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T11:08:44Z'
+updated_date: '2026-11-25T11:09:11Z'
 labels:
   - s
   - clio-main
@@ -16,10 +16,10 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f113 the plan over all herdr work (FRM-616), parked on his word — later: dima 19:32 («tomorrow or the day after») — parked: 2026-11-24
-- [ ] #2 f118 FRM-596 slice 09 hook half: built with the x half, then the live-wing done test — waits for: FRM-645 — parked: 2026-11-25
-- [ ] #3 f119 decamp bytes' verify tree after speak's round 2 — waits for: FRM-683 — parked: 2026-11-25
-- [ ] #4 f114 FRM-678: the queue's free-CPU number, read from two days of rows, then one number to dima — on: 2026-11-26 — parked: 2026-11-24
+- [ ] #1 f118 FRM-596 slice 09 hook half: built with the x half, then the live-wing done test — waits for: FRM-645 — parked: 2026-11-25
+- [ ] #2 f119 decamp bytes' verify tree after speak's round 2 — waits for: FRM-683 — parked: 2026-11-25
+- [ ] #3 f120 the plan over all herdr work (FRM-616): talk it through — with: dima
+- [ ] #4 f121 FRM-678: the queue's free-CPU number from two days of rows, one number to dima — waits for: FRM-678 — parked: 2026-11-25
 - [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
 - [ ] #6 f104 ⏳ herdr wisp: the slash list misses his skill, in chat's commands() — waits for: FRM-620
 - [ ] #7 f105 ⏳ herdr wisps: the phases steer text empties; a Read picture says «gone» on click — waits for: FRM-620
@@ -2826,4 +2826,8 @@ PK-349:W2438 (2026-11-25 13:08, dima): cc will maybe fix it itself later.
 PK-349:W2439 (2026-11-25 13:08, dima): so you just read skills by hand.
 PK-349:W2440 (2026-11-25 13:08, dima): what i want is our part to work as native.
 PK-349:W2441 (2026-11-25 13:08, dima): if skill typed from quill in herdr, it opens a message that expands - it is fine then.
+
+done 2026-11-25 13:09: f113 the plan over all herdr work (FRM-616), parked on his word — later: dima 19:32 («tomorrow or the day after») — parked: 2026-11-24 (FRM-616 Todo)
+
+done 2026-11-25 13:09: f114 FRM-678: the queue's free-CPU number, read from two days of rows, then one number to dima — on: 2026-11-26 — parked: 2026-11-24 (FRM-678 Todo)
 <!-- SECTION:NOTES:END -->
