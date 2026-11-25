@@ -1,3 +1,6 @@
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -5,6 +8,7 @@ import {
     goModMoves,
     manifestMoves,
     pnpmGlobalMoves,
+    previousHeads,
     uvMoves,
 } from './evergreen-delta.ts';
 
@@ -70,5 +74,31 @@ describe('the upgrade logs', () => {
         expect(pnpmGlobalMoves(json)).toEqual([
             { from: '2.46.4', name: 'n8n', to: '2.48.4' },
         ]);
+    });
+});
+
+describe('previousHeads', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'evergreen-'));
+    const save = (day: string, frame?: string) => {
+        mkdirSync(path.join(root, day));
+        if (frame)
+            writeFileSync(
+                path.join(root, day, 'heads.json'),
+                JSON.stringify({ bytes: 'b', frame }),
+            );
+    };
+
+    it('reads the newest saved run before the day, past a run with none', () => {
+        save('2026-11-11', 'old');
+        save('2026-11-18', 'last');
+        save('2026-11-20');
+        save('2026-11-25', 'today');
+        expect(previousHeads(root, '2026-11-25').frame).toBe('last');
+    });
+
+    it('is empty when no run was saved', () => {
+        expect(previousHeads(path.join(root, 'none'), '2026-11-25')).toEqual(
+            {},
+        );
     });
 });

@@ -1,7 +1,8 @@
 // usage: node script/evergreen-delta.ts [--since YYYY-MM-DD] [--day YYYY-MM-DD] — the evergreen delta: every package that moved since the last run, `name from -> to`, by lane, for the read's researcher cards
+// the repos are compared with the heads the previous run saved in its log dir (heads.json), so a move lands in one report only; --since, or a first run with none saved, starts at that date
 // --since defaults to the oldest `markedAt` in evergreen/sources.json (the last run, before this run marks); --day names the run's log dir, ~/.local/state/clio/evergreen/<day>/ (brew-upgrade.log, pnpm-g-outdated.json, uv-outdated.txt)
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
@@ -86,6 +87,20 @@ export function pnpmGlobalMoves(json: string): Move[] {
     }));
 }
 
+// the heads of the newest run before `day`
+export function previousHeads(root: string, day: string): Partial<Heads> {
+    const last = (existsSync(root) ? readdirSync(root) : [])
+        .filter(
+            (name) =>
+                name < day && existsSync(path.join(root, name, 'heads.json')),
+        )
+        .toSorted()
+        .at(-1);
+    return last
+        ? JSON.parse(readFileSync(path.join(root, last, 'heads.json'), 'utf8'))
+        : {};
+}
+
 function git(dir: string, ...args: string[]) {
     return execFileSync('git', ['-C', dir, ...args], {
         encoding: 'utf8',
@@ -103,17 +118,20 @@ function show(dir: string, rev: string, file: string) {
 
 function repoMoves(
     dir: string,
+    savedHead: string | undefined,
     since: string,
     pattern: RegExp,
     parse: (before: string, after: string) => Move[],
 ) {
-    const base = git(
-        dir,
-        'rev-list',
-        '-1',
-        `--before=${since}T00:00`,
-        'origin/main',
-    ).trim();
+    const base =
+        savedHead ??
+        git(
+            dir,
+            'rev-list',
+            '-1',
+            `--before=${since}T00:00`,
+            'origin/main',
+        ).trim();
     if (!base) return [];
     const files = git(dir, 'diff', '--name-only', base, 'origin/main')
         .split('\n')
@@ -151,16 +169,28 @@ if (import.meta.main) {
         sources.map((source) => source.markedAt).toSorted()[0] ??
         '';
     const day = values.day ?? new Date().toISOString().slice(0, 10);
-    const logs = path.join(home, '.local/state/clio/evergreen', day);
+    const root = path.join(home, '.local/state/clio/evergreen');
+    const logs = path.join(root, day);
     const frame = path.join(home, 'frame');
     const bytes = path.join(home, 'projects/bytes');
     for (const dir of [frame, bytes]) git(dir, 'fetch', '-q', 'origin');
 
+    const saved = values.since ? {} : previousHeads(root, day);
+
     console.log(`# evergreen delta since ${since} (logs: ${logs})\n`);
     const manifest = /(^|\/)package\.json$/;
-    print('pnpm · frame', repoMoves(frame, since, manifest, manifestMoves));
-    print('pnpm · bytes', repoMoves(bytes, since, manifest, manifestMoves));
-    print('go · frame', repoMoves(frame, since, /(^|\/)go\.mod$/, goModMoves));
+    print(
+        'pnpm · frame',
+        repoMoves(frame, saved.frame, since, manifest, manifestMoves),
+    );
+    print(
+        'pnpm · bytes',
+        repoMoves(bytes, saved.bytes, since, manifest, manifestMoves),
+    );
+    print(
+        'go · frame',
+        repoMoves(frame, saved.frame, since, /(^|\/)go\.mod$/, goModMoves),
+    );
     const lanes = [
         ['brew', 'brew-upgrade.log', brewMoves],
         ['pnpm -g', 'pnpm-g-outdated.json', pnpmGlobalMoves],
@@ -174,8 +204,17 @@ if (import.meta.main) {
                 `## ${title} — ⚠️ no ${full}: save it before the upgrade runs\n`,
             );
     }
+    if (existsSync(logs)) {
+        const heads = {
+            bytes: git(bytes, 'rev-parse', 'origin/main').trim(),
+            frame: git(frame, 'rev-parse', 'origin/main').trim(),
+        } satisfies Heads;
+        writeFileSync(path.join(logs, 'heads.json'), JSON.stringify(heads));
+    }
 }
 
 /* Types */
+
+type Heads = Record<'bytes' | 'frame', string>;
 
 export type Move = { from: string; name: string; to: string };
