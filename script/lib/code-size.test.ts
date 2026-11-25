@@ -18,14 +18,9 @@ const root = path.resolve(import.meta.dirname, '../..');
 // not ours to cut: types the engines write, vendored code, generated files, public bundles
 const skipped = [/\.d\.ts$/, /^logos\/data\.gen\.ts$/, /(^|\/)public\//];
 
-// today's giants, each capped at its size on 2026-11-19: a cap goes down by hand as the file shrinks;
+// giants not cut yet, each capped at its size: a cap goes down by hand as the file shrinks;
 // a raise names dima's word and its date in the why
-const caps = {
-    'x/go/verify_red_test.go': {
-        cap: 1_279,
-        why: 'verify red, one file of cases',
-    },
-} as const satisfies Record<string, { cap: number; why: string }>;
+const caps: Readonly<Record<string, { cap: number; why: string }>> = {};
 
 const codeFiles = trackedFiles(
     root,
