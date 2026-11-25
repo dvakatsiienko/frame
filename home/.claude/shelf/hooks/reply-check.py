@@ -579,6 +579,8 @@ def quiet_wake(path: str, reply: str) -> bool:
 QUEUE_DIR = os.environ.get("CLIO_QUEUE_RUN", os.path.expanduser("~/.local/state/clio/queue-run"))
 QUEUE_TTL_S = 12 * 3600
 NEXT_ITEM = re.compile(r"next catch:", re.I)
+# an item finished, never a report mid-item (dima, 2026-11-25 17:57)
+DONE_REPORT = re.compile(r"^\W*✅ \*\*done", re.I | re.M)
 MEMBER_OPENERS = ("Another Claude session sent", "<task-notification", "[SYSTEM NOTIFICATION", "<cross-session-message")
 
 
@@ -594,7 +596,9 @@ def queue_run(session: str) -> bool:
 def no_next_item(path: str, reply: str, session: str) -> bool:
     # in a queue run, a reply to dima ends with the next item and my take (dima, 2026-11-20 15:41: asked ~10 times)
     opener, _ = turn_opener(path)
-    return queue_run(session) and not opener.startswith(MEMBER_OPENERS) and not NEXT_ITEM.search(FENCE.sub("", reply))
+    shown = FENCE.sub("", reply)
+    is_done = DONE_REPORT.search(shown) is not None
+    return queue_run(session) and not opener.startswith(MEMBER_OPENERS) and is_done and not NEXT_ITEM.search(shown)
 
 
 VERDICT_BADGED = re.compile(r"(?<!\*\*)(🌼 clean|🩹 fix|🪜 escalate)(?!\*\*)")
@@ -735,7 +739,7 @@ def main() -> None:
     if by_rule("note-only"):
         reminds.append("the reply pointed at the board while the proposal sat only in an ask's hidden note — print the proposal in the thread")
     if by_rule("no-next-item"):
-        reminds.append("a queue-run reply with no «next catch:» — end every done report with the next catch and «my take:» (clio:lowtide), its pick an orbit ask")
+        reminds.append("a queue-run done report with no «next catch:» — end it with the next big item, never a substep, and «my take:» (clio:lowtide), its pick an orbit ask")
     if by_rule("quiet-wake"):
         reminds.append("a wake that only reports a commit or push prints nothing; it rides the next reply")
     if by_rule("plain-verdict"):

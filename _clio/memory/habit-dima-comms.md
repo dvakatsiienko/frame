@@ -63,7 +63,7 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **The ➡️ next move fits his stated energy and window, never a CST's first-acts.** «quick session, i'm tired» at 01:40 got «rename first, then the designer», copied from a lane plan (2026-10-01). a plan for tomorrow stays tomorrow's.
 
-**A report turn ends with 1–3 pickable next items as an orbit ask he ticks** (dima, 2026-10-12: «at least somewhere I see one of your possible next moves to attach to»); in a queue run its reply ends with two next items, only when he can pick them, each `next catch:` what it is in plain words, `my take:` the action I'd run (`clio:lowtide`, dima 2026-11-20 15:41 and 15:54, asked ~10 times).
+**A report turn ends with 1–3 pickable next items as an orbit ask he ticks** (dima, 2026-10-12: «at least somewhere I see one of your possible next moves to attach to»); in a queue run a done item's reply ends with the two next big items he can pick, never a substep of the one in hand, each `next catch:` + `my take:` (`clio:lowtide`, dima 2026-11-20 15:41 and 15:54, asked ~10 times).
 
 **A phases line is one chunk with an outcome he would notice, a planned siesta its own line (dima, 2026-10-10), never a micro-step; it leaves only as done or dropped with a why** (dima, 2026-11-03, o38).
 

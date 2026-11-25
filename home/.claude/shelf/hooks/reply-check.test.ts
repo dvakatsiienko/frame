@@ -803,7 +803,7 @@ describe('a wake that only reports a commit or push (dima o154)', () => {
 });
 
 describe('a queue-run reply with no next item (dima, 2026-11-20)', () => {
-    const done = 'FRM-1 fixed and closed.';
+    const done = '✅ **done:** FRM-1 fixed and closed.';
     // a queue-run dir with the flag set for this session, its mtime `ageS` seconds old
     const queueDir = (ageS = 0) => {
         const dir = mkdtempSync(join(tmpdir(), 'rc-queue-'));
@@ -816,11 +816,15 @@ describe('a queue-run reply with no next item (dima, 2026-11-20)', () => {
 
     it('logs a done report with no «next catch:» in a turn dima started', () => {
         expect(loggedAfter(done, turnOpenedBy('go on'), queueDir())).toContain('no-next-item');
-        expect(nextPrompt()).toContain('a queue-run reply with no «next catch:»');
+        expect(nextPrompt()).toContain('a queue-run done report with no «next catch:»');
     });
 
     it('passes a done report that ends with the next item', () => {
         expect(loggedAfter(`${done}\n\nnext catch: FRM-2, the flyway fix.\nmy take: rename it.`, turnOpenedBy('go on'), queueDir())).not.toContain('no-next-item');
+    });
+
+    it('passes a reply mid-item, no done line in it', () => {
+        expect(loggedAfter('The helpers still read; the list comes next.', turnOpenedBy('go on'), queueDir())).not.toContain('no-next-item');
     });
 
     it('passes a turn a task-notification opened', () => {

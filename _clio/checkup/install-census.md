@@ -1,6 +1,6 @@
 # install census — what is installed and what is used
 
-written by `clio:system-checkup` § install-census, rewritten each run. last run 2026-11-01, partial: the install hunt; the per-skill fire counts wait for a `helper-lite` run.
+written by `clio:lowtide-cuts` (its deletion hunt), rewritten each run. last run 2026-11-01, partial: the install hunt; the per-skill fire counts wait for a `helper-lite` run.
 
 ## 🔴 removal asks
 

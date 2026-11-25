@@ -1,6 +1,6 @@
 ---
 name: lowtide-cuts
-description: lowtide, what stays — load before weighing whether planned or built work stays, and before printing dima any cut, trim, merge, move, park or close proposal — «what can we cut?», «dead weight», «is it worth it», «cut it», a low tide's cut pass, a milestone close's kill side, a reorg of planned work, a batch of close asks.
+description: lowtide, what stays — load before weighing whether planned or built work stays, and before printing dima any cut, trim, merge, move, park or close proposal — «what can we cut?», «dead weight», «is it worth it», «cut it», a low tide's cut pass, a milestone close's kill side, a reorg of planned work, a batch of close asks — and on «delete hunt», «deletion scan», «what can we delete».
 ---
 
 # lowtide-cuts — what stays, what goes, and a print he can judge alone
@@ -12,6 +12,7 @@ dima, PK-367:W2 (2026-11-09 inbox, dima): why: we started a practice of cuts, si
 - **every lowtide** (`clio:lowtide`), over the planned tickets of the next big step, before its first chunk is signed
 - **every milestone close**, over what the milestone built: the kill side of `craft-pm` § the freebie rule
 - **his «what can we cut?»**, any time, over the set he names
+- **typed bare, or «delete hunt»** (dima, PK-472): the fleet's built features, one area a run: [deletion-hunt.md](references/deletion-hunt.md), its own print
 
 ## the filter test — an item stays only if it passes
 
