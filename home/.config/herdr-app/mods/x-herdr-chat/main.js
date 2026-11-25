@@ -2,7 +2,7 @@
 // drawn as his messages, replies and one line per tool call, in a list that never moves without him, over the quill,
 // his text box. this file builds the views and composes them; MODULES.md names the module that owns each part.
 
-import { exists, mkdir, readdir, writeFile } from 'fs/promises';
+import { mkdir, readdir, writeFile } from 'fs/promises';
 import { h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
 import {
@@ -26,6 +26,7 @@ import { createBand } from './band-view.js';
 import { createBlockedPanel } from './blocked-panel.js';
 import { CHAT_SHOWN, CHAT_VIEW, chatViewOf } from './chat-asks.js';
 import { readableTheme } from './contrast.js';
+import { onDisk } from './disk.js';
 import { createFindBar } from './find-bar.js';
 import { createHeights } from './heights.js';
 import { LOOK_KEY, lookOf } from './look.js';
@@ -126,7 +127,7 @@ export default class Chat extends View {
     });
     sent = createSentPictures(SENT_IO);
     /** the paths a reply names that are on disk */
-    links = createPathLinks({ exists, home });
+    links = createPathLinks({ home, onDisk });
     /** what the quill says about his last send: why it did not go, or why it went as a push @type {string | null} */
     note = null;
     /** the send path: the magic send's marks, the hold, a send that did not go coming back */

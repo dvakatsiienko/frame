@@ -44,6 +44,12 @@ describe('the paths a reply names', () => {
         ],
         ['a link to a path', '[`log`](/tmp/a.md)', ['/tmp/a.md']],
         ['once each', '/tmp/a and `/tmp/a`', ['/tmp/a']],
+        [
+            'in bold, in a nested list',
+            '**~/a** \n- x\n    - ~/b',
+            ['~/a', '~/b'],
+        ],
+        ['after inline triple ticks', '```npm x``` then\n~/a', ['~/a']],
     ])('%s', (_what, text, paths) => {
         expect(pathsNamed(text)).toEqual(paths);
     });
@@ -58,6 +64,19 @@ describe('the paths a reply names', () => {
         ],
         ['a picture', '![a](/tmp/a.png)'],
         ['a relative path', 'herdr/ftr/chat.md ./a ../b'],
+        [
+            'a fence of four ticks with three inside',
+            '````\n```\n~/a\n```\n~/b\n````',
+        ],
+        ['a quoted fence', '> ```\n> ~/a\n> ```'],
+        ['indented code', 'so\n\n    cat ~/a\n\tls ~/b'],
+        ['a span of two ticks', '``see `~/a` ``'],
+        [
+            'a path with a place to fill in',
+            '~/.claude/<slug>/x.jsonl ~/a(b) ~/{x} ~/frame\\ copy/a.md',
+        ],
+        ['a link’s definition', '[1]: /Users/dima/a.md'],
+        ['a network volume', '/Volumes/nas/x'],
     ])('never %s', (_what, text) => {
         expect(pathsNamed(text)).toEqual([]);
     });
@@ -75,12 +94,11 @@ describe('a path on disk draws as a link, any other as its words', () => {
     });
 
     test('none of them on disk', () => {
-        const text =
-            'see `~/a.md`, /tmp/b:4. or [w](/tmp/w) [x](https://x.dev)';
+        const text = 'see `~/a.md`, /tmp/b:4. or [x](https://x.dev)';
         expect(linkPaths(text, [])).toBe(text);
-        expect(linkPaths('[c](file:///tmp/c) <file:///tmp/d.md>', [])).toBe(
-            'c d.md',
-        );
+        expect(
+            linkPaths('[c](file:///tmp/c) <file:///tmp/d.md> [w](/tmp/w)', []),
+        ).toBe('c d.md w');
     });
 
     test('a code block keeps its text', () => {
@@ -98,8 +116,10 @@ describe('a path on disk draws as a link, any other as its words', () => {
 
 describe('a reply learns which paths are there', () => {
     const disk = (...there: string[]) => {
-        const exists = vi.fn(async (path: string) => there.includes(path));
-        return { exists, links: createPathLinks({ exists, home: () => HOME }) };
+        const onDisk = vi.fn(async (paths: string[]) =>
+            paths.map((path) => there.includes(path)),
+        );
+        return { links: createPathLinks({ home: () => HOME, onDisk }), onDisk };
     };
 
     test('only those, in one redraw', async () => {
@@ -115,15 +135,36 @@ describe('a reply learns which paths are there', () => {
         expect(row.version).toBe(1);
     });
 
-    test('the disk is asked once per text', async () => {
-        const row = reply('/tmp/a');
-        const { exists, links } = disk('/tmp/a');
-        await links.learn([row]);
-        await links.learn([row]);
-        expect(exists).toHaveBeenCalledTimes(1);
-        row.text += ' /tmp/b';
-        await links.learn([row]);
-        expect(exists).toHaveBeenCalledTimes(3);
+    test('the disk is asked once per text, in one look for every reply', async () => {
+        const rows = [reply('/tmp/a ~/b'), reply('/tmp/a')];
+        const { links, onDisk } = disk('/tmp/a', '/Users/dima/b');
+        await links.learn(rows);
+        await links.learn(rows);
+        expect(onDisk.mock.calls.filter(([paths]) => paths.length)).toEqual([
+            [['/tmp/a', '/Users/dima/b']],
+        ]);
+        (rows[1] as Row).text += ' /tmp/c';
+        await links.learn(rows);
+        expect(onDisk).toHaveBeenLastCalledWith(['/tmp/a', '/tmp/c']);
+    });
+
+    test('a path named before it was written links once it is there, near the end alone', async () => {
+        const old = reply('/tmp/late');
+        const rows = [
+            old,
+            ...Array.from({ length: 11 }, () => reply('x')),
+            reply('/tmp/late'),
+        ];
+        const there: string[] = [];
+        const links = createPathLinks({
+            home: () => HOME,
+            onDisk: async (paths) => paths.map((path) => there.includes(path)),
+        });
+        await links.learn(rows);
+        there.push('/tmp/late');
+        expect(await links.learn(rows)).toBe(true);
+        expect(rows.at(-1)?.links).toEqual(['/tmp/late']);
+        expect(old.links ?? []).toEqual([]);
     });
 
     test('a reply that grew while the disk answered waits for its own answer', async () => {
@@ -133,13 +174,5 @@ describe('a reply learns which paths are there', () => {
         row.text = 'no path now';
         expect(await first).toBe(false);
         expect(row.links).toBeUndefined();
-    });
-
-    test('a failed look reads as not there', async () => {
-        const links = createPathLinks({
-            exists: () => Promise.reject(new Error('no')),
-            home: () => HOME,
-        });
-        expect(await links.learn([reply('/tmp/a')])).toBe(false);
     });
 });

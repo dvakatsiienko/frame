@@ -376,6 +376,8 @@ export function createMessageList(deps) {
      * @param {string} url @param {Row} row @param {Context} cx
      */
     function follow(url, row, cx) {
+        // herdr follows a link on any button's mouse-up, one under an open menu or the viewer too
+        if (messageMenu.state || deps.pictures.isOpen()) return;
         const path = pathOf(url, row, home());
         if (!path) {
             if (/^https?:/.test(url)) cx.open_url(url);
@@ -422,6 +424,7 @@ export function createMessageList(deps) {
                         .cursor_pointer()
                         .hover((s) => s.bg(t.hover))
                         .on_click((_event, cx) => {
+                            cx.stop_propagation();
                             close(cx);
                             act(cx);
                         }),

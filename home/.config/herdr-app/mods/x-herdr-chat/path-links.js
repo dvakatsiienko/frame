@@ -3,16 +3,20 @@
 
 /** @typedef {import('./row-model.js').Row} Row */
 
-const ROOT = String.raw`(?:~|\/(?:Users|private|tmp|Volumes|opt))\/`;
-// a fenced block (one still being written too), a link whose label may hold code, a code span, a bare link, a bare path;
-// the first that matches takes its words, so a path inside a link or a fence is never linked again
+// a network volume is left out: a look at a lost one never answers
+const ROOT = String.raw`(?:~|\/(?:Users|private|tmp|opt))\/`;
+// a fence (one still being written too, or quoted), an indented line of code, a link's definition, a link whose label may
+// hold code, a code span, a bare link, a bare path; the first that matches takes its words, so a path inside one is
+// never linked again. a bare path that stops at a sign no path holds («<slug>», «(a)») names nothing on disk
 const TOKEN = new RegExp(
     [
-        String.raw`(?<fence>^[ \t]*(?<mark>\`\`\`|~~~)(?:[\s\S]*?^[ \t]*\k<mark>|[\s\S]*))`,
+        String.raw`(?<fence>^[ \t>]*(?<mark>\`{3,}(?=[^\`\n]*$)|~{3,})(?:[\s\S]*?^[ \t>]*\k<mark>|[\s\S]*))`,
+        String.raw`(?<indented>^(?: {4,}|\t)(?![ \t]*(?:[-*+]|\d+[.)])\s)[^\n]*)`,
+        String.raw`(?<definition>^ {0,3}\[[^\]\n]+\]:[^\n]*)`,
         String.raw`(?<link>!?\[(?<label>(?:\`[^\`\n]*\`|[^[\]\n\`])*)\]\(<?(?<url>[^\s)>]+)>?(?:\s+"[^"]*")?\))`,
-        String.raw`(?<code>\`[^\`\n]*\`)`,
+        String.raw`(?<code>(?<!\`)(?<ticks>\`+)(?!\`)[^\n]*?(?<!\`)\k<ticks>(?!\`))`,
         String.raw`<(?<auto>file:\/\/[^\s<>]+)>`,
-        String.raw`(?<=^|[\s(«])(?<bare>${ROOT}[^\s\`'"<>()[\]«»\\]+)`,
+        String.raw`(?<=^|[\s(«*])(?<bare>${ROOT}[^\s\`'"<>()[\]{}«»\\*]+)(?=[\s)»"*]|$)`,
     ].join('|'),
     'gm',
 );
@@ -40,19 +44,19 @@ function filePath(url) {
  */
 const eachPath = (text, draw) =>
     text.replace(TOKEN, (whole, ...rest) => {
-        const { auto, bare, code, label, link, url } =
+        const { auto, bare, code, label, link, ticks, url } =
             /** @type {Record<string, string | undefined>} */ (rest.at(-1));
         if (link) {
             if (whole.startsWith('!')) return whole;
             const path = filePath(url ?? '');
             if (path) return draw(path, label ?? '', label ?? '');
             return WHOLE_PATH.test(url ?? '')
-                ? draw(lineless(url ?? ''), label ?? '', whole)
+                ? draw(lineless(url ?? ''), label ?? '', label ?? '')
                 : whole;
         }
         if (code) {
             const inside = code.slice(1, -1);
-            return WHOLE_PATH.test(inside)
+            return ticks === '`' && WHOLE_PATH.test(inside)
                 ? draw(lineless(inside), code, code)
                 : code;
         }
@@ -93,9 +97,12 @@ export function pathOf(url, row, home) {
     return path ? path.replace(/^~(?=\/)/, home) : null;
 }
 
-/** @param {{ exists: (path: string) => Promise<boolean>, home: () => string }} disk */
-export function createPathLinks({ exists, home }) {
-    /** the text each row's links were read from @type {WeakMap<Row, string>} */
+// a reply this near the end may name a file it is about to write: a path that was not there is looked for again
+const NEWEST = 12;
+
+/** @param {{ home: () => string, onDisk: (paths: string[]) => Promise<boolean[]> }} disk */
+export function createPathLinks({ home, onDisk }) {
+    /** the text each row's links were read from, and whether a path of it was not there @type {WeakMap<Row, { isAnyMissing: boolean, text: string }>} */
     const read = new WeakMap();
     return {
         /**
@@ -103,32 +110,36 @@ export function createPathLinks({ exists, home }) {
          * @param {readonly Row[]} rows @returns {Promise<boolean>} whether one did
          */
         async learn(rows) {
-            const todo = rows.filter(
-                (r) => r.kind === 'reply' && read.get(r) !== r.text,
+            const todo = rows.flatMap((row, i) => {
+                if (row.kind !== 'reply') return [];
+                const had = read.get(row);
+                const isAgain = had?.isAnyMissing && i >= rows.length - NEWEST;
+                if (had?.text === row.text && !isAgain) return [];
+                const { text } = row;
+                const named = pathsNamed(text);
+                read.set(row, { isAnyMissing: named.length > 0, text });
+                return named.length ? [{ named, row, text }] : [];
+            });
+            const asked = [...new Set(todo.flatMap(({ named }) => named))];
+            const said = await onDisk(
+                asked.map((path) => path.replace(/^~(?=\/)/, home())),
             );
-            const changed = await Promise.all(
-                todo.map(async (row) => {
-                    const { text } = row;
-                    read.set(row, text);
-                    const named = pathsNamed(text);
-                    const isThere = await Promise.all(
-                        named.map((path) =>
-                            exists(path.replace(/^~(?=\/)/, home())).catch(
-                                () => false,
-                            ),
-                        ),
-                    );
-                    const links = named.filter((_path, i) => isThere[i]);
-                    // the reply grew while the disk answered: its longer text is asked for on its own
-                    if (row.text !== text) return false;
-                    if (links.join('\n') === (row.links ?? []).join('\n'))
-                        return false;
-                    row.links = links;
-                    row.version += 1;
-                    return true;
-                }),
-            );
-            return changed.includes(true);
+            const there = new Set(asked.filter((_path, i) => said[i]));
+            let isNew = false;
+            for (const { named, row, text } of todo) {
+                // the reply grew while the disk answered: its longer text is asked for on its own
+                if (row.text !== text) continue;
+                const links = named.filter((path) => there.has(path));
+                read.set(row, {
+                    isAnyMissing: links.length < named.length,
+                    text,
+                });
+                if (links.join('\n') === (row.links ?? []).join('\n')) continue;
+                row.links = links;
+                row.version += 1;
+                isNew = true;
+            }
+            return isNew;
         },
     };
 }

@@ -1,12 +1,12 @@
 // the picture viewer: a click on a picture opens it over the whole chat (W33/W35), with ⌘ held his desktop app;
 // zoom, step, copy, open and Finder; it holds the keyboard while open. the steps' rules live in viewer.js
 
-import { exists } from 'fs/promises';
 import { h_flex, v_flex } from 'gpui-base';
 import { div, image } from 'gpui-kit';
 import { appHome, exec } from 'herdr';
 
 import { pictureOpenArgs } from './attach.js';
+import { isOnDisk } from './disk.js';
 import { copyPicture, viewCopy } from './shots.js';
 import { tint } from './tint.js';
 import {
@@ -77,7 +77,7 @@ export function createPictureViewer({
         const mine = ++ask;
         cx.spawn(async (cx) => {
             // his app opens nothing for a gone file: the viewer shows its earlier copy, or says why not
-            if (await exists(clicked))
+            if (await isOnDisk(clicked))
                 exec('open', pictureOpenArgs(clicked, isCleanShot())).catch(
                     () => {},
                 );
@@ -100,7 +100,7 @@ export function createPictureViewer({
             // the picture clicked opens, or nothing: never a sibling in its place
             if (!made[at]) {
                 const clicked = files[at] ?? '';
-                const isThere = await exists(clicked);
+                const isThere = await isOnDisk(clicked);
                 if (file() === shownFile && ask === mine)
                     say(missingNote(clicked, isThere), cx);
                 return;
@@ -183,6 +183,8 @@ export function createPictureViewer({
                 cx.stop_propagation();
                 keys?.focus();
             })
+            // a link under the picture follows on a mouse-up
+            .on_mouse_up('left', (_e, cx) => cx.stop_propagation())
             // the tools sit centred on a pill of their own, so they read apart from the picture (dima, 17:40)
             .child(
                 h_flex()

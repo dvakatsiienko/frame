@@ -17,7 +17,11 @@ const cut = new WeakMap();
 export function replyBlocks(row) {
     const had = cut.get(row);
     if (had?.text === row.text && had.links === row.links) return had.blocks;
-    const blocks = splitBlocks(linkPaths(row.text, row.links ?? []));
+    const blocks = splitBlocks(row.text).map((block) =>
+        block.kind === 'text'
+            ? { ...block, text: linkPaths(block.text, row.links ?? []) }
+            : block,
+    );
     cut.set(row, { blocks, links: row.links, text: row.text });
     return blocks;
 }

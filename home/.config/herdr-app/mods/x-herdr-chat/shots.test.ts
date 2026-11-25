@@ -2,12 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 const herdr = vi.hoisted(() => ({
     exec: vi.fn(),
-    exists: vi.fn(),
     unlink: vi.fn(),
 }));
 vi.mock('herdr', () => ({ appHome: () => '/app', exec: herdr.exec }));
 vi.mock('fs/promises', () => ({
-    exists: herdr.exists,
     mkdir: vi.fn(),
     readFile: vi.fn(),
     unlink: herdr.unlink,
@@ -113,9 +111,17 @@ describe('a picture opened whole', () => {
         herdr.unlink.mockImplementation(async (p: string) => {
             delete files[p];
         });
-        herdr.exists.mockImplementation(async (p: string) => p in files);
         herdr.exec.mockImplementation(async (cmd: string, args: string[]) => {
             const [from = '', to = ''] = args.slice(-2);
+            // disk.js: a line for each path asked
+            if (cmd === '/bin/sh')
+                return {
+                    code: 0,
+                    stdout: args
+                        .slice(3)
+                        .map((p) => `${p in files ? 1 : 0}\n`)
+                        .join(''),
+                };
             if (cmd === 'sips')
                 return {
                     code: 0,
