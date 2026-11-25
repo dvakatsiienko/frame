@@ -13,7 +13,7 @@ posted: {health: yes}
 - an orbit ask is a short title, a body and a grey pick, opened by the chat's own rule: [FRM-695](https://linear.app/x-com/issue/FRM-695); look and test asks carry steps: [FRM-645](https://linear.app/x-com/issue/FRM-645)
 - herdr's chat copies the selected words, find marks its hits with no flicker: [FRM-699](https://linear.app/x-com/issue/FRM-699); a file drops anywhere on the chat, the cursor sits in the quill after any switch
 - herdr's deck and status mods are under the size cap: [FRM-687](https://linear.app/x-com/issue/FRM-687)
-- a start refuses an unsealed chunk: [FRM-700](https://linear.app/x-com/issue/FRM-700); a memory commit runs the cited-docs check alone: [FRM-704](https://linear.app/x-com/issue/FRM-704)
+- a start refuses an unsealed chunk: [FRM-700](https://linear.app/x-com/issue/FRM-700); a memory commit that adds a doc citation runs the cited-docs check alone: [FRM-704](https://linear.app/x-com/issue/FRM-704)
 - speak's mess hunt closed: [FRM-683](https://linear.app/x-com/issue/FRM-683), its list words read right: [FRM-406](https://linear.app/x-com/issue/FRM-406), its meter at 60 fps: [FRM-497](https://linear.app/x-com/issue/FRM-497); kokoro 0.6.8 is live, approved by dima's ear: [FRM-669](https://linear.app/x-com/issue/FRM-669)
 - `x:review-messhunt` is a skill: [FRM-629](https://linear.app/x-com/issue/FRM-629)
 - cut on dima's word: two recipes, the charm notes, the tick wake that started turns, the ticks-folder fence
