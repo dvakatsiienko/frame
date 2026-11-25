@@ -62,8 +62,6 @@ const ROW_KEYS = 64;
 const PINS = 'x-herdr-antenna.pins';
 const PIN_PRESS = 'x-herdr-antenna.pinPress';
 
-// the old list's saved order, in herdr's store for its mod: read once, so his order comes over by address
-const OLD_STORE = `${home()}/.config/herdr-app/data/x-herdr-agents/store.json`;
 const SETTINGS = `${home()}/.claude/shelf/herdr-settings/settings.json`;
 // the knobs live: the popup writes them here as it saves, so antenna and the tab bar redraw at once
 export const SETTINGS_KEY = 'antenna.settings';
@@ -248,38 +246,22 @@ export default class Antenna extends View {
         this.order = stored('order', []);
         /** @type {Record<string, string>} each ordered address's thread name, kept after its terminal goes */
         this.orderNames = stored('orderNames', {});
-        /** his order came over from the old list; until then antenna publishes no order, so his never gets wiped */
+        /** his order was saved once; until then antenna publishes no order, so his never gets wiped */
         this.isSeeded = stored('seeded', false) === true;
         const names = (/** @type {import('gpui-kit').Context} */ cx) =>
             cx.spawn(async (cx) => {
                 await readNames(agents());
                 publishNames();
-                if (!this.isSeeded) await this.seed();
+                if (!this.isSeeded) this.seed();
                 cx.notify();
             });
         names(cx);
         cx.timer.every(5000, names);
     }
 
-    // his order before antenna came: the old list's own saved addresses, read once, a thread it never saw at the end
-    async seed() {
-        const text = await readTextFile(OLD_STORE).catch(
-            () => /** @type {null} */ (null),
-        );
-        /** @type {unknown} */
-        let old = null;
-        try {
-            old = JSON.parse(JSON.parse(text ?? 'null')?.order ?? 'null');
-        } catch {}
-        const seeded = Array.isArray(old)
-            ? old.filter((a) => typeof a === 'string')
-            : [];
-        this.setOrder([
-            ...seeded,
-            ...agents()
-                .map((a) => a.address)
-                .filter((a) => !seeded.includes(a)),
-        ]);
+    // a first run, nothing saved: his order starts as herdr lists the threads
+    seed() {
+        this.setOrder(agents().map((a) => a.address));
         this.isSeeded = true;
         localStorage.setItem('seeded', 'true');
     }

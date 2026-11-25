@@ -28,7 +28,7 @@
             "n": 1,
             "name": "box 1 agents",
             "node": "sidebar",
-            "today": "x-herdr-agents",
+            "today": "x-herdr-antenna",
             "what": "every thread, in your own order"
         },
         {
@@ -36,7 +36,7 @@
             "n": 2,
             "name": "box 2 tabs",
             "node": "tabs",
-            "today": "x-herdr-tabs",
+            "today": "x-herdr-tab-pills",
             "what": "tab bar, with Files and Changes buttons"
         },
         {

@@ -29,10 +29,10 @@ import { firstTab } from './strip.js';
 import { tabDrops } from './tab-drops.js';
 
 // the agents list reads each session name and publishes it here (address → name); one reader, one naming rule
-const NAMES_KEY = 'x-herdr-agents.names';
+const NAMES_KEY = 'x-herdr-antenna.names';
 
 // A tab Herdr named after its program ("Claude Code", or an automatic "tbN") shows the agent's
-// own title instead, as the agents list does (`title` in x-herdr-agents): unless that title is
+// own title instead, as the agents list does: unless that title is
 // only a path, a user@host, or the program's name again. A tab someone renamed keeps its name.
 // "Named after its program" = the pane's program name, or any + menu entry's (`LAUNCHERS`): a
 // "Claude (dev container)" tab runs a pane whose program reports "Claude Code" (seen 2026-11-05).
@@ -60,7 +60,7 @@ function tabName(c, lead) {
 
 // Unread vs done: shared "x-herdr.turns" = { address: "run" | "seen" }; Herdr's done = unread until
 // the agent is shown with the window active (the Chat view hides the terminal, so Herdr never
-// sees you read it), idle after a turn = done. Copied from x-herdr-agents (the why is there): keep them in step.
+// sees you read it), idle after a turn = done.
 const machineOf = (addr) => (addr.includes('/') ? addr.split('/')[0] : '');
 function trackTurns(list, all) {
     const was = shared('x-herdr.turns') ?? {};

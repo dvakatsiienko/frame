@@ -13,7 +13,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ the deck's orbit sections and phases follow antenna's order
   - given dima drags a thread in antenna
   - then the deck's orbit sections and its phases groups move to the same order at once, and an ask arriving never reorders them (shot 2024)
-  - decision: antenna publishes the pids it shows as shared `x-herdr-agents.order`, the deck reads that one key (dima, 20:20: «The order in the agents list is the true source for the order in Orbit for threads»); this replaces blocked-first for the listed threads
+  - decision: antenna publishes the pids it shows as shared `x-herdr-antenna.order`, the deck reads that one key (dima, 20:20: «The order in the agents list is the true source for the order in Orbit for threads»); this replaces blocked-first for the listed threads
   - decision: a `claude --bg` thread shows in herdr as `claude attach <job id>`, so antenna finds its session by the registry file's `jobId`
   - not checked: a drag by his hand
 - ⬜ the deck leaves the thread list to antenna

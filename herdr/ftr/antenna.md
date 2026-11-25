@@ -6,7 +6,7 @@ wish: FRM-618 · legend and the other areas: [FTR.md](../FTR.md)
   - given threads in two spaces and his saved order
   - when antenna draws
   - then each thread shows once, grouped under its space name in his order, each row its name and a still status dot, never a spinner (PK-349:W1266)
-  - decision: antenna replaces x-herdr-agents in the sidebar, the old mod is deleted with its ♪ sounds, zoo's (dima, 2026-11-24: «if zoo-delete it»); the shared keys keep the name `x-herdr-agents.order` and `.names`, antenna their one writer (dima's tick, 16:15)
+  - decision: antenna replaces the old agents list in the sidebar, its mod is deleted with its ♪ sounds, zoo's (dima, 2026-11-24: «if zoo-delete it»); the shared keys are `x-herdr-antenna.order` and `.names`, antenna their one writer (dima's tick, 16:15; renamed 2026-11-25, FRM-620:W53)
 - ⬜ the ⚙️ cog opens antenna's settings, a small popup beside it
   - given antenna's header
   - when he clicks ⚙️

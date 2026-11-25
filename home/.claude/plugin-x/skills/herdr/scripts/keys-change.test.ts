@@ -13,7 +13,7 @@ const mods = [
     'chat',
     'x-herdr-chat',
     'menu',
-    'x-herdr-agents',
+    'x-herdr-antenna',
     'x-herdr-deck',
     'picker',
 ];
@@ -28,7 +28,7 @@ describe('planKeysChange', () => {
         const plan = planKeysChange(real, help, mods);
         expect(plan.steps).toEqual([
             { kind: 'write', text: plan.text },
-            { kind: 'reload', mod: 'x-herdr-agents' },
+            { kind: 'reload', mod: 'x-herdr-antenna' },
             { kind: 'reload', mod: 'x-herdr-chat' },
             { kind: 'reload', mod: 'x-herdr-deck' },
         ]);
@@ -99,7 +99,7 @@ describe('planKeysChange, the edges (wisphunter 17:53)', () => {
 
     it('reloads only, writing nothing, for a keys.json saved elsewhere', () => {
         expect(planKeysChange(real, null, mods).steps).toEqual([
-            { kind: 'reload', mod: 'x-herdr-agents' },
+            { kind: 'reload', mod: 'x-herdr-antenna' },
             { kind: 'reload', mod: 'x-herdr-chat' },
             { kind: 'reload', mod: 'x-herdr-deck' },
         ]);

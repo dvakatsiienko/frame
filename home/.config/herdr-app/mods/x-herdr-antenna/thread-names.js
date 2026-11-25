@@ -1,6 +1,5 @@
 // a thread's name and his order, published for the tab bar and the deck: the Claude Code session name of the terminal's
-// pid, from x's thread store, kept per address under NAMES_KEY; the order as pids under ORDER_KEY. x-herdr-agents keeps
-// its own older reader until it leaves the tree
+// pid, from x's thread store, kept per address under NAMES_KEY; the order as pids under ORDER_KEY
 
 import { readdir } from 'fs/promises';
 import { hc, home, readTextFile, setShared, shared } from 'herdr';
@@ -85,7 +84,7 @@ export async function readNames(list) {
 
 // the names go out through herdr's shared state, so the tab bar shows the same name and never reads them a second way;
 // setShared re-renders every mod, so an unchanged map is not written
-export const NAMES_KEY = 'x-herdr-agents.names';
+export const NAMES_KEY = 'x-herdr-antenna.names';
 export function publishNames() {
     /** @type {Record<string, string>} */
     const next = {};
@@ -110,7 +109,7 @@ export const PIDS_KEY = 'x-herdr-antenna.pids';
 
 // the pids in his order: the deck orders its sessions and orbit by it (dima, 20:20: «The order in the agents list is the
 // true source for the order in Orbit for threads»); written only on a change
-export const ORDER_KEY = 'x-herdr-agents.order';
+export const ORDER_KEY = 'x-herdr-antenna.order';
 
 /** his order as pids once every listed thread has its pid, written only on a change
  * @param {string[]} order @param {string[]} listed */
