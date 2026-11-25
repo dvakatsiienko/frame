@@ -12,6 +12,11 @@ func firstLine(path string) string {
 	return line
 }
 
+func logLine(text string) string {
+	line, _, _ := strings.Cut(strings.TrimSpace(text), "\n")
+	return line
+}
+
 func nonBlank(log string) []string {
 	var lines []string
 	for line := range strings.SplitSeq(log, "\n") {

@@ -5,13 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"slices"
 	"strings"
 )
-
-func midOperation() bool {
-	return slices.ContainsFunc(gitPaths("", "MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply"), exists)
-}
 
 func isMerging() bool {
 	path, _ := git("rev-parse", "--path-format=absolute", "--git-path", "MERGE_HEAD")
@@ -113,4 +108,11 @@ func mainCheckout(dir string) string {
 		return filepath.Dir(common)
 	}
 	return dir
+}
+
+func resolved(path string) string {
+	if real, err := filepath.EvalSymlinks(path); err == nil {
+		return real
+	}
+	return path
 }

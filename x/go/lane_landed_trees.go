@@ -105,10 +105,3 @@ func worktreesOf(listed string) []worktreeEntry {
 	}
 	return entries
 }
-
-func resolved(path string) string {
-	if real, err := filepath.EvalSymlinks(path); err == nil {
-		return real
-	}
-	return path
-}

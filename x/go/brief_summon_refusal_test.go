@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -176,4 +177,14 @@ func TestBriefSummonSchemaShowsThePaneShape(t *testing.T) {
 	if strings.Contains(got.stdout, "claude --bg") || !strings.Contains(got.stdout, "hc run --bg --no-parent") {
 		t.Fatalf("summon's schema, want the hc run shape and no claude --bg:\n%s", got.stdout)
 	}
+}
+
+// a bytes checkout is known by its essentials script; this one fails every app
+func (w summonWorld) bytesHome(t *testing.T) string {
+	t.Helper()
+	bytes := filepath.Join(w.repo, "bytes")
+	write(t, filepath.Join(bytes, "script/apps-essentials.ts"), "process.exit(1)\n")
+	claudeJSON, _ := json.Marshal(map[string]any{"projects": map[string]any{bytes: map[string]any{"hasTrustDialogAccepted": true}}})
+	write(t, filepath.Join(w.home, ".claude.json"), string(claudeJSON))
+	return bytes
 }

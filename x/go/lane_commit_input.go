@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -99,4 +100,8 @@ func rootPaths(tree, prefix string, paths []string) ([]string, error) {
 		out[i] = fromCwd
 	}
 	return out, nil
+}
+
+func midOperation() bool {
+	return slices.ContainsFunc(gitPaths("", "MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply"), exists)
 }

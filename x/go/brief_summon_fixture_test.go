@@ -65,16 +65,6 @@ func (w summonWorld) summonWith(t *testing.T, command string, flags []string, en
 	return xIn(t, w.repo, asCaller(t, append(base, env...), "coordinator"), append([]string{"brief", "summon", command}, flags...)...)
 }
 
-// a bytes checkout is known by its essentials script; this one fails every app
-func (w summonWorld) bytesHome(t *testing.T) string {
-	t.Helper()
-	bytes := filepath.Join(w.repo, "bytes")
-	write(t, filepath.Join(bytes, "script/apps-essentials.ts"), "process.exit(1)\n")
-	claudeJSON, _ := json.Marshal(map[string]any{"projects": map[string]any{bytes: map[string]any{"hasTrustDialogAccepted": true}}})
-	write(t, filepath.Join(w.home, ".claude.json"), string(claudeJSON))
-	return bytes
-}
-
 func codieArgv(repo, brief string) string {
 	return "cd " + repo + " && claude --bg -n '🌗 🔧 cli | FRM-1' --model opus --effort medium \"$(cat " + brief + ")\" --remote-control"
 }

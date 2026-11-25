@@ -87,8 +87,3 @@ func patchIDs(tip, base string) ([]patchCommit, error) {
 	}
 	return out, nil
 }
-
-func logLine(text string) string {
-	line, _, _ := strings.Cut(strings.TrimSpace(text), "\n")
-	return line
-}
