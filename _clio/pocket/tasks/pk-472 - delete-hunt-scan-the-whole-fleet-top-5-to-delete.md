@@ -1,10 +1,10 @@
 ---
 id: PK-472
 title: 'delete hunt: scan the whole fleet, top 5 to delete'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-25T15:33:41Z'
-updated_date: '2026-11-25T16:09:51Z'
+updated_date: '2026-11-25T16:22:35Z'
 labels:
   - s
   - clio-wing-1
@@ -65,4 +65,25 @@ PK-472:W30 (2026-11-25 18:09, dima): in the next batch: 10 recipes per reply ple
 PK-472:W31 (2026-11-25 18:09, dima): refresh-fleet-ops: yes delete it fully, not relevant anymore.
 PK-472:W32 (2026-11-25 18:09, dima): refresh-code-storage: delete too. i ask for it once per 6 months maybe.
 PK-472:W33 (2026-11-25 18:09, dima): next batch
+
+PK-472:W34 (2026-11-25 18:15, dima): helga: no, the recipe is our door to make her better, and we have a planned ticket for it (sonnet).
+PK-472:W35 (2026-11-25 18:15, dima): monorepo: no, we are about to move to the monorepo, the recipe will revive.
+PK-472:W36 (2026-11-25 18:15, dima): pr-flow: let's keep for now, just no capacity to run it.
+PK-472:W37 (2026-11-25 18:15, dima): art-kit: same, no time to draw yet.
+PK-472:W38 (2026-11-25 18:15, dima): refresh-guide-go: i was actually planning to delete this one. what does it research and update? ❓
+PK-472:W39 (2026-11-25 18:15, dima): remind: we have a dedicated guide go, a sibling to guide typescript, right? if yes then this part can stay, but what i wanted to delete is the knowledge about charmbracelet. we have, somewhere, a knowledge file about charmbracelet and something updates it. i was thinking that it is this guide recipe, so i want to delete that charmbracelet knowledge and a recipe that refreshes it. ❓
+PK-472:W40 (2026-11-25 18:15, dima): also we had some plans for some kind of mod or functionality that forces codies to read that knowledge, so i want to delete that. why? because it doesn't work and i think that we will just spend time on making it work. i want to delete that charmbracelet knowledge because it's useless and it doesn't bring any value. i want also to delete any functionality, and any planned functionality, we planned to build to make codies read that knowledge, forced somehow.
+
+PK-472:W41 (2026-11-25 18:20, dima): correction: delete only everything related to charmbracelet: the local knowledge file and all pointers to it. the refresh-guide-go recipe stays, it now does not have anything related to charmbracelet. the guide-go skill too. now the recipe refreshes guide-go only.
+PK-472:W42 (2026-11-25 18:20, dima): FRM-514: we also planned something like «mod-primer» that would also force codies to read knowledge files. where is it? or FRM-514 is about it? cancel it. ❓
+PK-472:W43 (2026-11-25 18:20, dima): after this we completed the deletion hunt over recipes? if yes: log the hunt and we stop deletion hunting for now. i think the skill works good. next deletion hunt later. ❓
+PK-472:W44 (2026-11-25 18:20, dima): let's do FRM-630 whenever you can (delete stuff first), and maybe FRM-630 after SW? ❓
+PK-472:W45 (2026-11-25 18:20, dima, o4 steer): only charmbracelet
+PK-472:W46 (2026-11-25 18:20, dima, o5 steer): yes keep what works, drop planned.
+
+his quotes from the deleted recipes, kept here: fleet-ops (2026-10-07) «i spotted that coder (especially) and verifier tool call chains are sometimes very long … i want to know how optimal their tool call chains are», «what did i miss? i printed only thoughts/ideas, but i can clearly miss something bigger», «this is very useful data. how/where to automate this check?»; guide-go, charm (2026-10-06, 10-07) «i like go with bubbletea the most … the cli must look pretty and prod grade», «would it be useful to create a «charmbracelet toolkit» reference for cli coders?», «where could i peek into all the installed tools? …», «the standard best practices, power-usage recipes, do's and don'ts etc»
+
+18:22 the first hunt closed: recipes logged (_clio/checkup/deletion-scans.md); the next one on his word
+
+close: done PK-472:W1, PK-472:W2, PK-472:W3, PK-472:W4, PK-472:W5, PK-472:W6, PK-472:W7, PK-472:W8, PK-472:W9, PK-472:W10, PK-472:W11, PK-472:W12, PK-472:W13, PK-472:W14, PK-472:W15, PK-472:W16, PK-472:W17, PK-472:W18, PK-472:W19, PK-472:W20, PK-472:W21, PK-472:W22, PK-472:W23, PK-472:W24, PK-472:W25, PK-472:W26, PK-472:W27, PK-472:W28, PK-472:W29, PK-472:W30, PK-472:W31, PK-472:W32, PK-472:W33, PK-472:W34, PK-472:W35, PK-472:W36, PK-472:W37, PK-472:W38, PK-472:W39, PK-472:W40, PK-472:W41, PK-472:W42, PK-472:W43, PK-472:W44, PK-472:W45, PK-472:W46 — the hunt lives in clio:lowtide-cuts (references/deletion-hunt.md, clutter and apps as later runs there), recipes scanned and logged in _clio/checkup/deletion-scans.md; moved: the drawing-tools wish to FRM-614, FRM-630 runs next (FRM-630:W42)
 <!-- SECTION:NOTES:END -->
