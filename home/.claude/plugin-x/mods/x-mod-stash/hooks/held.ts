@@ -352,7 +352,7 @@ async function holdForWind(
     if (!sid || !keys) return undefined;
     const kept = await heldStore($, keys);
     if (kept.isCompacted) return undefined;
-    const was = (await windOf($, sid))?.state;
+    const was = await windNow($, sid);
     const isWinding = was === 'writing' || was === 'refreshing';
     const at = await $.clock.now();
     const reply = text.match(

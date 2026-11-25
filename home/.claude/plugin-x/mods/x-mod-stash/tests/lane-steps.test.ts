@@ -628,6 +628,48 @@ test("a plan tick that moves the pointer drops dima's steer on the old step", as
     expect(steerOf(w)).toBeUndefined();
 });
 
+test("a move whose write did not land keeps dima's steer and tells no move: a plan tick, a codie's step, a glide step", async ($, on) => {
+    const w = world(on, { files: shelf(codieLane()) });
+    await start($);
+    await linkedPlan($, w);
+    w.store.set('lane-steer:l1', { steer: 'hold' });
+    w.store.set('lane-steer:l2', { steer: 'hold' });
+    w.shelfReads.isMoveRefused = true;
+    plant(w, marked('x  '));
+    w.store.set(stepKey(CODIE_NAME), { at: NOW + 1, step: 3 });
+    await poll(w);
+    const deny = await denied($, { act: 'step', current: 2, id: 'l1' });
+    await say($, 'hi');
+    expect([
+        w.store.get('lane-steer:l1'),
+        w.store.get('lane-steer:l2'),
+        deny,
+        w.contexts.flat().some((c) => c.includes('moved to step')),
+    ]).toEqual([
+        { steer: 'hold' },
+        { steer: 'hold' },
+        'orbit glide: the lanes file was not kept: disk full',
+        false,
+    ]);
+});
+
+test('two glide steps at once both land', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await create($);
+    await create($, { title: 'herdr panes' });
+    const denies = await Promise.all(
+        ['l1', 'l2'].map((id) => denied($, { act: 'step', current: 1, id })),
+    );
+    expect([denies, kept(w).map((l) => [l.id, l.current])]).toEqual([
+        [undefined, undefined],
+        [
+            ['l1', 1],
+            ['l2', 1],
+        ],
+    ]);
+});
+
 test('a create naming a relative plan path is refused for its shape, not read', async ($, on) => {
     const w = world(on);
     await start($);

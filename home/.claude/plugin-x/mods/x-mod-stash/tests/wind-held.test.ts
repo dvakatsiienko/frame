@@ -53,6 +53,22 @@ test("clio's message to a codie past 55 % becomes the wind note, and joins the f
     ]);
 });
 
+// a 🌀 row a lost run left holds clio's next message no longer than any other's
+for (const [age, isHeld] of [
+    [9 * 60_000, true],
+    [11 * 60_000, false],
+] as const)
+    test(`clio's next message into a wind row ${age / 60_000} min old, one held before it, is ${isHeld ? 'held' : 'passed'}`, async ($, on) => {
+        const w = receiveWorld(on);
+        w.store.set(`context:${SID}`, 20);
+        await start($);
+        w.store.set(`wind:${SID}`, { at: NOW, state: 'refreshing' });
+        await fromPeer($, 'one');
+        w.store.set(`wind:${SID}`, { at: NOW - age, state: 'refreshing' });
+        const r = await fromPeer($, 'two');
+        expect(r.consumed !== undefined).toBe(isHeld);
+    });
+
 // FRM-617 round 1: a retitle while the message waits strands nothing, the store keys on the session id
 test('a message held before a retitle still joins the first turn after the compact', async ($, on) => {
     const w = receiveWorld(on);

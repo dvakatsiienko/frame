@@ -24,7 +24,14 @@ import {
     threadRecords,
 } from './session-identity.ts';
 import { partsShown } from './settings-store.ts';
-import { bare, errorText, expandHome, oneLine, writeWhole } from './util.ts';
+import {
+    bare,
+    errorText,
+    expandHome,
+    oneLine,
+    serial,
+    writeWhole,
+} from './util.ts';
 import { xRead } from './x-cli.ts';
 
 type Entry = StashEntry;
@@ -279,6 +286,7 @@ export async function followCodies($: EngineInterface) {
     const now = await $.clock.now();
     const turns = (await currentOrbit($)).turns;
     const moves: string[] = [];
+    const steersDone: string[] = [];
     const next: StashLane[] = [];
     for (const lane of lanes) {
         const codie = lane.members.codie;
@@ -314,13 +322,15 @@ export async function followCodies($: EngineInterface) {
             items: stepped.items,
             movedAt: turns,
         });
-        await $.store.delete(LANE_STEER + lane.id).catch(() => undefined);
+        steersDone.push(lane.id);
         moves.push(
             `lane ${lane.id} «${lane.title}» moved to step ${stepped.current} by ${codie}`,
         );
     }
     if (!moves.length) return;
     if (await changeLanes($, lanes, next)) return;
+    for (const id of steersDone)
+        await $.store.delete(LANE_STEER + id).catch(() => undefined);
     await $.store.set(LANE_MOVES, [...(await heldLaneMoves($)), ...moves]);
 }
 
@@ -429,7 +439,8 @@ export async function openDispatchedLanes(
     for (const { codie, member } of newest.values()) {
         const plan = `~/.local/state/x/lanes/${codie.lane}/lane-plan.md`;
         const path = expandHome(plan, home);
-        const lanes = await readLanes($);
+        const lanes = await laneStore($);
+        if (!lanes) return;
         const onPlan = lanes.filter((l) => expandHome(l.plan, home) === path);
         const open = onPlan.find((l) => !l.endedAt);
         const shown = await laneShown($, codie);
@@ -504,6 +515,7 @@ export async function followPlans($: EngineInterface) {
     const now = await $.clock.now();
     const turns = (await currentOrbit($)).turns;
     let isChanged = false;
+    const steersDone: string[] = [];
     const next: StashLane[] = [];
     for (const lane of lanes) {
         if (!lane.plan || lane.endedAt) {
@@ -554,12 +566,8 @@ export async function followPlans($: EngineInterface) {
         if (
             at !== lane.current ||
             lane.items[lane.current]?.text !== items[at]?.text
-        ) {
-            await $.store.delete(LANE_STEER + lane.id).catch(() => undefined);
-            await $.store
-                .delete(LANE_STEER_OLD + lane.id)
-                .catch(() => undefined);
-        }
+        )
+            steersDone.push(lane.id);
         const { isPlanGone: _, isPlanStale: __, ...rest } = lane;
         next.push({
             ...rest,
@@ -580,7 +588,11 @@ export async function followPlans($: EngineInterface) {
             movedAt: at === lane.current ? lane.movedAt : turns,
         });
     }
-    if (isChanged) await changeLanes($, lanes, next);
+    if (!isChanged || (await changeLanes($, lanes, next))) return;
+    for (const id of steersDone) {
+        await $.store.delete(LANE_STEER + id).catch(() => undefined);
+        await $.store.delete(LANE_STEER_OLD + id).catch(() => undefined);
+    }
 }
 
 async function heldLaneMoves($: EngineInterface) {
@@ -736,9 +748,18 @@ export function mergeLanes(
     ];
 }
 
-// a change onto the file as it stands now, or why it was not kept; each card carries its ticked steps: the deck's count is
+// a change onto the file as it stands now, or why it was not kept; one at a time in this session, since a poll, a prompt and
+// a glide op share the temp file; each card carries its ticked steps: the deck's count is
 // done of all, never the pointer (FRM-656: l96 read 49/116)
-export async function changeLanes(
+const lanesLocked = serial();
+export function changeLanes(
+    $: EngineInterface,
+    before: StashLane[],
+    mine: StashLane[],
+) {
+    return lanesLocked(() => lanesChanged($, before, mine));
+}
+async function lanesChanged(
     $: EngineInterface,
     before: StashLane[],
     mine: StashLane[],
@@ -861,5 +882,6 @@ export async function reshowLanes($: EngineInterface) {
 export function resetLanes() {
     planParses.clear();
     laneShowns.clear();
+    lanesLocked.reset();
     lanesShown = '';
 }
