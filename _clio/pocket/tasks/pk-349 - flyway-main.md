@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-25T14:08:12Z'
+updated_date: '2026-11-25T15:00:54Z'
 labels:
   - s
   - clio-main
@@ -20,15 +20,15 @@ ordinal: 1000
 - [ ] #2 f121 FRM-678: the queue's free-CPU number from two days of rows, one number to dima — waits for: FRM-678 — parked: 2026-11-25
 - [ ] #3 f129 FRM-700 close: its 141 rider (12ad6787) is on main, one live refusal seen, then the close — parked: 2026-11-25
 - [ ] #4 f130 FRM-596: the seat switch tested with a live wing, by 27 Nov (both halves on main) — parked: 2026-11-25
-- [ ] #5 f133 FRM-689 starts in the mods lane: dispatch marks, steer to its spec — waits for: FRM-695 — parked: 2026-11-25
-- [ ] #6 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #7 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
-- [ ] #8 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
-- [ ] #9 f126 ⏳ kokoro engine upgrade: before and after sounds to dima, told when it lands — waits for: FRM-669
-- [ ] #10 f134 ⏳ herdr wisp: a triple click takes one visual line, fixed upstream, waits a herdr release — waits for: FRM-655
-- [ ] #11 f136 ⏳ the two old speak verify trees go, their env files moved first — waits for: FRM-669
-- [ ] #12 f131 📅 FRM-645: a shot dima sent through herdr on 25 Nov still opens — on: 2026-11-26
-- [ ] #13 f132 📅 read the first week's typed look and test asks (mods spec after-merge) — on: 2026-12-02
+- [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #6 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
+- [ ] #7 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
+- [ ] #8 f126 ⏳ kokoro engine upgrade: before and after sounds to dima, told when it lands — waits for: FRM-669
+- [ ] #9 f134 ⏳ herdr wisp: a triple click takes one visual line, fixed upstream, waits a herdr release — waits for: FRM-655
+- [ ] #10 f136 ⏳ the two old speak verify trees go, their env files moved first — waits for: FRM-669
+- [ ] #11 f131 📅 FRM-645: a shot dima sent through herdr on 25 Nov still opens — on: 2026-11-26
+- [ ] #12 f132 📅 read the first week's typed look and test asks (mods spec after-merge) — on: 2026-12-02
+- [ ] #13 f137 📅 orbit asks: 7 days of real ones hold a title, a body and a pick (FRM-695 exit 10) — on: 2026-12-02
 - [ ] #14 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
 - [ ] #15 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
@@ -2907,4 +2907,10 @@ PK-349:W2468 (2026-11-25 16:00, dima): anyone else who has been working on somet
 → crew-adviser reworded; the 55 % notice's own words are a rider on the mods lane (mods-lane-9/lane-plan.md, not greenlit)
 
 done 2026-11-25 16:08: f135 ⏳ two old speak verify trees (FRM-683, FRM-406) with env files of their own go — waits for: FRM-669 (FRM-683 Done, FRM-406 Done, FRM-669 In Progress)
+
+done 2026-11-25 16:55: f133 FRM-689 starts in the mods lane: dispatch marks, steer to its spec — waits for: FRM-695 — parked: 2026-11-25 (FRM-689 In Progress, FRM-695 Done)
+
+PK-349:W2469 (2026-11-25 17:00, dima): i want everyone to do as much as possible before we wind down.
+PK-349:W2470 (2026-11-25 17:00, dima): i want the wind-down to be notice-based (informative), not stopping immediately.
+PK-349:W2471 (2026-11-25 17:00, dima): while we wind down i also plan the next day, so until we finish planning the next day with your wing, everyone should still be active.
 <!-- SECTION:NOTES:END -->
