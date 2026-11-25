@@ -293,6 +293,14 @@ export function createThreadFeed(deps) {
                 deps.sendPath.magic.arrived(feed.file, arrived),
                 cx,
             );
+        // a reply that grew may hold more matches
+        if (
+            (changed.length || removed || isRestart) &&
+            deps.findBar.find.state.isOpen
+        )
+            deps.findBar.find.recount(
+                deps.rows.shown(deps.model.rows, deps.look()),
+            );
         if (changed.length || removed || isRestart || hadError) cx.notify();
     }
 

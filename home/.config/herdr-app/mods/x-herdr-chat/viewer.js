@@ -10,6 +10,7 @@ const FIT = 1;
  * @property {string} rel its copy under the app dir, the one image() draws
  * @property {number} w its width in pixels
  * @property {number} h
+ * @property {boolean} isEarlier its file is gone: this is the copy an earlier opening left
  */
 
 /** @typedef {{ pictures: Shown[], at: number, zoom: number }} ViewerState */
@@ -64,3 +65,12 @@ export const viewerTakesKeys = ({ isOpen, hasKeys, onList, inQuill }) =>
 
 /** «100%» @param {ViewerState} state */
 export const viewerLevel = (state) => `${Math.round(state.zoom * 100)}%`;
+
+/** why a picture did not open: its file is gone, or no picture reader opens it @param {string} path @param {boolean} isThere */
+export function missingNote(path, isThere) {
+    const cut = path.lastIndexOf('/');
+    const name = path.slice(cut + 1);
+    return isThere
+        ? `${name} cannot be read`
+        : `${name} is no longer in ${path.slice(0, cut) || '/'}`;
+}

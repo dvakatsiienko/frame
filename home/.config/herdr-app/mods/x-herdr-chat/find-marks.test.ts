@@ -101,7 +101,7 @@ describe('find moves no row (FRM-699:W3)', () => {
         for (let i = 0; i < find.state.hits.length; i++) {
             find.step('older');
             expect(looks()).toEqual([undefined, undefined, undefined]);
-            expect(view.booked(rows).every((r) => heights.has(r))).toBe(true);
+            expect(heights.toMeasure(view.booked(rows), null)).toEqual([]);
             expect(sizes()).toEqual([100, 900, 100]);
         }
 
@@ -154,14 +154,18 @@ describe('each match painted in the drawn message (FRM-699:W3)', () => {
         ]);
     });
 
-    test('none in the hidden measured copy, with find closed, or in a row with no match', () => {
+    test('none in the hidden measured copy', () => {
         const { find, view } = createRows();
-        expect(draw(2)(view)).toEqual([]);
         find.open();
         find.search(rows, 'viewer');
         expect(draw(2, false)(view)).toEqual([]);
-        find.search(rows, 'the');
+    });
+
+    test('none in a row the count left out, though its words match', () => {
+        const { find, view } = createRows();
+        find.open();
+        find.search(rows.slice(0, 2), 'viewer');
         expect(draw(2)(view)).toEqual([]);
-        expect(draw(0)(view)).toHaveLength(1);
+        expect(draw(0)(view)).toHaveLength(2);
     });
 });

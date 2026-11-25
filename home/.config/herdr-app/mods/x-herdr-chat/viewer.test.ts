@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import {
+    missingNote,
     openViewer,
     viewerAfter,
     viewerCount,
@@ -88,4 +89,15 @@ describe('the open viewer takes the keyboard back only from the chat’s own sea
             false,
         );
     });
+});
+
+test('a picture no longer on disk is named, with where it was', () => {
+    expect(missingNote('/tmp/pad/a.png', false)).toBe(
+        'a.png is no longer in /tmp/pad',
+    );
+    expect(missingNote('/a.png', false)).toBe('a.png is no longer in /');
+});
+
+test('a picture on disk that no reader opens is never called gone', () => {
+    expect(missingNote('/tmp/a.png', true)).toBe('a.png cannot be read');
 });

@@ -16,6 +16,16 @@ export const FIND_SETTLE_MS = 150;
 // a char read as written: no mark rule below matches it, as none matches the chars of a code span
 const LITERAL = String.fromCharCode(0xe000);
 
+/** @type {[RegExp, (match: RegExpExecArray) => [number, number]]} */
+const LINK = [
+    // brackets and parentheses nest once in a link's words and its address
+    /!?\[([^[\]]*(?:\[[^[\]]*\][^[\]]*)*)\]\([^()]*(?:\([^()]*\)[^()]*)*\)/g,
+    (m) => {
+        const before = m[0].startsWith('!') ? 2 : 1;
+        return [before, m[0].length - before - (m[1] ?? '').length];
+    },
+];
+
 // a mark dropped, its words kept: how many chars of the match stand before them, and after
 /** @type {[RegExp, (match: RegExpExecArray) => [number, number]][]} */
 const MARKS = [
@@ -26,13 +36,9 @@ const MARKS = [
         /<!--.*?-->|<\/?[A-Za-z][\w-]*(?:\s[^<>]*)?\/?>/g,
         (m) => [m[0].length, 0],
     ],
-    [
-        /!?\[([^\]]*)\]\([^)]*\)/g,
-        (m) => {
-            const before = m[0].startsWith('!') ? 2 : 1;
-            return [before, m[0].length - before - (m[1] ?? '').length];
-        },
-    ],
+    LINK,
+    // a picture inside a link, met once the link's own marks are cut
+    LINK,
     [/\*\*(?=\S)(.+?)(?<=\S)\*\*/g, () => [2, 2]],
     [/(?<![\w_])__(?=\S)(.+?)(?<=\S)__(?![\w_])/g, () => [2, 2]],
     [/(?<![\w*])\*(?=\S)(.+?)(?<=\S)\*(?![\w*])/g, () => [1, 1]],
@@ -59,7 +65,9 @@ function readLine(line, from) {
     };
     // an escaped char and a code span are read as written; a `\` that ends the line breaks it
     let done = 0;
-    for (const m of line.matchAll(/\\([!-/:-@[-`{-~])|(`+)([^`]*?)\2|\\$/g)) {
+    for (const m of line.matchAll(
+        /\\([!-/:-@[-`{-~])|(?<!`)(`+)(?!`)(.+?)(?<!`)\2(?!`)|\\$/g,
+    )) {
         add(done, m.index, false);
         done = m.index + m[0].length;
         if (m[1]) add(done - 1, done);
@@ -101,7 +109,7 @@ export function readOf(source, mayHold = () => true) {
     let fence = null;
     let from = 0;
     for (const line of source.split('\n')) {
-        const mark = /^\s*(`{3,}|~{3,})(.*)$/.exec(line);
+        const mark = /^\s*(`{3,}(?=[^`]*$)|~{3,})(.*)$/.exec(line);
         const isEnd =
             fence && !mark?.[2]?.trim() && mark?.[1]?.startsWith(fence);
         if (isEnd) fence = null;
@@ -219,11 +227,12 @@ export function createFind() {
             return ranges;
         },
         /**
-         * a page landed: the same query over the rows now loaded, the stepped hit kept
+         * the rows changed (a page landed, a reply grew, a transcript was replaced): the same query over them, the stepped hit kept
          * @param {readonly Row[]} rows
          * @param {{ from: string, to: string } | null} [joined] the page's last reply joined row `from` above, as `to`
          */
         recount(rows, joined = null) {
+            placed.clear();
             const was = state.hits[state.at];
             const hits = hitsOf(rows, state.q);
             /** @param {Hit[]} list @param {string} id */

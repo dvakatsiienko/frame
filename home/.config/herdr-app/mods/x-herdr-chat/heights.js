@@ -62,8 +62,6 @@ export function createHeights() {
             measured.clear();
             last.clear();
         },
-        /** whether the row's height is known as it would draw now @param {Measured} row */
-        has: (row) => measured.has(keyOf(row)),
         /**
          * @param {Measured} row
          * @param {number} height as measured

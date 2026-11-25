@@ -215,6 +215,27 @@ describe('the stepped row reads clean, no markdown marks (dima o14)', () => {
         ).toEqual([]);
         expect(sliced(row('b', '**Ship** it'), 'ship')).toEqual(['Ship']);
     });
+
+    test.each([
+        ['[a](https://x.y/A_(b)_viewer)', 'a'],
+        ['[[docs] a](https://viewer.dev)', '[docs] a'],
+        ['[![b](i.png)](https://viewer.dev)', 'b'],
+    ])(
+        'a link of brackets or a picture draws its words alone: %s',
+        (source, read) => {
+            expect(plainOf(source)).toBe(read);
+        },
+    );
+
+    test('a line that opens with inline triple backticks is no fence', () => {
+        expect(plainOf('```npm x``` then\n[docs](https://viewer.dev)')).toBe(
+            'npm x then\ndocs',
+        );
+    });
+
+    test('a code span keeps a shorter run of backticks', () => {
+        expect(plainOf('see ``a`b`` and `c`')).toBe('see a`b and c');
+    });
 });
 
 describe('find over history as pages land (FRM-638 slice 6b)', () => {
@@ -231,6 +252,16 @@ describe('find over history as pages land (FRM-638 slice 6b)', () => {
         ]);
         expect(find.current()).toBe('c');
         expect(findCount(find.state)).toBe('2 / 5');
+    });
+
+    test('a transcript read anew paints its own matches, never the old row’s at the same id and version', () => {
+        const find = createFind();
+        find.search([row('r', 'a viewer')], 'viewer');
+        find.rangesOf(row('r', 'a viewer'));
+        find.recount([row('r', 'viewer')]);
+        expect(find.rangesOf(row('r', 'viewer'))).toMatchObject([
+            { end: 6, start: 0 },
+        ]);
     });
 
     test('with no query or no hit left, a recount shows the newest', () => {

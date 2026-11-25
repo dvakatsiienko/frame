@@ -110,6 +110,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and files copied in Finder paste as their paths, the way a drop does, never as the file's icon; a text paste stays text
   - and a picture waiting over the quill is still there after the chat reloads
   - and a click on a picture's square, over the quill, under his message or in a reply's file row, opens the viewer over the chat on the whole picture: zoom out, its level (a click fits), zoom in, copy, open, Show in Finder, ← → with «n / N» among its siblings, ✕; keys ← → + − 0 ⌘C Esc (FRM-638 slice 5, W33/W35)
+  - and a picture whose file is gone shows from the copy an earlier opening left, marked «earlier copy», its tools on that copy, and a ⌘-click opens it there too; else a note says which file is no longer where, or cannot be read (FRM-620)
   - and the viewer's open, or a ⌘-click on any picture square, starts CleanShot X annotate on the file, or Preview, as «open pictures in» says in x-herdr-settings (FRM-587 W1, dima 16:59)
   - and with the viewer open, a click into another pane or mod (orbit's steer box, phases' steer box, a terminal) keeps its focus: the viewer takes the keyboard back only from the chat's own list or quill, and ← → + − 0 ⌘C Esc work while it holds it (dima 18:14, a click into orbit's steer box lost its focus at once)
   - and every square is sharp and fills its frame: a 288 px cut of the picture's middle (dima 17:00, «too blurry»)
@@ -235,7 +236,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and his query settles 150 ms, then «n / N» counts each match, any case, and the newest hit's row scrolls to the view's top
   - and Enter or ↓ steps to the next older match, ⇧Enter or ↑ to the newer, wrapping
   - and Esc, ✕ or a press anywhere outside the bar closes it and gives the keyboard back to the quill; a thread switch closes it (dima, 18:11, 18:18, 21:04)
-  - and an open find re-counts when an older page lands, and its «n / N» says on hover that it counts the history loaded so far
+  - and an open find re-counts when an older page lands or a reply grows, and its «n / N» says on hover that it counts the history loaded so far
   - decision: it searches the rows loaded so far, never pages further up
 - ⬜ find marks its matches inside the drawn message (FRM-699:W3, over FRM-638:W131's plain words)
   - given find is open on a query

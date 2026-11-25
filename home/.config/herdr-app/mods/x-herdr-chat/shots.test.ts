@@ -1,14 +1,22 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('herdr', () => ({ appHome: () => '/app', exec: vi.fn() }));
+const herdr = vi.hoisted(() => ({ exec: vi.fn(), exists: vi.fn() }));
+vi.mock('herdr', () => ({ appHome: () => '/app', exec: herdr.exec }));
 vi.mock('fs/promises', () => ({
+    exists: herdr.exists,
     mkdir: vi.fn(),
     readFile: vi.fn(),
-    unlink: vi.fn(),
+    unlink: vi.fn(async () => {}),
     writeFile: vi.fn(),
 }));
-const { parseShots, previewCopies, thumbName, waitingFiles, withWaitingFiles } =
-    await import('./shots.js');
+const {
+    parseShots,
+    previewCopies,
+    thumbName,
+    viewCopy,
+    waitingFiles,
+    withWaitingFiles,
+} = await import('./shots.js');
 
 describe('parseShots', () => {
     it('reads a store of thread addresses to preview paths', () => {
@@ -92,5 +100,62 @@ describe('previewCopies, which previews may be removed', () => {
 describe('thumbName, one file per picture', () => {
     it('keeps two paths a 31-hash alone confuses apart', () => {
         expect(thumbName('/tmp/Aa.png')).not.toBe(thumbName('/tmp/BB.png'));
+    });
+});
+
+describe('a picture opened whole', () => {
+    // a small disk: each file's width, 0 for one that is no picture
+    const disk = (files: Record<string, number>, refused: string[] = []) => {
+        herdr.exists.mockImplementation(async (p: string) => p in files);
+        herdr.exec.mockImplementation(async (cmd: string, args: string[]) => {
+            const [from = '', to = ''] = args.slice(-2);
+            if (cmd === 'sips')
+                return {
+                    code: 0,
+                    stdout: files[to]
+                        ? `pixelWidth: ${files[to]}\npixelHeight: 4`
+                        : '',
+                };
+            if (!(from in files) || refused.includes(from))
+                return { code: 1, stdout: '' };
+            files[to] = files[from] ?? 0;
+            if (cmd === 'mv') delete files[from];
+            return { code: 0, stdout: '' };
+        });
+        return files;
+    };
+    const A = '/tmp/pad/a.png';
+
+    it('shows from a fresh copy of its file', async () => {
+        const files = disk({ [A]: 8 });
+        const made = await viewCopy(A);
+        expect(made).toMatchObject({ isEarlier: false, w: 8 });
+        expect(Object.keys(files)).toEqual([A, `/app/${made?.rel}`]);
+        files[A] = 9;
+        expect(await viewCopy(A)).toMatchObject({ isEarlier: false, w: 9 });
+    });
+
+    it('shows from the copy an earlier opening left, once its file is gone, and says so', async () => {
+        const files = disk({ [A]: 8 });
+        await viewCopy(A);
+        delete files[A];
+        expect(await viewCopy(A)).toMatchObject({ isEarlier: true, w: 8 });
+    });
+
+    it('is none once its file is gone and it was never opened', async () => {
+        disk({});
+        expect(await viewCopy(A)).toBeNull();
+    });
+
+    it.each([
+        ['cannot be copied', [A], 9],
+        ['is no whole picture', [], 0],
+    ])('never an earlier copy for a file that %s', async (_why, refused, w) => {
+        const files = disk({ [A]: 8 });
+        const made = await viewCopy(A);
+        disk(Object.assign(files, { [A]: w }), refused);
+        expect(await viewCopy(A)).toBeNull();
+        // the earlier copy stays whole for the day its file is gone
+        expect(files[`/app/${made?.rel}`]).toBe(8);
     });
 });

@@ -1,7 +1,7 @@
 // Pictures waiting over the quill until sent. A pasted screenshot is saved here as a png and goes the way a dropped
 // picture does, by its path (FRM-613): never into Claude's own prompt, so × edits only our list. The png is its own
 // preview, kept per thread in shots.json, so a chat reload still shows what waits.
-import { mkdir, readFile, unlink, writeFile } from 'fs/promises';
+import { exists, mkdir, readFile, unlink, writeFile } from 'fs/promises';
 import { appHome, exec } from 'herdr';
 
 // image() loads from the app's own directory, so the previews live under it
@@ -176,23 +176,41 @@ export async function saveShots(store) {
 // a picture the viewer shows, whole: image() reads only under the app dir, so one from elsewhere is copied there once
 export const VIEW_DIR = 'data/x-herdr-chat/view';
 
-/** @param {string} path @returns {Promise<{ rel: string, w: number, h: number } | null>} */
+// two openings of one picture each copy into their own part
+let parts = 0;
+
+/**
+ * a file gone since (a thread's scratchpad is cleared) shows from the copy an earlier opening left; one on disk never does
+ * @param {string} path
+ * @returns {Promise<{ rel: string, w: number, h: number, isEarlier: boolean } | null>} null: gone and never opened here, or not readable
+ */
 export async function viewCopy(path) {
     const own = `${appHome()}/`;
     const ext = /\.\w+$/.exec(path)?.[0] ?? '.png';
     const rel = path.startsWith(own)
         ? path.slice(own.length)
         : `${VIEW_DIR}/${thumbName(path).slice(THUMBS_DIR.length + 1, -4)}${ext}`;
-    if (!path.startsWith(own)) {
-        await mkdir(`${appHome()}/${VIEW_DIR}`, { recursive: true });
-        const copied = await exec('cp', [path, `${appHome()}/${rel}`]).catch(
-            /** @returns {null} */ () => null,
-        );
-        if (copied?.code !== 0) return null;
+    const kept = `${appHome()}/${rel}`;
+    const isThere = await exists(path);
+    if (path.startsWith(own) || !isThere) {
+        const size = await sizeOf(kept);
+        return size ? { ...size, isEarlier: !isThere, rel } : null;
     }
-    const size = await sizeOf(`${appHome()}/${rel}`);
-    return size ? { ...size, rel } : null;
+    await mkdir(`${appHome()}/${VIEW_DIR}`, { recursive: true });
+    // a copy cut short never takes the place of a whole one
+    const part = `${appHome()}/${VIEW_DIR}/part-${++parts}${ext}`;
+    const isCopied = await ran('cp', path, part);
+    const size = isCopied ? await sizeOf(part) : null;
+    if (size && (await ran('mv', part, kept)))
+        return { ...size, isEarlier: false, rel };
+    await unlink(part).catch(() => {});
+    return null;
 }
+
+/** @param {string} command @param {string} from @param {string} to */
+const ran = async (command, from, to) =>
+    (await exec(command, [from, to]).catch(/** @returns {null} */ () => null))
+        ?.code === 0;
 
 // a picture onto the clipboard as an image, the way CleanShot's copy puts one (JXA, read only from the file)
 const MAC_COPY_IMAGE = `ObjC.import("AppKit");

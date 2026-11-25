@@ -214,8 +214,7 @@ export function createMessageRows(deps) {
     function textView(row, t, { block = 0, id, isShown, source }) {
         const view = TextView.markdown(id, source).selectable(isShown);
         const find = deps.find();
-        const { hits, isOpen } = find.state;
-        if (!isShown || !isOpen || !hits.some((h) => h.id === row.id))
+        if (!isShown || !find.state.hits.some((h) => h.id === row.id))
             return view;
         const stepped = find.current() === row.id ? find.currentHit()?.n : null;
         return find

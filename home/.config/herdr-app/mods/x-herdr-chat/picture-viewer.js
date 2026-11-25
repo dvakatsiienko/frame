@@ -1,14 +1,16 @@
 // the picture viewer: a click on a picture opens it over the whole chat (W33/W35), with ⌘ held his desktop app;
 // zoom, step, copy, open and Finder; it holds the keyboard while open. the steps' rules live in viewer.js
 
+import { exists } from 'fs/promises';
 import { h_flex, v_flex } from 'gpui-base';
 import { div, image } from 'gpui-kit';
-import { exec } from 'herdr';
+import { appHome, exec } from 'herdr';
 
 import { pictureOpenArgs } from './attach.js';
 import { copyPicture, viewCopy } from './shots.js';
 import { tint } from './tint.js';
 import {
+    missingNote,
     openViewer,
     viewerAfter,
     viewerCount,
@@ -33,6 +35,10 @@ const VIEWER_KEYS = /** @type {const} */ ([
 ]);
 /** @param {Step} step */
 const viewerAction = (step) => `x_herdr_chat_viewer_${step.replace(' ', '_')}`;
+
+/** the file a tool acts on: the picture's own, or the copy shown once that is gone @param {import('./viewer.js').Shown} shown */
+const fileShown = ({ file, isEarlier, rel }) =>
+    isEarlier ? `${appHome()}/${rel}` : file;
 
 /**
  * @param {{
@@ -66,11 +72,15 @@ export function createPictureViewer({
      */
     function show(files, at, cx, isDesktop = isCmdHeld()) {
         const clicked = files[at];
-        if (isDesktop && clicked)
-            exec('open', pictureOpenArgs(clicked, isCleanShot())).catch(
-                () => {},
-            );
-        else open(files, at, cx);
+        if (!isDesktop || !clicked) return open(files, at, cx);
+        cx.spawn(async (cx) => {
+            // his app opens nothing for a gone file: the viewer shows its earlier copy, or says why not
+            if (await exists(clicked))
+                exec('open', pictureOpenArgs(clicked, isCleanShot())).catch(
+                    () => {},
+                );
+            else open(files, at, cx);
+        });
     }
 
     /**
@@ -86,7 +96,13 @@ export function createPictureViewer({
             const shown = [];
             if (file() !== shownFile || ask !== mine) return;
             // the picture clicked opens, or nothing: never a sibling in its place
-            if (!made[at]) return say('That picture is gone', cx);
+            if (!made[at]) {
+                const clicked = files[at] ?? '';
+                const isThere = await exists(clicked);
+                if (file() === shownFile && ask === mine)
+                    say(missingNote(clicked, isThere), cx);
+                return;
+            }
             let from = 0;
             made.forEach((copy, i) => {
                 if (!copy) return;
@@ -103,7 +119,7 @@ export function createPictureViewer({
     function step(next, cx) {
         const shown = viewer?.pictures[viewer.at];
         if (next === 'copy') {
-            if (shown) copyPicture(shown.file).catch(() => {});
+            if (shown) copyPicture(fileShown(shown)).catch(() => {});
             return;
         }
         if (next === 'open' || next === 'folder') {
@@ -111,8 +127,8 @@ export function createPictureViewer({
                 exec(
                     'open',
                     next === 'open'
-                        ? pictureOpenArgs(shown.file, isCleanShot())
-                        : ['-R', shown.file],
+                        ? pictureOpenArgs(fileShown(shown), isCleanShot())
+                        : ['-R', fileShown(shown)],
                 ).catch(() => {});
             return;
         }
@@ -249,6 +265,21 @@ export function createPictureViewer({
                                     )
                                     .child(
                                         button('next', '→', 'Next (→)', 'next'),
+                                    ),
+                            )
+                            .when(shown.isEarlier, (el) =>
+                                el
+                                    .child(div().w(1).h(16).mx(6).bg(t.border))
+                                    .child(
+                                        div()
+                                            .id('chat-viewer-earlier')
+                                            .px(6)
+                                            .text_size(12)
+                                            .text_color(t.muted)
+                                            .tooltip(
+                                                missingNote(shown.file, false),
+                                            )
+                                            .child('earlier copy'),
                                     ),
                             )
                             .child(div().w(1).h(16).mx(6).bg(t.border))

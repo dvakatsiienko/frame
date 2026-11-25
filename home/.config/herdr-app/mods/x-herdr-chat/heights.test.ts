@@ -127,10 +127,8 @@ describe('a row drawn another way is measured apart: find’s word marks never j
         const plain = row('a');
         const marked = { ...plain, look: 'find:tool' };
         heights.record(plain, 120);
-        expect(heights.has(marked)).toBe(false);
         expect(heights.toMeasure([marked], null)).toEqual([marked]);
         heights.record(marked, 150);
-        expect(heights.has(marked)).toBe(true);
         expect(heights.sizes([marked], guess)).toEqual([150]);
         expect(heights.sizes([plain], guess)).toEqual([120]);
     });
