@@ -14,7 +14,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - 🔎 an ask reads as a card in three parts (FRM-620 slice 7, W64–W76)
   - given a thread's ask sent with a title and a body
   - then its title draws bold on one line with its emoji first (a look's 👀, a test's 🧪 before it), then its body a step smaller, then its pick in grey behind one ➡️
-  - and the body draws `**bold**`, backticks, `- ` and `1.` lists and a line per line; a heading, a link, an image, a table or an unclosed `**` reads as typed
+  - and the body draws `**bold**`, backticks, `- ` and `1.` lists, each number as typed, and a line per line; a heading, a link, an image, a table or an unclosed `**` reads as typed
   - and a title past the card's edge ends in «…», whole in its tooltip; a title that fits can be selected, as the body and the pick can
   - and an ask sent the old way draws as it did
   - not checked: his look, A (the title at today's size) against B (the title a step larger, `LOOK` in orbit-view.js)

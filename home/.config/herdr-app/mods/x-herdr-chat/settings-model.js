@@ -84,7 +84,7 @@ export const pages = [
                         default: 'IINA',
                         key: 'chatter.audio.app',
                         title: 'open audio in',
-                        why: 'the app an mp3, m4a or wav in the chat opens in; macos default is Music',
+                        why: 'the app an mp3, m4a or wav in the chat or an orbit ask opens in; macos default is Music',
                     },
                 ],
             },

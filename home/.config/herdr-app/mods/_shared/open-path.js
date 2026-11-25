@@ -1,5 +1,6 @@
-// the one rule for what a click opens, in the chat's replies and on an orbit card: a kind he reads, looks at or hears, a
-// plain folder, a web page; any other is shown in Finder, so a click never runs, installs or mounts
+// the one rule for what a click on a file opens, in the chat's replies and on an orbit card: a kind he reads, looks at or
+// hears, or a plain folder; any other is shown in Finder, so a click never runs, installs or mounts. an ask's link goes by
+// its own short list
 
 import { filePath } from './file-links.js';
 

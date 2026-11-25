@@ -163,6 +163,7 @@ function landed(plan: string[] = []) {
         updated: JSON.stringify(['a:o1']),
     };
     const deck = new Deck() as unknown as {
+        audioApp: string | null;
         init: (props: unknown, cx: unknown) => void;
         rows: { asks: unknown[]; phases: string[] }[];
         steers: Map<string, { value: () => string }>;
@@ -304,4 +305,16 @@ test('an ask that left for real takes its steer, its files and its 🆕 with it'
     expect(deck.steers.has('a:o1')).toBe(false);
     expect(at.stores.deck).not.toHaveProperty('steer:a:o1');
     expect([...(deck.updated ?? [])]).toEqual([]);
+});
+
+test('a card’s audio opens in the app his settings name', async () => {
+    const settings = '/Users/me/.claude/shelf/herdr-settings/settings.json';
+    at.files.set(
+        settings,
+        JSON.stringify({ rows: { 'chatter.audio.app': 'VLC' } }),
+    );
+    const deck = landed();
+    await settled();
+    expect(deck.audioApp).toBe('VLC');
+    at.files.delete(settings);
 });

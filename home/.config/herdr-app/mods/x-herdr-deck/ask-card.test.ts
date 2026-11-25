@@ -60,7 +60,7 @@ describe('an ask sent in three parts (FRM-620 slice 7)', () => {
 
     test('a title or body that is no string is none', () => {
         expect(
-            asksOf({ asks: [{ ...parted, body: 7, title: {} }] })[0],
+            asksOf({ asks: [{ ...parted, body: 7, title: ' ' }] })[0],
         ).toMatchObject({
             body: null,
             title: null,
@@ -84,6 +84,21 @@ describe('a body as small markdown', () => {
         ['a bullet list', '- one\n- **two**', '- one\n- **two**'],
         ['a numbered list, from its own number', '3. a\n4. b', '3. a\n4. b'],
         ['a line per line', 'one\ntwo', 'one\\\ntwo'],
+        [
+            'a list that jumps keeps its numbers',
+            '1. a\n3. b\n4. c',
+            '1. a\n\n3) b\n4) c',
+        ],
+        [
+            'one that starts again too',
+            '2. a\n\n1. b\n\n2. c',
+            '2. a\n\n1) b\n\n2) c',
+        ],
+        [
+            'a number after words is its own',
+            '1. a\nb\n2. c',
+            '1. a\n\nb\n\n2. c',
+        ],
         [
             'words, a list and words after it, three blocks',
             'a\n- b\nc',
@@ -112,6 +127,7 @@ describe('a body as small markdown', () => {
             'a **(b)**c',
             'a \\*\\*\\(b\\)\\*\\*c',
         ],
+        ['a number no list draws', '007. a', '007\\. a'],
         ['a lone backtick', 'a ` b', 'a \\` b'],
         ['a fence', '```\nx\n```', '\\`\\`\\`\\\nx\\\n\\`\\`\\`'],
         ['a table', '| a |\n|---|', '\\| a \\|\\\n\\|\\-\\-\\-\\|'],
@@ -130,6 +146,7 @@ describe('a title', () => {
     test('a look and a test lead with 👀 and 🧪, once', () => {
         expect(askTitle({ text: 'look: 🐑 x', title: '🐑 x' })).toBe('👀 🐑 x');
         expect(askTitle({ text: 'test: x', title: '🧪 x' })).toBe('🧪 x');
+        expect(askTitle({ text: 'look: 👀', title: '👀' })).toBe('👀');
     });
 
     test('any other keeps its own emoji, on one line', () => {

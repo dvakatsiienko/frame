@@ -1,5 +1,5 @@
 // orbit as drawn: each ask's card with its tick, replay and steer box, the pinned cards, each thread's section. it owns
-// the id labels' widths; everything another view reads stays on the deck (main.js) and comes through `deps`
+// the widths they draw at and the id copied last; everything another view reads stays on the deck (main.js) and comes through `deps`
 
 import { Button, h_flex, v_flex } from 'gpui-base';
 import { div } from 'gpui-kit';
@@ -123,7 +123,7 @@ export function createOrbitView(deps) {
                 onClick,
                 tip,
             });
-        // an ask is a card: the section head carries the 🪐, the bold id leads
+        // an ask is a card: the section head carries the 🪐
         return (
             v_flex()
                 .relative()

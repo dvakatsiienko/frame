@@ -14,7 +14,7 @@ export function askTitle({ text, title }) {
     const words = (title ?? '').replace(/\s+/g, ' ').trim();
     const kind = cardKind(text);
     if (!kind) return words;
-    return `${kind === 'look' ? '👀' : '🧪'} ${wordsOf(words)}`;
+    return `${kind === 'look' ? '👀' : '🧪'} ${wordsOf(words)}`.trim();
 }
 
 /** the pick as drawn: grey words behind one ➡️ @param {string} pick */
@@ -80,30 +80,46 @@ function inline(line) {
         .join('');
 }
 
-const ITEM = /^(-|\d{1,9}\.)[ \t]+(\S.*)$/;
+const ITEM = /^(-|(0|[1-9]\d{0,8})\.)[ \t]+(\S.*)$/;
 
 /**
  * a body as the markdown herdr's text view draws: `**bold**`, backticks, `- ` and `1.` lists, a line per line; any other
- * sign (a heading, a link, an image, a table) reads as typed
+ * sign (a heading, a link, an image, a table) reads as typed, and so does every number of a list: he answers by it
  * @param {string} text
  */
 export function askMarkdown(text) {
     let out = '';
     /** @type {'bullets' | 'numbers' | 'words' | null} */
     let last = null;
+    let isApart = false;
+    // a list counts on from its first number by itself; one that jumps starts a list of its own, which markdown tells by
+    // the other sign after the number (both draw «3.»)
+    let number = -1;
+    let sign = '.';
     for (const raw of text.split(/\r\n|\r|\n/)) {
         const line = raw.trim();
         if (!line) {
-            last = null;
+            isApart = true;
             continue;
         }
-        const [, mark, words] = ITEM.exec(line) ?? [];
-        const kind = !mark ? 'words' : mark === '-' ? 'bullets' : 'numbers';
-        // a new kind of line, or one after a blank line, is a block of its own; words after words break the line
-        if (out)
-            out += kind !== last ? '\n\n' : kind === 'words' ? '\\\n' : '\n';
-        out += mark ? `${mark} ${inline(words ?? '')}` : inline(line);
+        const [, mark, digits, words = ''] = ITEM.exec(line) ?? [];
+        const kind = !mark ? 'words' : digits ? 'numbers' : 'bullets';
+        let isNext = kind === last && !isApart;
+        if (digits) {
+            const isOn = last === 'numbers' && Number(digits) === number + 1;
+            if (last === 'numbers' && !isOn) sign = sign === '.' ? ')' : '.';
+            isNext = isNext && isOn;
+            number = Number(digits);
+        }
+        // words after words break the line; any other new kind, jump or blank line starts a block
+        if (out) out += !isNext ? '\n\n' : kind === 'words' ? '\\\n' : '\n';
+        out += digits
+            ? `${digits}${sign} ${inline(words)}`
+            : mark
+              ? `- ${inline(words)}`
+              : inline(line);
         last = kind;
+        isApart = false;
     }
     return out;
 }

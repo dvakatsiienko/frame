@@ -14,7 +14,7 @@ import { guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
 import { copiedFrom, createMessageMenu, menuPlace } from './menu.js';
 import { createMessageBodies } from './message-body.js';
-import { openPath, openWebLink } from './open-path.js';
+import { openPath } from './open-path.js';
 import { pathOf } from './path-links.js';
 import { createPlace } from './place.js';
 import { createSelections } from './selection.js';
@@ -380,7 +380,7 @@ export function createMessageList(deps) {
         if (messageMenu.state || deps.pictures.isOpen()) return;
         const path = pathOf(url, row, home());
         if (!path) {
-            openWebLink(url, (page) => cx.open_url(page), exec);
+            if (/^https?:/.test(url)) cx.open_url(url);
             return;
         }
         if (isPicture(path)) return deps.pictures.show([path], 0, cx);

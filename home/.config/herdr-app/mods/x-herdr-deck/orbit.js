@@ -59,7 +59,10 @@ export function asksOf(state) {
                     mark: a.mark ?? null,
                     pick: a.pick ?? null,
                     text: a.text,
-                    title: typeof a.title === 'string' ? a.title : null,
+                    title:
+                        typeof a.title === 'string' && a.title.trim()
+                            ? a.title
+                            : null,
                 }),
         )
         .sort(
