@@ -4,7 +4,7 @@ title: 'delete hunt: scan the whole fleet, top 5 to delete'
 status: open
 assignee: []
 created_date: '2026-11-25T15:33:41Z'
-updated_date: '2026-11-25T15:47:10Z'
+updated_date: '2026-11-25T15:53:23Z'
 labels:
   - s
   - clio-wing-1
@@ -49,4 +49,7 @@ PK-472:W21 (2026-11-25 17:45, dima): do not have any tech details unless i ask. 
 17:45 grill 1: Q1, Q2, Q4, Q5, Q6 ticked as printed; Q3 changed by PK-472:W16–PK-472:W19 (shallow whole fleet, then one area deep at a time, logged); Q5 print by PK-472:W20, PK-472:W21
 
 17:46 the stamp of PK-472:W15–PK-472:W21 is 17:46 (the prompt's own stamp), written as 17:45
+
+PK-472:W22 (2026-11-25 17:52, dima): we reshape cuts and run it via my initial ask about finding stuff to delete.
+PK-472:W23 (2026-11-25 17:52, dima): after you update this cut skill, how does it work now by default when i run bare cuts with no text and arguments? ❓
 <!-- SECTION:NOTES:END -->
