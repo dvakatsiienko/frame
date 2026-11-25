@@ -526,8 +526,9 @@ function createWindow(
             return { drawn: opacities.length, opacities };
         },
         /** his wheel over many rows: herdr scrolls the list and draws its rows, the chat is asked for nothing */
-        scroll(dy: number) {
+        scroll(dy: number, isDrawnBetween = false) {
             fire(root, 'on_scroll_wheel', { delta: { y: -dy } }, cx);
+            if (isDrawnBetween) list.take([...rows] as never, {} as never);
             scrollTop += dy;
             drawRows();
         },
@@ -1000,11 +1001,11 @@ describe('the words a note is written on', () => {
 
 // FRM-585 B3: a note row is written while he reads further down, or taken away
 test.each([
-    ['lands above him', 1, 0],
-    ['lands under him', 6, 0],
+    ['lands above him', 1, true],
+    ['lands under him', 6, false],
 ])(
-    'a note row that %s, and goes again, moves nothing he reads',
-    (_how, after) => {
+    'a note row that %s, and goes again, moves nothing he reads, in no frame he sees',
+    (_how, after, isHeld) => {
         const w = createWindow([...thread], (px) => px);
         w.run(1_000);
         w.land('r4', 60);
@@ -1012,14 +1013,48 @@ test.each([
         w.scroll(5);
         w.run(2_000);
         const was = w.above(4);
-        w.noteAfter(after);
-        w.run(2_000);
-        expect(w.above(after < 4 ? 5 : 4)).toBe(was);
-        w.noteAfter(null);
-        w.run(2_000);
-        expect(w.above(4)).toBe(was);
+        const seen = new Set<number>();
+        let isUnseen = false;
+        for (const [row, at] of [
+            [after, after < 4 ? 5 : 4],
+            [null, 4],
+        ] as const) {
+            w.noteAfter(row);
+            for (let i = 0; i < 100; i++) {
+                const { opacities } = w.run(16);
+                if (opacities.at(-1) !== 0) seen.add(w.above(at));
+                else isUnseen = true;
+            }
+        }
+        expect([...seen]).toEqual([was]);
+        expect(isUnseen).toBe(isHeld);
     },
 );
+
+test('a note row that was his first on screen, gone: the next one comes in its place', () => {
+    const w = createWindow([...thread], (px) => px);
+    w.run(1_000);
+    w.noteAfter(3);
+    w.run(1_000);
+    w.land('r90', 10);
+    w.run(2_000);
+    w.noteAfter(null);
+    w.run(2_000);
+    expect(w.above(4)).toBe(0);
+});
+
+test('a draw between his wheel step and the list’s own keeps the place the step left', () => {
+    const w = createWindow([...thread], (px) => px);
+    w.run(1_000);
+    w.land('r4', 60);
+    w.run(2_000);
+    w.scroll(-100, true);
+    w.run(2_000);
+    const was = w.above(2);
+    w.noteAfter(0);
+    w.run(2_000);
+    expect(w.above(3)).toBe(was);
+});
 
 test('a press on a note’s row opens it where he pressed', () => {
     const w = createWindow([...thread], (px) => px);

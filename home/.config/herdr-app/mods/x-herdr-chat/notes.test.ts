@@ -666,6 +666,26 @@ describe('where a note’s words are painted (FRM-585 B1)', () => {
         expect(noteMarks([note(twice)], [`so ${source}`])).toEqual([]);
     });
 
+    test('the same words at its old place in another text: not those', () => {
+        const fence = '```ts\nconst a = 1;\n```';
+        const other = '```ts\nconst b = 2;\n```';
+        const onConst = {
+            parts: [
+                {
+                    block: 0,
+                    range: { end: 11, start: 6 },
+                    source: fence,
+                    words: 'const',
+                },
+            ],
+            row: ROW,
+        };
+        expect(noteMarks([note(onConst)], [other, fence])).toEqual([]);
+        expect(noteMarks([note(onConst)], [fence, other])).toMatchObject([
+            { block: 0, end: 11, start: 6 },
+        ]);
+    });
+
     test('words no longer there: none, the other part’s kept', () => {
         const both = on('is cheap');
         both.parts.push({ ...both.parts[0], words: 'gone' } as never);

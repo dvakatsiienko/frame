@@ -2,7 +2,9 @@ import { beforeEach, expect, test, vi } from 'vitest';
 
 // FRM-585 A2: a note of the thread shown hears of its thread's state and of its line landing, and of no other thread's
 const at = vi.hoisted(() => ({
+    joined: null as string | null,
     lines: [] as { id: string; isWaiting?: boolean; text: string }[],
+    place: null as { id: string; offset: number } | null,
     state: null as object | null,
     /** resolves the pending wait for a change of each folder */
     touch: new Map<string, () => void>(),
@@ -43,7 +45,12 @@ vi.mock('./reader.js', () => ({
         }),
     }),
 }));
-vi.mock('./pages.js', () => ({ createPages: () => ({ close: () => {} }) }));
+vi.mock('./pages.js', () => ({
+    createPages: () => ({
+        close: () => {},
+        next: async () => ['a page'],
+    }),
+}));
 const { createThreadFeed } = await import('./thread-feed.js');
 
 const quiet = (): unknown =>
@@ -65,6 +72,7 @@ function world() {
     const said = {
         arrived: [] as [string, readonly { text: string }[]][],
         changed: 0,
+        restored: [] as unknown[][],
         settled: [] as [string, unknown][],
     };
     const answer = { arrived: true, settle: async () => true };
@@ -77,7 +85,6 @@ function world() {
                 'findBar',
                 'heights',
                 'links',
-                'list',
                 'pickers',
                 'quill',
                 'rows',
@@ -86,6 +93,12 @@ function world() {
         ) as object),
         clearShown: () => {
             joins = null;
+        },
+        list: {
+            land: () => {},
+            placeNow: () => ({ height: 300, place: at.place }),
+            reset: () => {},
+            restore: (...to: unknown[]) => said.restored.push(to),
         },
         look: () => undefined,
         model: {
@@ -96,7 +109,14 @@ function world() {
                     removed: 0,
                 };
             },
-            rows,
+            // the page's last reply takes the first row in
+            addEarlier: () => {
+                at.joined = 'page';
+            },
+            indexOf: (id: string) => (id === 'l2' ? 0 : -1),
+            get rows() {
+                return at.joined ? [{ id: at.joined }] : rows;
+            },
         },
         notes: {
             arrived: (file: string, rows: readonly { text: string }[]) => {
@@ -130,6 +150,7 @@ const open = async (w: ReturnType<typeof world>, address: string) => {
 };
 
 beforeEach(() => {
+    at.joined = null;
     at.lines = [];
     at.state = { joins: { joined: [], taken: ['j1'] } };
     at.touch.clear();
@@ -208,3 +229,20 @@ test('his messages as they land, never one still in the queue', async () => {
     await tick();
     expect([w.said.arrived.length, w.said.changed]).toEqual([2, changed + 1]);
 });
+
+test.each([
+    ['a reply', 'l2', ['page', 0, 260]],
+    ['a note under it', 'l2#note-n1', ['page#note-n1', 40]],
+    ['a file under it', 'l2#file-0', ['page#file-0', 40]],
+    ['a row the page left alone', 'l9', ['l9', 40]],
+])(
+    'an older page that joins the row he reads keeps his place on %s',
+    async (_what, id, to) => {
+        const w = world();
+        await open(w, 't1');
+        at.place = { id, offset: 40 };
+        w.feed.loadEarlier(cx as never);
+        await tick();
+        expect(w.said.restored).toEqual([to]);
+    },
+);

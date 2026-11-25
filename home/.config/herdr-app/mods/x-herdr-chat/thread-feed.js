@@ -481,10 +481,13 @@ export function createThreadFeed(deps) {
             makePictures(cx);
             linkPaths(cx);
             // the page's last reply joined the row he reads: that row took the page's id and grew above him
-            const joined = place
-                ? deps.model.rows[deps.model.indexOf(place.id)]
-                : undefined;
-            if (place && joined && joined.id !== place.id && height)
+            const lineId = replyIdOf(place?.id ?? '');
+            const joined = deps.model.rows[deps.model.indexOf(lineId)];
+            const under = place?.id.slice(lineId.length);
+            if (place && joined && joined.id !== lineId && under)
+                // a file or a note under that row goes by its new id
+                deps.list.restore(`${joined.id}${under}`, place.offset);
+            else if (place && joined && joined.id !== lineId && height)
                 deps.list.restore(joined.id, 0, height - place.offset);
             else if (place) deps.list.restore(place.id, place.offset);
             if (deps.findBar.find.state.isOpen)

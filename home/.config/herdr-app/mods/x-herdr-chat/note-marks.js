@@ -19,7 +19,7 @@ function partRange(part, sources) {
     const start = part.range
         ? part.range.start + (cut.length - cut.trimStart().length)
         : -1;
-    if (start >= 0 && sources[part.block]?.startsWith(words, start))
+    if (start >= 0 && sources[part.block]?.startsWith(part.source))
         return { block: part.block, end: start + words.length, start };
     const found = sources.flatMap((source, block) => {
         /** @type {PartRange[]} */

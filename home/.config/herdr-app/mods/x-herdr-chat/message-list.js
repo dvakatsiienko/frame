@@ -75,6 +75,8 @@ export function createMessageList(deps) {
     let pressing = null;
     /** @type {string | null} */
     let pressed = null;
+    /** the note rows of the last draw */
+    let noteKey = '';
     /** the last left press, in the list's px @type {{ x: number, y: number } | null} */
     let pressedAt = null;
     /** the items on screen @type {string[]} */
@@ -594,12 +596,19 @@ export function createMessageList(deps) {
 
     /** a note row that comes or goes above his place moves nothing he reads @param {readonly Row[]} rows */
     function keepOverNotes(rows) {
+        const key = rows
+            .flatMap((row) => (row.kind === 'note' ? [row.id] : []))
+            .join();
+        const isChanged = key !== noteKey;
+        noteKey = key;
+        // his place is read only then: between a wheel step and its draw it names the old first row
+        if (!isChanged) return;
         readPlace();
-        const { place } = at;
-        if (!place) return;
-        const was = notesBefore(shownRows, place.id);
-        const now = notesBefore(rows, place.id);
-        if (was >= 0 && now >= 0 && was !== now) at.hold();
+        const id = at.place?.id ?? '';
+        const was = notesBefore(shownRows, id);
+        if (was < 0 || was === notesBefore(rows, id)) return;
+        if (at.restyle(shownRows, sizes, rows))
+            settleUntil = Date.now() + SETTLE_MS;
     }
 
     /** his place is asked of the list again, to the pixel: after a new width; unseen while it lands */

@@ -276,7 +276,8 @@ export function createMessageRows(deps) {
         const plain = TextView.markdown(id, source).selectable(isShown);
         if (!isShown) return plain;
         const view = marksOf(row)
-            .filter((m) => m.block === block)
+            // a folded reply draws its first lines: a mark past them shows once it is open
+            .filter((m) => m.block === block && m.end <= source.length)
             .reduce(
                 (el, { end, isStrong, start }) =>
                     el.highlight_range(
@@ -452,7 +453,7 @@ export function createMessageRows(deps) {
                         div()
                             .flex_none()
                             .text_color(t.dim)
-                            .child(row.note?.word ?? ''),
+                            .child(`· ${row.note?.word ?? ''}`),
                     ),
             );
 

@@ -135,6 +135,7 @@ function world() {
     const kept = new Map<string, string>();
     let ids = 0;
     let clock = 0;
+    let drawn = 0;
     let pressedAt = 0;
     const notes = createNotes({
         dir: '/joins',
@@ -164,7 +165,9 @@ function world() {
     });
     const cx = {
         bind_keys: (keys: typeof at.keys) => at.keys.push(...keys),
-        notify: () => {},
+        notify: () => {
+            drawn += 1;
+        },
         spawn: (job: (c: unknown) => unknown) => job(cx),
         stop_propagation: () => {},
         timer: {
@@ -222,6 +225,7 @@ function world() {
             byId(id)?.handlers.get('on_click')?.({} as never, cx as never),
         byId,
         cx,
+        drawn: () => drawn,
         f6: (on: SelectedAt | null = selected('some words'), later = 1000) => {
             pressedAt += later;
             mini.toggle(() => on, pressedAt, cx as never);
@@ -765,6 +769,37 @@ describe('a press on a note’s row (FRM-585 B2)', () => {
         expect(w.words()).toEqual(expect.arrayContaining(['mine', 'joined']));
         expect(w.words()).not.toContain('the box');
         expect(at.box.focused).toBe(0);
+    });
+
+    test('a waiting one emptied and shut at once leaves no record, and the list is asked to draw it so', async () => {
+        const w = await made(false);
+        w.type('');
+        const drawn = w.drawn();
+        w.f6();
+        await settle();
+        expect(w.notes.of('/t/a.jsonl')).toEqual([]);
+        expect(w.rows().trim()).toBe('');
+        expect(w.drawn()).toBeGreaterThan(drawn + 1);
+    });
+
+    test('one whose send is refused with the box shut asks for a draw', async () => {
+        const w = world();
+        let answer = () => {};
+        w.now.sending = new Promise((done) => {
+            answer = done;
+        });
+        w.said.sentAnswer = 'Not sent: refused';
+        w.f6();
+        w.type('mine');
+        w.act(CMD_ENTER);
+        await settle();
+        w.f6();
+        await settle();
+        const drawn = w.drawn();
+        answer();
+        await settle();
+        expect(w.note()?.state).toBe('draft');
+        expect(w.drawn()).toBeGreaterThan(drawn);
     });
 
     test('that went meanwhile opens nothing', () => {

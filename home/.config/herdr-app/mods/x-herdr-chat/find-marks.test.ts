@@ -210,6 +210,38 @@ test('the list draws a note’s row under its message', () => {
     expect(ids.slice(-2)).toEqual(['new', 'new#note-n1']);
 });
 
+test('a folded reply paints no mark past its first lines', () => {
+    const { notes, view } = createRows();
+    view.markTurn([]);
+    const source = (LONG as { text: string }).text;
+    const words = 'line 79 **viewer**';
+    const start = source.indexOf(words);
+    notes.set('long', [
+        {
+            id: 'n',
+            passage: {
+                parts: [
+                    {
+                        block: 0,
+                        range: { end: start + words.length, start },
+                        source,
+                        words,
+                    },
+                ],
+            },
+            state: 'draft',
+        },
+    ]);
+    const painted = () => {
+        gpui.painted.length = 0;
+        view.texts(LONG as never, t, 'p', true, (drawn) => drawn);
+        return gpui.painted.length;
+    };
+    expect(painted()).toBe(0);
+    view.press([LONG as never], 'long');
+    expect(painted()).toBe(1);
+});
+
 test('a press on a note’s row names its note', () => {
     const { view } = createRows();
     const row = {

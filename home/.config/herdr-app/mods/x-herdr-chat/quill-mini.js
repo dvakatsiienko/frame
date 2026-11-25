@@ -106,20 +106,28 @@ export function createQuillMini(deps) {
         if (!open) return;
         const { id, thread } = open;
         typed += 1;
-        deps.notes.write(thread, id);
+        // a waiting note he emptied comes back as the file is written
+        const written = deps.notes
+            .write(thread, id)
+            .then(() => open?.id !== id && deps.notes.tidy(thread));
         open = null;
         said = null;
         isCmdDown = false;
         deps.notes.tidy(thread);
+        return written;
     }
 
     /** @param {Context} cx */
     function close(cx) {
         if (!open) return;
         const isSending = isCmdDown;
-        reset();
+        const written = reset();
         deps.focusQuill(isSending);
         cx.notify();
+        cx.spawn(async (cx) => {
+            await written;
+            cx.notify();
+        });
     }
 
     /** the box on a note, the cursor in it while the note is his @param {Note} note @param {string} thread @param {Point | null} at @param {Context} cx */
@@ -198,7 +206,8 @@ export function createQuillMini(deps) {
         cx.spawn(async (cx) => {
             const reason = await answer.catch(String);
             sending.delete(at.id);
-            if (open?.id !== at.id) return;
+            // its row says where it stands, the box shut or on another
+            if (open?.id !== at.id) return cx.notify();
             if (noteNow()?.state === 'sent') return close(cx);
             say(reason, at, cx);
             noteChanged(cx);
