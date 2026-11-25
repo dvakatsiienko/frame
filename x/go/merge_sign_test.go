@@ -51,6 +51,16 @@ func TestTicketsOfPrReadOneShape(t *testing.T) {
 
 func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 	t.Parallel()
+	waits := func(t *testing.T, paths ...string) {
+		w := newMergeWorld(t, append([]string{"script/foo.ts"}, paths...)...)
+
+		got := w.run(t, "7", "--apply")
+
+		want := "wait: self-edit, needs dima's word — " + strings.Join(paths, ", ") + ";"
+		if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, want) {
+			t.Fatalf("exit %d, %d merge calls, error %q, want %q", got.code, len(merges), envelopeOf(got).Error, want)
+		}
+	}
 	for _, path := range []string{
 		"home/.claude/plugin-x/mods/x-mod-guard/guard.ts",
 		"_clio/.claude/hooks/watch-pr.sh",
@@ -74,17 +84,25 @@ func TestMergeAutoWaitsForDimaOnASelfEdit(t *testing.T) {
 		"x/go/panic_seam_release.go",
 		"x/go/decamp.go",
 	} {
-		t.Run(path, func(t *testing.T) {
-			w := newMergeWorld(t, "script/foo.ts", path)
-
-			got := w.run(t, "7", "--apply")
-
-			want := "wait: self-edit, needs dima's word — " + path
-			if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, want) {
-				t.Fatalf("exit %d, %d merge calls, error %q, want %q", got.code, len(merges), envelopeOf(got).Error, want)
-			}
-		})
+		t.Run(path, func(t *testing.T) { waits(t, path) })
 	}
+	// one pr edits them all and the wait names every self path, so one missing from risky.json is missing from the wait
+	t.Run("the files cut from a self file", func(t *testing.T) {
+		waits(t,
+			"x/go/gate_queue.go",
+			"x/go/lane_commit.go",
+			"x/go/lane_commit_gates.go",
+			"x/go/lane_commit_input.go",
+			"x/go/lane_commit_refusal.go",
+			"x/go/lane_git.go",
+			"x/go/lane_index_lock.go",
+			"x/go/lane_merge_main.go",
+			"x/go/lane_pr.go",
+			"x/go/lane_push.go",
+			"x/go/lane_unlock.go",
+			"x/go/lane_words.go",
+		)
+	})
 }
 
 // on a lane with no sixth sense, --dima-ok is the raw merge's one door (his tick o36): no clean planted

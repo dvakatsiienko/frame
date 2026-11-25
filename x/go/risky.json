@@ -123,6 +123,18 @@
         "x/go/lane_landed.go",
         "x/go/panic_seam.go",
         "x/go/panic_seam_release.go",
-        "x/go/decamp.go"
+        "x/go/decamp.go",
+        "x/go/gate_queue.go",
+        "x/go/lane_commit.go",
+        "x/go/lane_commit_gates.go",
+        "x/go/lane_commit_input.go",
+        "x/go/lane_commit_refusal.go",
+        "x/go/lane_git.go",
+        "x/go/lane_index_lock.go",
+        "x/go/lane_merge_main.go",
+        "x/go/lane_pr.go",
+        "x/go/lane_push.go",
+        "x/go/lane_unlock.go",
+        "x/go/lane_words.go"
     ]
 }

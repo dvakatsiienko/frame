@@ -25,10 +25,6 @@ const caps = {
         cap: 1_312,
         why: 'brief summon, one file of cases',
     },
-    'x/go/lane.go': {
-        cap: 1_534,
-        why: 'the lane family: commit, push and the shared lane steps',
-    },
     'x/go/lane_landed.go': { cap: 1_398, why: 'lane landed and its decamp' },
     'x/go/merge_auto.go': {
         cap: 1_707,

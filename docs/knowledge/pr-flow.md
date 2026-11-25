@@ -18,7 +18,7 @@ when:
 **plain prs are the default.** our waits are short (codie pr open → merge median, 2026-10-06..20: frame 22 min over 23 prs, bytes 87 min over 5), so a stack has little wait to hide. a stack earns its place only for one codie building 2–4 dependent parts of one feature, held under a day, in bytes. the measurement lives in `docs/test-drive/stacked-prs.md`.
 
 **our tools assume one pr per branch** — a stack breaks each of these until it is taught otherwise:
-- `x lane pr-open` opens onto main (`x/go/lane.go`); a stack layer needs its base set to the layer below
+- `x lane pr-open` opens onto main (`x/go/lane_pr.go`); a stack layer needs its base set to the layer below
 - `x lane merge-main` makes a merge commit; github stacks want a straight history — `x lane rebase-main` gives one ([FRM-403](https://linear.app/x-com/issue/FRM-403))
 - `x:crew-codie` forbids rebasing a pushed branch — exactly how a stack is kept current
 - `x lane push` does not force-push; `x lane rebase-main` is the one force-push door, `codie/*` only, leased on the sha it read
