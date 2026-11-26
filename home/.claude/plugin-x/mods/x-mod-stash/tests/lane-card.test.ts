@@ -516,26 +516,32 @@ const handCard = (id: string, codie: string, movedAt: number) =>
         title: 'speak — by hand',
     });
 
-test("the older codie's card ends once a hand card links the newer one", async ($, on) => {
-    const w = twoCodies(
-        on,
-        keptLane({
-            id: 'l1',
-            linkedIds: { codie: OLD_CODIE },
-            plan: '~/.local/state/x/lanes/mods-lane-9/lane-plan.md',
-        }),
-        handCard('l2', CODIE, 410),
-    );
-    await start($);
-    await poll(w);
-    await poll(w);
-    expect(
-        kept(w).map((l) => [l.id, Boolean(l.endedAt), l.linkedIds?.codie]),
-    ).toEqual([
-        ['l1', true, OLD_CODIE],
-        ['l2', false, CODIE],
-    ]);
-});
+// an older codie that cleared since its card was linked: the card holds the id it left
+for (const linked of [OLD_CODIE, 'e0e0e0e0-cleared'])
+    test(`the older codie's card ends once a hand card links the newer one, linked as ${linked}`, async ($, on) => {
+        const w = twoCodies(
+            on,
+            keptLane({
+                id: 'l1',
+                linkedIds: { codie: linked },
+                plan: '~/.local/state/x/lanes/mods-lane-9/lane-plan.md',
+            }),
+            handCard('l2', CODIE, 410),
+        );
+        w.store.set('succ:e0e0e0e0-cleared', {
+            at: w.clock.now(),
+            sid: OLD_CODIE,
+        });
+        await start($);
+        await poll(w);
+        await poll(w);
+        expect(
+            kept(w).map((l) => [l.id, Boolean(l.endedAt), l.linkedIds?.codie]),
+        ).toEqual([
+            ['l1', true, linked],
+            ['l2', false, CODIE],
+        ]);
+    });
 
 test('her move landing while x reads the plan keeps her card a hand card', async ($, on) => {
     const w = twoCodies(on, handCard('l1', CODIE, 100));

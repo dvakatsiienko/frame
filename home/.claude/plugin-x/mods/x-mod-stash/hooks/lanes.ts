@@ -531,10 +531,7 @@ export async function openDispatchedLanes(
         const linked = open?.linkedIds?.codie;
         const linkedSid = linked && (await successorOf($, linked));
         const isOlders = dispatched.some(
-            (t) =>
-                t.lane === codie.lane &&
-                t.sessionId === linkedSid &&
-                t.sessionId !== codie.sessionId,
+            (t) => t.sessionId === linkedSid && t.sessionId !== codie.sessionId,
         );
         // a resummon's overlap: the older codie's card goes once a hand card links the newer one, so the lane keeps one
         if (
