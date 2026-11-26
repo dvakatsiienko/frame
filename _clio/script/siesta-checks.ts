@@ -53,6 +53,7 @@ function main(home: string, since: string) {
         retros(home),
         lanePaceSection(home, sinceDate(since).getTime() / 1000),
         partGrowth(home),
+        script(scripts, 'grades unnamed', 'comms-log-render', ['--unnamed']),
     ];
     for (const s of sections)
         console.log(

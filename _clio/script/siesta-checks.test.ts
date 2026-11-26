@@ -24,6 +24,7 @@ const CHECKS = [
     'check-tails',
     'blueprint-drift',
     'count-helpers',
+    'comms-log-render',
 ];
 
 // a fixture HOME whose frame/_clio/script holds stubs: each prints its args and exits with the code it is given
@@ -164,6 +165,7 @@ describe('siesta-checks', () => {
             '## retros',
             '## lane pace',
             '## part growth',
+            '## grades unnamed',
         ]);
         expect(heads.filter((h) => !h.endsWith('exit 0'))).toEqual([]);
     });

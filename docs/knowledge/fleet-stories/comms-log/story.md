@@ -1,6 +1,6 @@
 ---
 status: open
-dates: 2026-11-13 → 2026-11-24
+dates: 2026-11-13 → 2026-11-26
 tickets: [FRM-630]
 tags: [comms, dima-graded]
 fed-by: incidents
@@ -165,3 +165,31 @@ fed-by: incidents
 - **fix:** a review he asked for prints whole the turn it lands, never folded into a ticket alone
 - **home:** habit-dima-comms § A reply never restates what he settled
 - **source:** FRM-630:W4; prompts 2026-11-13.md 23:26
+
+## c12 · comms · + · siesta · open
+
+- **what:** he graded 👍🏼 a part of clio's reply «two of your earlier lines … are now filed as results, not wishes», with the why «did you saw «👍🏼» ?»; the grade reached her as its own slipstream line, and she answered that it had not
+- **how:** a 👍🏼 with a why, delivered as the fixed «dima graded» line in her next turn
+- **why:** clio took the grade's own line for a typed note and denied seeing it
+- **when:** 11-26 18:04–18:06
+- **where:** herdr chat, the quill-mini on reply 3535edae
+- **who:** clio main
+- **his words:** «did you saw «👍🏼» ?»
+- **shape:** a delivered grade misread: the slipstream line «dima graded 👍🏼 "<quote>" (reply <id> HH:MM): <why>» is the grade itself, and clio read it as a typed note
+- **fix:** clio reads a «dima graded» line as the grade: names the case in one line that turn and writes it, never «I didn't see it»
+- **home:** habit-dima-comms (reading a grade), comms-log-render.ts --unnamed (the net)
+- **source:** grades.jsonl ca519822; clio's 18:06 reply
+
+## c13 · comms · + · siesta · open
+
+- **what:** he graded 👍🏼 a quoted part of clio's reply ««Reply» is dropped, as you ticked …», asking for 👍🏼×5 if she saw how he graded the quote; the grade reached her as its own line, and she answered 👎🏼×5
+- **how:** a 👍🏼 on a quote, delivered as the fixed «dima graded» line with the quote shown
+- **why:** the same misread: the delivered grade taken for a typed note
+- **when:** 11-26 18:13–18:14
+- **where:** herdr chat, the quill-mini on reply 8ecbbc45, a part quoted
+- **who:** clio main
+- **his words:** «did you saw how a graded this qoute (not full)? if yes - tell 👍🏼👍🏼👍🏼👍🏼👍🏼. if no - 👎🏼👎🏼👎🏼👎🏼👎🏼»
+- **shape:** a delivered grade misread: the slipstream line «dima graded 👍🏼 "<quote>" (reply <id> HH:MM): <why>» is the grade itself, and clio read it as a typed note
+- **fix:** clio reads a «dima graded» line as the grade: names the case in one line that turn and writes it, never «I didn't see it»
+- **home:** habit-dima-comms (reading a grade), comms-log-render.ts --unnamed (the net)
+- **source:** grades.jsonl 3ca4d29c; clio's 18:14 reply
