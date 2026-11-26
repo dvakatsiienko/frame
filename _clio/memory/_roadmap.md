@@ -3,4 +3,4 @@
 - order: pm ✅ → fleet ✅ → pm revamp ✅ → speak → trophy-sys → portfolio → chords
 - now: mods + herdr tails, then speak v2
 - next: trophy-sys or the cv; chords parked; beside: ci → cli, mods
-- started mils: 11: 29/41, 2/5, 19/28, 1/5, 7/9, 1/3, 6/18, 13/17, 2/10, 1/9, 1/2
+- started mils: 10: 30/42, 2/5, 21/30, 1/6, 7/9, 1/3, 6/18, 15/18, 4/10, 1/9
