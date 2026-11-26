@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-26T15:08:39Z'
+updated_date: '2026-11-26T16:39:42Z'
 labels:
   - s
   - clio-wing-1
@@ -16,10 +16,10 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f60 blueprint v2 shape-idea grill (FRM-614), the mods big picture (FRM-611) inside it — with: dima
-- [ ] #2 f111 FRM-582 prior art with dima after the blueprint grill, sealed tonight for the mods codie — with: dima
-- [ ] #3 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
-- [ ] #4 f93 ⏳ bytes#176 github-actions pr: merge it once renovate stability-days goes green — waits for: bytes#176 release age
+- [ ] #1 f111 FRM-582 prior art with dima after the blueprint grill, sealed tonight for the mods codie — with: dima
+- [ ] #2 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
+- [ ] #3 f93 ⏳ bytes#176 github-actions pr: merge it once renovate stability-days goes green — waits for: bytes#176 release age
+- [ ] #4 f113 📅 vellum lane (FRM-614): after the bun lane, its shape on dima's monday word — on: 2026-11-30
 - [ ] #5 f83 📅 PK-468 ticket flow: its real check — on: 2026-12-01
 - [ ] #6 f52 📅 FRM-465 exit 5: did a scheduled renovate run open the minors prs inside the wednesday window — on: 2026-12-02
 - [ ] #7 f103 📅 FRM-706 lost-ping alarm: 7 days after its land, a true gap since? none → the cut to dima — on: 2026-12-04
