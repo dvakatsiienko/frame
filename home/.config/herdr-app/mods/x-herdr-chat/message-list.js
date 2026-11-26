@@ -46,12 +46,12 @@ export const placeKey = (file) => `place:${file}`;
 
 /**
  * @typedef {object} MessageListDeps
- * @property {(selected: import('./selection.js').SelectedAt, cx: Context) => void} annotate the note box on words he selected
- * @property {(id: string, at: { x: number, y: number } | null, cx: Context) => void} openNote the note box on a note he made
+ * @property {(selected: import('./selection.js').SelectedAt, cx: Context) => void} annotate the quill-mini on words he selected
+ * @property {(id: string, at: { x: number, y: number } | null, cx: Context) => void} openNote the quill-mini on a note he made
  * @property {() => string | null} audioApp the app his settings open audio in, null: the system's choice
  * @property {() => string | null} file the shown thread's transcript
  * @property {ReturnType<typeof import('./heights.js').createHeights>} heights
- * @property {(t: Theme) => any} noteBox the note box over the list, null while it is shut
+ * @property {(t: Theme) => any} quillMini the quill-mini over the list, null while it is shut
  * @property {() => string} threadName the shown thread as antenna names it, for the menu's «tell <thread>»
  * @property {(id: string, at: { x: number, y: number } | null) => void} noteClicked a click on a note's words: the chat opens it at
  *   its own next draw, under the press
@@ -369,7 +369,7 @@ export function createMessageList(deps) {
                 .when(Boolean(messageMenu.state), (el) =>
                     el.child(messageMenuView(t)),
                 )
-                .children([deps.noteBox(t)].filter(Boolean))
+                .children([deps.quillMini(t)].filter(Boolean))
                 .when(isNewestShown, (el) =>
                     el.child(
                         div()

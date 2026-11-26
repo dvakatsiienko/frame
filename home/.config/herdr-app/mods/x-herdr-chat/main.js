@@ -284,13 +284,13 @@ export default class Chat extends View {
         file: () => this.feed.file(),
         heights: this.heights,
         loadEarlier: (cx) => this.feed.loadEarlier(cx),
-        noteBox: (t) => this.quillMini.view(t),
         noteClicked: (id, at) => {
             this.noteAsk = { at, id };
             setShared(NOTE_CLICK, Date.now());
         },
         openNote: (id, at, cx) => this.quillMini.openNote(id, at, cx),
         pictures: this.pictures,
+        quillMini: (t) => this.quillMini.view(t),
         reader: () => this.feed.reader(),
         rows: this.rows,
         say: (note, cx) => this.say(note, cx),
@@ -526,7 +526,7 @@ export default class Chat extends View {
         }
         if (acts.isFind && !this.pictures.isOpen())
             _cx.timer.after(0, (later) => this.findBar.open(later));
-        // the quill is the chat's Tab stop while the chat shows, the note box one more while open; the loop asks for one, or
+        // the quill is the chat's Tab stop while the chat shows, the quill-mini one more while open; the loop asks for one, or
         // a reload hands it back
         const stops = this.quillMini.isOpen()
             ? ['quill', MINI_STOP]
@@ -787,13 +787,13 @@ export default class Chat extends View {
         else if (focus === 'chat') this.chatKeys?.focus();
     }
 
-    /** a press outside the quill: find closes, else the chat takes the keyboard, unless the note box has it @param {Context} cx */
+    /** a press outside the quill: find closes, else the chat takes the keyboard, unless the quill-mini has it @param {Context} cx */
     leaveQuill(cx) {
         if (this.findBar.find.state.isOpen) this.findBar.close(cx);
         else if (!this.quillMini.isOpen()) this.chatKeys?.focus();
     }
 
-    /** Esc over the chat: the viewer closes, else the note box, else find (dima, 18:18) @param {Context} cx @returns {boolean} whether one did */
+    /** Esc over the chat: the viewer closes, else the quill-mini, else find (dima, 18:18) @param {Context} cx @returns {boolean} whether one did */
     closeTop(cx) {
         const isFind = this.findBar.find.state.isOpen;
         if (this.pictures.isOpen()) this.pictures.step('close', cx);
@@ -825,7 +825,7 @@ export default class Chat extends View {
         this.isShowMore = values['chatter.showMore'] === true;
     }
 
-    /** the note box on words he selected @param {import('./selection.js').SelectedAt} selected @param {Context} cx */
+    /** the quill-mini on words he selected @param {import('./selection.js').SelectedAt} selected @param {Context} cx */
     annotate(selected, cx) {
         this.quillMini.show(selected, cx);
     }

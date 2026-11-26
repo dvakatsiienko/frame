@@ -201,7 +201,7 @@ describe('a file dropped on the chat', () => {
             { pictures: quiet({ isOpen: () => true }) },
         ],
         [
-            'with the note box open',
+            'with the quill-mini open',
             { quillMini: quiet({ isOpen: () => true }) },
         ],
     ])('joins the quill, %s, by the pane’s one handler', (_how, over) => {
@@ -323,12 +323,12 @@ describe('Esc over the chat', () => {
 describe('Esc in the quill', () => {
     test.each([
         [
-            'closes the viewer, the note box and find left as they are',
+            'closes the viewer, the quill-mini and find left as they are',
             { find: true, mini: true, viewer: true },
             ['viewer'],
         ],
         [
-            'closes the note box, find left as it is',
+            'closes the quill-mini, find left as it is',
             { find: true, mini: true },
             ['mini'],
         ],
@@ -360,8 +360,8 @@ describe('Esc in the quill', () => {
     });
 });
 
-// FRM-585 A4, A5: the note box in the chat
-describe('the note box', () => {
+// FRM-585 A4, A5: the quill-mini in the chat
+describe('the quill-mini', () => {
     /** the chat drawn with F6 asked for at its time, and what that did */
     const asked = (over: Record<string, unknown> = {}, time = Date.now()) => {
         const opened: unknown[] = [];
@@ -775,7 +775,7 @@ describe('a thread he switches to', () => {
         ['a steer box drawn in the deck keeps the cursor', ['steer-a:o1'], []],
         ['a steer box gone since does not', [], ['chat', 'quill']],
         [
-            'the note box, shut by it, does not',
+            'the quill-mini, shut by it, does not',
             ['quill', 'quill-mini'],
             ['chat', 'quill'],
             'quill-mini',

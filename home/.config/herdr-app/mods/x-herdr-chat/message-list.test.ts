@@ -174,13 +174,13 @@ function createWindow(
         file: () => '/t.jsonl',
         heights: createHeights(),
         loadEarlier: () => earlier.push(1),
-        noteBox: () => null,
         noteClicked: (id: string, at: unknown) => bodies.noted.push([id, at]),
         openNote: (id: string, at: unknown) => annotated.push([id, at]),
         pictures: {
             isOpen: () => bodies.isViewerOpen,
             show: (files: string[]) => bodies.opened.push(files.join()),
         },
+        quillMini: () => null,
         reader: () => null,
         rows: {
             bodyLook: (_row: unknown, _t: unknown, pre: string) =>

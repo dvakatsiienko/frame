@@ -143,7 +143,7 @@ export function openingKeys(keys, event) {
  * what a draw does about the keyboard and the picker: only the chat on screen acts, so a hidden one never opens a
  * second picker on the same thread. a thread he opens, or the chat on screen again, gives its quill the keyboard
  * (`openingKeys`); a fresh ⌘K does at once; a fresh ⌘⇧E not acted on yet opens the picker on the effort, or applies it
- * a fresh ⌘F opens the find bar, which takes the keyboard itself, a fresh F6 the note box, and a fresh Esc closes what is
+ * a fresh ⌘F opens the find bar, which takes the keyboard itself, a fresh F6 the quill-mini, and a fresh Esc closes what is
  * on top
  * @param {{ isShown: boolean, wasShown: boolean, isSwitched: boolean, isKept: boolean, quillAsk: unknown, lastQuill: unknown,
  *   annotateAsk: unknown, lastAnnotate: unknown, effortAsk: unknown, lastEffort: unknown, findAsk: unknown, lastFind: unknown, escapeAsk: unknown,

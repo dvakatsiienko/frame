@@ -290,7 +290,7 @@ describe('the quills of every thread, kept and shown by one owner', () => {
     });
 
     // x-herdr-settings' note boxes are its own text boxes, never a quill
-    test('the quill is written in one place: no file of the chat but quill.js sets its text, the note box and the settings their own', () => {
+    test('the quill is written in one place: no file of the chat but quill.js sets its text, the quill-mini and the settings their own', () => {
         const dir = new URL('.', import.meta.url).pathname;
         const writers = readdirSync(dir)
             .filter((name) => name.endsWith('.js'))

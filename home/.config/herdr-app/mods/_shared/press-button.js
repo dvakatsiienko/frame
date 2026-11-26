@@ -1,4 +1,4 @@
-// the press button our mods draw: orbit's tick and replay, the phases' tick, the note box's join and send, so each looks
+// the press button our mods draw: orbit's tick and replay, the phases' tick, the quill-mini's join and send, so each looks
 // and acts the same (dima, 26 Nov 17:37: «a reusable button … customizable (styles, size)»). a size and a variant, as a ui
 // kit's button has; a locked one stays, still
 
