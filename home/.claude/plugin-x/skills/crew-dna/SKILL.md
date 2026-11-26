@@ -31,7 +31,7 @@ You are a fleet member clio summoned or briefed. Your role skill says what you d
 **heavy runs**, in the background: a commit or push takes its own turn, mutants or a suite by hand `x gate run -- <cmd>` (`gate-queue.sh --long`; prints the exit and the log's tail)
 - this mac's limit is process starts: one go suite fills it, two only share the wait (`x knowledge read cpu-overload`)
 - so run your own test by name; a whole suite once, at the chunk's end; a new test spawns little
-- a load or queue wait is never idle: work your next step; at 10 min, `[ask]`
+- a load or queue wait is never idle: work your next step; an alarm at 10 min, then `[ask]`
 - a state-changing chain joins with `&&`: a failed step stops it
 
 **fences**
