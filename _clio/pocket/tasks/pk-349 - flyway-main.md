@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-26T17:35:13Z'
+updated_date: '2026-11-26T17:48:19Z'
 labels:
   - s
   - clio-main
@@ -25,14 +25,18 @@ ordinal: 1000
 - [ ] #7 f139 📅 FRM-596: the seat switch, 3 test lines and 4 gaps left (its 25 Nov comment) — on: 2026-11-27
 - [ ] #8 f149 📅 mini boot grill: one slipstream, a table of kinds (FRM-686), his 19:14 — on: 2026-11-27
 - [ ] #9 f150 📅 mini boot: how herdr marks a message as a proposal, FRM-582 herdr half — on: 2026-11-27
-- [ ] #10 f148 📅 CPU on Monday's four lanes: his read, still an open topic (FRM-678 want line) — on: 2026-11-30
-- [ ] #11 f151 📅 resume speak and herdr from their handoffs, the missed reviews first, then build — on: 2026-11-30
-- [ ] #12 f152 📅 speak: kokoro marks' wire shape, your pick before slice 62 (FRM-290) — on: 2026-11-30
-- [ ] #13 f146 📅 FRM-677 exit 6: 7 days of asks, none hiding what dima must read — on: 2026-12-01
-- [ ] #14 f132 📅 read the first week's typed look and test asks (mods spec after-merge) — on: 2026-12-02
-- [ ] #15 f137 📅 orbit asks: 7 days of real ones hold a title, a body and a pick (FRM-695 exit 10) — on: 2026-12-02
-- [ ] #16 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
-- [ ] #17 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #10 f153 📅 mini boot: grill your cv and plan its build (his 19:39 «important»), then close planning tails — on: 2026-11-27
+- [ ] #11 f154 📅 mini boot: your crow retro of 26 Nov, when fresh (his 19:45 «maybe tomorrow») — on: 2026-11-27
+- [ ] #12 f156 📅 FRM-289 exit 6: the 200-read run, a read only — on: 2026-11-27
+- [ ] #13 f148 📅 CPU on Monday's four lanes: his read, still an open topic (FRM-678 want line) — on: 2026-11-30
+- [ ] #14 f151 📅 resume speak and herdr from their handoffs, the missed reviews first, then build — on: 2026-11-30
+- [ ] #15 f152 📅 speak: kokoro marks' wire shape, your pick before slice 62 (FRM-290) — on: 2026-11-30
+- [ ] #16 f155 📅 bun migration lane, grilled with wing 1, prepped; who runs it is his word — on: 2026-11-30
+- [ ] #17 f146 📅 FRM-677 exit 6: 7 days of asks, none hiding what dima must read — on: 2026-12-01
+- [ ] #18 f132 📅 read the first week's typed look and test asks (mods spec after-merge) — on: 2026-12-02
+- [ ] #19 f137 📅 orbit asks: 7 days of real ones hold a title, a body and a pick (FRM-695 exit 10) — on: 2026-12-02
+- [ ] #20 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
+- [ ] #21 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
