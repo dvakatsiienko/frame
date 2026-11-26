@@ -27,10 +27,17 @@ func newStatsWorld(t *testing.T) statsWorld {
 	return statsWorld{t: t, dir: t.TempDir(), sessions: t.TempDir()}
 }
 
-// the session registry's entry for a live pid, naming the thread it runs
+// the session registry's entry for a pid, naming the thread it runs, with the start time ps reads for that pid now
 func (w statsWorld) live(pid int, sid string) {
 	w.t.Helper()
-	raw, _ := json.Marshal(map[string]any{"pid": pid, "sessionId": sid})
+	start := procStarts([]thread{{Pid: pid}}, []string{"x"})[pid]
+	w.entry(pid, sid, start)
+}
+
+// an entry with a start time of its own: one a kill -9 left behind reads the old process's
+func (w statsWorld) entry(pid int, sid, start string) {
+	w.t.Helper()
+	raw, _ := json.Marshal(map[string]any{"pid": pid, "procStart": start, "sessionId": sid})
 	if err := os.WriteFile(filepath.Join(w.sessions, strconv.Itoa(pid)+".json"), raw, 0o644); err != nil {
 		w.t.Fatal(err)
 	}
@@ -123,6 +130,11 @@ func TestFleetStatsParked(t *testing.T) {
 			w.live(os.Getpid(), "x")
 			w.row("x", os.Getpid(), 10, 4, "typed", nil)
 		}, "x", 4 * 60},
+		{"a kill -9's entry left under a pid a new process took parks nothing", func(w statsWorld) {
+			w.busy()
+			w.entry(os.Getpid(), "x", "Thu Nov 26 00:00:00 2026")
+			w.row("x", os.Getpid(), 10, 4, "typed", nil)
+		}, "x", 0},
 		{"a dead thread whose pid another session took parks nothing past its last row", func(w statsWorld) {
 			w.busy()
 			w.live(os.Getpid(), "someone-else")
@@ -180,6 +192,11 @@ func TestFleetStatsLostAndWakes(t *testing.T) {
 		t.Fatal(err)
 	}
 	w.live(os.Getpid(), "someone-else")
+	// a live thread's turn still running is no lost one
+	running, _ := json.Marshal(map[string]any{"pid": os.Getpid(), "start": statsNow.Add(-time.Minute).UnixMilli(), "turnId": "now"})
+	if err := os.WriteFile(filepath.Join(w.dir, "open", "someone-else.json"), running, 0o644); err != nil {
+		t.Fatal(err)
+	}
 	// a dead thread's stamp its own row explains is no lost turn
 	written, _ := json.Marshal(map[string]any{"pid": statsDead, "start": statsNow.Add(-20 * time.Minute).UnixMilli(), "turnId": "t"})
 	if err := os.WriteFile(filepath.Join(w.dir, "open", "m.json"), written, 0o644); err != nil {
