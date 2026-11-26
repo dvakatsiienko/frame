@@ -1,6 +1,15 @@
 import { describe, expect, test } from 'vitest';
 
-import { QUOTE_CUT, noteLine, quoteOf, repliesBelow } from './note-text.js';
+import {
+    HEAD_BACK,
+    QUOTE_CUT,
+    SENTENCE_CUT,
+    headOf,
+    noteLine,
+    quoteOf,
+    repliesBelow,
+    sentenceOf,
+} from './note-text.js';
 
 const ID = '1a2b3c4d-0000-4000-8000-000000000000';
 const at = new Date(2026, 10, 25, 18, 24).toISOString();
@@ -50,6 +59,78 @@ describe('the line a thread gets', () => {
     test('the note is never cut, its lines kept, its edges trimmed', () => {
         const text = `${'long '.repeat(100)}\nsecond`;
         expect(line({ text: `\n${text}  ` })).toContain(`): ${text}`);
+    });
+});
+
+// FRM-585:W72, dima 26 Nov: the line carries the sentence around the words, and a far message's first words
+describe('what stands around the words', () => {
+    const at = (source: string, words: string) => {
+        const start = source.indexOf(words);
+        return { range: { end: start + words.length, start }, source, words };
+    };
+
+    test.each([
+        [
+            'its sentence, from the stop before to the stop after',
+            at('One thing. The retry is cheap here. Next one.', 'retry'),
+            'The retry is cheap here.',
+        ],
+        [
+            'a line break ends it, a list marker and all',
+            at('- the retry is cheap\n- the next item', 'retry'),
+            '- the retry is cheap',
+        ],
+        [
+            'none when the words are the whole sentence',
+            at('One. Two.', 'Two.'),
+            null,
+        ],
+        [
+            'none with no range',
+            { range: null, source: 'a b', words: 'a' },
+            null,
+        ],
+        [
+            'a long one cut around the words, each cut side at a word',
+            at(
+                `${'left '.repeat(60)}the retry ${'right '.repeat(60)}.`,
+                'the retry',
+            ),
+            expect.stringMatching(/^…left .*the retry right .*right…$/),
+        ],
+    ])('%s', (_what, part, sentence) => {
+        expect(sentenceOf(part)).toEqual(sentence);
+    });
+
+    test('words as long as the cut: none, the quote is cut already', () => {
+        const words = 'word '.repeat(40).trim();
+        expect(sentenceOf(at(`Before ${words} after.`, words))).toBeNull();
+    });
+
+    test('a long sentence stays near the cut', () => {
+        const part = at(`${'word '.repeat(200)}x.`, 'word word');
+        expect((sentenceOf(part) ?? '').length).toBeLessThanOrEqual(
+            SENTENCE_CUT + 2,
+        );
+    });
+
+    test('the line says the sentence; a fresh note stays one short line', () => {
+        expect(line({ sentence: 'So the retry is cheap.' })).toBe(
+            'dima on "the retry is cheap" in "So the retry is cheap." (reply 1a2b3c4d 18:24, 3 back): why here?',
+        );
+        expect(
+            line({ row: { ...reply, head: 'One two three' } }),
+        ).not.toContain('One two');
+    });
+
+    test(`a message ${HEAD_BACK} or more back is named by its first words too`, () => {
+        expect(
+            line({
+                back: HEAD_BACK,
+                row: { ...reply, head: 'One two three…' },
+            }),
+        ).toContain(`, ${HEAD_BACK} back, «One two three…»): `);
+        expect(headOf('a  b\nc d e f g h i j')).toBe('a b c d e f g h…');
     });
 });
 

@@ -625,6 +625,21 @@ describe('a look that could not be made decides nothing', () => {
     });
 });
 
+// FRM-585:W72
+test('the line a note joins with carries the sentence its words sit in, and a far message’s first words', async () => {
+    const w = world();
+    const source = 'One thing. So the retry is cheap here. Next.';
+    const far = { ...ROW, head: 'One thing. So the retry…' };
+    const id = await w.draft(
+        'why here?',
+        passage('retry', source.indexOf('retry'), far, source),
+    );
+    await w.notes.join(THREAD, id, 20);
+    expect(w.texts()).toEqual([
+        'dima on "retry" in "So the retry is cheap here." (reply 1a2b3c4d, 20 back, «One thing. So the retry…»): why here?',
+    ]);
+});
+
 // FRM-585 C3
 test('a message of his is a note by the lines written for it, never by how it reads', async () => {
     const w = world();

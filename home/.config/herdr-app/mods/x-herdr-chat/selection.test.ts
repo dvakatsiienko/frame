@@ -151,6 +151,7 @@ describe('the passage a note is written on', () => {
         id: 'r1',
         isWaiting: false,
         kind: 'reply',
+        text: 'one two three four five six seven eight nine',
     } as Row;
     const parts = [{ ...part('first'), block: 0 }];
 
@@ -164,7 +165,12 @@ describe('the passage a note is written on', () => {
                     words: 'first',
                 },
             ],
-            row: { at: row.at, id: 'r1', kind },
+            row: {
+                at: row.at,
+                head: 'one two three four five six seven eight…',
+                id: 'r1',
+                kind,
+            },
         });
     });
 

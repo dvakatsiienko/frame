@@ -107,6 +107,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - when he presses F6 from anywhere in the window, then the box opens under the words' end with the cursor in it, the words over it cut as the thread will get them, the thread's name beside; F6 again, Esc or a press outside closes it and keeps the note as his draft, and the same words bring the draft back (W5, W6)
   - and the words are those that stood selected at the press; with none, in a message still waiting, in one scrolled away, or with the picture viewer open, F6 does nothing, and no view moves (W4)
   - and the menu shows «tell <thread>», the thread as antenna names it, only on the message that holds the words
+  - and the line the thread gets holds the words, the sentence they sit in (cut to about 160 characters around them), which message and when, and his note; a message 20 or more replies back is named by its first words too (FRM-585:W72)
   - and Enter joins the note, again takes it back; ⌘Enter sends it now and the box goes; Shift+Enter breaks the line; Tab walks the loop, where the box has a stop while open; an empty note does neither
   - and the box reads «joined» once the thread has the note, with what the thread got, read-only; words he typed past that are a new note on the same words, and a box he types in moves onto it, the cursor where it was, saying so; on a note a turn took, his next word starts one too
   - and a note waits while its thread is idle, for its next turn; one its thread's state no longer lists a minute after it joined is his draft again, saying so; a × on a sent one still in the queue makes it his draft too, whichever message's × pulled it (FRM-585:W2, W14, W42)
@@ -125,9 +126,9 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and they are found again after the reply grew or an older page landed above it; words that are gone, or stand twice and moved, show none and the note stays
   - and find's hits are painted over them, and leave them as they were
   - and a path in them that became a link later is still found; a folded reply paints none past the lines it shows
-  - when he clicks them with nothing selected, then the box opens on that note under the words he clicked, over them when there is no room below (dima, 26 Nov 14:39); a drag or a double click on them selects as anywhere else; of two notes on the same words the click opens the newer, the other by its row; in a code block, a code span, a link, a table or across a line break they are painted but open nothing, the row is the door (B5)
-- ✅ each note is one quiet row under its message (FRM-585:W2, W10)
-  - given notes on a message, then under it and its files comes a row for each, in the order he made them: 📝, its words on one line, and where it stands (draft, waiting, joined, sent); a note with no words yet has none
+  - when he clicks them with nothing selected, then the box opens on that note under the words he clicked, over them when there is no room below (dima, 26 Nov 14:39); a drag or a double click on them selects as anywhere else; of two notes on the same words the click opens the newer, the other by its row; in a code block, a code span, a link, a table or across a line break they are painted but open nothing: the row is the door once the thread has the note, and F6 on the same words brings back one still his (B5)
+- ⬜ each note the thread has is one quiet row under its message (FRM-585:W2, W10, W73)
+  - given notes on a message, then under it and its files comes a row for each the thread has or is getting, in the order he made them: 📝, its words on one line, and where it stands (joined, sending, sent); a draft or a waiting note has none, its highlighted words are its door (dima, 26 Nov 15:37: «i do not need this»)
   - when he clicks one, then the box opens on that note where he clicked: to edit while the thread has not got it, to read after
   - and a row that comes or goes above what he reads moves nothing; a reading place saved on one finds its message
 - 🧭 Reply quotes only the words he selected, never a whole message (dima, 20:35; FRM-585)

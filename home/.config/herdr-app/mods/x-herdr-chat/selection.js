@@ -3,6 +3,8 @@
 // and never says so: `keep` drops its words here. a left press anywhere clears herdr's selection, so an act takes the one
 // that stood at its press, never what stands when the chat reads it
 
+import { headOf } from './note-text.js';
+
 /**
  * one text view's share of the words he selected
  * @typedef {object} Reported
@@ -42,7 +44,7 @@ export const wordsOf = (parts) => parts.map((p) => p.words).join('\n\n');
  */
 export function passageOf(row, parts) {
     if (!row || row.isWaiting || !parts?.length) return null;
-    const { at, id, kind } = row;
+    const { at, id, kind, text } = row;
     if (kind !== 'mine' && kind !== 'reply') return null;
     return {
         parts: parts.map(({ block, range, source, words }) => ({
@@ -51,7 +53,7 @@ export function passageOf(row, parts) {
             source,
             words,
         })),
-        row: { at, id, kind },
+        row: { at, head: headOf(text), id, kind },
     };
 }
 

@@ -3,7 +3,7 @@
 // past what a turn took are a new draft on the same words. nothing here reads a clock or a file; notes.js owns the notes
 // and tells each what happened
 
-import { noteLine } from './note-text.js';
+import { noteLine, sentenceOf } from './note-text.js';
 import { withoutPathLinks } from './path-links.js';
 
 /**
@@ -17,7 +17,8 @@ import { withoutPathLinks } from './path-links.js';
 /**
  * the words he selected, and the message they stand in
  * @typedef {object} Passage
- * @property {{ id: string, kind: 'mine' | 'reply', at: string | null }} row `id` its line's uuid
+ * @property {{ id: string, kind: 'mine' | 'reply', at: string | null, head?: string }} row `id` its line's uuid, `head` its
+ *   first words
  * @property {Part[]} parts in block order
  */
 /** @typedef {'draft' | 'waiting' | 'taken' | 'joined' | 'sending' | 'sent'} NoteState `sending`: herdr has not answered yet */
@@ -88,6 +89,9 @@ export const lineOf = (note) =>
         back: note.back,
         parts: note.passage.parts.map((part) => part.words),
         row: note.passage.row,
+        sentence: sentenceOf(
+            note.passage.parts[0] ?? { range: null, source: '', words: '' },
+        ),
         text: note.text,
     });
 

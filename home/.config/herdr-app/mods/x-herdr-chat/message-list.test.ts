@@ -987,7 +987,7 @@ describe('the words a note is written on', () => {
                 words: text,
             },
         ],
-        row: { at: undefined, id, kind: 'reply' },
+        row: { at: undefined, head: expect.any(String), id, kind: 'reply' },
     });
 
     test('stood selected at a press, with the place they end at in the list', () => {
