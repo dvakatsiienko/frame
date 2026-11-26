@@ -35,7 +35,7 @@ import { readableTheme } from './contrast.js';
 import { onDisk } from './disk.js';
 import { createFindBar } from './find-bar.js';
 import { createHeights } from './heights.js';
-import { joinIo, linesWith, logTrial, newId } from './join-io.js';
+import { joinIo, keepGrade, linesWith, logTrial, newId } from './join-io.js';
 import { JOINS_DIR } from './joins.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { createMessageList } from './message-list.js';
@@ -183,6 +183,7 @@ export default class Chat extends View {
         dir: `${home()}/${JOINS_DIR}`,
         io: joinIo,
         joinsOf: (thread) => this.feed.joinsOf(thread),
+        keepGrade,
         linesWith,
         logTrial,
         movedOn: (thread, id, next, cut) =>

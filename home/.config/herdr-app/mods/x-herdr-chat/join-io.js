@@ -3,6 +3,9 @@
 
 import { exec, home, readTextFile, writeTextFile } from 'herdr';
 
+import { GRADES_DIR, GRADES_FILE, withGrade } from './grades.js';
+import { editLocked } from './joins.js';
+
 /** @type {import('./joins.js').JoinIo} */
 export const joinIo = {
     lock: async (path) =>
@@ -52,3 +55,14 @@ export const newId = () =>
             : Math.floor(Math.random() * 4) + 8
         ).toString(16),
     );
+
+/** a reply-grade's raw line into its file, once by its id @param {import('./grades.js').GradeLine} line */
+export async function keepGrade(line) {
+    const dir = `${home()}/${GRADES_DIR}`;
+    await exec('mkdir', ['-p', dir]).catch(() => {});
+    return (
+        (await editLocked(joinIo, `${dir}/${GRADES_FILE}`, (was) =>
+            withGrade(was, line),
+        )) === 'written'
+    );
+}

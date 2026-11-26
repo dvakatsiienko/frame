@@ -3,6 +3,7 @@ import { describe, expect, test, vi } from 'vitest';
 
 vi.mock('herdr', () => ({ exec: vi.fn() }));
 
+import { withGrade } from './grades.js';
 import { gradeLine } from './note-text.js';
 import { ON, ROW, THREAD, passage, world } from './notes-world.ts';
 
@@ -80,5 +81,81 @@ describe('a graded note joins as a case to log', () => {
         w.notes.graded(THREAD, id, 'good');
         await w.settle({ ...ON, taken: [w.note(id).joinId ?? ''] });
         expect(w.note(id)).toMatchObject({ grade: null, state: 'taken' });
+    });
+});
+
+// FRM-630 exits 1, 3, 4
+describe('a grade’s raw line in the grades file', () => {
+    test('a joined grade: one line with its id, message id, passage, grade and why', async () => {
+        const w = world();
+        const id = await w.draft('restates the plan');
+        w.notes.graded(THREAD, id, 'bad');
+        await w.notes.join(THREAD, id, 0);
+        expect(w.grades()).toEqual([]);
+        await w.settle({ ...ON, joined: [w.note(id).joinId ?? ''] });
+        expect(w.grades()).toEqual([
+            {
+                at: w.stamp(),
+                grade: 'bad',
+                id,
+                messageId: ROW.id,
+                passage: 'the retry is cheap',
+                sid: 'a',
+                whole: false,
+                why: 'restates the plan',
+            },
+        ]);
+    });
+
+    test('a plain note writes none', async () => {
+        const w = world();
+        const id = await w.draft('why here?');
+        await w.notes.join(THREAD, id, 0);
+        await w.settle({ ...ON, joined: [w.note(id).joinId ?? ''] });
+        expect(w.files.has('/grades.jsonl')).toBe(false);
+    });
+
+    test('three graded: the edit that won the race is the line, the one taken back none, each once past a reload', async () => {
+        const w = world();
+        const ids: string[] = [];
+        for (const [i, words] of ['one', 'two', 'three'].entries()) {
+            const id = await w.draft(`why ${words}`, passage(words, i * 10));
+            w.notes.graded(THREAD, id, 'good');
+            await w.notes.join(THREAD, id, 0);
+            ids.push(id);
+        }
+        const [kept = '', edited = '', back = ''] = ids;
+        await w.type(edited, 'why two, edited');
+        expect(await w.notes.takeBack(THREAD, back)).toBeNull();
+        const done = {
+            ...ON,
+            joined: [kept, edited].map((id) => w.note(id).joinId ?? ''),
+        };
+        await w.settle(done);
+        w.notes.arrived(THREAD, w.arrive());
+        w.reload();
+        await w.settle(done);
+        w.notes.arrived(THREAD, w.arrive());
+        expect(w.grades().map((g) => [g.id, g.why])).toEqual([
+            [kept, 'why one'],
+            [edited, 'why two, edited'],
+        ]);
+    });
+
+    test('a line of the same id replaces the one in the file, a broken row stays', () => {
+        const line = {
+            at: '',
+            grade: 'good' as const,
+            id: 'n-1',
+            messageId: ROW.id,
+            passage: 'p',
+            sid: 'a',
+            whole: false,
+            why: 'first',
+        };
+        const was = withGrade('not json\n', line);
+        expect(withGrade(was, { ...line, why: 'second' })).toBe(
+            `not json\n${JSON.stringify({ ...line, why: 'second' })}\n`,
+        );
     });
 });

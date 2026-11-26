@@ -5,11 +5,13 @@ import {
     joinRows,
     joinRowsText,
 } from '../../../../.claude/plugin-x/mods/x-mod-stash/hooks/orbit.ts';
+import { withGrade } from './grades.js';
 import type { Joins } from './magic.js';
 import { createNotes } from './notes.js';
 import { createRowModel } from './row-model.js';
 
 export const THREAD = '/t/a.jsonl';
+export const GRADES = '/grades.jsonl';
 export const FILE = '/joins/a.jsonl';
 export const ROW = {
     at: null,
@@ -71,6 +73,10 @@ export function world() {
                 },
             },
             joinsOf: () => at.joins,
+            keepGrade: async (line) => {
+                files.set(GRADES, withGrade(files.get(GRADES) ?? null, line));
+                return true;
+            },
             linesWith: async (_thread, words) => {
                 const lines = transcript.filter((line) => line.includes(words));
                 await at.searching;
@@ -124,6 +130,12 @@ export function world() {
             return id;
         },
         files,
+        /** the grades file's lines */
+        grades: () =>
+            (files.get(GRADES) ?? '')
+                .split('\n')
+                .filter(Boolean)
+                .map((line) => JSON.parse(line)),
         kept,
         locks,
         moved,

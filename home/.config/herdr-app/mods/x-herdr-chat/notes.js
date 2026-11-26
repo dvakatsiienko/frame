@@ -2,6 +2,7 @@
 // thread's join file written, rewritten and taken back here. it holds no herdr call: the view hands it the doors and
 // tells it what the thread's state and transcript say
 
+import { gradeOf } from './grades.js';
 import {
     appendJoin,
     joinStatus,
@@ -56,6 +57,7 @@ const drawnOf = (line) => joinedWords(line.split('»\n«')[0] ?? '');
  * @param {(thread: string) => Joins | null | undefined} doors.joinsOf what the thread's state lists of its joins now: null, joins are off for it; undefined, its state is not read
  * @param {(thread: string, words: string) => Promise<string[] | null>} doors.linesWith the lines of a transcript that hold the words, null when it could not be searched
  * @param {(line: string) => void} doors.logTrial one line of the trial's record
+ * @param {(line: import('./grades.js').GradeLine) => Promise<boolean>} doors.keepGrade a graded note's raw line into the grades file
  * @param {(thread: string, id: string, next: Note, cut: number) => void} doors.movedOn the words a turn did not get of a note are a new one, `cut` characters off their start
  */
 export function createNotes({
@@ -66,6 +68,7 @@ export function createNotes({
     joinsOf,
     linesWith,
     logTrial,
+    keepGrade,
     movedOn,
 }) {
     /** @type {Map<string, Note[]>} */
@@ -162,10 +165,12 @@ export function createNotes({
         return next;
     }
 
-    /** its trial line, once @param {string} thread @param {string} id */
+    /** its trial line, and a grade's raw line, once the thread has it, once @param {string} thread @param {string} id */
     function log(thread, id) {
         const note = find(thread, id);
         if (!note || !tell(thread, id, { type: 'logged' })) return;
+        const grade = gradeOf(note, thread, new Date(io.now()).toISOString());
+        if (grade) after(id, () => keepGrade(grade)).catch(() => {});
         const parts = note.passage.parts.map((p) => p.words);
         const quote = quoteOf(parts);
         const line = note.said.at(-1)?.line ?? lineOf(note);

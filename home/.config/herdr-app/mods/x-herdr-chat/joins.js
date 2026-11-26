@@ -25,12 +25,12 @@ export const JOINED_SHOWN_MS = 3000;
  */
 
 /**
- * the join file rewritten under the lock dir: «none» when there is nothing to write; «held» when the lock stays held past
- * ~2 s or the write fails, nothing written then
+ * a file two chats write, the join file or the grades file, rewritten under its lock dir: «none» when there is nothing
+ * to write; «held» when the lock stays held past ~2 s or the write fails, nothing written then
  * @param {JoinIo} io @param {string} path @param {(was: string | null) => string | null} edit null: nothing to write
  * @returns {Promise<'written' | 'none' | 'held'>}
  */
-async function editJoins(io, path, edit) {
+export async function editLocked(io, path, edit) {
     const lock = `${path}.lock`;
     const until = io.now() + LOCK_WAIT_MS;
     while (!(await io.lock(lock))) {
@@ -56,7 +56,7 @@ async function editJoins(io, path, edit) {
 
 /** one join row appended @param {JoinIo} io @param {string} path @param {string} id @param {string} text */
 export const appendJoin = async (io, path, id, text) =>
-    (await editJoins(io, path, (was) => {
+    (await editLocked(io, path, (was) => {
         const head = was && !was.endsWith('\n') ? `${was}\n` : (was ?? '');
         return `${head}${JSON.stringify({ id, text })}\n`;
     })) === 'written';
@@ -66,7 +66,7 @@ export const appendJoin = async (io, path, id, text) =>
  * yet, the file as it was @param {JoinIo} io @param {string} path @param {string} id @param {string} text
  */
 export const retextJoin = async (io, path, id, text) =>
-    (await editJoins(io, path, (was) => {
+    (await editLocked(io, path, (was) => {
         let isFound = false;
         const next = (was ?? '')
             .split('\n')
@@ -88,7 +88,7 @@ export const retextJoin = async (io, path, id, text) =>
  * landed) @param {JoinIo} io @param {string} path @param {string} id
  */
 export const takeOutJoin = (io, path, id) =>
-    editJoins(io, path, (was) => {
+    editLocked(io, path, (was) => {
         const next = dropJoin(was ?? '', id);
         return next === (was ?? '') ? null : next;
     });
