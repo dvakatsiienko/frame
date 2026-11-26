@@ -265,6 +265,7 @@ export function createMessageList(deps) {
                           deps.rows.textsCount(row),
                       )
                     : null;
+                probe('menu', { hasParts: Boolean(parts), key });
                 messageMenu.hit(event.position, {
                     copied: copiedFrom(row, parts && wordsOf(parts)),
                     selected: noteOn(row, parts, parts?.at(-1)?.position),
@@ -511,6 +512,13 @@ export function createMessageList(deps) {
                         const isHeld = selections
                             .heldIn(row.id)
                             .includes(block);
+                        probe('report', {
+                            block,
+                            key,
+                            range: part?.range ?? null,
+                            stamp,
+                            words: part?.words.length ?? null,
+                        });
                         selections.report(key, stamp, block, part, Date.now());
                         // words let go: its note links come back once his press ends
                         if (isHeld && !part) letGo.add(`${row.id}#${block}`);
@@ -769,13 +777,25 @@ export function createMessageList(deps) {
             const selected = selections.current(time);
             const i = selected ? (items?.keys.indexOf(selected.key) ?? -1) : -1;
             const row = items?.rowOf(i);
-            if (
-                !selected ||
-                !items ||
-                !row ||
-                !isDrawnNow(row, items.preOf(i), selected.stamp, selected.parts)
-            )
+            if (!selected || !items || !row) {
+                probe('selected: none', {
+                    hasItems: Boolean(items),
+                    i,
+                    key: selected?.key ?? null,
+                });
                 return null;
+            }
+            if (
+                !isDrawnNow(row, items.preOf(i), selected.stamp, selected.parts)
+            ) {
+                probe('selected: drawn anew', {
+                    key: selected.key,
+                    now: deps.rows.stampOf(row, items.preOf(i)),
+                    stamp: selected.stamp,
+                });
+                return null;
+            }
+            probe('selected: words', { parts: selected.parts.length });
             // a fold leaves the rest of its message out, and they never say so
             const blocks = deps.rows.textsCount(row);
             return noteOn(
