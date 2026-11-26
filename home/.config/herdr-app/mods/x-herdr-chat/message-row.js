@@ -44,7 +44,8 @@ const STEPPED_ALPHA = 'b3';
  * @property {() => number} column the readable column's width
  * @property {() => number} room the width a row may take: the list's, at most the column
  * @property {(row: Row) => readonly import('./note-states.js').Note[]} notesOn his notes on a row
- * @property {(row: Row) => { quote: string, text: string } | null} noteOf the note a message of his is, by its records
+ * @property {(row: Row) => { quote: string, text: string, isJoined: boolean } | null} noteOf the note a message of his is, by
+ *   its records
  * @property {() => ReturnType<typeof import('./find.js').createFind>} find the chat's search, which marks the rows and the words it matched
  * @property {() => import('./look.js').Look} look
  * @property {() => boolean} isShowMore his «Show more» switch (FRM-607)
@@ -244,13 +245,18 @@ export function createMessageRows(deps) {
             ? (foldOf(row)?.shown ?? replyBlocks(row)).length
             : 1;
 
-    /** a message of his that is a note draws its words, its quote a dim line over them @param {Row} row @returns {Row} */
+    /**
+     * a message of his that is a note sent as its own draws its words, its quote a dim line over them; one that joined a
+     * turn is drawn by its note row alone (dima's o1, 26 Nov 15:20)
+     * @param {Row} row @returns {Row[]}
+     */
     function asNote(row) {
-        if (row.kind !== 'mine') return row;
+        if (row.kind !== 'mine') return [row];
         const note = deps.noteOf(row);
+        if (note?.isJoined) return [];
         return note
-            ? { ...row, look: 'note', quote: note.quote, text: note.text }
-            : row;
+            ? [{ ...row, look: 'note', quote: note.quote, text: note.text }]
+            : [row];
     }
 
     /**
@@ -677,7 +683,7 @@ export function createMessageRows(deps) {
                                 !takenBack.has(row.id) &&
                                 (look.tools !== 'hide' || row.kind !== 'tool'),
                         )
-                        .map(asNote),
+                        .flatMap(asNote),
                     home(),
                     fileRows,
                     (row) => noteRows(row, deps.notesOn(row)),

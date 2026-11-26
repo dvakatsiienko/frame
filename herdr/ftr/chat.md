@@ -115,10 +115,11 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and the box fades in sliding up and fades out sliding down, about 120 ms each way; a second F6 sooner than that leaves no box; with reduce motion on in macOS it neither moves nor fades (C2)
   - decision: F6 opens on words selected and shuts an open box, nothing more; it never brings back a note it shut (dima, 26 Nov 15:00, W68); his want, the words staying selected across the toggle, waits on herdr letting a mod set a selection
   - decision: two doors to the box, F6 and the menu; the «tell <thread>» pill beside selected words is gone — dima, 26 Nov 14:53: three doors to one box is too many (W65, W66)
-- ✅ a note the thread has reads as his words, the words it is on a dim line over them (FRM-585 C3)
-  - given a note that joined a turn or went as its own message
+- ⬜ a note the thread has reads as his words, the words it is on a dim line over them (FRM-585 C3)
+  - given a note that went as its own message
   - then its message shows «on "<the words>"» dim over his note, never the line the thread got; a message he typed that only reads like a note stays as typed
   - and Copy on it gives what the bubble shows: the «on» line, then his words
+  - and a note that joined a turn draws no bubble at all: its quiet row under the message it is on is the one place it shows (dima's o1, 26 Nov 15:20)
 - ✅ the words he wrote a note on stay highlighted in their message (FRM-585:W2, W50, W51)
   - given notes on a message, then each one's words are painted behind in the theme's accent, stronger while the thread has not got the note, quieter once it has; opening the box paints them at once
   - and they are found again after the reply grew or an older page landed above it; words that are gone, or stand twice and moved, show none and the note stays

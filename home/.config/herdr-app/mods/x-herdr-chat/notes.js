@@ -72,7 +72,7 @@ export function createNotes({
     const refused = new Set();
     /** when he last typed in a note @type {Map<string, number>} */
     const typedAt = new Map();
-    /** each list of a thread's notes, as the messages they are: every draw asks for each message of his @type {WeakMap<readonly Note[], Map<string, { quote: string, text: string }>>} */
+    /** each list of a thread's notes, as the messages they are: every draw asks for each message of his @type {WeakMap<readonly Note[], Map<string, { quote: string, text: string, isJoined: boolean }>>} */
     const drawn = new WeakMap();
 
     /** @param {string} thread */
@@ -312,7 +312,7 @@ export function createNotes({
          * the note a message of his is, by the lines written for it: one the thread has, joined or sent; a message that
          * only reads like one is his words as typed
          * @param {string} thread @param {string} text the message's words as drawn
-         * @returns {{ quote: string, text: string } | null}
+         * @returns {{ quote: string, text: string, isJoined: boolean } | null}
          */
         noteOf(thread, text) {
             const notes = notesOf(thread);
@@ -323,6 +323,7 @@ export function createNotes({
                     if (n.state === 'joined' || n.state === 'sent')
                         for (const s of n.said)
                             byText.set(drawnOf(s.line), {
+                                isJoined: n.state === 'joined',
                                 quote: quoteOf(
                                     n.passage.parts.map((p) => p.words),
                                 ),

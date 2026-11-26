@@ -77,7 +77,10 @@ function createRows() {
     const made = new Map<string, string>();
     const notes = new Map<string, object[]>();
     /** the notes he made, by the words their message shows */
-    const noted = new Map<string, { quote: string; text: string }>();
+    const noted = new Map<
+        string,
+        { isJoined?: boolean; quote: string; text: string }
+    >();
     return {
         find,
         made,
@@ -266,6 +269,15 @@ test('a note of his draws his words under its quote; one that only reads like a 
     gpui.words.length = 0;
     view.texts(shown[0] as never, t, 'p');
     expect(gpui.words).toContain('on "the retry"');
+});
+
+// dima's o1, 26 Nov 15:20: a joined note's bubble reprinted the note its row already shows
+test('a note that joined a turn draws no bubble of its own', () => {
+    const { noted, view } = createRows();
+    const line = 'dima on "the retry" (reply 1a2b3c4d): why here?';
+    noted.set(line, { isJoined: true, quote: 'the retry', text: 'why here?' });
+    const mine = { ...reply('m1', line), kind: 'mine' } as never;
+    expect(view.shown([mine], { tools: 'show' } as never)).toEqual([]);
 });
 
 test('a folded reply paints no mark past its first lines', () => {

@@ -633,6 +633,7 @@ test('a message of his is a note by the lines written for it, never by how it re
     const [row] = w.arrive();
     w.notes.arrived(THREAD, row ? [row] : []);
     expect(w.notes.noteOf(THREAD, row?.text ?? '')).toEqual({
+        isJoined: true,
         quote: 'the retry',
         text: 'why here?',
     });
