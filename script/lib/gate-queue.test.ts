@@ -897,14 +897,16 @@ describe('gate-queue --long', () => {
             GATE_QUEUE_BATCH_MAX: max,
             PATH: `${bin}:${process.env.PATH}`,
         });
-        await sleep(200);
-        const left = spawnSync('ps', ['-ax', '-o', 'command='], {
-            encoding: 'utf8',
-            timeout: 10_000,
-        });
-        expect(
-            left.stdout.split('\n').filter((c) => c === `sleep ${max}`),
-        ).toEqual([]);
+        // a loaded ci runner reaps the sleep late, so wait for it instead of a fixed pause
+        const leftovers = () =>
+            spawnSync('ps', ['-ax', '-o', 'command='], {
+                encoding: 'utf8',
+                timeout: 10_000,
+            })
+                .stdout.split('\n')
+                .filter((c) => c === `sleep ${max}`);
+        for (let i = 0; i < 30 && leftovers().length > 0; i++) await sleep(100);
+        expect(leftovers()).toEqual([]);
     });
 
     test('a holder an older copy wrote is named by its command alone', () => {
