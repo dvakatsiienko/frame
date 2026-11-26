@@ -192,6 +192,39 @@ describe('he drags a card to change the order', () => {
         expect(order(glide)).toEqual(['l3', 'l1', 'l2']);
     });
 
+    test('a drop between two cards of one plan lands between them, through a reload', async () => {
+        const plan = '~/.local/state/x/lanes/a/lane-plan.md';
+        at.lanes = [lane('l1', plan), lane('l2', plan), lane('l3')];
+        const { glide, store } = await started();
+        dragBy(glide, 'l3', -1);
+        expect(order(glide)).toEqual(['l1', 'l3', 'l2']);
+        // the file lists them in another order now: each card still finds its own place
+        at.lanes = [lane('l2', plan), lane('l1', plan), lane('l3')];
+        expect(order((await started(store)).glide)).toEqual(['l1', 'l3', 'l2']);
+    });
+
+    test('a lane that gets a new card with a plan keeps its place by its codie', async () => {
+        const codie = { linkedIds: { codie: 's-codie' } };
+        at.lanes = [lane('l1'), lane('l2'), { ...lane('l3'), ...codie }];
+        const { glide, store } = await started();
+        dragBy(glide, 'l3', -2);
+        at.lanes = [
+            lane('l1'),
+            lane('l2'),
+            {
+                ...lane('l7', '~/.local/state/x/lanes/h/lane-plan.md'),
+                ...codie,
+            },
+        ];
+        expect(order((await started(store)).glide)).toEqual(['l7', 'l1', 'l2']);
+    });
+
+    test('a kept order that is no list reads as none', async () => {
+        const store = memory();
+        store.setItem('glide:order', '{"l3": 0}');
+        expect(order((await started(store)).glide)).toEqual(['l1', 'l2', 'l3']);
+    });
+
     test('the third dragged above the first holds through a reload, and a fourth card lands last', async () => {
         const { glide, store } = await started();
         dragBy(glide, 'l3', -2);

@@ -5,7 +5,7 @@
 /** @typedef {{ id?: string, title: string, ticket?: string, items?: LaneItem[], current?: number, done?: number, endedAt?: number | null, plan?: string, linkedIds?: { codie?: string } }} Lane */
 
 /** a card's lane: its codie and its title's first word («mods», «speak»); a card linked to none is a lane of its own @param {Lane} l */
-const laneOf = (l) =>
+export const laneOf = (l) =>
     l.linkedIds?.codie
         ? `${l.linkedIds.codie} ${/[a-z0-9]+/i.exec(l.title)?.[0]?.toLowerCase()}`
         : (l.id ?? l.title);

@@ -6,7 +6,13 @@ import { div } from 'gpui-kit';
 import { exec, run, theme } from 'herdr';
 
 import { createListDrag } from './drag-view.js';
-import { inHisOrder, loadOrder, movedOrder, saveOrder } from './glide-order.js';
+import {
+    cardKey,
+    inHisOrder,
+    loadOrder,
+    movedOrder,
+    saveOrder,
+} from './glide-order.js';
 import { GLIDE_MAX_PX, glideResize } from './glide-size.js';
 import { laneTicket, lanesShown, stepMark } from './lanes.js';
 import { SANS, SIZE, bar, line } from './look.js';
@@ -62,6 +68,10 @@ export function createGlide(block, store = localStorage) {
                 return;
             }
             lanes = inHisOrder(lanesShown(body), order);
+            // a gone card's height goes with it
+            const shown = new Set(lanes.map(keyOf));
+            for (const key of heights.keys())
+                if (!shown.has(key)) heights.delete(key);
             cx.notify();
         });
 
@@ -70,8 +80,7 @@ export function createGlide(block, store = localStorage) {
         if (px !== null) run('layout.resize', { id: block, px });
     };
 
-    /** @param {Lane} l */
-    const keyOf = (l) => l.id ?? l.title;
+    const keyOf = cardKey;
 
     /** what a card shows, drawn again for its ghost while he drags it @param {Theme} t @param {Lane} l @param {import('gpui-kit').Element} el */
     const cardBody = (t, l, el) => {
