@@ -250,6 +250,26 @@ test('an ask sent the old way draws as before: its id first, its text, its pick 
     expect(ids(card)).not.toContain('id-s1:o3');
 });
 
+test('a relayed ask names who started it on one muted line with no tooltip; a session’s own ask has no line', () => {
+    const [relayed] = asksOf({
+        asks: [
+            {
+                from: { line: '🐦‍⬛ crow' },
+                id: 'o4',
+                pick: 'ok',
+                text: 'a crow note',
+            },
+        ],
+    });
+    const card = drawn(relayed);
+    const origin = find(card, 'origin-s1:o4');
+    expect(origin.kids).toEqual(['🐦‍⬛ crow']);
+    const holder = all(card).find((d) => d.kids.includes(origin as never));
+    for (const d of [origin, holder])
+        expect(d?.calls.has('tooltip')).toBe(false);
+    expect(ids(drawn(plain))).not.toContain('origin-s1:o3');
+});
+
 describe('the id pill', () => {
     test('sits over the card’s far top right, its id plain in every thread, 🆕 first', () => {
         const pill = find(drawn(look), 'id-s1:o12');
