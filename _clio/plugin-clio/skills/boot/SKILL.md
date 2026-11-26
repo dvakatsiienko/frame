@@ -17,7 +17,7 @@ siesta after each (`habit-dima-comms`); heavy queries fire at the step that need
 
 📱 dima on mobile (his boot prompt says so) → read `x:mobile-mode` and run the session in it; it is user-only, so this line is its one automatic trigger.
 
-🚦 **a spawn in the boot never ends its turn**: the board is the one stop (dima, 2026-10-29; guard: FRM-426). **no wing opens by default, pending flyways included** (PK-351:W80): a full boot opens one by `clio:wing` only on his word at the boot or a `summon wings: <which>` first-act in the CST, at the first possible point; fresh unless he says fork, a fork before the boot reads anything, and the boot runs on.
+🚦 **a spawn in the boot never ends its turn**: the board is the one stop (guard: FRM-426). **no wing opens by default, pending flyways included** (PK-351:W80): a full boot opens one by `clio:wing` only on his word at the boot or a `summon wings: <which>` first-act in the CST, at the first possible point; fresh unless he says fork, a fork before the boot reads anything, and the boot runs on.
 
 ## 1. healthcheck — the digest, not a ritual
 the SessionStart hook printed `=== clio boot digest · <time> ===` at the top of this context (its sections are the script's). **one shell round at most:**
@@ -62,10 +62,10 @@ and the next ticket from it; never re-query what it already printed.
   status; busy → wait a tick, retry): a merge that races codie's tail push removes its worktree under a live push. clio merges and cleans; the monitor dies
   with the session.
 - 🖥️ **the go-test vm starts with the boot digest hook**, its first line, in the background (FRM-551); `limactl list` shows it Running before the board; a down vm only sends go tests to the mac
-- 📡 **the boot arms both watches, every time**: a project-scope plugin starts no monitors (cc docs, plugins/loading), so watch-pr and watch-ci run only when clio arms them; watch-ci is the only thing that wakes a turn on a new red, n8n's 🔴 ci watch is the record the digest reads, an n8n → mod bridge is parked (dima, 2026-10-18). the digest's `watches: N of 2 running` line counts them; arm each missing one as a one-shot background watch: Bash `run_in_background`, `~/frame/_clio/.claude/hooks/watch-once.sh ~/frame/_clio/.claude/hooks/watch-<pr|ci>.sh # deadline: 6 h inside the wrapper` — it ends on the first event line, so only a real event wakes a turn; after handling it, re-arm once, silently, and a no-event end is never a reply to dima. say so on the board. without watch-pr a cloud report branch lands in silence, and silence reads as «still running».
+- 📡 **the boot arms both watches, every time**: a project-scope plugin starts no monitors (cc docs, plugins/loading), so watch-pr and watch-ci run only when clio arms them; watch-ci is the only thing that wakes a turn on a new red, n8n's 🔴 ci watch is the record the digest reads, an n8n → mod bridge is parked. the digest's `watches: N of 2 running` line counts them; arm each missing one as a one-shot background watch: Bash `run_in_background`, `~/frame/_clio/.claude/hooks/watch-once.sh ~/frame/_clio/.claude/hooks/watch-<pr|ci>.sh # deadline: 6 h inside the wrapper` — it ends on the first event line, so only a real event wakes a turn; after handling it, re-arm once, silently, and a no-event end is never a reply to dima. say so on the board. without watch-pr a cloud report branch lands in silence, and silence reads as «still running».
 - 🦉 **crow and helga start by the surface leaf's door, from any thread; `--bg` is the fallback, said out loud** (dima, PK-363:W146–W148, W156; 2026-11-10: everyone the herdr way)
 - 🐦‍⬛ **crow lives one clio session**, in either mode (`_crow/AGENTS.md` § how it runs): dima says he opened her desktop tab → `pnpm -C ~/frame crow:keep-cache-hot`; otherwise `pnpm -C ~/frame crow:start opus --pane`; without `--pane` it is the `--bg` fallback, a session on opus 5.5 medium that writes its own 🔥 key; it refuses when one already runs, which counts as up. the halt stops a `--bg` one. a pick-up of either sidecar after dima reinits it: crow boots from `_crow/AGENTS.md` + the `x:crew-adviser` charter, helga from `x:crew-helga`.
-- 🐙 every upstream change the digest prints (a gh watch line, a changedetector watch changed since last viewed) is read during the boot — the new comments or the release notes — and the board carries one line each: what moved and whether it touches us, or «nothing that touches us», plus a proposed borrow for each that touches us, an orbit ask when it costs work (dima, 2026-10-23; 2026-10-16: «did you read them during the boot?»); a watch closed upstream, or whose fix ships in every cc we run (the desktop's bundled one included), dies here with `pnpm -C ~/frame x-changedetector:watch-remove <url>`, named on the board (dima, 2026-10-20)
+- 🐙 every upstream change the digest prints (a gh watch line, a changedetector watch changed since last viewed) is read during the boot — the new comments or the release notes — and the board carries one line each: what moved and whether it touches us, or «nothing that touches us», plus a proposed borrow for each that touches us, an orbit ask when it costs work (dima, 2026-10-23; 2026-10-16: «did you read them during the boot?»); a watch closed upstream, or whose fix ships in every cc we run (the desktop's bundled one included), dies here with `pnpm -C ~/frame x-changedetector:watch-remove <url>`, named on the board
 - 🧬 a «🧬 evergreen turn» line in the digest → load `clio:evergreen` now and run its § the day: its read starts beside the boot, and the board's item 1 is the evergreen turn. any other day, open renovate PRs get one board line (count, oldest, a red one named).
 - 📏 a Monday or Tuesday boot, or a memory pass he asks for → read [weekly](references/weekly.md) and run its line
 
@@ -99,7 +99,7 @@ reviews from wishkeeper and crow, only then print a plan»; the boot is the sess
   the worst outcome. its brief also asks three checks: every CST first-act sits in the board's plan; every question of his is
   answered on the board, never only routed to a pocket item; the board carries the stuck reminders and the
   roadmap line; a «🧬 evergreen turn» in the digest is the plan's item 1
-- both reviews run in the background (cc 2.1.302: a desktop main-thread subagent always does), so neither holds the turn:
+- both reviews run in the background, so neither holds the turn:
   beside the wishkeeper call, a Bash `run_in_background` wait on crow's notes file —
   `for i in $(seq 1 60); do [ "$(wc -l < ~/.local/state/crow/notes.jsonl)" -gt <count before the write> ] && exit 0; sleep 5; done; echo silent # deadline: 300 s`
   — then end the turn with no text; the two completion notices wake it, crow's note drains in as a peer message, and «silent» puts «crow silent» on the board
@@ -112,7 +112,8 @@ the board, one message, short lines, **no queries here — pure assembly**:
 - 📝 `flawlog: <path>` — the day's file from step 7, opened BEFORE the board is assembled; the line prints only once the file exists, so a skipped step 7 shows as a missing line
 - ⏰📌 stuck and due ⏰ reminders, own line each (omit if none)
 - inbox status · handoffs pending · pocket depth + top item
-- 🧭 the prefetch's roadmap board, copied as it prints (dima's template, 2026-10-25), plus `🧾 status drift fixed: <from → to>` when this turn fixed one; a step named in plain words, never a bare number (dima, 2026-10-23)
+- 🐕 what a stray could take today (`stray fit` tickets, the stray queue, a stray handoff), or «nothing for a stray»
+- 🧭 the prefetch's roadmap board, copied as it prints (dima's template, 2026-10-25), plus `🧾 status drift fixed: <from → to>` when this turn fixed one; a step named in plain words, never a bare number
 - 📋 the proposed processing order — a numbered session plan, one line per item, with a
   `🌤️ siesta` line placed where a topic boundary earns one (only when it helps; dima,
   2026-09-11: «keep this habit») — the pocket's order (`backlog task list --plain --sort ordinal`), then the main lane's open linear tickets, top milestone first, lanes marked, sub-batches labeled;
