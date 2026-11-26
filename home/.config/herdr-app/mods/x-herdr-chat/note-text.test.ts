@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import {
     HEAD_BACK,
+    LINE_QUOTE_CUT,
     QUOTE_CUT,
     SENTENCE_CUT,
     headOf,
@@ -45,11 +46,12 @@ describe('the line a thread gets', () => {
         );
     });
 
-    test('a 300-character passage over two blocks: at most 80 characters, ending at a word, and no word outside it', () => {
-        const parts = ['alpha beta '.repeat(5), 'gamma delta '.repeat(20)];
+    test('a 400-character passage over two blocks: at most 160 characters, ending at a word, and no word outside it', () => {
+        const parts = ['alpha beta '.repeat(5), 'gamma delta '.repeat(30)];
         const [, quote = ''] = /^dima on "(.*)" \(/.exec(line({ parts })) ?? [];
         expect(quote.endsWith('…')).toBe(true);
-        expect(quote.length).toBeLessThanOrEqual(QUOTE_CUT + 1);
+        expect(quote.length).toBeGreaterThan(QUOTE_CUT);
+        expect(quote.length).toBeLessThanOrEqual(LINE_QUOTE_CUT + 1);
         expect(quote).toContain('beta … gamma');
         expect(new Set(quote.match(/\w+/g))).toEqual(
             new Set(['alpha', 'beta', 'gamma', 'delta']),
@@ -84,6 +86,31 @@ describe('what stands around the words', () => {
             'none when the words are the whole sentence',
             at('One. Two.', 'Two.'),
             null,
+        ],
+        // the 🔎's round 1 on 574c7f3c: what he reads, never the markdown
+        [
+            'a link reads as its words, code and bold without their marks',
+            {
+                ...at(
+                    'We read [`/a/b.ts`](path:0) before the **big** merge.',
+                    'before',
+                ),
+            },
+            'We read /a/b.ts before the big merge.',
+        ],
+        [
+            'none for a whole bold sentence he selected',
+            {
+                range: { end: 10, start: 0 },
+                source: '**Do it.**',
+                words: 'Do it.',
+            },
+            null,
+        ],
+        [
+            'an abbreviation ends no sentence',
+            at('Use a tool, e.g. the retry, here.', 'retry'),
+            'Use a tool, e.g. the retry, here.',
         ],
         [
             'none with no range',

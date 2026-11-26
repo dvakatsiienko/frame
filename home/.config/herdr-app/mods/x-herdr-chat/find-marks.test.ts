@@ -231,6 +231,9 @@ test('words selected in a text view keep its markdown as drawn, painted still; t
     held.delete('new');
     expect(draw()).toEqual(['one [viewer](note:n)', [[5, 11]]]);
     expect(view.bodyLook(rows[2] as never, t, 'p')).not.toBe(look);
+    // words selected where a note's link already stands keep that link: dropping it rewrites the markdown too (the 🔎's P1)
+    held.set('new', [0]);
+    expect(draw()).toEqual(['one [viewer](note:n)', [[5, 11]]]);
 });
 
 test('his notes’ words are painted under find’s hits, the stepped one last, and stay once find shuts', () => {
@@ -284,7 +287,9 @@ test('his notes’ words are painted under find’s hits, the stepped one last, 
 
 test('the list draws a note’s row under its message', () => {
     const { notes, view } = createRows();
-    notes.set('new', [{ id: 'n1', state: 'joined', text: 'why?' }]);
+    notes.set('new', [
+        { id: 'n1', passage: { parts: [] }, state: 'joined', text: 'why?' },
+    ]);
     const ids = view.shown(rows, { tools: 'show' } as never).map((r) => r.id);
     expect(ids.slice(-2)).toEqual(['new', 'new#note-n1']);
 });

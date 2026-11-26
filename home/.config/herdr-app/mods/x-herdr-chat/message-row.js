@@ -65,6 +65,8 @@ export function createMessageRows(deps) {
     const toolFolds = createToolFolds();
     /** the long replies he opened with Show more, by row id @type {Set<string>} */
     const openReplies = new Set();
+    /** each text view's markdown as last drawn, `<row id>#<block>`, kept while words stand selected in it @type {Map<string, { source: string, linked: ReturnType<typeof linkNotes> }>} */
+    const drawnLinks = new Map();
     /** the rows of the turn he reads now, which never fold @type {Set<string>} */
     let currentTurn = new Set();
 
@@ -314,19 +316,27 @@ export function createMessageRows(deps) {
 
     /** a text view's markdown with his notes' words as links that open them (FRM-585 B5) @param {Row} row @param {number} block @param {string} source */
     function linkedOf(row, block, source) {
-        // words selected in it keep its markdown as drawn: the links come at his next press, which lets them go anyway
+        const key = `${row.id}#${block}`;
+        const drawn = drawnLinks.get(key);
+        // words selected in it keep its markdown as last drawn, links and all: herdr reads a rewritten one as a new
+        // text and lets them go; the links come after his next press (FRM-585:W77, the 🔎's round 1 P1)
         if (deps.heldIn(row.id).includes(block))
-            return {
-                at: (/** @type {number} */ n) => n,
-                back: (/** @type {{ start: number, end: number }} */ r) => r,
-                source,
-            };
+            return drawn?.source === source
+                ? drawn.linked
+                : {
+                      at: (/** @type {number} */ n) => n,
+                      back: (/** @type {{ start: number, end: number }} */ r) =>
+                          r,
+                      source,
+                  };
         // in the order he made them, so of two on the same words the newer is the link
         const made = deps.notesOn(row).map((n) => n.id);
         const marks = marksIn(row, block, source).sort(
             (a, b) => made.indexOf(a.id) - made.indexOf(b.id),
         );
-        return linkNotes(source, marks);
+        const linked = linkNotes(source, marks);
+        drawnLinks.set(key, { linked, source });
+        return linked;
     }
 
     /**
@@ -636,6 +646,7 @@ export function createMessageRows(deps) {
         /** the old thread's opened replies, files and tool calls: none of them belongs to the next */
         clearThread() {
             openReplies.clear();
+            drawnLinks.clear();
             fileRows.clear();
             toolFolds.clear();
         },
@@ -698,7 +709,12 @@ export function createMessageRows(deps) {
                         .flatMap(asNote),
                     home(),
                     fileRows,
-                    (row) => noteRows(row, deps.notesOn(row)),
+                    (row) => {
+                        const marked = new Set(marksOf(row).map((m) => m.id));
+                        return noteRows(row, deps.notesOn(row), (n) =>
+                            marked.has(n.id),
+                        );
+                    },
                 ),
                 toolFolds,
             ),

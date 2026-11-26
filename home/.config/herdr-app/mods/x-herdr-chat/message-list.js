@@ -64,6 +64,9 @@ export const placeKey = (file) => `place:${file}`;
  * @property {(queued: string, cx: Context) => void} unsend a waiting message's ×: back out of Claude Code's queue
  */
 
+// how long after his press ends a let-go text view draws its note links again
+const RELINK_MS = 60;
+
 /** @param {MessageListDeps} deps */
 export function createMessageList(deps) {
     const scroll = VirtualListScrollHandle.new();
@@ -73,6 +76,21 @@ export function createMessageList(deps) {
     const messageMenu = createMessageMenu();
     /** the words he selected, which the menu copies (FRM-699) */
     const selections = createSelections();
+    /**
+     * text views whose words he let go, `<row id>#<block>`: they keep their markdown until his press ends, or a redraw
+     * mid-drag rewrites it and herdr drops the words he is selecting (FRM-585:W78, W79 by the trace)
+     * @type {Set<string>}
+     */
+    const letGo = new Set();
+    /** @param {string} id */
+    const frozenIn = (id) => [
+        ...new Set([
+            ...selections.heldIn(id),
+            ...[...letGo]
+                .filter((k) => k.startsWith(`${id}#`))
+                .map((k) => Number(k.slice(id.length + 1))),
+        ]),
+    ];
     const bodies = createMessageBodies();
     let isSyncing = false;
     /** the list's corner in the window, read off a press in it, for herdr reports a selection in window px @type {{ x: number, y: number } | null} */
@@ -267,102 +285,113 @@ export function createMessageList(deps) {
                     deps.openNote(press.id, pressedAt, cx);
             })
             .size_full();
-        return div()
-            .id('chat-list')
-            .on_mouse_down('left', (event, cx) => {
-                readOrigin(event);
-                const local = event.local_position;
-                pressedAt = local
-                    ? { x: local.x / zoom, y: local.y / zoom }
-                    : null;
-                pressed = pressing;
-                pressing = null;
-                cx.stop_propagation();
-            })
-            .on_mouse_down('right', (event, cx) => {
-                readOrigin(event);
-                const local = event.local_position ?? { x: 0, y: 0 };
-                messageMenu.open(event.position, {
-                    x: local.x / zoom,
-                    y: local.y / zoom,
-                });
-                cx.notify();
-            })
-            .relative()
-            .flex_1()
-            .min_h(0)
-            .overflow_hidden()
-            .opacity(isSettling ? 0 : 1)
-            .on_size_change((size, cx) => {
-                const drawnWidth = size.width / zoom;
-                const height = size.height / zoom;
-                // told again with nothing changed: the chat was off the screen, where herdr drops every selection unsaid
-                if (Math.abs(drawnWidth - width) <= 1 && height === viewH) {
-                    drawnKeys = [];
-                    keepDrawn();
-                }
-                if (Math.abs(drawnWidth - width) > 1) {
-                    width = drawnWidth;
-                    widthGen += 1;
-                    readPlace();
-                    deps.heights.clear();
-                    // every height is guessed again: his place is brought back as the real ones arrive
-                    holdPlace();
-                }
-                viewH = height;
-                cx.notify();
-            })
-            .on_scroll_wheel((event, cx) => {
-                keepDrawn();
-                syncBodies(cx);
-                if (messageMenu.state) {
-                    messageMenu.close();
+        return (
+            div()
+                .id('chat-list')
+                // a press ended: words let go draw their note links, a beat later, after herdr told a drag's new words; a
+                // view holding new words keeps its markdown still
+                .on_window_mouse_up('left', (_event, cx) => {
+                    if (!letGo.size) return;
+                    cx.timer.after(RELINK_MS, (later) => {
+                        letGo.clear();
+                        later.notify();
+                    });
+                })
+                .on_mouse_down('left', (event, cx) => {
+                    readOrigin(event);
+                    const local = event.local_position;
+                    pressedAt = local
+                        ? { x: local.x / zoom, y: local.y / zoom }
+                        : null;
+                    pressed = pressing;
+                    pressing = null;
+                    cx.stop_propagation();
+                })
+                .on_mouse_down('right', (event, cx) => {
+                    readOrigin(event);
+                    const local = event.local_position ?? { x: 0, y: 0 };
+                    messageMenu.open(event.position, {
+                        x: local.x / zoom,
+                        y: local.y / zoom,
+                    });
                     cx.notify();
-                }
-                const step = at.wheel(
-                    (event.delta?.y ?? 0) / zoom,
-                    shownRows,
-                    sizes,
-                    viewH,
-                    Date.now(),
-                );
-                watchEnd(cx, END_GLIDE_MS);
-                if (step.isIgnored) return;
-                savePlaceSoon(cx);
-                // within a screen of the first row: the next older page, one at a time
-                // a step up in a thread that fits the view too, which follows the newest all the while
-                const isUp = (event.delta?.y ?? 0) > 0;
-                if ((isUp || !at.follow) && at.top < viewH)
-                    deps.loadEarlier(cx);
-                if (step.hadCut || step.isFollowChanged) cx.notify();
-            })
-            .child(list)
-            .child(measurer(booked, t, `m${widthGen}-`, plan.measured))
-            .when(Boolean(messageMenu.state), (el) =>
-                el.child(messageMenuView(t)),
-            )
-            .children([deps.noteBox(t)].filter(Boolean))
-            .when(isNewestShown, (el) =>
-                el.child(
-                    div()
-                        .id('chat-newest')
-                        .absolute()
-                        .bottom(12)
-                        .right(16)
-                        .px(9)
-                        .py(3)
-                        .rounded(10)
-                        .bg(t.raised)
-                        .text_color(t.muted)
-                        .tooltip('Go to the newest')
-                        .child(ICONS.newest)
-                        .on_click((_event, cx) => {
-                            at.newest();
-                            forgetPlace();
-                            cx.notify();
-                        }),
-                ),
-            );
+                })
+                .relative()
+                .flex_1()
+                .min_h(0)
+                .overflow_hidden()
+                .opacity(isSettling ? 0 : 1)
+                .on_size_change((size, cx) => {
+                    const drawnWidth = size.width / zoom;
+                    const height = size.height / zoom;
+                    // told again with nothing changed: the chat was off the screen, where herdr drops every selection unsaid
+                    if (Math.abs(drawnWidth - width) <= 1 && height === viewH) {
+                        drawnKeys = [];
+                        keepDrawn();
+                    }
+                    if (Math.abs(drawnWidth - width) > 1) {
+                        width = drawnWidth;
+                        widthGen += 1;
+                        readPlace();
+                        deps.heights.clear();
+                        // every height is guessed again: his place is brought back as the real ones arrive
+                        holdPlace();
+                    }
+                    viewH = height;
+                    cx.notify();
+                })
+                .on_scroll_wheel((event, cx) => {
+                    keepDrawn();
+                    syncBodies(cx);
+                    if (messageMenu.state) {
+                        messageMenu.close();
+                        cx.notify();
+                    }
+                    const step = at.wheel(
+                        (event.delta?.y ?? 0) / zoom,
+                        shownRows,
+                        sizes,
+                        viewH,
+                        Date.now(),
+                    );
+                    watchEnd(cx, END_GLIDE_MS);
+                    if (step.isIgnored) return;
+                    savePlaceSoon(cx);
+                    // within a screen of the first row: the next older page, one at a time
+                    // a step up in a thread that fits the view too, which follows the newest all the while
+                    const isUp = (event.delta?.y ?? 0) > 0;
+                    if ((isUp || !at.follow) && at.top < viewH)
+                        deps.loadEarlier(cx);
+                    if (step.hadCut || step.isFollowChanged) cx.notify();
+                })
+                .child(list)
+                .child(measurer(booked, t, `m${widthGen}-`, plan.measured))
+                .when(Boolean(messageMenu.state), (el) =>
+                    el.child(messageMenuView(t)),
+                )
+                .children([deps.noteBox(t)].filter(Boolean))
+                .when(isNewestShown, (el) =>
+                    el.child(
+                        div()
+                            .id('chat-newest')
+                            .absolute()
+                            .bottom(12)
+                            .right(16)
+                            .px(9)
+                            .py(3)
+                            .rounded(10)
+                            .bg(t.raised)
+                            .text_color(t.muted)
+                            .tooltip('Go to the newest')
+                            .child(ICONS.newest)
+                            .on_click((_event, cx) => {
+                                at.newest();
+                                forgetPlace();
+                                cx.notify();
+                            }),
+                    ),
+                )
+        );
     }
 
     /**
@@ -397,9 +426,8 @@ export function createMessageList(deps) {
     function isDrawnNow(row, pre, stamp, parts) {
         if (deps.rows.stampOf(row, pre) === stamp) return true;
         const sources = drawnBlocks(row);
-        return parts.every((p) =>
-            (sources[p.block] ?? '').startsWith(p.source),
-        );
+        // a reply that grew is drawn anew and loses his words (herdr/ftr/chat.md, Copy text)
+        return parts.every((p) => sources[p.block] === p.source);
     }
 
     /**
@@ -485,8 +513,8 @@ export function createMessageList(deps) {
                             words: part?.words.length ?? null,
                         });
                         selections.report(key, stamp, block, part, Date.now());
-                        // words let go: its note links come back; a redraw now drops no selection
-                        if (isHeld && !part) cx.notify();
+                        // words let go: its note links come back once his press ends
+                        if (isHeld && !part) letGo.add(`${row.id}#${block}`);
                     },
                 });
             }
@@ -705,7 +733,7 @@ export function createMessageList(deps) {
     return {
         column,
         /** @param {string} id */
-        heldIn: (id) => selections.heldIn(id),
+        heldIn: frozenIn,
         /** a restored place lands unseen: its frames would show him other rows first @param {string} id @param {number} offset */
         land(id, offset) {
             at.restore(id, offset);

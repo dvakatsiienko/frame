@@ -30,9 +30,9 @@ const WIDTH = 420;
 const GAP = 12;
 // the box before its height was ever measured
 const FIRST_HEIGHT = 130;
-// a held F6 repeats: this mac's first repeat comes 150 ms after the press, the next every 15 ms. one sooner than the
-// first repeat is a second press of his, so a fast F6 F6 shuts the box it opened; one faster than a hand is a repeat
-// seen early
+// a held F6 repeats: this mac's first repeat comes 150 ms after the press, the next every 15 ms. one faster than a hand
+// is a repeat; one at the first repeat's moment waits a hand's gap to see whether a stream follows, so his own presses
+// as fast as he likes keep toggling it (dima, 26 Nov 16:10: «make it work even if i press f6 very very fast»)
 const F6_REPEAT_MS = 200;
 const F6_FIRST_REPEAT_MS = 140;
 const F6_HAND_MS = 50;
@@ -98,6 +98,8 @@ export function createQuillMini(deps) {
     let typed = 0;
     let lastF6 = Number.NEGATIVE_INFINITY;
     let isF6Held = false;
+    /** a press at the first repeat's moment, acted on once no repeat follows @type {{ cancel: () => void } | null} */
+    let pendingF6 = null;
     /** reduce motion is on in macOS: still until it is read */
     let isReduced = true;
     /** @type {ReturnType<typeof createMiniMotion<{ note: Note, at: Point | null, height: number }>>} */
@@ -196,13 +198,24 @@ export function createQuillMini(deps) {
     function toggle(selected, at, cx) {
         const gap = at - lastF6;
         lastF6 = at;
-        isF6Held =
-            gap < F6_REPEAT_MS &&
-            (isF6Held || gap >= F6_FIRST_REPEAT_MS || gap < F6_HAND_MS);
-        if (isF6Held) return;
-        if (open) return close(cx);
-        const now = selected();
-        if (now) show(now, cx);
+        if (gap < F6_HAND_MS || (isF6Held && gap < F6_REPEAT_MS)) {
+            isF6Held = true;
+            pendingF6?.cancel();
+            pendingF6 = null;
+            return;
+        }
+        isF6Held = false;
+        /** @param {Context} cx */
+        const act = (cx) => {
+            if (open) return close(cx);
+            const now = selected();
+            if (now) show(now, cx);
+        };
+        if (gap < F6_FIRST_REPEAT_MS || gap >= F6_REPEAT_MS) return act(cx);
+        pendingF6 = cx.timer.after(F6_HAND_MS, (later) => {
+            pendingF6 = null;
+            act(later);
+        });
     }
 
     /** why a press did nothing: in the box, or in the chat once it is shut or on another note @param {string | null} words @param {{ thread: string, id: string }} at @param {Context} cx */

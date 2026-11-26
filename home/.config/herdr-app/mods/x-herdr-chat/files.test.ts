@@ -259,6 +259,17 @@ describe('a message has a quiet row for each note on it (FRM-585 B2)', () => {
         ]);
     });
 
+    // the 🔎's round 1 on 574c7f3c: a waiting note whose words show no mark had no door left
+    test('one still his keeps its row while its words show no mark', () => {
+        const rows = noteRows(row('r1'), notes, (n) => n.id !== 'n6');
+        expect(rows.map((r) => noteIdOf(r.id))).toEqual([
+            'n1',
+            'n2',
+            'n4',
+            'n6',
+        ]);
+    });
+
     test('how many stand before a row', () => {
         expect([
             notesBefore(drawn(), 'r1'),

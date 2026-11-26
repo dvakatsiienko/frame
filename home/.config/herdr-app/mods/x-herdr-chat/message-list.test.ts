@@ -470,6 +470,10 @@ function createWindow(
                 cx,
             );
         },
+        /** his left press ends anywhere in the window */
+        leftUp() {
+            fire(root, 'on_window_mouse_up', {}, cx);
+        },
         /** the right-click menu's items after his right press on a message, and a press on one */
         menu(id: string, y = id.length + Number(id.slice(1))) {
             const position = { x: 1, y };
@@ -717,10 +721,17 @@ test('a settled selection asks the chat for no draw, which would drop it', () =>
         w.cx as never,
     );
     expect(w.isDirty()).toBe(false);
-    // let go, the text view's note links come back in one draw (FRM-585:W77)
+    // let go, the text view keeps its markdown until his press ends, then its note links come back in one draw: a draw
+    // mid-drag drops the words he is selecting (FRM-585:W77, W78)
     expect(w.heldIn('r1')).toEqual([0]);
     (w.bodies.reports.get('r1') as Handler)(null as never, w.cx as never);
-    expect([w.heldIn('r1'), w.isDirty()]).toEqual([[], true]);
+    w.run(200);
+    expect([w.heldIn('r1'), w.isDirty()]).toEqual([[0], false]);
+    w.leftUp();
+    w.run(30);
+    expect(w.heldIn('r1')).toEqual([0]);
+    w.run(100);
+    expect(w.heldIn('r1')).toEqual([]);
 });
 
 test('a click opens the square he pressed, and the first when he pressed beside them', () => {
@@ -1018,7 +1029,8 @@ describe('the words a note is written on', () => {
         expect(w.selectedAt(Date.now())?.passage.parts[0]?.words).toBe(
             'two words',
         );
-        w.version(first, 'other words');
+        // grown, it is drawn anew and his words are gone
+        w.version(first, 'the written source, grown');
         w.run(40);
         expect(w.selectedAt(Date.now())).toBeNull();
     });

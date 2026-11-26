@@ -19,12 +19,16 @@ const isOnItsWay = (note) =>
 export const noteIdOf = (id) => NOTE_ROW.exec(id)?.[1] ?? null;
 
 /**
- * the rows of a message's notes the thread has or is getting, in the order he made them
- * @param {Row} row @param {readonly Note[]} notes @returns {Row[]}
+ * the rows of a message's notes the thread has or is getting, in the order he made them; one still his keeps its row
+ * while its words show no mark, its only door (the 🔎's round 1 on 574c7f3c)
+ * @param {Row} row @param {readonly Note[]} notes @param {(note: Note) => boolean} [isMarked] its words are painted
+ * @returns {Row[]}
  */
-export const noteRows = (row, notes) =>
+export const noteRows = (row, notes, isMarked = () => true) =>
     notes
-        .filter((note) => isOnItsWay(note) && note.text.trim())
+        .filter(
+            (note) => (isOnItsWay(note) || !isMarked(note)) && note.text.trim(),
+        )
         .map((note) => ({
             at: row.at,
             delivery: null,

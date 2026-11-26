@@ -27,6 +27,7 @@ born 2026-11-19 on dima's word (W40: «let's try the refuse and test drive it fo
 
 - date · file · lines / cap · right or wrong · minutes lost · what the codie did (split, `size:` line, asked for a raise)
 - 26 Nov · `script/lib/gate-queue.test.ts` · 1,220 / 1,200 · right: its cpu-log block and its kit were concerns of their own · 8 · split: `gate-queue-kit.ts` (the shared fixture), `gate-queue-cpu.test.ts` (the cpu log), the main file 1,021 (mods codie, FRM-689 queue rider)
+- 26 Nov · `home/.config/herdr-app/mods/x-herdr-chat/quill-mini.test.ts` · 1,223 / 1,200 · right: the placing rows are a pure function's and need none of the box's world · 6 · split: `quill-mini-place.test.ts` (miniPlace's rows), a W68 row folded into its sibling, the main file 1,196 (herdr codie, FRM-585 fix round)
 
 ## rounds
 

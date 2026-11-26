@@ -6,15 +6,35 @@ import { clockOf } from './relay.js';
 
 /** @typedef {import('./row-model.js').Row} Row */
 
-// a quote in the line ends here, at a word
+// a quote drawn in the chat ends here, at a word
 export const QUOTE_CUT = 80;
+// the words in the line a thread gets end here: it reads which words he meant whole (clio's probe of W72, 26 Nov 16:10)
+export const LINE_QUOTE_CUT = 160;
 // the sentence around the words, cut to about this many characters around them
 export const SENTENCE_CUT = 160;
 // a message this many replies back is named by its first words too
 export const HEAD_BACK = 20;
 const HEAD_WORDS = 8;
-// where a sentence ends: its stop, or a line break
-const SENTENCE_END = /[.!?](?=\s|$)|\n/g;
+// where a sentence ends: a stop before a capital or the end, or a line break; «e.g. a» goes on
+const SENTENCE_END = /[.!?](?=\s+\p{Lu}|\s*$)|\n/gu;
+// markdown he never reads: a link's address, code ticks, emphasis marks
+const MARKUP = [
+    [/!?\[([^\]\n]*)\]\([^)\n]*\)/g, '$1'],
+    [/`+/g, ''],
+    [/\*\*|__|~~/g, ''],
+    [/(^|[^\p{L}\p{N}])[*_](?=\S)|(?<=\S)[*_](?=[^\p{L}\p{N}]|$)/gu, '$1'],
+];
+
+/** markdown as he reads it @param {string} text */
+const plainOf = (text) =>
+    MARKUP.reduce(
+        (out, [pattern, to]) =>
+            out.replace(
+                /** @type {RegExp} */ (pattern),
+                /** @type {string} */ (to),
+            ),
+        text,
+    );
 
 /** the words he selected as one line, one part a text view @param {readonly string[]} parts */
 const oneLine = (parts) =>
@@ -23,14 +43,14 @@ const oneLine = (parts) =>
         .filter(Boolean)
         .join(' … ');
 
-/** the quote as the thread gets it @param {readonly string[]} parts the words as drawn, by text view */
-export function quoteOf(parts) {
+/** the quote, cut at a word @param {readonly string[]} parts the words as drawn, by text view @param {number} [most] */
+export function quoteOf(parts, most = QUOTE_CUT) {
     const words = oneLine(parts);
-    if (words.length <= QUOTE_CUT) return words;
-    const cut = words.slice(0, QUOTE_CUT + 1);
+    if (words.length <= most) return words;
+    const cut = words.slice(0, most + 1);
     const end = cut.lastIndexOf(' ');
     // one word longer than the cut is cut inside, never between the two halves of one character
-    const kept = end > 0 ? cut.slice(0, end) : cut.slice(0, QUOTE_CUT);
+    const kept = end > 0 ? cut.slice(0, end) : cut.slice(0, most);
     return `${kept.replace(/[\uD800-\uDBFF]$/, '').replace(/ …$/, '')}…`;
 }
 
@@ -53,9 +73,11 @@ export function sentenceOf({ source, range, words }) {
             break;
         }
     }
-    const one = (/** @type {string} */ text) => text.replace(/\s+/g, ' ');
+    // the sentence as he reads it: its markdown gone, his words as drawn
+    const one = (/** @type {string} */ text) =>
+        plainOf(text).replace(/\s+/g, ' ');
     const before = one(source.slice(from, range.start)).trimStart();
-    const middle = one(source.slice(range.start, range.end));
+    const middle = words.replace(/\s+/g, ' ');
     const after = one(source.slice(range.end, to)).trimEnd();
     const room = SENTENCE_CUT - middle.length;
     // words that long are cut in the quote already: no room for what is around them
@@ -116,5 +138,5 @@ export function noteLine({ parts, sentence = null, row, back, text }) {
         .join(' ');
     const far = back >= HEAD_BACK && row.head ? `, «${row.head}»` : '';
     const inSentence = sentence ? ` in "${sentence}"` : '';
-    return `dima on "${quoteOf(parts)}"${inSentence} (${which}${back ? `, ${back} back` : ''}${far}): ${text.trim()}`;
+    return `dima on "${quoteOf(parts, LINE_QUOTE_CUT)}"${inSentence} (${which}${back ? `, ${back} back` : ''}${far}): ${text.trim()}`;
 }

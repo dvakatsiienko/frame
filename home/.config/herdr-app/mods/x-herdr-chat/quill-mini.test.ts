@@ -95,7 +95,7 @@ vi.mock('gpui-base', () => ({
     h_flex: make,
     v_flex: make,
 }));
-const { createQuillMini, miniPlace } = await import('./quill-mini.js');
+const { createQuillMini } = await import('./quill-mini.js');
 const { JOIN_TAKE_MS } = await import('./joins.js');
 const { createNotes } = await import('./notes.js');
 const herdr = await import('herdr');
@@ -360,8 +360,24 @@ describe('the box comes and goes (FRM-585 C2)', () => {
         w.f6();
         for (const later of [150, 15, 15, 15])
             w.f6(selected('some words'), later);
+        w.run();
         expect(w.mini.isOpen()).toBe(true);
     });
+
+    // dima, 26 Nov 16:10: «make it work even if i press f6 very very fast»
+    test.each([100, 150, 180])(
+        'his own presses %i ms apart toggle it every time',
+        async (ms) => {
+            const w = await moving();
+            const states: boolean[] = [];
+            for (let i = 0; i < 4; i++) {
+                w.f6(selected('some words'), i === 0 ? 1000 : ms);
+                w.run();
+                states.push(w.mini.isOpen());
+            }
+            expect(states).toEqual([true, false, true, false]);
+        },
+    );
 
     test('shut once shown, it fades out where it stood, nothing on it pressable, then is gone', async () => {
         const w = await moving();
@@ -410,6 +426,11 @@ describe('F6 (FRM-585 A4)', () => {
             null,
             null,
         ]);
+        // one he shut never comes back (dima, 26 Nov 15:00, FRM-585:W68)
+        w.f6();
+        w.f6();
+        w.f6(null);
+        expect(w.mini.isOpen()).toBe(false);
     });
 
     test('with the box open it shuts, the keyboard to the quill, the draft kept and back at the next', () => {
@@ -1171,27 +1192,5 @@ describe('a note that moved by itself (A2)', () => {
         w.mini.reset();
         w.mini.noteChanged(w.cx as never);
         expect(w.said.quill).toBe(0);
-    });
-});
-
-describe('where it sits', () => {
-    const view = { h: 600, w: 800 };
-    const size = { h: 130, w: 420 };
-    test.each([
-        ['under the words’ end', { x: 40, y: 100 }, { x: 40, y: 112 }],
-        ['over it near the bottom', { x: 40, y: 560 }, { x: 40, y: 418 }],
-        ['left of the right edge', { x: 790, y: 100 }, { x: 368, y: 112 }],
-        ['inside on the left', { x: -30, y: 100 }, { x: 0, y: 112 }],
-        ['inside at the top', { x: 40, y: -90 }, { x: 40, y: 0 }],
-        ['at the bottom middle with no place', null, { x: 190, y: 458 }],
-    ])('%s', (_where, end, place) => {
-        expect(miniPlace(end, view, size)).toEqual(place);
-    });
-
-    test('in a list too small for it, at its corner', () => {
-        expect(miniPlace({ x: 10, y: 10 }, { h: 100, w: 300 }, size)).toEqual({
-            x: 0,
-            y: 0,
-        });
     });
 });
