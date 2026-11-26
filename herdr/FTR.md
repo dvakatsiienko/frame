@@ -16,5 +16,5 @@ claims: `home/.config/herdr-app/mods/`
 - [sidebar — antenna](ftr/antenna.md) — 7 features
 - [threads — tabs](ftr/tabs.md) — 9 features
 - [tray — quick terminal](ftr/tray.md) — 1 feature
-- [chat view — x-herdr-chat](ftr/chat.md) — 52 features
+- [chat view — x-herdr-chat](ftr/chat.md) — 53 features
 - [scripts](ftr/scripts.md) — 3 features

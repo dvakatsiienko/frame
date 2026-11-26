@@ -10,6 +10,7 @@ import {
     takeOutJoin,
 } from './joins.js';
 import {
+    contentOf,
     isBehind,
     isInFile,
     isLocked,
@@ -37,6 +38,11 @@ const JOINED_FIRST = 'It joined the turn first';
 const HELD = 'Its file was held, try again';
 // his keys are down until they rest this long: the box writes the row itself then, a settle never under them
 const TYPING_MS = 1000;
+
+/** a note with nothing to say: no words and no thumb @param {Note} note */
+const isEmpty = (note) => !note.text.trim() && !note.grade;
+/** an empty draft is drawn while its box is open, and leaves no record @param {Note} note */
+const isEmptyDraft = (note) => note.state === 'draft' && isEmpty(note);
 
 /** what the thread's row of a line holds; the reader takes the stash's «»\n«» between two for the next one's start @param {string} line */
 const drawnOf = (line) => joinedWords(line.split('»\n«')[0] ?? '');
@@ -95,8 +101,7 @@ export function createNotes({
     /** @param {string} thread @param {Note[]} notes */
     function keep(thread, notes) {
         threads.set(thread, notes);
-        // an empty draft is drawn while its box is open, and leaves no record
-        const kept = notes.filter((n) => n.state !== 'draft' || n.text.trim());
+        const kept = notes.filter((n) => !isEmptyDraft(n));
         try {
             if (kept.length)
                 store.setItem(NOTES + thread, JSON.stringify(kept));
@@ -283,12 +288,15 @@ export function createNotes({
             }
             return isChanged;
         },
+        /** his thumb on a note: the lit one again is none; a waiting note's row takes it as `write` runs @param {string} thread @param {string} id @param {import('./note-states.js').Grade} grade @returns {boolean} whether the note changed */
+        graded: (thread, id, grade) =>
+            tell(thread, id, { grade, type: 'graded' }),
         /** its row has not his last words, and would not take them @param {string} id */
         isRefused: (id) => refused.has(id),
         /** @param {string} thread @param {string} id @param {number} back @returns {Promise<string | null>} why it did not join, null when it did */
         join(thread, id, back) {
             const note = find(thread, id);
-            if (note?.state !== 'draft' || !note.text.trim())
+            if (note?.state !== 'draft' || isEmpty(note))
                 return Promise.resolve(null);
             if (joinsOf(thread) === null) return Promise.resolve(JOINS_OFF);
             const joinId = newId();
@@ -372,7 +380,7 @@ export function createNotes({
         release(thread, id, back) {
             return after(id, async () => {
                 const note = find(thread, id);
-                if (!note?.text.trim()) return { reason: null };
+                if (!note || isEmpty(note)) return { reason: null };
                 if (isLocked(note)) {
                     const isOwn = isInFile(note) || note.state === 'joined';
                     return { reason: isOwn ? JOINED_FIRST : null };
@@ -449,9 +457,7 @@ export function createNotes({
         /** an empty draft leaves, its box closed @param {string} thread */
         tidy(thread) {
             const had = notesOf(thread);
-            const kept = had.filter(
-                (n) => n.state !== 'draft' || n.text.trim(),
-            );
+            const kept = had.filter((n) => !isEmptyDraft(n));
             if (kept.length !== had.length) keep(thread, kept);
         },
         /** he typed in its box: the note keeps the words at once, `write` takes them to a waiting note's row @param {string} thread @param {string} id @param {string} text @returns {boolean} whether the note took them */
@@ -459,6 +465,9 @@ export function createNotes({
             typedAt.set(id, io.now());
             return tell(thread, id, { text, type: 'typed' });
         },
+        /** @param {string} thread @param {string} id @param {boolean} isWhole @returns {boolean} whether the note changed */
+        wholeSet: (thread, id, isWhole) =>
+            tell(thread, id, { isWhole, type: 'wholeSet' }),
         write,
     };
 
@@ -473,12 +482,12 @@ export function createNotes({
                 return note?.state === 'draft';
             refused.delete(id);
             if (!isBehind(note)) return true;
-            if (!note.text.trim()) {
+            if (isEmpty(note)) {
                 const reason = await takeRowBack(thread, note);
                 if (reason) refused.add(id);
                 return !reason && tell(thread, id, { type: 'takenBack' });
             }
-            const { text } = note;
+            const content = contentOf(note);
             const isWritten =
                 !isTaken(thread, note) &&
                 (await retextJoin(
@@ -487,7 +496,7 @@ export function createNotes({
                     note.joinId,
                     lineOf(note),
                 ));
-            if (isWritten) tell(thread, id, { text, type: 'rewritten' });
+            if (isWritten) tell(thread, id, { ...content, type: 'rewritten' });
             else refused.add(id);
             return isWritten;
         }).catch(() => {

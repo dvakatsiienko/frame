@@ -119,6 +119,13 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and the box fades in sliding up and fades out sliding down, about 120 ms each way; a second F6 sooner than that leaves no box, and his presses toggle it however fast they come, only a held key's repeats counting as one (W81); with reduce motion on in macOS it neither moves nor fades (C2)
   - decision: F6 opens on words selected and shuts an open box, nothing more; it never brings back a note it shut (dima, 26 Nov 15:00, W68); his want, the words staying selected across the toggle, waits on herdr letting a mod set a selection
   - decision: two doors to the box, F6 and the menu; the «tell <thread>» pill beside selected words is gone — dima, 26 Nov 14:53: three doors to one box is too many (W65, W66)
+- 🧭 a 👍🏼 or 👎🏼 in the quill-mini makes the note a reply-grade, its words the why (FRM-630:W45, W58, W59)
+  - makes: one line per grade in `~/.local/state/x/herdr-notes/grades.jsonl`, for clio to fold into the comms log
+  - given the box open on words of a reply
+  - when he lights 👎🏼, types why and joins, then the thread gets «dima graded 👎🏼 "<the words>" (reply <id> <time>): <why>», a case to log, never a request; a thumb with no words joins as «no why»
+  - and one thumb is lit at a time: the other takes its place, the lit one pressed again is none, and with none the note is a plain one
+  - and «whole message» ticked grades the whole reply, the line quoting its first words
+  - and a thumb pressed on a waiting note changes its row; once a turn took it, the note shows the grade the turn got
 - ⬜ a note the thread has reads as his words, the words it is on a dim line over them (FRM-585 C3)
   - given a note that went as its own message
   - then its message shows «on "<the words>"» dim over his note, never the line the thread got; a message he typed that only reads like a note stays as typed

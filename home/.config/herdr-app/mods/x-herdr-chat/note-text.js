@@ -147,3 +147,31 @@ export function noteLine({ parts, sentence = null, row, back, text }) {
     // the sentence holds his words once, marked; with none, his words alone (clio, 16:26: printed twice was overhead)
     return `dima on "${sentence ?? quoteOf(parts, LINE_QUOTE_CUT)}" (${which}${back ? `, ${back} back` : ''}${far}): ${text.trim()}`;
 }
+
+/** a grade's thumb, as the line and the box draw it */
+export const THUMBS = /** @type {const} */ ({ bad: '👎🏼', good: '👍🏼' });
+export const NO_WHY = 'no why';
+
+/**
+ * the line a graded note joins as: a case for clio to log, never a request (FRM-630). a whole message is quoted by its
+ * first words
+ * @param {object} note
+ * @param {keyof typeof THUMBS} note.grade
+ * @param {boolean} note.isWhole
+ * @param {readonly string[]} note.parts
+ * @param {Pick<Row, 'id' | 'kind' | 'at'> & { head?: string }} note.row
+ * @param {string} note.text his why
+ */
+export function gradeLine({ grade, isWhole, parts, row, text }) {
+    const which = [
+        `${row.kind === 'mine' ? 'message' : 'reply'} ${shortId(row.id)}`,
+        clockOf(row.at),
+    ]
+        .filter(Boolean)
+        .join(' ');
+    const quote = isWhole
+        ? (row.head ?? quoteOf(parts, LINE_QUOTE_CUT))
+        : quoteOf(parts, LINE_QUOTE_CUT);
+    const whole = isWhole ? ', the whole message' : '';
+    return `dima graded ${THUMBS[grade]} "${quote}" (${which}${whole}): ${text.trim() || NO_WHY} (a case for the comms log, not a request)`;
+}
