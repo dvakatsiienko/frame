@@ -807,6 +807,25 @@ const turnOpenedBy = (opener: string, note = '') => {
 };
 const peerWake = 'Another Claude session sent a message: <cross-session-message from="x">[done]</cross-session-message>';
 
+describe('an estimate with no member read', () => {
+    it.each(['about an hour left on the lane.', '~35 min to go.', 'the lane needs 3 hours.', 'it lands by 22:10.', 'earliest tomorrow.'])('logs «%s» and hints', (reply) => {
+        expect(loggedAfter(reply, noCalls)).toContain('estimate-unread\t');
+        expect(nextPrompt()).toContain('an estimate with no member read');
+    });
+
+    it('passes an estimate in a turn a member message opened', () => {
+        expect(loggedAfter('about an hour left on the lane.', turnOpenedBy(peerWake))).toBe('');
+    });
+
+    it('passes an estimate in a turn that asked a member', () => {
+        expect(loggedAfter('about an hour left on the lane.', turnWith({ calls: [{ input: { message: 'your count?', to: 'codie' }, name: 'SendMessage' }], id: 'm1' }))).toBe('');
+    });
+
+    it('passes an estimate labelled «my guess»', () => {
+        expect(loggedAfter('my guess: about an hour left on the lane.', noCalls)).toBe('');
+    });
+});
+
 describe('a round or a proposal dima never sees (FRM-495)', () => {
     it('reminds when a round closes a turn a peer started, and stays silent in a turn dima started', () => {
         expect(stopEvent(round, turnOpenedBy(peerWake))).toBe('');

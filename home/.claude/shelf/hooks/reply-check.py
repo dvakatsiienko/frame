@@ -616,6 +616,20 @@ def no_next_item(path: str, reply: str, session: str) -> bool:
     return queue_run(session) and not opener.startswith(MEMBER_OPENERS) and is_done and not NEXT_ITEM.search(shown)
 
 
+# a time told for a lane's work («about an hour», «~35 min», «3 hours», «by 22:10», «earliest tomorrow») needs the member's own count,
+# a member message or a SendMessage asking it that turn; a «my guess» in its sentence labels it
+ESTIMATE = re.compile(r"\babout (?:an hour|\d+ ?(?:min|minutes|hours?))\b|~ ?\d+ ?(?:min|minutes|h|hours?)\b|\b\d+ hours?\b(?! ago)|\bby \d{1,2}:\d{2}\b|\bearliest (?:tomorrow|tonight)\b", re.I)
+MY_GUESS = re.compile(r"\bmy guess\b", re.I)
+
+
+def estimate_unread(path: str, reply: str) -> list[str]:
+    opener, _ = turn_opener(path)
+    if opener.startswith(MEMBER_OPENERS) or any(name == "SendMessage" for name, _ in turn_calls(path)):
+        return []
+    prose = INLINE_CODE.sub("", FENCE.sub("", reply))
+    return [m.group(0).lower() for s in sentences(prose) if not MY_GUESS.search(s) for m in [ESTIMATE.search(GUILLEMETS.sub("", s))] if m][:1]
+
+
 VERDICT_BADGED = re.compile(r"(?<!\*\*)(🌼 clean|🩹 fix|🪜 escalate)(?!\*\*)")
 BARE_CLEAN = re.compile(r"(?<![\w🌼*-])(?<!🌼 )clean\b(?!\*\*)")
 NOT_A_VERDICT = re.compile(r"\b(?:typecheck|lint|biome|tree|checkout|build|tests?|suite|status|merge state)\W+(?:is |was |ran |reads? )?$", re.I)
@@ -705,6 +719,7 @@ def main() -> None:
         hits += [("empty-promise", said) for said in empty_promises(path, reply)]
         hits += [("unevidenced", said) for said in unevidenced(path, reply)]
         hits += [("landed-unread", said) for said in landed_unread(path, reply)]
+        hits += [("estimate-unread", said) for said in estimate_unread(path, reply)]
         hits += [("grill-unprinted", head) for head in grill_asks_unprinted(reply, turn_calls(path))]
         hits += [("printed-early", head) for head in asks_printed_early(turn_calls(path))]
         lost = lost_round(path, reply)
@@ -741,6 +756,8 @@ def main() -> None:
         reminds.append(f"the reply says «{said}» with no {'orbit add' if said == 'proposed in orbit' else 'command'} that turn — a promise lands with its call")
     if by_rule("landed-unread"):
         reminds.append(f"«{by_rule('landed-unread')[0]}» with no git or job read that turn — read `git log` or the job's output before saying it")
+    if by_rule("estimate-unread"):
+        reminds.append("an estimate with no member read — ask the member for its count, or label it «my guess»")
     if by_rule("empty-reply"):
         reminds.append("the answer sat in a mid-turn block dima never sees — open this reply with it in full")
     if by_rule("wait-on-crow"):
