@@ -1,5 +1,5 @@
 // the right-click menu on a message (FRM-638 slice 7): «Copy text» copies the words he selected in it (FRM-699),
-// «Copy message» the whole as written; «Annotate» opens the note box on the words he selected in it (FRM-585). herdr reports one
+// «Copy message» the whole as written; «tell <thread>» opens the note box on the words he selected in it (FRM-585). herdr reports one
 // right-click twice, on the list's item (which row) and on the list (where, in the list's own px), in either order:
 // whichever lands second completes the menu
 

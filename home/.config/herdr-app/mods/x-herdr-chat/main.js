@@ -40,7 +40,6 @@ import { JOINS_DIR } from './joins.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { createMessageList } from './message-list.js';
 import { createMessageRows } from './message-row.js';
-import { createNotePopup } from './note-popup.js';
 import { createNotesByRow } from './note-rows.js';
 import { repliesBelow } from './note-text.js';
 import { createNotes } from './notes.js';
@@ -76,8 +75,8 @@ import { NAMES_KEY } from './thread-keys.js';
 
 // the ui font, as the old chat drew it
 const SANS = '.AppleSystemUIFont';
-// the time of a press on «tell», in this window's shared store
-const TELL = 'chat.tell';
+// the time of a click on a note's words, in this window's shared store
+const NOTE_CLICK = 'chat.note-click';
 
 // the terminals a pick is typing keys into, model, effort or permission: it outlives a thread switch, so a second pick
 // never types beside it
@@ -207,18 +206,10 @@ export default class Chat extends View {
         thread: () => this.feed.file(),
         threadName: () => this.threadName(),
     });
-    isNotePopup = true;
-    /** the popup's last press, or a click on a note's words, as the chat saw it @type {unknown} */
-    tellAsk = null;
+    /** the last click on a note's words, as the chat saw it @type {unknown} */
+    noteClickAsk = null;
     /** the note whose words he clicked and where, until the chat opens it @type {{ id: string, at: { x: number, y: number } | null } | null} */
     noteAsk = null;
-    /** «tell <thread>» beside the words he selected */
-    notePopup = createNotePopup({
-        ask: () => setShared(TELL, Date.now()),
-        isOn: () => this.isNotePopup,
-        room: () => this.list.size(),
-        threadName: () => this.threadName(),
-    });
     /** the band over the quill and the bar under it */
     band = createBand({
         column: () => this.list.column(),
@@ -294,17 +285,14 @@ export default class Chat extends View {
         noteBox: (t) => this.quillMini.view(t),
         noteClicked: (id, at) => {
             this.noteAsk = { at, id };
-            setShared(TELL, Date.now());
+            setShared(NOTE_CLICK, Date.now());
         },
-        notePopup: (t) => this.notePopup.element(t),
         openNote: (id, at, cx) => this.quillMini.openNote(id, at, cx),
         pictures: this.pictures,
         reader: () => this.feed.reader(),
         rows: this.rows,
         say: (note, cx) => this.say(note, cx),
-        scrolled: (cx) => this.notePopup.hide(cx),
-        selected: (cx) =>
-            this.notePopup.reported(this.list.selectedAt(Date.now()), cx),
+        threadName: () => this.threadName(),
         unsend: (queued, cx) => this.sendPath.unsend(queued, cx),
     });
     /** the thread shown: its Claude, its transcript read and watched, its earlier pages */
@@ -365,7 +353,6 @@ export default class Chat extends View {
         this.pictures.close();
         this.findBar.reset();
         this.quillMini.reset();
-        this.notePopup.hide(cx);
         this.sendPath.takeJoins(null);
         // no button shows or presses a thread no longer on screen; the fleet's facts stay
         this.band.clear();
@@ -408,7 +395,6 @@ export default class Chat extends View {
         this.chatKeys = cx.focus_handle();
         this.quill.start(cx);
         this.quillMini.start(cx);
-        this.notePopup.start(cx);
         this.pickers.start(cx);
         this.pictures.start(cx);
         this.findBar.start(cx);
@@ -496,16 +482,14 @@ export default class Chat extends View {
                     later,
                 ),
             );
-        // a press on «tell»: the words it held go to the box, in a draw of the chat's own
-        const tellAsk = shared(TELL) ?? null;
-        if (tellAsk !== this.tellAsk) {
-            this.tellAsk = tellAsk;
+        // a click on a note's words: the box on that note, in a draw of the chat's own
+        const noteClickAsk = shared(NOTE_CLICK) ?? null;
+        if (noteClickAsk !== this.noteClickAsk) {
+            this.noteClickAsk = noteClickAsk;
             _cx.timer.after(0, (later) => {
-                const words = this.notePopup.take();
                 const note = this.noteAsk;
                 this.noteAsk = null;
-                if (words) this.annotate(words, later);
-                else if (note) this.quillMini.openNote(note.id, note.at, later);
+                if (note) this.quillMini.openNote(note.id, note.at, later);
             });
         }
         // a click on an orbit preview brings the chat into view and asks its viewer here (FRM-676)
@@ -837,12 +821,10 @@ export default class Chat extends View {
         this.audioApp = audioAppOf(values);
         this.band.applySettings(values);
         this.isShowMore = values['chatter.showMore'] === true;
-        this.isNotePopup = values['chatter.annotate.popup'] !== false;
     }
 
-    /** the note box on words he selected, the popup gone @param {import('./selection.js').SelectedAt} selected @param {Context} cx */
+    /** the note box on words he selected @param {import('./selection.js').SelectedAt} selected @param {Context} cx */
     annotate(selected, cx) {
-        this.notePopup.hide(cx);
         this.quillMini.show(selected, cx);
     }
 

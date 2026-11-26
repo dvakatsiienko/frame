@@ -157,7 +157,6 @@ const chat = (over: Record<string, unknown> = {}) => {
         list: quiet(),
         model: { rows: [] },
         note: null,
-        notePopup: quiet({ take: () => null }),
         pickers: quiet({
             confirmView: () => null,
             isOpen: () => false,
@@ -395,31 +394,9 @@ describe('the note box', () => {
         return { opened, stops: stops[0] };
     };
 
-    test('a press on «tell» opens the box in a draw of the chat’s own, once (FRM-585 C1)', () => {
-        const shown: unknown[] = [];
-        const held = ['the words'];
-        const view = chat({
-            notePopup: quiet({ take: () => held.shift() ?? null }),
-            quillMini: quiet({
-                isOpen: () => false,
-                show: (selected: unknown) => shown.push(selected),
-            }),
-        });
-        const draw = () => {
-            view.render(cx);
-            for (const run of at.timers.splice(0)) run();
-        };
-        draw();
-        at.shared.set('chat.tell', Date.now());
-        draw();
-        draw();
-        expect(shown).toEqual(['the words']);
-    });
-
     test('a click on a note’s words opens that note in a draw of the chat’s own (FRM-585 B5)', () => {
         const opened: unknown[] = [];
         const view = chat({
-            notePopup: quiet({ take: () => null }),
             quillMini: quiet({
                 isOpen: () => false,
                 openNote: (id: unknown, at: unknown) => opened.push(id, at),
@@ -434,7 +411,7 @@ describe('the note box', () => {
         };
         draw();
         view.noteAsk = { at: { x: 100, y: 100 }, id: 'n1' };
-        at.shared.set('chat.tell', Date.now());
+        at.shared.set('chat.note-click', Date.now());
         draw();
         draw();
         expect(opened).toEqual(['n1', { x: 100, y: 100 }]);
@@ -542,20 +519,16 @@ describe('the note box', () => {
         expect(view.rowOf('line')).toBe(row);
     });
 
-    test('a thread switched from shuts it and its popup', () => {
+    test('a thread switched from shuts it', () => {
         const reset = vi.fn();
-        const hide = vi.fn();
         const view = chat({
             heights: quiet(),
             model: { clear: () => {}, rows: [] },
-            notePopup: quiet({ hide }),
             quillMini: quiet({ reset }),
             sendPath: quiet(),
         }) as never as { clearShown: (cx: unknown) => void };
         view.clearShown({});
-        expect([reset.mock.calls.length, hide.mock.calls.length]).toEqual([
-            1, 1,
-        ]);
+        expect(reset).toHaveBeenCalledTimes(1);
     });
 
     test.each([

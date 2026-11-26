@@ -102,23 +102,18 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and a selection across two messages copies the part in the one he right-clicked; two blocks of one message join with an empty line
   - and a selection lives while any line of its message is on screen, and is gone once the whole message left it or the chat was hidden (herdr's own, dima's look 25 Nov)
   - and a reply that grows under his selection loses it, and then copies whole
-- ✅ F6, or «Annotate» in the right-click menu, opens the quill-mini: a small box for a note on the words he selected (FRM-585:W3, W12, W35)
+- ✅ F6, or «tell <thread>» in the right-click menu, opens the quill-mini: a small box for a note on the words he selected (FRM-585:W3, W12, W35, W67)
   - given words selected in a reply, or in a message of his the thread has
   - when he presses F6 from anywhere in the window, then the box opens under the words' end with the cursor in it, the words over it cut as the thread will get them, the thread's name beside; F6 again, Esc or a press outside closes it and keeps the note as his draft, and the same words bring the draft back (W5, W6)
   - and the words are those that stood selected at the press; with none, F6 opens the note it last shut in this thread again, so F6 toggles the box (dima, 26 Nov 14:45, W64); with no such note, in a message still waiting, in one scrolled away, or with the picture viewer open, F6 does nothing, and no view moves (W4)
-  - and the menu shows «Annotate» only on the message that holds the words
+  - and the menu shows «tell <thread>», the thread as antenna names it, only on the message that holds the words
   - and Enter joins the note, again takes it back; ⌘Enter sends it now and the box goes; Shift+Enter breaks the line; Tab walks the loop, where the box has a stop while open; an empty note does neither
   - and the box reads «joined» once the thread has the note, with what the thread got, read-only; words he typed past that are a new note on the same words, and a box he types in moves onto it, the cursor where it was, saying so; on a note a turn took, his next word starts one too
   - and a note waits while its thread is idle, for its next turn; one its thread's state no longer lists a minute after it joined is his draft again, saying so; a × on a sent one still in the queue makes it his draft too, whichever message's × pulled it (FRM-585:W2, W14, W42)
   - and a send or join refused with the box shut says why under the quill; a reload as one was sent makes it his draft, saying so, until its line is in the transcript; joined again meanwhile, that line landing before a turn takes the row reads sent, and the row leaves, so it goes once
   - and Esc closes the viewer first, then the box, then find; a thread switch closes the box, its draft kept in its own thread; an emptied draft leaves no record
   - and the box fades in sliding up and fades out sliding down, about 120 ms each way; a second F6 sooner than that leaves no box; with reduce motion on in macOS it neither moves nor fades (C2)
-- ✅ «tell <thread>» beside the words he selected opens the note box on them (FRM-585 C1, FRM-564:W2, W38)
-  - given words selected in a reply, or in a message of his the thread has, and the tell popup on in settings › chat › notes
-  - when the selection settles, then «tell <thread>» shows over the words' end, inside the list, and the chat does not redraw, so the words stay selected
-  - and one press on it opens the box on those words, the same as F6; with nothing pressed it goes a moment after the words are no longer selected
-  - and with the tell popup off nothing shows; F6 and the right-click menu still open the box
-  - and under the pointer it stays solid, its border in the accent, with no tooltip (dima, 26 Nov 14:27)
+  - decision: two doors to the box, F6 and the menu; the «tell <thread>» pill beside selected words is gone — dima, 26 Nov 14:53: three doors to one box is too many (W65, W66)
 - ✅ a note the thread has reads as his words, the words it is on a dim line over them (FRM-585 C3)
   - given a note that joined a turn or went as its own message
   - then its message shows «on "<the words>"» dim over his note, never the line the thread got; a message he typed that only reads like a note stays as typed

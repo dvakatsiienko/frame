@@ -51,9 +51,7 @@ export const placeKey = (file) => `place:${file}`;
  * @property {() => string | null} file the shown thread's transcript
  * @property {ReturnType<typeof import('./heights.js').createHeights>} heights
  * @property {(t: Theme) => any} noteBox the note box over the list, null while it is shut
- * @property {(t: Theme) => any} notePopup «tell <thread>» over the list, its own view; null before it is made
- * @property {(cx: Context) => void} selected his selection settled or was cleared in a message
- * @property {(cx: Context) => void} scrolled his wheel moved the list
+ * @property {() => string} threadName the shown thread as antenna names it, for the menu's «tell <thread>»
  * @property {(id: string, at: { x: number, y: number } | null) => void} noteClicked a click on a note's words: the chat opens it at
  *   its own next draw, under the press
  * @property {(cx: Context) => void} loadEarlier the next older page, asked near the first row
@@ -301,8 +299,6 @@ export function createMessageList(deps) {
             .on_scroll_wheel((event, cx) => {
                 keepDrawn();
                 syncBodies(cx);
-                // «tell» stood at the words' end as they were
-                deps.scrolled(cx);
                 if (messageMenu.state) {
                     messageMenu.close();
                     cx.notify();
@@ -329,7 +325,7 @@ export function createMessageList(deps) {
             .when(Boolean(messageMenu.state), (el) =>
                 el.child(messageMenuView(t)),
             )
-            .children([deps.notePopup(t), deps.noteBox(t)].filter(Boolean))
+            .children([deps.noteBox(t)].filter(Boolean))
             .when(isNewestShown, (el) =>
                 el.child(
                     div()
@@ -447,10 +443,8 @@ export function createMessageList(deps) {
                     report: (
                         /** @type {number} */ block,
                         /** @type {import('./selection.js').Reported | null} */ part,
-                        /** @type {Context} */ cx,
                     ) => {
                         selections.report(key, stamp, block, part, Date.now());
-                        deps.selected(cx);
                     },
                 });
             }
@@ -543,9 +537,13 @@ export function createMessageList(deps) {
             )
             .when(selected !== null, (el) =>
                 el.child(
-                    item('annotate', 'Annotate', (cx) => {
-                        if (selected) deps.annotate(selected, cx);
-                    }),
+                    item(
+                        'annotate',
+                        `tell ${deps.threadName()}`.trimEnd(),
+                        (cx) => {
+                            if (selected) deps.annotate(selected, cx);
+                        },
+                    ),
                 ),
             );
     }

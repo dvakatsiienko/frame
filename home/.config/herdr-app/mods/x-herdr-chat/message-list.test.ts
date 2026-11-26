@@ -160,7 +160,6 @@ function createWindow(
         /** a drawn body's selection handler, by row */
         reports: new Map<string, Handler>(),
         /** selections told to the popup */
-        settled: 0,
         /** a drawn square's press, by row */
         squares: new Map<string, Handler>(),
         /** how many text views each message draws */
@@ -177,7 +176,6 @@ function createWindow(
         loadEarlier: () => earlier.push(1),
         noteBox: () => null,
         noteClicked: (id: string, at: unknown) => bodies.noted.push([id, at]),
-        notePopup: () => null,
         openNote: (id: string, at: unknown) => annotated.push([id, at]),
         pictures: {
             isOpen: () => bodies.isViewerOpen,
@@ -239,10 +237,7 @@ function createWindow(
             textsCount: () => bodies.texts,
         },
         say: (note: string) => gpui.opened.push([note]),
-        scrolled: () => {},
-        selected: () => {
-            bodies.settled += 1;
-        },
+        threadName: () => '🦉 clio',
         unsend: () => {},
     } as never);
     let isDirty = true;
@@ -701,14 +696,14 @@ test.each([
     },
 );
 
-test('a settled selection tells the popup and asks the chat for no draw (FRM-585 C1)', () => {
+test('a settled selection asks the chat for no draw, which would drop it', () => {
     const w = createWindow(Array(5).fill(60), (px) => px);
     w.run(500);
     (w.bodies.reports.get('r1') as Handler)(
         { text: 'two words' } as never,
         w.cx as never,
     );
-    expect([w.bodies.settled, w.isDirty()]).toEqual([1, false]);
+    expect(w.isDirty()).toBe(false);
 });
 
 test('a click opens the square he pressed, and the first when he pressed beside them', () => {
@@ -1072,14 +1067,14 @@ describe('the words a note is written on', () => {
         expect(w.selectedAt(Date.now())).toBeNull();
     });
 
-    test('the menu offers Annotate on the message that holds them alone, and opens the box on them', () => {
+    test('the menu offers «tell <thread>» on the message that holds them alone, and opens the box on them', () => {
         const { first, second, select, w } = rested();
         w.leftDown(600, 200);
         select(first, words('two words'));
         expect(w.menu(second).items).toEqual(['Copy message']);
         const menu = w.menu(first);
-        expect(menu.items).toEqual(['Copy text', 'Annotate']);
-        menu.press('Annotate');
+        expect(menu.items).toEqual(['Copy text', 'tell 🦉 clio']);
+        menu.press('tell 🦉 clio');
         expect(w.annotated).toEqual([
             { at: { x: 200, y: 200 }, passage: passage(first, 'two words') },
         ]);
