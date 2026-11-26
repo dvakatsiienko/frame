@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -106,6 +107,30 @@ func TestVerifyRedPairsPrintARowEach(t *testing.T) {
 		if tests, _ := rows[0]["tests"].([]any); len(tests) != 1 || tests[0] != "TestLimit" {
 			t.Fatalf("the red row names %v, want TestLimit", rows[0]["tests"])
 		}
+	}
+}
+
+// a pairs file's @ lines run every set in one call, a verdict each, and one set with no proof fails the call
+func TestVerifyRedRunsEachSetOfAPairsFile(t *testing.T) {
+	t.Parallel()
+	f := goRedFixture(t)
+	write(t, filepath.Join(f.dir, "other.go"), "package p\n\nconst Other = 1\n")
+	commitAll(t, f.dir)
+	pairs := pairsFile(t, "@ lib.go lib_test.go", "Limit = 3\tLimit = 4", "@ other.go lib_test.go", "Other = 1\tOther = 2")
+
+	got, log := verifyRedIn(t, f, nil, "--pairs", pairs)
+
+	sets, _ := got.data["sets"].([]any)
+	verdicts := []string{}
+	for _, set := range sets {
+		row, _ := set.(map[string]any)
+		verdicts = append(verdicts, fmt.Sprint(row["file"], " ", row["verdict"]))
+	}
+	if got.code != 1 || strings.Join(verdicts, ",") != "lib.go red,other.go still green" {
+		t.Fatalf("exit %d, sets %v, want lib.go red, other.go still green and exit 1:\n%s", got.code, verdicts, got.stdout)
+	}
+	if log != "1\n1\n1\n1\n" {
+		t.Fatalf("the runs logged %q, want a clean run and a mutant for each set", log)
 	}
 }
 

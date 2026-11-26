@@ -63,15 +63,27 @@ func TestVerifyRedArgsOutsideItsFormsExitUsage(t *testing.T) {
 	t.Parallel()
 	f := goRedFixture(t)
 	pairs := pairsFile(t, "Limit = 3\tLimit = 4")
-	for _, args := range [][]string{
-		{f.file, "--pairs", pairs},
-		{f.file, f.anchor, f.replacement},
-		{f.file, f.anchor, f.replacement, f.test, "--", "go", "test", "."},
-		{f.file, "--pairs", pairsFile(t, "no tab here"), f.test},
-		{f.file, f.anchor, f.replacement, "--"},
+	set := func(lines ...string) string {
+		return pairsFile(t, append([]string{"@ lib.go lib_test.go"}, lines...)...)
+	}
+	for _, c := range []struct {
+		args []string
+		says string
+	}{
+		{[]string{f.file, "--pairs", pairs}, ""},
+		{[]string{f.file, f.anchor, f.replacement}, ""},
+		{[]string{f.file, f.anchor, f.replacement, f.test, "--", "go", "test", "."}, ""},
+		{[]string{f.file, "--pairs", pairsFile(t, "no tab here"), f.test}, ""},
+		{[]string{f.file, f.anchor, f.replacement, "--"}, ""},
+		{[]string{f.file, "--pairs", set("Limit = 3\tLimit = 4"), f.test}, "opens its sets with @ lines"},
+		{[]string{f.file, "--pairs", pairsFile(t, "Limit = 3\tLimit = 4", "@ lib.go lib_test.go", "Limit = 3\tLimit = 5"), f.test}, "belong to none"},
+		{[]string{"--pairs", pairsFile(t, "@ lib.go", "Limit = 3\tLimit = 4")}, "want @ <file> <test>"},
+		{[]string{"--pairs", pairsFile(t, "@ lib.go lib_test.go other", "Limit = 3\tLimit = 4")}, "want @ <file> <test>"},
+		{[]string{"--pairs", set("Limit = 3\tLimit = 4", "@ lib.go lib_test.go")}, "holds no pairs for lib.go"},
+		{[]string{"--pairs", set("Limit = 3\tLimit = 4", "@ lib.go lib_test.go", "Limit = 9\tLimit = 4")}, "found 0 times"},
 	} {
-		if got, _ := verifyRedIn(t, f, nil, args...); got.code != 2 {
-			t.Fatalf("%v: exit %d, want 2:\n%s", args, got.code, got.stdout)
+		if got, log := verifyRedIn(t, f, nil, c.args...); got.code != 2 || log != "" || !strings.Contains(got.stdout, c.says) {
+			t.Fatalf("%v: exit %d after runs %q, want 2 before any run, saying %q:\n%s", c.args, got.code, log, c.says, got.stdout)
 		}
 	}
 	// a mod's run is its one test file, so a name it cannot pass on refuses before any run

@@ -25,6 +25,12 @@ const verifyRedHelp = "x verify red --help"
 
 type redPair struct{ anchor, replacement string }
 
+// one file, its pairs and its test; a pairs file's `@ <file> <test>` lines open one set each, so one call and one turn prove many
+type redSet struct {
+	file, test string
+	pairs      []redPair
+}
+
 type pairRow struct {
 	Pair    string   `json:"pair"`
 	Verdict string   `json:"verdict"`
@@ -59,7 +65,7 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 	if err := os.Setenv("X_VERIFY", "1"); err != nil {
 		return nil, err
 	}
-	file, pairs, test, command, err := redArgs(args, flags)
+	sets, grouped, command, err := redArgs(args, flags)
 	if err != nil {
 		return nil, err
 	}
@@ -70,16 +76,58 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 		}
 	}
 	defer turn.close(nil)
+	if !grouped {
+		return verifySet(r, sets[0], command, flags, turn)
+	}
+	// every set's anchors are read before the first run, so a typo in the last set never costs the round
+	for _, set := range sets {
+		if err := anchorsHold(set); err != nil {
+			return nil, err
+		}
+	}
+	results := make([]any, 0, len(sets))
+	var missed []string
+	for _, set := range sets {
+		got, err := verifySet(r, set, command, flags, turn)
+		if fail, refused := errors.AsType[*Fail](err); refused && !fail.IsUsage {
+			missed = append(missed, set.file+": "+fail.Msg)
+			got = cmp.Or[any](fail.Data, ordered{{"file", set.file}, {"verdict", "refused"}, {"why", fail.Msg}})
+		} else if err != nil {
+			return nil, err
+		}
+		results = append(results, got)
+	}
+	if len(missed) > 0 {
+		return nil, &Fail{Refused: true, Msg: fmt.Sprintf("no proof in %d of %d sets: %s", len(missed), len(sets), strings.Join(missed, "; ")), Next: "fix each set named above; the same command runs them again", Data: ordered{{"verdict", "no proof"}, {"sets", results}}}
+	}
+	r.Done(fmt.Sprintf("%d sets red, no file written", len(sets)), "")
+	return ordered{{"verdict", verdictRed}, {"sets", results}}, nil
+}
+
+func anchorsHold(set redSet) error {
+	original, err := os.ReadFile(set.file)
+	if err != nil {
+		return usageFail("no file "+set.file, verifyRedHelp)
+	}
+	for _, pair := range set.pairs {
+		if n := strings.Count(string(original), pair.anchor); n != 1 {
+			return usageFail(fmt.Sprintf("anchor «%s» found %d times in %s, needs exactly 1", pair.anchor, n, set.file), "pick a longer anchor, unique in "+set.file)
+		}
+	}
+	return nil
+}
+
+// one set's round: the file as it is, then each pair alone
+func verifySet(r *Run, set redSet, command []string, flags Flags, turn *redTurn) (any, error) {
+	file, pairs, test := set.file, set.pairs, set.test
 	original, err := os.ReadFile(file)
 	if err != nil {
 		return nil, usageFail("no file "+file, verifyRedHelp)
 	}
 	var harness redHarness
 	if err := r.Step("check", "the anchors and the runner", func() (string, error) {
-		for _, pair := range pairs {
-			if n := strings.Count(string(original), pair.anchor); n != 1 {
-				return "", usageFail(fmt.Sprintf("anchor «%s» found %d times in %s, needs exactly 1", pair.anchor, n, file), "pick a longer anchor, unique in "+file)
-			}
+		if err := anchorsHold(set); err != nil {
+			return "", err
 		}
 		harness, err = pickHarness(file, test, command, flags)
 		return fmt.Sprintf("%d pairs", len(pairs)), err
@@ -242,16 +290,27 @@ func (p *redProgress) save() {
 
 func (p *redProgress) drop() { _ = os.Remove(p.path) }
 
-func redArgs(args []string, flags Flags) (file string, pairs []redPair, test string, command []string, err error) {
+func redArgs(args []string, flags Flags) (sets []redSet, grouped bool, command []string, err error) {
 	dash, _ := flags[argsBeforeDash].(int)
 	before := args
 	if dash >= 0 {
 		before, command = args[:dash], args[dash:]
 		if len(command) == 0 {
-			return "", nil, "", nil, usageFail("a -- needs a command after it", verifyRedHelp)
+			return nil, false, nil, usageFail("a -- needs a command after it", verifyRedHelp)
 		}
 	}
 	pairsFile, _ := flags["pairs"].(string)
+	if pairsFile != "" {
+		if sets, err = readPairs(pairsFile, command != nil); err != nil {
+			return nil, false, nil, err
+		}
+		if grouped = sets[0].file != ""; grouped {
+			if len(before) != 0 {
+				return nil, false, nil, usageFail(pairsFile+" opens its sets with @ lines, so the call names no file or test: x verify red --pairs "+pairsFile, verifyRedHelp)
+			}
+			return sets, true, command, nil
+		}
+	}
 	want := 3
 	if pairsFile != "" {
 		want = 1
@@ -260,29 +319,45 @@ func redArgs(args []string, flags Flags) (file string, pairs []redPair, test str
 		want++
 	}
 	if len(before) != want {
-		return "", nil, "", nil, usageFail("expected <file> <anchor> <replacement> <test>, <file> --pairs <pairs> <test>, or either with -- <command> for <test>", verifyRedHelp)
+		return nil, false, nil, usageFail("expected <file> <anchor> <replacement> <test>, <file> --pairs <pairs> <test>, --pairs <pairs> with @ <file> <test> lines, or any with -- <command> for <test>", verifyRedHelp)
 	}
-	file = before[0]
+	set := redSet{file: before[0]}
 	if command == nil {
-		test = before[len(before)-1]
+		set.test = before[len(before)-1]
 	}
 	if pairsFile == "" {
-		return file, []redPair{{before[1], before[2]}}, test, command, nil
+		set.pairs = []redPair{{before[1], before[2]}}
+	} else {
+		set.pairs = sets[0].pairs
 	}
-	pairs, err = readPairs(pairsFile)
-	return file, pairs, test, command, err
+	return []redSet{set}, false, command, nil
 }
 
 // the last tab splits a pair, so an anchor keeps its leading tabs (go is tab-indented); a replacement holds none
-func readPairs(path string) ([]redPair, error) {
+// a line `@ <file> <test>` (`@ <file>` beside a -- command) opens a set; a file with none is one set, its file and test the call's
+func readPairs(path string, hasCommand bool) ([]redSet, error) {
 	body, err := os.ReadFile(path)
 	if err != nil {
 		return nil, usageFail("no pairs file "+path, verifyRedHelp)
 	}
-	var pairs []redPair
+	var sets []redSet
 	for i, line := range strings.Split(strings.TrimSuffix(string(body), "\n"), "\n") {
 		line = strings.TrimSuffix(line, "\r")
 		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		if head, ok := strings.CutPrefix(line, "@ "); ok {
+			words, want := strings.Fields(head), "@ <file> <test>"
+			if hasCommand {
+				want = "@ <file>, the test being the -- command"
+			}
+			if len(words) != 2 && !hasCommand || len(words) != 1 && hasCommand {
+				return nil, usageFail(fmt.Sprintf("%s:%d reads «%s», want %s", path, i+1, line, want), verifyRedHelp)
+			}
+			if len(sets) > 0 && sets[len(sets)-1].file == "" {
+				return nil, usageFail(fmt.Sprintf("%s:%d opens a set after pairs that belong to none: put an @ line first", path, i+1), verifyRedHelp)
+			}
+			sets = append(sets, redSet{file: words[0], test: strings.Join(words[1:], "")})
 			continue
 		}
 		cut := strings.LastIndex(line, "\t")
@@ -292,12 +367,21 @@ func readPairs(path string) ([]redPair, error) {
 		if cut == 0 {
 			return nil, usageFail(fmt.Sprintf("%s:%d has an empty anchor", path, i+1), verifyRedHelp)
 		}
-		pairs = append(pairs, redPair{line[:cut], line[cut+1:]})
+		if len(sets) == 0 {
+			sets = append(sets, redSet{})
+		}
+		last := &sets[len(sets)-1]
+		last.pairs = append(last.pairs, redPair{line[:cut], line[cut+1:]})
 	}
-	if len(pairs) == 0 {
+	for _, set := range sets {
+		if len(set.pairs) == 0 {
+			return nil, usageFail(fmt.Sprintf("%s holds no pairs for %s", path, cmp.Or(set.file, "its file")), verifyRedHelp)
+		}
+	}
+	if len(sets) == 0 {
 		return nil, usageFail(path+" holds no pairs", verifyRedHelp)
 	}
-	return pairs, nil
+	return sets, nil
 }
 
 func pairLabel(anchor string) string {

@@ -1729,7 +1729,8 @@
         {
             "args": [
                 {
-                    "description": "the source file to break, from the cwd",
+                    "description": "the source file to break, from the cwd; left out when the pairs file's @ lines name each set's",
+                    "isOptional": true,
                     "name": "file"
                 },
                 {
@@ -1757,7 +1758,7 @@
             ],
             "flags": {
                 "pairs": {
-                    "description": "many swaps, each alone: one 'anchor<TAB>replacement' per line, split on the last tab, # and blank lines skipped",
+                    "description": "many swaps, each alone: one 'anchor<TAB>replacement' per line, split on the last tab, # and blank lines skipped; an '@ <file> <test>' line opens a set of its own, so one call proves many files",
                     "type": "string",
                     "value": "file"
                 },

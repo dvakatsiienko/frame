@@ -113,10 +113,6 @@ const goFuncCaps: Readonly<Record<string, { cap: number; why: string }>> = {
         cap: 260,
         why: 'its size on 2026-11-25, not cut yet',
     },
-    'x/go/verify_red.go verifyRed': {
-        cap: 125,
-        why: 'its size on 2026-11-25, not cut yet',
-    },
     'x/go/verify_tree.go verifyTree': {
         cap: 132,
         why: 'its size on 2026-11-25, not cut yet',
