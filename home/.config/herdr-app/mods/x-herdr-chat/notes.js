@@ -321,17 +321,13 @@ export function createNotes({
                 byText = new Map();
                 for (const n of notes)
                     if (n.state === 'joined' || n.state === 'sent')
-                        for (const s of n.said) {
-                            // of two that said the same line, the first made
-                            const key = drawnOf(s.line);
-                            if (!byText.has(key))
-                                byText.set(key, {
-                                    quote: quoteOf(
-                                        n.passage.parts.map((p) => p.words),
-                                    ),
-                                    text: n.text,
-                                });
-                        }
+                        for (const s of n.said)
+                            byText.set(drawnOf(s.line), {
+                                quote: quoteOf(
+                                    n.passage.parts.map((p) => p.words),
+                                ),
+                                text: n.text,
+                            });
                 drawn.set(notes, byText);
             }
             return byText.get(text) ?? null;

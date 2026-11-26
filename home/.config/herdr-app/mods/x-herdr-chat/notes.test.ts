@@ -641,6 +641,18 @@ test('a message of his is a note by the lines written for it, never by how it re
     ).toBeNull();
 });
 
+// the 🔎's round 1 on 154: a line he wrote is a note only once the thread has it
+test('a note whose line the thread has not taken yet is not a note of his message', async () => {
+    const w = world();
+    const id = await w.draft('why here?', passage('the retry'));
+    await w.notes.join(THREAD, id, 0);
+    const [row] = w.arrive();
+    expect(w.note(id).state).not.toBe('joined');
+    expect(w.notes.noteOf(THREAD, row?.text ?? '')).toBeNull();
+    w.notes.arrived(THREAD, row ? [row] : []);
+    expect(w.notes.noteOf(THREAD, row?.text ?? '')).not.toBeNull();
+});
+
 describe('a reload as a note was sent', () => {
     const cut = async () => {
         const w = world();

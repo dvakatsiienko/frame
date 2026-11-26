@@ -5,6 +5,8 @@ const gpui = vi.hoisted(() => {
     const painted: { color: string; id: string; range: number[] }[] = [];
     /** the markdown each text view was handed */
     const sources: string[] = [];
+    /** the plain words handed to an element as a child */
+    const words: string[] = [];
     const make = (id = ''): unknown => {
         const self: unknown = new Proxy(
             {},
@@ -18,6 +20,8 @@ const gpui = vi.hoisted(() => {
                                 id,
                                 range: args.slice(0, 2) as number[],
                             });
+                        if (name === 'child' && typeof args[0] === 'string')
+                            words.push(args[0]);
                         if (name === 'when' && args[0])
                             (args[1] as Handler)(self);
                         return self;
@@ -26,7 +30,7 @@ const gpui = vi.hoisted(() => {
         );
         return self;
     };
-    return { make, painted, sources };
+    return { make, painted, sources, words };
 });
 vi.mock('herdr', () => ({ home: () => '/Users/me' }));
 vi.mock('gpui-kit', () => ({
@@ -253,10 +257,15 @@ test('a note of his draws his words under its quote; one that only reads like a 
         [mine('m1', line), mine('m2', 'dima on "x" (reply 99): typed')],
         { tools: 'show' } as never,
     );
-    expect(shown.map((r) => [r.text, r.quote ?? null])).toEqual([
-        ['why here?', 'the retry'],
-        ['dima on "x" (reply 99): typed', null],
-    ]);
+    expect(shown.map((r) => [r.text, r.quote ?? null, r.look ?? null])).toEqual(
+        [
+            ['why here?', 'the retry', 'note'],
+            ['dima on "x" (reply 99): typed', null, null],
+        ],
+    );
+    gpui.words.length = 0;
+    view.texts(shown[0] as never, t, 'p');
+    expect(gpui.words).toContain('on "the retry"');
 });
 
 test('a folded reply paints no mark past its first lines', () => {
