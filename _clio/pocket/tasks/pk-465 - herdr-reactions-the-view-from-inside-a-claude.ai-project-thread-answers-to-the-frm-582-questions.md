@@ -3,10 +3,10 @@ id: PK-465
 title: >-
   herdr reactions: the view from inside a claude.ai project thread (answers to
   the FRM-582 question set)
-status: open
+status: done
 assignee: []
 created_date: '2026-11-22T23:10:00Z'
-updated_date: '2026-11-25T10:38:18Z'
+updated_date: '2026-11-26T12:26:29Z'
 labels:
   - s
 dependencies: []
@@ -94,4 +94,10 @@ Answer each in a few plain sentences. Say where you're guessing.
 6. done-test additions: a reaction answering an agent's open question starts its turn; add then remove before a turn arrives as nothing; after a compact, the agent still knows the legend.
 
 kept: 2026-11-25 — the answers feed wing 1's reactions grill (flyway f55, FRM-582), they move to FRM-582 when that grill runs on dima's word
+
+14:26 its open lines folded into FRM-582 (wing 1's edge-case read: steer 6, steer 8, unreact, the compact done-test line; W3's no-wake stays declined)
+
+close: every line now lives in FRM-582 (ticket: FRM-582)
+
+close: PK-465:W1 moved to FRM-582 · PK-465:W2 moved to FRM-582 · PK-465:W3 moved to FRM-582 (the no-wake line, W95–W97) · PK-465:W4 moved to FRM-582, replaced for 🚄 👍 👎 ✅ by FRM-582:W93, kept for the mood emoji
 <!-- SECTION:NOTES:END -->
