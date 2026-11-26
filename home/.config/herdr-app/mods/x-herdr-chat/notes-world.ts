@@ -73,9 +73,12 @@ export function world() {
                 },
             },
             joinsOf: () => at.joins,
-            keepGrade: async (line) => {
+            keepGrade: async (id, line) => {
                 if (at.isGradesHeld) return false;
-                files.set(GRADES, withGrade(files.get(GRADES) ?? null, line));
+                files.set(
+                    GRADES,
+                    withGrade(files.get(GRADES) ?? null, id, line),
+                );
                 return true;
             },
             linesWith: async (_thread, words) => {

@@ -56,7 +56,7 @@ const drawnOf = (line) => joinedWords(line.split('»\n«')[0] ?? '');
  * @param {(thread: string) => Joins | null | undefined} doors.joinsOf what the thread's state lists of its joins now: null, joins are off for it; undefined, its state is not read
  * @param {(thread: string, words: string) => Promise<string[] | null>} doors.linesWith the lines of a transcript that hold the words, null when it could not be searched
  * @param {(line: string) => void} doors.logTrial one line of the trial's record
- * @param {(line: import('./grades.js').GradeLine) => Promise<boolean>} doors.keepGrade a graded note's raw line into the grades file
+ * @param {(id: string, line: import('./grades.js').GradeLine | null) => Promise<boolean>} doors.keepGrade a graded note's raw line into the grades file, null out of it
  * @param {(thread: string, id: string, next: Note, cut: number) => void} doors.movedOn the words a turn did not get of a note are a new one, `cut` characters off their start
  */
 export function createNotes({
@@ -131,24 +131,30 @@ export function createNotes({
             thread,
             notesOf(thread).map((n) => (n.id === id ? now : n)),
         );
-        if (isLocked(now) && now.text !== note.text)
-            addAfter(thread, id, note.text);
+        // what he typed or pressed past what the thread got is a new note's: his words, his thumb
+        const lostGrade =
+            isLocked(now) && note.grade && now.grade !== note.grade
+                ? note.grade
+                : null;
+        if (isLocked(now) && (now.text !== note.text || lostGrade))
+            addAfter(thread, id, note.text, lostGrade);
         return true;
     }
 
     /**
      * the words he typed past a note the thread has: a draft of their own on the same passage
      * @param {string} thread @param {string} id @param {string} text all he typed
+     * @param {import('./note-states.js').Grade | null} [grade] a thumb he pressed past what the thread got
      * @returns {boolean} whether there were any
      */
-    function addAfter(thread, id, text) {
+    function addAfter(thread, id, text, grade = null) {
         const note = find(thread, id);
         const past = note ? pastText(note.text, text) : '';
-        if (!note || !past) return false;
-        const next = newNote(note.passage, newId(), {
-            reason: NEW_NOTE,
-            text: past,
-        });
+        if (!note || (!past && !grade)) return false;
+        const next = {
+            ...newNote(note.passage, newId(), { reason: NEW_NOTE, text: past }),
+            grade,
+        };
         keep(thread, [...notesOf(thread), next]);
         movedOn(thread, id, next, text.length - past.length);
         return true;
@@ -203,10 +209,11 @@ export function createNotes({
         const at = new Date(note.loggedAt ?? io.now()).toISOString();
         const grade = gradeOf(note, thread, at);
         const as = grade ? JSON.stringify(grade) : null;
-        if (!grade || !as || note.keptGrade === as) return;
+        // a plain note never written leaves the file alone; one the thread got plain after all takes its line out
+        if ((note.keptGrade ?? null) === as) return;
         keeping.add(id);
         after(id, async () => {
-            if (await keepGrade(grade))
+            if (await keepGrade(id, grade))
                 tell(thread, id, { as, type: 'gradeKept' });
             else unkept.add(thread);
         })

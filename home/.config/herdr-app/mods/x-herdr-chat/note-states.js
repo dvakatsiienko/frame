@@ -60,7 +60,7 @@ import { withoutPathLinks } from './path-links.js';
  *   | { type: 'rowOut' }
  *   | { type: 'reloaded' }
  *   | { type: 'logged', at: number }
- *   | { type: 'gradeKept', as: string }
+ *   | { type: 'gradeKept', as: string | null }
  * )} NoteEvent
  */
 

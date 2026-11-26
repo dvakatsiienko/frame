@@ -56,13 +56,13 @@ export const newId = () =>
         ).toString(16),
     );
 
-/** a reply-grade's raw line into its file, once by its id @param {import('./grades.js').GradeLine} line */
-export async function keepGrade(line) {
+/** a reply-grade's raw line into its file, once by its id; null takes it out @param {string} id @param {import('./grades.js').GradeLine | null} line */
+export async function keepGrade(id, line) {
     const dir = `${home()}/${GRADES_DIR}`;
     await exec('mkdir', ['-p', dir]).catch(() => {});
     return (
         (await editLocked(joinIo, `${dir}/${GRADES_FILE}`, (was) =>
-            withGrade(was, line),
+            withGrade(was, id, line),
         )) === 'written'
     );
 }

@@ -33,15 +33,19 @@ export const gradeOf = (note, thread, at) =>
           }
         : null;
 
-/** the file with the line in, over any of the same id: a grade is in it once @param {string | null} was @param {GradeLine} line */
-export function withGrade(was, line) {
+/**
+ * the file with the line in, over any of its id: a grade is in it once; null takes its line out, a grade the thread got
+ * plain after all @param {string | null} was @param {string} id @param {GradeLine | null} line
+ */
+export function withGrade(was, id, line) {
     const kept = (was ?? '').split('\n').filter((row) => {
         try {
-            return row.trim() && JSON.parse(row).id !== line.id;
+            return row.trim() && JSON.parse(row).id !== id;
         } catch {
             // a row he or another tool broke stays as it was
             return Boolean(row.trim());
         }
     });
-    return `${[...kept, JSON.stringify(line)].join('\n')}\n`;
+    const rows = line ? [...kept, JSON.stringify(line)] : kept;
+    return rows.length ? `${rows.join('\n')}\n` : '';
 }

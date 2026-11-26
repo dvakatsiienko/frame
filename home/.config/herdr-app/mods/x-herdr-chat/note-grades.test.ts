@@ -206,6 +206,25 @@ describe('a grade’s raw line in the grades file', () => {
         expect(w.grades().map((g) => g.why)).toEqual(['why first']);
     });
 
+    test('a thumb only the losing rewrite carried: its line leaves the file, the thumb is a new note’s', async () => {
+        const w = world();
+        const id = await w.draft('why first');
+        await w.notes.join(THREAD, id, 0);
+        const got = w.arrive();
+        w.notes.graded(THREAD, id, 'bad');
+        await w.notes.write(THREAD, id);
+        await w.settle({ ...ON, joined: [w.note(id).joinId ?? ''] });
+        await new Promise((go) => setTimeout(go, 0));
+        expect(w.grades().map((g) => g.grade)).toEqual(['bad']);
+        w.notes.arrived(THREAD, got);
+        await new Promise((go) => setTimeout(go, 0));
+        expect(w.grades()).toEqual([]);
+        expect(w.notes.of(THREAD).map((n) => [n.state, n.grade])).toEqual([
+            ['joined', null],
+            ['draft', 'bad'],
+        ]);
+    });
+
     test('a grade held in one thread goes at another thread’s settle', async () => {
         const w = world();
         const id = await w.draft('why');
@@ -247,8 +266,8 @@ describe('a grade’s raw line in the grades file', () => {
             whole: false,
             why: 'first',
         };
-        const was = withGrade('not json\n', line);
-        expect(withGrade(was, { ...line, why: 'second' })).toBe(
+        const was = withGrade('not json\n', 'n-1', line);
+        expect(withGrade(was, 'n-1', { ...line, why: 'second' })).toBe(
             `not json\n${JSON.stringify({ ...line, why: 'second' })}\n`,
         );
     });
