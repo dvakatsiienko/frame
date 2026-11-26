@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-26T10:57:15Z'
+updated_date: '2026-11-26T11:19:59Z'
 labels:
   - s
   - clio-main
@@ -33,4 +33,12 @@ ordinal: 1000
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
+13:19 groomed lines of 26 Nov, each landed:
+PK-349:W2473 (2026-11-26 12:53, dima): stray's handoff is relevant? ❓ → landed: answered on the board / in the 13:1x replies
+PK-349:W2474 (2026-11-26 12:53, dima): in a boot message tell what stray could do today. → landed: answered on the board / in the 13:1x replies
+PK-349:W2475 (2026-11-26 13:11, dima): FRM-360: is this about my wish for a pretty board/stats look with charts in cli? if yes - snooze it, and remove its milestone. ❓ → landed: answered on the board / in the 13:1x replies
+PK-349:W2476 (2026-11-26 13:11, dima): i do not see assumptions in herdr yet. (not implemented). → landed: answered on the board / in the 13:1x replies
+PK-349:W2477 (2026-11-26 13:11, dima): FRM-660: sign it so it can be picked up by someone, or maybe a stray. → landed: answered on the board / in the 13:1x replies
+PK-349:W2478 (2026-11-26 13:11, dima): FRM-660: summon it only if more scope for a bigger batch appears for stray. → landed: answered on the board / in the 13:1x replies
+PK-349:W2479 (2026-11-26 13:11, dima): FRM-707: what is it? looks like a freebie? ❓ → landed: answered on the board / in the 13:1x replies
 <!-- SECTION:NOTES:END -->
