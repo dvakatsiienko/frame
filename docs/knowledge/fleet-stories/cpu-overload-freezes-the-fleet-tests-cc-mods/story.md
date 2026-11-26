@@ -59,10 +59,11 @@ dima, 2026-11-20 20:48: the biggest problem in this whole incident is the silenc
 
 - one whole x-mod-stash run: 447.67 → 169.85 cpu-s (user + sys, one run each inside `gate-queue.sh --long`, 10:33 and 13:19), −62 %; all 1,901 rows of the first run still present by name, 23 new
 - the cause 1 fix: the rows of one test file share one host start (`tests/shared-boot.ts`), so x-mod-stash starts the host 52 times a whole run, where almost every one of its ~1,900 rows did before
-- the caps, in `script/test-cpu-budget.tsv`: x-mod-stash 187 cpu-s, x-mod-guard 15, x-mod-holds 2, x-mod-redact 2; a whole run past its row is red
+- the caps, in `script/test-cpu-budget.tsv`: x-mod-stash 200 cpu-s (187 until 26 Nov, raised on his o15 tick for FRM-639's 14 turn-log rows), x-mod-guard 15, x-mod-holds 2, x-mod-redact 2; a whole run past its row is red
 - `boots.tsv` counts host starts per test file and per mod with no run; the commit reds a file past its row, a file with no row, a start in a loop
 - a raise of either table stands only on dima's tick (4fd1c3f2, after clio let a cap rise 187 → 195 unasked the same day)
-- a commit runs no mods suite; a whole suite takes the long turn alone, at a 1-minute load of 14 or under
+- a commit runs no mods suite; a whole suite takes the long turn alone, at any load: two days of queue rows (1,005 runs, 24–26 Nov) showed a whole run takes ~21 s and ~172 cpu-s at load ≤8 and at load 20+ alike, so the load-14 gate went (5798f03b, FRM-678)
+- the prevention at the root (his o17 tick, 26 Nov): the boots table reds a wrongly shaped mods test at its first commit
 - not read yet: a day of lane work under the new shape (FRM-678's exit 7, 24 Nov)
 - not covered: the caps hold the four mods and x's go suite; frame's and bytes' vitest suites have no cpu row
 
