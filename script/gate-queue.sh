@@ -7,13 +7,11 @@
 # --hold-long <label…>: the same door on the long turn, for a batch that gives it back between its groups; its cap is an hour, past
 # any one pair.
 # no flag: no turn, it says so, runs the command and logs slot none; a turn held by a wrapped chain made every commit wait behind it.
-# a mods suite (claude plugin test, mods:test, mods/test.ts anywhere in the command) starts at a 1-minute load of 14 or under, one
-# a core: first in line it waits for the load, and past the deadline it runs nothing, exit 75. two suites back to back sat at 35.
-# in the long line a whole suite goes ahead of every batch (mutants, red proofs, one file): its ticket sorts first. a mods suite over
-# the load lets a batch past only once the turn has stood free 2 min: the load a batch made is gone by then.
+# no load gate: two days of rows (FRM-678, 24–26 Nov) showed a whole mods suite costs the same cpu and wall at load 8 or 20+.
+# in the long line a whole suite goes ahead of every batch (mutants, red proofs, one file): its ticket sorts first.
 # a turn waits for the machine-wide slot and hands back the exit code; 75 means the wait passed its deadline.
 # a turn is a mkdir, atomic on any disk, holding the holder's pid and start time, so a dead holder or a reused pid frees it.
-# waiters line up first come, first served inside their class: one ticket file each, named <epoch>.<pid>, a suite's 0.<epoch>.<pid>, a run the load gates <epoch>.m.<pid> after its class.
+# waiters line up first come, first served inside their class: one ticket file each, named <epoch>.<pid>, a suite's 0.<epoch>.<pid>.
 set -u
 # a closed stderr or stdout would be the next substitution's own pipe
 : >&2 || exec 2>/dev/null
@@ -62,7 +60,6 @@ hold_until_told() {
 }
 # a queued run calling another queued run of its slot keeps its turn; a commit inside a long round still takes the gate slot
 [ -n "$is_hold" ] && [ "$held" = "$slot" ] && hold_until_told "$@"
-load_max=14
 load_now() { uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/'; }
 is_mods_suite=
 case "$slot$is_hold $*" in "long "*"plugin test"* | "long "*mods:test* | "long "*mods/test.ts*) is_mods_suite=1 ;; esac
@@ -169,8 +166,6 @@ is_cut_batch() {
 }
 is_cut=
 [ "$slot$is_hold" = long ] && [ -z "$is_suite" ] && is_cut_batch "$@" && is_cut=1
-is_low_load() { awk -v now="$(load_now)" -v max="$load_max" 'BEGIN { exit !(now + 0 <= max + 0) }'; }
-is_calm() { [ -z "$is_mods_suite" ] || is_low_load; }
 threads=${GATE_QUEUE_THREADS:-$HOME/.claude/shelf/threads.json}
 # a thread's name from its session id, the id's head when the record holds none
 thread_of() {
@@ -188,21 +183,10 @@ holder() {
         thread=$(thread_of "${sid-}")
         echo "holder: ${what-}${ran}${thread:+, from $thread}"
     else
-        echo "the 1-minute load is $(load_now), a mods suite starts at $load_max or under"
+        echo "a run ahead in line takes the free turn"
     fi
 }
-if [ "$slot" = long ] && [ "$held" = long ] && [ -z "$is_hold" ]; then
-    began=$(date +%s)
-    turn=/nonexistent
-    until is_calm; do
-        if [ $(($(date +%s) - began)) -ge "${GATE_QUEUE_WAIT:-1500}" ]; then
-            say "waited $(($(date +%s) - began))s, deadline passed, nothing ran. $(holder)"
-            exit 75
-        fi
-        sleep "${GATE_QUEUE_POLL:-2}"
-    done
-    exec "$@"
-fi
+[ "$slot" = long ] && [ "$held" = long ] && [ -z "$is_hold" ] && exec "$@"
 [ "$slot" = none ] && [ -n "$held" ] && exec "$@"
 
 state=${X_STATE:-$HOME/.local/state/x}
@@ -236,7 +220,7 @@ log_run() {
     printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$load" "$slot" "$waited" "$1" "$2" "${session:--}" "$(one_line "$cmd")" >>"$log"
 }
 
-# a second log beside the first, one row a run that took or waited for a turn, to measure the load gate: start, slot, mods suite (1/0),
+# a second log beside the first, one row a run that took or waited for a turn, the drift read: start, slot, mods suite (1/0),
 # idle % at the start (the mean of 3 one-second iostat samples, the first being the boot average), the 1-min load, wait s, run s, the
 # child's cpu s, the slowest of 5 /usr/bin/true spawns in ms. the sampling runs beside the wait, so a run never starts later for it, and
 # a field the sample did not finish or could not read is -; nothing reads this log to decide anything
@@ -267,23 +251,7 @@ log_cpu() {
 drop_sample() { rm -f "$sample" "$sample.tmp" "$sample.times-before" "$sample.times-after"; }
 drop_sample
 
-freed() { [ "$slot" != long ] || { date +%s >"$turn.freed.$$" && mv "$turn.freed.$$" "$turn.freed"; }; }
-# the turn stood free for the suite of this ticket, 2 min from its arrival or the last release, and the load kept it out
-is_load_outside() {
-    local born=${1#0.} last=0 now
-    # a held turn first: its release writes the time before the turn goes
-    [ -d "$turn" ] && return 1
-    now=$(date +%s)
-    born=${born%%.*}
-    { read -r last; } 2>/dev/null <"$turn.freed"
-    case $last in '' | 0* | *[!0-9]*) last=0 ;; esac
-    [ "$last" -gt "$now" ] && last=0
-    [ "$born" -gt "$last" ] && last=$born
-    [ $((now - last)) -ge "${GATE_QUEUE_LOAD_GRACE:-120}" ] && ! is_low_load
-}
-
-# a ticket ahead whose owner is gone leaves the line; true when this run's ticket is the first, or, asked `past-load`, when only runs
-# the load keeps out stand ahead of it
+# a ticket ahead whose owner is gone leaves the line; true when this run's ticket is the first
 first_in_line() {
     local ahead since now
     for ahead in $(ls "$tickets"); do
@@ -292,7 +260,6 @@ first_in_line() {
         { read -r since; } 2>/dev/null <"$tickets/$ahead"
         now=$(started_at "${ahead##*.}")
         if [ -n "$now" ] && [ "$now" = "$(one_line "$since")" ]; then
-            [ "${1-}" = past-load ] && [[ $ahead == *.m.* ]] && is_load_outside "$ahead" && continue
             return 1
         fi
         rm -f "$tickets/$ahead"
@@ -318,7 +285,7 @@ if [ "$slot" = none ]; then
     exit $?
 fi
 (take_sample) </dev/null >/dev/null 2>&1 &
-ticket=$tickets/${is_suite:+0.}$began.${is_mods_suite:+m.}$$
+ticket=$tickets/${is_suite:+0.}$began.$$
 started_at $$ >"$tickets/.new.$$"
 mv "$tickets/.new.$$" "$ticket"
 leave() { rm -f "$ticket"; }
@@ -328,10 +295,9 @@ trap 'exit 143' TERM
 # bash 5 left to die of it reads exit 0 in the trap below, bash 3.2 reads 1
 trap 'exit 141' PIPE
 next_say=0
-until first_in_line past-load && is_calm && mkdir "$turn" 2>/dev/null; do
+until first_in_line && mkdir "$turn" 2>/dev/null; do
     # only the first in line frees a stale turn, so it never takes a turn a newer run just made
     if first_in_line && is_stale; then
-        freed
         if mv "$turn" "$turn.stale.$$" 2>/dev/null; then
             say "freed a dead holder's turn"
             rm -rf "$turn.stale.$$"
@@ -361,7 +327,6 @@ release() {
     drop_unwritten
     ran=$(($(date +%s) - took))
     times >"$sample.times-after"
-    freed
     rm -rf "$turn"
     # a signal ended this shell with the batch still running: its line and its group go with it
     [ -n "$line" ] && kill "$line" 2>/dev/null

@@ -26,12 +26,8 @@ import {
 } from './gate-queue-kit.ts';
 
 describe('gate-queue --long on a loaded mac', () => {
-    // an uptime that answers each load in turn, the last one on; a claude and a pnpm that only say they ran
-    function loaded(
-        loads: string[],
-        args: string[],
-        extra: NodeJS.ProcessEnv = {},
-    ) {
+    // an uptime that says a loaded mac; a claude that only says it ran
+    function loaded(extra: NodeJS.ProcessEnv = {}) {
         const { state } = fixture();
         const bin = join(state, 'bin');
         mkdirSync(bin);
@@ -39,54 +35,24 @@ describe('gate-queue --long on a loaded mac', () => {
             writeFileSync(join(bin, name), `#!/bin/sh\n${body}\n`, {
                 mode: 0o755,
             });
-        writeFileSync(join(state, 'loads'), `${loads.join('\n')}\n`);
-        put(
-            'uptime',
-            `l=$(head -n 1 ${state}/loads); [ $(wc -l <${state}/loads) -gt 1 ] && sed -i.bak 1d ${state}/loads; echo "12:27  up 1 day, 7 users, load averages: $l 9.00 9.00"`,
-        );
+        put('uptime', 'echo "12:27  up 1 day, load averages: 90.00 9.00 9.00"');
         put('claude', 'echo ran');
-        put('pnpm', 'echo ran');
-        return queue(state, ['--long', ...args], '1', {
-            PATH: `${bin}:${process.env.PATH}`,
-            ...extra,
-        });
+        return queue(
+            state,
+            ['--long', 'claude', 'plugin', 'test', 'mod'],
+            '1',
+            {
+                PATH: `${bin}:${process.env.PATH}`,
+                ...extra,
+            },
+        );
     }
-    const SUITE = ['claude', 'plugin', 'test', 'mod'];
 
     test.each([
-        ['x’s suite', SUITE],
-        ['a hand run', ['pnpm', 'mods:test', 'x-mod-stash']],
-        ['a timed run', ['/usr/bin/time', '-p', 'pnpm', 'mods:test']],
-        ['a run by its file', ['node', 'home/.claude/plugin-x/mods/test.ts']],
-        ['a shell line', ['sh', '-c', 'claude plugin test mod']],
-        ['a quiet pnpm', ['pnpm', '--silent', 'mods:test']],
-    ])(
-        '%s over the number waits, then runs nothing and says the load',
-        (_name, args) => {
-            const got = loaded(['14.01'], args);
-            expect([got.status, got.stdout]).toEqual([75, '']);
-            expect(got.stderr).toMatch(
-                /gate-queue: waited \d+s, deadline passed, nothing ran\. the 1-minute load is 14\.01, a mods suite starts at 14 or under/,
-            );
-        },
-    );
-
-    test('a load that falls inside the wait lets it run', () => {
-        const got = loaded(['30.00', '30.00', '30.00', '12.00'], SUITE);
-        expect([got.status, got.stdout]).toEqual([0, 'ran\n']);
-    });
-
-    test('a suite inside a held long turn waits for the load too', () => {
-        const held = { GATE_QUEUE_HELD: 'long' };
-        expect(loaded(['30.00'], SUITE, held).status).toBe(75);
-        expect(loaded(['9.00'], SUITE, held).stdout).toBe('ran\n');
-    });
-
-    test.each([
-        ['at the number', '14.00', SUITE],
-        ['any other long run, over it', '90.00', ['sh', '-c', 'echo ran']],
-    ])('%s it runs', (_name, load, args) => {
-        const got = loaded([load], args);
+        ['in its own turn', {}],
+        ['inside a held long turn', { GATE_QUEUE_HELD: 'long' }],
+    ])('a mods suite runs at once %s, whatever the load', (_name, extra) => {
+        const got = loaded(extra);
         expect([got.status, got.stdout]).toEqual([0, 'ran\n']);
     });
 });
@@ -535,12 +501,6 @@ describe('gate-queue --long', () => {
                 `#!/bin/sh\necho "$RUN" >>${log}\n`,
                 { mode: 0o755 },
             );
-        // a calm mac, whatever this one's load: a mods suite waits for it
-        writeFileSync(
-            join(bin, 'uptime'),
-            '#!/bin/sh\necho "12:27  up 1 day, load averages: 1.00 1.00 1.00"\n',
-            { mode: 0o755 },
-        );
         const run = (name: string, args: string[]) =>
             new Promise<void>((done) => {
                 spawn(script, ['--long', ...args], {
@@ -938,130 +898,6 @@ describe('gate-queue --long', () => {
         expect(got.stderr).toMatch(
             /holder: old run, running 4[2-4]s, from ⚡ 🔧 mods \| FRM-1/,
         );
-    });
-
-    function onLoad(state: string, load: string, args: string[]) {
-        const bin = join(state, 'bin');
-        mkdirSync(bin);
-        writeFileSync(
-            join(bin, 'uptime'),
-            `#!/bin/sh\necho "1 day, load averages: ${load} 1.00 1.00"\n`,
-            { mode: 0o755 },
-        );
-        return queue(state, ['--long', ...args], '1', {
-            PATH: `${bin}:${process.env.PATH}`,
-        });
-    }
-
-    // a mods suite first in line over the load, and a batch behind it at a free turn
-    test.each([
-        ['30.00', 600, 600, 0],
-        ['3.00', 600, 600, 75],
-        ['30.00', 5, 600, 75],
-        ['30.00', 600, 5, 75],
-        ['30.00', 600, undefined, 0],
-        ['30.00', 600, 'garbage', 0],
-        ['30.00', 600, '01795522718', 0],
-        ['30.00', 600, '9999999999', 0],
-    ])(
-        'a batch goes past a mods suite over the load once the turn stood free 2 min (load %s, in line %s s, free %s s: exit %d)',
-        (load, inLine, free, status) => {
-            const { state, turn } = fixture();
-            const ago = (s: number) => Math.floor(Date.now() / 1000) - s;
-            plantTicket(turn, `0.${ago(inLine)}.m.${process.pid}`, liveSince());
-            if (free !== undefined)
-                writeFileSync(
-                    `${turn}.freed`,
-                    `${typeof free === 'string' ? free : ago(free)}\n`,
-                );
-            expect(onLoad(state, load, ['true']).status).toBe(status);
-        },
-    );
-
-    test('a batch that the load gates lets the batch behind it past too', () => {
-        const { state, turn } = fixture();
-        const born = Math.floor(Date.now() / 1000) - 600;
-        plantTicket(turn, `${born}.m.${process.pid}`, liveSince());
-        const got = onLoad(state, '30.00', ['true']);
-        expect(got.status).toBe(0);
-    });
-
-    test('a batch passes no suite while the turn is held, whatever the last release says', () => {
-        const { state, turn } = fixture();
-        const born = Math.floor(Date.now() / 1000) - 600;
-        plantTicket(turn, `0.${born}.m.${process.pid}`, liveSince());
-        plantHolder(turn, String(process.pid), liveSince());
-        expect(onLoad(state, '30.00', ['true']).status).toBe(75);
-    });
-
-    // the read alone: in the script a held turn refuses the mkdir too, all but in the moment its release runs
-    test('no suite reads as kept out while the turn is held', () => {
-        const { turn } = fixture();
-        mkdirSync(turn);
-        writeFileSync(`${turn}.freed`, '5\n');
-        const text = readFileSync(script, 'utf8');
-        const from = text.indexOf('is_load_outside() {');
-        const read = text.slice(from, text.indexOf('\n}\n', from) + 3);
-        const got = spawnSync(
-            '/bin/bash',
-            [
-                '-c',
-                `set -u\nturn=${turn}\nis_low_load() { return 1; }\n${read}\nis_load_outside 0.5.m.1 && echo past; rmdir $turn; is_load_outside 0.5.m.1 && echo free`,
-            ],
-            { encoding: 'utf8', timeout: 10_000 },
-        );
-        expect([got.stdout, got.stderr]).toEqual(['free\n', '']);
-    });
-
-    test('a batch the load gates stands in line with the gated mark', async () => {
-        const { state, turn } = fixture();
-        const bin = join(state, 'bin');
-        mkdirSync(bin);
-        writeFileSync(
-            join(bin, 'uptime'),
-            '#!/bin/sh\necho "1 day, load averages: 30.00 1.00 1.00"\n',
-            { mode: 0o755 },
-        );
-        const run = spawn(
-            script,
-            ['--long', 'sh', '-c', 'claude plugin test m; true'],
-            {
-                env: {
-                    ...queueEnv(state, '3'),
-                    PATH: `${bin}:${process.env.PATH}`,
-                },
-            },
-        );
-        const gone = new Promise((done) => run.on('exit', done));
-        const tickets = () =>
-            existsSync(`${turn}.tickets`)
-                ? readdirSync(`${turn}.tickets`).filter(
-                      (n) => !n.startsWith('.'),
-                  )
-                : [];
-        while (!tickets().length && run.exitCode === null) await sleep(20);
-        expect(tickets()).toEqual([
-            expect.stringMatching(new RegExp(`^\\d+\\.m\\.${run.pid}$`)),
-        ]);
-        await gone;
-    });
-
-    test('a run that ends says when the turn was free, the gate slot writes nothing', () => {
-        const { gateTurn, state, turn } = fixture();
-        long(state, ['true']);
-        expect(
-            Date.now() / 1000 - Number(readFileSync(`${turn}.freed`)),
-        ).toBeLessThan(30);
-        hold(state);
-        expect(existsSync(`${gateTurn}.freed`)).toBe(false);
-    });
-
-    // the suite that frees it waits on the load, so no run of its own writes the time
-    test('a dead holder freed says when the turn was free', () => {
-        const { state, turn } = fixture();
-        plantHolder(turn, '999999', 'Fri Nov  6 10:00:00 2026');
-        const got = onLoad(state, '30.00', ['pnpm', 'mods:test']);
-        expect([got.status, existsSync(`${turn}.freed`)]).toEqual([75, true]);
     });
 
     test('a ticket of the old form still holds its place', () => {
