@@ -244,3 +244,4 @@ Ticket: none
 - 2026-11-25 19:45, main · 242k tokens · 1 high, 7 medium (1 marked ?), 4 low · highs real: y (the waiting hint missed the sentence it was built for; 301 green rows all held invented phrasings) · acted: four red rows, fixed the same turn; FRM-694 got its missing exit; the rest told in the halt report
 - 2026-11-26 13:20, main · 71k tokens · 1 high, 5 medium, 2 low · highs real: y (his charts wish sat in FRM-387, a search cut at 6 rows missed it) · acted: 5 the same turn; dropped 1 (an ask the boot board had answered)
 - 2026-11-26 14:02, main · 104k tokens · 0 high, 2 medium, 3 low · highs real: none · acted: both mediums fixed the same turn
+- 2026-11-26 18:08, main · 119k tokens · 0 high, 3 medium, 5 low · highs real: none · acted: all 3 mediums the same turn (a misplaced W-line pair moved, an overstated claim corrected, an unasked question put on orbit)
