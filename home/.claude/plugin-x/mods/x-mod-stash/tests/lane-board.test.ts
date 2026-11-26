@@ -447,7 +447,7 @@ test("unfolded, a subcard draws the member's asks as a view: line and pick, no t
     await ui.press({ key: 'fold:lane:l1:codie' });
     const text = (await subText(ui, 'codie')) ?? '';
     expect(text).toMatch(
-        /o3 🧩 mods: cut the second probe\?.*➡️ cut it.*🐦‍⬛ crow · it rang twice/su,
+        /o3 🧩 mods: cut the second probe\?.*➡️ cut it.*🐦‍⬛ crow/su,
     );
     expect([
         /tick|replay|🔊|steer/u.test(text),

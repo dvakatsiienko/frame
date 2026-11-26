@@ -483,42 +483,34 @@ test("an ask's row puts its steer before its file link (dima, 20:57)", async ($,
 
 /* FRM-670: ask origin, the area before the text and the muted line under the pick */
 
-test('an ask draws its area before its text and who started it and why under its pick', async ($, on) => {
+test('an ask draws its area before its text and only who started it under its pick', async ($, on) => {
     const w = world(on);
     const asks: [Record<string, unknown>, string, string][] = [
-        [
-            { area: 'speak', areaEmoji: '🎙️', why: 'it jumps' },
-            ' 🎙️ speak: ',
-            'it jumps',
-        ],
+        [{ area: 'speak', areaEmoji: '🎙️', why: 'it jumps' }, ' 🎙️ speak: ', ''],
         [{}, ': ', ''],
         [
             origin('codie', { lane: 'mods', ticket: 'FRM-662' }),
             ': ',
-            '🔧 mods | FRM-662 · it rang twice',
+            '🔧 mods | FRM-662',
         ],
-        [
-            origin('codie', { topic: 'the pill' }),
-            ': ',
-            '🔧 the pill · it rang twice',
-        ],
+        [origin('codie', { topic: 'the pill' }), ': ', '🔧 the pill'],
         [
             origin('sixth sense', { lane: 'mods', ticket: 'FRM-662' }),
             ': ',
-            '🔎 mods | FRM-662 · it rang twice',
+            '🔎 mods | FRM-662',
         ],
-        [origin('crow'), ': ', '🐦‍⬛ crow · it rang twice'],
-        [origin('wishkeeper'), ': ', '🐬 wishkeeper · it rang twice'],
-        [origin('wing 2'), ': ', '🪽 wing 2 · it rang twice'],
-        [origin('main clio'), ': ', '🦉 clio · it rang twice'],
+        [origin('crow'), ': ', '🐦‍⬛ crow'],
+        [origin('wishkeeper'), ': ', '🐬 wishkeeper'],
+        [origin('wing 2'), ': ', '🪽 wing 2'],
+        [origin('main clio'), ': ', '🦉 clio'],
         [
             origin('designer', { topic: 'the key map' }),
             ': ',
-            '🎨 designer: the key map · it rang twice',
+            '🎨 designer: the key map',
         ],
-        [origin('helga'), ': ', '🎀 helga · it rang twice'],
-        [origin("dima's rule"), ': ', "🙋‍♂️ dima's rule · it rang twice"],
-        [origin('plain cc'), ': ', '💻 cc · it rang twice'],
+        [origin('helga'), ': ', '🎀 helga'],
+        [origin("dima's rule"), ': ', "🙋‍♂️ dima's rule"],
+        [origin('plain cc'), ': ', '💻 cc'],
     ];
     w.store.set(`kept:${SID}`, {
         at: w.clock.now(),

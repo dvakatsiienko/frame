@@ -20,7 +20,7 @@ import {
 import {
     ORBIT_TOOL,
     isFresh,
-    joinRowsText,
+    joinNotes,
     joinText,
     planText,
     wrongText,
@@ -254,7 +254,7 @@ export async function composePrompt(
             ...laneSteers,
             ...(planMark ? [planText(planMark)] : []),
             ...(quiet.held.length ? [quietNote(quiet.held)] : []),
-            ...(joins.length ? [joinRowsText(joins)] : []),
+            ...joinNotes(joins),
             ...gapNotes,
             ...(tickets ? [tickets] : []),
             ...(fillLine ? [fillLine] : []),

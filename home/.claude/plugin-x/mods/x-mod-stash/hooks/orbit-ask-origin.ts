@@ -164,9 +164,9 @@ export function fromLine({ lane, ticket, topic, who }: AskFrom) {
     return `${badge} ${name}${topic ? `: ${topic}` : ''}`;
 }
 
-// the muted line under the pick; an ask kept from before the field has none
-export const originLine = ({ from, why }: Pick<OrbitAsk, 'from' | 'why'>) =>
-    [from ? fromLine(from) : '', why].filter(Boolean).join(' · ');
+// the muted line under the pick names only who started it, never the why; an ask with no `from` draws none (dima's o4, 26 Nov)
+export const originLine = ({ from }: Pick<OrbitAsk, 'from'>) =>
+    from ? fromLine(from) : '';
 
 export const areaLine = ({ area, areaEmoji }: OrbitAsk) =>
     [areaEmoji, area].filter(Boolean).join(' ');
