@@ -1,7 +1,7 @@
-// the press button and the steer box every deck card draws, an orbit ask's and the phases' alike, so both look and act
-// the same (dima, 19:08: «it is essentially same button, you can reuse component»)
+// the steer box every deck card draws, an orbit ask's and the phases' alike, so both look and act the same (dima, 19:08:
+// «it is essentially same button, you can reuse component»); their press button is `_shared/press-button.js`
 
-import { Button, Input } from 'gpui-base';
+import { Input } from 'gpui-base';
 import { div } from 'gpui-kit';
 
 import { focusBorder } from './focus-ring.js';
@@ -16,43 +16,8 @@ export const STEER_CMD_ENTER = 'x_herdr_deck_steer_cmd_enter';
 // Tab and shift-Tab in a steer box loop the quill and orbit, never herdr's hidden stops (FRM-620 slice 5c)
 export const STEER_TAB = 'x_herdr_deck_steer_tab';
 export const STEER_BACK = 'x_herdr_deck_steer_back';
-
-/**
- * a press button: tick is the main act, so it is the one filled; locked (delivered) it stays, still
- * @param {Theme} t
- * @param {{ id: string, label: string, tip: string, onClick: (cx: Context) => void, isPrimary?: boolean, isLocked?: boolean }} it
- */
-export const pressButton = (
-    t,
-    { id, isLocked = false, isPrimary = false, label, onClick, tip },
-) =>
-    Button.new(id)
-        // the steer box's Enter and ⌘Enter press these, so Tab skips them (his 14:12 steer)
-        .tab_stop(false)
-        .h(28)
-        .px(12)
-        .flex_none()
-        .flex()
-        .items_center()
-        .rounded(6)
-        .border_1()
-        .border_color(isPrimary ? t.solid : t.border)
-        .bg(isPrimary ? t.solid : t.surface)
-        .text_size(SIZE.secondary)
-        .text_color(isPrimary ? t.solid_foreground : t.foreground)
-        .when(isPrimary, (el) => el.font_semibold())
-        // delivered: both stay, still, the taken one reading 😋 (dima, 21:03)
-        .when(isLocked, (el) =>
-            el.opacity(0.6).tooltip('joined: the session took it'),
-        )
-        .when(!isLocked, (el) =>
-            el
-                .cursor_pointer()
-                .hover((st) => (isPrimary ? st.opacity(0.85) : st.bg(t.hover)))
-                .tooltip(tip)
-                .on_click((_e, cx) => onClick(cx)),
-        )
-        .child(label);
+/** a delivered press's tooltip, orbit's and the phases' */
+export const LOCKED_TIP = 'joined: the session took it';
 
 /**
  * a steer box: its keys are the card's (Enter ticks, ⌘Enter replays, Tab walks the loop); delivered, its steer stays as

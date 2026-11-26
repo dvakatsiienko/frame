@@ -19,7 +19,7 @@ read this before a change: find the one module that owns the state you touch, an
 
 ## drawing parts, no state
 
-- `steer-kit.js` — the press button and the steer box every card draws
+- `steer-kit.js` — the steer box every card draws; their press button is `_shared/press-button.js`, the quill-mini's too
 - `look.js` — the font, the type scale, a meter bar, a one-line row, selectable prose
 
 ## rules — pure steps, each with its test

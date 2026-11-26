@@ -36,7 +36,8 @@ import {
     tickAllTakes,
 } from './orbit.js';
 import { askText } from './pictures.js';
-import { pressButton } from './steer-kit.js';
+import { pressButton } from './press-button.js';
+import { LOCKED_TIP } from './steer-kit.js';
 import { ORDER_KEY } from './thread-keys.js';
 
 // an ask's title and body sizes, two looks for his pick: A the title at today's size, the body a step under it; B the
@@ -125,10 +126,11 @@ export function createOrbitView(deps) {
             pressButton(t, {
                 id: `${id}-${key}`,
                 isLocked,
-                isPrimary,
                 label,
+                lockedTip: LOCKED_TIP,
                 onClick,
                 tip,
+                variant: isPrimary ? 'primary' : 'outline',
             });
         // an ask is a card: the section head carries the 🪐
         return (

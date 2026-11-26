@@ -7,8 +7,9 @@ import { exec, readTextFile, writeTextFile } from 'herdr';
 
 import { SIZE, line, prose } from './look.js';
 import { phaseParts, planPress, pressLabel, savePress } from './orbit.js';
+import { pressButton } from './press-button.js';
 import { TICKS } from './shelf.js';
-import { pressButton } from './steer-kit.js';
+import { LOCKED_TIP } from './steer-kit.js';
 
 /** @typedef {import('./deck-types.js').Context} Context */
 /** @typedef {import('./deck-types.js').Theme} Theme */
@@ -54,12 +55,13 @@ export function createPhasesView(deps) {
             .child(
                 pressButton(t, {
                     id: `plan-tick-${sid}`,
-                    isPrimary: true,
                     label: pressLabel(isTicked ? 'ticked' : 'open', null).tick,
+                    lockedTip: LOCKED_TIP,
                     onClick: (cx) => cx.spawn((cx) => view.pressPlan(cx, key)),
                     tip: isTicked
                         ? 'queued for its next turn: click to take it back'
                         : 'tick: agree with the plan',
+                    variant: 'primary',
                 }),
             )
             .child(
