@@ -306,13 +306,6 @@ export function joinText(asks: OrbitAsk[], sentence = TICK_SENTENCE) {
     ].join('\n');
 }
 
-// an ask whose tick x-mod-guard reads as dima's word — a sign, a ⚠️ or merge ask, one quoting a command, in its pick too; published as
-// `isGated` beside the ask, so x-herdr-deck draws the mark instead of keeping its own copy of the pattern (FRM-544 slice 1)
-export const isGuardGated = ({ pick, text }: Pick<OrbitAsk, 'pick' | 'text'>) =>
-    /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️/iu.test(text) ||
-    quoted(text).length > 0 ||
-    isMergeAsk(text) ||
-    quoted(pick).some(isCommand);
 const named = (x: string) => `«${[...x].slice(0, 40).join('')}»`;
 const overCapText = (x: string) =>
     [...x].length > ORBIT_TEXT_MAX

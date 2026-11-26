@@ -215,15 +215,15 @@ test('a titled ask publishes title, body and pick apart, its text the two, and t
     await $.tool.call({ command: 'ls', tool: 'Bash' });
     const body = '- log each run\n- or **skip** it';
     expect([
-        shown.map((a) => [a.title, a.body, a.pick, a.text, a.isGated]),
+        shown.map((a) => [a.title, a.body, a.pick, a.text]),
         card,
         items().map((a) => [a.mark, a.text]),
         writes.at(-1),
     ]).toEqual([
         [
-            [TITLED.title, body, 'log', TITLED_TEXT, undefined],
-            [TITLED.title, gated, 'log', `${TITLED.title}\n\n${gated}`, true],
-            [TITLED.title, body, 'log', `look: ${TITLED_TEXT}`, undefined],
+            [TITLED.title, body, 'log', TITLED_TEXT],
+            [TITLED.title, gated, 'log', `${TITLED.title}\n\n${gated}`],
+            [TITLED.title, body, 'log', `look: ${TITLED_TEXT}`],
         ],
         expect.stringMatching(/^👀 o3 mods: 🧩 tests queue/u),
         [
@@ -591,44 +591,6 @@ test('an http url, a file:// url and a bare word are still refused as links', as
         expect((await addLinked($, link)).deny).toContain(
             'is neither an https url',
         );
-});
-
-// FRM-544 slice 1: x-herdr-deck draws the gated mark the stash publishes, never its own copy of the pattern
-test('a gated ask carries isGated in the store, a plain ask none', async ($, on) => {
-    const w = world(on);
-    await start($);
-    const asks = [
-        {
-            area: 'mods',
-            pick: 'run it',
-            text: '⚠️ mirror: `git push --mirror origin`',
-            why: 'a test ask',
-        },
-        {
-            area: 'mods',
-            pick: 'merge it',
-            text: 'test: merge https://github.com/x/y/pull/7 at abc1234',
-            why: 'a test ask',
-        },
-        ...addOf(
-            { pick: 'run `git push -n`' },
-            { pick: 'yes, `main`' },
-            { body: 'a ` b\nc ` d' },
-        ).asks,
-    ];
-    await orbit($, { asks, op: 'add' });
-    const items = (
-        w.store.get('asks:o1o1o1o1-orbit') as {
-            items: { isGated?: boolean; text: string }[];
-        }
-    ).items;
-    expect(items.map((a) => a.isGated)).toEqual([
-        true,
-        true,
-        true,
-        undefined,
-        undefined,
-    ]);
 });
 
 test('orbit registers loaded up front, never behind ToolSearch', async ($, on) => {

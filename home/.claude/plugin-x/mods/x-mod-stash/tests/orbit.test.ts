@@ -1056,7 +1056,6 @@ test("an ask's origin rides its store item, and a follow keeps each field it lea
             areaEmoji: '🧩',
             from: { line: '🐦‍⬛ crow', who: 'crow' },
             id: 'o1',
-            isGated: true,
             pick: 'yes',
             text: '⚠️ push it',
             why: 'it rang twice',

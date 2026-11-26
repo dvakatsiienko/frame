@@ -40,8 +40,6 @@ export type PublishedAsk = Omit<AskOrigin, 'from'> & {
     mark?: 'accepted' | 'rejected';
     steer?: string;
     isLocked?: boolean;
-    // its tick is one x-mod-guard reads as dima's word (a sign, a warning or merge ask, a quoted command)
-    isGated?: boolean;
 };
 
 // a press dima made on herdr's board, read from its ticks file for the session to take in
