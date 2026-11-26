@@ -4,12 +4,13 @@
 
 import { Textarea, TextareaState, h_flex, v_flex } from 'gpui-base';
 import { div } from 'gpui-kit';
-import { settings } from 'herdr';
+import { exec, settings } from 'herdr';
 
 import { focusBorder } from './focus-ring.js';
 import { JOIN_TAKE_MS } from './joins.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
 import { retextWait } from './magic.js';
+import { MINI_MOTION_MS, createMiniMotion } from './mini-motion.js';
 import { isLocked, stateWord } from './note-states.js';
 import { quoteOf } from './note-text.js';
 
@@ -29,8 +30,14 @@ const WIDTH = 420;
 const GAP = 12;
 // the box before its height was ever measured
 const FIRST_HEIGHT = 130;
-// an F6 this soon after the one before is a held key's: this mac repeats every 15 ms, the first after 150 ms
+// a held F6 repeats: this mac's first repeat comes 150 ms after the press, the next every 15 ms. one sooner than the
+// first repeat is a second press of his, so a fast F6 F6 shuts the box it opened
 const F6_REPEAT_MS = 200;
+const F6_FIRST_REPEAT_MS = 140;
+const MOTION = {
+    duration: MINI_MOTION_MS,
+    easing: /** @type {const} */ ('ease-out'),
+};
 /** its one stop in the Tab loop */
 export const MINI_STOP = 'quill-mini';
 
@@ -88,6 +95,11 @@ export function createQuillMini(deps) {
     /** a typing's serial: a newer key's rest wins */
     let typed = 0;
     let lastF6 = Number.NEGATIVE_INFINITY;
+    let isF6Held = false;
+    /** reduce motion is on in macOS, read at start */
+    let isReduced = false;
+    /** @type {ReturnType<typeof createMiniMotion<{ note: Note, at: Point | null }>>} */
+    const motion = createMiniMotion(() => isReduced);
     /** notes under way to their thread, until herdr answers: the box keeps the keyboard, and no second press sends one @type {Set<string>} */
     const sending = new Set();
     /** the ⌘ of a ⌘Enter is down */
@@ -113,7 +125,7 @@ export function createQuillMini(deps) {
     const isClosed = (note) => isLocked(note) || sending.has(note.id);
 
     /** the box shut, its draft kept; an empty one leaves no record */
-    function reset() {
+    function drop() {
         if (!open) return;
         const { id, thread } = open;
         typed += 1;
@@ -132,7 +144,10 @@ export function createQuillMini(deps) {
     function close(cx) {
         if (!open) return;
         const isSending = isCmdDown;
-        const written = reset();
+        const note = noteNow();
+        const { at } = open;
+        const written = drop();
+        if (note) motion.closed({ at, note }, cx);
         deps.focusQuill(isSending);
         cx.notify();
         cx.spawn(async (cx) => {
@@ -145,6 +160,7 @@ export function createQuillMini(deps) {
     function openOn(note, thread, at, cx) {
         if (!box) return;
         open = { at, id: note.id, thread };
+        motion.opened(cx);
         box.set_value(note.text);
         box.set_selected_range({
             end: note.text.length,
@@ -160,7 +176,7 @@ export function createQuillMini(deps) {
     function show({ at, passage }, cx) {
         const thread = deps.thread();
         if (!thread) return;
-        reset();
+        drop();
         openOn(deps.notes.open(thread, passage, deps.rowOf), thread, at, cx);
     }
 
@@ -168,16 +184,18 @@ export function createQuillMini(deps) {
     function openNote(id, at, cx) {
         const thread = deps.thread();
         if (!thread) return;
-        reset();
+        drop();
         const note = deps.notes.of(thread).find((n) => n.id === id);
         if (note) openOn(note, thread, at, cx);
     }
 
     /** F6: the box on what stood selected, or shut @param {() => SelectedAt | null} selected @param {number} at when it was pressed @param {Context} cx */
     function toggle(selected, at, cx) {
-        const isRepeat = at - lastF6 < F6_REPEAT_MS;
+        const gap = at - lastF6;
         lastF6 = at;
-        if (isRepeat) return;
+        isF6Held =
+            gap < F6_REPEAT_MS && (isF6Held || gap >= F6_FIRST_REPEAT_MS);
+        if (isF6Held) return;
         if (open) return close(cx);
         const now = selected();
         if (now) show(now, cx);
@@ -301,6 +319,14 @@ export function createQuillMini(deps) {
             cx.notify();
         });
         box = made;
+        cx.spawn(async () => {
+            const out = await exec('defaults', [
+                'read',
+                'com.apple.universalaccess',
+                'reduceMotion',
+            ]).catch(() => null);
+            isReduced = out?.code === 0 && out.stdout.trim() === '1';
+        });
         // each before the text box's own (context `Input`), as the quill's; Shift+Enter is the box's line break
         cx.bind_keys([
             {
@@ -333,16 +359,20 @@ export function createQuillMini(deps) {
 
     /** @param {Theme} t */
     function view(t) {
-        const note = noteNow();
-        if (!open || !note || !box) return null;
+        const live = open ? noteNow() : null;
+        // a shut box is drawn as it goes, nothing on it pressable
+        const ghost = live ? null : motion.ghost();
+        const note = live ?? ghost?.note ?? null;
+        if (!note || !box) return null;
         const room = deps.room();
         const width = Math.min(WIDTH, Math.max(0, room.width - 2 * GAP));
+        const look = motion.look();
         const place = miniPlace(
-            open.at,
+            live ? (open?.at ?? null) : (ghost?.at ?? null),
             { h: room.height, w: room.width },
             { h: height, w: width },
         );
-        const isDim = isClosed(note) || !note.text.trim();
+        const isDim = !live || isClosed(note) || !note.text.trim();
         const isWaiting = note.state === 'waiting';
         /** @param {string} id @param {string} label @param {string} hint @param {(cx: Context) => void} act */
         const button = (id, label, hint, act) =>
@@ -366,109 +396,115 @@ export function createQuillMini(deps) {
                         .on_click((_e, cx) => act(cx)),
                 )
                 .child(label);
-        return (
-            v_flex()
-                .id('chat-quill-mini')
-                .key_context('XChatQuillMini')
-                .absolute()
-                .left(place.x)
-                .top(place.y)
-                .w(width)
-                .px(12)
-                .py(10)
-                .gap(8)
-                .rounded(12)
-                .bg(t.popover)
-                .border(1)
-                .border_color(focusBorder(isFocused, t, t.border))
-                .shadow_lg()
-                .cursor_default()
-                .on_size_change((size, cx) => {
-                    // herdr's sizes are window px, the box's place is not
-                    const drawn = size.height / (Number(settings().zoom) || 1);
-                    if (Math.abs(drawn - height) < 1) return;
-                    height = drawn;
-                    cx.notify();
-                })
-                // a press on the box is the box's, never the list's under it
-                .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
-                .on_mouse_down('right', (_e, cx) => cx.stop_propagation())
-                // herdr follows a link under the box on a mouse-up
-                .on_mouse_up('left', (_e, cx) => cx.stop_propagation())
-                .on_mouse_up('right', (_e, cx) => cx.stop_propagation())
-                .on_mouse_down_out((_e, cx) => close(cx))
-                .on_action(ENTER, (_e, cx) => {
-                    if (enter.pressed() === 'act') join(cx);
-                })
-                .on_action(CMD_ENTER, (_e, cx) => {
-                    isCmdDown = true;
-                    if (cmdEnter.pressed(Date.now()) === 'act') sendNow(cx);
-                })
-                .on_action(ESCAPE, (_e, cx) => deps.pressEscape(cx))
-                .on_action(TAB, () => deps.tab.ask(MINI_STOP, false))
-                .on_action(BACK, () => deps.tab.ask(MINI_STOP, true))
-                .on_key_up((e) => {
-                    if (e.key === 'enter') enter.released();
-                })
-                .on_modifiers_changed((e) => {
-                    if (e.modifiers.platform) return;
-                    isCmdDown = false;
-                    enter.modifiersReleased();
-                })
-                .child(
-                    h_flex()
-                        .gap(8)
-                        .text_size(12)
-                        .text_color(t.muted)
-                        .child(
-                            div()
-                                .flex_1()
-                                .min_w(0)
-                                .truncate()
-                                .child(
-                                    `"${quoteOf(note.passage.parts.map((p) => p.words))}"`,
-                                ),
-                        )
-                        .child(div().flex_none().child(deps.threadName())),
-                )
-                .child(
-                    isLocked(note) && !sending.has(note.id) && !isFocused
-                        ? div().child(note.text)
-                        : Textarea.new(box),
-                )
-                .child(
-                    h_flex()
-                        .gap(6)
-                        .items_center()
-                        .child(
-                            div()
-                                .flex_1()
-                                .min_w(0)
-                                .truncate()
-                                .text_size(12)
-                                .text_color(t.muted)
-                                .child(wordNow(note)),
-                        )
-                        .child(
-                            button(
-                                'chat-mini-join',
-                                isWaiting ? 'take back' : 'join',
-                                isWaiting
-                                    ? 'Take it back (Enter)'
-                                    : "Join its turn's next step, or its next turn (Enter)",
-                                join,
+        return v_flex()
+            .id('chat-quill-mini')
+            .absolute()
+            .left(place.x)
+            .top(place.y + look.lift)
+            .opacity(look.opacity)
+            .when(!isReduced, (el) =>
+                el.transition('opacity', MOTION).transition('top', MOTION),
+            )
+            .w(width)
+            .px(12)
+            .py(10)
+            .gap(8)
+            .rounded(12)
+            .bg(t.popover)
+            .border(1)
+            .border_color(focusBorder(isFocused, t, t.border))
+            .shadow_lg()
+            .cursor_default()
+            .when(Boolean(live), (el) =>
+                el
+                    .key_context('XChatQuillMini')
+                    .on_size_change((size, cx) => {
+                        // herdr's sizes are window px, the box's place is not
+                        const drawn =
+                            size.height / (Number(settings().zoom) || 1);
+                        if (Math.abs(drawn - height) < 1) return;
+                        height = drawn;
+                        cx.notify();
+                    })
+                    // a press on the box is the box's, never the list's under it
+                    .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
+                    .on_mouse_down('right', (_e, cx) => cx.stop_propagation())
+                    // herdr follows a link under the box on a mouse-up
+                    .on_mouse_up('left', (_e, cx) => cx.stop_propagation())
+                    .on_mouse_up('right', (_e, cx) => cx.stop_propagation())
+                    .on_mouse_down_out((_e, cx) => close(cx))
+                    .on_action(ENTER, (_e, cx) => {
+                        if (enter.pressed() === 'act') join(cx);
+                    })
+                    .on_action(CMD_ENTER, (_e, cx) => {
+                        isCmdDown = true;
+                        if (cmdEnter.pressed(Date.now()) === 'act') sendNow(cx);
+                    })
+                    .on_action(ESCAPE, (_e, cx) => deps.pressEscape(cx))
+                    .on_action(TAB, () => deps.tab.ask(MINI_STOP, false))
+                    .on_action(BACK, () => deps.tab.ask(MINI_STOP, true))
+                    .on_key_up((e) => {
+                        if (e.key === 'enter') enter.released();
+                    })
+                    .on_modifiers_changed((e) => {
+                        if (e.modifiers.platform) return;
+                        isCmdDown = false;
+                        enter.modifiersReleased();
+                    }),
+            )
+            .child(
+                h_flex()
+                    .gap(8)
+                    .text_size(12)
+                    .text_color(t.muted)
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w(0)
+                            .truncate()
+                            .child(
+                                `"${quoteOf(note.passage.parts.map((p) => p.words))}"`,
                             ),
-                        )
-                        .child(
-                            button(
-                                'chat-mini-send',
-                                'send now',
-                                'Send now: a turn starts (⌘Enter)',
-                                sendNow,
-                            ),
+                    )
+                    .child(div().flex_none().child(deps.threadName())),
+            )
+            .child(
+                !live || (isLocked(note) && !sending.has(note.id) && !isFocused)
+                    ? div().child(note.text)
+                    : Textarea.new(box),
+            )
+            .child(
+                h_flex()
+                    .gap(6)
+                    .items_center()
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w(0)
+                            .truncate()
+                            .text_size(12)
+                            .text_color(t.muted)
+                            .child(wordNow(note)),
+                    )
+                    .child(
+                        button(
+                            'chat-mini-join',
+                            isWaiting ? 'take back' : 'join',
+                            isWaiting
+                                ? 'Take it back (Enter)'
+                                : "Join its turn's next step, or its next turn (Enter)",
+                            join,
                         ),
-                )
-        );
+                    )
+                    .child(
+                        button(
+                            'chat-mini-send',
+                            'send now',
+                            'Send now: a turn starts (⌘Enter)',
+                            sendNow,
+                        ),
+                    ),
+            );
     }
 
     return {
@@ -479,7 +515,11 @@ export function createQuillMini(deps) {
         movedOn,
         noteChanged,
         openNote,
-        reset,
+        /** shut with its thread, at once */
+        reset() {
+            motion.cut();
+            return drop();
+        },
         show,
         start,
         toggle,

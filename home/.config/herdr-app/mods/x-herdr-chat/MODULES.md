@@ -12,6 +12,7 @@ read this before a change: find the one module that owns the state you touch, an
 - `message-list.js` — the list on screen, his reading place in it (scroll, sizes, width, the column), the measurer, the right-click menu
 - `message-body.js` — a nested view for each message and row of pictures near the screen, the one place herdr takes a selection, link or press handler in a list (until herdr-app#942)
 - `quill-mini.js` — the box he writes a note in, over the list: which note is open, where it sits, its keys
+- `mini-motion.js` — how that box comes and goes: its fade and slide, the shut box drawn as it goes
 - `message-row.js` — each row as drawn (his bubble, a reply and its fold, tool calls, files), the rows shown of the model's, which replies and tool calls he opened
 - `quill-view.js` — the quill: the text box, each thread's draft, the files over it, the + picker, the / menu
 - `send-path.js` — a send: a note's own, the magic send's marks, the hold, a push, a send that did not go coming back

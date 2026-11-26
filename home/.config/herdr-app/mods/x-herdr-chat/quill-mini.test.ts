@@ -9,6 +9,7 @@ type El = {
     kids: unknown[];
     tooltip: string | null;
     top?: number;
+    opacity?: number;
 };
 const at = vi.hoisted(() => ({
     box: {
@@ -35,6 +36,8 @@ const { make } = vi.hoisted(() => ({
                 return (...args: unknown[]) => {
                     if (name === 'id') target.id = String(args[0]);
                     else if (name === 'top') target.top = Number(args[0]);
+                    else if (name === 'opacity')
+                        target.opacity = Number(args[0]);
                     else if (name === 'tooltip')
                         target.tooltip = String(args[0]);
                     else if (name === 'child') target.kids.push(args[0]);
@@ -58,7 +61,8 @@ const { make } = vi.hoisted(() => ({
     },
 }));
 vi.mock('herdr', () => ({
-    exec: vi.fn(),
+    // reduce motion is off: macOS has no key for it
+    exec: vi.fn(async () => ({ code: 1, stdout: '' })),
     settings: () => ({ zoom: at.zoom }),
 }));
 vi.mock('gpui-kit', () => ({ div: make }));
@@ -179,8 +183,16 @@ function world() {
         spawn: (job: (c: unknown) => unknown) => job(cx),
         stop_propagation: () => {},
         timer: {
-            after: (ms: number, run: (c: unknown) => void) =>
-                at.timers.push({ ms, run: () => run(cx) }),
+            after: (ms: number, run: (c: unknown) => void) => {
+                const timer = { ms, run: () => run(cx) };
+                at.timers.push(timer);
+                return {
+                    cancel: () => {
+                        at.timers = at.timers.filter((t) => t !== timer);
+                    },
+                    is_done: () => !at.timers.includes(timer),
+                };
+            },
         },
     };
     const mini = createQuillMini({
@@ -277,6 +289,46 @@ beforeEach(() => {
     at.box.text = '';
     at.keys.length = 0;
     at.timers.length = 0;
+});
+
+describe('the box comes and goes (FRM-585 C2)', () => {
+    test('it fades in from a little below its place', () => {
+        const w = world();
+        w.f6({ ...selected('some words'), at: { x: 40, y: 100 } });
+        const first = w.root();
+        expect([first?.opacity, first?.top]).toEqual([0, 118]);
+        w.run();
+        expect([w.root()?.opacity, w.root()?.top]).toEqual([1, 112]);
+    });
+
+    test('a second F6 sooner than a held key’s first repeat shuts it, leaving no box', () => {
+        const w = world();
+        w.f6();
+        w.f6(selected('some words'), 80);
+        expect([w.mini.isOpen(), w.root()]).toEqual([false, null]);
+        w.run();
+        expect(w.root()).toBeNull();
+    });
+
+    test('a held F6 keeps it open', () => {
+        const w = world();
+        w.f6();
+        for (const later of [150, 15, 15, 15])
+            w.f6(selected('some words'), later);
+        expect(w.mini.isOpen()).toBe(true);
+    });
+
+    test('shut once shown, it fades out where it stood, nothing on it pressable, then is gone', () => {
+        const w = world();
+        w.f6();
+        w.run();
+        w.f6();
+        expect(w.mini.isOpen()).toBe(false);
+        expect(w.root()?.opacity).toBe(0);
+        expect(w.root()?.handlers.size).toBe(0);
+        w.run();
+        expect(w.root()).toBeNull();
+    });
 });
 
 describe('F6 (FRM-585 A4)', () => {
@@ -779,6 +831,7 @@ test('its height is read in the px its place is in', () => {
     const w = world();
     at.zoom = 2;
     w.f6({ ...selected('some words'), at: { x: 40, y: 400 } });
+    w.run();
     const drawnAt = () => {
         w.root()?.handlers.get('on_size_change')?.(
             { height: 240 } as never,
