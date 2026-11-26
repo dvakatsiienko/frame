@@ -36,7 +36,8 @@ import { withoutPathLinks } from './path-links.js';
  * @property {boolean} [isWhole] the grade is of the whole message
  * @property {Said[]} said every line written for it, newest last, with the note in it
  * @property {boolean} isLogged its trial line is written
- * @property {boolean} [isGradeKept] a grade's raw line is in the grades file
+ * @property {number} [loggedAt] when the thread had it: its trial line's time, a grade's `at`
+ * @property {string | null} [keptGrade] the grade's raw line as the grades file holds it, null before it was written
  * @property {Said | null} [cutSend] a send a reload cut short: it may land still
  */
 /** @typedef {'good' | 'bad'} Grade */
@@ -58,8 +59,8 @@ import { withoutPathLinks } from './path-links.js';
  *   | { type: 'sentFirst' }
  *   | { type: 'rowOut' }
  *   | { type: 'reloaded' }
- *   | { type: 'logged' }
- *   | { type: 'gradeKept' }
+ *   | { type: 'logged', at: number }
+ *   | { type: 'gradeKept', as: string }
  * )} NoteEvent
  */
 
@@ -309,9 +310,13 @@ export function nextNote(note, event) {
                   }
                 : note;
         case 'logged':
-            return note.isLogged ? note : { ...note, isLogged: true };
+            return note.isLogged
+                ? note
+                : { ...note, isLogged: true, loggedAt: event.at };
         case 'gradeKept':
-            return note.isGradeKept ? note : { ...note, isGradeKept: true };
+            return note.keptGrade === event.as
+                ? note
+                : { ...note, keptGrade: event.as };
         default:
             return /** @type {never} */ (event);
     }

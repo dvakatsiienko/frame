@@ -54,7 +54,7 @@ export function gradeParts(
                 name: grade === 'good' ? 'grade it good' : 'grade it bad',
                 onClick: (cx) => onGrade(grade, cx),
                 size: 'sm',
-                variant: note.grade === grade ? 'primary' : 'outline',
+                variant: thumbVariant(note, grade),
             }),
             keysOf(grade),
         );
@@ -104,6 +104,20 @@ export function gradeParts(
     ];
 }
 
-/** a part the box's Tab reaches @template {import('gpui-kit').NativeElement} E @param {E} el @param {import('gpui-kit').FocusHandle | null} keys @returns {E} */
+/** the lit thumb is filled, the other plain @param {{ grade?: Grade | null }} note @param {Grade} grade @returns {'primary' | 'outline'} */
+export const thumbVariant = (note, grade) =>
+    note.grade === grade ? 'primary' : 'outline';
+
+/**
+ * a part the box's Tab reaches: a plain wrapper holds the keyboard, never the control in it, so a gpui-base Button or
+ * Checkbox's own Enter and space never press it a second time beside the box's (the 🔎's question, 26 Nov)
+ * @param {import('gpui-kit').NativeElement} el @param {import('gpui-kit').FocusHandle | null} keys
+ */
 export const withKeys = (el, keys) =>
-    keys ? el.track_focus(keys).key_context('XChatQuillMiniPart') : el;
+    keys
+        ? div()
+              .flex_none()
+              .track_focus(keys)
+              .key_context('XChatQuillMiniPart')
+              .child(el)
+        : el;

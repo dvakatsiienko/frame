@@ -78,6 +78,8 @@ export function createNotes({
     const searched = new Set();
     /** grades on their way to the grades file @type {Set<string>} */
     const keeping = new Set();
+    /** threads with a grade a held file refused: any thread's settle tries them again @type {Set<string>} */
+    const unkept = new Set();
     /** notes whose row would not take their words: asked again as the thread's state changes @type {Set<string>} */
     const refused = new Set();
     /** when he last typed in a note @type {Map<string, number>} */
@@ -169,8 +171,10 @@ export function createNotes({
     /** its trial line, and a grade's raw line, once the thread has it, once @param {string} thread @param {string} id */
     function log(thread, id) {
         const note = find(thread, id);
-        if (!note || !tell(thread, id, { type: 'logged' })) return;
+        if (!note) return;
+        const isFirst = tell(thread, id, { at: io.now(), type: 'logged' });
         keepGradeOf(thread, id);
+        if (!isFirst) return;
         const parts = note.passage.parts.map((p) => p.words);
         const quote = quoteOf(parts);
         const line = note.said.at(-1)?.line ?? lineOf(note);
@@ -188,20 +192,25 @@ export function createNotes({
     }
 
     /**
-     * a grade's raw line into the grades file once the thread has it; a held file leaves it for the next settle, so none
-     * is lost (wisphunter, 26 Nov)
+     * a grade's raw line into the grades file once the thread has it, and again by its id when what the thread got turns
+     * out other than what was written (a turn's own line read late); a held file leaves it for the next settle of any
+     * thread, so none is lost (wisphunter and the 🔎, 26 Nov)
      * @param {string} thread @param {string} id
      */
     function keepGradeOf(thread, id) {
         const note = find(thread, id);
-        if (!note?.isLogged || note.isGradeKept || keeping.has(id)) return;
-        const grade = gradeOf(note, thread, new Date(io.now()).toISOString());
-        if (!grade) return;
+        if (!note?.isLogged || keeping.has(id)) return;
+        const at = new Date(note.loggedAt ?? io.now()).toISOString();
+        const grade = gradeOf(note, thread, at);
+        const as = grade ? JSON.stringify(grade) : null;
+        if (!grade || !as || note.keptGrade === as) return;
         keeping.add(id);
         after(id, async () => {
-            if (await keepGrade(grade)) tell(thread, id, { type: 'gradeKept' });
+            if (await keepGrade(grade))
+                tell(thread, id, { as, type: 'gradeKept' });
+            else unkept.add(thread);
         })
-            .catch(() => {})
+            .catch(() => unkept.add(thread))
             .finally(() => keeping.delete(id));
     }
 
@@ -434,6 +443,13 @@ export function createNotes({
             let isChanged = false;
             /** @type {Promise<boolean>[]} */
             const writes = [];
+            for (const other of [...unkept]) {
+                unkept.delete(other);
+                if (other === thread) continue;
+                for (const note of notesOf(other))
+                    if (note.state === 'sent' || note.state === 'joined')
+                        keepGradeOf(other, note.id);
+            }
             for (const { id } of notesOf(thread)) {
                 const note = find(thread, id);
                 const joins = joinsOf(thread);

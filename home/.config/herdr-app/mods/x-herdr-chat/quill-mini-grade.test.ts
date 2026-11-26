@@ -48,6 +48,17 @@ const PART_TAB = 'x_herdr_chat_mini_part_tab';
 const PART_BACK = 'x_herdr_chat_mini_part_back';
 const PART_PRESS = 'x_herdr_chat_mini_part_press';
 
+const { thumbVariant } = await import('./quill-mini-grade.js');
+
+// FRM-630 exit 2
+test('the lit thumb is filled, the other plain', () => {
+    expect([
+        thumbVariant({ grade: 'bad' }, 'bad'),
+        thumbVariant({ grade: 'bad' }, 'good'),
+        thumbVariant({}, 'good'),
+    ]).toEqual(['primary', 'outline', 'outline']);
+});
+
 // FRM-630 exit 5
 describe('the grade row', () => {
     test('Tab walks text, 👍🏼, 👎🏼, whole message, join, send, then the loop', () => {

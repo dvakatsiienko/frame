@@ -335,7 +335,8 @@ describe('its keys (A5)', () => {
         expect(w.note()?.state).toBe('waiting');
         expect(w.rows()).toContain('2 back): mine');
         // as orbit's tick: 🍕 while it waits
-        expect(w.words()).toEqual(expect.arrayContaining(['waiting', '🍕']));
+        expect(w.words()).toContain('🍕');
+        expect(w.words()).not.toContain('waiting');
         w.press(ENTER);
         await settle();
         expect([w.note()?.state, w.rows().trim()]).toEqual(['draft', '']);
@@ -455,7 +456,7 @@ describe('a waiting note typed on (A2)', () => {
         await settle();
         w.now.joins = { joined: [], taken: [w.note()?.joinId ?? ''] };
         await w.notes.settle('/t/a.jsonl');
-        expect(w.words()).toEqual(expect.arrayContaining(['mine', 'waiting']));
+        expect(w.words()).toEqual(expect.arrayContaining(['mine', '😋']));
         expect(w.words()).not.toContain('the box');
         w.press(ENTER);
         w.act(CMD_ENTER);
@@ -715,15 +716,13 @@ describe('a press on a note’s row (FRM-585 B2)', () => {
     test('opens it to edit while it waits', async () => {
         const w = await made(false);
         expect(at.box.text).toBe('mine');
-        expect(w.words()).toEqual(
-            expect.arrayContaining(['the box', 'waiting']),
-        );
+        expect(w.words()).toEqual(expect.arrayContaining(['the box', '🍕']));
         expect([at.box.focused, w.top()]).toEqual([1, 32]);
     });
 
     test('opens it to read once the thread has it, the keyboard where it was', async () => {
         const w = await made(true);
-        expect(w.words()).toEqual(expect.arrayContaining(['mine', 'joined']));
+        expect(w.words()).toEqual(expect.arrayContaining(['mine', '😋']));
         expect(w.words()).not.toContain('the box');
         expect(at.box.focused).toBe(0);
     });
@@ -846,7 +845,7 @@ describe('a note that moved by itself (A2)', () => {
         expect(w.words()).toContain('It joined first, this is a new note');
         w.press(ENTER);
         await settle();
-        expect(w.words()).toContain('waiting');
+        expect(w.words()).toContain('🍕');
         expect(texts(w).at(-1)).toEqual(['waiting', 'too']);
     });
 
@@ -899,10 +898,10 @@ describe('a note that moved by itself (A2)', () => {
         expect(w.words()).toContain('Not in its row yet');
         w.now.isHeld = false;
         await w.notes.settle('/t/a.jsonl');
-        expect(w.words()).toContain('waiting');
+        expect(w.words()).toContain('🍕');
         w.now.joins = { joined: [w.note()?.joinId ?? ''], taken: [] };
         await w.notes.settle('/t/a.jsonl');
-        expect(w.words()).toContain('joined');
+        expect(w.words()).toContain('😋');
     });
 
     test('why a press did nothing goes as the note moves on', async () => {
@@ -913,7 +912,7 @@ describe('a note that moved by itself (A2)', () => {
         expect(w.words()).toContain('Its file was held, try again');
         w.now.joins = { joined: [w.note()?.joinId ?? ''], taken: [] };
         await w.notes.settle('/t/a.jsonl');
-        expect(w.words()).toContain('joined');
+        expect(w.words()).toContain('😋');
     });
 
     test('a join refused with the box shut says so in the chat', async () => {
@@ -934,7 +933,7 @@ describe('a note that moved by itself (A2)', () => {
         w.now.joins = { joined: [w.note()?.joinId ?? ''], taken: [] };
         await w.notes.settle('/t/a.jsonl');
         w.mini.noteChanged(w.cx as never);
-        expect(w.words()).toContain('joined');
+        expect(w.words()).toContain('😋');
         w.mini.reset();
         w.mini.noteChanged(w.cx as never);
         expect(w.said.quill).toBe(0);

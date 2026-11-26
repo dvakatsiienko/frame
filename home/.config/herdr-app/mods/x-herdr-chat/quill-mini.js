@@ -70,12 +70,15 @@ export function miniPlace(end, view, size) {
     };
 }
 
-/** the word under the box: where the note stands @param {Note} note @param {boolean} isRefused its row would not take its last words */
+/**
+ * the word under the box, only when there is something to say: why a draft came back, or a row that would not take his
+ * words; where it stands the join button's emoji says, and its lock (dima, 26 Nov 18:06: «removed «joined». emoji on a
+ * button tells it»)
+ * @param {Note} note @param {boolean} isRefused its row would not take its last words
+ */
 export function noteWord(note, isRefused) {
     if (note.state === 'draft') return note.reason ?? '';
-    return note.state === 'waiting' && isRefused
-        ? 'Not in its row yet'
-        : stateWord(note);
+    return note.state === 'waiting' && isRefused ? 'Not in its row yet' : '';
 }
 
 /**
@@ -602,6 +605,7 @@ export function createQuillMini(deps) {
                         ? div().child(note.text)
                         : Textarea.new(box),
                 )
+                // one row: the grade's parts on the left, where the note stands, join and send on the right (dima, 18:04)
                 .child(
                     h_flex()
                         .gap(6)
@@ -621,12 +625,7 @@ export function createQuillMini(deps) {
                                     backToText(cx);
                                 },
                             }),
-                        ),
-                )
-                .child(
-                    h_flex()
-                        .gap(6)
-                        .items_center()
+                        )
                         .child(
                             div()
                                 .flex_1()

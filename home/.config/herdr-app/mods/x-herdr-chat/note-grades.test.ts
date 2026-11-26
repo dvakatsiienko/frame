@@ -171,6 +171,71 @@ describe('a grade’s raw line in the grades file', () => {
         expect(w.notes.noteOf(THREAD, line)?.text).toBe('👍🏼 no why');
     });
 
+    test('«whole message» ticked: the raw line says so, with the message id', async () => {
+        const w = world();
+        const id = await w.draft('too long');
+        w.notes.graded(THREAD, id, 'bad');
+        w.notes.wholeSet(THREAD, id, true);
+        await w.notes.join(THREAD, id, 0);
+        await w.settle({ ...ON, joined: [w.note(id).joinId ?? ''] });
+        expect(w.grades()).toMatchObject([{ messageId: ROW.id, whole: true }]);
+    });
+
+    test('a thumb on a note the thread has changes nothing', async () => {
+        const w = world();
+        const id = await w.draft('why');
+        w.notes.graded(THREAD, id, 'bad');
+        await w.notes.join(THREAD, id, 0);
+        await w.settle({ ...ON, joined: [w.note(id).joinId ?? ''] });
+        expect(w.notes.graded(THREAD, id, 'good')).toBe(false);
+        expect(w.notes.wholeSet(THREAD, id, true)).toBe(false);
+    });
+
+    test('the thread’s own line read late wins: the file is written again with the why it got', async () => {
+        const w = world();
+        const id = await w.draft('why first');
+        w.notes.graded(THREAD, id, 'bad');
+        await w.notes.join(THREAD, id, 0);
+        const got = w.arrive();
+        await w.type(id, 'why second');
+        await w.settle({ ...ON, joined: [w.note(id).joinId ?? ''] });
+        await new Promise((go) => setTimeout(go, 0));
+        expect(w.grades().map((g) => g.why)).toEqual(['why second']);
+        w.notes.arrived(THREAD, got);
+        await new Promise((go) => setTimeout(go, 0));
+        expect(w.grades().map((g) => g.why)).toEqual(['why first']);
+    });
+
+    test('a grade held in one thread goes at another thread’s settle', async () => {
+        const w = world();
+        const id = await w.draft('why');
+        w.notes.graded(THREAD, id, 'bad');
+        await w.notes.join(THREAD, id, 0);
+        w.isGradesHeld = true;
+        await w.settle({ ...ON, joined: [w.note(id).joinId ?? ''] });
+        await new Promise((go) => setTimeout(go, 0));
+        w.isGradesHeld = false;
+        await w.notes.settle('/t/b.jsonl');
+        await new Promise((go) => setTimeout(go, 0));
+        expect(w.grades().map((g) => g.id)).toEqual([id]);
+    });
+
+    test('its time is when the thread had it, kept past a later write', async () => {
+        const w = world();
+        const id = await w.draft('why');
+        w.notes.graded(THREAD, id, 'bad');
+        await w.notes.join(THREAD, id, 0);
+        w.isGradesHeld = true;
+        await w.settle({ ...ON, joined: [w.note(id).joinId ?? ''] });
+        const had = w.stamp();
+        await new Promise((go) => setTimeout(go, 0));
+        w.pass(60_000);
+        w.isGradesHeld = false;
+        await w.settle({ ...ON, joined: [w.note(id).joinId ?? ''] });
+        await new Promise((go) => setTimeout(go, 0));
+        expect(w.grades()[0]?.at).toBe(had);
+    });
+
     test('a line of the same id replaces the one in the file, a broken row stays', () => {
         const line = {
             at: '',
