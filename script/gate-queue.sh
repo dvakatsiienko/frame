@@ -115,6 +115,8 @@ kind_of() {
         case ${1-} in
         node) case ${2-} in mods/test.ts | */mods/test.ts) echo suite ;; esac ;;
         mods:test | x-go:test | x-go:gate) echo suite ;;
+        # a build is whole by nature, its own suite often inside it (speak's daemon:build), so the batch line never cuts one
+        build | *:build) echo suite ;;
         typecheck | *:typecheck) echo neutral ;;
         test | *:test)
             shift
