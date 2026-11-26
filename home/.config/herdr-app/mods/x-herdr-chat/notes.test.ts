@@ -309,6 +309,15 @@ describe('a note knows when the thread has it', () => {
         expect(w.note(id).state).toBe('draft');
     });
 
+    test('a prompt of its words is not its join', async () => {
+        const w = world();
+        const id = await w.draft('why?');
+        await w.notes.join(THREAD, id, 0);
+        const rows = w.arrive().map((r) => ({ ...r, isJoin: false }));
+        expect(w.notes.arrived(THREAD, rows)).toBe(false);
+        expect(w.note(id).state).toBe('waiting');
+    });
+
     test('two notes of one quote: the line’s own text picks', async () => {
         const w = world();
         const a = await w.draft('one', passage('same', 0));
@@ -679,6 +688,28 @@ describe('a reload as a note was sent', () => {
         w.pass(1000);
         w.notes.arrived(THREAD, w.arrive());
         expect(w.note(id).state).toBe('joined');
+    });
+
+    test('joined since, its join refused by a held file as the cut send lands, it stays sent', async () => {
+        const { id, line, w } = await cut();
+        w.locks.add(`${FILE}.lock`);
+        const joined = w.notes.join(THREAD, id, 0);
+        w.pass(1000);
+        w.notes.arrived(THREAD, [{ at: w.stamp(), text: line }]);
+        expect(await joined).toBeNull();
+        expect(w.note(id).state).toBe('sent');
+    });
+
+    test('a send of its own since, which did not go, ends the cut send: that line landing later joins nothing', async () => {
+        const { id, line, w } = await cut();
+        await w.notes.join(THREAD, id, 0);
+        await w.notes.takeBack(THREAD, id);
+        await w.notes.release(THREAD, id, 0);
+        w.notes.returned(THREAD, id);
+        await w.notes.join(THREAD, id, 0);
+        w.pass(1000);
+        w.notes.arrived(THREAD, [{ at: w.stamp(), text: line }]);
+        expect(w.note(id).state).toBe('waiting');
     });
 
     test('joined since, a held file keeps the sent one’s row until the next settle takes it out', async () => {

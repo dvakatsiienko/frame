@@ -296,7 +296,9 @@ export function createNotes({
                 if (await appendJoin(io, fileOf(thread), joinId, line))
                     return null;
                 // a cut send that landed meanwhile made it sent: no row of it to give back
-                if (find(thread, id)?.joinId !== joinId) return null;
+                const now = find(thread, id);
+                if (now?.state !== 'waiting' || now.joinId !== joinId)
+                    return null;
                 const reason = 'Not joined: its file was held, try again';
                 tell(thread, id, { reason, type: 'takenBack' });
                 return reason;
