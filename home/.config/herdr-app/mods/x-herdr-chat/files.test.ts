@@ -199,13 +199,17 @@ describe('a message has a quiet row for each note on it (FRM-585 B2)', () => {
         version: 1,
         ...over,
     });
-    const note = (id: string, text: string, state = 'waiting') =>
+    const note = (id: string, text: string, state = 'joined') =>
         ({ id, state, text }) as never;
     const notes = [
         note('n1', 'one\nline'),
-        note('n2', 'two', 'taken'),
+        note('n2', 'two', 'sent'),
         note('n3', '  '),
-        note('n4', 'four', 'joined'),
+        note('n4', 'four', 'sending'),
+        // still his: their words are highlighted, a click opens them (dima, 26 Nov 15:37, FRM-585:W73)
+        note('n5', 'five', 'draft'),
+        note('n6', 'six', 'waiting'),
+        note('n7', 'seven', 'taken'),
     ];
     const drawn = () =>
         withFileRows(
@@ -215,7 +219,7 @@ describe('a message has a quiet row for each note on it (FRM-585 B2)', () => {
             (r) => (r.id === 'r1' ? noteRows(r, notes) : []),
         );
 
-    test('after its files, in the order he made them; one not typed yet has none', () => {
+    test('after its files, in the order he made them; one not typed yet or still his has none', () => {
         expect(drawn().map((r) => r.id)).toEqual([
             'r1',
             'r1#file-0',
@@ -231,9 +235,9 @@ describe('a message has a quiet row for each note on it (FRM-585 B2)', () => {
                 .filter((r) => r.kind === 'note')
                 .map((r) => [r.text, r.note?.word]),
         ).toEqual([
-            ['one line', 'waiting'],
-            ['two', 'waiting'],
-            ['four', 'joined'],
+            ['one line', 'joined'],
+            ['two', 'sent'],
+            ['four', 'sending'],
         ]);
     });
 

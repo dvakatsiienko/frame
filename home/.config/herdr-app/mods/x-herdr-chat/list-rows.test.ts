@@ -36,7 +36,7 @@ test('each drawn row has one size, a message’s notes and files and the calls a
     });
     const notes = ['one', 'two', 'three'].map((text, i) => ({
         id: `n${i}`,
-        state: 'waiting',
+        state: 'joined',
         text,
     }));
     const drawn = withFileRows(

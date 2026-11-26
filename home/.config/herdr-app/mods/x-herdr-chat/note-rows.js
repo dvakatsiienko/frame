@@ -1,5 +1,6 @@
-// one quiet row under a message for each note he wrote on it: the list's item click opens the note (a press handler in a
-// list row blanks the list, herdr-app#894)
+// one quiet row under a message for each note the thread has: the list's item click opens the note (a press handler in a
+// list row blanks the list, herdr-app#894). a note still his, a draft or waiting for a turn, draws none: its words are
+// highlighted and a click on them opens it (dima, 26 Nov 15:37, FRM-585:W73: «i do not need this»)
 
 import { stateWord } from './note-states.js';
 
@@ -8,16 +9,22 @@ import { stateWord } from './note-states.js';
 
 const NOTE_ROW = /#note-(.+)$/;
 
+/** the thread has it, or herdr is sending it @param {Note} note */
+const isOnItsWay = (note) =>
+    note.state === 'joined' ||
+    note.state === 'sending' ||
+    note.state === 'sent';
+
 /** the note a row stands for, null for any other @param {string} id */
 export const noteIdOf = (id) => NOTE_ROW.exec(id)?.[1] ?? null;
 
 /**
- * the rows of a message's notes, in the order he made them; one he has not typed yet has none
+ * the rows of a message's notes the thread has or is getting, in the order he made them
  * @param {Row} row @param {readonly Note[]} notes @returns {Row[]}
  */
 export const noteRows = (row, notes) =>
     notes
-        .filter((note) => note.text.trim())
+        .filter((note) => isOnItsWay(note) && note.text.trim())
         .map((note) => ({
             at: row.at,
             delivery: null,

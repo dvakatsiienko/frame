@@ -244,7 +244,7 @@ test('his notes’ words are painted under find’s hits, the stepped one last, 
 
 test('the list draws a note’s row under its message', () => {
     const { notes, view } = createRows();
-    notes.set('new', [{ id: 'n1', state: 'waiting', text: 'why?' }]);
+    notes.set('new', [{ id: 'n1', state: 'joined', text: 'why?' }]);
     const ids = view.shown(rows, { tools: 'show' } as never).map((r) => r.id);
     expect(ids.slice(-2)).toEqual(['new', 'new#note-n1']);
 });
