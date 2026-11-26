@@ -151,6 +151,8 @@ export function noteLine({ parts, sentence = null, row, back, text }) {
 /** a grade's thumb, as the line and the box draw it */
 export const THUMBS = /** @type {const} */ ({ bad: '👎🏼', good: '👍🏼' });
 export const NO_WHY = 'no why';
+// a grade's line leads with this, so the stash hands it to the thread apart from his words, and the chat finds it back
+export const GRADE_LEAD = '🎚️ grade: ';
 
 /**
  * the line a graded note joins as: a case for clio to log, never a request (FRM-630). a whole message is quoted by its
@@ -173,5 +175,5 @@ export function gradeLine({ grade, isWhole, parts, row, text }) {
         ? (row.head ?? quoteOf(parts, LINE_QUOTE_CUT))
         : quoteOf(parts, LINE_QUOTE_CUT);
     const whole = isWhole ? ', the whole message' : '';
-    return `dima graded ${THUMBS[grade]} "${quote}" (${which}${whole}): ${text.trim() || NO_WHY} (a case for the comms log, not a request)`;
+    return `${GRADE_LEAD}dima graded ${THUMBS[grade]} "${quote}" (${which}${whole}): ${text.trim() || NO_WHY} (a case for the comms log, not a request)`;
 }

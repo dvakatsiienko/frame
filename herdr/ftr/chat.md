@@ -122,7 +122,10 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
 - 🧭 a 👍🏼 or 👎🏼 in the quill-mini makes the note a reply-grade, its words the why (FRM-630:W45, W58, W59)
   - makes: one line per grade in `~/.local/state/x/herdr-notes/grades.jsonl`, for clio to fold into the comms log
   - given the box open on words of a reply
-  - when he lights 👎🏼, types why and joins, then the thread gets «dima graded 👎🏼 "<the words>" (reply <id> <time>): <why>», a case to log, never a request; a thumb with no words joins as «no why»
+  - when he lights 👎🏼, types why and joins, then the thread gets «🎚️ grade: dima graded 👎🏼 "<the words>" (reply <id> <time>): <why>», a case to log, never a request; a thumb with no words joins as «no why»
+  - and its join row is marked `kind: "grade"`, so the stash hands it to the thread as its own line, apart from his typed words; the chat finds that line back and marks the note joined (dima, 26 Nov 18:50: «you shouldn't miss it»)
+  - and its line in the grades file carries the time the transcript shows it joined, kept past a later rewrite
+  - not checked: the stash's half, a grade row as its own line (the mods codie's)
   - and one thumb is lit at a time: the other takes its place, the lit one pressed again is none, and with none the note is a plain one
   - and «whole message» ticked grades the whole reply, the line quoting its first words
   - and a thumb pressed on a waiting note changes its row; once a turn took it, the note shows the grade the turn got

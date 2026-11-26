@@ -174,11 +174,17 @@ export function createNotes({
         return next;
     }
 
-    /** its trial line, and a grade's raw line, once the thread has it, once @param {string} thread @param {string} id */
-    function log(thread, id) {
+    /**
+     * its trial line, and a grade's raw line, once the thread has it, once; `at` is when the transcript shows it joined,
+     * now when only the join file's state says so @param {string} thread @param {string} id @param {number | null} [at]
+     */
+    function log(thread, id, at = null) {
         const note = find(thread, id);
         if (!note) return;
-        const isFirst = tell(thread, id, { at: io.now(), type: 'logged' });
+        const isFirst = tell(thread, id, {
+            at: at ?? io.now(),
+            type: 'logged',
+        });
         keepGradeOf(thread, id);
         if (!isFirst) return;
         const parts = note.passage.parts.map((p) => p.words);
@@ -308,12 +314,14 @@ export function createNotes({
                     continue;
                 }
                 const isJoin = isInFile(note) || note.state === 'joined';
-                const texts = isJoin
-                    ? since.filter((r) => r.isJoin).map((r) => r.text)
-                    : prompts;
-                const said = [...note.said]
-                    .reverse()
-                    .find((s) => texts.includes(drawnOf(s.line)));
+                const kin = since.filter((r) => Boolean(r.isJoin) === isJoin);
+                /** @type {string | null} */
+                let at = null;
+                const said = [...note.said].reverse().find((s) => {
+                    at =
+                        kin.find((r) => r.text === drawnOf(s.line))?.at ?? null;
+                    return at !== null;
+                });
                 if (!said) continue;
                 const isNew = tell(
                     thread,
@@ -323,7 +331,7 @@ export function createNotes({
                         : { type: 'landed' },
                 );
                 isChanged = isNew || isChanged;
-                log(thread, note.id);
+                log(thread, note.id, at === null ? null : Date.parse(at));
             }
             return isChanged;
         },
@@ -342,7 +350,15 @@ export function createNotes({
             tell(thread, id, { at: io.now(), back, joinId, type: 'queued' });
             const line = lineOf(/** @type {Note} */ (find(thread, id)));
             return after(id, async () => {
-                if (await appendJoin(io, fileOf(thread), joinId, line))
+                if (
+                    await appendJoin(
+                        io,
+                        fileOf(thread),
+                        joinId,
+                        line,
+                        note.grade ? 'grade' : null,
+                    )
+                )
                     return null;
                 // a cut send that landed meanwhile made it sent: no row of it to give back
                 const now = find(thread, id);
@@ -546,6 +562,7 @@ export function createNotes({
                     fileOf(thread),
                     note.joinId,
                     lineOf(note),
+                    note.grade ? 'grade' : null,
                 ));
             if (isWritten) tell(thread, id, { ...content, type: 'rewritten' });
             else refused.add(id);

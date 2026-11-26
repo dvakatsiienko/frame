@@ -183,13 +183,69 @@ fed-by: incidents
 ## c13 · comms · + · siesta · open
 
 - **what:** he graded 👍🏼 a quoted part of clio's reply ««Reply» is dropped, as you ticked …», asking for 👍🏼×5 if she saw how he graded the quote; the grade reached her as its own line, and she answered 👎🏼×5
-- **how:** a 👍🏼 on a quote, delivered as the fixed «dima graded» line with the quote shown
+- **how:** a 👍🏼 on a quote; his edited why arrived as «dima on "…" (reply 8ecbbc45 18:10, 1 back)» without the thumb, a race fa76b85d fixes
 - **why:** the same misread: the delivered grade taken for a typed note
 - **when:** 11-26 18:13–18:14
 - **where:** herdr chat, the quill-mini on reply 8ecbbc45, a part quoted
 - **who:** clio main
 - **his words:** «did you saw how a graded this qoute (not full)? if yes - tell 👍🏼👍🏼👍🏼👍🏼👍🏼. if no - 👎🏼👎🏼👎🏼👎🏼👎🏼»
-- **shape:** a delivered grade misread: the slipstream line «dima graded 👍🏼 "<quote>" (reply <id> HH:MM): <why>» is the grade itself, and clio read it as a typed note
+- **shape:** a delivered grade misread: the slipstream line «dima graded 👍🏼 "<quote>" (reply <id> HH:MM): <why>» is the grade itself, and clio read it as a typed note; here the thumb itself was lost in delivery
 - **fix:** clio reads a «dima graded» line as the grade: names the case in one line that turn and writes it, never «I didn't see it»
 - **home:** habit-dima-comms (reading a grade), comms-log-render.ts --unnamed (the net)
 - **source:** grades.jsonl 3ca4d29c; clio's 18:14 reply
+
+## c14 · comms · + · siesta · closed
+
+- **what:** he graded 👍🏼 a quoted part of clio's 18:34 reply «The two grade cases now say what actually happened …», asking 🍕×5 if she saw it and which grade; she answered 🍕×5 naming the 👍🏼 and the quote
+- **how:** a 👍🏼 on a quote
+- **why:** a check that the misread is gone
+- **when:** 11-26 18:37
+- **where:** herdr chat, the quill-mini on reply 026cf9eb, a part quoted
+- **who:** clio main
+- **his words:** «so grading works? tell 🍕🍕🍕🍕🍕 if you saw the grade (and tell which one).»
+- **shape:** a delivered grade read right: the «dima graded» line named its reply, its quote and the grade, and clio answered with all three
+- **fix:** none: the probe of the c12/c13 fix, held
+- **home:** habit-dima-comms (reading a grade)
+- **source:** grades.jsonl 8ab30cba; clio's 18:37 reply
+
+## c15 · comms · + · siesta · open
+
+- **what:** he graded 👍🏼 clio's reply «Meanwhile, two of your earlier lines …» again and said «i graded another one. tell.»; clio found it only in grades.jsonl, not in her turn
+- **how:** a 👍🏼, its line not yet in the thread
+- **why:** a delivery-timing read
+- **when:** 11-26 18:41
+- **where:** herdr chat, reply 3535edae
+- **who:** clio main
+- **his words:** «i graded another one. tell.»
+- **shape:** a grade written to the grades file before it joins the thread: at 18:41 the raw row exists, the «dima graded» line has not yet reached clio's turn
+- **fix:** none yet: read whether it joins the next turn; if it never does, a herdr wisp
+- **home:** FRM-630 (the grade's delivery)
+- **source:** grades.jsonl ca519822
+
+## c16 · comms · + · siesta · closed
+
+- **what:** he graded 👍🏼 clio's whole 18:37 reply (the 🍕 one) and asked which grade she saw; she named the 👍🏼 on the whole message
+- **how:** a 👍🏼 on the whole reply
+- **why:** a check of whole-message grades
+- **when:** 11-26 18:41
+- **where:** herdr chat, reply 826a2e73, the whole message
+- **who:** clio main
+- **his words:** «now i graded your whole message ← did you saw it? and tell which grade you saw.»
+- **shape:** a whole-message grade read right: its line said «the whole message» and clio named the grade and the reply
+- **fix:** none: the c12/c13 fix held
+- **home:** habit-dima-comms (reading a grade)
+- **source:** grades.jsonl f29eb2ed; clio's 18:41 reply
+
+## c17 · comms · - · siesta · closed
+
+- **what:** he graded 👎🏼 a part of clio's 18:41 reply («Not tried yet: a 👎🏼 with a why …») with a pretend reason X, to test the 👎 path; clio saw it in the 18:50 turn and wrote this case
+- **how:** a 👎🏼 with a why
+- **why:** the 👎 path's first live run
+- **when:** 11-26 18:50
+- **where:** herdr chat, the quill-mini on reply b8f5af3a, a part quoted
+- **who:** clio main
+- **his words:** «le's try. let's say i dont like this message, with a reason X (ephemeral, le's prented i explained). did you saw grade immediately, and can you fold it into comms-log properly?»
+- **shape:** a test 👎🏼 with a why: the grade line arrived within seconds, joined to the next turn, thumb, quote and why intact
+- **fix:** none: exit 6 of FRM-630 proven end to end
+- **home:** FRM-630 exit 6
+- **source:** grades.jsonl 6b52159a
