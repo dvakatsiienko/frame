@@ -511,6 +511,8 @@ test('an ask draws its area before its text and only who started it under its pi
         [origin('helga'), ': ', '🎀 helga'],
         [origin("dima's rule"), ': ', "🙋‍♂️ dima's rule"],
         [origin('plain cc'), ': ', '💻 cc'],
+        [origin('retro'), ': ', '🦡 retro'],
+        [origin('stray'), ': ', '🐕 stray'],
     ];
     w.store.set(`kept:${SID}`, {
         at: w.clock.now(),

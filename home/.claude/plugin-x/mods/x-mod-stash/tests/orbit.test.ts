@@ -933,8 +933,8 @@ test('an ask with no why, a blank one or a one-word one refuses the whole add, n
 test('a starter off the list, with no which-one, or with a lane it cannot have is refused', () => {
     const refused: [unknown, RegExp][] = [
         [
-            { who: 'retro' },
-            new RegExp(`use ${STARTER_WORDS}.*drop from and lead the why`),
+            { who: 'gardener' },
+            new RegExp(`use ${STARTER_WORDS} \\(researcher, .*fresh-eyes\\)$`),
         ],
         ['crow', /from is an object/],
         [{ who: 'codie' }, /lane and ticket, or a topic/],

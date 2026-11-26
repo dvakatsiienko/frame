@@ -292,7 +292,7 @@ export async function boardKit($: EngineInterface, e: RenderInput<'Pane'>) {
                                 {linkedJSX(a.pick, `pick:${a.id}`)}
                             </Text>
                         </Text>
-                        {/* who started it and why, always there (FRM-670) */}
+                        {/* who started it, only when the ask names a sender (FRM-670, dima's o4) */}
                         {originLine(a) ? (
                             <Text dimColor>
                                 {linkedJSX(originLine(a), `origin:${a.id}`)}

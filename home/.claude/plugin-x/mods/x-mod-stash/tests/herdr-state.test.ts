@@ -630,7 +630,7 @@ const endTurn = ($: Engine, isAborted = false) =>
         turnId: 't',
     });
 const said = (s: { contexts: string[][] }) =>
-    s.contexts.flat().filter((l) => l.startsWith('💨 dima wrote'));
+    s.contexts.flat().filter((l) => /^(?:💨 dima wrote|🎚️)/u.test(l));
 
 test('exit 1: two joins written before a turn land in it in order, once, and read joined only after it completes', async ($, on) => {
     const s = await session($, on);
@@ -697,10 +697,6 @@ const GRADE =
 const gradeRow = (id: string) =>
     `${JSON.stringify({ id, kind: 'grade', text: GRADE })}\n`;
 
-const joined = (s: { contexts: string[][] }) =>
-    s.contexts
-        .flat()
-        .filter((l) => l.startsWith('💨 dima wrote') || l.startsWith('🎚️'));
 const NUDGE_ONE =
     '🎚️ dima graded a reply: name each grade and its reply in this reply, then write its comms case.';
 
@@ -709,7 +705,17 @@ test('a grade row joins as its own entry, its text whole, outside his words', as
     s.files.set(JOINS, gradeRow('g1'));
     await say($);
     await endTurn($);
-    expect(joined(s)).toEqual([GRADE, NUDGE_ONE]);
+    expect(said(s)).toEqual([GRADE, NUDGE_ONE]);
+});
+
+test('a grade written mid-turn joins at the next tool step as its own entry, with its nudge', async ($, on) => {
+    const s = await session($, on);
+    await say($);
+    await step($);
+    s.files.set(JOINS, gradeRow('g1'));
+    expect(
+        (await step($)).split('\n').filter((l) => l.startsWith('🎚️')),
+    ).toEqual([GRADE.split('\n')[0], NUDGE_ONE]);
 });
 
 test('two grades get one nudge that counts them, and words alone get none', async ($, on) => {
@@ -717,13 +723,10 @@ test('two grades get one nudge that counts them, and words alone get none', asyn
     s.files.set(JOINS, gradeRow('g1') + gradeRow('g2'));
     await say($);
     await endTurn($);
-    s.files.set(
-        JOINS,
-        `${gradeRow('g1')}${gradeRow('g2')}${row('j1', 'plain')}`,
-    );
+    s.files.set(JOINS, row('j1', 'plain'));
     await say($);
     await endTurn($);
-    expect(joined(s).filter((l) => l.startsWith('🎚️ dima graded'))).toEqual([
+    expect(said(s).filter((l) => l.startsWith('🎚️ dima graded'))).toEqual([
         '🎚️ dima graded 2 replies: name each grade and its reply in this reply, then write its comms case.',
     ]);
 });
@@ -736,7 +739,7 @@ test('a grade row between two word rows leaves the words wrapped, in order, and 
     );
     await say($);
     await endTurn($);
-    expect(joined(s)).toEqual([
+    expect(said(s)).toEqual([
         '💨 dima wrote these 2, in order, in herdr while you worked; it joins this turn as his own words:\n«first»\n«second»',
         GRADE,
         NUDGE_ONE,

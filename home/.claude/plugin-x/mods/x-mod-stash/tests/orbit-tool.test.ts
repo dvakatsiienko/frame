@@ -476,7 +476,7 @@ test("orbit's text names the required area and why, and from with every starter"
     expect(add).toContain('area, required: chords, speak;');
     expect(add).toContain('why, required: 2+ words;');
     expect(add).toContain(
-        "from: a starter not you, { who: crow, wishkeeper, codie, sixth sense, wing N, main clio, designer, helga, dima's rule, plain cc }",
+        "from: a starter not you, { who: crow, wishkeeper, codie, sixth sense, wing N, main clio, designer, helga, dima's rule, plain cc, stray, a card }",
     );
 });
 

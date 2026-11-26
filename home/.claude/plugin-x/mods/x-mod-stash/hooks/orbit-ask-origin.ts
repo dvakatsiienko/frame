@@ -29,17 +29,29 @@ const STARTERS = {
     crow: MEMBERS.crow,
     designer: MEMBERS.designer,
     "dima's rule": MEMBERS.dima,
+    'fresh-eyes': '🐣',
     helga: MEMBERS.helga,
+    helper: '🐜',
+    'helper-lite': MEMBERS['helper-lite'],
     'main clio': MEMBERS.clio,
+    messhunter: '🦝',
     'plain cc': '💻',
+    researcher: MEMBERS.researcher,
+    retro: '🦡',
+    scout: '🦅',
     'sixth sense': MEMBERS['sixth sense'],
+    stray: '🐕',
     wishkeeper: '🐬',
+    wisphunter: '🐆',
 } as const;
 type Starter = keyof typeof STARTERS;
 const WING = /^wing (\d+)$/;
 // the order the tool's text and a refusal print them in
 export const STARTER_WORDS =
-    "crow, wishkeeper, codie, sixth sense, wing N, main clio, designer, helga, dima's rule, plain cc";
+    "crow, wishkeeper, codie, sixth sense, wing N, main clio, designer, helga, dima's rule, plain cc, stray, a card";
+// the cards a refusal spells out; the tool's text names them only as «a card», its 4096 chars being full
+const CARD_WORDS =
+    'researcher, retro, scout, wisphunter, messhunter, helper, helper-lite, fresh-eyes';
 const isStarter = (who: string): who is Starter => Object.hasOwn(STARTERS, who);
 // the two a relay must say which one of
 const isMember = (who: string) => who === 'codie' || who === 'sixth sense';
@@ -84,7 +96,7 @@ function fromOf(
     const who = oneLine(raw.who).toLowerCase().replaceAll('’', "'");
     if (!isStarter(who) && !WING.test(who))
         return {
-            deny: `from has who «${who.slice(0, 40)}»; use ${STARTER_WORDS}. a starter not on this list: drop from and lead the why with its name («retro: …»)`,
+            deny: `from has who «${who.slice(0, 40)}»; use ${STARTER_WORDS} (${CARD_WORDS})`,
         };
     const lane = oneLine(raw.lane);
     const ticket = oneLine(raw.ticket).toUpperCase();
