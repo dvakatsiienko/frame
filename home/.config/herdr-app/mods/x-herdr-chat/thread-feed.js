@@ -90,7 +90,7 @@ const doorTo = (file) => ({
 /**
  * @typedef {object} ThreadFeedDeps
  * @property {ReturnType<typeof import('./band-view.js').createBand>} band
- * @property {() => void} clearShown every view lets go of the old thread: its rows, ask, menu, viewer, find, quill
+ * @property {(cx: Context) => void} clearShown every view lets go of the old thread: its rows, ask, menu, viewer, find, quill
  * @property {ReturnType<typeof import('./find-bar.js').createFindBar>} findBar
  * @property {ReturnType<typeof import("./heights.js").createHeights>} heights
  * @property {ReturnType<typeof import('./path-links.js').createPathLinks>} links
@@ -208,7 +208,7 @@ export function createThreadFeed(deps) {
         feed.isStateRead = false;
         // nothing the views hold of the old thread may act on the new one; read after the fields above, so a
         // draft shown is the one of no thread
-        deps.clearShown();
+        deps.clearShown(cx);
         cx.notify();
         if (pid === null) {
             opened(address, cx);

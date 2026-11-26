@@ -17,7 +17,7 @@ import { View } from 'gpui-kit';
  * @property {(handlers: Handlers) => Element} draw
  * @property {(url: string, cx: import('gpui-kit').Context) => void} follow a click on a link in its text
  * @property {(picture: string) => void} press a left press on one of its squares, by the picture's id
- * @property {(block: number, part: import('./selection.js').Reported | null) => void} report his selection in one of them
+ * @property {(block: number, part: import('./selection.js').Reported | null, cx: import('gpui-kit').Context) => void} report his selection in one of them
  */
 
 class MessageBody extends View {
@@ -46,7 +46,7 @@ const drawBody = (at) =>
         reporting: (view, block, source) =>
             view
                 .on_link_click((url, cx) => at.follow(url, cx))
-                .on_selection_change((s) =>
+                .on_selection_change((s, cx) =>
                     at.report(
                         block,
                         s && {
@@ -55,6 +55,7 @@ const drawBody = (at) =>
                             source,
                             words: s.text,
                         },
+                        cx,
                     ),
                 ),
     });

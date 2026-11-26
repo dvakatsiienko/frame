@@ -50,6 +50,8 @@ export const placeKey = (file) => `place:${file}`;
  * @property {() => string | null} file the shown thread's transcript
  * @property {ReturnType<typeof import('./heights.js').createHeights>} heights
  * @property {(t: Theme) => any} noteBox the note box over the list, null while it is shut
+ * @property {(t: Theme) => any} notePopup «tell <thread>» over the list, its own view; null before it is made
+ * @property {(cx: Context) => void} selected his selection settled or was cleared in a message
  * @property {(cx: Context) => void} loadEarlier the next older page, asked near the first row
  * @property {ReturnType<typeof import('./picture-viewer.js').createPictureViewer>} pictures
  * @property {() => unknown} reader the shown thread's reader: a save for an earlier opening is dropped
@@ -321,7 +323,7 @@ export function createMessageList(deps) {
             .when(Boolean(messageMenu.state), (el) =>
                 el.child(messageMenuView(t)),
             )
-            .children([deps.noteBox(t)].filter(Boolean))
+            .children([deps.notePopup(t), deps.noteBox(t)].filter(Boolean))
             .when(isNewestShown, (el) =>
                 el.child(
                     div()
@@ -439,7 +441,11 @@ export function createMessageList(deps) {
                     report: (
                         /** @type {number} */ block,
                         /** @type {import('./selection.js').Reported | null} */ part,
-                    ) => selections.report(key, stamp, block, part, Date.now()),
+                        /** @type {Context} */ cx,
+                    ) => {
+                        selections.report(key, stamp, block, part, Date.now());
+                        deps.selected(cx);
+                    },
                 });
             }
             const made = bodies.sync(near, later);

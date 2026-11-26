@@ -155,6 +155,8 @@ function createWindow(
         opened: [] as (string | null)[],
         /** a drawn body's selection handler, by row */
         reports: new Map<string, Handler>(),
+        /** selections told to the popup */
+        settled: 0,
         /** a drawn square's press, by row */
         squares: new Map<string, Handler>(),
         /** how many text views each message draws */
@@ -170,6 +172,7 @@ function createWindow(
         heights: createHeights(),
         loadEarlier: () => earlier.push(1),
         noteBox: () => null,
+        notePopup: () => null,
         openNote: (id: string, at: unknown) => annotated.push([id, at]),
         pictures: {
             isOpen: () => bodies.isViewerOpen,
@@ -228,6 +231,9 @@ function createWindow(
             textsCount: () => bodies.texts,
         },
         say: (note: string) => gpui.opened.push([note]),
+        selected: () => {
+            bodies.settled += 1;
+        },
         unsend: () => {},
     } as never);
     let isDirty = true;
@@ -410,6 +416,7 @@ function createWindow(
                 .filter((box) => box.children.length)
                 .map((box) => box.isClipped);
         },
+        cx,
         earlier,
         /** his click on a link in a message */
         async follow(id: string, url: string) {
@@ -423,6 +430,7 @@ function createWindow(
             scrollTop += px;
             drawRows();
         },
+        isDirty: () => isDirty,
         /** the ↓ that brings him to the newest is on screen */
         isNewestShown: () =>
             under(root).some(
@@ -683,6 +691,16 @@ test.each([
         expect(w.rightPress(id).label).toBe('Copy message');
     },
 );
+
+test('a settled selection tells the popup and asks the chat for no draw (FRM-585 C1)', () => {
+    const w = createWindow(Array(5).fill(60), (px) => px);
+    w.run(500);
+    (w.bodies.reports.get('r1') as Handler)(
+        { text: 'two words' } as never,
+        w.cx as never,
+    );
+    expect([w.bodies.settled, w.isDirty()]).toEqual([1, false]);
+});
 
 test('a click opens the square he pressed, and the first when he pressed beside them', () => {
     const w = createWindow(Array(5).fill(60), (px) => px);

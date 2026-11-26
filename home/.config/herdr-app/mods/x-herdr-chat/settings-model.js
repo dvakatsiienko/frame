@@ -190,6 +190,18 @@ export const pages = [
                     },
                 ],
             },
+            {
+                heading: 'notes',
+                rows: [
+                    {
+                        control: { kind: 'toggle' },
+                        default: true,
+                        key: 'chatter.annotate.popup',
+                        title: 'tell popup',
+                        why: 'words you select show «tell <thread>» beside them, a press opens a note on them; off, F6 and the right-click menu still do',
+                    },
+                ],
+            },
         ],
         icon: '💬',
         id: 'chatter',

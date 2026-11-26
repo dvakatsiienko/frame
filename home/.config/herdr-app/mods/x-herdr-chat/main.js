@@ -40,6 +40,7 @@ import { JOINS_DIR } from './joins.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { createMessageList } from './message-list.js';
 import { createMessageRows } from './message-row.js';
+import { createNotePopup } from './note-popup.js';
 import { createNotesByRow } from './note-rows.js';
 import { repliesBelow } from './note-text.js';
 import { createNotes } from './notes.js';
@@ -204,6 +205,14 @@ export default class Chat extends View {
         thread: () => this.feed.file(),
         threadName: () => this.threadName(),
     });
+    isNotePopup = true;
+    /** «tell <thread>» beside the words he selected */
+    notePopup = createNotePopup({
+        isOn: () => this.isNotePopup,
+        open: (selected, cx) => this.annotate(selected, cx),
+        room: () => this.list.size(),
+        threadName: () => this.threadName(),
+    });
     /** the band over the quill and the bar under it */
     band = createBand({
         column: () => this.list.column(),
@@ -267,23 +276,26 @@ export default class Chat extends View {
     });
     /** the list on screen and his reading place in it */
     list = createMessageList({
-        annotate: (selected, cx) => this.quillMini.show(selected, cx),
+        annotate: (selected, cx) => this.annotate(selected, cx),
         audioApp: () => this.audioApp,
         file: () => this.feed.file(),
         heights: this.heights,
         loadEarlier: (cx) => this.feed.loadEarlier(cx),
         noteBox: (t) => this.quillMini.view(t),
+        notePopup: (t) => this.notePopup.element(t),
         openNote: (id, at, cx) => this.quillMini.openNote(id, at, cx),
         pictures: this.pictures,
         reader: () => this.feed.reader(),
         rows: this.rows,
         say: (note, cx) => this.say(note, cx),
+        selected: (cx) =>
+            this.notePopup.reported(this.list.selectedAt(Date.now()), cx),
         unsend: (queued, cx) => this.sendPath.unsend(queued, cx),
     });
     /** the thread shown: its Claude, its transcript read and watched, its earlier pages */
     feed = createThreadFeed({
         band: this.band,
-        clearShown: () => this.clearShown(),
+        clearShown: (cx) => this.clearShown(cx),
         findBar: this.findBar,
         heights: this.heights,
         links: this.links,
@@ -319,8 +331,8 @@ export default class Chat extends View {
         );
     }
 
-    /** every view lets go of the thread it showed: nothing of the old one may act on the next */
-    clearShown() {
+    /** every view lets go of the thread it showed: nothing of the old one may act on the next @param {Context} cx */
+    clearShown(cx) {
         this.model.clear();
         this.blocked.clear();
         this.rows.clearThread();
@@ -331,6 +343,7 @@ export default class Chat extends View {
         this.pictures.close();
         this.findBar.reset();
         this.quillMini.reset();
+        this.notePopup.hide(cx);
         this.sendPath.takeJoins(null);
         // no button shows or presses a thread no longer on screen; the fleet's facts stay
         this.band.clear();
@@ -373,6 +386,7 @@ export default class Chat extends View {
         this.chatKeys = cx.focus_handle();
         this.quill.start(cx);
         this.quillMini.start(cx);
+        this.notePopup.start(cx);
         this.pickers.start(cx);
         this.pictures.start(cx);
         this.findBar.start(cx);
@@ -789,6 +803,13 @@ export default class Chat extends View {
         this.audioApp = audioAppOf(values);
         this.band.applySettings(values);
         this.isShowMore = values['chatter.showMore'] === true;
+        this.isNotePopup = values['chatter.annotate.popup'] !== false;
+    }
+
+    /** the note box on words he selected, the popup gone @param {import('./selection.js').SelectedAt} selected @param {Context} cx */
+    annotate(selected, cx) {
+        this.notePopup.hide(cx);
+        this.quillMini.show(selected, cx);
     }
 
     /** @param {string | null} note @param {Context} cx */

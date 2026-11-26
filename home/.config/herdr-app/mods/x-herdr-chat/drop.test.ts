@@ -496,16 +496,20 @@ describe('the note box', () => {
         expect(view.rowOf('line')).toBe(row);
     });
 
-    test('a thread switched from shuts it', () => {
+    test('a thread switched from shuts it and its popup', () => {
         const reset = vi.fn();
+        const hide = vi.fn();
         const view = chat({
             heights: quiet(),
             model: { clear: () => {}, rows: [] },
+            notePopup: quiet({ hide }),
             quillMini: quiet({ reset }),
             sendPath: quiet(),
-        }) as never as { clearShown: () => void };
-        view.clearShown();
-        expect(reset).toHaveBeenCalledTimes(1);
+        }) as never as { clearShown: (cx: unknown) => void };
+        view.clearShown({});
+        expect([reset.mock.calls.length, hide.mock.calls.length]).toEqual([
+            1, 1,
+        ]);
     });
 
     test.each([

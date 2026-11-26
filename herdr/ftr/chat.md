@@ -113,6 +113,11 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and a send or join refused with the box shut says why under the quill; a reload as one was sent makes it his draft, saying so, until its line is in the transcript; joined again meanwhile, that line landing before a turn takes the row reads sent, and the row leaves, so it goes once
   - and Esc closes the viewer first, then the box, then find; a thread switch closes the box, its draft kept in its own thread; an emptied draft leaves no record
   - and the box fades in sliding up and fades out sliding down, about 120 ms each way; a second F6 sooner than that leaves no box; with reduce motion on in macOS it neither moves nor fades (C2)
+- ⬜ «tell <thread>» beside the words he selected opens the note box on them (FRM-585 C1, FRM-564:W2, W38; not live yet)
+  - given words selected in a reply, or in a message of his the thread has, and the tell popup on in settings › chat › notes
+  - when the selection settles, then «tell <thread>» shows over the words' end, inside the list, and the chat does not redraw, so the words stay selected
+  - and one press on it opens the box on those words, the same as F6; with nothing pressed it goes a moment after the words are no longer selected
+  - and with the tell popup off nothing shows; F6 and the right-click menu still open the box
 - ⬜ the words he wrote a note on stay highlighted in their message (FRM-585:W2, W50, W51; not live yet)
   - given notes on a message, then each one's words are painted behind in the theme's accent, stronger while the thread has not got the note, quieter once it has; opening the box paints them at once
   - and they are found again after the reply grew or an older page landed above it; words that are gone, or stand twice and moved, show none and the note stays
