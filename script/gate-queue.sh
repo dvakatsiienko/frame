@@ -343,8 +343,9 @@ release() {
     times >"$sample.times-after"
     freed
     rm -rf "$turn"
-    # a signal ended this shell with the batch still running: its group goes with it
-    [ -n "$batch" ] && kill -TERM -- "-$batch" 2>/dev/null
+    # a signal ended this shell with the batch still running: its line and its group go with it
+    [ -n "$line" ] && kill "$line" 2>/dev/null
+    [ -n "$batch" ] && end_group "$batch"
     [ -e "$sample.capped" ] && code=124 && batch_capped=1
     rm -f "$sample.capped"
     log_run "$ran" "$code"
@@ -356,6 +357,15 @@ release() {
 leave
 batch=
 batch_capped=
+line=
+batch_max=${GATE_QUEUE_BATCH_MAX:-180}
+# TERM, then KILL for what ignored it: a group's id stays its own while any member lives
+end_group() {
+    kill -TERM -- "-$1" 2>/dev/null || return 0
+    sleep "${GATE_QUEUE_KILL_GRACE:-2}"
+    kill -KILL -- "-$1" 2>/dev/null
+    return 0
+}
 trap release EXIT
 # pid, its start, the command on one line, when the turn was taken, the session: the waiting line reads the last three
 printf '%s\n%s\n%s\n%s\n%s\n' "$$" "$(started_at $$)" "$(printf %s "$*" | tr '\n\t' '  ')" "$took" "${CLAUDE_CODE_SESSION_ID:-}" >"$turn/holder"
@@ -365,7 +375,6 @@ printf '%s\n%s\n%s\n%s\n%s\n' "$$" "$(started_at $$)" "$(printf %s "$*" | tr '\n
 # a batch run whole kept every suite behind it: two held the turn 21 min each while four suites stood 7 to 16 (2026-11-24). so a
 # batch ends at its line, in its own process group so every process it started goes; a terminal's stdin stays with this shell, since
 # a group outside the terminal's foreground that reads it stops
-batch_max=${GATE_QUEUE_BATCH_MAX:-180}
 set -m
 if [ -t 0 ]; then
     GATE_QUEUE_HELD=$slot "$@" </dev/null &
@@ -374,10 +383,14 @@ else
 fi
 batch=$!
 set +m
-(sleep "$batch_max" && : >"$sample.capped" && kill -TERM -- "-$batch" && sleep 5 && kill -KILL -- "-$batch") </dev/null >/dev/null 2>&1 &
+# the line marks a batch still alive, before its TERM, so the mark is there when the wait returns; it sends the KILL itself, since
+# a leader that ignores TERM keeps the wait below from returning
+(sleep "$batch_max" && kill -0 -- "-$batch" && : >"$sample.capped" && end_group "$batch") </dev/null >/dev/null 2>&1 &
 line=$!
 wait "$batch"
 code=$?
-batch=
 kill "$line" 2>/dev/null
+line=
+[ -e "$sample.capped" ] && end_group "$batch"
+batch=
 exit "$code"

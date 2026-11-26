@@ -77,7 +77,7 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 	}
 	defer turn.close(nil)
 	if !grouped {
-		return verifySet(r, sets[0], command, flags, turn)
+		return verifySet(r, sets[0], command, flags, turn, nil)
 	}
 	// every set's anchors are read before the first run, so a typo in the last set never costs the round
 	for _, set := range sets {
@@ -87,15 +87,21 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 	}
 	results := make([]any, 0, len(sets))
 	var missed []string
+	// a cut call resumes past every set it finished, so each set's rows stay saved until the whole call ends
+	var finished []*redProgress
 	for _, set := range sets {
-		got, err := verifySet(r, set, command, flags, turn)
-		if fail, refused := errors.AsType[*Fail](err); refused && !fail.IsUsage {
+		got, err := verifySet(r, set, command, flags, turn, &finished)
+		// a set's own verdict is a refusal; a turn that timed out or an interrupt ends the call, never one set
+		if fail, isFail := errors.AsType[*Fail](err); isFail && fail.Refused {
 			missed = append(missed, set.file+": "+fail.Msg)
 			got = cmp.Or[any](fail.Data, ordered{{"file", set.file}, {"verdict", "refused"}, {"why", fail.Msg}})
 		} else if err != nil {
 			return nil, err
 		}
 		results = append(results, got)
+	}
+	for _, saved := range finished {
+		saved.drop()
 	}
 	if len(missed) > 0 {
 		return nil, &Fail{Refused: true, Msg: fmt.Sprintf("no proof in %d of %d sets: %s", len(missed), len(sets), strings.Join(missed, "; ")), Next: "fix each set named above; the same command runs them again", Data: ordered{{"verdict", "no proof"}, {"sets", results}}}
@@ -118,7 +124,8 @@ func anchorsHold(set redSet) error {
 }
 
 // one set's round: the file as it is, then each pair alone
-func verifySet(r *Run, set redSet, command []string, flags Flags, turn *redTurn) (any, error) {
+// finished, when set, keeps the set's saved rows for the caller to drop; nil drops them once the set ends
+func verifySet(r *Run, set redSet, command []string, flags Flags, turn *redTurn, finished *[]*redProgress) (any, error) {
 	file, pairs, test := set.file, set.pairs, set.test
 	original, err := os.ReadFile(file)
 	if err != nil {
@@ -205,7 +212,13 @@ func verifySet(r *Run, set redSet, command []string, flags Flags, turn *redTurn)
 			row.Pair, row.Seconds = pairLabel(pair.anchor), took.Round(100*time.Millisecond).Seconds()
 			rows = append(rows, row)
 		}
-		saved.drop()
+		if finished == nil {
+			saved.drop()
+		} else {
+			saved.Pairs = rows
+			saved.save()
+			*finished = append(*finished, saved)
+		}
 		if verdict := worstPair(rows); verdict != verdictRed {
 			return "", notHeld(verdict)
 		}

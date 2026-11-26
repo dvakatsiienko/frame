@@ -26,6 +26,7 @@ born 2026-11-19 on dima's word (W40: «let's try the refuse and test drive it fo
 ## the refusal log — one line per refusal, by the codie it stopped or by clio at land
 
 - date · file · lines / cap · right or wrong · minutes lost · what the codie did (split, `size:` line, asked for a raise)
+- 26 Nov · `script/lib/gate-queue.test.ts` · 1,220 / 1,200 · right: its cpu-log block and its kit were concerns of their own · 8 · split: `gate-queue-kit.ts` (the shared fixture), `gate-queue-cpu.test.ts` (the cpu log), the main file 1,021 (mods codie, FRM-689 queue rider)
 
 ## rounds
 

@@ -83,3 +83,22 @@ func TestVerifyRedResumesACutRun(t *testing.T) {
 		})
 	}
 }
+
+// a grouped call cut in its second set reruns only what that set left: the first set's rows stay saved till the call ends
+func TestVerifyRedResumesACutCallPastItsFinishedSets(t *testing.T) {
+	t.Parallel()
+	f, marker := cutRedFixture(t)
+	pairs := pairsFile(t, "@ lib.go lib_test.go", "Limit = 3\tLimit = 4", "@ lib.go lib_test.go", "Limit = 3\tLimit = 5")
+	log := filepath.Join(t.TempDir(), "verify.log")
+	env := []string{"VERIFY_LOG=" + log, "HANG_MARKER=" + marker, "X_STATE=" + t.TempDir(), "TMPDIR=" + t.TempDir()}
+	cutAt(t, f, env, 4, syscall.SIGKILL, "--pairs", pairs)
+
+	got := xIn(t, f.dir, append(f.env, env...), "verify", "red", "--pairs", pairs)
+
+	if got.code != 0 || got.data["verdict"] != verdictRed {
+		t.Fatalf("exit %d, data %v, want red:\n%s", got.code, got.data, got.stdout)
+	}
+	if runs := strings.Count(readOr(log, ""), "\n") - 4; runs != 1 {
+		t.Fatalf("the second call ran the test %d times, want 1: the second set's mutant alone", runs)
+	}
+}
