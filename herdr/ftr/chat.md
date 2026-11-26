@@ -102,7 +102,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and a selection across two messages copies the part in the one he right-clicked; two blocks of one message join with an empty line
   - and a selection lives while any line of its message is on screen, and is gone once the whole message left it or the chat was hidden (herdr's own, dima's look 25 Nov)
   - and a reply that grows under his selection loses it, and then copies whole
-- ⬜ F6, or «Annotate» in the right-click menu, opens the quill-mini: a small box for a note on the words he selected (FRM-585:W3, W12, W35; not live yet)
+- ✅ F6, or «Annotate» in the right-click menu, opens the quill-mini: a small box for a note on the words he selected (FRM-585:W3, W12, W35)
   - given words selected in a reply, or in a message of his the thread has
   - when he presses F6 from anywhere in the window, then the box opens under the words' end with the cursor in it, the words over it cut as the thread will get them, the thread's name beside; F6 again, Esc or a press outside closes it and keeps the note as his draft, and the same words bring the draft back (W5, W6)
   - and the words are those that stood selected at the press; with none, in a message still waiting, in one scrolled away, or with the picture viewer open, F6 does nothing, and no view moves (W4)
@@ -113,22 +113,23 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and a send or join refused with the box shut says why under the quill; a reload as one was sent makes it his draft, saying so, until its line is in the transcript; joined again meanwhile, that line landing before a turn takes the row reads sent, and the row leaves, so it goes once
   - and Esc closes the viewer first, then the box, then find; a thread switch closes the box, its draft kept in its own thread; an emptied draft leaves no record
   - and the box fades in sliding up and fades out sliding down, about 120 ms each way; a second F6 sooner than that leaves no box; with reduce motion on in macOS it neither moves nor fades (C2)
-- ⬜ «tell <thread>» beside the words he selected opens the note box on them (FRM-585 C1, FRM-564:W2, W38; not live yet)
+- ✅ «tell <thread>» beside the words he selected opens the note box on them (FRM-585 C1, FRM-564:W2, W38)
   - given words selected in a reply, or in a message of his the thread has, and the tell popup on in settings › chat › notes
   - when the selection settles, then «tell <thread>» shows over the words' end, inside the list, and the chat does not redraw, so the words stay selected
   - and one press on it opens the box on those words, the same as F6; with nothing pressed it goes a moment after the words are no longer selected
   - and with the tell popup off nothing shows; F6 and the right-click menu still open the box
-- ⬜ a note the thread has reads as his words, the words it is on a dim line over them (FRM-585 C3; not live yet)
+  - and under the pointer it stays solid, its border in the accent, with no tooltip (dima, 26 Nov 14:27)
+- ✅ a note the thread has reads as his words, the words it is on a dim line over them (FRM-585 C3)
   - given a note that joined a turn or went as its own message
   - then its message shows «on "<the words>"» dim over his note, never the line the thread got; a message he typed that only reads like a note stays as typed
   - and Copy on it gives what the bubble shows: the «on» line, then his words
-- ⬜ the words he wrote a note on stay highlighted in their message (FRM-585:W2, W50, W51; not live yet)
+- ✅ the words he wrote a note on stay highlighted in their message (FRM-585:W2, W50, W51)
   - given notes on a message, then each one's words are painted behind in the theme's accent, stronger while the thread has not got the note, quieter once it has; opening the box paints them at once
   - and they are found again after the reply grew or an older page landed above it; words that are gone, or stand twice and moved, show none and the note stays
   - and find's hits are painted over them, and leave them as they were
   - and a path in them that became a link later is still found; a folded reply paints none past the lines it shows
-  - when he clicks them with nothing selected, then the box opens on that note; a drag or a double click on them selects as anywhere else; of two notes on the same words the click opens the newer, the other by its row; in a code block, a code span, a link, a table or across a line break they are painted but open nothing, the row is the door (B5)
-- ⬜ each note is one quiet row under its message (FRM-585:W2, W10; not live yet)
+  - when he clicks them with nothing selected, then the box opens on that note under the words he clicked, over them when there is no room below (dima, 26 Nov 14:39); a drag or a double click on them selects as anywhere else; of two notes on the same words the click opens the newer, the other by its row; in a code block, a code span, a link, a table or across a line break they are painted but open nothing, the row is the door (B5)
+- ✅ each note is one quiet row under its message (FRM-585:W2, W10)
   - given notes on a message, then under it and its files comes a row for each, in the order he made them: 📝, its words on one line, and where it stands (draft, waiting, joined, sent); a note with no words yet has none
   - when he clicks one, then the box opens on that note where he clicked: to edit while the thread has not got it, to read after
   - and a row that comes or goes above what he reads moves nothing; a reading place saved on one finds its message

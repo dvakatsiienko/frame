@@ -210,7 +210,7 @@ export default class Chat extends View {
     isNotePopup = true;
     /** the popup's last press, or a click on a note's words, as the chat saw it @type {unknown} */
     tellAsk = null;
-    /** the note whose words he clicked, until the chat opens it @type {string | null} */
+    /** the note whose words he clicked and where, until the chat opens it @type {{ id: string, at: { x: number, y: number } | null } | null} */
     noteAsk = null;
     /** «tell <thread>» beside the words he selected */
     notePopup = createNotePopup({
@@ -292,8 +292,8 @@ export default class Chat extends View {
         heights: this.heights,
         loadEarlier: (cx) => this.feed.loadEarlier(cx),
         noteBox: (t) => this.quillMini.view(t),
-        noteClicked: (id) => {
-            this.noteAsk = id;
+        noteClicked: (id, at) => {
+            this.noteAsk = { at, id };
             setShared(TELL, Date.now());
         },
         notePopup: (t) => this.notePopup.element(t),
@@ -505,7 +505,7 @@ export default class Chat extends View {
                 const note = this.noteAsk;
                 this.noteAsk = null;
                 if (words) this.annotate(words, later);
-                else if (note) this.quillMini.openNote(note, null, later);
+                else if (note) this.quillMini.openNote(note.id, note.at, later);
             });
         }
         // a click on an orbit preview brings the chat into view and asks its viewer here (FRM-676)

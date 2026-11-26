@@ -152,7 +152,7 @@ function createWindow(
         /** what every row's text views draw from */
         look: 'first',
         /** notes whose words he clicked */
-        noted: [] as string[],
+        noted: [] as unknown[],
         /** a body told to draw again */
         notified: new Set<unknown>(),
         /** the square each click on a row opens */
@@ -176,7 +176,7 @@ function createWindow(
         heights: createHeights(),
         loadEarlier: () => earlier.push(1),
         noteBox: () => null,
-        noteClicked: (id: string) => bodies.noted.push(id),
+        noteClicked: (id: string, at: unknown) => bodies.noted.push([id, at]),
         notePopup: () => null,
         openNote: (id: string, at: unknown) => annotated.push([id, at]),
         pictures: {
@@ -734,11 +734,13 @@ test.each([
 });
 
 // FRM-585 B5
-test('a click on a note’s words opens that note, and nothing else', async () => {
+test('a click on a note’s words opens that note under the press, and nothing else', async () => {
     const w = createWindow(Array(5).fill(60), (px) => px);
     w.run(500);
+    w.leftDown(553, 182);
     expect(await w.follow('r1', 'note:n1')).toEqual([]);
-    expect(w.bodies.noted).toEqual(['n1']);
+    // his 14:39 shot: two notes opened in one spot, far from their words
+    expect(w.bodies.noted).toEqual([['n1', { x: 100, y: 100 }]]);
 });
 
 test('words selected over a note’s link stand in the markdown as written', () => {

@@ -424,17 +424,20 @@ describe('the note box', () => {
                 isOpen: () => false,
                 openNote: (id: unknown, at: unknown) => opened.push(id, at),
             }),
-        }) as never as { noteAsk: string | null; render: (c: unknown) => void };
+        }) as never as {
+            noteAsk: { at: unknown; id: string } | null;
+            render: (c: unknown) => void;
+        };
         const draw = () => {
             view.render(cx);
             for (const run of at.timers.splice(0)) run();
         };
         draw();
-        view.noteAsk = 'n1';
+        view.noteAsk = { at: { x: 100, y: 100 }, id: 'n1' };
         at.shared.set('chat.tell', Date.now());
         draw();
         draw();
-        expect(opened).toEqual(['n1', null]);
+        expect(opened).toEqual(['n1', { x: 100, y: 100 }]);
     });
 
     test('F6 takes the words that stood at its press, once', () => {
