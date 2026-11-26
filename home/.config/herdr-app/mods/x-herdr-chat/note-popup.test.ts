@@ -40,6 +40,7 @@ const words = (y = 200) => ({
 function world(isOn: boolean | (() => boolean) = true) {
     const opened: unknown[] = [];
     const notified: unknown[] = [];
+    const stopped: boolean[] = [];
     let drawn: () => unknown = () => null;
     const timers: (() => void)[] = [];
     const entity = { name: 'the popup' };
@@ -49,7 +50,9 @@ function world(isOn: boolean | (() => boolean) = true) {
             return entity;
         },
         notify: (...args: unknown[]) => notified.push(args[0] ?? 'the chat'),
-        stop_propagation: () => {},
+        stop_propagation: () => {
+            stopped.push(true);
+        },
         timer: {
             after: (_ms: number, run: (c: unknown) => void) => {
                 const at = timers.push(() => run(cx)) - 1;
@@ -80,6 +83,7 @@ function world(isOn: boolean | (() => boolean) = true) {
         runTimers: () => {
             for (const run of timers.splice(0)) run();
         },
+        stopped,
     };
 }
 
@@ -101,6 +105,9 @@ test('a press opens the box on the words it showed, the selection already cleare
     w.runTimers();
     expect(w.opened).toEqual([selected]);
     expect(w.popup.isShown()).toBe(false);
+    // the list under it never sees the press, and the words are taken once
+    expect(w.stopped).toEqual([true]);
+    expect(w.popup.take()).toBeNull();
 });
 
 test('cleared with no press, it goes a moment later', () => {

@@ -88,3 +88,12 @@ test('with reduce motion on, it is there at once and gone at once', () => {
     w.motion.closed('the box', w.cx);
     expect([w.motion.ghost(), w.live()]).toEqual([null, 0]);
 });
+
+test('opened again while shown, as on another note, it stays shown and starts no move', () => {
+    const w = world();
+    w.motion.opened(w.cx);
+    w.pass(20);
+    w.pass(MINI_MOTION_MS);
+    w.motion.opened(w.cx);
+    expect([w.motion.look().opacity, w.live()]).toEqual([1, 0]);
+});

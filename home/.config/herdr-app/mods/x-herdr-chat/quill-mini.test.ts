@@ -98,6 +98,7 @@ vi.mock('gpui-base', () => ({
 const { createQuillMini, miniPlace } = await import('./quill-mini.js');
 const { JOIN_TAKE_MS } = await import('./joins.js');
 const { createNotes } = await import('./notes.js');
+const herdr = await import('herdr');
 
 const raw = (el: unknown) =>
     el && typeof el === 'object' ? ((el as { raw?: El }).raw ?? null) : null;
@@ -297,6 +298,17 @@ beforeEach(() => {
     at.timers.length = 0;
 });
 
+/** every handler on an element and the elements in it */
+const pressable = (el: El | null | undefined): string[] =>
+    el
+        ? [
+              ...el.handlers.keys(),
+              ...el.kids.flatMap((kid) =>
+                  pressable((kid as { raw?: El } | null)?.raw),
+              ),
+          ]
+        : [];
+
 describe('the box comes and goes (FRM-585 C2)', () => {
     /** reduce motion read as off: still until then */
     const moving = async () => {
@@ -357,12 +369,24 @@ describe('the box comes and goes (FRM-585 C2)', () => {
         // its frame, then its way in
         w.run();
         w.run();
+        // words typed: its buttons were live as it stood
+        w.type('why here?');
         w.f6();
         expect(w.mini.isOpen()).toBe(false);
         expect(w.root()?.opacity).toBe(0);
-        expect(w.root()?.handlers.size).toBe(0);
+        expect(pressable(w.root())).toEqual([]);
         w.run();
         expect(w.root()).toBeNull();
+    });
+
+    test('with reduce motion on in macOS, it neither fades nor slides', async () => {
+        vi.mocked(herdr.exec).mockResolvedValueOnce({
+            code: 0,
+            stdout: '1\n',
+        } as never);
+        const w = await moving();
+        w.f6();
+        expect([w.root()?.opacity, w.root()?.moved]).toEqual([1, undefined]);
     });
 });
 
