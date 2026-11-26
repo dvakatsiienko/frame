@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -17,12 +18,22 @@ var statsNow = time.Date(2026, 11, 27, 12, 0, 0, 0, time.UTC)
 const statsDead = 99_999_901
 
 type statsWorld struct {
-	t   *testing.T
-	dir string
+	t        *testing.T
+	dir      string
+	sessions string
 }
 
 func newStatsWorld(t *testing.T) statsWorld {
-	return statsWorld{t: t, dir: t.TempDir()}
+	return statsWorld{t: t, dir: t.TempDir(), sessions: t.TempDir()}
+}
+
+// the session registry's entry for a live pid, naming the thread it runs
+func (w statsWorld) live(pid int, sid string) {
+	w.t.Helper()
+	raw, _ := json.Marshal(map[string]any{"pid": pid, "sessionId": sid})
+	if err := os.WriteFile(filepath.Join(w.sessions, strconv.Itoa(pid)+".json"), raw, 0o644); err != nil {
+		w.t.Fatal(err)
+	}
 }
 
 // a row from `startMin` to `endMin`, minutes before the clock
@@ -64,7 +75,7 @@ func (w statsWorld) fold(hours int, only ...string) *statsAnswer {
 	if len(only) > 0 {
 		o = only
 	}
-	return statsFoldAt(w.dir, statsNow, hours, o)
+	return statsFoldAt(w.dir, w.sessions, statsNow, hours, o)
 }
 
 func TestFleetStatsParked(t *testing.T) {
@@ -102,13 +113,21 @@ func TestFleetStatsParked(t *testing.T) {
 		}, "x", 23 * 3600},
 		{"a killed thread resumed under a new pid parks nothing", func(w statsWorld) {
 			w.busy()
+			// a kill -9 leaves its registry entry behind
+			w.live(statsDead+1, "x")
 			w.row("x", statsDead, 400, 399, "typed", nil)
 			w.row("x", statsDead+1, 99, 98, "typed", nil)
 		}, "x", 0},
 		{"a live idle thread parks its open gap", func(w statsWorld) {
 			w.busy()
+			w.live(os.Getpid(), "x")
 			w.row("x", os.Getpid(), 10, 4, "typed", nil)
 		}, "x", 4 * 60},
+		{"a dead thread whose pid another session took parks nothing past its last row", func(w statsWorld) {
+			w.busy()
+			w.live(os.Getpid(), "someone-else")
+			w.row("x", os.Getpid(), 10, 4, "typed", nil)
+		}, "x", 0},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -155,6 +174,12 @@ func TestFleetStatsLostAndWakes(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(w.dir, "open", "k.json"), stamp, 0o644); err != nil {
 		t.Fatal(err)
 	}
+	// a stamp whose pid another session took now: its thread is dead, its turn lost
+	reused, _ := json.Marshal(map[string]any{"pid": os.Getpid(), "start": statsNow.Add(-2 * time.Hour).UnixMilli(), "turnId": "r"})
+	if err := os.WriteFile(filepath.Join(w.dir, "open", "r.json"), reused, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	w.live(os.Getpid(), "someone-else")
 	// a dead thread's stamp its own row explains is no lost turn
 	written, _ := json.Marshal(map[string]any{"pid": statsDead, "start": statsNow.Add(-20 * time.Minute).UnixMilli(), "turnId": "t"})
 	if err := os.WriteFile(filepath.Join(w.dir, "open", "m.json"), written, 0o644); err != nil {
@@ -169,8 +194,8 @@ func TestFleetStatsLostAndWakes(t *testing.T) {
 	w.row("m", statsDead, 20, 19, "member", func(r map[string]any) { quiet(1)(r); r["ended"] = "aborted" })
 	f := w.fold(24)
 	got := []int{f.Lost, f.Fleet.EmptyWakes, f.Fleet.WakesNotHis, f.Fleet.KeepHot}
-	if !slices.Equal(got, []int{1, 1, 3, 1}) {
-		t.Fatalf("lost, empty wakes, wakes not his, keep-hot: %v, want [1 1 3 1]", got)
+	if !slices.Equal(got, []int{2, 1, 3, 1}) {
+		t.Fatalf("lost, empty wakes, wakes not his, keep-hot: %v, want [2 1 3 1]", got)
 	}
 }
 

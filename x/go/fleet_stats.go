@@ -131,7 +131,7 @@ func fleetStats(r *Run, _ []string, flags Flags) (any, error) {
 	}
 	now := clock()
 	if hours != statsHours || only != nil {
-		return statsFoldAt(dir, now, hours, only), nil
+		return statsFoldAt(dir, sessionsDir(), now, hours, only), nil
 	}
 	return statsCached(dir, now)
 }
@@ -140,7 +140,7 @@ func fleetStats(r *Run, _ []string, flags Flags) (any, error) {
 func statsCached(dir string, now time.Time) (any, error) {
 	file := statsCacheFile()
 	if file == "" {
-		return statsFoldAt(dir, now, statsHours, nil), nil
+		return statsFoldAt(dir, sessionsDir(), now, statsHours, nil), nil
 	}
 	if a, ok := statsFresh(file, now); ok {
 		return a, nil
@@ -157,7 +157,7 @@ func statsCached(dir string, now time.Time) (any, error) {
 	if a, ok := statsFresh(file, clock()); ok {
 		return a, nil
 	}
-	a := statsFoldAt(dir, now, statsHours, nil)
+	a := statsFoldAt(dir, sessionsDir(), now, statsHours, nil)
 	raw, err := json.Marshal(a)
 	if err != nil {
 		return nil, err
@@ -186,7 +186,7 @@ func statsFresh(file string, now time.Time) (*statsAnswer, bool) {
 	return &a, true
 }
 
-func statsFoldAt(dir string, now time.Time, hours int, only []string) *statsAnswer {
+func statsFoldAt(dir, sessions string, now time.Time, hours int, only []string) *statsAnswer {
 	from := now.Add(-time.Duration(hours) * time.Hour)
 	rows, torn, skipped := statsRows(dir, from, now)
 	a := &statsAnswer{
@@ -200,7 +200,7 @@ func statsFoldAt(dir string, now time.Time, hours int, only []string) *statsAnsw
 		V:       statsVersion,
 	}
 	idle := statsIdleStretches(rows, from, now)
-	a.Lost = statsLost(dir, rows, from)
+	a.Lost = statsLost(dir, sessions, rows, from)
 	bySid := map[string][]turnRow{}
 	for _, row := range rows {
 		bySid[row.Sid] = append(bySid[row.Sid], row)
@@ -218,7 +218,7 @@ func statsFoldAt(dir string, now time.Time, hours int, only []string) *statsAnsw
 				a.Unknown++
 			}
 		}
-		f.park(bySid[sid], idle, from, now, statsLiveGap(dir, bySid[sid], now))
+		f.park(bySid[sid], idle, from, now, statsLiveGap(dir, sessions, bySid[sid], now))
 		fleet.ParkedS += f.ParkedS
 		fleet.ParkedNowS += f.ParkedNowS
 		fleet.Clamped += f.Clamped
@@ -366,9 +366,9 @@ func (f *statsFold) park(rows []turnRow, idle []statsSpan, from, now time.Time, 
 func overlap(a, b statsSpan) int64 { return max(0, min(a.to, b.to)-max(a.from, b.from)) }
 
 // a live thread with no turn running parks from its last row's end
-func statsLiveGap(dir string, rows []turnRow, now time.Time) int64 {
+func statsLiveGap(dir, sessions string, rows []turnRow, now time.Time) int64 {
 	last := slices.MaxFunc(rows, func(a, b turnRow) int { return int(a.End - b.End) })
-	if !pidAlive(last.Pid) {
+	if !threadAlive(sessions, last.Pid, last.Sid) {
 		return 0
 	}
 	if stamp, ok := readOpenStamp(dir, last.Sid); ok && stamp.Start > last.Start && stamp.Pid == last.Pid {
@@ -380,6 +380,19 @@ func statsLiveGap(dir string, rows []turnRow, now time.Time) int64 {
 	return last.End
 }
 
+// a thread lives while its pid does and the session registry still names it under that pid: this mac reuses a pid within
+// minutes, so a live pid alone would park a dead thread's every hour since its last row
+func threadAlive(sessions string, pid int, sid string) bool {
+	if sessions == "" || !pidAlive(pid) {
+		return false
+	}
+	var entry struct {
+		SessionID string `json:"sessionId"`
+	}
+	raw, err := os.ReadFile(filepath.Join(sessions, strconv.Itoa(pid)+".json"))
+	return err == nil && json.Unmarshal(raw, &entry) == nil && entry.SessionID == sid
+}
+
 func readOpenStamp(dir, sid string) (openStamp, bool) {
 	var s openStamp
 	raw, err := os.ReadFile(filepath.Join(dir, "open", sid+".json"))
@@ -387,7 +400,7 @@ func readOpenStamp(dir, sid string) (openStamp, bool) {
 }
 
 // a lost turn: an open stamp whose pid is dead and that no row of its start explains
-func statsLost(dir string, rows []turnRow, from time.Time) int {
+func statsLost(dir, sessions string, rows []turnRow, from time.Time) int {
 	entries, _ := os.ReadDir(filepath.Join(dir, "open"))
 	lost := 0
 	for _, e := range entries {
@@ -396,7 +409,7 @@ func statsLost(dir string, rows []turnRow, from time.Time) int {
 			continue
 		}
 		s, ok := readOpenStamp(dir, sid)
-		if !ok || s.Start < from.UnixMilli() || pidAlive(s.Pid) {
+		if !ok || s.Start < from.UnixMilli() || threadAlive(sessions, s.Pid, sid) {
 			continue
 		}
 		if !slices.ContainsFunc(rows, func(r turnRow) bool { return r.Sid == sid && r.Start == s.Start }) {
