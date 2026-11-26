@@ -77,6 +77,9 @@ export const newNote = (passage, id, past) => ({
     writtenAt: 0,
 });
 
+/** a note with nothing to say: no words and no thumb @param {Note} note */
+export const isEmpty = (note) => !note.text.trim() && !note.grade;
+
 /** a note the thread has or is getting: it opens, and nothing in it changes @param {Note} note */
 export const isLocked = (note) =>
     note.state !== 'draft' && note.state !== 'waiting';

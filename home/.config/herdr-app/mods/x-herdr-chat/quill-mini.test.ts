@@ -1,71 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { SelectedAt } from './selection.js';
+const { at, make } = await vi.hoisted(() => import('./quill-mini-fakes.ts'));
 
-type Handler = (...args: never[]) => unknown;
-type El = {
-    handlers: Map<string, Handler>;
-    id: string | null;
-    kids: unknown[];
-    tooltip: string | null;
-    top?: number;
-    opacity?: number;
-    moved?: string[];
-};
-const at = vi.hoisted(() => ({
-    box: {
-        focused: 0,
-        on: new Map<string, (event: unknown, cx: unknown) => void>(),
-        range: { end: 0, start: 0 },
-        text: '',
-    },
-    keys: [] as { action: string; context: string; keystroke: string }[],
-    timers: [] as { ms: number; run: () => void }[],
-    zoom: 1,
-}));
-const { make } = vi.hoisted(() => ({
-    make: (): unknown => {
-        const el: El = {
-            handlers: new Map(),
-            id: null,
-            kids: [],
-            tooltip: null,
-        };
-        const self: unknown = new Proxy(el, {
-            get(target, name) {
-                if (name === 'raw') return target;
-                return (...args: unknown[]) => {
-                    if (name === 'id') target.id = String(args[0]);
-                    else if (name === 'top') target.top = Number(args[0]);
-                    else if (name === 'opacity')
-                        target.opacity = Number(args[0]);
-                    else if (name === 'transition')
-                        target.moved = [
-                            ...(target.moved ?? []),
-                            String(args[0]),
-                        ];
-                    else if (name === 'tooltip')
-                        target.tooltip = String(args[0]);
-                    else if (name === 'child') target.kids.push(args[0]);
-                    else if (name === 'when') {
-                        if (args[0]) (args[1] as (el: unknown) => void)(self);
-                    } else if (String(name).startsWith('on_'))
-                        target.handlers.set(
-                            name === 'on_action'
-                                ? String(args[0])
-                                : name === 'on_mouse_down' ||
-                                    name === 'on_mouse_up'
-                                  ? `${String(name)}_${args[0]}`
-                                  : String(name),
-                            args.at(-1) as Handler,
-                        );
-                    return self;
-                };
-            },
-        });
-        return self;
-    },
-}));
 vi.mock('herdr', () => ({
     // reduce motion is off: macOS has no key for it
     exec: vi.fn(async () => ({ code: 1, stdout: '' })),
@@ -73,6 +9,8 @@ vi.mock('herdr', () => ({
 }));
 vi.mock('gpui-kit', () => ({ div: make }));
 vi.mock('gpui-base', () => ({
+    Button: { new: make },
+    Checkbox: { new: make },
     Textarea: { new: () => 'the box' },
     TextareaState: {
         new: () => ({
@@ -95,201 +33,11 @@ vi.mock('gpui-base', () => ({
     h_flex: make,
     v_flex: make,
 }));
-const { createQuillMini } = await import('./quill-mini.js');
 const { JOIN_TAKE_MS } = await import('./joins.js');
-const { createNotes } = await import('./notes.js');
 const herdr = await import('herdr');
-
-const raw = (el: unknown) =>
-    el && typeof el === 'object' ? ((el as { raw?: El }).raw ?? null) : null;
-const all = (el: unknown): El[] => {
-    const own = raw(el);
-    return own ? [own, ...own.kids.flatMap(all)] : [];
-};
-const ON = { joined: [], taken: [] };
-const selected = (words: string, id = 'r1'): SelectedAt => ({
-    at: { x: 40, y: 100 },
-    passage: {
-        parts: [
-            {
-                block: 0,
-                range: { end: words.length, start: 0 },
-                source: words,
-                words,
-            },
-        ],
-        row: { at: null, id, kind: 'reply' },
-    },
-});
-const settle = async () => {
-    // a held lock is asked for twenty times
-    for (let i = 0; i < 300; i++) await Promise.resolve();
-};
-
-function world() {
-    const files = new Map<string, string>();
-    const writes: string[] = [];
-    const said = {
-        chat: [] as (string | null)[],
-        escapes: 0,
-        isSending: null as boolean | null,
-        lines: [] as string[],
-        quill: 0,
-        sent: [] as string[],
-        sentAnswer: null as string | null,
-        settles: 0,
-        tab: [] as string[],
-        tabs: [] as [string, boolean][],
-    };
-    const now = {
-        broken: null as Error | null,
-        isHeld: false,
-        joins: ON as { joined: string[]; taken: string[] } | null,
-        rowOf: (id: string) => id,
-        /** herdr's answer to a send, when it is slow */
-        sending: Promise.resolve(),
-        thread: '/t/a.jsonl' as string | null,
-    };
-    const kept = new Map<string, string>();
-    let ids = 0;
-    let clock = 0;
-    let drawn = 0;
-    let pressedAt = 0;
-    const notes = createNotes({
-        dir: '/joins',
-        io: {
-            lock: async () => !now.isHeld,
-            lockAge: async () => 0,
-            now: () => clock,
-            read: async (path) => files.get(path) ?? null,
-            sleep: async (ms) => {
-                clock += ms;
-            },
-            unlock: async () => {},
-            write: async (path, text) => {
-                writes.push(text);
-                files.set(path, text);
-            },
-        },
-        joinsOf: () => now.joins,
-        linesWith: async () => [],
-        logTrial: () => {},
-        movedOn: (thread, id, next, cut) => mini.movedOn(thread, id, next, cut),
-        newId: () => `id-${++ids}`,
-        store: {
-            getItem: (key) => kept.get(key) ?? null,
-            removeItem: (key) => kept.delete(key),
-            setItem: (key, text) => kept.set(key, text),
-        },
-    });
-    const cx = {
-        bind_keys: (keys: typeof at.keys) => at.keys.push(...keys),
-        notify: () => {
-            drawn += 1;
-        },
-        spawn: (job: (c: unknown) => unknown) => job(cx),
-        stop_propagation: () => {},
-        timer: {
-            after: (ms: number, run: (c: unknown) => void) => {
-                const timer = { ms, run: () => run(cx) };
-                at.timers.push(timer);
-                return {
-                    cancel: () => {
-                        at.timers = at.timers.filter((t) => t !== timer);
-                    },
-                    is_done: () => !at.timers.includes(timer),
-                };
-            },
-        },
-    };
-    const mini = createQuillMini({
-        back: () => 2,
-        focusQuill: (isSending: boolean) => {
-            said.quill += 1;
-            said.isSending = isSending;
-        },
-        notes,
-        pressEscape: () => {
-            said.escapes += 1;
-        },
-        room: () => ({ height: 600, width: 800 }),
-        rowOf: (id: string) => now.rowOf(id),
-        say: (note: string | null) => said.chat.push(note),
-        sendNote: async (id: string) => {
-            said.sent.push(id);
-            if (now.broken) throw now.broken;
-            const out = await notes.release('/t/a.jsonl', id, 2);
-            if ('reason' in out) return out.reason;
-            said.lines.push(out.line);
-            await now.sending;
-            if (said.sentAnswer)
-                notes.returned('/t/a.jsonl', id, said.sentAnswer);
-            else notes.landed('/t/a.jsonl', id);
-            return said.sentAnswer;
-        },
-        settle: () => {
-            said.settles += 1;
-        },
-        tab: {
-            ask: (from: string, isBack: boolean) =>
-                said.tabs.push([from, isBack]),
-            held: (stop: string) => said.tab.push(`held ${stop}`),
-            left: (stop: string, later: (run: () => void) => void) => {
-                said.tab.push(`left ${stop}`);
-                later(() => said.tab.push('after'));
-            },
-        },
-        thread: () => now.thread,
-        threadName: () => 'clio',
-    } as never);
-    mini.start(cx as never);
-    const el = () => mini.view({} as never);
-    const words = () =>
-        all(el()).flatMap((e) =>
-            e.kids.filter((kid): kid is string => typeof kid === 'string'),
-        );
-    const byId = (id: string) => all(el()).find((e) => e.id === id);
-    const act = (action: string) =>
-        raw(el())?.handlers.get(action)?.({} as never, cx as never);
-    return {
-        act,
-        button: (id: string) =>
-            byId(id)?.handlers.get('on_click')?.({} as never, cx as never),
-        byId,
-        cx,
-        drawn: () => drawn,
-        f6: (on: SelectedAt | null = selected('some words'), later = 1000) => {
-            pressedAt += later;
-            mini.toggle(() => on, pressedAt, cx as never);
-        },
-        mini,
-        note: (thread = '/t/a.jsonl') => notes.of(thread)[0] ?? null,
-        notes,
-        now,
-        press: (action: string) => {
-            act(action);
-            raw(el())?.handlers.get('on_key_up')?.(
-                { key: 'enter' } as never,
-                cx as never,
-            );
-        },
-        root: () => raw(el()),
-        rows: () => files.get('/joins/a.jsonl') ?? '',
-        run: () => {
-            for (const { run } of at.timers.splice(0)) run();
-        },
-        said,
-        top: () => raw(el())?.top,
-        type: (text: string) => {
-            at.box.text = text;
-            at.box.on.get('change')?.({}, cx);
-        },
-        words,
-        writes,
-    };
-}
-const ENTER = 'x_herdr_chat_mini_enter';
-const CMD_ENTER = 'x_herdr_chat_mini_cmd_enter';
+const { CMD_ENTER, ENTER, pressable, selected, settle, world } = await import(
+    './quill-mini-world.ts'
+);
 
 beforeEach(() => {
     at.box.focused = 0;
@@ -297,17 +45,6 @@ beforeEach(() => {
     at.keys.length = 0;
     at.timers.length = 0;
 });
-
-/** every handler on an element and the elements in it */
-const pressable = (el: El | null | undefined): string[] =>
-    el
-        ? [
-              ...el.handlers.keys(),
-              ...el.kids.flatMap((kid) =>
-                  pressable((kid as { raw?: El } | null)?.raw),
-              ),
-          ]
-        : [];
 
 describe('the box comes and goes (FRM-585 C2)', () => {
     /** reduce motion read as off: still until then */
@@ -523,30 +260,38 @@ test('a click inside gives its field the keyboard back, and leaves one that has 
 describe('its keys (A5)', () => {
     test('each is bound on the box itself, before the box’s own; Shift+Enter is the box’s', () => {
         world();
-        expect(at.keys.map((k) => k.keystroke).sort()).toEqual([
+        const keysIn = (context: string) =>
+            at.keys
+                .filter((k) => k.context === context)
+                .map((k) => k.keystroke)
+                .sort();
+        expect(keysIn('XChatQuillMini > Input')).toEqual([
             'cmd-enter',
             'enter',
             'escape',
             'shift-tab',
             'tab',
         ]);
-        expect(new Set(at.keys.map((k) => k.context))).toEqual(
-            new Set(['XChatQuillMini > Input']),
-        );
+        // the row's parts (FRM-630): Enter and space press the one Tab is on
+        expect(keysIn('XChatQuillMiniPart')).toEqual([
+            'cmd-enter',
+            'enter',
+            'escape',
+            'shift-tab',
+            'space',
+            'tab',
+        ]);
+        expect(new Set(at.keys.map((k) => k.context)).size).toBe(2);
     });
 
-    test('Esc asks the chat what is on top; Tab and Shift-Tab walk the loop from its stop', () => {
+    test('Esc asks the chat what is on top; Shift-Tab from the text walks the loop from its stop', () => {
         const w = world();
         w.f6();
         w.act('x_herdr_chat_mini_escape');
-        w.act('x_herdr_chat_mini_tab');
         w.act('x_herdr_chat_mini_back');
         expect([w.said.escapes, w.said.tabs]).toEqual([
             1,
-            [
-                ['quill-mini', false],
-                ['quill-mini', true],
-            ],
+            [['quill-mini', true]],
         ]);
     });
 
@@ -589,13 +334,12 @@ describe('its keys (A5)', () => {
         await settle();
         expect(w.note()?.state).toBe('waiting');
         expect(w.rows()).toContain('2 back): mine');
-        expect(w.words()).toEqual(
-            expect.arrayContaining(['waiting', 'take back']),
-        );
+        // as orbit's tick: 🍕 while it waits
+        expect(w.words()).toEqual(expect.arrayContaining(['waiting', '🍕']));
         w.press(ENTER);
         await settle();
         expect([w.note()?.state, w.rows().trim()]).toEqual(['draft', '']);
-        expect(w.words()).toContain('join');
+        expect(w.words()).toContain('🛎️');
     });
 
     test('a held Enter acts once', async () => {
@@ -671,8 +415,9 @@ describe('its keys (A5)', () => {
         const w = world();
         w.f6();
         w.type('mine');
-        expect(w.byId('chat-mini-join')?.tooltip).toContain('(Enter)');
-        expect(w.byId('chat-mini-send')?.tooltip).toContain('(⌘Enter)');
+        // no tooltip on either (dima, 26 Nov 17:37)
+        expect(w.byId('chat-mini-join')?.tooltip).toBeNull();
+        expect(w.byId('chat-mini-send')?.tooltip).toBeNull();
         w.button('chat-mini-join');
         await settle();
         expect(w.note()?.state).toBe('waiting');

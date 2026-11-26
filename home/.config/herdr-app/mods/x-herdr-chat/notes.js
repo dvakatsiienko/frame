@@ -13,6 +13,7 @@ import {
 import {
     contentOf,
     isBehind,
+    isEmpty,
     isInFile,
     isLocked,
     isOverlapping,
@@ -40,8 +41,6 @@ const HELD = 'Its file was held, try again';
 // his keys are down until they rest this long: the box writes the row itself then, a settle never under them
 const TYPING_MS = 1000;
 
-/** a note with nothing to say: no words and no thumb @param {Note} note */
-const isEmpty = (note) => !note.text.trim() && !note.grade;
 /** an empty draft is drawn while its box is open, and leaves no record @param {Note} note */
 const isEmptyDraft = (note) => note.state === 'draft' && isEmpty(note);
 

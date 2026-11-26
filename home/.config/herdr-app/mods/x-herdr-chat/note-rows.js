@@ -2,7 +2,8 @@
 // list row blanks the list, herdr-app#894). a note still his, a draft or waiting for a turn, draws none: its words are
 // highlighted and a click on them opens it (dima, 26 Nov 15:37, FRM-585:W73: «i do not need this»)
 
-import { stateWord } from './note-states.js';
+import { isEmpty, stateWord } from './note-states.js';
+import { NO_WHY, THUMBS } from './note-text.js';
 
 /** @typedef {import('./note-states.js').Note} Note */
 /** @typedef {import('./row-model.js').Row} Row */
@@ -27,7 +28,7 @@ export const noteIdOf = (id) => NOTE_ROW.exec(id)?.[1] ?? null;
 export const noteRows = (row, notes, isMarked = () => true) =>
     notes
         .filter(
-            (note) => (isOnItsWay(note) || !isMarked(note)) && note.text.trim(),
+            (note) => (isOnItsWay(note) || !isMarked(note)) && !isEmpty(note),
         )
         .map((note) => ({
             at: row.at,
@@ -37,10 +38,15 @@ export const noteRows = (row, notes, isMarked = () => true) =>
             isTurnStart: false,
             isWaiting: false,
             kind: 'note',
-            note: { isMine: row.kind === 'mine', word: stateWord(note) },
+            note: {
+                isMine: row.kind === 'mine',
+                // a reply-grade says so by its thumb (FRM-630)
+                mark: note.grade ? THUMBS[note.grade] : '📝',
+                word: stateWord(note),
+            },
             pictures: [],
             replyId: null,
-            text: note.text.replace(/\s+/g, ' ').trim(),
+            text: note.text.replace(/\s+/g, ' ').trim() || NO_WHY,
             tools: [],
             // one line, whatever it says: its height is its first
             version: 1,

@@ -126,6 +126,11 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and one thumb is lit at a time: the other takes its place, the lit one pressed again is none, and with none the note is a plain one
   - and «whole message» ticked grades the whole reply, the line quoting its first words
   - and a thumb pressed on a waiting note changes its row; once a turn took it, the note shows the grade the turn got
+  - and the thumbs and «whole message» sit in a row under the text; a click on one leaves the keyboard in the text, and never sends
+  - and Tab walks the text, 👍🏼, 👎🏼, «whole message», join and send, then the loop's next stop; Enter or space presses the one it is on
+  - and a graded note's row under its message leads with its thumb
+  - and join looks and acts as orbit's tick: 🛎️, 🍕 while the note waits (a press takes it back), 😋 still once the thread has it; send reads «send now», 😋 once sent; neither has a tooltip
+  - decision: one press button for orbit, the phases and the quill-mini, `_shared/press-button.js`, with a size and a variant — dima, 26 Nov 17:37: «i think it is a good point to have it since orbit uses it, phases and now this mini annotation box»
 - ⬜ a note the thread has reads as his words, the words it is on a dim line over them (FRM-585 C3)
   - given a note that went as its own message
   - then its message shows «on "<the words>"» dim over his note, never the line the thread got; a message he typed that only reads like a note stays as typed

@@ -20,7 +20,8 @@ import {
  * @property {'mine' | 'reply' | 'tool' | 'file' | 'note' | 'start'} kind `file`: a file a reply names, drawn under it (files.js); `note`: a note of his on it (note-rows.js);
  *   `start`: the quiet row over a thread read back to its first line
  * @property {string} [path] a file row's file
- * @property {{ isMine: boolean, word: string }} [note] a note row's: whether it is on a message of his, and where it stands
+ * @property {{ isMine: boolean, mark: string, word: string }} [note] a note row's: whether it is on a message of his, its 📝 or a
+ *   grade's thumb, and where it stands
  * @property {string} text his words, the reply's markdown, or the line naming a run of tool calls
  * @property {string | null} at when its line was written, as the transcript stamps it
  * @property {number} version 1 at birth, one more each time the text changes

@@ -4,6 +4,7 @@ import { describe, expect, test, vi } from 'vitest';
 vi.mock('herdr', () => ({ exec: vi.fn() }));
 
 import { withGrade } from './grades.js';
+import { noteRows } from './note-rows.js';
 import { gradeLine } from './note-text.js';
 import { ON, ROW, THREAD, passage, world } from './notes-world.ts';
 
@@ -157,5 +158,22 @@ describe('a grade’s raw line in the grades file', () => {
         expect(withGrade(was, { ...line, why: 'second' })).toBe(
             `not json\n${JSON.stringify({ ...line, why: 'second' })}\n`,
         );
+    });
+});
+
+describe('a graded note’s row under its message', () => {
+    test('leads with its thumb, «no why» for no words', async () => {
+        const w = world();
+        const { id } = w.notes.open(THREAD, passage('the retry is cheap'));
+        w.notes.graded(THREAD, id, 'bad');
+        await w.notes.join(THREAD, id, 0);
+        await w.settle({ ...ON, joined: [w.note(id).joinId ?? ''] });
+        const row = { ...ROW, at: null, text: '' } as never;
+        expect(
+            noteRows(row, w.notes.of(THREAD)).map((r) => [
+                r.note?.mark,
+                r.text,
+            ]),
+        ).toEqual([['👎🏼', 'no why']]);
     });
 });

@@ -522,7 +522,7 @@ export function createMessageRows(deps) {
                     .hover((st) => st.bg(t.hover))
                     .text_size(12)
                     .text_color(t.muted)
-                    .child('📝')
+                    .child(row.note?.mark ?? '📝')
                     .child(div().min_w(0).truncate().child(row.text))
                     .child(
                         div()

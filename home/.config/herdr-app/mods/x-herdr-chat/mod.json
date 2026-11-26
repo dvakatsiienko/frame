@@ -16,6 +16,7 @@
         "joined.js",
         "keypress.js",
         "open-path.js",
+        "press-button.js",
         "tab-loop.js",
         "thread-keys.js"
     ],

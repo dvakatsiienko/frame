@@ -11,20 +11,26 @@ import { JOIN_TAKE_MS } from './joins.js';
 import { createCmdEnter, createKeyPress } from './keypress.js';
 import { retextWait } from './magic.js';
 import { MINI_MOTION_MS, createMiniMotion } from './mini-motion.js';
-import { isLocked, stateWord } from './note-states.js';
+import { isEmpty, isLocked, stateWord } from './note-states.js';
 import { quoteOf } from './note-text.js';
+import { pressButton } from './press-button.js';
+import { PARTS, gradeParts, partAfter, withKeys } from './quill-mini-grade.js';
 
 /** @typedef {import('./chat-types.js').Context} Context */
 /** @typedef {import('./chat-types.js').Theme} Theme */
 /** @typedef {import('./note-states.js').Note} Note */
 /** @typedef {import('./selection.js').SelectedAt} SelectedAt */
 /** @typedef {{ x: number, y: number }} Point */
+/** @typedef {import('./quill-mini-grade.js').Part} Part */
 
 const ENTER = 'x_herdr_chat_mini_enter';
 const CMD_ENTER = 'x_herdr_chat_mini_cmd_enter';
 const ESCAPE = 'x_herdr_chat_mini_escape';
 const TAB = 'x_herdr_chat_mini_tab';
 const BACK = 'x_herdr_chat_mini_back';
+const PART_TAB = 'x_herdr_chat_mini_part_tab';
+const PART_BACK = 'x_herdr_chat_mini_part_back';
+const PART_PRESS = 'x_herdr_chat_mini_part_press';
 const WIDTH = 420;
 // how far from the words' end, and from the list's edge
 const GAP = 12;
@@ -112,6 +118,10 @@ export function createQuillMini(deps) {
     let said = null;
     const enter = createKeyPress();
     const cmdEnter = createCmdEnter();
+    /** each part's keyboard, made in the view's init @type {Map<Part, import('gpui-kit').FocusHandle>} */
+    const keys = new Map();
+    /** the part of the row Tab put the keyboard on, null while the text has it @type {Part | null} */
+    let partHeld = null;
 
     const noteNow = () =>
         open
@@ -140,6 +150,7 @@ export function createQuillMini(deps) {
         open = null;
         said = null;
         isCmdDown = false;
+        partHeld = null;
         deps.notes.tidy(thread);
         return written;
     }
@@ -250,7 +261,7 @@ export function createQuillMini(deps) {
         const at = open;
         const isWaiting = note.state === 'waiting';
         if (sending.has(note.id)) return;
-        if (!isWaiting && (isLocked(note) || !note.text.trim())) return;
+        if (!isWaiting && (isLocked(note) || isEmpty(note))) return;
         const answer = isWaiting
             ? deps.notes.takeBack(at.thread, at.id)
             : deps.notes.join(at.thread, at.id, deps.back(note.passage.row.id));
@@ -264,7 +275,7 @@ export function createQuillMini(deps) {
     /** ⌘Enter: the note goes now, and the box with it @param {Context} cx */
     function sendNow(cx) {
         const note = noteNow();
-        if (!open || !note || isClosed(note) || !note.text.trim()) return;
+        if (!open || !note || isClosed(note) || isEmpty(note)) return;
         const at = open;
         sending.add(at.id);
         const answer = deps.sendNote(at.id, deps.back(note.passage.row.id));
@@ -278,6 +289,55 @@ export function createQuillMini(deps) {
         });
         cx.notify();
     }
+
+    /** his thumb, or «whole message»: a waiting note's row takes it at once @param {(at: { thread: string, id: string }) => boolean} change @param {Context} cx */
+    function mark(change, cx) {
+        const note = noteNow();
+        if (!open || !note || isClosed(note)) return;
+        const at = open;
+        if (change(at) && note.state === 'waiting')
+            cx.spawn(async (cx) => {
+                await deps.notes.write(at.thread, at.id);
+                cx.notify();
+            });
+        cx.notify();
+    }
+
+    /** a click on a part of the row: the keyboard stays in the text @param {Context} cx */
+    function backToText(cx) {
+        partHeld = null;
+        box?.focus();
+        cx.notify();
+    }
+
+    /** Tab from the text or a part: the next part, or the loop's next stop @param {Part | 'text'} from @param {boolean} isBack @param {Context} cx */
+    function tabFrom(from, isBack, cx) {
+        const note = noteNow();
+        const to = note && !isClosed(note) ? partAfter(from, isBack) : 'out';
+        if (to === 'out') {
+            partHeld = null;
+            return deps.tab.ask(MINI_STOP, isBack);
+        }
+        if (to === 'text') return backToText(cx);
+        partHeld = to;
+        keys.get(to)?.focus();
+        cx.notify();
+    }
+
+    /** Enter or space on a part @param {Context} cx */
+    function pressPart(cx) {
+        if (partHeld === 'good' || partHeld === 'bad') grade(partHeld, cx);
+        else if (partHeld === 'whole') whole(!noteNow()?.isWhole, cx);
+        else if (partHeld === 'join') join(cx);
+        else if (partHeld === 'send') sendNow(cx);
+    }
+
+    /** @param {import('./note-states.js').Grade} g @param {Context} cx */
+    const grade = (g, cx) =>
+        mark((at) => deps.notes.graded(at.thread, at.id, g), cx);
+    /** @param {boolean} isWhole @param {Context} cx */
+    const whole = (isWhole, cx) =>
+        mark((at) => deps.notes.wholeSet(at.thread, at.id, isWhole), cx);
 
     /** the note in the box moved by itself: the box keeps the keyboard, whoever has the note by now @param {Context} cx */
     function noteChanged(cx) {
@@ -325,6 +385,7 @@ export function createQuillMini(deps) {
         made.on('change', (_event, cx) => type(made.value(), cx));
         made.on('focus', (_event, cx) => {
             isFocused = true;
+            partHeld = null;
             deps.tab.held(MINI_STOP);
             cx.notify();
         });
@@ -336,6 +397,7 @@ export function createQuillMini(deps) {
             cx.notify();
         });
         box = made;
+        for (const part of PARTS) keys.set(part, cx.focus_handle());
         // init's own awaits may run under another mod's store
         cx.timer.after(0, async () => {
             const out = await exec('defaults', [
@@ -373,6 +435,36 @@ export function createQuillMini(deps) {
                 context: 'XChatQuillMini > Input',
                 keystroke: 'shift-tab',
             },
+            {
+                action: PART_TAB,
+                context: 'XChatQuillMiniPart',
+                keystroke: 'tab',
+            },
+            {
+                action: PART_BACK,
+                context: 'XChatQuillMiniPart',
+                keystroke: 'shift-tab',
+            },
+            {
+                action: PART_PRESS,
+                context: 'XChatQuillMiniPart',
+                keystroke: 'enter',
+            },
+            {
+                action: PART_PRESS,
+                context: 'XChatQuillMiniPart',
+                keystroke: 'space',
+            },
+            {
+                action: CMD_ENTER,
+                context: 'XChatQuillMiniPart',
+                keystroke: 'cmd-enter',
+            },
+            {
+                action: ESCAPE,
+                context: 'XChatQuillMiniPart',
+                keystroke: 'escape',
+            },
         ]);
     }
 
@@ -391,30 +483,17 @@ export function createQuillMini(deps) {
             { h: room.height, w: room.width },
             { h: height, w: width },
         );
-        const isDim = !live || isClosed(note) || !note.text.trim();
         const isWaiting = note.state === 'waiting';
-        /** @param {string} id @param {string} label @param {string} hint @param {(cx: Context) => void} act */
-        const button = (id, label, hint, act) =>
-            div()
-                .id(id)
-                .h(24)
-                .px(10)
-                .flex()
-                .flex_none()
-                .items_center()
-                .rounded(6)
-                .border_1()
-                .border_color(t.border)
-                .text_size(12)
-                .text_color(isDim ? t.dim : t.foreground)
-                .when(Boolean(live), (el) => el.tooltip(hint))
-                .when(!isDim, (el) =>
-                    el
-                        .cursor_pointer()
-                        .hover((s) => s.bg(t.hover))
-                        .on_click((_e, cx) => act(cx)),
-                )
-                .child(label);
+        const isTaken = note.state === 'joined' || note.state === 'taken';
+        const canJoin =
+            Boolean(live) &&
+            !sending.has(note.id) &&
+            (isWaiting || (!isLocked(note) && !isEmpty(note)));
+        const canSend = Boolean(live) && !isClosed(note) && !isEmpty(note);
+        /** @param {Part} part */
+        const partKeys = (part) => (live ? (keys.get(part) ?? null) : null);
+        /** @param {Part} part */
+        const isPartFocused = (part) => Boolean(live) && partHeld === part;
         return (
             v_flex()
                 .id('chat-quill-mini')
@@ -476,8 +555,15 @@ export function createQuillMini(deps) {
                                 sendNow(cx);
                         })
                         .on_action(ESCAPE, (_e, cx) => deps.pressEscape(cx))
-                        .on_action(TAB, () => deps.tab.ask(MINI_STOP, false))
-                        .on_action(BACK, () => deps.tab.ask(MINI_STOP, true))
+                        .on_action(TAB, (_e, cx) => tabFrom('text', false, cx))
+                        .on_action(BACK, (_e, cx) => tabFrom('text', true, cx))
+                        .on_action(PART_TAB, (_e, cx) =>
+                            tabFrom(partHeld ?? 'text', false, cx),
+                        )
+                        .on_action(PART_BACK, (_e, cx) =>
+                            tabFrom(partHeld ?? 'text', true, cx),
+                        )
+                        .on_action(PART_PRESS, (_e, cx) => pressPart(cx))
                         .on_key_up((e) => {
                             if (e.key === 'enter') enter.released();
                         })
@@ -513,6 +599,27 @@ export function createQuillMini(deps) {
                     h_flex()
                         .gap(6)
                         .items_center()
+                        .children(
+                            gradeParts(t, {
+                                isFocused: isPartFocused,
+                                isLocked: !live || isClosed(note),
+                                keysOf: partKeys,
+                                note,
+                                onGrade: (g, cx) => {
+                                    grade(g, cx);
+                                    backToText(cx);
+                                },
+                                onWhole: (isWhole, cx) => {
+                                    whole(isWhole, cx);
+                                    backToText(cx);
+                                },
+                            }),
+                        ),
+                )
+                .child(
+                    h_flex()
+                        .gap(6)
+                        .items_center()
                         .child(
                             div()
                                 .flex_1()
@@ -522,22 +629,39 @@ export function createQuillMini(deps) {
                                 .text_color(t.muted)
                                 .child(wordNow(note)),
                         )
+                        // as orbit's tick: 🛎️, 🍕 while it waits and a press takes it back, 😋 still once the thread has it
                         .child(
-                            button(
-                                'chat-mini-join',
-                                isWaiting ? 'take back' : 'join',
-                                isWaiting
-                                    ? 'Take it back (Enter)'
-                                    : "Join its turn's next step, or its next turn (Enter)",
-                                join,
+                            withKeys(
+                                pressButton(t, {
+                                    id: 'chat-mini-join',
+                                    isFocused: isPartFocused('join'),
+                                    isLocked: !canJoin,
+                                    label: isWaiting
+                                        ? '🍕'
+                                        : isTaken
+                                          ? '😋'
+                                          : '🛎️',
+                                    name: isWaiting ? 'take it back' : 'join',
+                                    onClick: join,
+                                    variant: 'primary',
+                                }),
+                                partKeys('join'),
                             ),
                         )
                         .child(
-                            button(
-                                'chat-mini-send',
-                                'send now',
-                                'Send now: a turn starts (⌘Enter)',
-                                sendNow,
+                            withKeys(
+                                pressButton(t, {
+                                    id: 'chat-mini-send',
+                                    isFocused: isPartFocused('send'),
+                                    isLocked: !canSend,
+                                    label:
+                                        note.state === 'sent'
+                                            ? '😋'
+                                            : 'send now',
+                                    name: 'send now',
+                                    onClick: sendNow,
+                                }),
+                                partKeys('send'),
                             ),
                         ),
                 )
