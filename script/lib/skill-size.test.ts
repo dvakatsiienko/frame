@@ -25,8 +25,8 @@ const crewCaps = {
     // +150: the stray mode branch, FRM-627, dima o90; +150: notes ride its «final» to the sixth sense (dima, 2026-11-23)
     'crew-codie': 12_300,
     'crew-designer': 12_000,
-    // +600: the messaging contract's one home, moved in from four files (dima, 2026-11-23)
-    'crew-dna': 7_600,
+    // +600: the messaging contract's one home, moved in from four files (dima, 2026-11-23); +50: a state-changing chain joins with && (his o14, 2026-11-26)
+    'crew-dna': 7_650,
     'crew-lead': 12_000,
     // +150: the size-cap grade line, FRM-629, dima o3; +150: its exit message is the one clean report and hands on codie's notes (dima, 2026-11-23)
     'crew-sixth-sense': 12_300,
