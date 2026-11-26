@@ -797,6 +797,12 @@ describe('gate-queue --long', () => {
             [0, KEPT],
         ],
         [
+            'a typecheck run by node runs whole past the line',
+            '0',
+            ['node', './home/.claude/plugin-x/mods/typecheck.ts'],
+            [0, KEPT],
+        ],
+        [
             'a whole go suite runs past the line, silent',
             '0',
             ['go', 'test', './...'],
@@ -822,6 +828,7 @@ describe('gate-queue --long', () => {
             'case "$*" in *a.test.ts* | *verify*) sleep 5 ;; *) sleep 1 ;; esac',
         );
         put('mut.py', '[ "$1" = fast ] && exit 7; sleep 5');
+        put('node', 'case "$*" in *typecheck*) sleep 1 ;; *) sleep 5 ;; esac');
         const got = queue(state, ['--long', ...args], '20', {
             GATE_QUEUE_BATCH_MAX: max,
             GATE_QUEUE_KILL_GRACE: '0.2',

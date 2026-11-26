@@ -156,6 +156,10 @@ is_suite=
 # 2026-11-26), so an unknown run runs whole and hears the old line past 3 min
 is_cut_batch() {
     local word
+    # a typecheck is whole whatever runs it (node ./mods/typecheck.ts, tsc)
+    for word in "$@"; do
+        case ${word##*/} in *typecheck* | tsc) return 1 ;; esac
+    done
     for word in "$@"; do
         case ${word##*/} in
         python | python3 | node | *.py | *.mjs | --only | --only=* | --pairs | --pairs=* | -run | -run=* | --run | --run=* | -*test.run* | *.test.ts | *.test.tsx | *_test.go) return 0 ;;
