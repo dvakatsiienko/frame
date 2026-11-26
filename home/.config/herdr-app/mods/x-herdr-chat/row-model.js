@@ -28,6 +28,7 @@ import {
  * @property {string[]} tools the names of the tool calls a tool row folds, in order
  * @property {boolean} isWaiting his message in Claude Code's queue, no turn has taken it yet
  * @property {boolean} isTurnStart his prompt that started a turn, never words a running turn took in
+ * @property {boolean} [isJoin] words that joined a running turn, never a prompt of their own
  * @property {string} [command] a prompt a tool round took: the queued command its `remove` record names
  * @property {string} [queued] a waiting row's text as Claude Code queued it, which its × pulls back
  * @property {Delivery | null} delivery his message's one state and that state's time (FRM-594); null on any other row
@@ -258,9 +259,10 @@ function rowsOf(line) {
                 : [];
         }
         // words that joined a turn (the magic send) are his messages, one row each
-        return joinedTexts(entry).map((text, n) =>
-            his(text, null, n ? `${id}#${n}` : id),
-        );
+        return joinedTexts(entry).map((text, n) => ({
+            ...his(text, null, n ? `${id}#${n}` : id),
+            isJoin: true,
+        }));
     }
     const { content } = message;
     const blocks = (Array.isArray(content) ? content : []).filter(isRecord);

@@ -317,7 +317,11 @@ export function createThreadFeed(deps) {
         const added = new Set(changed);
         const arrived = deps.model.rows
             .filter((r) => added.has(r.id) && r.kind === 'mine' && !r.isWaiting)
-            .map((r) => ({ at: r.at, text: r.text }));
+            .map((r) => ({
+                at: r.at,
+                isJoin: Boolean(r.isJoin),
+                text: r.text,
+            }));
         if (arrived.length && feed.file) {
             deps.sendPath.showSettled(
                 deps.sendPath.magic.arrived(feed.file, arrived),

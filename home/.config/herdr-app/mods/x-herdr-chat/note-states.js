@@ -47,6 +47,7 @@ import { withoutPathLinks } from './path-links.js';
  *   | { type: 'pushed', at: number, back: number }
  *   | { type: 'landed' }
  *   | { type: 'sentFirst' }
+ *   | { type: 'rowOut' }
  *   | { type: 'reloaded' }
  *   | { type: 'logged' }
  * )} NoteEvent
@@ -188,13 +189,12 @@ export function nextNote(note, event) {
                 ? note
                 : { ...note, said, state: 'joined', text };
         }
-        // the send a reload cut short landed before its row joined: the row leaves, it went as that send
+        // the send a reload cut short landed before its row joined: it went as that send, its row is yet to leave
         case 'sentFirst':
             return note.state === 'waiting' && note.cutSend
                 ? {
                       ...note,
                       cutSend: null,
-                      joinId: null,
                       reason: null,
                       said: [note.cutSend],
                       state: 'sent',
@@ -206,6 +206,7 @@ export function nextNote(note, event) {
                 ? told({
                       ...note,
                       back: event.back,
+                      cutSend: null,
                       reason: null,
                       said: [],
                       state: 'sending',
@@ -219,9 +220,11 @@ export function nextNote(note, event) {
                 (note.state === 'draft' && note.said.length > 0);
             const text = note.said.at(-1)?.text ?? note.text;
             return isGone
-                ? { ...note, reason: null, state: 'sent', text }
+                ? { ...note, cutSend: null, reason: null, state: 'sent', text }
                 : note;
         }
+        case 'rowOut':
+            return note.state === 'sent' ? { ...note, joinId: null } : note;
         case 'reloaded':
             return note.state === 'sending'
                 ? {

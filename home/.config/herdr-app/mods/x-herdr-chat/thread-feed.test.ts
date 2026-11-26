@@ -242,19 +242,22 @@ test('an answer that comes after he left the thread says nothing in the next one
     expect(w.said.changed).toBe(0);
 });
 
-test('his messages as they land, never one still in the queue', async () => {
+test('his messages as they land, words that joined marked, never one still in the queue', async () => {
     const w = world();
     await open(w, 't1');
     const dir = [...at.touch.keys()].find((d) => d !== STATE_DIR) ?? '';
     const changed = w.said.changed;
     at.lines = [
-        { id: 'a', text: 'a line' },
+        { id: 'a', isJoin: true, text: 'a line' },
         { id: 'b', isWaiting: true, text: 'queued' },
     ];
     at.touch.get(dir)?.();
     await tick();
     expect(w.said.arrived).toEqual([
-        [w.feed.file(), [expect.objectContaining({ text: 'a line' })]],
+        [
+            w.feed.file(),
+            [expect.objectContaining({ isJoin: true, text: 'a line' })],
+        ],
     ]);
     expect(w.said.changed).toBe(changed + 1);
     w.answer.arrived = false;

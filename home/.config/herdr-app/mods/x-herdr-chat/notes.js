@@ -202,12 +202,23 @@ export function createNotes({
         return isOut ? null : JOINED_FIRST;
     }
 
-    /** a line of these words is the send a reload cut short, not its row: no turn took that @param {string} thread @param {Note} note @param {string} line */
-    const isCutSendOf = (thread, note, line) =>
-        note.state === 'waiting' &&
-        Boolean(note.cutSend) &&
-        drawnOf(note.cutSend?.line ?? '') === drawnOf(line) &&
-        !isTaken(thread, note);
+    /** it went as the send a reload cut short: its row leaves the file @param {string} thread @param {string} id */
+    function sentFirst(thread, id) {
+        const isChanged = tell(thread, id, { type: 'sentFirst' });
+        takeSentRow(thread, id);
+        log(thread, id);
+        return isChanged;
+    }
+
+    /** a sent note's row out of the join file; a held file keeps its id for the next settle @param {string} thread @param {string} id */
+    function takeSentRow(thread, id) {
+        after(id, async () => {
+            const note = find(thread, id);
+            if (note?.state !== 'sent' || !note.joinId) return;
+            const answer = await takeOutJoin(io, fileOf(thread), note.joinId);
+            if (answer !== 'held') tell(thread, id, { type: 'rowOut' });
+        }).catch(() => {});
+    }
 
     /** the thread's state lists the note's row nowhere, a minute after it was written @param {string} thread @param {Note} note */
     function isLost(thread, note) {
@@ -228,36 +239,36 @@ export function createNotes({
         /**
          * his messages the transcript just added: a note whose line is one of them has joined, or its prompt has landed.
          * one older than the note is another's with the same words
-         * @param {string} thread @param {readonly { at: string | null, text: string }[]} rows
+         * @param {string} thread @param {readonly { at: string | null, text: string, isJoin?: boolean }[]} rows `isJoin`: words
+         *   that joined a turn, never a prompt
          * @returns {boolean} whether a note changed
          */
         arrived(thread, rows) {
             let isChanged = false;
             for (const note of notesOf(thread)) {
                 if (!note.said.length) continue;
-                const texts = rows
-                    .filter(
-                        (r) =>
-                            r.at !== null && Date.parse(r.at) >= note.writtenAt,
-                    )
+                const since = rows.filter(
+                    (r) => r.at !== null && Date.parse(r.at) >= note.writtenAt,
+                );
+                const prompts = since
+                    .filter((r) => !r.isJoin)
                     .map((r) => r.text);
+                if (
+                    note.state === 'waiting' &&
+                    note.cutSend &&
+                    prompts.includes(drawnOf(note.cutSend.line))
+                ) {
+                    isChanged = sentFirst(thread, note.id) || isChanged;
+                    continue;
+                }
+                const isJoin = isInFile(note) || note.state === 'joined';
+                const texts = isJoin
+                    ? since.filter((r) => r.isJoin).map((r) => r.text)
+                    : prompts;
                 const said = [...note.said]
                     .reverse()
                     .find((s) => texts.includes(drawnOf(s.line)));
                 if (!said) continue;
-                if (isCutSendOf(thread, note, said.line)) {
-                    const { joinId } = note;
-                    isChanged =
-                        tell(thread, note.id, { type: 'sentFirst' }) ||
-                        isChanged;
-                    if (joinId)
-                        after(note.id, () =>
-                            takeOutJoin(io, fileOf(thread), joinId),
-                        ).catch(() => {});
-                    log(thread, note.id);
-                    continue;
-                }
-                const isJoin = isInFile(note) || note.state === 'joined';
                 const isNew = tell(
                     thread,
                     note.id,
@@ -284,6 +295,8 @@ export function createNotes({
             return after(id, async () => {
                 if (await appendJoin(io, fileOf(thread), joinId, line))
                     return null;
+                // a cut send that landed meanwhile made it sent: no row of it to give back
+                if (find(thread, id)?.joinId !== joinId) return null;
                 const reason = 'Not joined: its file was held, try again';
                 tell(thread, id, { reason, type: 'takenBack' });
                 return reason;
@@ -361,6 +374,8 @@ export function createNotes({
             for (const { id } of notesOf(thread)) {
                 const note = find(thread, id);
                 const joins = joinsOf(thread);
+                if (note?.state === 'sent' && note.joinId)
+                    takeSentRow(thread, id);
                 if (!note?.joinId || !isInFile(note)) continue;
                 const isRested =
                     refused.has(id) ||

@@ -111,7 +111,11 @@ function world() {
             transcript.push(line);
             const model = createRowModel();
             model.add([line]);
-            return model.rows.map(({ at, text }) => ({ at, text }));
+            return model.rows.map(({ at, isJoin, text }) => ({
+                at,
+                isJoin,
+                text,
+            }));
         },
         /** a note with its words typed, its id */
         draft: async (text: string, on = passage('the retry is cheap')) => {
@@ -660,12 +664,36 @@ describe('a reload as a note was sent', () => {
         await vi.waitFor(() => expect(w.rows()).toEqual([]));
     });
 
-    test('joined since and taken by a turn, its line is the join', async () => {
+    test('joined since at another place under the reply, the cut send still sends it once', async () => {
+        const { id, line, w } = await cut();
+        await w.notes.join(THREAD, id, 1);
+        w.pass(1000);
+        w.notes.arrived(THREAD, [{ at: w.stamp(), text: line }]);
+        expect(w.note(id).state).toBe('sent');
+    });
+
+    test('joined since, its row’s words joining a turn are the join, its state not read yet', async () => {
+        const { id, w } = await cut();
+        await w.notes.join(THREAD, id, 0);
+        w.joins = undefined;
+        w.pass(1000);
+        w.notes.arrived(THREAD, w.arrive());
+        expect(w.note(id).state).toBe('joined');
+    });
+
+    test('joined since, a held file keeps the sent one’s row until the next settle takes it out', async () => {
         const { id, line, w } = await cut();
         await w.notes.join(THREAD, id, 0);
-        w.joins = { ...ON, taken: [w.note(id).joinId ?? ''] };
+        w.locks.add(`${FILE}.lock`);
+        w.pass(1000);
         w.notes.arrived(THREAD, [{ at: w.stamp(), text: line }]);
-        expect(w.note(id).state).toBe('joined');
+        // its file work is done once a take back, queued after it, answers
+        await w.notes.takeBack(THREAD, id);
+        expect(w.rows()).toHaveLength(1);
+        w.locks.clear();
+        await w.notes.settle(THREAD);
+        await vi.waitFor(() => expect(w.rows()).toEqual([]));
+        expect(w.note(id)).toMatchObject({ joinId: null, state: 'sent' });
     });
 });
 
