@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-26T11:27:23Z'
+updated_date: '2026-11-26T12:00:15Z'
 labels:
   - s
   - clio-main
@@ -45,4 +45,16 @@ PK-349:W2479 (2026-11-26 13:11, dima): FRM-707: what is it? looks like a freebie
 13:26 homes, corrected: W2473 answered on the boot board (the stray's handoff is stale) · W2474 → clio:boot SKILL.md, the 🐕 stray line (a7d52c1b) · W2475 → FRM-387 holds his charts wish (someday, no milestone); FRM-360 left its milestone · W2476 → FRM-620:W88 · W2477–W2478 → FRM-660 already built, o2 · W2479 → FRM-707 signed, held for a stray batch
 
 13:27 homes: W2480, W2481, W2482, W2483, W2484, W2485 → FRM-360 out of its milestone, milestone deleted (13:16); herdr codie answer in the 13:17 reply
+
+13:59 PK-349:W2484 and PK-349:W2485 (2026-11-26 13:16, dima): so the verifier completed his part but codie did not wake up? → answered 13:17 (it woke at 13:02; its turn had ended on its commit's checks), the gap a herdr wisp in herdr-lane-3's lane plan
+
+14:00 home: PK-349:W2485 so the verifier completed his part but codie did not wake up? ❓ → answered 13:17
+
+14:00 home: PK-349:W2484 so yes, he is working, but he was 20m inactive when i wrote to him. → answered 13:17, the herdr wisp in herdr-lane-3's lane plan
+
+14:00 homes:
+PK-349:W2480 (2026-11-26 13:16, dima): FRM-360 — looks like another type of «my wish for cli»? not charts, but this ticket is about functionality more useful for me, right? ❓ → FRM-360 out of its milestone, the milestone deleted 13:16
+PK-349:W2481 (2026-11-26 13:16, dima): that was an experiment idea. i am not planning it soon. → FRM-360 out of its milestone, the milestone deleted 13:16
+PK-349:W2482 (2026-11-26 13:16, dima): so remove it out of a mil and close a mil. → FRM-360 out of its milestone, the milestone deleted 13:16
+PK-349:W2483 (2026-11-26 13:16, dima): it will not be done soon most likely, no need for a parked mil. → FRM-360 out of its milestone, the milestone deleted 13:16
 <!-- SECTION:NOTES:END -->
