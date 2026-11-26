@@ -10,6 +10,7 @@ type El = {
     tooltip: string | null;
     top?: number;
     opacity?: number;
+    moved?: string[];
 };
 const at = vi.hoisted(() => ({
     box: {
@@ -38,6 +39,11 @@ const { make } = vi.hoisted(() => ({
                     else if (name === 'top') target.top = Number(args[0]);
                     else if (name === 'opacity')
                         target.opacity = Number(args[0]);
+                    else if (name === 'transition')
+                        target.moved = [
+                            ...(target.moved ?? []),
+                            String(args[0]),
+                        ];
                     else if (name === 'tooltip')
                         target.tooltip = String(args[0]);
                     else if (name === 'child') target.kids.push(args[0]);
@@ -292,8 +298,16 @@ beforeEach(() => {
 });
 
 describe('the box comes and goes (FRM-585 C2)', () => {
-    test('it fades in from a little below its place', () => {
+    /** reduce motion read as off: still until then */
+    const moving = async () => {
         const w = world();
+        w.run();
+        await settle();
+        return w;
+    };
+
+    test('it fades in from a little below its place', async () => {
+        const w = await moving();
         w.f6({ ...selected('some words'), at: { x: 40, y: 100 } });
         const first = w.root();
         expect([first?.opacity, first?.top]).toEqual([0, 118]);
@@ -301,26 +315,47 @@ describe('the box comes and goes (FRM-585 C2)', () => {
         expect([w.root()?.opacity, w.root()?.top]).toEqual([1, 112]);
     });
 
-    test('a second F6 sooner than a held key’s first repeat shuts it, leaving no box', () => {
-        const w = world();
+    test('a second F6 sooner than a held key’s first repeat shuts it, leaving no box', async () => {
+        const w = await moving();
         w.f6();
-        w.f6(selected('some words'), 80);
-        expect([w.mini.isOpen(), w.root()]).toEqual([false, null]);
         w.run();
-        expect(w.root()).toBeNull();
+        w.f6(selected('some words'), 80);
+        expect([w.mini.isOpen(), w.root(), at.timers]).toEqual([
+            false,
+            null,
+            [],
+        ]);
     });
 
-    test('a held F6 keeps it open', () => {
-        const w = world();
+    test('a held F6 whose first repeat comes early keeps it open', async () => {
+        const w = await moving();
+        w.f6();
+        for (const later of [30, 15, 15]) w.f6(selected('some words'), later);
+        expect(w.mini.isOpen()).toBe(true);
+    });
+
+    test('standing, a new place lands at once: only its lift moves', async () => {
+        const w = await moving();
+        w.f6();
+        expect(w.root()?.moved).toEqual(['opacity', 'top']);
+        w.run();
+        w.run();
+        expect(w.root()?.moved).toEqual(['opacity']);
+    });
+
+    test('a held F6 keeps it open', async () => {
+        const w = await moving();
         w.f6();
         for (const later of [150, 15, 15, 15])
             w.f6(selected('some words'), later);
         expect(w.mini.isOpen()).toBe(true);
     });
 
-    test('shut once shown, it fades out where it stood, nothing on it pressable, then is gone', () => {
-        const w = world();
+    test('shut once shown, it fades out where it stood, nothing on it pressable, then is gone', async () => {
+        const w = await moving();
         w.f6();
+        // its frame, then its way in
+        w.run();
         w.run();
         w.f6();
         expect(w.mini.isOpen()).toBe(false);

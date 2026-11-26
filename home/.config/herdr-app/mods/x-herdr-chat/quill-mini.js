@@ -31,9 +31,11 @@ const GAP = 12;
 // the box before its height was ever measured
 const FIRST_HEIGHT = 130;
 // a held F6 repeats: this mac's first repeat comes 150 ms after the press, the next every 15 ms. one sooner than the
-// first repeat is a second press of his, so a fast F6 F6 shuts the box it opened
+// first repeat is a second press of his, so a fast F6 F6 shuts the box it opened; one faster than a hand is a repeat
+// seen early
 const F6_REPEAT_MS = 200;
 const F6_FIRST_REPEAT_MS = 140;
+const F6_HAND_MS = 50;
 const MOTION = {
     duration: MINI_MOTION_MS,
     easing: /** @type {const} */ ('ease-out'),
@@ -96,9 +98,9 @@ export function createQuillMini(deps) {
     let typed = 0;
     let lastF6 = Number.NEGATIVE_INFINITY;
     let isF6Held = false;
-    /** reduce motion is on in macOS, read at start */
-    let isReduced = false;
-    /** @type {ReturnType<typeof createMiniMotion<{ note: Note, at: Point | null }>>} */
+    /** reduce motion is on in macOS: still until it is read */
+    let isReduced = true;
+    /** @type {ReturnType<typeof createMiniMotion<{ note: Note, at: Point | null, height: number }>>} */
     const motion = createMiniMotion(() => isReduced);
     /** notes under way to their thread, until herdr answers: the box keeps the keyboard, and no second press sends one @type {Set<string>} */
     const sending = new Set();
@@ -147,7 +149,8 @@ export function createQuillMini(deps) {
         const note = noteNow();
         const { at } = open;
         const written = drop();
-        if (note) motion.closed({ at, note }, cx);
+        if (note) motion.closed({ at, height, note }, cx);
+        else motion.cut();
         deps.focusQuill(isSending);
         cx.notify();
         cx.spawn(async (cx) => {
@@ -194,7 +197,8 @@ export function createQuillMini(deps) {
         const gap = at - lastF6;
         lastF6 = at;
         isF6Held =
-            gap < F6_REPEAT_MS && (isF6Held || gap >= F6_FIRST_REPEAT_MS);
+            gap < F6_REPEAT_MS &&
+            (isF6Held || gap >= F6_FIRST_REPEAT_MS || gap < F6_HAND_MS);
         if (isF6Held) return;
         if (open) return close(cx);
         const now = selected();
@@ -319,12 +323,14 @@ export function createQuillMini(deps) {
             cx.notify();
         });
         box = made;
-        cx.spawn(async () => {
+        // init's own awaits may run under another mod's store
+        cx.timer.after(0, async () => {
             const out = await exec('defaults', [
                 'read',
                 'com.apple.universalaccess',
                 'reduceMotion',
             ]).catch(() => null);
+            // no key is off
             isReduced = out?.code === 0 && out.stdout.trim() === '1';
         });
         // each before the text box's own (context `Input`), as the quill's; Shift+Enter is the box's line break
@@ -388,7 +394,7 @@ export function createQuillMini(deps) {
                 .border_color(t.border)
                 .text_size(12)
                 .text_color(isDim ? t.dim : t.foreground)
-                .tooltip(hint)
+                .when(Boolean(live), (el) => el.tooltip(hint))
                 .when(!isDim, (el) =>
                     el
                         .cursor_pointer()
@@ -396,115 +402,126 @@ export function createQuillMini(deps) {
                         .on_click((_e, cx) => act(cx)),
                 )
                 .child(label);
-        return v_flex()
-            .id('chat-quill-mini')
-            .absolute()
-            .left(place.x)
-            .top(place.y + look.lift)
-            .opacity(look.opacity)
-            .when(!isReduced, (el) =>
-                el.transition('opacity', MOTION).transition('top', MOTION),
-            )
-            .w(width)
-            .px(12)
-            .py(10)
-            .gap(8)
-            .rounded(12)
-            .bg(t.popover)
-            .border(1)
-            .border_color(focusBorder(isFocused, t, t.border))
-            .shadow_lg()
-            .cursor_default()
-            .when(Boolean(live), (el) =>
-                el
-                    .key_context('XChatQuillMini')
-                    .on_size_change((size, cx) => {
-                        // herdr's sizes are window px, the box's place is not
-                        const drawn =
-                            size.height / (Number(settings().zoom) || 1);
-                        if (Math.abs(drawn - height) < 1) return;
-                        height = drawn;
-                        cx.notify();
-                    })
-                    // a press on the box is the box's, never the list's under it
-                    .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
-                    .on_mouse_down('right', (_e, cx) => cx.stop_propagation())
-                    // herdr follows a link under the box on a mouse-up
-                    .on_mouse_up('left', (_e, cx) => cx.stop_propagation())
-                    .on_mouse_up('right', (_e, cx) => cx.stop_propagation())
-                    .on_mouse_down_out((_e, cx) => close(cx))
-                    .on_action(ENTER, (_e, cx) => {
-                        if (enter.pressed() === 'act') join(cx);
-                    })
-                    .on_action(CMD_ENTER, (_e, cx) => {
-                        isCmdDown = true;
-                        if (cmdEnter.pressed(Date.now()) === 'act') sendNow(cx);
-                    })
-                    .on_action(ESCAPE, (_e, cx) => deps.pressEscape(cx))
-                    .on_action(TAB, () => deps.tab.ask(MINI_STOP, false))
-                    .on_action(BACK, () => deps.tab.ask(MINI_STOP, true))
-                    .on_key_up((e) => {
-                        if (e.key === 'enter') enter.released();
-                    })
-                    .on_modifiers_changed((e) => {
-                        if (e.modifiers.platform) return;
-                        isCmdDown = false;
-                        enter.modifiersReleased();
-                    }),
-            )
-            .child(
-                h_flex()
-                    .gap(8)
-                    .text_size(12)
-                    .text_color(t.muted)
-                    .child(
-                        div()
-                            .flex_1()
-                            .min_w(0)
-                            .truncate()
-                            .child(
-                                `"${quoteOf(note.passage.parts.map((p) => p.words))}"`,
+        return (
+            v_flex()
+                .id('chat-quill-mini')
+                .absolute()
+                .left(place.x)
+                .top(place.y + look.lift)
+                .opacity(look.opacity)
+                .when(!isReduced, (el) => el.transition('opacity', MOTION))
+                // only its lift moves: a new place while it stands, a line he typed, lands at once
+                .when(!isReduced && motion.isMoving(), (el) =>
+                    el.transition('top', MOTION),
+                )
+                .when(!live, (el) => el.h(ghost?.height ?? height))
+                .w(width)
+                .px(12)
+                .py(10)
+                .gap(8)
+                .rounded(12)
+                .bg(t.popover)
+                .border(1)
+                .border_color(focusBorder(isFocused, t, t.border))
+                .shadow_lg()
+                .cursor_default()
+                .when(Boolean(live), (el) =>
+                    el
+                        .key_context('XChatQuillMini')
+                        .on_size_change((size, cx) => {
+                            // herdr's sizes are window px, the box's place is not
+                            const drawn =
+                                size.height / (Number(settings().zoom) || 1);
+                            if (Math.abs(drawn - height) < 1) return;
+                            height = drawn;
+                            cx.notify();
+                        })
+                        // a press on the box is the box's, never the list's under it
+                        .on_mouse_down('left', (_e, cx) =>
+                            cx.stop_propagation(),
+                        )
+                        .on_mouse_down('right', (_e, cx) =>
+                            cx.stop_propagation(),
+                        )
+                        // herdr follows a link under the box on a mouse-up
+                        .on_mouse_up('left', (_e, cx) => cx.stop_propagation())
+                        .on_mouse_up('right', (_e, cx) => cx.stop_propagation())
+                        .on_mouse_down_out((_e, cx) => close(cx))
+                        .on_action(ENTER, (_e, cx) => {
+                            if (enter.pressed() === 'act') join(cx);
+                        })
+                        .on_action(CMD_ENTER, (_e, cx) => {
+                            isCmdDown = true;
+                            if (cmdEnter.pressed(Date.now()) === 'act')
+                                sendNow(cx);
+                        })
+                        .on_action(ESCAPE, (_e, cx) => deps.pressEscape(cx))
+                        .on_action(TAB, () => deps.tab.ask(MINI_STOP, false))
+                        .on_action(BACK, () => deps.tab.ask(MINI_STOP, true))
+                        .on_key_up((e) => {
+                            if (e.key === 'enter') enter.released();
+                        })
+                        .on_modifiers_changed((e) => {
+                            if (e.modifiers.platform) return;
+                            isCmdDown = false;
+                            enter.modifiersReleased();
+                        }),
+                )
+                .child(
+                    h_flex()
+                        .gap(8)
+                        .text_size(12)
+                        .text_color(t.muted)
+                        .child(
+                            div()
+                                .flex_1()
+                                .min_w(0)
+                                .truncate()
+                                .child(
+                                    `"${quoteOf(note.passage.parts.map((p) => p.words))}"`,
+                                ),
+                        )
+                        .child(div().flex_none().child(deps.threadName())),
+                )
+                .child(
+                    !live ||
+                        (isLocked(note) && !sending.has(note.id) && !isFocused)
+                        ? div().child(note.text)
+                        : Textarea.new(box),
+                )
+                .child(
+                    h_flex()
+                        .gap(6)
+                        .items_center()
+                        .child(
+                            div()
+                                .flex_1()
+                                .min_w(0)
+                                .truncate()
+                                .text_size(12)
+                                .text_color(t.muted)
+                                .child(wordNow(note)),
+                        )
+                        .child(
+                            button(
+                                'chat-mini-join',
+                                isWaiting ? 'take back' : 'join',
+                                isWaiting
+                                    ? 'Take it back (Enter)'
+                                    : "Join its turn's next step, or its next turn (Enter)",
+                                join,
                             ),
-                    )
-                    .child(div().flex_none().child(deps.threadName())),
-            )
-            .child(
-                !live || (isLocked(note) && !sending.has(note.id) && !isFocused)
-                    ? div().child(note.text)
-                    : Textarea.new(box),
-            )
-            .child(
-                h_flex()
-                    .gap(6)
-                    .items_center()
-                    .child(
-                        div()
-                            .flex_1()
-                            .min_w(0)
-                            .truncate()
-                            .text_size(12)
-                            .text_color(t.muted)
-                            .child(wordNow(note)),
-                    )
-                    .child(
-                        button(
-                            'chat-mini-join',
-                            isWaiting ? 'take back' : 'join',
-                            isWaiting
-                                ? 'Take it back (Enter)'
-                                : "Join its turn's next step, or its next turn (Enter)",
-                            join,
+                        )
+                        .child(
+                            button(
+                                'chat-mini-send',
+                                'send now',
+                                'Send now: a turn starts (⌘Enter)',
+                                sendNow,
+                            ),
                         ),
-                    )
-                    .child(
-                        button(
-                            'chat-mini-send',
-                            'send now',
-                            'Send now: a turn starts (⌘Enter)',
-                            sendNow,
-                        ),
-                    ),
-            );
+                )
+        );
     }
 
     return {

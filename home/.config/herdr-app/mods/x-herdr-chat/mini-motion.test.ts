@@ -38,20 +38,24 @@ function world(isReduced = false) {
     };
 }
 
-test('F6 F6 inside 120 ms leaves no box and no timer', () => {
-    const w = world();
-    w.motion.opened(w.cx);
-    w.pass(10);
-    w.motion.closed('the box', w.cx);
-    expect([w.motion.ghost(), w.live()]).toEqual([null, 0]);
-    w.pass(MINI_MOTION_MS);
-    expect(w.motion.ghost()).toBeNull();
-});
+test.each([10, 80])(
+    'F6 F6 inside 120 ms leaves no box and no timer: %i ms apart',
+    (ms) => {
+        const w = world();
+        w.motion.opened(w.cx);
+        w.pass(ms);
+        w.motion.closed('the box', w.cx);
+        expect([w.motion.ghost(), w.live()]).toEqual([null, 0]);
+        w.pass(MINI_MOTION_MS);
+        expect(w.motion.ghost()).toBeNull();
+    },
+);
 
 test('shut once shown, it is drawn going for 120 ms, then gone', () => {
     const w = world();
     w.motion.opened(w.cx);
     w.pass(20);
+    w.pass(MINI_MOTION_MS);
     expect(w.motion.look()).toEqual({ lift: 0, opacity: 1 });
     w.motion.closed('the box', w.cx);
     expect([w.motion.ghost(), w.motion.look().opacity]).toEqual(['the box', 0]);
@@ -65,9 +69,11 @@ test('opened again while it goes: shown, the going one gone', () => {
     const w = world();
     w.motion.opened(w.cx);
     w.pass(20);
+    w.pass(MINI_MOTION_MS);
     w.motion.closed('the box', w.cx);
     w.motion.opened(w.cx);
     w.pass(20);
+    w.pass(MINI_MOTION_MS);
     expect([w.motion.ghost(), w.motion.look().opacity, w.live()]).toEqual([
         null,
         1,

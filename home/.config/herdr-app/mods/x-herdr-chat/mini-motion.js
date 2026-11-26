@@ -11,7 +11,7 @@ const LIFT = 6;
 // one frame drawn in the start look before the move
 const FRAME_MS = 16;
 
-/** @typedef {'shut' | 'entering' | 'shown' | 'leaving'} MiniPhase */
+/** @typedef {'shut' | 'entering' | 'rising' | 'shown' | 'leaving'} MiniPhase `entering`: its start look's one frame; `rising`: on its way in */
 
 /**
  * @template T
@@ -36,6 +36,7 @@ export function createMiniMotion(isReduced) {
             task = null;
             phase = next;
             if (next === 'shut') ghost = null;
+            if (next === 'rising') later('shown', MINI_MOTION_MS, cx);
             cx.notify();
         });
     }
@@ -44,6 +45,7 @@ export function createMiniMotion(isReduced) {
         /** it shut, `drawn` as it was last drawn @param {T} drawn @param {Context} cx */
         closed(drawn, cx) {
             stop();
+            // one shut on its way in was never seen whole: it goes at once
             if (phase !== 'shown' || isReduced()) {
                 phase = 'shut';
                 ghost = null;
@@ -65,12 +67,12 @@ export function createMiniMotion(isReduced) {
         isMoving: () => task !== null,
         /** where it stands against its place and how much it shows */
         look: () =>
-            phase === 'shown'
+            phase === 'shown' || phase === 'rising'
                 ? { lift: 0, opacity: 1 }
                 : { lift: LIFT, opacity: 0 },
         /** it opened, or moved onto another note: one already shown stays so @param {Context} cx */
         opened(cx) {
-            if (phase === 'shown') return;
+            if (phase === 'shown' || phase === 'rising') return;
             stop();
             ghost = null;
             if (isReduced()) {
@@ -78,7 +80,7 @@ export function createMiniMotion(isReduced) {
                 return;
             }
             phase = 'entering';
-            later('shown', FRAME_MS, cx);
+            later('rising', FRAME_MS, cx);
         },
     };
 }
