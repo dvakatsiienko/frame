@@ -9,6 +9,7 @@ import {
 import { div } from 'gpui-kit';
 import { exec, home, settings } from 'herdr';
 
+import { drawnBlocks } from './drawn.js';
 import { isPicture } from './file-links.js';
 import { guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
@@ -20,6 +21,7 @@ import { openPath } from './open-path.js';
 import { pathOf } from './path-links.js';
 import { END_GLIDE_MS, createPlace } from './place.js';
 import { createSelections, passageOf, wordsOf } from './selection.js';
+import { trace } from './trace.js';
 import { missingNote } from './viewer.js';
 
 /** @typedef {import('./chat-types.js').Context} Context */
@@ -229,10 +231,24 @@ export function createMessageList(deps) {
                 const parts = row
                     ? selections.partsFor(
                           key,
-                          (k) => deps.rows.stampOf(row, preOf(keys.indexOf(k))),
+                          (k, stamp, parts) =>
+                              isDrawnNow(
+                                  row,
+                                  preOf(keys.indexOf(k)),
+                                  stamp,
+                                  parts,
+                              ),
                           deps.rows.textsCount(row),
                       )
                     : null;
+                trace('menu', {
+                    hasParts: Boolean(parts),
+                    key,
+                    kind: row?.kind ?? null,
+                    rowStamp: row
+                        ? deps.rows.stampOf(row, preOf(keys.indexOf(key)))
+                        : null,
+                });
                 messageMenu.hit(event.position, {
                     copied: copiedFrom(row, parts && wordsOf(parts)),
                     selected: noteOn(row, parts, parts?.at(-1)?.position),
@@ -374,6 +390,19 @@ export function createMessageList(deps) {
     }
 
     /**
+     * words reported from what a row draws now: its drawing, or one whose texts are the row's still, a version that only
+     * added what it never draws (FRM-585:W79 W80: a whole paragraph of the newest reply found no words)
+     * @param {Row} row @param {string} pre @param {string} stamp @param {readonly import('./selection.js').Part[]} parts
+     */
+    function isDrawnNow(row, pre, stamp, parts) {
+        if (deps.rows.stampOf(row, pre) === stamp) return true;
+        const sources = drawnBlocks(row);
+        return parts.every((p) =>
+            (sources[p.block] ?? '').startsWith(p.source),
+        );
+    }
+
+    /**
      * what a note would be written on, and where the words end in the list
      * @param {Row | undefined} row @param {readonly import('./selection.js').Part[] | null} parts
      * @param {{ x: number, y: number } | null | undefined} end in window px
@@ -443,8 +472,21 @@ export function createMessageList(deps) {
                     report: (
                         /** @type {number} */ block,
                         /** @type {import('./selection.js').Reported | null} */ part,
+                        /** @type {Context} */ cx,
                     ) => {
+                        const isHeld = selections
+                            .heldIn(row.id)
+                            .includes(block);
+                        trace('report', {
+                            block,
+                            key,
+                            range: part?.range ?? null,
+                            stamp,
+                            words: part?.words.length ?? null,
+                        });
                         selections.report(key, stamp, block, part, Date.now());
+                        // words let go: its note links come back; a redraw now drops no selection
+                        if (isHeld && !part) cx.notify();
                     },
                 });
             }
@@ -662,6 +704,8 @@ export function createMessageList(deps) {
 
     return {
         column,
+        /** @param {string} id */
+        heldIn: (id) => selections.heldIn(id),
         /** a restored place lands unseen: its frames would show him other rows first @param {string} id @param {number} offset */
         land(id, offset) {
             at.restore(id, offset);
@@ -698,9 +742,28 @@ export function createMessageList(deps) {
             const selected = selections.current(time);
             const i = selected ? (items?.keys.indexOf(selected.key) ?? -1) : -1;
             const row = items?.rowOf(i);
-            if (!selected || !items || !row) return null;
-            if (deps.rows.stampOf(row, items.preOf(i)) !== selected.stamp)
+            const facts = {
+                i,
+                key: selected?.key ?? null,
+                kind: row?.kind ?? null,
+                stamp: selected?.stamp ?? null,
+            };
+            if (!selected || !items || !row) {
+                trace('f6: no words', facts);
                 return null;
+            }
+            const rowStamp = deps.rows.stampOf(row, items.preOf(i));
+            if (
+                !isDrawnNow(row, items.preOf(i), selected.stamp, selected.parts)
+            ) {
+                trace('f6: drawn anew', { ...facts, rowStamp });
+                return null;
+            }
+            trace('f6', {
+                ...facts,
+                isWaiting: row.isWaiting,
+                parts: selected.parts.length,
+            });
             // a fold leaves the rest of its message out, and they never say so
             const blocks = deps.rows.textsCount(row);
             return noteOn(

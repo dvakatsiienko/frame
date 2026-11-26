@@ -77,18 +77,22 @@ function createRows() {
     const made = new Map<string, string>();
     const notes = new Map<string, object[]>();
     /** the notes he made, by the words their message shows */
+    /** the text views of a message that hold words he selected */
+    const held = new Map<string, number[]>();
     const noted = new Map<
         string,
         { isJoined?: boolean; quote: string; text: string }
     >();
     return {
         find,
+        held,
         made,
         noted,
         notes,
         view: createMessageRows({
             column: () => 700,
             find: () => find,
+            heldIn: (id: string) => held.get(id) ?? [],
             isShowMore: () => true,
             look: () => ({ space: 'normal' }),
             noteOf: (row: { text: string }) => noted.get(row.text) ?? null,
@@ -195,6 +199,40 @@ test('each text view reports the words it drew, and its place', () => {
 });
 
 // FRM-585 B4
+// FRM-585:W77: a note's link rewrote the markdown and herdr let his selected words go; F6 F6 «randomly» kept them
+test('words selected in a text view keep its markdown as drawn, painted still; the links come once they are let go', () => {
+    const { held, notes, view } = createRows();
+    const source = 'one viewer';
+    notes.set('new', [
+        {
+            id: 'n',
+            passage: {
+                parts: [
+                    {
+                        block: 0,
+                        range: { end: 10, start: 4 },
+                        source,
+                        words: 'viewer',
+                    },
+                ],
+            },
+            state: 'draft',
+        },
+    ]);
+    const draw = () => {
+        gpui.sources.length = 0;
+        gpui.painted.length = 0;
+        view.texts(rows[2] as never, t, 'p', true, (drawn) => drawn);
+        return [gpui.sources[0], gpui.painted.map((p) => p.range)];
+    };
+    held.set('new', [0]);
+    expect(draw()).toEqual(['one viewer', [[4, 10]]]);
+    const look = view.bodyLook(rows[2] as never, t, 'p');
+    held.delete('new');
+    expect(draw()).toEqual(['one [viewer](note:n)', [[5, 11]]]);
+    expect(view.bodyLook(rows[2] as never, t, 'p')).not.toBe(look);
+});
+
 test('his notes’ words are painted under find’s hits, the stepped one last, and stay once find shuts', () => {
     const { find, notes, view } = createRows();
     const source = 'one viewer';
@@ -215,18 +253,20 @@ test('his notes’ words are painted under find’s hits, the stepped one last, 
     const before = view.bodyLook(rows[2] as never, t, 'p');
     notes.set('new', [note('a', 'waiting'), note('b', 'joined')]);
     expect(view.bodyLook(rows[2] as never, t, 'p')).not.toBe(before);
+    // a waiting note in the theme's amber, a joined one in its accent (FRM-585:W75 W76)
+    const hues = new Proxy(
+        {},
+        { get: (_t, k) => (k === 'blocked' ? '#cc8800' : '#336699') },
+    ) as never;
     const paint = () => {
         gpui.painted.length = 0;
-        view.texts(rows[2] as never, t, 'p', true, (drawn) => drawn);
-        return gpui.painted.map(({ color, range }) => [
-            color.slice(-2),
-            ...range,
-        ]);
+        view.texts(rows[2] as never, hues, 'p', true, (drawn) => drawn);
+        return gpui.painted.map(({ color, range }) => [color, ...range]);
     };
     // drawn inside the newer note's link: «one [viewer](note:b)»
     const mine = [
-        ['22', 5, 11],
-        ['40', 5, 11],
+        ['#3366992e', 5, 11],
+        ['#cc880047', 5, 11],
     ];
     gpui.sources.length = 0;
     expect(paint()).toEqual(mine);
@@ -234,7 +274,7 @@ test('his notes’ words are painted under find’s hits, the stepped one last, 
     expect(gpui.sources).toEqual(['one [viewer](note:b)']);
     find.open();
     find.search(rows, 'viewer');
-    expect(paint()).toEqual([...mine, ['b3', 5, 11]]);
+    expect(paint()).toEqual([...mine, ['#336699b3', 5, 11]]);
     find.close();
     expect(paint()).toEqual(mine);
     gpui.painted.length = 0;

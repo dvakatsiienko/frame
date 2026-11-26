@@ -475,6 +475,29 @@ test('a press outside shuts it, one on it stays on it', () => {
     expect([w.mini.isOpen(), w.note()?.text]).toEqual([false, 'mine']);
 });
 
+// dima, 26 Nov 15:51, FRM-585:W74: a click inside left the field unfocused, a second gave it none
+test('a click inside gives its field the keyboard back, and leaves one that has it alone', () => {
+    const w = world();
+    w.f6();
+    w.run();
+    const press = (name: string) =>
+        w.root()?.handlers.get(name)?.(
+            {} as never,
+            { stop_propagation: () => {} } as never,
+        );
+    at.box.on.get('blur')?.(
+        {},
+        { notify: () => {}, timer: { after: () => ({}) } },
+    );
+    const before = at.box.focused;
+    press('on_mouse_down_left');
+    press('on_mouse_up_left');
+    expect(at.box.focused).toBe(before + 2);
+    at.box.on.get('focus')?.({}, { notify: () => {} });
+    press('on_mouse_down_left');
+    expect(at.box.focused).toBe(before + 2);
+});
+
 describe('its keys (A5)', () => {
     test('each is bound on the box itself, before the box’s own; Shift+Enter is the box’s', () => {
         world();

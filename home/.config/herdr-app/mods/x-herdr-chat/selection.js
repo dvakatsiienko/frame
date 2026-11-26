@@ -73,24 +73,25 @@ export function createSelections() {
         ];
     };
 
-    /** @param {string} key @param {string} stamp @param {number} blocks */
-    const partsIn = (key, stamp, blocks) => {
+    /** @param {string} key @param {(key: string, stamp: string, parts: Part[]) => boolean} isNow @param {number} blocks */
+    const partsIn = (key, isNow, blocks) => {
         const item = items.get(key);
-        if (item?.stamp !== stamp) return null;
+        if (!item || !isNow(key, item.stamp, inOrder(item.parts))) return null;
         const parts = inOrder(item.parts).filter((p) => p.block < blocks);
         return parts.length ? parts : null;
     };
 
     /**
      * the words selected in a list item by text view, else in the other half of its message
-     * @param {string} key @param {(key: string) => string} stampOf
+     * @param {string} key @param {(key: string, stamp: string, parts: Part[]) => boolean} isNow its words were reported from
+     *   what the item draws now
      * @param {number} blocks how many text views its message draws: a fold leaves the rest out, and they never say so
      */
-    function partsFor(key, stampOf, blocks) {
+    function partsFor(key, isNow, blocks) {
         const twin = twinOf(key);
         return (
-            partsIn(key, stampOf(key), blocks) ??
-            (twin ? partsIn(twin, stampOf(twin), blocks) : null)
+            partsIn(key, isNow, blocks) ??
+            (twin ? partsIn(twin, isNow, blocks) : null)
         );
     }
 
@@ -103,6 +104,16 @@ export function createSelections() {
         current: (at) =>
             [...stands].reverse().find((s) => s.from <= at && at < s.to)
                 ?.selected ?? null,
+        /**
+         * which text views of a message hold words he selected: while they do, their markdown stays as drawn, or herdr
+         * reads it as a new text and lets the words go (FRM-585:W77) @param {string} id the message's row
+         * @returns {number[]}
+         */
+        heldIn: (id) =>
+            [...items.entries()]
+                .filter(([key]) => key.replace(/#(?:above|below)$/, '') === id)
+                .flatMap(([, item]) => [...item.parts.keys()])
+                .sort((a, b) => a - b),
         /** @param {ReadonlySet<string>} keys the list items on screen @param {number} now */
         keep(keys, now) {
             for (const key of items.keys())

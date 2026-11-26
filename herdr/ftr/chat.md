@@ -105,9 +105,12 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
 - ✅ F6, or «tell <thread>» in the right-click menu, opens the quill-mini: a small box for a note on the words he selected (FRM-585:W3, W12, W35, W67)
   - given words selected in a reply, or in a message of his the thread has
   - when he presses F6 from anywhere in the window, then the box opens under the words' end with the cursor in it, the words over it cut as the thread will get them, the thread's name beside; F6 again, Esc or a press outside closes it and keeps the note as his draft, and the same words bring the draft back (W5, W6)
+  - and words he selected stay selected while the box opens and shuts: a message keeps its text as drawn while words stand selected in it, its note links coming at his next press; meanwhile a click on a note's words in that message opens nothing (W77)
+  - and any selection opens it, a whole paragraph with bold in it too, by F6 or the menu; one the note cannot link across still opens it, with no link (W79, W80)
   - and the words are those that stood selected at the press; with none, in a message still waiting, in one scrolled away, or with the picture viewer open, F6 does nothing, and no view moves (W4)
   - and the menu shows «tell <thread>», the thread as antenna names it, only on the message that holds the words
   - and the line the thread gets holds the words, the sentence they sit in (cut to about 160 characters around them), which message and when, and his note; a message 20 or more replies back is named by its first words too (FRM-585:W72)
+  - and a click anywhere inside the box keeps the keyboard in its field, every time (W74)
   - and Enter joins the note, again takes it back; ⌘Enter sends it now and the box goes; Shift+Enter breaks the line; Tab walks the loop, where the box has a stop while open; an empty note does neither
   - and the box reads «joined» once the thread has the note, with what the thread got, read-only; words he typed past that are a new note on the same words, and a box he types in moves onto it, the cursor where it was, saying so; on a note a turn took, his next word starts one too
   - and a note waits while its thread is idle, for its next turn; one its thread's state no longer lists a minute after it joined is his draft again, saying so; a × on a sent one still in the queue makes it his draft too, whichever message's × pulled it (FRM-585:W2, W14, W42)
@@ -122,7 +125,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and Copy on it gives what the bubble shows: the «on» line, then his words
   - and a note that joined a turn draws no bubble at all: its quiet row under the message it is on is the one place it shows (dima's o1, 26 Nov 15:20)
 - ✅ the words he wrote a note on stay highlighted in their message (FRM-585:W2, W50, W51)
-  - given notes on a message, then each one's words are painted behind in the theme's accent, stronger while the thread has not got the note, quieter once it has; opening the box paints them at once
+  - given notes on a message, then each one's words are painted behind: in the theme's waiting amber while the thread has not got the note, in its accent once it has, two hues told apart at a glance (W75, W76); opening the box paints them at once
   - and they are found again after the reply grew or an older page landed above it; words that are gone, or stand twice and moved, show none and the note stays
   - and find's hits are painted over them, and leave them as they were
   - and a path in them that became a link later is still found; a folded reply paints none past the lines it shows

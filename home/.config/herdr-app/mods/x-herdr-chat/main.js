@@ -265,6 +265,7 @@ export default class Chat extends View {
     rows = createMessageRows({
         column: () => this.list.column(),
         find: () => this.findBar.find,
+        heldIn: (id) => this.list.heldIn(id),
         isShowMore: () => this.isShowMore,
         look: () => this.look,
         noteOf: (row) => {

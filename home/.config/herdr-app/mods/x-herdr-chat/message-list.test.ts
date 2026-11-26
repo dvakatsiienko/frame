@@ -206,7 +206,11 @@ function createWindow(
                             return this;
                         },
                         on_selection_change: (report: Handler) =>
-                            bodies.reports.set(row.id, report),
+                            bodies.reports.set(
+                                row.id,
+                                (s: unknown, c?: unknown) =>
+                                    report(s, c ?? { notify: () => {} }),
+                            ),
                     } as never,
                     0 as never,
                     'the written source' as never,
@@ -233,7 +237,8 @@ function createWindow(
                 if (isShown) frame.set(row.id, body !== null);
                 return gpui.make();
             },
-            stampOf: (row: { id: string }, pre: string) => `${pre}${row.id}`,
+            stampOf: (row: { id: string; version: number }, pre: string) =>
+                `${pre}${row.id}@${row.version}`,
             textsCount: () => bodies.texts,
         },
         say: (note: string) => gpui.opened.push([note]),
@@ -434,6 +439,7 @@ function createWindow(
             scrollTop += px;
             drawRows();
         },
+        heldIn: (id: string) => list.heldIn(id),
         isDirty: () => isDirty,
         /** the ↓ that brings him to the newest is on screen */
         isNewestShown: () =>
@@ -565,6 +571,13 @@ function createWindow(
         /** herdr tells the list its size: at a change, and once it is back on the screen */
         told: (height: number) =>
             fire(root, 'on_size_change', { height, width: 900 }, cx),
+        /** a row's next version, its words as given */
+        version(id: string, text: string) {
+            rows = rows.map((r) =>
+                r.id === id ? { ...r, text, version: r.version + 1 } : r,
+            );
+            isDirty = true;
+        },
         /** the list's width changes: every row is laid out anew */
         wide: (width: number) =>
             fire(root, 'on_size_change', { height: viewH, width }, cx),
@@ -704,6 +717,10 @@ test('a settled selection asks the chat for no draw, which would drop it', () =>
         w.cx as never,
     );
     expect(w.isDirty()).toBe(false);
+    // let go, the text view's note links come back in one draw (FRM-585:W77)
+    expect(w.heldIn('r1')).toEqual([0]);
+    (w.bodies.reports.get('r1') as Handler)(null as never, w.cx as never);
+    expect([w.heldIn('r1'), w.isDirty()]).toEqual([[], true]);
 });
 
 test('a click opens the square he pressed, and the first when he pressed beside them', () => {
@@ -988,6 +1005,22 @@ describe('the words a note is written on', () => {
             },
         ],
         row: { at: undefined, head: expect.any(String), id, kind: 'reply' },
+    });
+
+    // FRM-585:W79 W80: a whole paragraph of the newest reply found no words, F6 nor the menu
+    test('a message whose version moved and whose words did not keeps them', () => {
+        const { first, select, w } = rested();
+        w.version(first, 'the written source');
+        w.run(40);
+        select(first, words('two words'));
+        w.version(first, 'the written source');
+        w.run(40);
+        expect(w.selectedAt(Date.now())?.passage.parts[0]?.words).toBe(
+            'two words',
+        );
+        w.version(first, 'other words');
+        w.run(40);
+        expect(w.selectedAt(Date.now())).toBeNull();
     });
 
     test('stood selected at a press, with the place they end at in the list', () => {

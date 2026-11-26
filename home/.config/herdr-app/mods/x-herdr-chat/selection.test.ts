@@ -18,7 +18,11 @@ describe('the words he selected, read at a right press', () => {
     const select = (key: string, block: number, words: string | null) =>
         selections.report(key, now(key), block, words ? part(words) : null, 0);
     const textFor = (key: string, stampOf = now, blocks = 9) => {
-        const parts = selections.partsFor(key, stampOf, blocks);
+        const parts = selections.partsFor(
+            key,
+            (k, stamp) => stampOf(k) === stamp,
+            blocks,
+        );
         return parts && wordsOf(parts);
     };
     beforeEach(() => {

@@ -34,9 +34,10 @@ const SENT_THUMB = 96;
 const CHAR_PX = 7.5;
 // how strong find paints a match, and the one it stepped to
 const HIT_ALPHA = '4d';
-// the words of a note the thread has not got, and of one it has
-const NOTE_ALPHA = '40';
-const HAD_NOTE_ALPHA = '22';
+// the words of a note the thread has not got, in the theme's waiting amber, and of one it has, in its accent: two hues,
+// told apart at a glance (dima, 26 Nov, FRM-585:W75 W76)
+const NOTE_ALPHA = '47';
+const HAD_NOTE_ALPHA = '2e';
 const STEPPED_ALPHA = 'b3';
 
 /**
@@ -49,6 +50,7 @@ const STEPPED_ALPHA = 'b3';
  * @property {() => ReturnType<typeof import('./find.js').createFind>} find the chat's search, which marks the rows and the words it matched
  * @property {() => import('./look.js').Look} look
  * @property {() => boolean} isShowMore his «Show more» switch (FRM-607)
+ * @property {(id: string) => readonly number[]} heldIn the text views of a message that hold words he selected
  * @property {ReturnType<typeof import('./sent-pictures.js').createSentPictures>} sent
  */
 
@@ -279,6 +281,7 @@ export function createMessageRows(deps) {
             foldOf(row)?.hidden ?? '',
             isHit ? find.state.q : '',
             JSON.stringify(marksOf(row)),
+            deps.heldIn(row.id).join(','),
             find.current() === row.id ? find.currentHit()?.n : '',
             ...row.pictures.map((p) => deps.sent.relOf(p) ?? ''),
             t.accent,
@@ -311,6 +314,13 @@ export function createMessageRows(deps) {
 
     /** a text view's markdown with his notes' words as links that open them (FRM-585 B5) @param {Row} row @param {number} block @param {string} source */
     function linkedOf(row, block, source) {
+        // words selected in it keep its markdown as drawn: the links come at his next press, which lets them go anyway
+        if (deps.heldIn(row.id).includes(block))
+            return {
+                at: (/** @type {number} */ n) => n,
+                back: (/** @type {{ start: number, end: number }} */ r) => r,
+                source,
+            };
         // in the order he made them, so of two on the same words the newer is the link
         const made = deps.notesOn(row).map((n) => n.id);
         const marks = marksIn(row, block, source).sort(
@@ -335,7 +345,9 @@ export function createMessageRows(deps) {
                 el.highlight_range(
                     linked.at(start),
                     linked.at(end),
-                    tint(t.accent, isStrong ? NOTE_ALPHA : HAD_NOTE_ALPHA),
+                    isStrong
+                        ? tint(t.blocked, NOTE_ALPHA)
+                        : tint(t.accent, HAD_NOTE_ALPHA),
                 ),
             plain,
         );

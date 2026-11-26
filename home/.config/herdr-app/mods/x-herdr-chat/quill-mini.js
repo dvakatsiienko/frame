@@ -436,15 +436,22 @@ export function createQuillMini(deps) {
                             height = drawn;
                             cx.notify();
                         })
-                        // a press on the box is the box's, never the list's under it
-                        .on_mouse_down('left', (_e, cx) =>
-                            cx.stop_propagation(),
-                        )
+                        // a press on the box is the box's, never the list's under it; it keeps the keyboard in its field,
+                        // or a click inside left it unfocused and a second gave it none (dima, 26 Nov 15:51, FRM-585:W74)
+                        .on_mouse_down('left', (_e, cx) => {
+                            cx.stop_propagation();
+                            if (!isFocused && note && !isClosed(note))
+                                box?.focus();
+                        })
                         .on_mouse_down('right', (_e, cx) =>
                             cx.stop_propagation(),
                         )
                         // herdr follows a link under the box on a mouse-up
-                        .on_mouse_up('left', (_e, cx) => cx.stop_propagation())
+                        .on_mouse_up('left', (_e, cx) => {
+                            cx.stop_propagation();
+                            if (!isFocused && note && !isClosed(note))
+                                box?.focus();
+                        })
                         .on_mouse_up('right', (_e, cx) => cx.stop_propagation())
                         .on_mouse_down_out((_e, cx) => close(cx))
                         .on_action(ENTER, (_e, cx) => {
