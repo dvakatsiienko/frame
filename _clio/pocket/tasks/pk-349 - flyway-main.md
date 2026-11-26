@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-26T11:26:50Z'
+updated_date: '2026-11-26T11:27:23Z'
 labels:
   - s
   - clio-main
@@ -43,4 +43,6 @@ PK-349:W2478 (2026-11-26 13:11, dima): FRM-660: summon it only if more scope for
 PK-349:W2479 (2026-11-26 13:11, dima): FRM-707: what is it? looks like a freebie? ❓ → landed: answered on the board / in the 13:1x replies
 
 13:26 homes, corrected: W2473 answered on the boot board (the stray's handoff is stale) · W2474 → clio:boot SKILL.md, the 🐕 stray line (a7d52c1b) · W2475 → FRM-387 holds his charts wish (someday, no milestone); FRM-360 left its milestone · W2476 → FRM-620:W88 · W2477–W2478 → FRM-660 already built, o2 · W2479 → FRM-707 signed, held for a stray batch
+
+13:27 homes: W2480, W2481, W2482, W2483, W2484, W2485 → FRM-360 out of its milestone, milestone deleted (13:16); herdr codie answer in the 13:17 reply
 <!-- SECTION:NOTES:END -->
