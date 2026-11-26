@@ -172,7 +172,7 @@ export function createOrbitView(deps) {
                                   : []),
                           ],
                 )
-                // who asks and why, muted, one line, whole on hover (FRM-670:W5–W8); none of both adds no row
+                // who relayed it, muted, one line, no tooltip (FRM-670:W5–W8, dima 18:22); a session's own ask adds no row
                 .when(Boolean(ask.origin), (el) =>
                     el.child(
                         h_flex()
@@ -180,7 +180,6 @@ export function createOrbitView(deps) {
                             .child(
                                 line(t.muted, SIZE.small)
                                     .id(`origin-${key}`)
-                                    .tooltip(ask.origin ?? '')
                                     .child(ask.origin ?? ''),
                             ),
                     ),

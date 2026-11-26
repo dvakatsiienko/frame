@@ -52,37 +52,27 @@ describe('a tint of a theme colour', () => {
 
 // FRM-620 step 164 (FRM-670:W5–W8): under an ask, who asks and why
 describe('an ask’s origin line', () => {
-    test('crow, a codie relay, a why alone and neither', () => {
-        expect(
-            [
-                [{ line: '🐦‍⬛ crow', who: 'crow' }, 'the pace again'],
-                [
-                    {
-                        lane: 'herdr',
-                        line: '🔧 herdr | FRM-569',
-                        ticket: 'FRM-569',
-                        who: 'codie',
-                    },
-                    'his eyes first',
-                ],
-                [null, 'your 17:57 save question'],
-                [null, null],
-            ].map(([from, why]) => originOf(from, why)),
-        ).toEqual([
-            '🐦‍⬛ crow · the pace again',
-            '🔧 herdr | FRM-569 · his eyes first',
-            'your 17:57 save question',
-            null,
-        ]);
-    });
-
-    test('an ask updated in place takes its new sender and why', () => {
-        const ask = (why: string, line: string) =>
-            asksOf({ asks: [{ from: { line }, id: 'o1', text: 'x', why }] })[0]
+    // dima, 26 Nov 18:22: only a relayed ask says who started it, its area and ticket; never the why
+    test('a relayed ask names its starter, area and ticket; a session’s own ask none, its why never', () => {
+        const origin = (from: unknown) =>
+            asksOf({ asks: [{ from, id: 'o1', text: 'x', why: 'a why' }] })[0]
                 ?.origin;
         expect([
-            ask('first', '🐬 wishkeeper'),
-            ask('second', '🐦‍⬛ crow'),
-        ]).toEqual(['🐬 wishkeeper · first', '🐦‍⬛ crow · second']);
+            origin({ line: '🐦‍⬛ crow', who: 'crow' }),
+            origin({
+                lane: 'herdr',
+                line: '🔧 herdr | FRM-569',
+                ticket: 'FRM-569',
+                who: 'codie',
+            }),
+            origin(null),
+            origin({ line: '  ' }),
+        ]).toEqual(['🐦‍⬛ crow', '🔧 herdr | FRM-569', null, null]);
+    });
+
+    test('an ask updated in place takes its new starter', () => {
+        expect(
+            ['🐬 wishkeeper', '🐦‍⬛ crow'].map((line) => originOf({ line })),
+        ).toEqual(['🐬 wishkeeper', '🐦‍⬛ crow']);
     });
 });
