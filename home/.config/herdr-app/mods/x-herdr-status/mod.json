@@ -4,6 +4,6 @@
         "version": "0.1.10"
     },
     "place": "none",
-    "shared": ["chat-asks.js", "deck-block.js"],
+    "shared": ["chat-asks.js", "deck-block.js", "press-probe.js"],
     "title": "x-herdr status"
 }

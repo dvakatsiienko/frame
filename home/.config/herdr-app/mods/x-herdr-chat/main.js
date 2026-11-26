@@ -47,6 +47,7 @@ import { audioAppOf } from './open-path.js';
 import { createPathLinks } from './path-links.js';
 import { createPickers } from './pickers.js';
 import { createPictureViewer } from './picture-viewer.js';
+import { createPressProbe } from './press-probe.js';
 import { MINI_STOP, createQuillMini } from './quill-mini.js';
 import { createQuill } from './quill-view.js';
 import { createRowModel } from './row-model.js';
@@ -74,6 +75,7 @@ import { NAMES_KEY } from './thread-keys.js';
 /** @typedef {import('./chat-types.js').Theme} Theme */
 
 // the ui font, as the old chat drew it
+const probe = createPressProbe('chat');
 const SANS = '.AppleSystemUIFont';
 // the time of a click on a note's words, in this window's shared store
 const NOTE_CLICK = 'chat.note-click';
@@ -447,6 +449,8 @@ export default class Chat extends View {
             heldStop !== 'quill' &&
             heldStop !== MINI_STOP &&
             loopOf(shared, layout()).includes(heldStop);
+        if (annotateAsk !== null && annotateAsk !== this.annotateAsk)
+            probe('f6 seen', { annotateAsk, isShown, wasShown: this.wasShown });
         const acts = asksActedOn({
             annotateAsk,
             effortAsk,
@@ -474,6 +478,8 @@ export default class Chat extends View {
         this.isLoaded = true;
         // Esc pressed anywhere in the window closes what is on top (dima, 18:18)
         if (acts.isEscape) _cx.timer.after(0, (later) => this.closeTop(later));
+        if (acts.isAnnotate)
+            probe('f6 acted', { isPictures: this.pictures.isOpen() });
         // F6: the words that stood selected at its press, since a press in between lets them go
         if (acts.isAnnotate && !this.pictures.isOpen())
             _cx.timer.after(0, (later) =>

@@ -12,9 +12,9 @@ claims: `home/.config/herdr-app/mods/`
 
 - [the setup — x-herdr](ftr/setup.md) — 2 features
 - [x-herdr-deck — phases and the deck's reads](ftr/sessions.md) — 7 features
-- [x-herdr-deck — orbit](ftr/orbit.md) — 17 features
-- [sidebar — antenna](ftr/antenna.md) — 6 features
+- [x-herdr-deck — orbit](ftr/orbit.md) — 19 features
+- [sidebar — antenna](ftr/antenna.md) — 7 features
 - [threads — tabs](ftr/tabs.md) — 9 features
 - [tray — quick terminal](ftr/tray.md) — 1 feature
-- [chat view — x-herdr-chat](ftr/chat.md) — 48 features
+- [chat view — x-herdr-chat](ftr/chat.md) — 52 features
 - [scripts](ftr/scripts.md) — 3 features
