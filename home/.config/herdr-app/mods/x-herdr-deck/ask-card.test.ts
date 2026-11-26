@@ -10,7 +10,6 @@ const parted = {
     body: 'a click **opens it**',
     from: { lane: 'herdr', line: '🔧 herdr | FRM-620', who: 'codie' },
     id: 'o1',
-    isGated: true,
     kind: 'look',
     pick: 'both work',
     text: 'look: path links\n\na click **opens it**',

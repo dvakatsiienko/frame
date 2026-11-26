@@ -60,7 +60,6 @@ const LOOK = LOOKS.a;
  * @property {() => ReturnType<typeof import('./card-files.js').createCardFiles>} files
  * @property {() => string | null} hoverSid
  * @property {() => Map<string, { text: string, until: number }>} keyNotes
- * @property {() => Set<string>} passedOver
  * @property {() => import('./orbit.js').OrbitPin} pin
  * @property {(cx: AsyncContext, s: Row, ask: Ask, verdict: 'tick' | 'replay') => Promise<void>} press
  * @property {(cx: AsyncContext, s: Row) => Promise<void>} pressAll
@@ -110,9 +109,6 @@ export function createOrbitView(deps) {
             cx.notify();
         };
 
-    // a gated ask (the stash marks it: a sign, a ⚠️, a merge, a quoted command) takes the same 🛎️: his click writes the
-    // press only his click writes, and x-mod-guard reads it as his word for that ask, once (FRM-544). a click, never a key:
-    // a keyed mod command is any shell's
     /** @param {Theme} t @param {Row} s @param {Ask} ask */
     function ask(t, s, ask) {
         const key = `${s.sid}:${ask.id}`;
@@ -190,9 +186,7 @@ export function createOrbitView(deps) {
                                     labels.tick,
                                     state === 'ticked'
                                         ? 'queued for its next turn: click to take it back'
-                                        : ask.isGated
-                                          ? 'tick: your word for this guarded action, it runs once within 2 h'
-                                          : 'tick: agree',
+                                        : 'tick: agree',
                                     (cx) =>
                                         cx.spawn((cx) =>
                                             state === 'ticked'
@@ -252,16 +246,6 @@ export function createOrbitView(deps) {
                             .text_color(t.blocked)
                             .child(`⚠️ ${failed}`),
                     ),
-                )
-                .when(
-                    ask.isGated && !isLocked && deps.passedOver().has(key),
-                    (el) =>
-                        el.child(
-                            div()
-                                .text_size(SIZE.secondary)
-                                .text_color(t.muted)
-                                .child('needs your own press'),
-                        ),
                 )
                 // last, so it lies over the card
                 .when(Boolean(ask.title && ask.id), (el) =>

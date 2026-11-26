@@ -5,7 +5,6 @@ import { orbitSections, orbitTabOrder } from './orbit.js';
 // FRM-620 slice 4 (W14, his 14:12 steer): Tab walks the steer boxes alone, in the order orbit draws them, the look and
 // 🧪 cards first; Enter and ⌘Enter there tick and replay, so the buttons take no Tab
 const plain = {
-    isGated: false,
     isLocked: false,
     link: null,
     mark: null,

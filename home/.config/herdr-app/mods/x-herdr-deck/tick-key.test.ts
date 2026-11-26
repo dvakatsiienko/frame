@@ -116,7 +116,6 @@ const cx: Record<string, unknown> = {
 
 const ask = (text: string) => ({
     id: 'o1',
-    isGated: false,
     isLocked: false,
     link: null,
     mark: null,

@@ -7,9 +7,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when he clicks its 🍕
   - then the press leaves the ticks file and 🛎️ tick shows again; once the thread takes it, the button reads 😋
   - and a press waiting on an idle thread stays 🍕 however long it waits; 😋 shows only once the published ask is locked, which a turn does, never the stash's 4 s read of the press (his hand-test, 20:52)
-  - and his second click takes a tick back until a turn takes it, gated asks too: a press the stash has not read leaves the ticks file, one it has read gets an untick line (`{id, verdict: "untick", at}`) the stash answers by dropping the mark; «↩︎ unticking» shows until it has (dima: «ticked and able to untick until you actually receive them»)
+  - and his second click takes a tick back until a turn takes it: a press the stash has not read leaves the ticks file, one it has read gets an untick line (`{id, verdict: "untick", at}`) the stash answers by dropping the mark; «↩︎ unticking» shows until it has (dima: «ticked and able to untick until you actually receive them»)
   - not checked: the stash's side of the untick line, the mods codie's, not landed yet
-  - decision: a gated ask keeps its one-way press until the mods lane's tick fixes settle (clio, 19:34)
   - not checked: the click itself, by his hand
 - 🔎 an ask reads as a card in three parts (FRM-620 slice 7, W64–W76)
   - given a thread's ask sent with a title and a body
@@ -73,15 +72,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: hover first, then the thread open on screen; a click picks nothing (dima, 25 Nov 13:37, over his 21:42 pick by click); a hovered asker with nothing left to take ticks nobody else's, and a hover ends with ⌘E
   - decision: ⌘⇧K is the deck's own key command (`x-herdr-deck.tickall`), from any focus, with no relay through the status bar; with the deck hidden it does nothing (FRM-618 slice C)
   - then every open plain ask of that thread reads 🍕 with its pick, each taken back by its own second click; another thread's asks stay open
-  - and a guarded ask stays open and says «needs your own press»; a thread with nothing to take draws no button
-  - decision: never a guarded ask, those stay one click each: a keyed command is any shell's (clio's call, 2026-11-13)
-- ⬜ one-click 🛎️ on a guarded ask
-  - makes: one press line in the thread's ticks file, the same as a plain tick
-  - given the stash marks the ask `isGated` (a sign, a merge, a ⚠️ or a quoted command)
-  - when dima clicks its 🛎️ on the deck
-  - then the guard reads that press as his tick for that ask's targets, within 2 h, once
-  - decision: the 🛎️ is click-only; a keyed mod command is any shell's (FRM-544)
-  - decision: the «🚦 tick in its pane» door and x-herdr-deck's own copy of the gated pattern are gone (live 18:51:40), after the guard's fences went clean at a14bca4b; his own click on a real gated ask is the last proof, set up by clio
+  - and a thread with nothing to take draws no button
+  - decision: no ask is guarded any more: the stash dropped its gated mark, so every ask ticks alike, by click, key or «tick all» (26 Nov)
 - 🧭 a standing override button on the deck, behind slice 2 of FRM-544
   - given the operator override is off
   - when dima clicks its button on x-herdr-deck
@@ -97,7 +89,6 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given dima's focus in an ask's steer box
   - when he presses Enter, or cmd-enter
   - then Enter acts as 🛎️ and cmd-enter as 🔁, his steer riding the press; the same key again takes that press back, the button changing in the same frame; a held key acts once, two taps act twice
-  - and Enter never ticks a guarded ask: that word stays his click
   - and Enter then ⌘Enter takes the replay over the tick at once, with no read of the shelf between; ⌘Enter again takes it back (FRM-628:W1, a fake-clock test)
   - and a press the thread never answers in 2 min says «No answer in 2 min: press again» under its box, never a silent flip back (FRM-628 step 96)
   - decision: dima, 20:34 (FRM-564:W75)

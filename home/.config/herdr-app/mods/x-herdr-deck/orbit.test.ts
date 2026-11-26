@@ -25,7 +25,6 @@ import {
     savePress,
     stateOfPid,
     steerKeyAct,
-    steerKeyNote,
     steerKeyPress,
     threadFacts,
     tickAll,
@@ -74,7 +73,6 @@ const SID = 's1';
 const ask: Ask = {
     body: null,
     id: 'o1',
-    isGated: false,
     isLocked: false,
     link: null,
     mark: null,
@@ -87,16 +85,6 @@ describe('the panel reads the state file the stash writes', () => {
     test('an open ask shows with its id, text and pick', () => {
         const state = { asks: [{ id: 'o1', pick: 'yes', text: 'push FRM-1' }] };
         expect(asksOf(state)).toEqual([ask]);
-    });
-
-    test('an ask the stash marked gated carries its mark, a plain one none', () => {
-        const state = {
-            asks: [
-                { id: 'o1', isGated: true, text: '⚠️ merge #9' },
-                { id: 'o2', text: 'push FRM-1' },
-            ],
-        };
-        expect(asksOf(state).map((a) => a.isGated)).toEqual([true, false]);
     });
 
     test('an ask’s link comes with it: the linked look card he opens', () => {
@@ -594,10 +582,9 @@ describe('a replay can be taken back until a turn takes it (PK-386, dima 14:54)'
 });
 
 describe("«tick all» ticks one thread's open asks (FRM-589)", () => {
-    const open = (id: string, isGated = false): Ask => ({
+    const open = (id: string): Ask => ({
         ...ask,
         id,
-        isGated,
         text: `ask ${id}`,
     });
     function shelf(files: Record<string, string | null>) {
@@ -646,31 +633,6 @@ describe("«tick all» ticks one thread's open asks (FRM-589)", () => {
         expect(lines(files['t/A.jsonl'])[0]).not.toHaveProperty('pick');
     });
 
-    test('a gated ask stays open: only the two others are ticked', async () => {
-        const files: Record<string, string | null> = {};
-        const rows = [
-            {
-                asks: [open('o1'), open('o2', true), open('o3')],
-                sid: 'A',
-                taken: 0,
-            },
-        ];
-        const ticked = await tickAll(
-            shelf(files),
-            't',
-            rows,
-            'A',
-            allOpen,
-            none,
-            1,
-        );
-        expect(ticked.map((a) => a.id)).toEqual(['o1', 'o3']);
-        expect(lines(files['t/A.jsonl']).map((p) => p.id)).toEqual([
-            'o1',
-            'o3',
-        ]);
-    });
-
     test('an ask already ticked or replayed is left as it is', () => {
         const shown = new Map([
             ['o1', 'ticked' as const],
@@ -693,7 +655,9 @@ describe("«tick all» ticks one thread's open asks (FRM-589)", () => {
 
     test('a thread with no open ask writes nothing', async () => {
         const files: Record<string, string | null> = {};
-        const rows = [{ asks: [open('o1', true)], sid: 'A', taken: 0 }];
+        const rows = [
+            { asks: [{ ...open('o1'), id: null }], sid: 'A', taken: 0 },
+        ];
         expect(
             await tickAll(shelf(files), 't', rows, 'A', allOpen, none, 1),
         ).toEqual([]);
@@ -735,40 +699,18 @@ describe('an ask updated under its id', () => {
 
 describe('Enter in a steer box ticks, cmd-enter replays, each a second time takes it back (dima, 20:34)', () => {
     test('Enter ticks an open or replayed ask, and takes a tick back', () => {
-        expect(steerKeyPress('open', false, false)).toBe('tick');
-        expect(steerKeyPress('replayed', false, false)).toBe('tick');
-        expect(steerKeyPress('ticked', false, false)).toBe('untick');
+        expect(steerKeyPress('open', false)).toBe('tick');
+        expect(steerKeyPress('replayed', false)).toBe('tick');
+        expect(steerKeyPress('ticked', false)).toBe('untick');
     });
     test('cmd-enter replays an open or ticked ask, and takes a replay back', () => {
-        expect(steerKeyPress('open', true, false)).toBe('replay');
-        expect(steerKeyPress('ticked', true, false)).toBe('replay');
-        expect(steerKeyPress('replayed', true, false)).toBe('untick');
-    });
-    test('a key never ticks a guarded ask: that word is his click alone', () => {
-        expect(steerKeyPress('open', false, true)).toBeNull();
-        expect(steerKeyPress('ticked', false, true)).toBe('untick');
-        expect(steerKeyPress('open', true, true)).toBe('replay');
+        expect(steerKeyPress('open', true)).toBe('replay');
+        expect(steerKeyPress('ticked', true)).toBe('replay');
+        expect(steerKeyPress('replayed', true)).toBe('untick');
     });
     test('a locked ask takes no key', () => {
-        expect(steerKeyPress('locked', false, false)).toBeNull();
-        expect(steerKeyPress('locked', true, false)).toBeNull();
-    });
-});
-
-describe('a key that does nothing says why under the steer box', () => {
-    test('Enter on a guarded ask: it ticks by click only', () => {
-        expect(steerKeyNote('open', false, true)).toBe('Ticks by click only');
-        expect(steerKeyNote('replayed', false, true)).toBe(
-            'Ticks by click only',
-        );
-    });
-    test('a key that acts says nothing', () => {
-        expect(steerKeyNote('open', false, false)).toBeNull();
-        expect(steerKeyNote('ticked', false, true)).toBeNull();
-        expect(steerKeyNote('open', true, true)).toBeNull();
-    });
-    test('a locked ask stays quiet, its lock already shown', () => {
-        expect(steerKeyNote('locked', false, true)).toBeNull();
+        expect(steerKeyPress('locked', false)).toBeNull();
+        expect(steerKeyPress('locked', true)).toBeNull();
     });
 });
 
@@ -1058,16 +1000,6 @@ describe('Enter then ⌘Enter in a steer box: the replay takes over from the tic
         expect(
             steerKeyAct(rows, `${SID}:gone`, false, () => 'open'),
         ).toBeNull();
-    });
-
-    test('Enter on a gated ask says it ticks by click', () => {
-        const gated = [
-            { ...rows[0]!, asks: [{ ...rows[0]!.asks[0]!, isGated: true }] },
-        ];
-        expect(steerKeyAct(gated, KEY, false, () => 'open')).toMatchObject({
-            act: null,
-            note: 'Ticks by click only',
-        });
     });
 });
 

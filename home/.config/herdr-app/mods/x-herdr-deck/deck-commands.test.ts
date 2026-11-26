@@ -107,7 +107,6 @@ describe("the deck's key commands", () => {
     test('a hover outlives no asks group: one that left the screen is no hover when it comes back', () => {
         const ask = (text: string) => ({
             id: 'o1',
-            isGated: false,
             isLocked: false,
             link: null,
             mark: null,
