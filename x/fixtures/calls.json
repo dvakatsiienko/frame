@@ -591,6 +591,7 @@
     "data": {
         "brief check": "{ brief, checked, repo, sha256, stamp, unchecked } — on a miss: failed, the error lists each line, kind and name",
         "completion": "{ shell, script }",
+        "fleet stats": "{ v, builtAt, from, to, hours, isCached, lost, torn, unknown, skipped, fleet, threads: { <sid>: <fold> } } — a fold and fleet: { turns, starters: { <starter>: n }, winds: { byDima, byMod, bySelf: [<ctx % or null>], askedAt65 }, keepHot, pushed, slipstreams, ticks, replays, askWaitS: [s], asksOpened, cards: { <type>: n }, emptyWakes, wakesNotHis, parkedS, parkedNowS, clamped }; herdr's stats block reads these names (FRM-705)",
         "handoff delete": "{ deleted: [{ name, slug }] } — every file named, shared ones too, went to the macos trash",
         "handoff ingest": "{ name, slug, kept, body } — the file is deleted unless shared (kept: true)",
         "handoff list": "{ root, entries: [{ name, slug, audience, lane, author, shared, age, stale, bytes, runId }], others: [same] } — newest first; `others` holds what --for <audience> filtered out, [] without --for",
