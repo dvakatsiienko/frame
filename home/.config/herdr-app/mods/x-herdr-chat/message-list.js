@@ -52,6 +52,7 @@ export const placeKey = (file) => `place:${file}`;
  * @property {(t: Theme) => any} noteBox the note box over the list, null while it is shut
  * @property {(t: Theme) => any} notePopup «tell <thread>» over the list, its own view; null before it is made
  * @property {(cx: Context) => void} selected his selection settled or was cleared in a message
+ * @property {(cx: Context) => void} scrolled his wheel moved the list
  * @property {(cx: Context) => void} loadEarlier the next older page, asked near the first row
  * @property {ReturnType<typeof import('./picture-viewer.js').createPictureViewer>} pictures
  * @property {() => unknown} reader the shown thread's reader: a save for an earlier opening is dropped
@@ -297,6 +298,8 @@ export function createMessageList(deps) {
             .on_scroll_wheel((event, cx) => {
                 keepDrawn();
                 syncBodies(cx);
+                // «tell» stood at the words' end as they were
+                deps.scrolled(cx);
                 if (messageMenu.state) {
                     messageMenu.close();
                     cx.notify();

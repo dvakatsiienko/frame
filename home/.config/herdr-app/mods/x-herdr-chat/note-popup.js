@@ -9,7 +9,7 @@ import { View, div } from 'gpui-kit';
 /** @typedef {import('./chat-types.js').Theme} Theme */
 /** @typedef {import('./selection.js').SelectedAt} SelectedAt */
 
-// above the words' end, inside the list
+// above the words' end, inside the list; a long thread name is cut to its width
 const HEIGHT = 26;
 const GAP = 6;
 const WIDTH_GUESS = 160;
@@ -49,7 +49,8 @@ export function popupPlace(end, view) {
  * @param {() => boolean} deps.isOn `chatter.annotate.popup`
  * @param {() => string} deps.threadName
  * @param {() => { width: number, height: number }} deps.room the list's size
- * @param {(selected: SelectedAt, cx: Context) => void} deps.open the note box on the words
+ * @param {() => void} deps.ask the chat takes the pressed words at its next draw: the box is the chat's, and this view's
+ *   own redraw never reaches it
  */
 export function createNotePopup(deps) {
     /** the words it stands for @type {SelectedAt | null} */
@@ -60,6 +61,8 @@ export function createNotePopup(deps) {
     let theme = null;
     /** a cleared selection's hide, waiting for a press @type {{ cancel: () => void } | null} */
     let hiding = null;
+    /** the words of its last press, until the chat takes them @type {SelectedAt | null} */
+    let pressed = null;
 
     /** @param {Context} cx */
     const redraw = (cx) => {
@@ -68,17 +71,19 @@ export function createNotePopup(deps) {
 
     /** @param {Context} cx */
     function press(cx) {
-        const words = shown;
+        const words = deps.isOn() ? shown : null;
         hiding?.cancel();
         hiding = null;
         shown = null;
         redraw(cx);
-        if (words) deps.open(words, cx);
+        if (!words) return;
+        pressed = words;
+        deps.ask();
     }
 
     function draw() {
         const t = theme;
-        if (!shown?.at || !t) return div().absolute();
+        if (!shown?.at || !t || !deps.isOn()) return div().absolute();
         const room = deps.room();
         const place = popupPlace(shown.at, { h: room.height, w: room.width });
         const label = `tell ${deps.threadName()}`;
@@ -92,6 +97,7 @@ export function createNotePopup(deps) {
                 .px(10)
                 .flex()
                 .items_center()
+                .max_w(WIDTH_GUESS)
                 .rounded(13)
                 .bg(t.popover)
                 .border_1()
@@ -107,7 +113,7 @@ export function createNotePopup(deps) {
                     cx.stop_propagation();
                     press(cx);
                 })
-                .child(label)
+                .child(div().min_w(0).truncate().child(label))
         );
     }
 
@@ -146,6 +152,12 @@ export function createNotePopup(deps) {
         start(cx) {
             const maker = /** @type {Maker} */ (/** @type {unknown} */ (cx));
             entity = maker.new(NotePopup, { draw });
+        },
+        /** the words of its press, once @returns {SelectedAt | null} */
+        take() {
+            const words = pressed;
+            pressed = null;
+            return words;
         },
     };
 }

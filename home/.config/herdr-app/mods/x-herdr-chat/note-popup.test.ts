@@ -37,7 +37,7 @@ const words = (y = 200) => ({
     passage: { parts: [], row: { at: null, id: 'r1', kind: 'reply' } },
 });
 
-function world(isOn = true) {
+function world(isOn: boolean | (() => boolean) = true) {
     const opened: unknown[] = [];
     const notified: unknown[] = [];
     let drawn: () => unknown = () => null;
@@ -62,8 +62,8 @@ function world(isOn = true) {
         },
     };
     const popup = createNotePopup({
-        isOn: () => isOn,
-        open: (selected) => opened.push(selected),
+        ask: () => opened.push(popup.take()),
+        isOn: () => (typeof isOn === 'function' ? isOn() : isOn),
         room: () => ({ height: 600, width: 800 }),
         threadName: () => 'clio',
     });
@@ -86,7 +86,8 @@ function world(isOn = true) {
 test('a settled selection shows «tell <thread>» over its end, redrawing only itself', () => {
     const w = world();
     w.popup.reported(words() as never, w.cx);
-    expect(w.raw().kids).toEqual(['tell clio']);
+    const [label] = w.raw().kids as { raw: El }[];
+    expect(label?.raw.kids).toEqual(['tell clio']);
     expect([w.raw().left, w.raw().top]).toEqual([40, 168]);
     expect(w.notified).toEqual([{ name: 'the popup' }]);
 });
@@ -115,6 +116,16 @@ test('switched off, nothing shows', () => {
     const w = world(false);
     w.popup.reported(words() as never, w.cx);
     expect(w.popup.isShown()).toBe(false);
+});
+
+test('switched off as it shows, it draws nothing and a press opens nothing', () => {
+    let isOn = true;
+    const w = world(() => isOn);
+    w.popup.reported(words() as never, w.cx);
+    isOn = false;
+    expect(w.raw().kids).toEqual([]);
+    w.popup.press(w.cx);
+    expect(w.opened).toEqual([]);
 });
 
 test.each([

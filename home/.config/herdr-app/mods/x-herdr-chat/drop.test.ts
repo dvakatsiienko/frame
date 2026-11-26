@@ -157,6 +157,7 @@ const chat = (over: Record<string, unknown> = {}) => {
         list: quiet(),
         model: { rows: [] },
         note: null,
+        notePopup: quiet({ take: () => null }),
         pickers: quiet({
             confirmView: () => null,
             isOpen: () => false,
@@ -393,6 +394,27 @@ describe('the note box', () => {
         draw();
         return { opened, stops: stops[0] };
     };
+
+    test('a press on «tell» opens the box in a draw of the chat’s own, once (FRM-585 C1)', () => {
+        const shown: unknown[] = [];
+        const held = ['the words'];
+        const view = chat({
+            notePopup: quiet({ take: () => held.shift() ?? null }),
+            quillMini: quiet({
+                isOpen: () => false,
+                show: (selected: unknown) => shown.push(selected),
+            }),
+        });
+        const draw = () => {
+            view.render(cx);
+            for (const run of at.timers.splice(0)) run();
+        };
+        draw();
+        at.shared.set('chat.tell', Date.now());
+        draw();
+        draw();
+        expect(shown).toEqual(['the words']);
+    });
 
     test('F6 takes the words that stood at its press, once', () => {
         const time = Date.now() - 20;

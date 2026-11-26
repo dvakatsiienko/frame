@@ -231,6 +231,7 @@ function createWindow(
             textsCount: () => bodies.texts,
         },
         say: (note: string) => gpui.opened.push([note]),
+        scrolled: () => {},
         selected: () => {
             bodies.settled += 1;
         },

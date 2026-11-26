@@ -76,6 +76,8 @@ import { NAMES_KEY } from './thread-keys.js';
 
 // the ui font, as the old chat drew it
 const SANS = '.AppleSystemUIFont';
+// the time of a press on «tell», in this window's shared store
+const TELL = 'chat.tell';
 
 // the terminals a pick is typing keys into, model, effort or permission: it outlives a thread switch, so a second pick
 // never types beside it
@@ -206,10 +208,12 @@ export default class Chat extends View {
         threadName: () => this.threadName(),
     });
     isNotePopup = true;
+    /** the popup's last press as the chat saw it @type {unknown} */
+    tellAsk = null;
     /** «tell <thread>» beside the words he selected */
     notePopup = createNotePopup({
+        ask: () => setShared(TELL, Date.now()),
         isOn: () => this.isNotePopup,
-        open: (selected, cx) => this.annotate(selected, cx),
         room: () => this.list.size(),
         threadName: () => this.threadName(),
     });
@@ -288,6 +292,7 @@ export default class Chat extends View {
         reader: () => this.feed.reader(),
         rows: this.rows,
         say: (note, cx) => this.say(note, cx),
+        scrolled: (cx) => this.notePopup.hide(cx),
         selected: (cx) =>
             this.notePopup.reported(this.list.selectedAt(Date.now()), cx),
         unsend: (queued, cx) => this.sendPath.unsend(queued, cx),
@@ -474,6 +479,15 @@ export default class Chat extends View {
                     later,
                 ),
             );
+        // a press on «tell»: the words it held go to the box, in a draw of the chat's own
+        const tellAsk = shared(TELL) ?? null;
+        if (tellAsk !== this.tellAsk) {
+            this.tellAsk = tellAsk;
+            _cx.timer.after(0, (later) => {
+                const words = this.notePopup.take();
+                if (words) this.annotate(words, later);
+            });
+        }
         // a click on an orbit preview brings the chat into view and asks its viewer here (FRM-676)
         const viewAsk = chatViewOf(shared(CHAT_VIEW));
         if (
