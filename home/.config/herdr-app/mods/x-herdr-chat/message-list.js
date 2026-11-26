@@ -20,7 +20,6 @@ import { notesBefore } from './note-rows.js';
 import { openPath } from './open-path.js';
 import { pathOf } from './path-links.js';
 import { END_GLIDE_MS, createPlace } from './place.js';
-import { createPressProbe } from './press-probe.js';
 import { createSelections, passageOf, wordsOf } from './selection.js';
 import { missingNote } from './viewer.js';
 
@@ -67,8 +66,6 @@ export const placeKey = (file) => `place:${file}`;
 // how long after his press ends a let-go text view draws its note links again: past a double or a triple click's next
 // press, whose selection a redraw between its clicks drops (his paragraph, the trace of 26 Nov 16:22)
 const RELINK_MS = 500;
-
-const probe = createPressProbe('list');
 
 /** @param {MessageListDeps} deps */
 export function createMessageList(deps) {
@@ -249,7 +246,6 @@ export function createMessageList(deps) {
             .track_scroll(scroll)
             // a right-click names the row first; the list's own handler below then opens the menu where it was
             .on_item_secondary_click((key, event) => {
-                probe('right on item', { key });
                 const id = key.replace(/#(?:above|below)$/, '');
                 const row = rows.find((r) => r.id === id);
                 const parts = row
@@ -265,7 +261,6 @@ export function createMessageList(deps) {
                           deps.rows.textsCount(row),
                       )
                     : null;
-                probe('menu', { hasParts: Boolean(parts), key });
                 messageMenu.hit(event.position, {
                     copied: copiedFrom(row, parts && wordsOf(parts)),
                     selected: noteOn(row, parts, parts?.at(-1)?.position),
@@ -290,7 +285,6 @@ export function createMessageList(deps) {
                 // a press ended: words let go draw their note links, a beat later, after herdr told a drag's new words; a
                 // view holding new words keeps its markdown still
                 .on_window_mouse_up('left', (_event, cx) => {
-                    probe('mouse up');
                     relinking?.cancel();
                     relinking = null;
                     if (!letGo.size) return;
@@ -314,7 +308,6 @@ export function createMessageList(deps) {
                     cx.stop_propagation();
                 })
                 .on_mouse_down('right', (event, cx) => {
-                    probe('right down');
                     readOrigin(event);
                     const local = event.local_position ?? { x: 0, y: 0 };
                     messageMenu.open(event.position, {
@@ -512,13 +505,6 @@ export function createMessageList(deps) {
                         const isHeld = selections
                             .heldIn(row.id)
                             .includes(block);
-                        probe('report', {
-                            block,
-                            key,
-                            range: part?.range ?? null,
-                            stamp,
-                            words: part?.words.length ?? null,
-                        });
                         selections.report(key, stamp, block, part, Date.now());
                         // words let go: its note links come back once his press ends
                         if (isHeld && !part) letGo.add(`${row.id}#${block}`);
@@ -777,25 +763,13 @@ export function createMessageList(deps) {
             const selected = selections.current(time);
             const i = selected ? (items?.keys.indexOf(selected.key) ?? -1) : -1;
             const row = items?.rowOf(i);
-            if (!selected || !items || !row) {
-                probe('selected: none', {
-                    hasItems: Boolean(items),
-                    i,
-                    key: selected?.key ?? null,
-                });
-                return null;
-            }
             if (
+                !selected ||
+                !items ||
+                !row ||
                 !isDrawnNow(row, items.preOf(i), selected.stamp, selected.parts)
-            ) {
-                probe('selected: drawn anew', {
-                    key: selected.key,
-                    now: deps.rows.stampOf(row, items.preOf(i)),
-                    stamp: selected.stamp,
-                });
+            )
                 return null;
-            }
-            probe('selected: words', { parts: selected.parts.length });
             // a fold leaves the rest of its message out, and they never say so
             const blocks = deps.rows.textsCount(row);
             return noteOn(

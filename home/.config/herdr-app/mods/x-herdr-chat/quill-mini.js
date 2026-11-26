@@ -13,7 +13,6 @@ import { retextWait } from './magic.js';
 import { MINI_MOTION_MS, createMiniMotion } from './mini-motion.js';
 import { isLocked, stateWord } from './note-states.js';
 import { quoteOf } from './note-text.js';
-import { createPressProbe } from './press-probe.js';
 
 /** @typedef {import('./chat-types.js').Context} Context */
 /** @typedef {import('./chat-types.js').Theme} Theme */
@@ -35,7 +34,6 @@ const FIRST_HEIGHT = 130;
 // is a repeat; one at the first repeat's moment waits a hand's gap to see whether a stream follows, so his own presses
 // as fast as he likes keep toggling it (dima, 26 Nov 16:10: «make it work even if i press f6 very very fast»)
 const F6_REPEAT_MS = 200;
-const probe = createPressProbe('quill');
 const F6_FIRST_REPEAT_MS = 140;
 const F6_HAND_MS = 50;
 const MOTION = {
@@ -200,7 +198,6 @@ export function createQuillMini(deps) {
     function toggle(selected, at, cx) {
         const gap = at - lastF6;
         lastF6 = at;
-        probe('toggle', { gap, isF6Held, isOpen: Boolean(open) });
         if (gap < F6_HAND_MS || (isF6Held && gap < F6_REPEAT_MS)) {
             isF6Held = true;
             pendingF6?.cancel();

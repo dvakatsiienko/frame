@@ -5,9 +5,6 @@ import { exec, layout, nextCommand, openOverlay, run, setShared } from 'herdr';
 
 import { chatSelectArgs, settingsOverlay } from './chat-asks.js';
 import { toggleDeck } from './deck-block.js';
-import { createPressProbe } from './press-probe.js';
-
-const probe = createPressProbe('status');
 
 /** whether a window, dialog or popup sits over the layout: no mod api lists them, the window's status does */
 async function isOverlayOpen() {
@@ -33,7 +30,6 @@ export async function takeCommands() {
             setShared(`chat.${command}`, Date.now());
         } else if (command === 'annotate') {
             // F6 acts on words he selected in the chat on screen: with none it moves no view (FRM-585:W4)
-            probe('f6 command', { pressed });
             setShared('chat.annotate', pressed);
         } else if (command === 'escape') {
             // the chat on screen closes its viewer or find; no view is switched for it
