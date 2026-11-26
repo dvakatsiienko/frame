@@ -44,14 +44,12 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **bare run** — a `claude … --safe-mode` call in a Bash command: a cc session our setup cannot touch
 - **false fire** — a crew skill (`x:crew-codie`, `x:crew-sixth-sense`) loaded with no earlier message naming it; its opposite is **brief-led**
 
-## events
+## fleet stats
 
-- **event** — one thing that happened in the fleet, logged as one line by `x events log`: a second wind, a keep-hot ping, a park. not a **trace**, which is x's own line about a verb call
-- **kind** — an event's dotted name, family first (`wind.taken`), from the **kinds list**
-- **kinds list** — the closed list of kinds in `x/go/events_kinds.json`, each with the fields it takes; anything outside it is refused
-- **day file** — `~/.claude/shelf/events/<local day>.jsonl`, a day's event lines; the day is the rotation
-- **snapshot** — `~/.claude/shelf/events/today.json`, today's counts rebuilt whole from the day file; what a display reads with no spawn
-- **parked time** — the seconds a thread sat between a `park.start` and its `park.end`, an open park counted up to now
+- **turn log** — x-mod-stash's one row a main turn, `~/.claude/shelf/events/<utc day>/<sid>.<start>.json`, and one open stamp a thread under `events/open/`; `x fleet stats` folds it. not a **trace**, which is x's own line about a verb call
+- **parked time** — the seconds a thread sat idle between two of its turns under one pid, a fleet-wide quiet stretch counted only for its first 30 minutes
+- **empty wake** — a turn something other than dima started that did nothing: no tool, no join, an answer under 200 characters
+- **lost turn** — a turn whose process died before its row was written: an open stamp of a dead pid with no row of its start
 
 ## lanes and reviews
 

@@ -844,6 +844,15 @@
   - given a git read that fails, then the reader says so in `error` and exits 0; a `baseline.json` that exists and does not parse exits 1 naming the file and is left as it is; only `--keep` misuse exits non-zero
   - decision: the first want in his words (the ticket's first W-line) is clio's to add: x has no door to a part's ticket, so the ask carries the first commit as the anchor
   - decision: a reader, never a hook, and one metric for every part (his o103: bytes apps later)
+- ⬜ `x fleet stats` adds up the fleet's last 24 hours from x-mod-stash's turn log, with no transcript read (FRM-639)
+  - given the rows under `~/.claude/shelf/events/<utc day>/` and the open stamps under `events/open/`, when `x fleet stats` runs, then it prints, whole and per thread: turns by starter, second winds by who asked (dima, the mod, the thread) with each one's context percent and the 65 % asks, keep-hot pings, pushed and slipstreamed prompts, orbit ticks and replays with each tick's wait, asks opened, cards by type, empty wakes beside the wakes not his, parked time over the window and now, rows lost, torn and `unknown`
+  - one act, one bucket: his prompt into an idle thread is a push, one typed into a running turn (joined, or queued into the next) a slipstream, counted once
+  - parked: the gaps between one thread's rows of one pid, the gap before its first row from the window's start, and a live idle thread's open gap; a fleet-wide stretch with no turn but keep-hot pings counts only its first 30 minutes (29 counts 29, 31 counts 30); a killed thread resumed under a new pid parks nothing; a row that starts before the last one ended is clamped and counted
+  - an empty wake: a member, a task or the mod (not keep-hot, not a second wind) started it, and it ended on an answer under 200 characters with no tool, join or tick
+  - a lost turn: an open stamp of a dead pid that no row of its start explains; a row read twice counts once; an empty or broken row is torn, skipped and counted; a file at the folder's top (the old `<day>.jsonl`, `today.json`, `.lock`) is named in `skipped`, never read
+  - given `--hours <n>` (1 to 720) or `--thread <sid>` (comma-joined or repeated), then it folds fresh, neither reading nor writing the cached file; a bad `--hours` exits 2 with the command that works
+  - given a default run, then it serves `~/.claude/shelf/fleet-stats.json` while it is under 30 s old (`isCached: true`), else rebuilds it under one lock, temp then rename: 40 runs at once on an old file rebuild it once; the same rows, clock and live pids give the same bytes twice
+  - decision: x-mod-stash writes one row a turn and no process; the counting is here, in one fold (dima's W68–W73); `x events` and its kinds list died with it
 
 ## stats — telemetry
 
@@ -897,22 +906,3 @@
   - not traced: a line that does not start with `pnpm` — an env prefix (`FOO=1 pnpm dev`) or a compound (`cd app; pnpm dev`)
   - decision: the hook skips `x` — the dispatcher already traces it as `dima` (clio, 2026-10-07)
   - decision: only lines that start with `pnpm`; the gap above is known and kept narrow (clio, 2026-10-07)
-
-## events — the fleet's event log
-
-- ⬜ `x events log <kind> sid=… id=… [key=value…]` appends one event line and rebuilds the snapshot (FRM-639)
-  - makes: one line in `~/.claude/shelf/events/<local day>.jsonl`, `{v, at, kind, sid, id, …the kind's fields}`, and `~/.claude/shelf/events/today.json`
-  - given a kind from the kinds list with its `sid` and `id`, when it runs, then the day file gains exactly one line under 4 KB that parses alone, written in one append; the stamp and the day are x's clock, the local calendar day
-  - given a kind outside the kinds list, a field the kind does not list, a word outside its enum, a number outside its range, a slug or an id over its cap or holding a space, a key given twice or no `sid` or `id`, then it exits 2, names the field or the word's place and never echoes a refused value or key, and writes nothing
-  - given the same `id` logged twice under one kind, then the day file holds two lines and every count holds one; two kinds may share an id (a turn id ends one park and starts the next), each counted
-  - given writers in parallel, then every line still parses alone and `today.json` equals a fold of the lines: the rebuild runs under one lock, temp then rename, and a rebuild from fewer bytes of the same day, or of an earlier day, never replaces a newer snapshot
-  - `x schema events log` prints the kinds list with each kind's fields and where its `id` comes from
-  - decision: no caller passes a time or free text; a field is a whole number in a range, a word from an enum or a slug, so no line can carry a command, a path or his words (FRM-639, the blind critic)
-  - decision: no mod calls it yet; the call sites are the ticket's second piece
-- ⬜ `x events today` and `x events day <yyyy-mm-dd>` print a day's counts per kind and per thread (FRM-639)
-  - given a day's lines, then each kind prints its count, split per value of every word field (`wind.taken` by `mod` and by `dima`), and each thread (`sid`) its count per kind
-  - given `park.start` and `park.end` lines of one thread, then its parked time is the sum of the pairs, paired by stamp, never by line order; a park still open counts up to now, or to the end of a day that is over; a park an earlier day left open (its start within a week) counts on each later day from midnight, with or without a line of its own that day; an end with no start and a second start before an end add no time
-  - given `log.failed` lines, then `failed` is the sum of their `n`; a line that does not parse alone is skipped and counted in `skipped`
-  - given `today.json` built on another day, or a day file larger than the size the snapshot records, then `events today` rebuilds it first; `events day` folds the day's lines and writes nothing
-  - given `--sid <id>` (comma-joined or repeated for several, the wings), then only those threads' events are counted, folded from the day's lines; a thread with no event prints empty counts
-  - given a date that is no `yyyy-mm-dd`, then exit 2; a day with no file prints empty counts, exit 0
