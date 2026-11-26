@@ -127,7 +127,6 @@ describe('the pin setting', () => {
 describe('«tick all» leaves the pinned cards', () => {
     test("a thread's tick all takes its plain asks, never its look or 🧪 cards, which sit in the pinned group", () => {
         const plain = {
-            isGated: false,
             isLocked: false,
             link: null,
             mark: null,

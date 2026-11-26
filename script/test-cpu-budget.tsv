@@ -1,6 +1,6 @@
 # suite	cpu-s	date	reason	the `at` of the dima tick a raise stands on (home/.claude/plugin-x/mods/boots.ts)
 x-go	283	2026-11-07	5 workers on git-slim, lone median 226 + 25 %, 3 at once read 263, FRM-525
-x-mod-stash	187	2026-11-23	the whole run at 220289e0, 169.9 at load 4.8 + 10 %, FRM-678 (the baseline read 447.7); 176.5 at 261f3e0a, after FRM-688's split
+x-mod-stash	200	2026-11-26	FRM-639's turn log: 14 rows its sixth sense asked for, the whole run 193.4 at load 10.7 and 188.2 at load 18 (176.5 at 261f3e0a, after FRM-688's split)	1795704662955
 x-mod-guard	15	2026-11-23	its whole run at 261f3e0a, 13.1 + 10 %, FRM-688 (14.0 before the split)
 x-mod-holds	2	2026-11-23	its whole run the same hour, 0.9; under 2 a loaded mac is the noise, FRM-678
 x-mod-redact	2	2026-11-23	its whole run the same hour, 0.5; under 2 a loaded mac is the noise, FRM-678

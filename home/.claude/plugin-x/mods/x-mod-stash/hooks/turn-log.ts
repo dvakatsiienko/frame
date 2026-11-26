@@ -54,6 +54,8 @@ let nextWind: StashTurnRow['wind'] = null;
 const nextCards = new Map<string, number>();
 // his prompt takes his ticks before its turn starts
 let nextTicks: TurnTick[] = [];
+// the 65 % ask the prompt path makes lands before its turn starts
+let nextWindAsked = 0;
 let lastEnd: number | undefined;
 let isCompacted = false;
 
@@ -63,11 +65,12 @@ export function starterOf(
     origin: string | undefined,
     isDima: boolean,
 ): TurnStarter {
+    // a `claude -p` summon reads as his own prompt to the rest of the mod, never here: it is no push of his
+    if (origin === 'sdk') return 'summon';
     if (isDima || isIn(DIMA, origin)) return 'typed';
     if (isIn(MEMBER, origin)) return 'member';
     if (origin === 'task-notification') return 'task';
     if (origin === 'scheduled-trigger') return 'schedule';
-    if (origin === 'sdk') return 'summon';
     if (origin === 'plugin') return 'mod';
     return 'unknown';
 }
@@ -124,8 +127,10 @@ export async function startRow(
     const cards = Object.fromEntries(nextCards);
     const ticks = nextTicks;
     const wind = nextWind;
+    const windAsked = nextWindAsked;
     nextCards.clear();
     nextTicks = [];
+    nextWindAsked = 0;
     nextWind = null;
     isCompacted = false;
     if (!isOn) return;
@@ -154,7 +159,7 @@ export async function startRow(
         turnId,
         typedJoined: 0,
         wind,
-        windAsked: 0,
+        windAsked,
     };
     await mirror($);
     await $.fs
@@ -218,7 +223,10 @@ export async function noteHerdrJoins($: EngineInterface, n: number) {
 
 // the 65 % ask fired this turn
 export async function noteWindAsk($: EngineInterface) {
-    if (!open) return;
+    if (!open) {
+        nextWindAsked += 1;
+        return;
+    }
     open.windAsked += 1;
     await mirror($);
 }
@@ -316,6 +324,7 @@ export function resetTurnLog() {
     nextWind = null;
     nextCards.clear();
     nextTicks = [];
+    nextWindAsked = 0;
     lastEnd = undefined;
     isCompacted = false;
 }

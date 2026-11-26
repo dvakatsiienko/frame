@@ -6,7 +6,7 @@ import { PENDING_MS } from './band-press.js';
 import { isWebLink, linkPath } from './open-path.js';
 
 // `title` and `body` are what `text` was built from; an ask sent the old way has neither, its `text` the whole
-/** @typedef {{ id: string | null, text: string, title: string | null, body: string | null, pick: string | null, link: string | null, mark: string | null, isGated: boolean, isLocked: boolean }} Ask */
+/** @typedef {{ id: string | null, text: string, title: string | null, body: string | null, pick: string | null, link: string | null, mark: string | null, isLocked: boolean }} Ask */
 /** @typedef {ReturnType<typeof import('./press.js').pressState>} PressState */
 /** @typedef {{ id: string, verdict: 'tick' | 'replay' | 'untick', steer?: string, text?: string, pick?: string, at: number }} Press */
 
@@ -53,7 +53,6 @@ export function asksOf(state) {
                 /** @type {Ask} */ ({
                     body: typeof a.body === 'string' ? a.body : null,
                     id: a.id,
-                    isGated: a.isGated === true,
                     isLocked: a.isLocked === true,
                     link: typeof a.link === 'string' ? a.link : null,
                     mark: a.mark ?? null,
@@ -536,18 +535,14 @@ export const dropPress = (io, path, id, taken) =>
     rewrite(io, path, (text) => withoutPress(text, id, taken));
 
 /**
- * the asks «tick all» takes (FRM-589): open and pressable, never gated, since a gated ask unlocks an action and stays
- * his own press, one each (mods AGENTS.md § never); never a look or 🧪 card either, drawn apart in the pinned group
+ * the asks «tick all» takes (FRM-589): open and pressable; never a look or 🧪 card, drawn apart in the pinned group
  * @param {Ask[]} asks
  * @param {(id: string) => PressState} stateOf
  */
 export const tickAllTakes = (asks, stateOf) =>
     asks.filter(
         (a) =>
-            a.id !== null &&
-            !a.isGated &&
-            !isPinnedCard(a.text) &&
-            stateOf(a.id) === 'open',
+            a.id !== null && !isPinnedCard(a.text) && stateOf(a.id) === 'open',
     );
 
 /**
@@ -713,15 +708,14 @@ export function askRounds(seen, rows) {
 
 /**
  * a key in an ask's steer box: Enter is 🛎️, cmd-enter 🔁, each pressed a second time taking its press back (dima,
- * 20:34); a guarded ask's tick stays his click, as no key reaches an unlocking press
- * @param {PressState} state @param {boolean} isCmd @param {boolean} isGated
+ * 20:34)
+ * @param {PressState} state @param {boolean} isCmd
  * @returns {'tick' | 'replay' | 'untick' | null}
  */
-export function steerKeyPress(state, isCmd, isGated) {
+export function steerKeyPress(state, isCmd) {
     if (state === 'locked') return null;
     if (isCmd) return state === 'replayed' ? 'untick' : 'replay';
-    if (state === 'ticked') return 'untick';
-    return isGated ? null : 'tick';
+    return state === 'ticked' ? 'untick' : 'tick';
 }
 
 /**
@@ -730,20 +724,13 @@ export function steerKeyPress(state, isCmd, isGated) {
  * @template {{ sid: string, asks: Ask[] }} R
  * @param {R[]} rows @param {string} key the box's `sid:id` @param {boolean} isCmd
  * @param {(s: R, id: string | null) => PressState} stateOf
- * @returns {{ s: R, ask: Ask, act: ReturnType<typeof steerKeyPress>, note: string | null } | null} null: its ask left
+ * @returns {{ s: R, ask: Ask, act: ReturnType<typeof steerKeyPress> } | null} null: its ask left
  */
 export function steerKeyAct(rows, key, isCmd, stateOf) {
     for (const s of rows)
         for (const ask of s.asks) {
             if (`${s.sid}:${ask.id}` !== key) continue;
-            const state = stateOf(s, ask.id);
-            const isGated = Boolean(ask.isGated);
-            return {
-                act: steerKeyPress(state, isCmd, isGated),
-                ask,
-                note: steerKeyNote(state, isCmd, isGated),
-                s,
-            };
+            return { act: steerKeyPress(stateOf(s, ask.id), isCmd), ask, s };
         }
     return null;
 }
@@ -764,17 +751,6 @@ export function createTurns() {
         writing = run;
         return run;
     };
-}
-
-/**
- * the line under a steer box when its key did nothing: a guarded ask's tick is his click, never Enter
- * @param {PressState} state @param {boolean} isCmd @param {boolean} isGated
- * @returns {string | null}
- */
-export function steerKeyNote(state, isCmd, isGated) {
-    return state !== 'locked' && !steerKeyPress(state, isCmd, isGated)
-        ? 'Ticks by click only'
-        : null;
 }
 
 /**

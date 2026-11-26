@@ -166,7 +166,6 @@ export default class Deck extends View {
         files: () => this.files,
         hoverSid: () => this.hover?.sid ?? null,
         keyNotes: () => this.keyNotes,
-        passedOver: () => this.passedOver,
         pin: () => this.pin,
         press: (cx, s, ask, verdict) => this.press(cx, s, ask, verdict),
         pressAll: (cx, s) => this.pressAll(cx, s),
@@ -246,9 +245,6 @@ export default class Deck extends View {
         this.steers = new Map();
         /** the asks clio updated since he last pressed them (FRM-620): their steer cleared, 🆕 on them */
         this.updated = /** @type {Set<string> | null} */ (null);
-        // the gated asks a «tick all» passed over, `sid:id`: each says it still needs his own press
-        /** @type {Set<string>} */
-        this.passedOver = new Set();
         /** a key in a steer box that did nothing, and why, by ask key @type {Map<string, { text: string, until: number }>} */
         this.keyNotes = new Map();
         // ⌘⇧K reaches this copy alone: a `view` copy returned above and never waits on a command
@@ -714,7 +710,7 @@ export default class Deck extends View {
         if (asker) cx.spawn((cx) => this.pressAll(cx, asker));
     }
 
-    // «tick all» (FRM-589): every open, ungated ask of one thread in one write; the asks draw ticked at once, and a
+    // «tick all» (FRM-589): every open ask of one thread in one write; the asks draw ticked at once, and a
     // failure takes them back and lands in the panel
     /** @param {Context} cx @param {Row} s */
     async pressAll(cx, s) {
@@ -727,9 +723,6 @@ export default class Deck extends View {
         const takes = tickAllTakes(s.asks, stateOf);
         for (const a of takes)
             this.pressMade(cx, `${s.sid}:${a.id}`, 'tick', at);
-        if (takes.length > 0)
-            for (const a of s.asks)
-                if (a.isGated) this.passedOver.add(`${s.sid}:${a.id}`);
         cx.notify();
         try {
             const made = await exec('mkdir', ['-p', TICKS]);
@@ -810,15 +803,7 @@ export default class Deck extends View {
             this.pressStateOf(s, id),
         );
         if (!step) return;
-        const { act, ask, note, s } = step;
-        if (note) {
-            this.keyNotes.set(key, {
-                text: note,
-                until: Date.now() + KEY_NOTE_MS,
-            });
-            cx.notify();
-            cx.timer.after(KEY_NOTE_MS + 1, (later) => later.notify());
-        }
+        const { act, ask, s } = step;
         if (act === 'untick') cx.spawn((cx) => this.unpress(cx, s, ask));
         else if (act) cx.spawn((cx) => this.press(cx, s, ask, act));
     }

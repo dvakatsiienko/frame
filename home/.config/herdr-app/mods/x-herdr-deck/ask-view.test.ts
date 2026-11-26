@@ -115,7 +115,6 @@ const deps = {
     chipsOf: () => [],
     files: () => files,
     keyNotes: () => new Map(),
-    passedOver: () => new Set(),
     press,
     pressStateOf: () => 'open',
     presses: () => new Map(),
