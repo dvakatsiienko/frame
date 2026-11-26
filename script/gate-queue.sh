@@ -1,6 +1,7 @@
 #!/bin/bash
 # gate-queue [--long | --hold | --hold-long] <command…> — one heavy run at a time per slot on this mac.
-# --long: a long round (mutants, an x verify red round, a whole suite by hand), so a commit never waits behind one.
+# --long: a long round (mutants, an x verify red round, a whole suite by hand), so a commit never waits behind one. a batch (any run
+# but a whole suite) ends at its 3 min line, exit 124, with every process it started.
 # --hold <label…>: the gate slot, x's own door: x lane commit and push hold it around their hook. once it has the turn it prints
 # one line and holds until its stdin gives an exit code or closes, so a dead x frees the turn; a hung hook frees it at the cap, 600 s, exit 124.
 # --hold-long <label…>: the same door on the long turn, for a batch that gives it back between its groups; its cap is an hour, past
@@ -150,10 +151,22 @@ is_suite=
 [ "$slot$is_hold" = long ] && is_suite_run "$@" && is_suite=1
 is_low_load() { awk -v now="$(load_now)" -v max="$load_max" 'BEGIN { exit !(now + 0 <= max + 0) }'; }
 is_calm() { [ -z "$is_mods_suite" ] || is_low_load; }
-# what a wait waits on
+threads=${GATE_QUEUE_THREADS:-$HOME/.claude/shelf/threads.json}
+# a thread's name from its session id, the id's head when the record holds none
+thread_of() {
+    [ -n "$1" ] || return 0
+    local name
+    name=$(jq -r --arg id "$1" 'first(.threads[]? | select(.sessionId == $id) | .name) // empty' "$threads" 2>/dev/null)
+    echo "${name:-session ${1:0:8}}"
+}
+# what a wait waits on: the holder's command, how long it has run and from which thread; a holder an older copy wrote has neither
 holder() {
     if [ -d "$turn" ]; then
-        echo "holder: $(tail -n 1 "$turn/holder" 2>/dev/null)"
+        local pid since what taken sid ran= thread
+        { read -r pid && read -r since && read -r what && read -r taken && read -r sid; } 2>/dev/null <"$turn/holder"
+        case ${taken-} in '' | *[!0-9]*) ;; *) ran=", running $(($(date +%s) - taken))s" ;; esac
+        thread=$(thread_of "${sid-}")
+        echo "holder: ${what-}${ran}${thread:+, from $thread}"
     else
         echo "the 1-minute load is $(load_now), a mods suite starts at $load_max or under"
     fi
@@ -330,16 +343,41 @@ release() {
     times >"$sample.times-after"
     freed
     rm -rf "$turn"
+    # a signal ended this shell with the batch still running: its group goes with it
+    [ -n "$batch" ] && kill -TERM -- "-$batch" 2>/dev/null
+    [ -e "$sample.capped" ] && code=124 && batch_capped=1
+    rm -f "$sample.capped"
     log_run "$ran" "$code"
     log_cpu "$ran"
-    # a batch run whole keeps every suite behind it: two held the turn 21 min each while four suites stood 7 to 16 (2026-11-24)
-    if [ "$slot" = long ] && [ -z "$is_suite$is_hold" ] && [ "$ran" -gt "${GATE_QUEUE_BATCH_MAX:-180}" ]; then
-        say "this batch kept the long turn ${ran}s; run it in groups under 3 min, each its own --long, so a lane's suite goes between"
-    fi
+    [ "$code" = 124 ] && [ -n "$batch_capped" ] &&
+        say "this batch passed its ${batch_max}s line and was ended, exit 124; run it in groups under 3 min, each its own --long, so a lane's suite goes between"
+    exit "$code"
 }
 leave
+batch=
+batch_capped=
 trap release EXIT
-printf '%s\n%s\n%s\n' "$$" "$(started_at $$)" "$*" >"$turn/holder"
+# pid, its start, the command on one line, when the turn was taken, the session: the waiting line reads the last three
+printf '%s\n%s\n%s\n%s\n%s\n' "$$" "$(started_at $$)" "$(printf %s "$*" | tr '\n\t' '  ')" "$took" "${CLAUDE_CODE_SESSION_ID:-}" >"$turn/holder"
 [ "$waited" -gt 0 ] && say "took the turn after ${waited}s"
 [ -n "$is_hold" ] && hold_until_told "$@"
-GATE_QUEUE_HELD=$slot "$@"
+[ "$slot" = long ] && [ -z "$is_suite" ] || { GATE_QUEUE_HELD=$slot "$@"; exit $?; }
+# a batch run whole kept every suite behind it: two held the turn 21 min each while four suites stood 7 to 16 (2026-11-24). so a
+# batch ends at its line, in its own process group so every process it started goes; a terminal's stdin stays with this shell, since
+# a group outside the terminal's foreground that reads it stops
+batch_max=${GATE_QUEUE_BATCH_MAX:-180}
+set -m
+if [ -t 0 ]; then
+    GATE_QUEUE_HELD=$slot "$@" </dev/null &
+else
+    GATE_QUEUE_HELD=$slot "$@" &
+fi
+batch=$!
+set +m
+(sleep "$batch_max" && : >"$sample.capped" && kill -TERM -- "-$batch" && sleep 5 && kill -KILL -- "-$batch") </dev/null >/dev/null 2>&1 &
+line=$!
+wait "$batch"
+code=$?
+batch=
+kill "$line" 2>/dev/null
+exit "$code"

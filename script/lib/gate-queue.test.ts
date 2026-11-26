@@ -800,23 +800,88 @@ describe('gate-queue --long', () => {
 
     test.each([
         [
-            'a batch past its bound says to run in groups',
-            '1',
-            ['sleep', '2'],
-            1,
+            'a batch past its line is ended, exit 124, and told to run in groups',
+            '0',
+            ['sleep', '5'],
+            [124, 1],
         ],
-        ['a short batch says nothing', '60', ['true'], 0],
-        ['a long suite says nothing', '1', ['go', 'test', './...'], 0],
-    ])('%s', (_name, bound, args, says) => {
+        [
+            'a short batch keeps its exit and says nothing',
+            '60',
+            ['sh', '-c', 'exit 7'],
+            [7, 0],
+        ],
+        [
+            'a long suite runs past the line',
+            '0',
+            ['go', 'test', './...'],
+            [0, 0],
+        ],
+    ])('%s', (_name, max, args, [status, says]) => {
         const { state } = fixture();
         const bin = join(state, 'bin');
         mkdirSync(bin);
-        writeFileSync(join(bin, 'go'), '#!/bin/sh\nsleep 2\n', { mode: 0o755 });
+        writeFileSync(join(bin, 'go'), '#!/bin/sh\nsleep 1\n', { mode: 0o755 });
         const got = queue(state, ['--long', ...args], '20', {
-            GATE_QUEUE_BATCH_MAX: String(Number(bound) - 1),
+            GATE_QUEUE_BATCH_MAX: max,
             PATH: `${bin}:${process.env.PATH}`,
         });
-        expect(got.stderr.split('run it in groups').length - 1).toBe(says);
+        expect([
+            got.status,
+            got.stderr.split('run it in groups').length - 1,
+        ]).toEqual([status, says]);
+        expect(logRows(state).at(-1)?.[5]).toBe(String(status));
+    });
+
+    test.each([
+        ['its line', '1', false],
+        ['a signal to the queue', '60', true],
+    ])(
+        'a batch ended by %s takes every process it started with it',
+        async (_name, max, signal) => {
+            const { state } = fixture();
+            const pidFile = join(state, 'grandchild');
+            const child = spawn(
+                script,
+                ['--long', 'sh', '-c', `sleep 30 & echo $! >${pidFile}; wait`],
+                {
+                    env: { ...queueEnv(state), GATE_QUEUE_BATCH_MAX: max },
+                    stdio: 'ignore',
+                },
+            );
+            const ended = new Promise((done) => child.on('exit', done));
+            for (let i = 0; i < 100 && !existsSync(pidFile); i++)
+                await sleep(50);
+            if (signal) child.kill('SIGTERM');
+            await ended;
+            const pid = Number(readFileSync(pidFile, 'utf8'));
+            await sleep(200);
+            expect(() => process.kill(pid, 0)).toThrow();
+        },
+    );
+
+    test('a wait names the holder, how long it has run and its thread', () => {
+        const { state, turn } = fixture();
+        const threads = join(state, 'threads.json');
+        writeFileSync(
+            threads,
+            JSON.stringify({
+                threads: [{ name: '⚡ 🔧 mods | FRM-1', sessionId: 'sid-1' }],
+            }),
+        );
+        mkdirSync(turn);
+        const took = Math.floor(Date.now() / 1000) - 42;
+        writeFileSync(
+            join(turn, 'holder'),
+            `${process.pid}\n${liveSince()}\nold run\n${took}\nsid-1\n`,
+        );
+        const got = queue(state, ['--long', 'true'], '1', {
+            GATE_QUEUE_THREADS: threads,
+        });
+        expect(got.status).toBe(75);
+        expect(got.stderr).toMatch(
+            /holder: old run, running 4[2-4]s, from ⚡ 🔧 mods \| FRM-1/,
+        );
     });
 
     function onLoad(state: string, load: string, args: string[]) {
