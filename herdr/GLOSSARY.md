@@ -30,6 +30,7 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **sidebar** — the window's left column: antenna today; settled to hold glide at its bottom
 - **deck** — the window's right column, drawn by x-herdr-deck: orbit on top, then glide, phases pinned at its bottom; no thread list, antenna holds it
 - **antenna** — the sidebar's list of every thread, once each, in his order, grouped by space or not, a still dot per row; drawn by `x-herdr-antenna`, its knobs in its ⚙️ popup; it replaced the agents list (FRM-618)
+- **space** — herdr's group of threads, one per repo (frame, bytes, studio) plus one for clio's sidecars (helga, crow); antenna groups by it (dima's o13, 2026-11-26)
 - **orbit** — the asks threads put to dima, in the deck; one ask is **ticked** or **replayed**
 - **phases** — each thread's next moves, the lines it keeps with orbit's plan op; one block pinned at the deck's bottom, a group per thread in antenna's order
 - **glide** — one card per running lane, its steps and «we are here»; drawn in the deck today, settled at the sidebar's bottom, stuck there and growing upward
