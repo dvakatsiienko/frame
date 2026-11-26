@@ -1,6 +1,7 @@
 import type { On } from 'claude-code';
 
 import { type Engine, expect, mock, test } from './shared-boot.ts';
+import { turnRows } from './turn-rows.ts';
 
 const props = {
     bodyColumns: 100,
@@ -118,10 +119,12 @@ test(
 );
 
 test('with the waker on, a session stopped on the cap gets one resume at the reset', async ($, on) => {
+    on('env.get', () => ({ value: '/home' }));
+    const row = turnRows(on);
     const s = await session($, on, { waker: { on: true } });
     await endTurn($, CAPPED, 'error');
     await s.clock.advance(40 * MIN);
-    expect(s.resumes).toHaveLength(1);
+    expect([s.resumes.length, await row($)]).toEqual([1, 'waker']);
 });
 
 test('a newer cap takes the wake over: the reset the old one waited on sends nothing', async ($, on) => {

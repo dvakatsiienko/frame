@@ -20,6 +20,7 @@ import {
 import { logFile } from './quiet-helpers.ts';
 import { expect, test } from './shared-boot.ts';
 import { THREADS_FILE } from './threads.ts';
+import { turnRows } from './turn-rows.ts';
 
 /* the crossing */
 
@@ -128,10 +129,11 @@ test('≤ 1 h left sends one burn', async ($, on) => {
 
 test('92 % used, 50 min left, +8 over pace sends exactly one line, the burn', async ($, on) => {
     const w = world(on, WATCH);
+    const row = turnRows(on, w.files);
     w.meter(92, 50 * MIN);
     await start($);
     await w.clock.advance(POLL);
-    expect(rungs(w)).toEqual(['burn']);
+    expect([rungs(w), await row($)]).toEqual([['burn'], 'pace']);
 });
 
 test(

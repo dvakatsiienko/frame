@@ -2,6 +2,7 @@ import type { On } from 'claude-code';
 
 import { MESSAGE_KINDS, messageKind } from '../hooks/quiet.ts';
 import { expect, test } from './shared-boot.ts';
+import { turnRows } from './turn-rows.ts';
 import {
     CLIO,
     type Held,
@@ -69,6 +70,7 @@ for (const trigger of ['manual', 'auto'] as const)
 
 test('a message held during a wind follows the ingest as a prompt of its own, so an idle session reads it', async ($, on) => {
     const w = sentWorld(on);
+    const row = turnRows(on, w.files);
     await start($);
     await ready($, SLUG);
     w.store.set(OLD_HELD, {
@@ -89,11 +91,13 @@ test('a message held during a wind follows the ingest as a prompt of its own, so
             p.startsWith('🌀 held while this thread compacted, delivered now'),
         ),
         w.store.has(STORE),
+        await row($),
     ]).toEqual([
         [
             `🌀 held while this thread compacted, delivered now — ${SIXTH} (untagged): round 9 on abc1234`,
         ],
         false,
+        'steer',
     ]);
 });
 

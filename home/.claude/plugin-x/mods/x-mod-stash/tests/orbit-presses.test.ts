@@ -23,6 +23,7 @@ import {
 } from './orbit-world.ts';
 import { type Engine, expect, test } from './shared-boot.ts';
 import { THREADS_FILE, threadsFile } from './threads.ts';
+import { turnRows } from './turn-rows.ts';
 
 test('check all accepts every open ask', async ($, on) => {
     const w = world(on);
@@ -938,4 +939,28 @@ test('a look ask hidden 60 min with no follow is told to its coordinator once th
         [],
         undefined,
     ]);
+});
+
+test("main clio's own look ask hidden 60 min wakes her once idle, a turn the turn log names stranded", async ($, on) => {
+    on('env.get', (_$, e) => ({
+        value: e.name === 'X_STASH_POLL_MS' ? String(10 * 60_000) : '/home',
+    }));
+    const w = world(on, {
+        [THREADS_FILE]: threadsFile([
+            { pid: 7, role: 'coordinator', sessionId: SID },
+        ]),
+    });
+    const row = turnRows(on);
+    await start($);
+    await orbit($, {
+        asks: [{ ...ASK, text: 'look: the card' }],
+        op: 'add',
+    });
+    await followed($, { text: 'look: the card', why: 'fixing the wrap' });
+    await endTurn($);
+    // keep-hot pings the idle thread at 50 min; its turn ends before the 60
+    await w.clock.advance(55 * 60_000);
+    const hot = await row($, 'hot');
+    await w.clock.advance(10 * 60_000);
+    expect([hot, await row($)]).toEqual(['keep-hot', 'stranded']);
 });

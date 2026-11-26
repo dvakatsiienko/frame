@@ -31,6 +31,7 @@ import {
 } from './quiet-helpers.ts';
 import { expect, test } from './shared-boot.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
+import { turnRows } from './turn-rows.ts';
 
 test('the log names the arm from the switch', async ($, on) => {
     const w = world(on);
@@ -742,21 +743,19 @@ test('under afk a silent member takes no turn of clio', async ($, on) => {
 
 test('under a shift a silent member wakes clio once', async ($, on) => {
     const w = silentWorld(on);
+    const row = turnRows(on, w.files);
     await start($);
     w.store.set(`pace:${SID}`, { since: EVEN });
     const before = w.contexts.length;
     await w.skip(4 * MIN);
-    await $.turn.complete({
-        answer: 'ok',
-        durationMs: 1,
-        isAborted: false,
-        reason: 'answer',
-        turnId: 't',
-    });
+    await $.turn.start({ text: '', turnId: 't' });
+    const reason = await row($, 't', true);
     await w.skip(3 * MIN);
-    expect([silentAlarms(w).length, w.contexts.length - before]).toEqual([
-        1, 1,
-    ]);
+    expect([
+        silentAlarms(w).length,
+        w.contexts.length - before,
+        reason,
+    ]).toEqual([1, 1, 'quiet']);
 });
 
 test('under a shift a busy clio takes the wake when her turn ends', async ($, on) => {

@@ -26,6 +26,7 @@ import {
     world,
 } from './quiet-helpers.ts';
 import { type Engine, expect, test } from './shared-boot.ts';
+import { turnRows } from './turn-rows.ts';
 
 const RELAY = '/home/.local/state/crow/relay.json';
 
@@ -83,19 +84,15 @@ const parkedWakes = (w: { submitted: string[] }) =>
 
 test('a lane whose members sit idle 10 min wakes its clio once, no shift needed', async ($, on) => {
     const w = silentWorld(on, { wait: 60 });
+    const row = turnRows(on, w.files);
     await start($);
     await w.skip(9 * MIN);
     const early = parkedWakes(w).length;
     await w.skip(2 * MIN);
-    await $.turn.complete({
-        answer: 'ok',
-        durationMs: 1,
-        isAborted: false,
-        reason: 'answer',
-        turnId: 't',
-    });
+    await $.turn.start({ text: '', turnId: 't' });
+    const reason = await row($, 't', true);
     await w.skip(5 * MIN);
-    expect([early, parkedWakes(w).length]).toEqual([0, 1]);
+    expect([early, parkedWakes(w).length, reason]).toEqual([0, 1, 'parked']);
 });
 
 const idleLane = async (
