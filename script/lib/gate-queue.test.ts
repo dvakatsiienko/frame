@@ -738,38 +738,97 @@ describe('gate-queue --long', () => {
         ).toEqual(['holder', 'first', 'second', 'batch']);
     });
 
+    // the line cuts only a known batch; anything else runs whole and hears one line past it
+    const ENDED = 'was ended';
+    const KEPT = 'kept the long turn';
     test.each([
         [
-            'a batch past its line is ended, exit 124, and told to run in groups',
+            'a mutant script past its line is ended',
             '0',
-            ['sleep', '5'],
-            [124, 1],
+            ['mut.py'],
+            [124, ENDED],
+        ],
+        [
+            'a python mutant past its line is ended',
+            '0',
+            ['python3', '-c', 'import time; time.sleep(5)'],
+            [124, ENDED],
+        ],
+        [
+            'a node mutant past its line is ended',
+            '0',
+            ['node', '-e', 'setTimeout(() => {}, 5000)'],
+            [124, ENDED],
+        ],
+        [
+            'a run of one test file past its line is ended',
+            '0',
+            ['pnpm', 'vitest', 'run', 'a.test.ts'],
+            [124, ENDED],
+        ],
+        [
+            'a go test by name past its line is ended',
+            '0',
+            ['go', 'test', '-run', 'TestX', './...'],
+            [124, ENDED],
+        ],
+        [
+            'a red round past its line is ended',
+            '0',
+            ['pnpm', 'x', 'verify', 'red', '--pairs', 'p.tsv'],
+            [124, ENDED],
         ],
         [
             'a short batch keeps its exit and says nothing',
             '60',
-            ['sh', '-c', 'exit 7'],
-            [7, 0],
+            ['mut.py', 'fast'],
+            [7, ''],
         ],
         [
-            'a long suite runs past the line',
+            'an unknown run runs whole past the line, told once',
+            '0',
+            ['sh', '-c', 'sleep 1; exit 3'],
+            [3, KEPT],
+        ],
+        [
+            'a typecheck runs whole past the line',
+            '0',
+            ['pnpm', 'typecheck'],
+            [0, KEPT],
+        ],
+        [
+            'a whole go suite runs past the line, silent',
             '0',
             ['go', 'test', './...'],
-            [0, 0],
+            [0, ''],
         ],
-    ])('%s', (_name, max, args, [status, says]) => {
+        [
+            'a build runs past the line, silent',
+            '0',
+            ['pnpm', '--filter', 'speak', 'daemon:build'],
+            [0, ''],
+        ],
+    ] as const)('%s', (_name, max, args, [status, says]) => {
         const { state } = fixture();
         const bin = join(state, 'bin');
         mkdirSync(bin);
-        writeFileSync(join(bin, 'go'), '#!/bin/sh\nsleep 1\n', { mode: 0o755 });
+        const put = (name: string, body: string) =>
+            writeFileSync(join(bin, name), `#!/bin/sh\n${body}\n`, {
+                mode: 0o755,
+            });
+        put('go', 'case "$*" in *-run*) sleep 5 ;; *) sleep 1 ;; esac');
+        put(
+            'pnpm',
+            'case "$*" in *a.test.ts* | *verify*) sleep 5 ;; *) sleep 1 ;; esac',
+        );
+        put('mut.py', '[ "$1" = fast ] && exit 7; sleep 5');
         const got = queue(state, ['--long', ...args], '20', {
             GATE_QUEUE_BATCH_MAX: max,
+            GATE_QUEUE_KILL_GRACE: '0.2',
             PATH: `${bin}:${process.env.PATH}`,
         });
-        expect([
-            got.status,
-            got.stderr.split('run it in groups').length - 1,
-        ]).toEqual([status, says]);
+        const told = [ENDED, KEPT].filter((line) => got.stderr.includes(line));
+        expect([got.status, told.join()]).toEqual([status, says]);
         expect(logRows(state).at(-1)?.[5]).toBe(String(status));
     });
 
@@ -791,6 +850,8 @@ describe('gate-queue --long', () => {
                     'sh',
                     '-c',
                     `${ignore}sleep 30 & echo $! >${pidFile}; wait`,
+                    // its $0: a word the line reads as a mutant script
+                    'mut.py',
                 ],
                 {
                     env: {
@@ -815,6 +876,29 @@ describe('gate-queue --long', () => {
             ).toEqual([]);
         },
     );
+
+    test('a batch that ends before its line leaves no sleep of the line behind', async () => {
+        const { state } = fixture();
+        const bin = join(state, 'bin');
+        mkdirSync(bin);
+        writeFileSync(join(bin, 'mut.py'), '#!/bin/sh\nexit 0\n', {
+            mode: 0o755,
+        });
+        // a line no other run uses, so a leftover is this run's
+        const max = String(170 + (process.pid % 9));
+        queue(state, ['--long', 'mut.py'], '20', {
+            GATE_QUEUE_BATCH_MAX: max,
+            PATH: `${bin}:${process.env.PATH}`,
+        });
+        await sleep(200);
+        const left = spawnSync('ps', ['-ax', '-o', 'command='], {
+            encoding: 'utf8',
+            timeout: 10_000,
+        });
+        expect(
+            left.stdout.split('\n').filter((c) => c === `sleep ${max}`),
+        ).toEqual([]);
+    });
 
     test('a holder an older copy wrote is named by its command alone', () => {
         const { state, turn } = fixture();

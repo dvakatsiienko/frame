@@ -151,6 +151,20 @@ is_suite_run() {
 }
 is_suite=
 [ "$slot$is_hold" = long ] && is_suite_run "$@" && is_suite=1
+# the 3 min line cuts only what is known to be a batch: a mutant group (a python or node script) or a run narrowed to a file, a
+# name or a red round; a build, a typecheck or any runner's whole run is never cut (a cut-all line ended speak's daemon:build,
+# 2026-11-26), so an unknown run runs whole and hears the old line past 3 min
+is_cut_batch() {
+    local word
+    for word in "$@"; do
+        case ${word##*/} in
+        python | python3 | node | *.py | *.mjs | --only | --only=* | --pairs | --pairs=* | -run | -run=* | --run | --run=* | -*test.run* | *.test.ts | *.test.tsx | *_test.go) return 0 ;;
+        esac
+    done
+    return 1
+}
+is_cut=
+[ "$slot$is_hold" = long ] && [ -z "$is_suite" ] && is_cut_batch "$@" && is_cut=1
 is_low_load() { awk -v now="$(load_now)" -v max="$load_max" 'BEGIN { exit !(now + 0 <= max + 0) }'; }
 is_calm() { [ -z "$is_mods_suite" ] || is_low_load; }
 threads=${GATE_QUEUE_THREADS:-$HOME/.claude/shelf/threads.json}
@@ -354,6 +368,8 @@ release() {
     log_cpu "$ran"
     [ "$code" = 124 ] && [ -n "$batch_capped" ] &&
         say "this batch passed its ${batch_max}s line and was ended, exit 124; run it in groups under 3 min, each its own --long, so a lane's suite goes between"
+    [ "$slot" = long ] && [ -z "$is_suite$is_hold$is_cut" ] && [ "$ran" -gt "$batch_max" ] &&
+        say "this run kept the long turn ${ran}s; a batch runs in groups under 3 min, each its own --long, so a lane's suite goes between"
     exit "$code"
 }
 leave
@@ -373,7 +389,7 @@ trap release EXIT
 printf '%s\n%s\n%s\n%s\n%s\n' "$$" "$(started_at $$)" "$(printf %s "$*" | tr '\n\t' '  ')" "$took" "${CLAUDE_CODE_SESSION_ID:-}" >"$turn/holder"
 [ "$waited" -gt 0 ] && say "took the turn after ${waited}s"
 [ -n "$is_hold" ] && hold_until_told "$@"
-[ "$slot" = long ] && [ -z "$is_suite" ] || { GATE_QUEUE_HELD=$slot "$@"; exit $?; }
+[ -n "$is_cut" ] || { GATE_QUEUE_HELD=$slot "$@"; exit $?; }
 # a batch run whole kept every suite behind it: two held the turn 21 min each while four suites stood 7 to 16 (2026-11-24). so a
 # batch ends at its line, in its own process group so every process it started goes; a terminal's stdin stays with this shell, since
 # a group outside the terminal's foreground that reads it stops
@@ -387,7 +403,13 @@ batch=$!
 set +m
 # the line marks a batch still alive, before its TERM, so the mark is there when the wait returns; it sends the KILL itself, since
 # a leader that ignores TERM keeps the wait below from returning
-(sleep "$batch_max" && kill -0 -- "-$batch" && : >"$sample.capped" && end_group "$batch") </dev/null >/dev/null 2>&1 &
+# its sleep dies with it: a killed subshell leaves a plain sleep child behind under launchd
+(
+    trap 'kill "$nap" 2>/dev/null; exit 0' TERM
+    sleep "$batch_max" &
+    nap=$!
+    wait "$nap" && kill -0 -- "-$batch" && : >"$sample.capped" && end_group "$batch"
+) </dev/null >/dev/null 2>&1 &
 line=$!
 wait "$batch"
 code=$?
