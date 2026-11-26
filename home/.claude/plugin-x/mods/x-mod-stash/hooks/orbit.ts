@@ -179,12 +179,18 @@ export function joinRows(text: string) {
 export const joinRowsText = (rows: Pick<JoinRow, 'text'>[]) =>
     `💨 dima wrote ${rows.length === 1 ? 'this' : `these ${rows.length}, in order,`} in herdr while you worked; it joins this turn as his own words:\n${rows.map((r) => `«${r.text}»`).join('\n')}`;
 
+// a grade must be answered like a tick, so a nudge rides after it; never led «🎚️ grade: », the lead herdr reads back as joined
+export const gradeNudge = (n: number) =>
+    `🎚️ dima graded ${n === 1 ? 'a reply' : `${n} replies`}: name each grade and its reply in this reply, then write its comms case.`;
+
 // a grade is a case for the comms log, not his words: its own entry, its text byte-equal, which herdr reads back to mark it joined
 export function joinNotes(rows: JoinRow[]) {
     const words = rows.filter((r) => !r.isGrade);
+    const grades = rows.filter((r) => r.isGrade).map((r) => r.text);
     return [
         ...(words.length ? [joinRowsText(words)] : []),
-        ...rows.filter((r) => r.isGrade).map((r) => r.text),
+        ...grades,
+        ...(grades.length ? [gradeNudge(grades.length)] : []),
     ];
 }
 

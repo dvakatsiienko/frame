@@ -700,16 +700,32 @@ const gradeRow = (id: string) =>
 const joined = (s: { contexts: string[][] }) =>
     s.contexts
         .flat()
-        .filter(
-            (l) => l.startsWith('💨 dima wrote') || l.startsWith('🎚️ grade:'),
-        );
+        .filter((l) => l.startsWith('💨 dima wrote') || l.startsWith('🎚️'));
+const NUDGE_ONE =
+    '🎚️ dima graded a reply: name each grade and its reply in this reply, then write its comms case.';
 
 test('a grade row joins as its own entry, its text whole, outside his words', async ($, on) => {
     const s = await session($, on);
     s.files.set(JOINS, gradeRow('g1'));
     await say($);
     await endTurn($);
-    expect(joined(s)).toEqual([GRADE]);
+    expect(joined(s)).toEqual([GRADE, NUDGE_ONE]);
+});
+
+test('two grades get one nudge that counts them, and words alone get none', async ($, on) => {
+    const s = await session($, on);
+    s.files.set(JOINS, gradeRow('g1') + gradeRow('g2'));
+    await say($);
+    await endTurn($);
+    s.files.set(
+        JOINS,
+        `${gradeRow('g1')}${gradeRow('g2')}${row('j1', 'plain')}`,
+    );
+    await say($);
+    await endTurn($);
+    expect(joined(s).filter((l) => l.startsWith('🎚️ dima graded'))).toEqual([
+        '🎚️ dima graded 2 replies: name each grade and its reply in this reply, then write its comms case.',
+    ]);
 });
 
 test('a grade row between two word rows leaves the words wrapped, in order, and joins apart', async ($, on) => {
@@ -723,6 +739,7 @@ test('a grade row between two word rows leaves the words wrapped, in order, and 
     expect(joined(s)).toEqual([
         '💨 dima wrote these 2, in order, in herdr while you worked; it joins this turn as his own words:\n«first»\n«second»',
         GRADE,
+        NUDGE_ONE,
     ]);
 });
 
