@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-26T12:00:15Z'
+updated_date: '2026-11-26T12:28:49Z'
 labels:
   - s
   - clio-main
@@ -25,9 +25,8 @@ ordinal: 1000
 - [ ] #7 f139 📅 FRM-596: the seat switch, 3 test lines and 4 gaps left (its 25 Nov comment) — on: 2026-11-27
 - [ ] #8 f132 📅 read the first week's typed look and test asks (mods spec after-merge) — on: 2026-12-02
 - [ ] #9 f137 📅 orbit asks: 7 days of real ones hold a title, a body and a pick (FRM-695 exit 10) — on: 2026-12-02
-- [ ] #10 f144 📅 FRM-669: its first real kokoro call by evergreen, then it closes — on: 2026-12-02
-- [ ] #11 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
-- [ ] #12 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #10 f110 📅 usage trial, all-fable, a fable reset only at fable 100 %: the 3-week verdict — on: 2026-12-09
+- [ ] #11 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
