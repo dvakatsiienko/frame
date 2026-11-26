@@ -309,8 +309,9 @@ export function nextNote(note, event) {
                       state: 'draft',
                   }
                 : note;
+        // a join's own time read late from the transcript wins over the time the join file's state said so
         case 'logged':
-            return note.isLogged
+            return note.isLogged && (note.loggedAt ?? 0) <= event.at
                 ? note
                 : { ...note, isLogged: true, loggedAt: event.at };
         case 'gradeKept':

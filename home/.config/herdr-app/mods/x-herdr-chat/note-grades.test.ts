@@ -4,6 +4,7 @@ import { describe, expect, test, vi } from 'vitest';
 vi.mock('herdr', () => ({ exec: vi.fn() }));
 
 import { withGrade } from './grades.js';
+import { JOIN_TAKE_MS } from './joins.js';
 import { noteRows } from './note-rows.js';
 import { gradeLine } from './note-text.js';
 import { FILE, ON, ROW, THREAD, passage, world } from './notes-world.ts';
@@ -273,6 +274,34 @@ describe('a grade’s raw line in the grades file', () => {
         await w.settle({ ...ON, joined: [w.note(id).joinId ?? ''] });
         await new Promise((go) => setTimeout(go, 0));
         expect(w.grades()[0]?.at).toBe(had);
+    });
+
+    test('its time is the join’s when the state said joined before the transcript was read', async () => {
+        const w = world();
+        const id = await w.draft('why');
+        w.notes.graded(THREAD, id, 'good');
+        await w.notes.join(THREAD, id, 0);
+        const joinedAt = w.stamp();
+        const got = w.arrive();
+        w.pass(60_000);
+        await w.settle({ ...ON, joined: [w.note(id).joinId ?? ''] });
+        await new Promise((go) => setTimeout(go, 0));
+        w.notes.arrived(THREAD, got);
+        await new Promise((go) => setTimeout(go, 0));
+        expect(w.grades()[0]?.at).toBe(joinedAt);
+    });
+
+    test('its time is the join’s when the state lists it nowhere and the transcript is searched', async () => {
+        const w = world();
+        const id = await w.draft('why');
+        w.notes.graded(THREAD, id, 'good');
+        await w.notes.join(THREAD, id, 0);
+        const joinedAt = w.stamp();
+        w.arrive();
+        w.pass(JOIN_TAKE_MS);
+        await w.notes.settle(THREAD);
+        await new Promise((go) => setTimeout(go, 0));
+        expect(w.grades()[0]?.at).toBe(joinedAt);
     });
 
     test('its time is the join’s in the transcript, not when the chat read it', async () => {

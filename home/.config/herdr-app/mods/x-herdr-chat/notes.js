@@ -181,10 +181,8 @@ export function createNotes({
     function log(thread, id, at = null) {
         const note = find(thread, id);
         if (!note) return;
-        const isFirst = tell(thread, id, {
-            at: at ?? io.now(),
-            type: 'logged',
-        });
+        const isFirst = !note.isLogged;
+        tell(thread, id, { at: at ?? io.now(), type: 'logged' });
         keepGradeOf(thread, id);
         if (!isFirst) return;
         const parts = note.passage.parts.map((p) => p.words);
@@ -581,22 +579,28 @@ export function createNotes({
         const texts = lines.flatMap((line) => {
             try {
                 const entry = JSON.parse(line);
-                return Date.parse(entry.timestamp) >= note.writtenAt
-                    ? joinedTexts(entry)
+                const at = Date.parse(entry.timestamp);
+                return at >= note.writtenAt
+                    ? joinedTexts(entry).map((text) => ({ at, text }))
                     : [];
             } catch {
                 return [];
             }
         });
-        const said = [...note.said]
-            .reverse()
-            .find((s) => texts.some((t) => drawnOf(t) === drawnOf(s.line)));
+        /** @type {number | null} */
+        let at = null;
+        const said = [...note.said].reverse().find((s) => {
+            at =
+                texts.find((t) => drawnOf(t.text) === drawnOf(s.line))?.at ??
+                null;
+            return at !== null;
+        });
         if (said) {
             const isNew = tell(thread, note.id, {
                 line: said.line,
                 type: 'arrived',
             });
-            log(thread, note.id);
+            log(thread, note.id, at);
             return isNew;
         }
         // its row leaves the file before his words are his again, so a stash that comes back never hands it in late
