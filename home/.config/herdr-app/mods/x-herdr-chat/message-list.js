@@ -21,7 +21,6 @@ import { openPath } from './open-path.js';
 import { pathOf } from './path-links.js';
 import { END_GLIDE_MS, createPlace } from './place.js';
 import { createSelections, passageOf, wordsOf } from './selection.js';
-import { trace } from './trace.js';
 import { missingNote } from './viewer.js';
 
 /** @typedef {import('./chat-types.js').Context} Context */
@@ -262,14 +261,6 @@ export function createMessageList(deps) {
                           deps.rows.textsCount(row),
                       )
                     : null;
-                trace('menu', {
-                    hasParts: Boolean(parts),
-                    key,
-                    kind: row?.kind ?? null,
-                    rowStamp: row
-                        ? deps.rows.stampOf(row, preOf(keys.indexOf(key)))
-                        : null,
-                });
                 messageMenu.hit(event.position, {
                     copied: copiedFrom(row, parts && wordsOf(parts)),
                     selected: noteOn(row, parts, parts?.at(-1)?.position),
@@ -514,13 +505,6 @@ export function createMessageList(deps) {
                         const isHeld = selections
                             .heldIn(row.id)
                             .includes(block);
-                        trace('report', {
-                            block,
-                            key,
-                            range: part?.range ?? null,
-                            stamp,
-                            words: part?.words.length ?? null,
-                        });
                         selections.report(key, stamp, block, part, Date.now());
                         // words let go: its note links come back once his press ends
                         if (isHeld && !part) letGo.add(`${row.id}#${block}`);
@@ -779,28 +763,13 @@ export function createMessageList(deps) {
             const selected = selections.current(time);
             const i = selected ? (items?.keys.indexOf(selected.key) ?? -1) : -1;
             const row = items?.rowOf(i);
-            const facts = {
-                i,
-                key: selected?.key ?? null,
-                kind: row?.kind ?? null,
-                stamp: selected?.stamp ?? null,
-            };
-            if (!selected || !items || !row) {
-                trace('f6: no words', facts);
-                return null;
-            }
-            const rowStamp = deps.rows.stampOf(row, items.preOf(i));
             if (
+                !selected ||
+                !items ||
+                !row ||
                 !isDrawnNow(row, items.preOf(i), selected.stamp, selected.parts)
-            ) {
-                trace('f6: drawn anew', { ...facts, rowStamp });
+            )
                 return null;
-            }
-            trace('f6', {
-                ...facts,
-                isWaiting: row.isWaiting,
-                parts: selected.parts.length,
-            });
             // a fold leaves the rest of its message out, and they never say so
             const blocks = deps.rows.textsCount(row);
             return noteOn(
