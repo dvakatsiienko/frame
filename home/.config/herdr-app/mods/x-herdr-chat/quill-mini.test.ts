@@ -358,7 +358,8 @@ describe('the box comes and goes (FRM-585 C2)', () => {
     test('a held F6 keeps it open', async () => {
         const w = await moving();
         w.f6();
-        for (const later of [150, 15, 15, 15])
+        // a slower key repeat setting: once a stream, a gap past a hand's still counts
+        for (const later of [150, 15, 15, 15, 60, 60, 60])
             w.f6(selected('some words'), later);
         w.run();
         expect(w.mini.isOpen()).toBe(true);

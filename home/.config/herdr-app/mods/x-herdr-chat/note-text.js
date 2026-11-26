@@ -15,12 +15,14 @@ export const SENTENCE_CUT = 160;
 // a message this many replies back is named by its first words too
 export const HEAD_BACK = 20;
 const HEAD_WORDS = 8;
-// where a sentence ends: a stop before a capital or the end, or a line break; «e.g. a» goes on
-const SENTENCE_END = /[.!?](?=\s+\p{Lu}|\s*$)|\n/gu;
+// where a sentence ends: a stop before a capital (its bold or link marks between) or the end, or a line break; «e.g. a»
+// goes on
+const SENTENCE_END = /[.!?][*_`~)\]]*(?=\s+[*_`~[(]*\p{Lu}|\s*$)|\n/gu;
 // markdown he never reads: a link's address, code ticks, emphasis marks
 const MARKUP = [
     [/!?\[([^\]\n]*)\]\([^)\n]*\)/g, '$1'],
     [/`+/g, ''],
+    [/^\s*(?:#{1,6}\s|[-*+]\s|\d+[.)]\s|>\s?)/, ''],
     [/\*\*|__|~~/g, ''],
     [/(^|[^\p{L}\p{N}])[*_](?=\S)|(?<=\S)[*_](?=[^\p{L}\p{N}]|$)/gu, '$1'],
 ];
@@ -58,7 +60,8 @@ export function quoteOf(parts, most = QUOTE_CUT) {
 const flat = (text) => text.replace(/\s+/g, ' ').trim();
 
 /**
- * the sentence the words sit in, cut to about 160 characters around them; null when it is only the words
+ * the sentence the words sit in, his words in ⟦ ⟧, cut to about 160 characters around them; null when it is only the
+ * words
  * @param {{ source: string, range: { start: number, end: number } | null, words: string }} part
  */
 export function sentenceOf({ source, range, words }) {
@@ -77,7 +80,9 @@ export function sentenceOf({ source, range, words }) {
     const one = (/** @type {string} */ text) =>
         plainOf(text).replace(/\s+/g, ' ');
     const before = one(source.slice(from, range.start)).trimStart();
-    const middle = words.replace(/\s+/g, ' ');
+    // a selection's edge on a space keeps it, or two words run into one (clio's probe, 16:25: «Aburst»)
+    const raw = source.slice(range.start, range.end);
+    const middle = `${/^\s/.test(raw) ? ' ' : ''}${words.replace(/\s+/g, ' ').trim()}${/\s$/.test(raw) ? ' ' : ''}`;
     const after = one(source.slice(range.end, to)).trimEnd();
     const room = SENTENCE_CUT - middle.length;
     // words that long are cut in the quote already: no room for what is around them
@@ -94,18 +99,20 @@ export function sentenceOf({ source, range, words }) {
         isCutBefore
             ? `…${before.slice(before.length - takeBefore).replace(/^\S*\s?/, '')}`
             : before,
-        middle,
+        middle.replace(/\S(?:.*\S)?/, '⟦$&⟧'),
         isCutAfter
             ? `${after.slice(0, takeAfter).replace(/\s?\S*$/, '')}…`
             : after,
     ].join('');
     const sentence = kept.trim();
-    return flat(sentence) === flat(words) ? null : sentence;
+    return flat(sentence.replace(/[⟦⟧]/g, '')) === flat(words)
+        ? null
+        : sentence;
 }
 
 /** a message's first words, as the line names one far back @param {string} text */
 export function headOf(text) {
-    const words = flat(text).split(' ');
+    const words = flat(plainOf(text)).split(' ');
     const head = words.slice(0, HEAD_WORDS).join(' ');
     return words.length > HEAD_WORDS ? `${head}…` : head;
 }
@@ -137,6 +144,6 @@ export function noteLine({ parts, sentence = null, row, back, text }) {
         .filter(Boolean)
         .join(' ');
     const far = back >= HEAD_BACK && row.head ? `, «${row.head}»` : '';
-    const inSentence = sentence ? ` in "${sentence}"` : '';
-    return `dima on "${quoteOf(parts, LINE_QUOTE_CUT)}"${inSentence} (${which}${back ? `, ${back} back` : ''}${far}): ${text.trim()}`;
+    // the sentence holds his words once, marked; with none, his words alone (clio, 16:26: printed twice was overhead)
+    return `dima on "${sentence ?? quoteOf(parts, LINE_QUOTE_CUT)}" (${which}${back ? `, ${back} back` : ''}${far}): ${text.trim()}`;
 }

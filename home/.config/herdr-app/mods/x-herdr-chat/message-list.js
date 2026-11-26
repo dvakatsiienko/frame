@@ -64,8 +64,9 @@ export const placeKey = (file) => `place:${file}`;
  * @property {(queued: string, cx: Context) => void} unsend a waiting message's ×: back out of Claude Code's queue
  */
 
-// how long after his press ends a let-go text view draws its note links again
-const RELINK_MS = 60;
+// how long after his press ends a let-go text view draws its note links again: past a double or a triple click's next
+// press, whose selection a redraw between its clicks drops (his paragraph, the trace of 26 Nov 16:22)
+const RELINK_MS = 500;
 
 /** @param {MessageListDeps} deps */
 export function createMessageList(deps) {
@@ -82,6 +83,8 @@ export function createMessageList(deps) {
      * @type {Set<string>}
      */
     const letGo = new Set();
+    /** the relink a press's end set off, waiting out a next click @type {{ cancel: () => void } | null} */
+    let relinking = null;
     /** @param {string} id */
     const frozenIn = (id) => [
         ...new Set([
@@ -291,13 +294,19 @@ export function createMessageList(deps) {
                 // a press ended: words let go draw their note links, a beat later, after herdr told a drag's new words; a
                 // view holding new words keeps its markdown still
                 .on_window_mouse_up('left', (_event, cx) => {
+                    relinking?.cancel();
+                    relinking = null;
                     if (!letGo.size) return;
-                    cx.timer.after(RELINK_MS, (later) => {
+                    relinking = cx.timer.after(RELINK_MS, (later) => {
+                        relinking = null;
                         letGo.clear();
                         later.notify();
                     });
                 })
                 .on_mouse_down('left', (event, cx) => {
+                    // a click that follows is a double or a triple: no redraw under it
+                    relinking?.cancel();
+                    relinking = null;
                     readOrigin(event);
                     const local = event.local_position;
                     pressedAt = local

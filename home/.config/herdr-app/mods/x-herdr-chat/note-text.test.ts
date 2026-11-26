@@ -75,12 +75,12 @@ describe('what stands around the words', () => {
         [
             'its sentence, from the stop before to the stop after',
             at('One thing. The retry is cheap here. Next one.', 'retry'),
-            'The retry is cheap here.',
+            'The ⟦retry⟧ is cheap here.',
         ],
         [
-            'a line break ends it, a list marker and all',
+            'a line break ends it, its list marker gone (clio, 16:26)',
             at('- the retry is cheap\n- the next item', 'retry'),
-            '- the retry is cheap',
+            'the ⟦retry⟧ is cheap',
         ],
         [
             'none when the words are the whole sentence',
@@ -96,7 +96,7 @@ describe('what stands around the words', () => {
                     'before',
                 ),
             },
-            'We read /a/b.ts before the big merge.',
+            'We read /a/b.ts ⟦before⟧ the big merge.',
         ],
         [
             'none for a whole bold sentence he selected',
@@ -108,9 +108,23 @@ describe('what stands around the words', () => {
             null,
         ],
         [
+            'a stop before bold ends one',
+            at('Intro. **Do it now.** Then rest.', 'it now'),
+            'Do ⟦it now⟧.',
+        ],
+        [
             'an abbreviation ends no sentence',
             at('Use a tool, e.g. the retry, here.', 'retry'),
-            'Use a tool, e.g. the retry, here.',
+            'Use a tool, e.g. the ⟦retry⟧, here.',
+        ],
+        [
+            'a selection whose edge is a space keeps it (clio, 16:26: «Aburst»)',
+            {
+                range: { end: 13, start: 1 },
+                source: 'A burst of quick presses.',
+                words: 'burst of qu',
+            },
+            'A ⟦burst of qu⟧ick presses.',
         ],
         [
             'none with no range',
@@ -123,7 +137,7 @@ describe('what stands around the words', () => {
                 `${'left '.repeat(60)}the retry ${'right '.repeat(60)}.`,
                 'the retry',
             ),
-            expect.stringMatching(/^…left .*the retry right .*right…$/),
+            expect.stringMatching(/^…left .*⟦the retry⟧ right .*right…$/),
         ],
     ])('%s', (_what, part, sentence) => {
         expect(sentenceOf(part)).toEqual(sentence);
@@ -141,9 +155,9 @@ describe('what stands around the words', () => {
         );
     });
 
-    test('the line says the sentence; a fresh note stays one short line', () => {
-        expect(line({ sentence: 'So the retry is cheap.' })).toBe(
-            'dima on "the retry is cheap" in "So the retry is cheap." (reply 1a2b3c4d 18:24, 3 back): why here?',
+    test('the line says the sentence, his words marked in it once; a fresh note stays one short line', () => {
+        expect(line({ sentence: 'So ⟦the retry is cheap⟧.' })).toBe(
+            'dima on "So ⟦the retry is cheap⟧." (reply 1a2b3c4d 18:24, 3 back): why here?',
         );
         expect(
             line({ row: { ...reply, head: 'One two three' } }),
@@ -158,6 +172,9 @@ describe('what stands around the words', () => {
             }),
         ).toContain(`, ${HEAD_BACK} back, «One two three…»): `);
         expect(headOf('a  b\nc d e f g h i j')).toBe('a b c d e f g h…');
+        expect(
+            headOf('**Verdict:** the `x lane` door [works](https://a.b)'),
+        ).toBe('Verdict: the x lane door works');
     });
 });
 

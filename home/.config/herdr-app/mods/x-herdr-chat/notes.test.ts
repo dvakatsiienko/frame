@@ -636,7 +636,7 @@ test('the line a note joins with carries the sentence its words sit in, and a fa
     );
     await w.notes.join(THREAD, id, 20);
     expect(w.texts()).toEqual([
-        'dima on "retry" in "So the retry is cheap here." (reply 1a2b3c4d, 20 back, «One thing. So the retry…»): why here?',
+        'dima on "So the ⟦retry⟧ is cheap here." (reply 1a2b3c4d, 20 back, «One thing. So the retry…»): why here?',
     ]);
 });
 

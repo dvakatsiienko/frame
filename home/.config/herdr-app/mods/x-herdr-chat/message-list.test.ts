@@ -273,8 +273,15 @@ function createWindow(
         spawn: (task: (c: unknown) => unknown) => task(cx),
         stop_propagation: () => {},
         timer: {
-            after: (ms: number, run: (cx: unknown) => void) =>
-                timers.push({ at: Date.now() + ms, run: () => run(cx) }),
+            after: (ms: number, run: (cx: unknown) => void) => {
+                const timer = { at: Date.now() + ms, run: () => run(cx) };
+                timers.push(timer);
+                return {
+                    cancel: () => {
+                        timer.run = () => {};
+                    },
+                };
+            },
         },
         write_to_clipboard: (text: string) => written.push(text),
     };
@@ -716,21 +723,20 @@ test.each([
 test('a settled selection asks the chat for no draw, which would drop it', () => {
     const w = createWindow(Array(5).fill(60), (px) => px);
     w.run(500);
-    (w.bodies.reports.get('r1') as Handler)(
-        { text: 'two words' } as never,
-        w.cx as never,
-    );
-    expect(w.isDirty()).toBe(false);
-    // let go, the text view keeps its markdown until his press ends, then its note links come back in one draw: a draw
-    // mid-drag drops the words he is selecting (FRM-585:W77, W78)
-    expect(w.heldIn('r1')).toEqual([0]);
-    (w.bodies.reports.get('r1') as Handler)(null as never, w.cx as never);
+    const report = w.bodies.reports.get('r1') as Handler;
+    report({ text: 'two words' } as never, w.cx as never);
+    expect([w.heldIn('r1'), w.isDirty()]).toEqual([[0], false]);
+    // let go, its markdown holds until his press ends and a next click of a double or triple is past (W77, W78, W83)
+    report(null as never, w.cx as never);
     w.run(200);
     expect([w.heldIn('r1'), w.isDirty()]).toEqual([[0], false]);
     w.leftUp();
-    w.run(30);
+    w.run(300);
+    w.leftDown(600, 200);
+    w.run(400);
     expect(w.heldIn('r1')).toEqual([0]);
-    w.run(100);
+    w.leftUp();
+    w.run(600);
     expect(w.heldIn('r1')).toEqual([]);
 });
 

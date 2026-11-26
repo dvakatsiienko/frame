@@ -34,11 +34,8 @@ describe('a note’s words drawn as a link (FRM-585 B5)', () => {
         ['in a code block', '```ts\nlet retry\n```', 10, 15],
         ['in a code span', 'the `retry` path', 5, 10],
         ['in a link', 'see [the retry](https://x.io)', 9, 14],
-        ['across a line break', 'the re\ntry', 4, 10],
         ['in a table', '| retry | cheap |', 2, 15],
         ['in one cell of a table', '| retry | cheap |', 2, 7],
-        ['over half a bold run', '**retry** is cheap', 2, 14],
-        ['over half an emphasis', 'the _retry is_ cheap', 4, 9],
         ['in an autolink', 'see <https://x.dev/a> now', 13, 18],
         ['in a reference link', 'see [the run][r] now', 5, 12],
         [
@@ -47,9 +44,6 @@ describe('a note’s words drawn as a link (FRM-585 B5)', () => {
             14,
             17,
         ],
-        ['ending on a line break’s backslash', 'one\\\ntwo', 0, 4],
-        ['over a list item’s marker', '- the retry', 0, 11],
-        ['over a heading’s marks', '## the retry', 0, 12],
     ])(
         'none %s: its mark and its row stay its door',
         (_where, source, start, end) => {
@@ -58,6 +52,56 @@ describe('a note’s words drawn as a link (FRM-585 B5)', () => {
             );
         },
     );
+
+    // dima, 26 Nov 16:23: a draft across bold had a mark and no way to open it but F6
+    test.each([
+        [
+            'across a line break',
+            'the re\ntry',
+            4,
+            10,
+            'the [re](note:n1)\n[try](note:n1)',
+        ],
+        [
+            'across bold',
+            '**retry** is cheap',
+            2,
+            14,
+            '**[retry](note:n1)** [is c](note:n1)heap',
+        ],
+        [
+            'over half an emphasis',
+            'the _retry is_ cheap',
+            4,
+            9,
+            'the _[retr](note:n1)y is_ cheap',
+        ],
+        [
+            'ending on a line break’s backslash',
+            'one\\\ntwo',
+            0,
+            4,
+            '[one](note:n1)\\\ntwo',
+        ],
+        [
+            'over a list item’s marker',
+            '- the retry',
+            0,
+            11,
+            '- [the retry](note:n1)',
+        ],
+        [
+            'over a heading’s marks',
+            '## the retry',
+            0,
+            12,
+            '## [the retry](note:n1)',
+        ],
+    ])('linked run by run %s', (_where, source, start, end, linked) => {
+        expect(linkNotes(source, [{ end, id: 'n1', start }]).source).toBe(
+            linked,
+        );
+    });
 
     test('its url names its note, any other names none', () => {
         expect([noteOfUrl('note:n1'), noteOfUrl('path:0')]).toEqual([
