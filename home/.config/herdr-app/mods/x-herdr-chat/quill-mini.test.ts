@@ -426,6 +426,16 @@ describe('F6 (FRM-585 A4)', () => {
         expect(at.box.text).toBe('mine');
     });
 
+    // dima, 26 Nov 14:45: «f6 should toggle mini quill open/show state»
+    test('shut with the words no longer selected, F6 opens the note it shut again', () => {
+        const w = world();
+        w.f6();
+        w.type('mine');
+        w.f6();
+        w.f6(null);
+        expect([w.mini.isOpen(), at.box.text]).toEqual([true, 'mine']);
+    });
+
     test('shut before the cursor came, it takes no keyboard', () => {
         const w = world();
         w.f6();

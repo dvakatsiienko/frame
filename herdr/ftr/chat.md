@@ -105,7 +105,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
 - ✅ F6, or «Annotate» in the right-click menu, opens the quill-mini: a small box for a note on the words he selected (FRM-585:W3, W12, W35)
   - given words selected in a reply, or in a message of his the thread has
   - when he presses F6 from anywhere in the window, then the box opens under the words' end with the cursor in it, the words over it cut as the thread will get them, the thread's name beside; F6 again, Esc or a press outside closes it and keeps the note as his draft, and the same words bring the draft back (W5, W6)
-  - and the words are those that stood selected at the press; with none, in a message still waiting, in one scrolled away, or with the picture viewer open, F6 does nothing, and no view moves (W4)
+  - and the words are those that stood selected at the press; with none, F6 opens the note it last shut in this thread again, so F6 toggles the box (dima, 26 Nov 14:45, W64); with no such note, in a message still waiting, in one scrolled away, or with the picture viewer open, F6 does nothing, and no view moves (W4)
   - and the menu shows «Annotate» only on the message that holds the words
   - and Enter joins the note, again takes it back; ⌘Enter sends it now and the box goes; Shift+Enter breaks the line; Tab walks the loop, where the box has a stop while open; an empty note does neither
   - and the box reads «joined» once the thread has the note, with what the thread got, read-only; words he typed past that are a new note on the same words, and a box he types in moves onto it, the cursor where it was, saying so; on a note a turn took, his next word starts one too
