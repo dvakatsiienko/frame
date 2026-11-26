@@ -5,6 +5,8 @@
         "attach-row.js",
         "band-press.js",
         "chat-asks.js",
+        "drag-view.js",
+        "drag.js",
         "file-links.js",
         "focus-ring.js",
         "joined.js",

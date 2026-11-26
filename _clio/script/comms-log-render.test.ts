@@ -22,7 +22,11 @@ function unnamed(dir: string) {
     return spawnSync(
         'node',
         [join(import.meta.dirname, 'comms-log-render.ts'), '--unnamed'],
-        { encoding: 'utf8', env: { ...process.env, HOME: dir } },
+        {
+            encoding: 'utf8',
+            env: { ...process.env, HOME: dir },
+            timeout: 10_000,
+        },
     );
 }
 

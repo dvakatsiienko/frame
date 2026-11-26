@@ -152,12 +152,17 @@ function jsonRows(text: string) {
 }
 
 // herdr's chatter appends each message dima joins to a thread as one line of `~/.claude/shelf/herdr-joins/<sid>.jsonl`,
-// `{id, text}`: the rows in the order written, an id's first row only; a row with no id or no text is skipped
-export type JoinRow = { id: string; line: string; text: string };
+// `{id, text, kind?}`: the rows in the order written, an id's first row only; a row with no id or no text is skipped
+export type JoinRow = {
+    id: string;
+    isGrade: boolean;
+    line: string;
+    text: string;
+};
 export function joinRows(text: string) {
     const rows: JoinRow[] = [];
     for (const { line, row } of jsonRows(text)) {
-        const { id, text: said } = row;
+        const { id, kind, text: said } = row;
         if (
             typeof id !== 'string' ||
             !id ||
@@ -166,13 +171,22 @@ export function joinRows(text: string) {
             rows.some((r) => r.id === id)
         )
             continue;
-        rows.push({ id, line, text: said });
+        rows.push({ id, isGrade: kind === 'grade', line, text: said });
     }
     return rows;
 }
 
-export const joinRowsText = (rows: JoinRow[]) =>
+export const joinRowsText = (rows: Pick<JoinRow, 'text'>[]) =>
     `💨 dima wrote ${rows.length === 1 ? 'this' : `these ${rows.length}, in order,`} in herdr while you worked; it joins this turn as his own words:\n${rows.map((r) => `«${r.text}»`).join('\n')}`;
+
+// a grade is a case for the comms log, not his words: its own entry, its text byte-equal, which herdr reads back to mark it joined
+export function joinNotes(rows: JoinRow[]) {
+    const words = rows.filter((r) => !r.isGrade);
+    return [
+        ...(words.length ? [joinRowsText(words)] : []),
+        ...rows.filter((r) => r.isGrade).map((r) => r.text),
+    ];
+}
 
 // a marked ask no turn has taken yet
 export const isFresh = (a: OrbitAsk) =>

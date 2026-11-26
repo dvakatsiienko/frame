@@ -27,7 +27,7 @@ read this before a change: find the one module that owns the state you touch, an
 - `orbit.js` — a session's asks, phases and facts, the ticks file's lines, the order of sections and Tab stops
 - `ask-card.js` — an ask's title, its body as small markdown, the ➡️ line, the room beside the id pill
 - `press.js` — an ask's press, one record per ask, moved by named events
-- `lanes.js`, `glide-size.js` — the lanes shown, glide's block height
+- `lanes.js`, `glide-size.js`, `glide-order.js` — the lanes shown, glide's block height, his order of the cards
 - `deck-parts.js`, `deck-commands.js` — what the deck draws, its key commands
 - `pictures.js` — the files an ask names
 

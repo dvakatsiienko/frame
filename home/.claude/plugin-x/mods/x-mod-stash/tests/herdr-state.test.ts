@@ -691,6 +691,41 @@ test('a slash row joins the turn like words: herdr pushes none (o3)', async ($, 
     ]);
 });
 
+// a real grade row of 26 Nov, as herdr writes it with its kind (FRM-630)
+const GRADE =
+    '🎚️ grade: dima graded 👎🏼 "Not tried yet: a 👎🏼 with a why takes the same path…" (reply b8f5af3a 18:41): le\'s try.\nnot a fit (a case for the comms log, not a request)';
+const gradeRow = (id: string) =>
+    `${JSON.stringify({ id, kind: 'grade', text: GRADE })}\n`;
+
+const joined = (s: { contexts: string[][] }) =>
+    s.contexts
+        .flat()
+        .filter(
+            (l) => l.startsWith('💨 dima wrote') || l.startsWith('🎚️ grade:'),
+        );
+
+test('a grade row joins as its own entry, its text whole, outside his words', async ($, on) => {
+    const s = await session($, on);
+    s.files.set(JOINS, gradeRow('g1'));
+    await say($);
+    await endTurn($);
+    expect(joined(s)).toEqual([GRADE]);
+});
+
+test('a grade row between two word rows leaves the words wrapped, in order, and joins apart', async ($, on) => {
+    const s = await session($, on);
+    s.files.set(
+        JOINS,
+        row('j1', 'first') + gradeRow('g1') + row('j2', 'second'),
+    );
+    await say($);
+    await endTurn($);
+    expect(joined(s)).toEqual([
+        '💨 dima wrote these 2, in order, in herdr while you worked; it joins this turn as his own words:\n«first»\n«second»',
+        GRADE,
+    ]);
+});
+
 test('exit 2: an Esc after the hand-in stamps nothing, and the rows land again at the next turn, once', async ($, on) => {
     const s = await session($, on);
     s.files.set(JOINS, row('j1', 'first') + row('j2', 'second'));

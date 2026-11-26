@@ -94,7 +94,7 @@ test('a follow-up keeps its id and place with new text, led by 🆕', async ($, 
     ]).toEqual([
         ['o1', 'o2'],
         expect.stringMatching(
-            /^🆕 o1 mods: push the branch once ci is green➡️ after cia test ask🛎️ tick/u,
+            /^🆕 o1 mods: push the branch once ci is green➡️ after ci🛎️ tick/u,
         ),
     ]);
 });

@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-26T16:47:14Z'
+updated_date: '2026-11-26T17:08:58Z'
 labels:
   - s
   - clio-main
@@ -22,8 +22,8 @@ ordinal: 1000
 - [ ] #4 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
 - [ ] #5 f134 ⏳ herdr wisp: a triple click takes one visual line, fixed upstream, waits a herdr release — waits for: FRM-655
 - [ ] #6 f145 ⏳ stray 2nd chore: x lane gate passes on any herdr file (lefthook.yaml:128) — waits for: FRM-707
-- [ ] #7 f147 ⏳ FRM-678 want line: a lane day with no cpu roast, his look; the busy-hour half has no check yet — waits for: dima
-- [ ] #8 f139 📅 FRM-596: the seat switch, 3 test lines and 4 gaps left (its 25 Nov comment) — on: 2026-11-27
+- [ ] #7 f139 📅 FRM-596: the seat switch, 3 test lines and 4 gaps left (its 25 Nov comment) — on: 2026-11-27
+- [ ] #8 f148 📅 CPU on Monday's four lanes: his read, still an open topic (FRM-678 want line) — on: 2026-11-30
 - [ ] #9 f146 📅 FRM-677 exit 6: 7 days of asks, none hiding what dima must read — on: 2026-12-01
 - [ ] #10 f132 📅 read the first week's typed look and test asks (mods spec after-merge) — on: 2026-12-02
 - [ ] #11 f137 📅 orbit asks: 7 days of real ones hold a title, a body and a pick (FRM-695 exit 10) — on: 2026-12-02
@@ -58,4 +58,6 @@ PK-349:W2480 (2026-11-26 13:16, dima): FRM-360 — looks like another type of «
 PK-349:W2481 (2026-11-26 13:16, dima): that was an experiment idea. i am not planning it soon. → FRM-360 out of its milestone, the milestone deleted 13:16
 PK-349:W2482 (2026-11-26 13:16, dima): so remove it out of a mil and close a mil. → FRM-360 out of its milestone, the milestone deleted 13:16
 PK-349:W2483 (2026-11-26 13:16, dima): it will not be done soon most likely, no need for a parked mil. → FRM-360 out of its milestone, the milestone deleted 13:16
+
+19:08 dima o12 steer: «I think Monday will be the test because I think we will have four lanes on Monday… today I saw a red CPU … a few times a day … much calmer than it was before. I treat the current picture as acceptable but I still think that we are somewhere near the edge… Any uncareful move will roast my CPU again so this area is not solved. It is an open topic currently.»
 <!-- SECTION:NOTES:END -->

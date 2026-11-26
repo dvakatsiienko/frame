@@ -45,6 +45,9 @@ async function actsAfter(file: string, ...lists: string[][]) {
 }
 
 /** a view's context whose timers fire at once, their waits kept */
+// glide's order of the cards, kept nowhere: these rows read the file
+const noStore = { getItem: () => null, setItem: () => {} };
+
 function fakeCx(waits: number[] = []) {
     return {
         spawn: (run: (cx: unknown) => Promise<void>) => void run(fakeCx(waits)),
@@ -139,7 +142,10 @@ test('glide redraws at each write of lanes.json, a half-written read kept out', 
         seen.push(redraws);
     };
     herdr.readTextFile.mockResolvedValue('{"lanes":[]}');
-    createGlide('glide').init(cx as never);
+    createGlide('glide', noStore).init({
+        ...cx,
+        focus_handle: () => ({}),
+    } as never);
     await settle();
     seen.push(redraws);
     await write('{"lanes":[{"id":"l1","title":"a"}]}');
@@ -165,7 +171,10 @@ test('glide reads an unread lanes.json again, with no write to wake it', async (
         .mockReset()
         .mockResolvedValue('{"lanes":[]}')
         .mockRejectedValueOnce(new Error('too many open files'));
-    createGlide('glide').init(cx as never);
+    createGlide('glide', noStore).init({
+        ...cx,
+        focus_handle: () => ({}),
+    } as never);
     await settle();
     expect({ redraws, waits }).toEqual({ redraws: 1, waits: [2000] });
 });
@@ -184,7 +193,10 @@ test('a read again, waited for while a write was read, reads nothing', async () 
         .mockReset()
         .mockResolvedValue('{"lanes":[]}')
         .mockResolvedValueOnce('{"lanes":[');
-    createGlide('glide').init(cx as never);
+    createGlide('glide', noStore).init({
+        ...cx,
+        focus_handle: () => ({}),
+    } as never);
     await settle();
     herdr.watches.shift()?.([`${REAL}/lanes.json`]);
     await settle();
@@ -201,7 +213,10 @@ test('a glide read that answers late never draws over a newer one', async () => 
     herdr.readTextFile.mockImplementation(
         () => new Promise((done) => answers.push(done)),
     );
-    createGlide('glide').init(cx as never);
+    createGlide('glide', noStore).init({
+        ...cx,
+        focus_handle: () => ({}),
+    } as never);
     herdr.watches.shift()?.([`${REAL}/lanes.json`]);
     await settle();
     answers[1]?.('{"lanes":[]}');

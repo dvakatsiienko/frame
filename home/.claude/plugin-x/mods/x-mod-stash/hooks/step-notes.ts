@@ -8,13 +8,7 @@ import { flushFields, isTypedHere } from './fields.ts';
 import { joinsLocked, takeJoins } from './joins.ts';
 import { type ViewDoors, paceStep, warm } from './keep-warm.ts';
 import { readLanes, takeLaneMoves } from './lanes.ts';
-import {
-    ORBIT_TOOL,
-    isFresh,
-    joinRowsText,
-    joinText,
-    planText,
-} from './orbit.ts';
+import { ORBIT_TOOL, isFresh, joinNotes, joinText, planText } from './orbit.ts';
 import { takeMarks, takePlanMark } from './orbit-presses.ts';
 import { absorbMarks, currentOrbit, unreadAs } from './orbit-store.ts';
 import { orbitToolCall } from './orbit-tool.ts';
@@ -203,7 +197,7 @@ export async function onToolCall(
     const joins = isPing
         ? []
         : await joinsLocked(() => takeJoins($)).catch(() => []);
-    if (joins.length) notes.push(joinRowsText(joins));
+    notes.push(...joinNotes(joins));
     if (!notes.length) return answer;
     return { ...answer, context: [...(r.context ?? []), ...notes] };
 }
