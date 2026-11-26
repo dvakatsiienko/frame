@@ -528,7 +528,22 @@ export async function openDispatchedLanes(
                 role: 'sixth-sense',
                 session: sixth,
             });
-        if (open) {
+        const linked = open?.linkedIds?.codie;
+        const linkedSid = linked && (await successorOf($, linked));
+        const isOlders = dispatched.some(
+            (t) =>
+                t.lane === codie.lane &&
+                t.sessionId === linkedSid &&
+                t.sessionId !== codie.sessionId,
+        );
+        // a resummon's overlap: the older codie's card goes once a hand card links the newer one, so the lane keeps one
+        if (
+            open &&
+            isOlders &&
+            (await handCardOf($, lanes, [codie.sessionId], runner, live))
+        )
+            await glide({ act: 'end', id: open.id, op: 'glide' });
+        else if (open) {
             if (bare(open.members.codie ?? '') !== bare(member.base.name))
                 await glide({
                     act: 'link',

@@ -37,6 +37,8 @@ export function world(
     // `x lane plan-steps <path>`'s answer per plan path; a path with none fails the run, as x would
     const steps: Record<string, unknown[] | undefined> = {};
     const planRuns: string[] = [];
+    // what lands while x reads a plan: a move of hers in the middle of the run
+    const planRead: { during?: () => void } = {};
     // `x lane show <lane> --json`'s record per lane; a lane with none fails the run, as x would
     const shows: Record<string, unknown> = {};
     const showRuns: string[] = [];
@@ -107,6 +109,7 @@ export function world(
         if (e.argv[1] === 'lane' && e.argv[2] === 'plan-steps') {
             const path = e.argv[3] ?? '';
             planRuns.push(path);
+            planRead.during?.();
             const answer = steps[path];
             return {
                 value: {
@@ -187,6 +190,7 @@ export function world(
         clock,
         contexts,
         files,
+        planRead,
         planRuns,
         shelfReads,
         showRuns,

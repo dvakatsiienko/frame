@@ -2,6 +2,8 @@ import {
     CLIO,
     CODIE,
     CODIE_NAME,
+    FILE,
+    type KeptLane,
     PID,
     SID,
     type Step,
@@ -483,6 +485,76 @@ for (const [name, over, want] of [
             kept(w).map((l) => [l.id, l.plan?.split('/').at(-2), l.title]),
         ).toEqual(want as never);
     });
+
+// the newer codie (dispatched 200) and the older (50) of one lane, l1 on the plan and linked to the older
+const twoCodies = (on: Parameters<typeof world>[0], ...cards: KeptLane[]) => {
+    const d = dispatched([
+        {
+            at: 400,
+            dispatchedAt: 200,
+            lane: 'mods-lane-9',
+            pid: 5001,
+            sessionId: CODIE,
+        },
+        {
+            at: 50,
+            dispatchedAt: 50,
+            lane: 'mods-lane-9',
+            pid: 5002,
+            sessionId: OLD_CODIE,
+        },
+    ]);
+    const w = world(on, { ...d, files: { ...d.files, ...shelf(...cards) } });
+    titled(w, marked('x  '));
+    return w;
+};
+const handCard = (id: string, codie: string, movedAt: number) =>
+    keptLane({
+        history: [{ act: 'create', at: movedAt, current: 0, done: 0 }],
+        id,
+        linkedIds: { codie },
+        title: 'speak — by hand',
+    });
+
+test("the older codie's card ends once a hand card links the newer one", async ($, on) => {
+    const w = twoCodies(
+        on,
+        keptLane({
+            id: 'l1',
+            linkedIds: { codie: OLD_CODIE },
+            plan: '~/.local/state/x/lanes/mods-lane-9/lane-plan.md',
+        }),
+        handCard('l2', CODIE, 410),
+    );
+    await start($);
+    await poll(w);
+    await poll(w);
+    expect(
+        kept(w).map((l) => [l.id, Boolean(l.endedAt), l.linkedIds?.codie]),
+    ).toEqual([
+        ['l1', true, OLD_CODIE],
+        ['l2', false, CODIE],
+    ]);
+});
+
+test('her move landing while x reads the plan keeps her card a hand card', async ($, on) => {
+    const w = twoCodies(on, handCard('l1', CODIE, 100));
+    w.planRead.during = () => {
+        const store = JSON.parse(w.files[FILE] ?? '{}');
+        store.lanes[0].history.push({
+            act: 'edit',
+            at: 300,
+            current: 0,
+            done: 0,
+        });
+        w.files[FILE] = JSON.stringify(store);
+    };
+    await start($);
+    await poll(w);
+    expect(kept(w).map((l) => [l.plan, l.history.map((h) => h.act)])).toEqual([
+        [undefined, ['create', 'edit']],
+    ]);
+});
 
 test('a card that took the plan keeps its title on a fresh read of the record', async ($, on) => {
     const plan = '~/.local/state/x/lanes/mods-lane-9/lane-plan.md';
