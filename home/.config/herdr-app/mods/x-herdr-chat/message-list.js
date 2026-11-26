@@ -20,6 +20,7 @@ import { notesBefore } from './note-rows.js';
 import { openPath } from './open-path.js';
 import { pathOf } from './path-links.js';
 import { END_GLIDE_MS, createPlace } from './place.js';
+import { createPressProbe } from './press-probe.js';
 import { createSelections, passageOf, wordsOf } from './selection.js';
 import { missingNote } from './viewer.js';
 
@@ -66,6 +67,8 @@ export const placeKey = (file) => `place:${file}`;
 // how long after his press ends a let-go text view draws its note links again: past a double or a triple click's next
 // press, whose selection a redraw between its clicks drops (his paragraph, the trace of 26 Nov 16:22)
 const RELINK_MS = 500;
+
+const probe = createPressProbe('list');
 
 /** @param {MessageListDeps} deps */
 export function createMessageList(deps) {
@@ -246,6 +249,7 @@ export function createMessageList(deps) {
             .track_scroll(scroll)
             // a right-click names the row first; the list's own handler below then opens the menu where it was
             .on_item_secondary_click((key, event) => {
+                probe('right on item', { key });
                 const id = key.replace(/#(?:above|below)$/, '');
                 const row = rows.find((r) => r.id === id);
                 const parts = row
@@ -285,6 +289,7 @@ export function createMessageList(deps) {
                 // a press ended: words let go draw their note links, a beat later, after herdr told a drag's new words; a
                 // view holding new words keeps its markdown still
                 .on_window_mouse_up('left', (_event, cx) => {
+                    probe('mouse up');
                     relinking?.cancel();
                     relinking = null;
                     if (!letGo.size) return;
@@ -308,6 +313,7 @@ export function createMessageList(deps) {
                     cx.stop_propagation();
                 })
                 .on_mouse_down('right', (event, cx) => {
+                    probe('right down');
                     readOrigin(event);
                     const local = event.local_position ?? { x: 0, y: 0 };
                     messageMenu.open(event.position, {
