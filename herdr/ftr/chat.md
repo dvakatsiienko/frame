@@ -125,7 +125,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and Copy on it gives what the bubble shows: the «on» line, then his words
   - and a note that joined a turn draws no bubble at all: its quiet row under the message it is on is the one place it shows (dima's o1, 26 Nov 15:20)
 - ✅ the words he wrote a note on stay highlighted in their message (FRM-585:W2, W50, W51)
-  - given notes on a message, then each one's words are painted behind: in the theme's waiting amber while the thread has not got the note, in its accent once it has, two hues told apart at a glance (W75, W76); opening the box paints them at once
+  - given notes on a message, then each one's words are painted behind: in the theme's waiting amber while the thread has not got the note, in its green once it has, two hues told apart at a glance (W75, W86); opening the box paints them at once
   - and they are found again after the reply grew or an older page landed above it; words that are gone, or stand twice and moved, show none and the note stays
   - and find's hits are painted over them, and leave them as they were
   - and a path in them that became a link later is still found; a folded reply paints none past the lines it shows

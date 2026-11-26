@@ -287,6 +287,7 @@ export function createMessageRows(deps) {
             find.current() === row.id ? find.currentHit()?.n : '',
             ...row.pictures.map((p) => deps.sent.relOf(p) ?? ''),
             t.accent,
+            t.ansi2,
             t.background,
             t.border,
             t.dim,
@@ -357,7 +358,7 @@ export function createMessageRows(deps) {
                     linked.at(end),
                     isStrong
                         ? tint(t.blocked, NOTE_ALPHA)
-                        : tint(t.accent, HAD_NOTE_ALPHA),
+                        : tint(t.ansi2, HAD_NOTE_ALPHA),
                 ),
             plain,
         );

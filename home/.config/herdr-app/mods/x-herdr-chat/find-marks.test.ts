@@ -256,10 +256,17 @@ test('his notes’ words are painted under find’s hits, the stepped one last, 
     const before = view.bodyLook(rows[2] as never, t, 'p');
     notes.set('new', [note('a', 'waiting'), note('b', 'joined')]);
     expect(view.bodyLook(rows[2] as never, t, 'p')).not.toBe(before);
-    // a waiting note in the theme's amber, a joined one in its accent (FRM-585:W75 W76)
+    // a waiting note in the theme's amber, a joined one in its green (FRM-585:W75 W86)
     const hues = new Proxy(
         {},
-        { get: (_t, k) => (k === 'blocked' ? '#cc8800' : '#336699') },
+        {
+            get: (_t, k) =>
+                k === 'blocked'
+                    ? '#cc8800'
+                    : k === 'ansi2'
+                      ? '#22aa55'
+                      : '#336699',
+        },
     ) as never;
     const paint = () => {
         gpui.painted.length = 0;
@@ -268,7 +275,7 @@ test('his notes’ words are painted under find’s hits, the stepped one last, 
     };
     // drawn inside the newer note's link: «one [viewer](note:b)»
     const mine = [
-        ['#3366992e', 5, 11],
+        ['#22aa552e', 5, 11],
         ['#cc880047', 5, 11],
     ];
     gpui.sources.length = 0;

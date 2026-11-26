@@ -3,6 +3,6 @@
 /** @typedef {import('gpui-kit').Color} Color */
 /** @typedef {import('gpui-kit').Context} Context */
 // the theme colours the chat reads, each present in every herdr theme
-/** @typedef {Record<'accent' | 'accent_foreground' | 'background' | 'blocked' | 'border' | 'dim' | 'foreground' | 'hover' | 'muted' | 'popover' | 'raised' | 'selected' | 'solid' | 'solid_foreground' | 'working', Color>} Theme */
+/** @typedef {Record<'accent' | 'accent_foreground' | 'ansi2' | 'background' | 'blocked' | 'border' | 'dim' | 'foreground' | 'hover' | 'muted' | 'popover' | 'raised' | 'selected' | 'solid' | 'solid_foreground' | 'working', Color>} Theme */
 
 export {};
