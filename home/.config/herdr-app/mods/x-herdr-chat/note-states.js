@@ -89,9 +89,11 @@ export const lineOf = (note) =>
         back: note.back,
         parts: note.passage.parts.map((part) => part.words),
         row: note.passage.row,
-        sentence: sentenceOf(
-            note.passage.parts[0] ?? { range: null, source: '', words: '' },
-        ),
+        // words over two text views go as the quote of all of them: one sentence holds only the first
+        sentence:
+            note.passage.parts.length === 1 && note.passage.parts[0]
+                ? sentenceOf(note.passage.parts[0])
+                : null,
         text: note.text,
     });
 

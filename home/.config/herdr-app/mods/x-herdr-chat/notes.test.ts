@@ -640,6 +640,20 @@ test('the line a note joins with carries the sentence its words sit in, and a fa
     ]);
 });
 
+test('the line of words over two text views quotes all of them', async () => {
+    const w = world();
+    const first = passage('More', 0, ROW, 'More here.');
+    const second = passage('Second block', 0, ROW, 'Second block holds.');
+    const id = await w.draft('both', {
+        ...first,
+        parts: [...first.parts, { ...second.parts[0], block: 1 }],
+    });
+    await w.notes.join(THREAD, id, 0);
+    expect(w.texts()).toEqual([
+        'dima on "More … Second block" (reply 1a2b3c4d): both',
+    ]);
+});
+
 // FRM-585 C3
 test('a message of his is a note by the lines written for it, never by how it reads', async () => {
     const w = world();

@@ -77,6 +77,13 @@ describe('a note’s words drawn as a link (FRM-585 B5)', () => {
             'the _[retr](note:n1)y is_ cheap',
         ],
         [
+            'over an underscore inside a word',
+            'run snake_case now',
+            4,
+            14,
+            'run [snake_case](note:n1) now',
+        ],
+        [
             'ending on a line break’s backslash',
             'one\\\ntwo',
             0,
