@@ -415,6 +415,7 @@ async function sayLine(
 ) {
     const r = await selfSubmit(
         $,
+        'parked',
         `🅿️ parked lane: ${said.map((h) => h.text).join('; ')}.`,
         false,
         () => prepareTurn(view),

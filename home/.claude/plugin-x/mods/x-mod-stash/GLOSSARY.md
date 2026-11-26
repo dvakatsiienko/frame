@@ -157,4 +157,12 @@ _Avoid_: wind defaults file
 A session's 🍃 switch on the band: on, the session hears at 55 % that its wind is coming and the mod asks for the wind at 65 %; on for every thread, the coordinator's too; 💨 afk or a shift turn a coordinator's pressed-off one on while they last.
 _Avoid_: refresh, graceful refresh, checkpoint request, molt
 
+**Turn log**:
+The 📊 rows this mod writes, one per main-loop turn of every session, under `~/.claude/shelf/events/<UTC day>/`, each a closed list of words and numbers, never a prompt, a tool argument, a path or an ask title; `x fleet stats` folds them. A thread's open stamp (`events/open/<sid>.json`) with no row of its start is a lost turn.
+_Avoid_: event log, events, telemetry
+
+**Starter**:
+Who started a turn, on its turn log row: typed (dima), member, task, schedule, summon, mod (with its reason: keep-hot, pace, waker, tick, stranded, quiet, parked, steer, wind, command) or unknown. A prompt queued under a running turn either joins it (counted on that row) or starts the next, a slipstream either way.
+_Avoid_: origin, source, trigger
+
 **Operator-override**: x's word, defined in `x/GLOSSARY.md`; the band's 🔓 shows it and its one press turns it off.

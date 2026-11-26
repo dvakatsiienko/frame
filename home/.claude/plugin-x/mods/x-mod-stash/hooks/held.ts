@@ -559,19 +559,19 @@ export async function releaseHeldSteers(
     const steers = await takeHeld($, keys, isDue);
     if (!steers.length) return;
     // through selfSubmit, so the released turn reads busy: a keep-hot ping or a wake never lands inside it
-    await selfSubmit($, heldText(steers), false, () => prepareTurn(view)).catch(
-        async (err: unknown) => {
-            // a refused submit hands the list back ahead of what landed since, flagged, so the next release takes it
-            await quietLocked(async () => {
-                const now = await heldStore($, keys);
-                await saveHeld($, keys, {
-                    isCompacted: true,
-                    messages: [...steers, ...now.messages],
-                });
+    await selfSubmit($, 'steer', heldText(steers), false, () =>
+        prepareTurn(view),
+    ).catch(async (err: unknown) => {
+        // a refused submit hands the list back ahead of what landed since, flagged, so the next release takes it
+        await quietLocked(async () => {
+            const now = await heldStore($, keys);
+            await saveHeld($, keys, {
+                isCompacted: true,
+                messages: [...steers, ...now.messages],
             });
-            throw err;
-        },
-    );
+        });
+        throw err;
+    });
     await tellDelivered($, steers);
     const quiet = steers.filter((m) => m.isQuiet).map(quietPingOf);
     if (quiet.length)

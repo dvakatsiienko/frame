@@ -29,7 +29,7 @@ x-mod-holds	tests/holds.test.ts	1
 x-mod-redact	*	12	
 x-mod-redact	tests/redact.test.ts	1	
 x-mod-redact	tests/vault.test.ts	1	
-x-mod-stash	*	53	
+x-mod-stash	*	54	1795699942885
 x-mod-stash	tests/afk.test.ts	1	
 x-mod-stash	tests/band.test.ts	1	
 x-mod-stash	tests/board-chips.test.ts	1	
@@ -82,6 +82,7 @@ x-mod-stash	tests/step-notes.test.ts	1
 x-mod-stash	tests/switches.test.ts	1	
 x-mod-stash	tests/tick-pick.test.ts	1	
 x-mod-stash	tests/tree.test.ts	0	
+x-mod-stash	tests/turn-log.test.ts	1	
 x-mod-stash	tests/turn-notes.test.ts	1	
 x-mod-stash	tests/waker.test.ts	1	
 x-mod-stash	tests/wind-compact.test.ts	1	

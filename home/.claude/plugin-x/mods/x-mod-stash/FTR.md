@@ -1324,3 +1324,32 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - decision: on the board, not at summon — a `--bg` codie starts through Bash, and `agent.spawn` sees only Agent-tool subagents
   - proof: tests/board.test.ts::the board marks a background session named off the fleet pattern; ::a cold row off the fleet pattern keeps ⚠, never ❄️ — not asserted: standing-member no-⚠ only via helga-sidecar test
 
+
+## 📊 the turn log — one row per turn, for `x fleet stats` (FRM-639)
+
+- ⬜ each main-loop turn leaves one row, written whole once at its end: `~/.claude/shelf/events/<UTC day>/<sid>.<start>.json`, and an open stamp `events/open/<sid>.json` at its start
+  - given his typed prompt, then its row says `starter: typed`, and its keys are the closed list: sid, pid, turnId, start, end, prevEnd, starter, reason, isQueued, typedJoined, pingsJoined, herdrJoins, ticks, tools, cards, answerLen, ended, asksOpened, ctx, wind, windAsked
+  - given a prompt, a tool argument, a path and a card's brief that hold a marked string, then no row of that turn holds it
+  - given a turn killed with `kill -9`, then it has no row and its open stamp stays: the fold reads it as a lost turn
+  - makes: a row file per turn and one open stamp per thread; day dirs past 30 days go to the trash at a session's start
+  - proof: tests/turn-log.test.ts::his typed prompt is one row, named typed, its keys the closed list, with an open stamp; ::no row holds his prompt, a tool argument or a path
+- ⬜ a turn says who started it: typed, member, task, schedule, summon, mod (with its reason) or unknown
+  - given a prompt or a ping queued under a running turn and delivered into it (the engine's `session.append` door `delivery`), then it counts once on that turn as `typedJoined` or `pingsJoined`, never on the next
+  - given one queued under a running turn that starts the next turn, then the next row is its own, `isQueued: true`, a slipstream
+  - given a keep-hot ping, then its row says `starter: mod`, `reason: keep-hot`
+  - decision: the mod's own `$.prompt.submit` fires no `prompt.submit` hook (probe 3, 26 Nov), so `selfSubmit` names its reason at each of its callers; a turn nothing explains reads `unknown`
+  - given a task's notice delivered into it, then neither count moves
+  - given a mod's submit the engine drops or refuses, then its slot goes, and the next turn is named for its own prompt
+  - proof: tests/turn-log.test.ts::a prompt and a ping delivered into the running turn count once on it, never on the next, and a task's notice is neither; ::a prompt queued under a running turn that starts the next one is that turn, a slipstream; ::a keep-hot ping is its own turn, started by the mod for keep-hot; ::a turn no prompt explains reads unknown, and a card spawned between turns lands on the next row
+- ⬜ a row counts what the turn did: tools, cards by type, asks opened, his ticks, herdr joins, the answer's length, how it ended, the context fill
+  - given a card of a known type, one of a new type, a refused one and a resumed one, then the row counts the known one by name, the new one as `other`, and neither of the last two
+  - given a tick his prompt took, then its row holds the pick, whether it carried a steer and the seconds from the ask's opening to his press
+  - given an aborted or failed turn that took a join, then its row counts no join and no tick: the turn that takes them again counts them
+  - given a card or a tick while the switch is off, then the first row after it is switched on carries neither
+  - given a second wind's compact, then the ingest's row carries who asked (dima, the mod, the thread itself) and the fill it fired at
+  - proof: tests/turn-log.test.ts::a tick his prompt took is on its turn: its pick, no steer, the seconds it waited; ::an aborted turn's join is not counted, and its row says aborted — not asserted: the wind's row, read by a live wind
+- ⬜ a hot reload mid-turn keeps the row whole: the counts are mirrored to `$.state` by turnId and read back, also when turn.complete reaches the fresh module before its session.start
+  - proof: tests/turn-log.test.ts::a reload mid-turn keeps the row whole: its counts come back from $.state
+- ⬜ 🎛️ `stash.events` off: no row and no open stamp is written
+  - proof: tests/turn-log.test.ts::📊 switched off, a turn writes no row and no open stamp
+- decision: `$.fs.write` is not atomic (probe 5, 26 Nov: a reader meets a new file at 0 bytes), so the fold counts an empty or unparsable row as torn, never as a turn

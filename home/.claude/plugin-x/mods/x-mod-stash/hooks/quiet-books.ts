@@ -496,6 +496,7 @@ export async function quietSilentMembers(
             if (raised.includes(`wake:${key}`)) continue;
             const r = await selfSubmit(
                 $,
+                'quiet',
                 `🚨 quiet comms: ${words}; check it, and break the hang if it is one.`,
                 false,
                 () => prepareTurn(view),

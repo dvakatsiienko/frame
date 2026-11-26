@@ -18,6 +18,8 @@ const HOOKS = [
     'ui.render{component=AssistantMessage}',
     'classic.Stop',
     'turn.start',
+    'agent.spawn',
+    'session.append{door=delivery}',
     'turn.complete',
     'session.compact',
     'session.measure',
@@ -37,8 +39,11 @@ const HOOKS = [
     'ui.render{component=AbovePrompt}',
 ];
 
+// a long list comes on more than one `hooks:` line
 function hooksOf(report: string) {
-    const line = /❯ \.\/register\.tsx hooks: (.*)$/m.exec(report)?.[1] ?? '';
+    const line = [...report.matchAll(/❯ \.\/register\.tsx hooks: (.*)$/gm)]
+        .map((m) => m[1])
+        .join(', ');
     return line
         .replace(/ \(default matcher key: [^)]*\)/g, '')
         .split(/, (?![^{]*\})/)

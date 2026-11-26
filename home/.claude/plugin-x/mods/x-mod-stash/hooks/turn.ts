@@ -1,5 +1,7 @@
 import type { EngineInterface } from 'claude-code';
 
+import type { TurnModReason } from '../types/stash.d.ts';
+import { dropSelfSubmit, noteSelfSubmit } from './turn-log.ts';
 import { resetObject } from './util.ts';
 
 // the turn as this session runs it: busy or not, whose turn, what it did, when it ended; one owner, read through
@@ -181,13 +183,23 @@ export async function startTurn(
 // (mods AGENTS, probe (d)), so its turn starts here; a submit the engine refuses leaves the session idle again
 export async function selfSubmit(
     $: EngineInterface,
+    reason: TurnModReason,
     text: string,
     isPing: boolean,
     prepare: () => Promise<boolean>,
 ) {
     await startTurn($, false, isPing, prepare);
-    return $.prompt.submit({ text }).catch(async (err: unknown) => {
-        await idleTurn($);
-        throw err;
-    });
+    noteSelfSubmit(reason);
+    // a drop or a refusal never became a turn: its slot goes, or the next turn would be named for it
+    return $.prompt
+        .submit({ text })
+        .then((r) => {
+            if (r.drop !== undefined) dropSelfSubmit(reason);
+            return r;
+        })
+        .catch(async (err: unknown) => {
+            dropSelfSubmit(reason);
+            await idleTurn($);
+            throw err;
+        });
 }

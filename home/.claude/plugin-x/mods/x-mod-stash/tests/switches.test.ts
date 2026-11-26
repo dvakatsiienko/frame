@@ -410,6 +410,8 @@ const NO_MODEL: Record<string, string> = {
     'stash.bullets': 'its rewrite of the stored reply already reads its switch',
     'stash.circled': 'a redraw of the reply on screen, drawn only',
     'stash.ctx': 'a band bar, drawn only',
+    'stash.events':
+        'a file per turn on the shelf, read by x fleet stats, never by a model',
     'stash.pace': 'a band number, drawn only',
     'stash.reset': 'a band timer, drawn only',
     'stash.rowmeta': 'board row text, drawn only',

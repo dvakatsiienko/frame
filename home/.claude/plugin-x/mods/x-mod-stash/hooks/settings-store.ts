@@ -171,6 +171,11 @@ export const PARTS = [
         key: 'stash.cost',
         label: '💵 cost questions read model-cards.md',
     },
+    {
+        group: 'stash · board',
+        key: 'stash.events',
+        label: '📊 turn log: one row per turn, for x fleet stats',
+    },
 ] as const;
 export type PartKey = (typeof PARTS)[number]['key'];
 export type IsPartOn = (key: PartKey) => boolean;

@@ -29,6 +29,13 @@ import {
 import { keepShelf } from './session-record.ts';
 import { partsShown, readNumber, windEditsOf } from './settings-store.ts';
 import { REPLY, type Reply } from './store-keys.ts';
+import {
+    dropSelfSubmit,
+    noteCompact,
+    noteSelfSubmit,
+    noteWind,
+    noteWindAsk,
+} from './turn-log.ts';
 import { forgetTold } from './turn-notes.ts';
 import { CONTEXT, drawFill, drawFillAfterCompact } from './usage.ts';
 import { errorText, writeWhole } from './util.ts';
@@ -218,6 +225,7 @@ export async function takeFill($: EngineInterface, fill: number | undefined) {
         mark.noticed !== turnNo
     ) {
         mark.asked = turnNo;
+        await noteWindAsk($).catch(() => undefined);
         if (!(await windOf($, sid)))
             await $.store.set(WIND + sid, {
                 at: await $.clock.now(),
@@ -327,8 +335,12 @@ export async function windReady(
             deny: `orbit second-wind: no handoff «${name}» in the store; write it with x:handoff first`,
         };
     if (!sid) return { deny: 'orbit second-wind: this session has no id yet' };
+    // who asked rides to the compact, where the turn log reads it: the mod's ask, dima's press (no `by`), or none at all
+    const was = await windOf($, sid);
+    const by = was ? was.by : 'self';
     await $.store.set(WIND + sid, {
         at: await $.clock.now(),
+        ...(by ? { by } : {}),
         slug: name,
         state: 'refreshing',
     } satisfies StashWind);
@@ -451,6 +463,14 @@ export async function peekHandoff(
     if (peek.exitCode === 0) return 'here';
     return HANDOFF_GONE.test(peek.stdout + peek.stderr) ? 'gone' : 'unread';
 }
+// the ingest as a prompt: the engine fires no prompt.submit for the mod's own, so the turn log hears it here
+async function submitIngest($: EngineInterface, slug: string) {
+    noteSelfSubmit('wind');
+    return $.prompt.submit({ text: windIngest(slug) }).catch((err: unknown) => {
+        dropSelfSubmit('wind');
+        throw err;
+    });
+}
 async function runWind(
     $: EngineInterface,
     sid: string,
@@ -459,8 +479,10 @@ async function runWind(
 ) {
     try {
         // the slug goes first, so a turn end during the compact finds nothing to run; the board keeps 🌀
+        const by = (await windOf($, sid))?.by;
         await $.store.set(WIND + sid, {
             at: await $.clock.now(),
+            ...(by ? { by } : {}),
             state: 'refreshing',
         } satisfies StashWind);
         // the handoff can leave the store after the op's peek (another ingest, a delete): the compact never runs on nothing
@@ -482,7 +504,7 @@ async function runWind(
             }),
             hasIngestCommand
                 ? $.command.run({ args: slug, command: 'x:handoff-ingest' })
-                : $.prompt.submit({ text: windIngest(slug) }),
+                : submitIngest($, slug),
         ]);
         if (ingested.status === 'rejected') throw ingested.reason;
         await $.store.delete(WIND + sid);
@@ -641,6 +663,9 @@ export async function compactSession(
         await $.store
             .set(COMPACTING + compacting, await $.clock.now())
             .catch(() => undefined);
+    const fillBefore = compacting
+        ? await $.store.get(CONTEXT + compacting).catch(() => undefined)
+        : undefined;
     const r = await next(e).finally(() =>
         compacting
             ? $.store.delete(COMPACTING + compacting).catch(() => undefined)
@@ -652,6 +677,12 @@ export async function compactSession(
         // a wind's own compact: its ingest is queued behind it, and runWind hands the held messages over after it
         const wind = compacting ? await windOf($, compacting) : undefined;
         const isWinds = wind?.state === 'refreshing' && !wind.slug;
+        noteCompact();
+        if (isWinds)
+            noteWind(
+                wind.by ?? 'dima',
+                typeof fillBefore === 'number' ? fillBefore : undefined,
+            );
         forgetTold();
         await windOnCompact($).catch(() => undefined);
         await steersOnCompact($).catch(() => undefined);

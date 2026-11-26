@@ -241,7 +241,7 @@ async function paceTick($: EngineInterface, view: ViewDoors) {
     if (!due || !(await paceClaim($, sid))) return;
     isPaceSending = true;
     try {
-        const r = await selfSubmit($, due.line, false, () =>
+        const r = await selfSubmit($, 'pace', due.line, false, () =>
             prepareTurn(view),
         ).catch(() => undefined);
         if (r && !r.drop) await paceSent($, sid, due.stored);
@@ -404,7 +404,7 @@ export async function armHot($: EngineInterface, view: ViewDoors) {
         if (!(await partsShown($))('stash.hot')) return;
         if (await isWindowSpent($)) return;
         $.ui.log('x-mod-stash keep-hot: pinged the idle session');
-        await selfSubmit($, PING, true, () => prepareTurn(view));
+        await selfSubmit($, 'keep-hot', PING, true, () => prepareTurn(view));
     });
 }
 
@@ -420,9 +420,9 @@ export async function hotLate($: EngineInterface, view: ViewDoors) {
     if (lateWindow === m.resetsAt) return;
     lateWindow = m.resetsAt;
     $.ui.log('x-mod-stash keep-hot: the last ping before the reset');
-    const r = await selfSubmit($, PING, true, () => prepareTurn(view)).catch(
-        () => undefined,
-    );
+    const r = await selfSubmit($, 'keep-hot', PING, true, () =>
+        prepareTurn(view),
+    ).catch(() => undefined);
     if (r && !r.drop) return;
     await idleTurn($);
     await armHot($, view);
@@ -560,7 +560,7 @@ export async function armWake($: EngineInterface, view: ViewDoors) {
             | undefined;
         if (waker?.on !== true || !(await partsShown($))('stash.waker')) return;
         $.ui.log('x-mod-stash waker: resumed the session after the 5h reset');
-        await selfSubmit($, RESUME, false, () => prepareTurn(view));
+        await selfSubmit($, 'waker', RESUME, false, () => prepareTurn(view));
     });
 }
 // a reload hands back the cap `$.state` kept

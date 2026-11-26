@@ -15,6 +15,7 @@ const ROW_MS = 5_000;
 const FILE_MS = 280_000;
 // every event a row may hook: a host hook cannot be added once the mod runs, so each is hooked at the boot
 const DOORS = [
+    'agent.spawn',
     'classic.Stop',
     'clock.after',
     'clock.every',

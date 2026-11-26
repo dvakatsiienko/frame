@@ -3,7 +3,7 @@
 
 import type { EngineInterface } from 'claude-code';
 
-import type { OrbitAsk, StashOrbit } from '../types/stash.d.ts';
+import type { OrbitAsk, StashOrbit, TurnTick } from '../types/stash.d.ts';
 import { carried } from './fields.ts';
 import { type ViewDoors, armHot, prepareTurn } from './keep-warm.ts';
 import {
@@ -31,6 +31,7 @@ import {
 import { keepShelf } from './session-record.ts';
 import { partsShown } from './settings-store.ts';
 import { idleTurn, isTurnBusy, selfSubmit } from './turn.ts';
+import { noteTicks } from './turn-log.ts';
 import { onOneLine } from './util.ts';
 
 // mobile mode: mods draw nothing on the phone, so the session prints the open asks as the asks fence instead
@@ -61,7 +62,7 @@ export async function tellStranded($: EngineInterface, view: ViewDoors) {
         ) ?? live.find((t) => ownerOf(t) === MAIN_OWNER);
     if (ownerOf(self) === MAIN_OWNER) {
         if (await isTurnBusy($)) return;
-        const r = await selfSubmit($, line, false, () =>
+        const r = await selfSubmit($, 'stranded', line, false, () =>
             prepareTurn(view),
         ).catch(() => undefined);
         if (!r || r.drop !== undefined) {
@@ -94,6 +95,18 @@ export async function tellStranded($: EngineInterface, view: ViewDoors) {
         );
     });
 }
+// the turn log's read of a tick, taken before the lock clears the mark
+function tickOf(a: OrbitAsk): TurnTick {
+    const pressedAt = a.pressedAt ?? a.markedAt;
+    return {
+        isSteer: Boolean(a.steer?.trim()),
+        pick: a.mark === 'rejected' ? 'replay' : 'tick',
+        waitS:
+            pressedAt !== undefined && a.openedAt !== undefined
+                ? Math.max(0, Math.round((pressedAt - a.openedAt) / 1000))
+                : null,
+    };
+}
 // a turn takes his marks in the marking queue: a press lands wholly before or after the lock, never inside it
 export function takeMarks(
     $: EngineInterface,
@@ -104,6 +117,7 @@ export function takeMarks(
         const asks = pick(o);
         if (asks.length)
             await saveOrbit($, lockJoined(o, asks), () => keepShelf($));
+        await noteTicks($, asks.map(tickOf));
         carried(
             $,
             asks.map((a) => `orbit:steer:${a.id}`),
@@ -141,6 +155,7 @@ async function pressMarkNow(
     const next = ask.mark === mark ? undefined : mark;
     const isTicked = next === 'accepted';
     if (isTicked) await recordTicks($, [ask], true);
+    const pressedAt = next ? await $.clock.now() : undefined;
     const isKept = await markAsksNow(
         $,
         () => keepShelf($),
@@ -151,6 +166,7 @@ async function pressMarkNow(
                       isChanged: false,
                       isHerdrMark: undefined,
                       mark: next,
+                      pressedAt,
                   }
                 : a,
         false,

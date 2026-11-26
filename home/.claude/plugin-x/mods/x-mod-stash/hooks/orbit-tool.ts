@@ -47,6 +47,7 @@ import {
 import { keepShelf } from './session-record.ts';
 import { partRefusal, readNumber, turnParts } from './settings-store.ts';
 import { addGridQs, markWork, turn } from './turn.ts';
+import { noteAsks } from './turn-log.ts';
 import { STALE_TURNS } from './turn-notes.ts';
 import {
     ORBIT_BODY_MAX,
@@ -420,7 +421,17 @@ export async function orbitCall(
                 read,
             );
             if ('deny' in made) return made;
-            if (asked) made.orbit = { ...made.orbit, next: current.next };
+            if (asked) {
+                const had = new Set(current.asks.map((a) => a.id));
+                const openedAt = await $.clock.now();
+                made.orbit = {
+                    ...made.orbit,
+                    asks: made.orbit.asks.map((a) =>
+                        had.has(a.id) ? a : { ...a, openedAt },
+                    ),
+                    next: current.next,
+                };
+            }
             await saveOrbit($, made.orbit, () => keepShelf($));
             // a follow asks a new question: his tick on the old one is no longer his word on it (S3); one step with the
             // save, so a press lands wholly before both or after both
@@ -441,6 +452,7 @@ export async function orbitCall(
         );
     });
     if ('deny' in op) return { deny: op.deny };
+    await noteAsks($, asked);
     if (input.op === 'add')
         addGridQs(
             ...(Array.isArray(input.asks) ? input.asks : []).flatMap((x) => {

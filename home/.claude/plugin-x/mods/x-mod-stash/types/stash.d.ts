@@ -81,6 +81,63 @@ export type StashMember = {
     wind?: StashWind;
 };
 
+// 📊 one row of the turn log (FRM-639), `~/.claude/shelf/events/<day>/<sid>.<start>.json`: a closed list of words and
+// numbers, never a prompt, a tool argument, a path or an ask title
+export type TurnStarter =
+    | 'typed'
+    | 'member'
+    | 'task'
+    | 'schedule'
+    | 'summon'
+    | 'mod'
+    | 'unknown';
+// what the mod's own prompt was for
+export type TurnModReason =
+    | 'keep-hot'
+    | 'pace'
+    | 'waker'
+    | 'tick'
+    | 'stranded'
+    | 'quiet'
+    | 'parked'
+    | 'steer'
+    | 'wind'
+    | 'command';
+export type TurnWindBy = 'dima' | 'mod' | 'self';
+// one tick or replay a turn took: its pick, whether it carried a steer, the seconds from the ask's opening to the press
+export type TurnTick = {
+    pick: 'tick' | 'replay';
+    isSteer: boolean;
+    waitS: number | null;
+};
+export type StashTurnRow = {
+    sid: string;
+    pid: number;
+    turnId: string;
+    start: number;
+    end: number;
+    // the thread's last row's end, for a gap the fold window cuts
+    prevEnd: number | null;
+    starter: TurnStarter;
+    reason: TurnModReason | null;
+    // submitted under the turn before, so it is a slipstream even though it started this one
+    isQueued: boolean;
+    typedJoined: number;
+    pingsJoined: number;
+    herdrJoins: number;
+    ticks: TurnTick[];
+    tools: number;
+    cards: Record<string, number>;
+    answerLen: number;
+    ended: 'answer' | 'aborted' | 'refusal' | 'error';
+    asksOpened: number;
+    ctx: number | null;
+    // the second wind whose ingest this turn is: who asked, at what fill
+    wind: { by: TurnWindBy; ctx: number | null } | null;
+    // how often the wind line's ask fired this turn
+    windAsked: number;
+};
+
 // second wind for one session, a store key every board reads: asked from a board, writing once its turn carried the
 // note, refreshing once it named its handoff, cancelled when a second press took it back after the note went out
 export type StashWind = {
@@ -93,8 +150,8 @@ export type StashWind = {
         | 'stopped';
     at: number;
     slug?: string;
-    // the mod asked it, past the wind line, where dima's press leaves this out
-    by?: 'mod';
+    // the mod asked it, past the wind line, or the thread named its handoff unasked; dima's press leaves this out
+    by?: 'mod' | 'self';
     // work started after «pending: none» and before the compact: the wind refuses, and says what
     blocked?: string;
     // stopped before its compact: the handoff had left the store, so the context is whole and the handoff is gone
@@ -186,6 +243,9 @@ export type OrbitAsk = AskOrigin & {
     isResolved?: boolean;
     // when a mark came in from another board, which x-mod-guard reads as the press's time
     markedAt?: number;
+    // when the ask went up and when this board's press marked it, so the turn log reads how long a tick waited
+    openedAt?: number;
+    pressedAt?: number;
     // the mark came from herdr's ticks file, which any agent can write: its turn reads it labelled, to weigh (FRM-552)
     isHerdrMark?: boolean;
     // the closing word a resolve gave it («landed», «dropped: superseded by o58»)
@@ -366,6 +426,8 @@ declare module 'claude-code' {
             folds: Record<string, boolean>;
             // dima's ticks, newest last; any plugin reads them, only this mod's press handler writes them
             ticks: StashTick[];
+            // the running main turn's row of the turn log, by turnId, so a hot reload keeps it whole
+            turnLog: StashTurnRow | null;
         };
     }
 }

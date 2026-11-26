@@ -1,5 +1,5 @@
 /* @jsx h */
-import type { Register } from 'claude-code';
+import type { EngineInterface, Register } from 'claude-code';
 
 import { renderBand } from './band.tsx';
 import { boardCommand, drawBoard } from './board.tsx';
@@ -39,9 +39,18 @@ import { keepShelf, noteModel } from './session-record.ts';
 import { resetModules } from './session-reset.ts';
 import { startSession } from './session-start.ts';
 import { drawSettingsPane } from './settings-pane.tsx';
-import { setSettingsOpen } from './settings-store.ts';
+import { partsShown, setSettingsOpen } from './settings-store.ts';
 import { onToolCall } from './step-notes.ts';
 import { beginQueuedTurn, endBusy, endStop, markActive } from './turn.ts';
+import {
+    endRow,
+    noteCard,
+    noteDelivery,
+    noteTool,
+    pruneTurnLog,
+    restoreRow,
+    startRow,
+} from './turn-log.ts';
 import { measureUsage, noteStep } from './usage.ts';
 import { errorText } from './util.ts';
 import { load, publish, viewDoors } from './view.ts';
@@ -63,10 +72,17 @@ const MOBILE = { key: 'mobile', plugin: 'x-mod-stash' } as const;
 const MOBILE_SKILL = /(^|:)mobile-mode$/;
 const MOBILE_OFF = /ARGUMENTS:\s*off\b/i;
 
+// 📊 the turn log's 🎛️ switch: off, no row and no open stamp is written
+async function isLogOn($: EngineInterface) {
+    return (await partsShown($))('stash.events');
+}
+
 export const register: Register = (on) => {
     // session.start fires at startup and again on every hot reload; the classic event only at startup
     on('session.start', async ($, e, next) => {
         await startSession($, e.cwd, viewDoors($));
+        await restoreRow($);
+        await pruneTurnLog($, await isLogOn($)).catch(() => undefined);
         return next(e);
     });
 
@@ -107,7 +123,27 @@ export const register: Register = (on) => {
     on('turn.start', async ($, e, next) => {
         if (!e.agentId && (await beginQueuedTurn($).catch(() => false)))
             await keepShelf($);
+        if (!e.agentId)
+            await startRow($, e.turnId, await isLogOn($)).catch(
+                () => undefined,
+            );
         return next(e);
+    });
+
+    // 📊 a card the engine spawned; a denied or a resumed one is no new card
+    on('agent.spawn', async ($, e, next) => {
+        const r = await next(e);
+        if (r.deny === undefined && !e.resume)
+            await noteCard($, e.subagentType).catch(() => undefined);
+        return r;
+    });
+
+    // 📊 a prompt or ping queued under the running turn and delivered into it (probed 26 Nov: door `delivery`)
+    on('session.append', { door: 'delivery' }, async ($, e, next) => {
+        const r = await next(e);
+        if (!e.agentId)
+            await noteDelivery($, e.origin.kind).catch(() => undefined);
+        return r;
     });
 
     on('turn.complete', async ($, e, next) => {
@@ -119,6 +155,8 @@ export const register: Register = (on) => {
         await joinsLocked(() =>
             settleJoins($, !e.isAborted && e.reason !== 'error'),
         ).catch(() => undefined);
+        // the herdr joins settle above, so the row counts what this turn kept
+        await endRow($, e, await isLogOn($)).catch(() => undefined);
         await refreshThreads($);
         await inMarking(async () =>
             saveOrbit($, turnEnded(await currentOrbit($)), () => keepShelf($)),
@@ -241,7 +279,10 @@ export const register: Register = (on) => {
 
     // orbit's write door, where the session adds, resolves and follows up its asks and sets its plan; and afk flipped
     // mid-turn: the next tool result carries the new state once
-    on('tool.call', ($, e, next) => onToolCall($, e, next, viewDoors($)));
+    on('tool.call', async ($, e, next) => {
+        if (!e.agentId) await noteTool($).catch(() => undefined);
+        return onToolCall($, e, next, viewDoors($));
+    });
 
     // the band: one row — the meters' readings, the 🔭 mark, the switches — then the bars
     // and a refused threshold's one line

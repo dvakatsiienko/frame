@@ -42,6 +42,7 @@ import { currentId, isLaneOwner } from './session-identity.ts';
 import { keepShelf } from './session-record.ts';
 import { turnParts } from './settings-store.ts';
 import { markActive, setPrimed, startTurn, turn } from './turn.ts';
+import { notePrompt } from './turn-log.ts';
 import {
     LANE_STALE_TEXT,
     filled,
@@ -130,6 +131,8 @@ export async function composePrompt(
         await $.state.set(MOBILE, false).catch(() => undefined);
     // prompt.submit fires when a prompt is queued (engine.md): one queued behind a running turn is no turn of its own yet
     const isQueued = turn.isBusy;
+    // 📊 who starts the turn this prompt becomes, or the one it joins (turn-log.ts)
+    notePrompt(e.origin?.kind, isUser, e.turnId !== undefined, e.command?.name);
     await startTurn($, isUser, e.text === PING, () => prepareTurn(view));
     // herdr's spinner and antenna's dot read working from the state file, so a turn's start writes it at once
     await keepShelf($);

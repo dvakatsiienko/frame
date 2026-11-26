@@ -17,6 +17,7 @@ import { resetSessionRecord } from './session-record.ts';
 import { resetSessionStart } from './session-start.ts';
 import { resetSettings } from './settings-store.ts';
 import { resetTurn } from './turn.ts';
+import { resetTurnLog } from './turn-log.ts';
 import { resetTurnNotes } from './turn-notes.ts';
 import { resetUsage } from './usage.ts';
 import { resetView } from './view.ts';
@@ -39,6 +40,7 @@ export function resetModules() {
     resetSettings();
     resetTurnNotes();
     resetTurn();
+    resetTurnLog();
     resetUsage();
     resetView();
     resetWindRun();

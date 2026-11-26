@@ -3,6 +3,7 @@ import type { EngineInterface } from 'claude-code';
 import { joinRows } from './orbit.ts';
 import { currentId, identity } from './session-identity.ts';
 import { partsShown } from './settings-store.ts';
+import { noteHerdrJoins } from './turn-log.ts';
 import { serial, writeWhole } from './util.ts';
 
 // dima's rows herdr writes into a thread's turn: the one reader of `herdr-joins/`, taken into a turn, stamped at its end,
@@ -56,6 +57,7 @@ export async function settleJoins($: EngineInterface, isLanded: boolean) {
     );
     if (!taken.length) return;
     if (isLanded) {
+        await noteHerdrJoins($, taken.length).catch(() => undefined);
         const done = idsOf(
             await $.store.get(JOIN_DONE + sid).catch(() => undefined),
         );

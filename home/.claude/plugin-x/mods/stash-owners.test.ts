@@ -18,6 +18,7 @@ const OWNERS = {
     'relay.json': 'parked-wake.ts',
     // syncWindStore writes it from wind-run.ts, the paths and parse are wind-store.ts's
     'second-wind.json': ['wind-run.ts', 'wind-store.ts'],
+    'shelf/events': 'turn-log.ts',
 } as const satisfies Record<string, string | readonly string[]>;
 // a module that only quotes the path in a text the model or dima reads, never touching the file
 const QUOTED: Record<string, readonly string[]> = {
