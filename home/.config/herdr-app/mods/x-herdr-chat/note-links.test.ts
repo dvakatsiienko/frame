@@ -36,6 +36,20 @@ describe('a note’s words drawn as a link (FRM-585 B5)', () => {
         ['in a link', 'see [the retry](https://x.io)', 9, 14],
         ['across a line break', 'the re\ntry', 4, 10],
         ['in a table', '| retry | cheap |', 2, 15],
+        ['in one cell of a table', '| retry | cheap |', 2, 7],
+        ['over half a bold run', '**retry** is cheap', 2, 14],
+        ['over half an emphasis', 'the _retry is_ cheap', 4, 9],
+        ['in an autolink', 'see <https://x.dev/a> now', 13, 18],
+        ['in a reference link', 'see [the run][r] now', 5, 12],
+        [
+            'in a link whose url holds brackets',
+            '[t](https://w/Foo_(bar)) x',
+            14,
+            17,
+        ],
+        ['ending on a line break’s backslash', 'one\\\ntwo', 0, 4],
+        ['over a list item’s marker', '- the retry', 0, 11],
+        ['over a heading’s marks', '## the retry', 0, 12],
     ])(
         'none %s: its mark and its row stay its door',
         (_where, source, start, end) => {

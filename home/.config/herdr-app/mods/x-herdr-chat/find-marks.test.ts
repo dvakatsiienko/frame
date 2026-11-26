@@ -216,12 +216,15 @@ test('his notes’ words are painted under find’s hits, the stepped one last, 
             ...range,
         ]);
     };
-    // drawn inside the newer note's link: «one [viewer](note:a)»
+    // drawn inside the newer note's link: «one [viewer](note:b)»
     const mine = [
         ['22', 5, 11],
         ['40', 5, 11],
     ];
+    gpui.sources.length = 0;
     expect(paint()).toEqual(mine);
+    // of two on the same words the newer is the link, whatever each one's state
+    expect(gpui.sources).toEqual(['one [viewer](note:b)']);
     find.open();
     find.search(rows, 'viewer');
     expect(paint()).toEqual([...mine, ['b3', 5, 11]]);
@@ -361,6 +364,23 @@ test('a note’s words are a link to it in what the text view draws, its mark on
     );
     expect(gpui.sources).toEqual(['the [retry](note:n) is cheap']);
     expect(gpui.painted.map((p) => p.range)).toEqual([[5, 10]]);
+});
+
+test('a selection over a note’s link is reported back in the markdown as written', () => {
+    const { notes, view } = createRows();
+    notes.set('a', [noteOn('the retry is cheap', 'retry')]);
+    const backs: ((r: { start: number; end: number }) => unknown)[] = [];
+    view.texts(reply('a', 'the retry is cheap') as never, t, 'p', true, ((
+        drawn: unknown,
+        _block: number,
+        _source: string,
+        back: never,
+    ) => {
+        backs.push(back);
+        return drawn;
+    }) as never);
+    // «the [retry](note:n) is» selected from «retry» to «is»
+    expect(backs[0]?.({ end: 22, start: 5 })).toEqual({ end: 12, start: 4 });
 });
 
 test('a press on a note’s row names its note', () => {

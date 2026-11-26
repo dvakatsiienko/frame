@@ -2,15 +2,21 @@
 // a mod no word under a press, only a link's click, and follows one only with nothing selected, so a drag or a double
 // click on the words selects as before. the text view draws the linked markdown; every offset the rest of the chat
 // holds (a mark, a find hit, a selection he reports) stands in the markdown as written, and goes through `at` or `back`.
-// where no link can be (a code block, a code span, a link, a table, a line break) the mark stays and the note's row is
-// its door
+// where no link can be (a code block, a code span, a link, a table row, a line break, an emphasis cut in two, a block's
+// own start) the mark stays and the note's row is its door
 
 /** @typedef {{ start: number, end: number }} Range */
 /** @typedef {{ start: number, end: number, id: string }} NoteSpan one note's words in one text view's markdown */
 
 const NOTE_LINK = /^note:(.+)$/;
-// a code span or a link: no link goes inside or across one
-const HELD = /`[^`\n]*`|!?\[[^\]\n]*\]\([^)\n]*\)/g;
+// a code span, a link (its url may hold one pair of brackets), a reference link or an autolink: no link goes inside
+// or across one
+const HELD =
+    /`[^`\n]*`|!?\[[^\]\n]*\]\((?:[^()\n]|\([^()\n]*\))*\)|!?\[[^\]\n]*\]\[[^\]\n]*\]|<[^>\s]+>/g;
+// words a link would break: a line break, a table's edge, brackets, a backslash, or an emphasis run cut in two
+const BREAKS = /[\n|[\]`\\*~]|(?:^|\W)_|_(?:\W|$)/;
+// a block's own start: a heading, a list item, a quote
+const BLOCK_START = /^(?:#{1,6}\s|[-*+]\s|\d+[.)]\s|>)/;
 
 /** the note a link of `linkNotes` opens, null for any other url @param {string} url */
 export const noteOfUrl = (url) => NOTE_LINK.exec(url)?.[1] ?? null;
@@ -30,10 +36,16 @@ export function linkNotes(source, spans) {
     const kept = [];
     for (const span of [...spans].reverse()) {
         const words = source.slice(span.start, span.end);
+        const line = source.slice(
+            source.lastIndexOf('\n', span.start - 1) + 1,
+            span.start,
+        );
         const isFree =
             !isCode &&
             words.trim() !== '' &&
-            !/[\n|[\]`]/.test(words) &&
+            !BREAKS.test(words) &&
+            !BLOCK_START.test(line.trimStart() === '' ? words : '') &&
+            !line.trimStart().startsWith('|') &&
             !held.some((h) => h.start < span.end && span.start < h.end) &&
             !kept.some((k) => k.start < span.end && span.start < k.end);
         if (isFree) kept.push(span);

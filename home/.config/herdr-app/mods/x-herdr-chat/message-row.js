@@ -304,8 +304,14 @@ export function createMessageRows(deps) {
     }
 
     /** a text view's markdown with his notes' words as links that open them (FRM-585 B5) @param {Row} row @param {number} block @param {string} source */
-    const linkedOf = (row, block, source) =>
-        linkNotes(source, marksIn(row, block, source));
+    function linkedOf(row, block, source) {
+        // in the order he made them, so of two on the same words the newer is the link
+        const made = deps.notesOn(row).map((n) => n.id);
+        const marks = marksIn(row, block, source).sort(
+            (a, b) => made.indexOf(a.id) - made.indexOf(b.id),
+        );
+        return linkNotes(source, marks);
+    }
 
     /**
      * one text view of a row, the words of his notes and find's matches painted behind its own: the stepped match last, so

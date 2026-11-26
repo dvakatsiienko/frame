@@ -106,8 +106,8 @@ export function createNotePopup(deps) {
                 .text_size(12)
                 .text_color(t.foreground)
                 .cursor_pointer()
-                .hover((s) => s.bg(t.hover))
-                .tooltip('Write a note on these words (F6)')
+                // the theme's hover is see-through: over the reply's words the pill must stay solid (dima, 14:27)
+                .hover((s) => s.border_color(t.accent))
                 // the press acts at once: its click would come after herdr cleared the words
                 .on_mouse_down('left', (_e, cx) => {
                     cx.stop_propagation();
