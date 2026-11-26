@@ -33,11 +33,40 @@ const THRESHOLD = 4;
  * the place a drag points at: the press's own place moved by whole slots, within its kind's places. it reads the
  * pointer against the slots as they stood at the press, never the rows' hover: a row that slides from under the
  * pointer would retarget the drag each frame and the rows would flicker (dima's 16:28 video)
- * @param {{ from: number, places: number, slot: number }} press @param {number} moved along the axis since the press
+ * @param {{ from: number, places: number, slot: number, sizes?: number[], gap?: number }} press `sizes`: each place's
+ *   own size when the rows differ (glide's open cards), so a row is passed at half its own slot
+ * @param {number} moved along the axis since the press
  */
-export function placeAt({ from, places, slot }, moved) {
+export function placeAt({ from, gap = 0, places, sizes, slot }, moved) {
     if (places <= 0 || slot <= 0) return from;
-    return Math.min(places - 1, Math.max(0, from + Math.round(moved / slot)));
+    if (sizes?.length !== places)
+        return Math.min(
+            places - 1,
+            Math.max(0, from + Math.round(moved / slot)),
+        );
+    const step = moved > 0 ? 1 : -1;
+    let to = from;
+    let passed = 0;
+    // the uniform rule's edges: down at half a slot, up only past it
+    while (to + step >= 0 && to + step < places) {
+        const next = (sizes[to + step] ?? 0) + gap;
+        const reach = Math.abs(moved) - passed;
+        if (step > 0 ? reach < next / 2 : reach <= next / 2) break;
+        passed += next;
+        to += step;
+    }
+    return to;
+}
+
+/**
+ * how far the source's slot moves from `from` to `to`: the rows it passes, each its own size when `sizes` holds them
+ * @param {number} from @param {number} to @param {number} slot @param {number[] | undefined} sizes @param {number} gap
+ */
+export function shiftOf(from, to, slot, sizes, gap) {
+    if (!sizes) return (to - from) * slot;
+    const [lo, hi] = to > from ? [from + 1, to + 1] : [to, from];
+    const span = sizes.slice(lo, hi).reduce((sum, s) => sum + s + gap, 0);
+    return to > from ? span : -span;
 }
 
 /** @type {{ name: 'idle' }} */

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { createDrag, placeAt } from './drag.js';
+import { createDrag, placeAt, shiftOf } from './drag.js';
 
 // FRM-664: one drag for the top tabs and the agents list, the research's recipe (docs/research/herdr-drag-and-drop.md)
 function drag() {
@@ -191,6 +191,32 @@ describe('Escape or leaving the list cancels with no move', () => {
         d.press('a', 'a', 0, at(0));
         for (const y of [10, -30, 200, 3, 90]) d.pointer(at(7, y));
         expect(d.state().name).toBe('dragging');
+    });
+});
+
+// glide's open cards are taller than its folded ones (FRM-527 step 161)
+describe('rows of different sizes are passed at half their own slot', () => {
+    // a 40 px row, then a 200 px open one, then 40 px rows; 8 px between
+    const sizes = [40, 200, 40, 40];
+    const press = { from: 0, gap: 8, places: 4, sizes, slot: 48 };
+
+    test('a row under a tall one stays until half the tall one is passed', () => {
+        expect(placeAt(press, 100)).toBe(0);
+        expect(placeAt(press, 104)).toBe(1);
+        expect(placeAt(press, 231)).toBe(1);
+        expect(placeAt(press, 232)).toBe(2);
+    });
+
+    test('up past the tall one the same way', () => {
+        const up = { ...press, from: 2 };
+        expect(placeAt(up, -104)).toBe(2);
+        expect(placeAt(up, -105)).toBe(1);
+    });
+
+    test('the source shifts by the rows it passed, each its own size', () => {
+        expect(shiftOf(0, 2, 48, sizes, 8)).toBe(256);
+        expect(shiftOf(2, 0, 48, sizes, 8)).toBe(-256);
+        expect(shiftOf(0, 2, 48, undefined, 8)).toBe(96);
     });
 });
 

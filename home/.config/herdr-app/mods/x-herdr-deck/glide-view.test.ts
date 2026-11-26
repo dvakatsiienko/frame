@@ -27,6 +27,8 @@ const { make } = vi.hoisted(() => ({
 const at = vi.hoisted(() => ({
     lanes: [] as unknown[],
     opened: [] as string[][],
+    /** a write of lanes.json, as herdr's watch reports it */
+    wake: () => {},
 }));
 vi.mock('gpui-kit', () => ({ div: make }));
 vi.mock('gpui-base', () => ({ h_flex: make, v_flex: make }));
@@ -40,7 +42,10 @@ vi.mock('herdr', () => ({
     readTextFile: async () => JSON.stringify({ lanes: at.lanes }),
     run: vi.fn(),
     theme: () => ({}),
-    watchFolder: () => new Promise(() => {}),
+    watchFolder: () =>
+        new Promise((done) => {
+            at.wake = () => done(['/Users/me/.claude/shelf/lanes.json']);
+        }),
 }));
 const { createGlide } = await import('./glide-view.js');
 
@@ -152,6 +157,41 @@ test("a card named by hand has its step's ticket as its pill (FRM-527:W137)", as
 
 // FRM-527 step 161, exits 1–4
 describe('he drags a card to change the order', () => {
+    test('past an open card the drag waits for half its height', async () => {
+        const { glide } = await started();
+        for (const [id, height] of [
+            ['l1', 40],
+            ['l2', 200],
+            ['l3', 40],
+        ] as const)
+            byId(glide, `lane-${id}`).on.get('on_size_change')?.({ height });
+        press(glide, 'l1', 200);
+        move(glide, 230);
+        move(glide, 260);
+        release(glide);
+        expect(order(glide)).toEqual(['l1', 'l2', 'l3']);
+    });
+
+    test('a lanes.json write during the drag moves the card he holds', async () => {
+        const { glide } = await started();
+        press(glide, 'l3', 200);
+        move(glide, 176);
+        move(glide, 104);
+        at.lanes = [lane('l0'), ...at.lanes];
+        at.wake();
+        await new Promise((done) => setTimeout(done, 0));
+        release(glide);
+        expect(order(glide)).toEqual(['l3', 'l0', 'l1', 'l2']);
+    });
+
+    test('two cards of one plan keep the drag’s places', async () => {
+        const plan = '~/.local/state/x/lanes/a/lane-plan.md';
+        at.lanes = [lane('l1', plan), lane('l2', plan), lane('l3')];
+        const { glide } = await started();
+        dragBy(glide, 'l3', -2);
+        expect(order(glide)).toEqual(['l3', 'l1', 'l2']);
+    });
+
     test('the third dragged above the first holds through a reload, and a fourth card lands last', async () => {
         const { glide, store } = await started();
         dragBy(glide, 'l3', -2);

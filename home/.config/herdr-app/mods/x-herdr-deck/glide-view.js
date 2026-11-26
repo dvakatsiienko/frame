@@ -37,6 +37,8 @@ export function createGlide(block, store = localStorage) {
     let order = loadOrder(store);
     /** @type {ReturnType<typeof createListDrag<string>> | null} one drag, made with the copy's focus at init */
     let drag = null;
+    /** @type {Map<string, number>} each card's measured height: an open card is taller, the drag passes it at its own half */
+    const heights = new Map();
     /** the cards opened to every step @type {Set<string>} */
     const open = new Set();
     let width = Infinity;
@@ -179,7 +181,8 @@ export function createGlide(block, store = localStorage) {
                 .border_1()
                 .border_color(t.border)
                 .cursor_pointer()
-                .hover((st) => st.bg(t.hover)),
+                .hover((st) => st.bg(t.hover))
+                .on_size_change((size) => heights.set(key, size.height)),
         );
         return drag
             ? drag.item(
@@ -192,6 +195,12 @@ export function createGlide(block, store = localStorage) {
                       look: () =>
                           cardBody(t, l, v_flex().size_full().p(12).gap(8)),
                       places: lanes.length,
+                      sizes: () => {
+                          const all = lanes.map((c) => heights.get(keyOf(c)));
+                          return all.every((h) => h !== undefined)
+                              ? /** @type {number[]} */ (all)
+                              : undefined;
+                      },
                       targetFor: () => at,
                   },
                   t,
@@ -205,15 +214,20 @@ export function createGlide(block, store = localStorage) {
             .id('x-herdr-glide-zone')
             .relative()
             .w_full()
-            .px(12)
-            .py(4)
             .gap(CARD_GAP)
             .children(lanes.map((l, i) => card(t, l, i)));
-        return drag
-            ? drag
-                  .zone(list)
-                  .children([drag.ghost(t)].filter((g) => g !== null))
-            : list;
+        // the padding sits outside the zone, so the ghost, as wide as the zone, is as wide as a card
+        return v_flex()
+            .w_full()
+            .px(12)
+            .py(4)
+            .child(
+                drag
+                    ? drag
+                          .zone(list)
+                          .children([drag.ghost(t)].filter((g) => g !== null))
+                    : list,
+            );
     };
 
     return {
@@ -228,7 +242,10 @@ export function createGlide(block, store = localStorage) {
                 onClick: (key) => {
                     open.has(key) ? open.delete(key) : open.add(key);
                 },
-                onMove: (_key, from, to) => {
+                // the card by its key: a lanes.json read during the drag may have moved its index
+                onMove: (key, _from, to) => {
+                    const from = lanes.findIndex((l) => keyOf(l) === key);
+                    if (from < 0) return;
                     order = movedOrder(lanes, from, to);
                     saveOrder(store, order);
                     lanes = inHisOrder(lanes, order);

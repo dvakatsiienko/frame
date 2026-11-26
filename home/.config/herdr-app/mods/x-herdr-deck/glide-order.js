@@ -27,10 +27,11 @@ export function inHisOrder(lanes, order) {
 
 /** his order after a drop: the shown cards with the one at `from` put at `to` @param {Lane[]} shown @param {number} from @param {number} to */
 export function movedOrder(shown, from, to) {
-    const places = [...new Set(shown.map(placeOf))];
+    // by card, so two cards of one plan keep the indices the drag counts in; the place's first card then holds it
+    const places = shown.map(placeOf);
     const [held] = places.splice(from, 1);
     if (held !== undefined) places.splice(to, 0, held);
-    return places;
+    return [...new Set(places)];
 }
 
 /** @param {OrderStore} store @returns {string[]} */

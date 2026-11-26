@@ -5,7 +5,7 @@
 import { div } from 'gpui-kit';
 import { focused, run } from 'herdr';
 
-import { createDrag, placeAt } from './drag.js';
+import { createDrag, placeAt, shiftOf } from './drag.js';
 
 const SETTLE_MS = 180;
 const SLIDE_MS = 120;
@@ -15,7 +15,7 @@ const FALLBACK_SIZE = 30;
  * the press, measured: its item, where its element starts in the window and its size along the axis
  * @template T
  * @typedef {{ item: T, start: number, size: number, label: string, places: number,
- *   look?: () => import('gpui-kit').Element }} Held
+ *   look?: () => import('gpui-kit').Element, sizes?: number[] }} Held `sizes`: each place's size at the press, when rows differ
  */
 
 /** @typedef {Record<'raised' | 'selected' | 'border' | 'foreground', import('gpui-kit').Color>} DragTheme */
@@ -74,7 +74,7 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
             const offset =
                 s.name === 'dragging'
                     ? along(s.pointer) - along(s.at)
-                    : (s.to - s.from) * (size + gap);
+                    : shiftOf(s.from, s.to, size + gap, s.item.sizes, gap);
             const at = start - origin + offset;
             const ghost = div()
                 .id('drag-ghost')
@@ -107,12 +107,17 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
          * @template {import('gpui-kit').Element} E
          * @param {E} el
          * @param {{ key: string, item: T | null, from: number, places: number, targetFor: (held: T) => number | null,
-         *   label: string, look?: () => import('gpui-kit').Element }} it `item` null: it lifts nothing;
-         *   `look` draws the ghost as the item looks, else the ghost is its label
+         *   label: string, look?: () => import('gpui-kit').Element, sizes?: () => number[] | undefined }} it `item` null:
+         *   it lifts nothing; `look` draws the ghost as the item looks, else the ghost is its label; `sizes` each place's
+         *   measured size, read at the press, for rows of different sizes
          * @param {DragTheme} t
          * @returns {E}
          */
-        item(el, { from, item, key, label, look, places, targetFor }, t) {
+        item(
+            el,
+            { from, item, key, label, look, places, sizes, targetFor },
+            t,
+        ) {
             const s = drag.state();
             const mine = s.name !== 'idle' && s.key === key;
             const at = s.name === 'idle' ? null : targetFor(s.item.item);
@@ -123,7 +128,7 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
                 s.name !== 'dragging' || s.to === null || at === null
                     ? 0
                     : mine
-                      ? (s.to - s.from) * slot
+                      ? shiftOf(s.from, s.to, slot, s.item.sizes, gap)
                       : s.from < s.to && at > s.from && at <= s.to
                         ? -slot
                         : s.from > s.to && at >= s.to && at < s.from
@@ -166,6 +171,7 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
                                 ? box.height
                                 : box.width
                             : FALLBACK_SIZE,
+                        sizes: sizes?.(),
                         start:
                             along(e.position) -
                             (e.local_position ? along(e.local_position) : 0),
@@ -209,7 +215,9 @@ export function createListDrag({ axis, focus, gap = 0, onClick, onMove }) {
                         placeAt(
                             {
                                 from: now.from,
+                                gap,
                                 places: now.item.places,
+                                sizes: now.item.sizes,
                                 slot: now.item.size + gap,
                             },
                             along(now.pointer) - along(now.at),
