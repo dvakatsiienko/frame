@@ -306,6 +306,25 @@ export function createNotes({
         },
         /** herdr took the prompt of a note @param {string} thread @param {string} id */
         landed: (thread, id) => tell(thread, id, { type: 'landed' }),
+        /**
+         * the note a message of his is, by the lines written for it: one the thread has, joined or sent; a message that
+         * only reads like one is his words as typed
+         * @param {string} thread @param {string} text the message's words as drawn
+         * @returns {{ quote: string, text: string } | null}
+         */
+        noteOf(thread, text) {
+            const note = notesOf(thread).find(
+                (n) =>
+                    (n.state === 'joined' || n.state === 'sent') &&
+                    n.said.some((s) => drawnOf(s.line) === text),
+            );
+            return note
+                ? {
+                      quote: quoteOf(note.passage.parts.map((p) => p.words)),
+                      text: note.text,
+                  }
+                : null;
+        },
         /** the thread's notes, in the order he made them @param {string} thread @returns {readonly Note[]} */
         of: notesOf,
         /**

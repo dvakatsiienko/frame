@@ -95,6 +95,11 @@ describe('what a right-click copies', () => {
         expect(copiedFrom(at, null)).toEqual({ isSelection: false, text });
     });
 
+    test('a note, as its bubble draws it: the words it is on, then his', () => {
+        const at = row({ kind: 'mine', quote: 'the retry', text: 'why?' });
+        expect(copiedFrom(at, null)?.text).toBe('on "the retry"\nwhy?');
+    });
+
     test.each([
         ['a reply', row({})],
         ['his own message', row({ kind: 'mine' })],

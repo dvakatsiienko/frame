@@ -35,6 +35,8 @@ import {
  * @property {string[]} [links] the paths a reply names that are on disk, as it writes them (path-links.js)
  * @property {Picture[]} pictures the pictures his message sent, drawn under his words (FRM-638 slice 5)
  * @property {string[]} files the other files his message sent, by path
+ * @property {string} [look] a drawing of the row apart from its model's, measured apart: `fold`, `note`
+ * @property {string} [quote] a note's: the words it is on, drawn as a dim line over his own (note-rows.js)
  * @property {Call[]} [calls] a tool row's calls, in order (PK-432)
  */
 

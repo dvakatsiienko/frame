@@ -625,6 +625,22 @@ describe('a look that could not be made decides nothing', () => {
     });
 });
 
+// FRM-585 C3
+test('a message of his is a note by the lines written for it, never by how it reads', async () => {
+    const w = world();
+    const id = await w.draft('why here?', passage('the retry'));
+    await w.notes.join(THREAD, id, 0);
+    const [row] = w.arrive();
+    w.notes.arrived(THREAD, row ? [row] : []);
+    expect(w.notes.noteOf(THREAD, row?.text ?? '')).toEqual({
+        quote: 'the retry',
+        text: 'why here?',
+    });
+    expect(
+        w.notes.noteOf(THREAD, 'dima on "the retry" (reply 1a2b3c4d): typed'),
+    ).toBeNull();
+});
+
 describe('a reload as a note was sent', () => {
     const cut = async () => {
         const w = world();

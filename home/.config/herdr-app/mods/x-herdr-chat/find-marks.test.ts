@@ -65,15 +65,19 @@ function createRows() {
     /** a picture's square, once it is made */
     const made = new Map<string, string>();
     const notes = new Map<string, object[]>();
+    /** the notes he made, by the words their message shows */
+    const noted = new Map<string, { quote: string; text: string }>();
     return {
         find,
         made,
+        noted,
         notes,
         view: createMessageRows({
             column: () => 700,
             find: () => find,
             isShowMore: () => true,
             look: () => ({ space: 'normal' }),
+            noteOf: (row: { text: string }) => noted.get(row.text) ?? null,
             notesOn: (row: { id: string }) => notes.get(row.id) ?? [],
             room: () => 700,
             sent: {
@@ -225,6 +229,23 @@ test('the list draws a note’s row under its message', () => {
     notes.set('new', [{ id: 'n1', state: 'waiting', text: 'why?' }]);
     const ids = view.shown(rows, { tools: 'show' } as never).map((r) => r.id);
     expect(ids.slice(-2)).toEqual(['new', 'new#note-n1']);
+});
+
+// FRM-585 C3
+test('a note of his draws his words under its quote; one that only reads like a note stays as typed', () => {
+    const { noted, view } = createRows();
+    const line = 'dima on "the retry" (reply 1a2b3c4d): why here?';
+    noted.set(line, { quote: 'the retry', text: 'why here?' });
+    const mine = (id: string, text: string) =>
+        ({ ...reply(id, text), kind: 'mine' }) as never;
+    const shown = view.shown(
+        [mine('m1', line), mine('m2', 'dima on "x" (reply 99): typed')],
+        { tools: 'show' } as never,
+    );
+    expect(shown.map((r) => [r.text, r.quote ?? null])).toEqual([
+        ['why here?', 'the retry'],
+        ['dima on "x" (reply 99): typed', null],
+    ]);
 });
 
 test('a folded reply paints no mark past its first lines', () => {

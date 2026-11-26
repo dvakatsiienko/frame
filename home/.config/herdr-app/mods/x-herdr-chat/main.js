@@ -274,6 +274,10 @@ export default class Chat extends View {
         find: () => this.findBar.find,
         isShowMore: () => this.isShowMore,
         look: () => this.look,
+        noteOf: (row) => {
+            const file = this.feed.file();
+            return file ? this.notes.noteOf(file, row.text) : null;
+        },
         notesOn: (row) => this.notesOn(row),
         room: () => this.list.room(),
         sent: this.sent,

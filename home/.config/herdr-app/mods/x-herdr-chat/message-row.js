@@ -43,6 +43,7 @@ const STEPPED_ALPHA = 'b3';
  * @property {() => number} column the readable column's width
  * @property {() => number} room the width a row may take: the list's, at most the column
  * @property {(row: Row) => readonly import('./note-states.js').Note[]} notesOn his notes on a row
+ * @property {(row: Row) => { quote: string, text: string } | null} noteOf the note a message of his is, by its records
  * @property {() => ReturnType<typeof import('./find.js').createFind>} find the chat's search, which marks the rows and the words it matched
  * @property {() => import('./look.js').Look} look
  * @property {() => boolean} isShowMore his «Show more» switch (FRM-607)
@@ -207,7 +208,17 @@ export function createMessageRows(deps) {
             );
         const column = v_flex().gap(8);
         if (row.kind === 'mine')
-            return column.child(viewAt(0, drawnBlocks(row)[0] ?? ''));
+            return column
+                .when(Boolean(row.quote), (el) =>
+                    el.child(
+                        div()
+                            .text_size(12)
+                            .text_color(t.muted)
+                            .truncate()
+                            .child(`on "${row.quote}"`),
+                    ),
+                )
+                .child(viewAt(0, drawnBlocks(row)[0] ?? ''));
         return column.children(
             (foldOf(row)?.shown ?? replyBlocks(row)).map((block, i) => {
                 const view = viewAt(i, blockSource(block));
@@ -230,6 +241,15 @@ export function createMessageRows(deps) {
         row.kind === 'reply'
             ? (foldOf(row)?.shown ?? replyBlocks(row)).length
             : 1;
+
+    /** a message of his that is a note draws its words, its quote a dim line over them @param {Row} row @returns {Row} */
+    function asNote(row) {
+        if (row.kind !== 'mine') return row;
+        const note = deps.noteOf(row);
+        return note
+            ? { ...row, look: 'note', quote: note.quote, text: note.text }
+            : row;
+    }
 
     /**
      * what a row's body draws (message-body.js)
@@ -625,11 +645,13 @@ export function createMessageRows(deps) {
         shown: (rows, look) =>
             withCallRows(
                 withFileRows(
-                    rows.filter(
-                        (row) =>
-                            !takenBack.has(row.id) &&
-                            (look.tools !== 'hide' || row.kind !== 'tool'),
-                    ),
+                    rows
+                        .filter(
+                            (row) =>
+                                !takenBack.has(row.id) &&
+                                (look.tools !== 'hide' || row.kind !== 'tool'),
+                        )
+                        .map(asNote),
                     home(),
                     fileRows,
                     (row) => noteRows(row, deps.notesOn(row)),

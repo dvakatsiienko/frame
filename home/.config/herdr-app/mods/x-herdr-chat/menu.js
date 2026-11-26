@@ -54,7 +54,10 @@ export function createMessageMenu() {
 export function copiedFrom(row, selected) {
     if (row?.kind !== 'mine' && row?.kind !== 'reply') return null;
     if (selected) return { isSelection: true, text: selected };
-    return row.text.trim() ? { isSelection: false, text: row.text } : null;
+    if (!row.text.trim()) return null;
+    // a note copies as its bubble draws it: the words it is on, then his
+    const text = row.quote ? `on "${row.quote}"\n${row.text}` : row.text;
+    return { isSelection: false, text };
 }
 
 /**
