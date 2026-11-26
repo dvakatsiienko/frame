@@ -16,7 +16,7 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f106 FRM-616 umbrella: the other 369 ❓ lines sorted, the still-open ones to dima, then the close asked again — with: dima
+- [ ] #1 f106 FRM-616: the other 369 ❓ lines sorted, still-open ones to dima, then the close asked again — with: dima
 - [ ] #2 f76 BYT-135 renovate weekly minutes under 120: read after 16:52, close if it holds — parked: 2026-11-26
 - [ ] #3 f82 ⏳ FRM-702 the two slow test files split, once gate-queue.test.ts is quiet — waits for: FRM-596
 - [ ] #4 f93 ⏳ bytes#176 github-actions pr: merge it once renovate stability-days goes green — waits for: bytes#176 release age
