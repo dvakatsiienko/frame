@@ -46,4 +46,5 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - @sys-settings-drift.md — CC writes it at runtime; a real file where the symlink belongs is silent divergence
 
 - 📐 recipes live in `~/frame/recipes/<name>/`; the `clio:shape-recipe` skill is the engine — load it before creating, reshaping or running one. (plain pointer, not an import)
+- 🗺️ vellum (blueprint v2, [FRM-614](https://linear.app/x-com/issue/FRM-614)) — our coming canvas app, design-loupe grown: «help me understand X» becomes a few lines plus a drawing he digs into and comments on; signed 26 Nov, its lane after the bun lane from 30 Nov; until it lands, drawings go through `clio:author-blueprint` (plain pointer)
 - 🧹 «memory sweep» = a run of `~/frame/recipes/nurture-memory/recipe.md`: read it whole and follow its re-entry rule, never a fresh plan (plain pointer)
