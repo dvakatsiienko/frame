@@ -90,8 +90,6 @@ export function noteWord(note, isRefused) {
 export function createQuillMini(deps) {
     /** the note in the box @type {{ thread: string, id: string, at: Point | null } | null} */
     let open = null;
-    /** the note it last shut, which F6 with nothing selected brings back @type {{ thread: string, id: string, at: Point | null } | null} */
-    let lastShut = null;
     /** made in the view's init, where herdr allows it @type {import('gpui-base').TextareaState | null} */
     let box = null;
     let isFocused = false;
@@ -132,7 +130,6 @@ export function createQuillMini(deps) {
     function drop() {
         if (!open) return;
         const { id, thread } = open;
-        lastShut = open;
         typed += 1;
         // a waiting note he emptied comes back as the file is written
         const written = deps.notes
@@ -195,7 +192,7 @@ export function createQuillMini(deps) {
         if (note) openOn(note, thread, at, cx);
     }
 
-    /** F6: the box on what stood selected, else on the note it last shut; or shut @param {() => SelectedAt | null} selected @param {number} at when it was pressed @param {Context} cx */
+    /** F6: the box on what stood selected, or shut @param {() => SelectedAt | null} selected @param {number} at when it was pressed @param {Context} cx */
     function toggle(selected, at, cx) {
         const gap = at - lastF6;
         lastF6 = at;
@@ -205,9 +202,7 @@ export function createQuillMini(deps) {
         if (isF6Held) return;
         if (open) return close(cx);
         const now = selected();
-        if (now) return show(now, cx);
-        if (lastShut && lastShut.thread === deps.thread())
-            openNote(lastShut.id, lastShut.at, cx);
+        if (now) show(now, cx);
     }
 
     /** why a press did nothing: in the box, or in the chat once it is shut or on another note @param {string | null} words @param {{ thread: string, id: string }} at @param {Context} cx */
