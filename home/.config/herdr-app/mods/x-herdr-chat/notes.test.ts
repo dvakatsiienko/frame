@@ -500,6 +500,26 @@ describe('words its row has not got', () => {
         ]);
     });
 
+    // the 🔎's round 2 on 51feed3b, v6
+    test('joined, its later words joined as their own note stay that note’s', async () => {
+        const w = world();
+        const id = await w.draft('hello world');
+        await w.notes.join(THREAD, id, 0);
+        const taken = w.rows();
+        await w.type(id, 'hello brave world');
+        w.notes.arrived(THREAD, w.arrive(taken));
+        const next = w.notes.of(THREAD).find((n) => n.id !== id)?.id ?? '';
+        w.pass(1000);
+        await w.notes.join(THREAD, next, 0);
+        const own = w.rows().filter((r) => r.id === w.note(next).joinId);
+        w.pass(1000);
+        w.notes.arrived(THREAD, w.arrive(own));
+        expect(w.notes.of(THREAD).map((n) => [n.state, n.text])).toEqual([
+            ['joined', 'hello world'],
+            ['joined', 'hello brave world'],
+        ]);
+    });
+
     test('a reload before his keys rested: its row has them at the next settle', async () => {
         const w = world();
         const id = await w.draft('mine');
@@ -628,6 +648,24 @@ describe('a reload as a note was sent', () => {
         const { id, w } = await cut();
         await w.notes.join(THREAD, id, 0);
         expect(w.note(id).said).toHaveLength(1);
+    });
+
+    // the 🔎's round 2 on 51feed3b, v7
+    test('joined since, the cut send landing first sends it once: its row leaves', async () => {
+        const { id, line, w } = await cut();
+        await w.notes.join(THREAD, id, 0);
+        w.pass(1000);
+        w.notes.arrived(THREAD, [{ at: w.stamp(), text: line }]);
+        expect(w.note(id)).toMatchObject({ state: 'sent', text: 'mine' });
+        await vi.waitFor(() => expect(w.rows()).toEqual([]));
+    });
+
+    test('joined since and taken by a turn, its line is the join', async () => {
+        const { id, line, w } = await cut();
+        await w.notes.join(THREAD, id, 0);
+        w.joins = { ...ON, taken: [w.note(id).joinId ?? ''] };
+        w.notes.arrived(THREAD, [{ at: w.stamp(), text: line }]);
+        expect(w.note(id).state).toBe('joined');
     });
 });
 

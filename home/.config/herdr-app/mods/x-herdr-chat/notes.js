@@ -202,6 +202,13 @@ export function createNotes({
         return isOut ? null : JOINED_FIRST;
     }
 
+    /** a line of these words is the send a reload cut short, not its row: no turn took that @param {string} thread @param {Note} note @param {string} line */
+    const isCutSendOf = (thread, note, line) =>
+        note.state === 'waiting' &&
+        Boolean(note.cutSend) &&
+        drawnOf(note.cutSend?.line ?? '') === drawnOf(line) &&
+        !isTaken(thread, note);
+
     /** the thread's state lists the note's row nowhere, a minute after it was written @param {string} thread @param {Note} note */
     function isLost(thread, note) {
         const now = find(thread, note.id);
@@ -238,6 +245,18 @@ export function createNotes({
                     .reverse()
                     .find((s) => texts.includes(drawnOf(s.line)));
                 if (!said) continue;
+                if (isCutSendOf(thread, note, said.line)) {
+                    const { joinId } = note;
+                    isChanged =
+                        tell(thread, note.id, { type: 'sentFirst' }) ||
+                        isChanged;
+                    if (joinId)
+                        after(note.id, () =>
+                            takeOutJoin(io, fileOf(thread), joinId),
+                        ).catch(() => {});
+                    log(thread, note.id);
+                    continue;
+                }
                 const isJoin = isInFile(note) || note.state === 'joined';
                 const isNew = tell(
                     thread,

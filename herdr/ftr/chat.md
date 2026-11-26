@@ -110,7 +110,7 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - and Enter joins the note, again takes it back; ⌘Enter sends it now and the box goes; Shift+Enter breaks the line; Tab walks the loop, where the box has a stop while open; an empty note does neither
   - and the box reads «joined» once the thread has the note, with what the thread got, read-only; words he typed past that are a new note on the same words, and a box he types in moves onto it, the cursor where it was, saying so; on a note a turn took, his next word starts one too
   - and a note waits while its thread is idle, for its next turn; one its thread's state no longer lists a minute after it joined is his draft again, saying so; a × on a sent one still in the queue makes it his draft too, whichever message's × pulled it (FRM-585:W2, W14, W42)
-  - and a send or join refused with the box shut says why under the quill; a reload as one was sent makes it his draft, saying so, until its line is in the transcript
+  - and a send or join refused with the box shut says why under the quill; a reload as one was sent makes it his draft, saying so, until its line is in the transcript; joined again meanwhile, that line landing before a turn takes the row reads sent, and the row leaves, so it goes once
   - and Esc closes the viewer first, then the box, then find; a thread switch closes the box, its draft kept in its own thread; an emptied draft leaves no record
 - ⬜ the words he wrote a note on stay highlighted in their message (FRM-585:W2, W50, W51; not live yet)
   - given notes on a message, then each one's words are painted behind in the theme's accent, stronger while the thread has not got the note, quieter once it has; opening the box paints them at once

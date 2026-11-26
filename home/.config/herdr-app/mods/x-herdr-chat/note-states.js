@@ -33,6 +33,7 @@ import { withoutPathLinks } from './path-links.js';
  * @property {number} writtenAt when that row was written, or the prompt sent
  * @property {{ line: string, text: string }[]} said every line written for it, newest last, with the note in it
  * @property {boolean} isLogged its trial line is written
+ * @property {{ line: string, text: string } | null} [cutSend] a send a reload cut short: it may land still
  */
 
 /**
@@ -45,6 +46,7 @@ import { withoutPathLinks } from './path-links.js';
  *   | { type: 'arrived', line?: string }
  *   | { type: 'pushed', at: number, back: number }
  *   | { type: 'landed' }
+ *   | { type: 'sentFirst' }
  *   | { type: 'reloaded' }
  *   | { type: 'logged' }
  * )} NoteEvent
@@ -140,6 +142,7 @@ export function nextNote(note, event) {
                 ? told({
                       ...note,
                       back: event.back,
+                      cutSend: note.said.at(-1) ?? note.cutSend ?? null,
                       joinId: event.joinId,
                       reason: null,
                       said: [],
@@ -177,10 +180,27 @@ export function nextNote(note, event) {
             if (note.state !== 'joined' && !isInFile(note)) return note;
             const got = note.said.find((s) => s.line === event.line);
             const text = (got ?? note.said.at(-1))?.text ?? note.text;
-            return note.state === 'joined' && note.text === text
+            // its own line is the one it got: no later line of the same words is its
+            const said = got ? [got] : note.said;
+            return note.state === 'joined' &&
+                note.text === text &&
+                note.said.length === said.length
                 ? note
-                : { ...note, state: 'joined', text };
+                : { ...note, said, state: 'joined', text };
         }
+        // the send a reload cut short landed before its row joined: the row leaves, it went as that send
+        case 'sentFirst':
+            return note.state === 'waiting' && note.cutSend
+                ? {
+                      ...note,
+                      cutSend: null,
+                      joinId: null,
+                      reason: null,
+                      said: [note.cutSend],
+                      state: 'sent',
+                      text: note.cutSend.text,
+                  }
+                : note;
         case 'pushed':
             return note.state === 'draft'
                 ? told({
