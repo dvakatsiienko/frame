@@ -14,6 +14,7 @@ import { guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
 import { copiedFrom, createMessageMenu, menuPlace } from './menu.js';
 import { createMessageBodies } from './message-body.js';
+import { noteOfUrl } from './note-links.js';
 import { notesBefore } from './note-rows.js';
 import { openPath } from './open-path.js';
 import { pathOf } from './path-links.js';
@@ -53,6 +54,7 @@ export const placeKey = (file) => `place:${file}`;
  * @property {(t: Theme) => any} notePopup «tell <thread>» over the list, its own view; null before it is made
  * @property {(cx: Context) => void} selected his selection settled or was cleared in a message
  * @property {(cx: Context) => void} scrolled his wheel moved the list
+ * @property {(id: string) => void} noteClicked a click on a note's words: the chat opens it at its own next draw
  * @property {(cx: Context) => void} loadEarlier the next older page, asked near the first row
  * @property {ReturnType<typeof import('./picture-viewer.js').createPictureViewer>} pictures
  * @property {() => unknown} reader the shown thread's reader: a save for an earlier opening is dropped
@@ -463,6 +465,8 @@ export function createMessageList(deps) {
     function follow(url, row, cx) {
         // herdr follows a link on any button's mouse-up, one under an open menu or the viewer too
         if (messageMenu.state || deps.pictures.isOpen()) return;
+        const note = noteOfUrl(url);
+        if (note) return deps.noteClicked(note);
         const path = pathOf(url, row, home());
         if (!path) {
             if (/^https?:/.test(url)) cx.open_url(url);

@@ -4,7 +4,7 @@ import { View } from 'gpui-kit';
 
 /** @typedef {import('gpui-kit').Element} Element */
 /** @typedef {import('gpui-base').TextViewElement} TextViewElement */
-/** @typedef {(view: TextViewElement, block: number, source: string) => TextViewElement} Reporting a text view that reports his selection and his click on a link */
+/** @typedef {(view: TextViewElement, block: number, source: string, back: (range: { start: number, end: number }) => { start: number, end: number }) => TextViewElement} Reporting a text view that reports his selection and his click on a link; `back` puts a range of what it draws in `source` */
 
 /** @typedef {(square: Element, picture: string) => Element} Pressing a picture's square that says it was pressed */
 /** @typedef {{ pressing: Pressing, reporting: Reporting }} Handlers */
@@ -43,7 +43,7 @@ const drawBody = (at) =>
     at.draw({
         pressing: (square, picture) =>
             square.on_mouse_down('left', () => at.press(picture)),
-        reporting: (view, block, source) =>
+        reporting: (view, block, source, back) =>
             view
                 .on_link_click((url, cx) => at.follow(url, cx))
                 .on_selection_change((s, cx) =>
@@ -51,7 +51,7 @@ const drawBody = (at) =>
                         block,
                         s && {
                             position: s.position ?? null,
-                            range: s.range ?? null,
+                            range: s.range ? back(s.range) : null,
                             source,
                             words: s.text,
                         },

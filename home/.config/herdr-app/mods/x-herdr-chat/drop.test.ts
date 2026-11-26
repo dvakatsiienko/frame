@@ -416,6 +416,27 @@ describe('the note box', () => {
         expect(shown).toEqual(['the words']);
     });
 
+    test('a click on a note’s words opens that note in a draw of the chat’s own (FRM-585 B5)', () => {
+        const opened: unknown[] = [];
+        const view = chat({
+            notePopup: quiet({ take: () => null }),
+            quillMini: quiet({
+                isOpen: () => false,
+                openNote: (id: unknown, at: unknown) => opened.push(id, at),
+            }),
+        }) as never as { noteAsk: string | null; render: (c: unknown) => void };
+        const draw = () => {
+            view.render(cx);
+            for (const run of at.timers.splice(0)) run();
+        };
+        draw();
+        view.noteAsk = 'n1';
+        at.shared.set('chat.tell', Date.now());
+        draw();
+        draw();
+        expect(opened).toEqual(['n1', null]);
+    });
+
     test('F6 takes the words that stood at its press, once', () => {
         const time = Date.now() - 20;
         expect(asked({}, time).opened).toEqual([`at ${time}`, time]);

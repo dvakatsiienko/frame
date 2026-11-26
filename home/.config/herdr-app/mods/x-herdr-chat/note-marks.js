@@ -2,6 +2,7 @@
 // shows them, words that are gone or could be either of two places show none and the note stays
 
 import { isLocked } from './note-states.js';
+import { withoutPathLinks } from './path-links.js';
 
 /** @typedef {import('./note-states.js').Note} Note */
 /** @typedef {import('./note-states.js').Part} Part */
@@ -21,7 +22,20 @@ function partRange(part, sources) {
         : -1;
     if (start >= 0 && sources[part.block]?.startsWith(part.source))
         return { block: part.block, end: start + words.length, start };
-    const found = sources.flatMap((source, block) => {
+    const found = foundIn(sources, words);
+    if (found.length) return found.length === 1 ? (found[0] ?? null) : null;
+    // a path in the words may be a link by now: found in the words as drawn, painted over the link's markup too
+    const plain = foundIn(
+        sources.map((source) => withoutPathLinks(source, null).source),
+        words,
+    );
+    const only = plain.length === 1 ? plain[0] : null;
+    return only ? linkedRange(only, sources[only.block] ?? '') : null;
+}
+
+/** every place the words stand, by text view @param {readonly string[]} sources @param {string} words @returns {PartRange[]} */
+const foundIn = (sources, words) =>
+    sources.flatMap((source, block) => {
         /** @type {PartRange[]} */
         const at = [];
         for (
@@ -32,7 +46,24 @@ function partRange(part, sources) {
             at.push({ block, end: from + words.length, start: from });
         return at;
     });
-    return found.length === 1 ? (found[0] ?? null) : null;
+
+/** a range of the words as drawn, in the markdown with its path links @param {PartRange} range @param {string} source */
+function linkedRange(range, source) {
+    /** the first offset of the markdown that stands at or past a drawn one @param {number} drawn */
+    const at = (drawn) => {
+        let low = 0;
+        let high = source.length;
+        while (low < high) {
+            const mid = (low + high) >> 1;
+            const moved =
+                withoutPathLinks(source, { end: mid, start: mid }).range
+                    ?.start ?? mid;
+            if (moved < drawn) low = mid + 1;
+            else high = mid;
+        }
+        return low;
+    };
+    return { block: range.block, end: at(range.end), start: at(range.start) };
 }
 
 /**

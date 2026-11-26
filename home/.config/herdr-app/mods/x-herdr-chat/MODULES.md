@@ -14,6 +14,7 @@ read this before a change: find the one module that owns the state you touch, an
 - `quill-mini.js` — the box he writes a note in, over the list: which note is open, where it sits, its keys
 - `mini-motion.js` — how that box comes and goes: its fade and slide, the shut box drawn as it goes
 - `note-popup.js` — «tell <thread>» beside the words he selected: a view of its own, so a selection never redraws the chat
+- `note-links.js` — a note's words drawn as a link that opens it, and every offset moved between the markdown as written and as drawn
 - `message-row.js` — each row as drawn (his bubble, a reply and its fold, tool calls, files), the rows shown of the model's, which replies and tool calls he opened
 - `quill-view.js` — the quill: the text box, each thread's draft, the files over it, the + picker, the / menu
 - `send-path.js` — a send: a note's own, the magic send's marks, the hold, a push, a send that did not go coming back

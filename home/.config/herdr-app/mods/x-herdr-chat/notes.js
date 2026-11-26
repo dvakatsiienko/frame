@@ -72,6 +72,8 @@ export function createNotes({
     const refused = new Set();
     /** when he last typed in a note @type {Map<string, number>} */
     const typedAt = new Map();
+    /** each list of a thread's notes, as the messages they are: every draw asks for each message of his @type {WeakMap<readonly Note[], Map<string, { quote: string, text: string }>>} */
+    const drawn = new WeakMap();
 
     /** @param {string} thread */
     function notesOf(thread) {
@@ -313,17 +315,22 @@ export function createNotes({
          * @returns {{ quote: string, text: string } | null}
          */
         noteOf(thread, text) {
-            const note = notesOf(thread).find(
-                (n) =>
-                    (n.state === 'joined' || n.state === 'sent') &&
-                    n.said.some((s) => drawnOf(s.line) === text),
-            );
-            return note
-                ? {
-                      quote: quoteOf(note.passage.parts.map((p) => p.words)),
-                      text: note.text,
-                  }
-                : null;
+            const notes = notesOf(thread);
+            let byText = drawn.get(notes);
+            if (!byText) {
+                byText = new Map();
+                for (const n of notes)
+                    if (n.state === 'joined' || n.state === 'sent')
+                        for (const s of n.said)
+                            byText.set(drawnOf(s.line), {
+                                quote: quoteOf(
+                                    n.passage.parts.map((p) => p.words),
+                                ),
+                                text: n.text,
+                            });
+                drawn.set(notes, byText);
+            }
+            return byText.get(text) ?? null;
         },
         /** the thread's notes, in the order he made them @param {string} thread @returns {readonly Note[]} */
         of: notesOf,

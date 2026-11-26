@@ -10,6 +10,7 @@ import { blockSource, drawnBlocks, replyBlocks } from './drawn.js';
 import { fileAt, isSentRow, isUnsendRow, withFileRows } from './files.js';
 import { replyFold } from './fold.js';
 import { ICONS } from './icons.js';
+import { linkNotes } from './note-links.js';
 import { noteMarks } from './note-marks.js';
 import { noteIdOf, noteRows } from './note-rows.js';
 import { tint } from './tint.js';
@@ -205,6 +206,7 @@ export function createMessageRows(deps) {
                 }),
                 block,
                 source,
+                isShown ? linkedOf(row, block, source).back : (range) => range,
             );
         const column = v_flex().gap(8);
         if (row.kind === 'mine')
@@ -266,6 +268,8 @@ export function createMessageRows(deps) {
         const isHit = find.state.hits.some((h) => h.id === row.id);
         return [
             stampOf(row, pre),
+            // a message of his that turns into a note draws other words at the same version
+            row.look ?? '',
             foldOf(row)?.hidden ?? '',
             isHit ? find.state.q : '',
             JSON.stringify(marksOf(row)),
@@ -287,26 +291,42 @@ export function createMessageRows(deps) {
     }
 
     /**
+     * the marks one text view draws: a folded reply draws its first lines and a closing fence of its own, so a mark past
+     * what it shares with the whole shows once it is open
+     * @param {Row} row @param {number} block @param {string} source what the text view draws
+     */
+    function marksIn(row, block, source) {
+        const whole = drawnBlocks(row)[block] ?? '';
+        let shared = 0;
+        while (shared < source.length && source[shared] === whole[shared])
+            shared += 1;
+        return marksOf(row).filter((m) => m.block === block && m.end <= shared);
+    }
+
+    /** a text view's markdown with his notes' words as links that open them (FRM-585 B5) @param {Row} row @param {number} block @param {string} source */
+    const linkedOf = (row, block, source) =>
+        linkNotes(source, marksIn(row, block, source));
+
+    /**
      * one text view of a row, the words of his notes and find's matches painted behind its own: the stepped match last, so
      * it paints over. a mark moves no line, so the measured copy has none
      * @param {Row} row @param {Theme} t
      * @param {{ block?: number, id: string, isShown: boolean, source: string }} at `block` its place in the row
      */
     function textView(row, t, { block = 0, id, isShown, source }) {
-        const plain = TextView.markdown(id, source).selectable(isShown);
-        if (!isShown) return plain;
-        const view = marksOf(row)
-            // a folded reply draws its first lines: a mark past them shows once it is open
-            .filter((m) => m.block === block && m.end <= source.length)
-            .reduce(
-                (el, { end, isStrong, start }) =>
-                    el.highlight_range(
-                        start,
-                        end,
-                        tint(t.accent, isStrong ? NOTE_ALPHA : HAD_NOTE_ALPHA),
-                    ),
-                plain,
-            );
+        // the measured copy draws no link: a link's markup takes no room
+        if (!isShown) return TextView.markdown(id, source).selectable(false);
+        const linked = linkedOf(row, block, source);
+        const plain = TextView.markdown(id, linked.source).selectable(true);
+        const view = marksIn(row, block, source).reduce(
+            (el, { end, isStrong, start }) =>
+                el.highlight_range(
+                    linked.at(start),
+                    linked.at(end),
+                    tint(t.accent, isStrong ? NOTE_ALPHA : HAD_NOTE_ALPHA),
+                ),
+            plain,
+        );
         const find = deps.find();
         if (!find.state.hits.some((h) => h.id === row.id)) return view;
         const stepped = find.current() === row.id ? find.currentHit()?.n : null;
@@ -317,8 +337,8 @@ export function createMessageRows(deps) {
             .reduce(
                 (el, { end, n, start }) =>
                     el.highlight_range(
-                        start,
-                        end,
+                        linked.at(start),
+                        linked.at(end),
                         tint(
                             t.accent,
                             n === stepped ? STEPPED_ALPHA : HIT_ALPHA,

@@ -208,8 +208,10 @@ export default class Chat extends View {
         threadName: () => this.threadName(),
     });
     isNotePopup = true;
-    /** the popup's last press as the chat saw it @type {unknown} */
+    /** the popup's last press, or a click on a note's words, as the chat saw it @type {unknown} */
     tellAsk = null;
+    /** the note whose words he clicked, until the chat opens it @type {string | null} */
+    noteAsk = null;
     /** «tell <thread>» beside the words he selected */
     notePopup = createNotePopup({
         ask: () => setShared(TELL, Date.now()),
@@ -290,6 +292,10 @@ export default class Chat extends View {
         heights: this.heights,
         loadEarlier: (cx) => this.feed.loadEarlier(cx),
         noteBox: (t) => this.quillMini.view(t),
+        noteClicked: (id) => {
+            this.noteAsk = id;
+            setShared(TELL, Date.now());
+        },
         notePopup: (t) => this.notePopup.element(t),
         openNote: (id, at, cx) => this.quillMini.openNote(id, at, cx),
         pictures: this.pictures,
@@ -312,7 +318,14 @@ export default class Chat extends View {
         look: () => this.look,
         model: this.model,
         notes: this.notes,
-        notesChanged: (cx) => this.quillMini.noteChanged(cx),
+        notesChanged: (cx) => {
+            this.quillMini.noteChanged(cx);
+            // a message of his that turned into a note draws other words: find counts them anew
+            if (this.findBar.find.state.isOpen)
+                this.findBar.find.recount(
+                    this.rows.shown(this.model.rows, this.look),
+                );
+        },
         pickers: this.pickers,
         quill: this.quill,
         rows: this.rows,
@@ -489,7 +502,10 @@ export default class Chat extends View {
             this.tellAsk = tellAsk;
             _cx.timer.after(0, (later) => {
                 const words = this.notePopup.take();
+                const note = this.noteAsk;
+                this.noteAsk = null;
                 if (words) this.annotate(words, later);
+                else if (note) this.quillMini.openNote(note, null, later);
             });
         }
         // a click on an orbit preview brings the chat into view and asks its viewer here (FRM-676)

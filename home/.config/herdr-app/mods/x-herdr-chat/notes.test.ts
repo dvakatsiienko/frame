@@ -994,6 +994,26 @@ describe('where a note’s words are painted (FRM-585 B1)', () => {
             sources[block]?.slice(start, end),
         ]);
 
+    // the 🔎's round 1 on slice B, b1b
+    test('a path in its words that is a link by now: painted over the link', () => {
+        const before = 'see foo/bar.ts here';
+        const now = 'see [foo/bar.ts](path:0) here';
+        const passage = {
+            parts: [
+                {
+                    block: 0,
+                    range: { end: 19, start: 4 },
+                    source: before,
+                    words: 'foo/bar.ts here',
+                },
+            ],
+            row: ROW,
+        };
+        expect(slices(passage, [now])).toEqual([
+            [0, '[foo/bar.ts](path:0) here'],
+        ]);
+    });
+
     test.each([
         ['bold', 'the **retry** is'],
         ['a link', '[the run](path:0) and'],

@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 type Handler = (...args: unknown[]) => unknown;
 const gpui = vi.hoisted(() => {
     const painted: { color: string; id: string; range: number[] }[] = [];
+    /** the markdown each text view was handed */
+    const sources: string[] = [];
     const make = (id = ''): unknown => {
         const self: unknown = new Proxy(
             {},
@@ -24,7 +26,7 @@ const gpui = vi.hoisted(() => {
         );
         return self;
     };
-    return { make, painted };
+    return { make, painted, sources };
 });
 vi.mock('herdr', () => ({ home: () => '/Users/me' }));
 vi.mock('gpui-kit', () => ({
@@ -32,7 +34,12 @@ vi.mock('gpui-kit', () => ({
     image: () => gpui.make(),
 }));
 vi.mock('gpui-base', () => ({
-    TextView: { markdown: (id: string) => gpui.make(id) },
+    TextView: {
+        markdown: (id: string, source: string) => {
+            gpui.sources.push(source);
+            return gpui.make(id);
+        },
+    },
     h_flex: () => gpui.make(),
     v_flex: () => gpui.make(),
 }));
@@ -209,14 +216,15 @@ test('his notes’ words are painted under find’s hits, the stepped one last, 
             ...range,
         ]);
     };
+    // drawn inside the newer note's link: «one [viewer](note:a)»
     const mine = [
-        ['22', 4, 10],
-        ['40', 4, 10],
+        ['22', 5, 11],
+        ['40', 5, 11],
     ];
     expect(paint()).toEqual(mine);
     find.open();
     find.search(rows, 'viewer');
-    expect(paint()).toEqual([...mine, ['b3', 4, 10]]);
+    expect(paint()).toEqual([...mine, ['b3', 5, 11]]);
     find.close();
     expect(paint()).toEqual(mine);
     gpui.painted.length = 0;
@@ -278,6 +286,81 @@ test('a folded reply paints no mark past its first lines', () => {
     expect(painted()).toBe(0);
     view.press([LONG as never], 'long');
     expect(painted()).toBe(1);
+});
+
+/** a note on one text view's words @param {number} block */
+const noteOn = (source: string, words: string, block = 0, from = 0) => {
+    const start = source.indexOf(words, from);
+    return {
+        id: 'n',
+        passage: {
+            parts: [
+                {
+                    block,
+                    range: { end: start + words.length, start },
+                    source,
+                    words,
+                },
+            ],
+        },
+        state: 'draft',
+    };
+};
+
+// a wisphunter read of c5c8c4cf: a message that turns into a note after it drew
+test('a message of his that turns into a note draws again, and find reads its new words', () => {
+    const { find, view } = createRows();
+    const line = { ...reply('m', 'dima on "x" (reply 1): why'), kind: 'mine' };
+    const noted = { ...line, look: 'note', quote: 'x', text: 'why' };
+    expect(view.bodyLook(noted as never, t, 'p')).not.toBe(
+        view.bodyLook(line as never, t, 'p'),
+    );
+    find.open();
+    find.search([line] as never, 'reply');
+    expect(find.rangesOf(line as never)).toHaveLength(1);
+    expect(find.rangesOf(noted as never)).toEqual([]);
+});
+
+// the 🔎's round 1 on slice B
+test('a folded code reply paints no mark on the fence it closes with', () => {
+    const { notes, view } = createRows();
+    view.markTurn([]);
+    const lines = Array.from(
+        { length: 60 },
+        (_, i) => `l${String(i).padStart(2, '0')}`,
+    );
+    const source = `\`\`\`js\n${lines.join('\n')}\n\`\`\``;
+    const code = reply('code', source);
+    notes.set('code', [noteOn(source, 'l22')]);
+    gpui.painted.length = 0;
+    view.texts(code as never, t, 'p', true, (drawn) => drawn);
+    expect(gpui.painted).toEqual([]);
+});
+
+test('a mark of one text view never paints another at its offsets', () => {
+    const { notes, view } = createRows();
+    const text = '```ts\none two\n```\n\none two';
+    notes.set('a', [noteOn('one two', 'two', 1)]);
+    gpui.painted.length = 0;
+    view.texts(reply('a', text) as never, t, 'p', true, (drawn) => drawn);
+    expect(gpui.painted.map((p) => p.id)).toEqual(['pa@1-1']);
+});
+
+// FRM-585 B5
+test('a note’s words are a link to it in what the text view draws, its mark on them there', () => {
+    const { notes, view } = createRows();
+    notes.set('a', [noteOn('the retry is cheap', 'retry')]);
+    gpui.painted.length = 0;
+    gpui.sources.length = 0;
+    view.texts(
+        reply('a', 'the retry is cheap') as never,
+        t,
+        'p',
+        true,
+        (drawn) => drawn,
+    );
+    expect(gpui.sources).toEqual(['the [retry](note:n) is cheap']);
+    expect(gpui.painted.map((p) => p.range)).toEqual([[5, 10]]);
 });
 
 test('a press on a note’s row names its note', () => {

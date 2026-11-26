@@ -222,7 +222,7 @@ export function createFind() {
     /** @type {FindState} */
     let state = { at: 0, hits: [], isOpen: false, q: '' };
     // a row's ranges, placed once per version: the list draws its rows on every frame of a scroll
-    /** @type {Map<string, { q: string, ranges: FindRange[], version: number }>} */
+    /** @type {Map<string, { q: string, ranges: FindRange[], version: string }>} */
     const placed = new Map();
     return {
         close() {
@@ -238,11 +238,13 @@ export function createFind() {
         },
         /** where the query stands in the row's drawn markdown @param {Row} row */
         rangesOf(row) {
+            // a message of his that turns into a note draws other words at the same version
+            const version = `${row.version}${row.look ?? ''}`;
             const kept = placed.get(row.id);
-            if (kept?.q === state.q && kept.version === row.version)
+            if (kept?.q === state.q && kept.version === version)
                 return kept.ranges;
             const ranges = findRanges(row, state.q);
-            placed.set(row.id, { q: state.q, ranges, version: row.version });
+            placed.set(row.id, { q: state.q, ranges, version });
             return ranges;
         },
         /**

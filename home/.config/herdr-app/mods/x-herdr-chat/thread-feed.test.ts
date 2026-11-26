@@ -3,8 +3,11 @@ import { beforeEach, expect, test, vi } from 'vitest';
 // FRM-585 A2: a note of the thread shown hears of its thread's state and of its line landing, and of no other thread's
 const at = vi.hoisted(() => ({
     joined: null as string | null,
+    joinedText: '',
     lines: [] as { id: string; isWaiting?: boolean; text: string }[],
     place: null as { id: string; offset: number } | null,
+    /** the text of the row he reads before an older page joins it, and after */
+    readText: '',
     state: null as object | string | null,
     /** resolves the pending wait for a change of each folder */
     touch: new Map<string, () => void>(),
@@ -119,7 +122,8 @@ function world() {
             },
             indexOf: (id: string) => (id === 'l2' ? 0 : -1),
             get rows() {
-                return at.joined ? [{ id: at.joined }] : rows;
+                if (at.joined) return [{ id: at.joined, text: at.joinedText }];
+                return at.readText ? [{ id: 'l2', text: at.readText }] : rows;
             },
         },
         notes: {
@@ -283,3 +287,17 @@ test.each([
         expect(w.said.restored).toEqual([to]);
     },
 );
+
+// the 🔎's round 1 on slice B: the page's own files come first in the joined row
+test('an older page that brings a file above the row he reads keeps his place on the same file', async () => {
+    const w = world();
+    await open(w, 't1');
+    at.readText = 'see [a](file:///tmp/a.md)';
+    at.joinedText = `see [b](file:///tmp/b.md)\n\n${at.readText}`;
+    at.place = { id: 'l2#file-0', offset: 40 };
+    w.feed.loadEarlier(cx as never);
+    await tick();
+    expect(w.said.restored).toEqual([['page#file-1', 40]]);
+    at.readText = '';
+    at.joinedText = '';
+});

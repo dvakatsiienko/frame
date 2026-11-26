@@ -126,6 +126,8 @@ regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-6
   - given notes on a message, then each one's words are painted behind in the theme's accent, stronger while the thread has not got the note, quieter once it has; opening the box paints them at once
   - and they are found again after the reply grew or an older page landed above it; words that are gone, or stand twice and moved, show none and the note stays
   - and find's hits are painted over them, and leave them as they were
+  - and a path in them that became a link later is still found; a folded reply paints none past the lines it shows
+  - when he clicks them with nothing selected, then the box opens on that note; a drag or a double click on them selects as anywhere else; of two notes on the same words the click opens the newer, the other by its row; in a code block, a code span, a link, a table or across a line break they are painted but open nothing, the row is the door (B5)
 - ⬜ each note is one quiet row under its message (FRM-585:W2, W10; not live yet)
   - given notes on a message, then under it and its files comes a row for each, in the order he made them: 📝, its words on one line, and where it stands (draft, waiting, joined, sent); a note with no words yet has none
   - when he clicks one, then the box opens on that note where he clicked: to edit while the thread has not got it, to read after

@@ -143,12 +143,16 @@ function createWindow(
     /** each row of the last frame, and whether its own view drew its words */
     const frame = new Map<string, boolean>();
     const bodies = {
+        /** a text view's linked markdown back to the written one */
+        back: (range: { start: number; end: number }) => range,
         isViewerOpen: false,
         /** a drawn body's link click, by row */
         links: new Map<string, Handler>(),
         live: 0,
         /** what every row's text views draw from */
         look: 'first',
+        /** notes whose words he clicked */
+        noted: [] as string[],
         /** a body told to draw again */
         notified: new Set<unknown>(),
         /** the square each click on a row opens */
@@ -172,6 +176,7 @@ function createWindow(
         heights: createHeights(),
         loadEarlier: () => earlier.push(1),
         noteBox: () => null,
+        noteClicked: (id: string) => bodies.noted.push(id),
         notePopup: () => null,
         openNote: (id: string, at: unknown) => annotated.push([id, at]),
         pictures: {
@@ -206,6 +211,9 @@ function createWindow(
                             bodies.reports.set(row.id, report),
                     } as never,
                     0 as never,
+                    'the written source' as never,
+                    ((range: { start: number; end: number }) =>
+                        bodies.back(range)) as never,
                 );
             },
             hasBody: () => true,
@@ -725,6 +733,29 @@ test.each([
     expect(await w.follow('r1', url)).toEqual(opened);
 });
 
+// FRM-585 B5
+test('a click on a note’s words opens that note, and nothing else', async () => {
+    const w = createWindow(Array(5).fill(60), (px) => px);
+    w.run(500);
+    expect(await w.follow('r1', 'note:n1')).toEqual([]);
+    expect(w.bodies.noted).toEqual(['n1']);
+});
+
+test('words selected over a note’s link stand in the markdown as written', () => {
+    const w = createWindow(Array(5).fill(60), (px) => px);
+    w.run(500);
+    w.bodies.back = ({ end, start }) => ({ end: end - 10, start: start - 1 });
+    (w.bodies.reports.get('r1') as Handler)(
+        { range: { end: 22, start: 5 }, text: 'two words' } as never,
+        w.cx as never,
+    );
+    const part = w.selectedAt(Date.now())?.passage.parts[0];
+    expect([part?.source, part?.range]).toEqual([
+        'the written source',
+        { end: 12, start: 4 },
+    ]);
+});
+
 test('a click on a picture’s path opens it in the viewer', async () => {
     const w = createWindow(Array(5).fill(60), (px) => px);
     w.run(500);
@@ -955,7 +986,7 @@ describe('the words a note is written on', () => {
             {
                 block: 0,
                 range: { end: text.length, start: 0 },
-                source: undefined,
+                source: 'the written source',
                 words: text,
             },
         ],

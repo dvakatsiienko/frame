@@ -1,9 +1,11 @@
 // the thread the chat shows: which Claude the focused tab runs, its transcript read from the tail and watched for each
 // new line, its state file, the earlier pages above, and his reading place brought back after a reload
+
 import { readdir } from 'fs/promises';
 import { exec, home, readTextFile, watchFolder } from 'herdr';
 
 import { STATE_DIR } from './band.js';
+import { fileLinks } from './file-links.js';
 import { replyIdOf } from './files.js';
 import { placeOf } from './follow.js';
 import { placeKey } from './message-list.js';
@@ -470,6 +472,18 @@ export function createThreadFeed(deps) {
     }
 
     /**
+     * a row's tail under it once an older page joined the row: its n-th file is n plus the files the page brought above
+     * @param {string} under `#file-<n>` or `#note-<id>` @param {string} was the row's text before @param {string} now
+     */
+    function underNow(under, was, now) {
+        const file = /^#file-(\d+)$/.exec(under);
+        if (!file) return under;
+        const added =
+            fileLinks(now, home()).length - fileLinks(was, home()).length;
+        return `#file-${Number(file[1]) + added}`;
+    }
+
+    /**
      * the next older page drawn above, the row he reads kept at its spot on screen; nothing while one is read or at
      * the thread's start, and a page for a thread he left is dropped
      * @param {Context} cx
@@ -483,6 +497,10 @@ export function createThreadFeed(deps) {
             if (feed.pages !== pages || !lines?.length) return;
             const { height, place } = deps.list.placeNow();
             const firstId = deps.model.rows[0]?.id ?? '';
+            // a file row under the row he reads counts its files from the row's top, which the page may grow
+            const readText =
+                deps.model.rows[deps.model.indexOf(replyIdOf(place?.id ?? ''))]
+                    ?.text ?? '';
             deps.model.addEarlier(lines);
             // the page's last reply may join the first row: it keeps its lines and takes the page's id
             const first = deps.model.rows[deps.model.indexOf(firstId)];
@@ -495,7 +513,10 @@ export function createThreadFeed(deps) {
             const under = place?.id.slice(lineId.length);
             if (place && joined && joined.id !== lineId && under)
                 // a file or a note under that row goes by its new id
-                deps.list.restore(`${joined.id}${under}`, place.offset);
+                deps.list.restore(
+                    `${joined.id}${underNow(under, readText, joined.text)}`,
+                    place.offset,
+                );
             else if (place && joined && joined.id !== lineId && height)
                 deps.list.restore(joined.id, 0, height - place.offset);
             else if (place) deps.list.restore(place.id, place.offset);
