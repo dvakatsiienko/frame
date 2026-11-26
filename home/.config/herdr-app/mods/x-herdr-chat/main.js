@@ -536,7 +536,7 @@ export default class Chat extends View {
         );
         const isTabbed = tabbed === 'quill';
         if (tabbed === MINI_STOP)
-            _cx.timer.after(0, () => this.quillMini.focus());
+            _cx.timer.after(0, () => this.quillMini.focus(this.tab.cameBack()));
         const isAsked = isTabbed || (acts.isFocus && !this.pictures.isOpen());
         // a quill the next opening takes off the screen is no place for the keyboard
         if (isAsked && !this.isOpening())

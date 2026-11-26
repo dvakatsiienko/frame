@@ -23,7 +23,7 @@ import {
     nextNote,
     pastText,
 } from './note-states.js';
-import { quoteOf, shortId } from './note-text.js';
+import { NO_WHY, THUMBS, quoteOf, shortId } from './note-text.js';
 import { joinedWords } from './row-model.js';
 import { sidOf } from './thread.js';
 
@@ -76,6 +76,8 @@ export function createNotes({
     const work = new Map();
     /** notes looked for in their transcript now @type {Set<string>} */
     const searched = new Set();
+    /** grades on their way to the grades file @type {Set<string>} */
+    const keeping = new Set();
     /** notes whose row would not take their words: asked again as the thread's state changes @type {Set<string>} */
     const refused = new Set();
     /** when he last typed in a note @type {Map<string, number>} */
@@ -168,8 +170,7 @@ export function createNotes({
     function log(thread, id) {
         const note = find(thread, id);
         if (!note || !tell(thread, id, { type: 'logged' })) return;
-        const grade = gradeOf(note, thread, new Date(io.now()).toISOString());
-        if (grade) after(id, () => keepGrade(grade)).catch(() => {});
+        keepGradeOf(thread, id);
         const parts = note.passage.parts.map((p) => p.words);
         const quote = quoteOf(parts);
         const line = note.said.at(-1)?.line ?? lineOf(note);
@@ -184,6 +185,24 @@ export function createNotes({
                 size: line.length,
             }),
         );
+    }
+
+    /**
+     * a grade's raw line into the grades file once the thread has it; a held file leaves it for the next settle, so none
+     * is lost (wisphunter, 26 Nov)
+     * @param {string} thread @param {string} id
+     */
+    function keepGradeOf(thread, id) {
+        const note = find(thread, id);
+        if (!note?.isLogged || note.isGradeKept || keeping.has(id)) return;
+        const grade = gradeOf(note, thread, new Date(io.now()).toISOString());
+        if (!grade) return;
+        keeping.add(id);
+        after(id, async () => {
+            if (await keepGrade(grade)) tell(thread, id, { type: 'gradeKept' });
+        })
+            .catch(() => {})
+            .finally(() => keeping.delete(id));
     }
 
     /** @param {string} thread @param {Note} note */
@@ -339,7 +358,10 @@ export function createNotes({
                                 quote: quoteOf(
                                     n.passage.parts.map((p) => p.words),
                                 ),
-                                text: n.text,
+                                // a grade sent as its own message reads as one: its thumb, its why
+                                text: n.grade
+                                    ? `${THUMBS[n.grade]} ${n.text.trim() || NO_WHY}`
+                                    : n.text,
                             });
                 drawn.set(notes, byText);
             }
@@ -417,6 +439,8 @@ export function createNotes({
                 const joins = joinsOf(thread);
                 if (note?.state === 'sent' && note.joinId)
                     takeSentRow(thread, id);
+                if (note?.state === 'sent' || note?.state === 'joined')
+                    keepGradeOf(thread, id);
                 if (!note?.joinId || !isInFile(note)) continue;
                 const isRested =
                     refused.has(id) ||

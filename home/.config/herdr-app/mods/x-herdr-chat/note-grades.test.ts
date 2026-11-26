@@ -143,6 +143,34 @@ describe('a grade’s raw line in the grades file', () => {
         ]);
     });
 
+    test('a grades file held as the thread had it: the line goes at the next settle, once', async () => {
+        const w = world();
+        const id = await w.draft('why');
+        w.notes.graded(THREAD, id, 'bad');
+        await w.notes.join(THREAD, id, 0);
+        const done = { ...ON, joined: [w.note(id).joinId ?? ''] };
+        w.isGradesHeld = true;
+        await w.settle(done);
+        expect(w.grades()).toEqual([]);
+        w.isGradesHeld = false;
+        await new Promise((go) => setTimeout(go, 0));
+        await w.settle(done);
+        await new Promise((go) => setTimeout(go, 0));
+        await w.settle(done);
+        expect(w.grades().map((g) => g.id)).toEqual([id]);
+    });
+
+    test('a grade sent as its own message reads as its thumb and why', async () => {
+        const w = world();
+        const { id } = w.notes.open(THREAD, passage('the retry is cheap'));
+        w.notes.graded(THREAD, id, 'good');
+        const out = await w.notes.release(THREAD, id, 0);
+        if ('line' in out)
+            w.notes.arrived(THREAD, [{ at: w.stamp(), text: out.line }]);
+        const line = 'line' in out ? out.line : '';
+        expect(w.notes.noteOf(THREAD, line)?.text).toBe('👍🏼 no why');
+    });
+
     test('a line of the same id replaces the one in the file, a broken row stays', () => {
         const line = {
             at: '',

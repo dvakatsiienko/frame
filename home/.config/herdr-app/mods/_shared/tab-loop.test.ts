@@ -121,8 +121,30 @@ describe('a Tab ask', () => {
     test('counts on from the last ask, never by the clock, so a clock set back loses no Tab', () => {
         expect(tabAsk(() => ({ at: 41, to: 'quill' }), 'steer-a:o1')).toEqual({
             at: 42,
+            isBack: false,
             to: 'steer-a:o1',
         });
-        expect(tabAsk(() => null, 'quill')).toEqual({ at: 1, to: 'quill' });
+        expect(tabAsk(() => null, 'quill')).toEqual({
+            at: 1,
+            isBack: false,
+            to: 'quill',
+        });
+    });
+
+    test('a shift-Tab ask tells the stop it reaches that it came back (FRM-630)', () => {
+        const store = new Map<string, unknown>();
+        const herdr = {
+            layout: () => ({ children: [{ content: { mod: 'x-a' } }] }),
+            setShared: (key: string, value: unknown) => store.set(key, value),
+            shared: (key: string) => store.get(key),
+        };
+        const member = createTabMember('x-a', herdr);
+        member.draw(['one', 'two'], (run) => run());
+        member.ask('one', true);
+        expect(member.draw(['one', 'two'], (run) => run())).toBe('two');
+        expect(member.cameBack()).toBe(true);
+        member.ask('two', false);
+        member.draw(['one', 'two'], (run) => run());
+        expect(member.cameBack()).toBe(false);
     });
 });

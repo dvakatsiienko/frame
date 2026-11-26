@@ -74,6 +74,7 @@ export function world() {
             },
             joinsOf: () => at.joins,
             keepGrade: async (line) => {
+                if (at.isGradesHeld) return false;
                 files.set(GRADES, withGrade(files.get(GRADES) ?? null, line));
                 return true;
             },
@@ -92,6 +93,8 @@ export function world() {
             },
         });
     const at = {
+        /** the grades file's lock stays held */
+        isGradesHeld: false,
         isSearchBroken: false,
         joins: ON as Joins | null | undefined,
         /** what happens while the join file is held */

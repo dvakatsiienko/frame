@@ -98,6 +98,25 @@ describe('the grade row', () => {
         expect(w.note()?.isWhole).toBe(true);
     });
 
+    test('a held Enter on a part presses it once', () => {
+        const w = world();
+        w.f6();
+        w.act(TAB);
+        w.act(PART_PRESS);
+        w.act(PART_PRESS);
+        expect(w.note()?.grade).toBe('good');
+    });
+
+    test('shift-Tab into the box lands on send, the row’s last part', () => {
+        const w = world();
+        w.f6();
+        w.mini.focus(true);
+        expect(at.held).toBe(at.handles.at(-1));
+        const before = at.box.focused;
+        w.mini.focus(false);
+        expect(at.box.focused).toBe(before + 1);
+    });
+
     test('a thumb alone joins, as «no why»', async () => {
         const w = world();
         w.f6();

@@ -9,11 +9,12 @@ export const TAB_GO = 'tab.go';
 export const tabStopsKey = (mod) => `tab.stops.${mod}`;
 
 /**
- * the ask for stop `to`: its `at` counts on from the last ask, so a clock set back loses no Tab
- * @param {(key: string) => unknown} read @param {string} to
+ * the ask for stop `to`: its `at` counts on from the last ask, so a clock set back loses no Tab; `isBack`, a shift-Tab, so
+ * a stop with parts of its own lands on its last
+ * @param {(key: string) => unknown} read @param {string} to @param {boolean} [isBack]
  */
-export function tabAsk(read, to) {
-    return { at: atOf(read(TAB_GO)) + 1, to };
+export function tabAsk(read, to, isBack = false) {
+    return { at: atOf(read(TAB_GO)) + 1, isBack, to };
 }
 
 /**
@@ -73,6 +74,8 @@ export function createTabMember(mod, herdr) {
     const key = tabStopsKey(mod);
     let seen = atOf(herdr.shared(TAB_GO));
     let isRestoring = true;
+    /** the last ask this member took came by shift-Tab */
+    let isCameBack = false;
     return {
         /** @param {string} from the stop holding the keyboard @param {boolean} isBack */
         ask(from, isBack) {
@@ -81,8 +84,10 @@ export function createTabMember(mod, herdr) {
                 from,
                 isBack,
             );
-            herdr.setShared(TAB_GO, tabAsk(herdr.shared, to));
+            herdr.setShared(TAB_GO, tabAsk(herdr.shared, to, isBack));
         },
+        /** the stop `draw` last named was reached by shift-Tab */
+        cameBack: () => isCameBack,
         /**
          * @param {string[]} stops this render's stops, in its own Tab order
          * @param {(run: () => void) => void} later after the draw @returns {string | null} the stop to focus
@@ -98,6 +103,9 @@ export function createTabMember(mod, herdr) {
             if (at > seen) {
                 seen = at;
                 isRestoring = false;
+                isCameBack = Boolean(
+                    /** @type {{ isBack?: unknown }} */ (go).isBack,
+                );
                 const to = /** @type {{ to?: unknown }} */ (go).to;
                 return isDrawn(to) ? to : null;
             }

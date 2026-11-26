@@ -118,6 +118,8 @@ export function createQuillMini(deps) {
     let said = null;
     const enter = createKeyPress();
     const cmdEnter = createCmdEnter();
+    /** Enter or space on a part of the row: a held one presses once */
+    const partPress = createKeyPress();
     /** each part's keyboard, made in the view's init @type {Map<Part, import('gpui-kit').FocusHandle>} */
     const keys = new Map();
     /** the part of the row Tab put the keyboard on, null while the text has it @type {Part | null} */
@@ -319,6 +321,7 @@ export function createQuillMini(deps) {
             return deps.tab.ask(MINI_STOP, isBack);
         }
         if (to === 'text') return backToText(cx);
+        partPress.blurred();
         partHeld = to;
         keys.get(to)?.focus();
         cx.notify();
@@ -563,9 +566,13 @@ export function createQuillMini(deps) {
                         .on_action(PART_BACK, (_e, cx) =>
                             tabFrom(partHeld ?? 'text', true, cx),
                         )
-                        .on_action(PART_PRESS, (_e, cx) => pressPart(cx))
+                        .on_action(PART_PRESS, (_e, cx) => {
+                            if (partPress.pressed() === 'act') pressPart(cx);
+                        })
                         .on_key_up((e) => {
                             if (e.key === 'enter') enter.released();
+                            if (e.key === 'enter' || e.key === 'space')
+                                partPress.released();
                         })
                         .on_modifiers_changed((e) => {
                             if (e.modifiers.platform) return;
@@ -670,8 +677,16 @@ export function createQuillMini(deps) {
 
     return {
         close,
-        /** the Tab loop's turn */
-        focus: () => box?.focus(),
+        /** the Tab loop's turn: shift-Tab lands on the row's last part, Tab on the text @param {boolean} [isBack] */
+        focus(isBack = false) {
+            const note = noteNow();
+            const last = keys.get('send');
+            if (isBack && note && !isClosed(note) && last) {
+                partHeld = 'send';
+                return last.focus();
+            }
+            box?.focus();
+        },
         isOpen: () => open !== null,
         movedOn,
         noteChanged,
