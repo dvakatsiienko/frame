@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { cardKind, cardText, tint } from './orbit.js';
+import { asksOf, cardKind, cardText, originOf, tint } from './orbit.js';
 
 // FRM-620 slice 3b (W21–W28): a look card reads as a look at a glance, 👀 first, a 🧪 card with 🧪, never «pinned»
 describe('a card opens with its kind', () => {
@@ -47,5 +47,42 @@ describe('a tint of a theme colour', () => {
     test('a colour already carrying alpha, or another form, stays as it is', () => {
         expect(tint('#3b82f680', 0.2)).toBe('#3b82f680');
         expect(tint('#fff', 0.2)).toBe('#fff');
+    });
+});
+
+// FRM-620 step 164 (FRM-670:W5–W8): under an ask, who asks and why
+describe('an ask’s origin line', () => {
+    test('crow, a codie relay, a why alone and neither', () => {
+        expect(
+            [
+                [{ line: '🐦‍⬛ crow', who: 'crow' }, 'the pace again'],
+                [
+                    {
+                        lane: 'herdr',
+                        line: '🔧 herdr | FRM-569',
+                        ticket: 'FRM-569',
+                        who: 'codie',
+                    },
+                    'his eyes first',
+                ],
+                [null, 'your 17:57 save question'],
+                [null, null],
+            ].map(([from, why]) => originOf(from, why)),
+        ).toEqual([
+            '🐦‍⬛ crow · the pace again',
+            '🔧 herdr | FRM-569 · his eyes first',
+            'your 17:57 save question',
+            null,
+        ]);
+    });
+
+    test('an ask updated in place takes its new sender and why', () => {
+        const ask = (why: string, line: string) =>
+            asksOf({ asks: [{ from: { line }, id: 'o1', text: 'x', why }] })[0]
+                ?.origin;
+        expect([
+            ask('first', '🐬 wishkeeper'),
+            ask('second', '🐦‍⬛ crow'),
+        ]).toEqual(['🐬 wishkeeper · first', '🐦‍⬛ crow · second']);
     });
 });

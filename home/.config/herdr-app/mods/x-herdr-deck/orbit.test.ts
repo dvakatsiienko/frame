@@ -76,6 +76,7 @@ const ask: Ask = {
     isLocked: false,
     link: null,
     mark: null,
+    origin: null,
     pick: 'yes',
     text: 'push FRM-1',
     title: null,

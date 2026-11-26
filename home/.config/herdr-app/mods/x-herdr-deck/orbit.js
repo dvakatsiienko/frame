@@ -6,7 +6,7 @@ import { PENDING_MS } from './band-press.js';
 import { isWebLink, linkPath } from './open-path.js';
 
 // `title` and `body` are what `text` was built from; an ask sent the old way has neither, its `text` the whole
-/** @typedef {{ id: string | null, text: string, title: string | null, body: string | null, pick: string | null, link: string | null, mark: string | null, isLocked: boolean }} Ask */
+/** @typedef {{ id: string | null, text: string, title: string | null, body: string | null, pick: string | null, link: string | null, mark: string | null, isLocked: boolean, origin: string | null }} Ask `origin`: who asks and why, one line */
 /** @typedef {ReturnType<typeof import('./press.js').pressState>} PressState */
 /** @typedef {{ id: string, verdict: 'tick' | 'replay' | 'untick', steer?: string, text?: string, pick?: string, at: number }} Press */
 
@@ -56,6 +56,7 @@ export function asksOf(state) {
                     isLocked: a.isLocked === true,
                     link: typeof a.link === 'string' ? a.link : null,
                     mark: a.mark ?? null,
+                    origin: originOf(a.from, a.why),
                     pick: a.pick ?? null,
                     text: a.text,
                     title:
@@ -68,6 +69,19 @@ export function asksOf(state) {
             (/** @type {Ask} */ a, /** @type {Ask} */ b) =>
                 pinRank(a.text) - pinRank(b.text),
         );
+}
+
+/**
+ * who asks and why, the muted line under an ask (FRM-670:W5–W8): the sender as the stash names it with its badge
+ * («🐦‍⬛ crow», «🔧 herdr | FRM-569»), then the why; no sender, the why alone; neither, none
+ * @param {unknown} from the stash's `from`, its `line` the sender drawn @param {unknown} why
+ * @returns {string | null}
+ */
+export function originOf(from, why) {
+    const who =
+        from && typeof from === 'object' && 'line' in from ? from.line : null;
+    const parts = [who, why].filter((p) => typeof p === 'string' && p.trim());
+    return parts.length ? parts.map((p) => String(p).trim()).join(' · ') : null;
 }
 
 /**

@@ -22,6 +22,10 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then its title ends before the pill, which reads `o12` in every thread (dima, 25 Nov 16:44), 🆕 first on a new round, its hover word «copy» (dima, 25 Nov 16:33)
   - when dima clicks the pill
   - then `o12` is on his clipboard, the pill shows ✓ in its place, the same width, for a moment, and the card is not pressed
+- ⬜ under an ask, a muted line says who asks and why (FRM-670:W5–W8)
+  - given an ask from crow, then the line reads «🐦‍⬛ crow · <why>»; from a codie, its lane and ticket, «🔧 herdr | FRM-569 · <why>»
+  - and with no sender the why alone; with neither, no line and no room for one
+  - and a long one is cut with «…» on one line, a hover shows it whole; an ask updated in place takes its new sender and why
 - 🔎 a file or a link an ask names opens by the chat's rule (FRM-620 step 138)
   - given an ask naming an app, or a symlink to one, however its path is written, `file://` too
   - when dima clicks it

@@ -172,6 +172,19 @@ export function createOrbitView(deps) {
                                   : []),
                           ],
                 )
+                // who asks and why, muted, one line, whole on hover (FRM-670:W5–W8); none of both adds no row
+                .when(Boolean(ask.origin), (el) =>
+                    el.child(
+                        h_flex()
+                            .w_full()
+                            .child(
+                                line(t.muted, SIZE.small)
+                                    .id(`origin-${key}`)
+                                    .tooltip(ask.origin ?? '')
+                                    .child(ask.origin ?? ''),
+                            ),
+                    ),
+                )
                 .when(linkOf(ask.link)?.kind === 'web', (el) =>
                     el.child(view.linkLine(t, ask, `link-${key}`)),
                 )
