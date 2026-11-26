@@ -6,7 +6,7 @@ vi.mock('herdr', () => ({ exec: vi.fn() }));
 import { withGrade } from './grades.js';
 import { noteRows } from './note-rows.js';
 import { gradeLine } from './note-text.js';
-import { ON, ROW, THREAD, passage, world } from './notes-world.ts';
+import { FILE, ON, ROW, THREAD, passage, world } from './notes-world.ts';
 
 const at = new Date(2026, 10, 26, 17, 20).toISOString();
 
@@ -22,7 +22,7 @@ describe('a graded note joins as a case to log', () => {
                 text: ' restates the plan ',
             }),
         ).toBe(
-            'dima graded 👎🏼 "the retry is cheap" (reply 1a2b3c4d 17:20): restates the plan (a case for the comms log, not a request)',
+            '🎚️ grade: dima graded 👎🏼 "the retry is cheap" (reply 1a2b3c4d 17:20): restates the plan (a case for the comms log, not a request)',
         );
     });
 
@@ -32,7 +32,7 @@ describe('a graded note joins as a case to log', () => {
         w.notes.graded(THREAD, id, 'good');
         expect(await w.notes.join(THREAD, id, 0)).toBeNull();
         expect(w.texts()).toEqual([
-            'dima graded 👍🏼 "the retry is cheap" (reply 1a2b3c4d): no why (a case for the comms log, not a request)',
+            '🎚️ grade: dima graded 👍🏼 "the retry is cheap" (reply 1a2b3c4d): no why (a case for the comms log, not a request)',
         ]);
     });
 
@@ -60,7 +60,7 @@ describe('a graded note joins as a case to log', () => {
         w.notes.wholeSet(THREAD, id, true);
         await w.notes.join(THREAD, id, 0);
         expect(w.texts()[0]).toBe(
-            'dima graded 👎🏼 "So the retry is…" (reply 1a2b3c4d, the whole message): too long (a case for the comms log, not a request)',
+            '🎚️ grade: dima graded 👎🏼 "So the retry is…" (reply 1a2b3c4d, the whole message): too long (a case for the comms log, not a request)',
         );
     });
 
@@ -70,9 +70,29 @@ describe('a graded note joins as a case to log', () => {
         await w.notes.join(THREAD, id, 0);
         w.notes.graded(THREAD, id, 'bad');
         expect(await w.notes.write(THREAD, id)).toBe(true);
-        expect(w.texts()[0]).toMatch(/^dima graded 👎🏼/);
+        expect(w.texts()[0]).toMatch(/^🎚️ grade: dima graded 👎🏼/);
         await w.settle({ ...ON, taken: [w.note(id).joinId ?? ''] });
         expect(w.note(id)).toMatchObject({ grade: 'bad', state: 'taken' });
+    });
+
+    test('a grade’s join row is marked a grade, so the stash hands it apart from his words', async () => {
+        const kinds = (w: ReturnType<typeof world>) =>
+            (w.files.get(FILE) ?? '')
+                .trim()
+                .split('\n')
+                .map((line) => JSON.parse(line).kind ?? null);
+        const graded = world();
+        const id = await graded.draft('why here?');
+        graded.notes.graded(THREAD, id, 'bad');
+        await graded.notes.join(THREAD, id, 0);
+        expect(kinds(graded)).toEqual(['grade']);
+        const plain = world();
+        const later = await plain.draft('just a note');
+        await plain.notes.join(THREAD, later, 0);
+        expect(kinds(plain)).toEqual([null]);
+        plain.notes.graded(THREAD, later, 'good');
+        expect(await plain.notes.write(THREAD, later)).toBe(true);
+        expect(kinds(plain)).toEqual(['grade']);
     });
 
     test('a thumb pressed after the row was written: a turn that took it keeps the grade it got', async () => {
@@ -253,6 +273,19 @@ describe('a grade’s raw line in the grades file', () => {
         await w.settle({ ...ON, joined: [w.note(id).joinId ?? ''] });
         await new Promise((go) => setTimeout(go, 0));
         expect(w.grades()[0]?.at).toBe(had);
+    });
+
+    test('its time is the join’s in the transcript, not when the chat read it', async () => {
+        const w = world();
+        const id = await w.draft('why');
+        w.notes.graded(THREAD, id, 'good');
+        await w.notes.join(THREAD, id, 0);
+        const joinedAt = w.stamp();
+        const got = w.arrive();
+        w.pass(60_000);
+        w.notes.arrived(THREAD, got);
+        await new Promise((go) => setTimeout(go, 0));
+        expect(w.grades()[0]?.at).toBe(joinedAt);
     });
 
     test('a line of the same id replaces the one in the file, a broken row stays', () => {

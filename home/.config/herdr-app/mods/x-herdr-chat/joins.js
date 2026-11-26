@@ -3,6 +3,8 @@
 // (`<sid>.jsonl.lock`, a mkdir); the stash hands the rows into the turn and lists each id in the thread's herdr state as
 // `joins: {joined, waiting, push}`, `joined` only once the turn that took it completed (FRM-584's contract)
 
+import { GRADE_LEAD } from './note-text.js';
+
 export const JOINS_DIR = '.claude/shelf/herdr-joins';
 // how long a click waits for a lock the stash holds before it gives the text back
 const LOCK_WAIT_MS = 2000;
@@ -54,18 +56,23 @@ export async function editLocked(io, path, edit) {
     }
 }
 
-/** one join row appended @param {JoinIo} io @param {string} path @param {string} id @param {string} text */
-export const appendJoin = async (io, path, id, text) =>
+/** @typedef {'grade' | null} JoinKind a grade's row the stash hands apart from his words (FRM-630) */
+/** @param {string} id @param {string} text @param {JoinKind} kind */
+const rowOf = (id, text, kind) =>
+    JSON.stringify(kind ? { id, kind, text } : { id, text });
+
+/** one join row appended @param {JoinIo} io @param {string} path @param {string} id @param {string} text @param {JoinKind} [kind] */
+export const appendJoin = async (io, path, id, text, kind = null) =>
     (await editLocked(io, path, (was) => {
         const head = was && !was.endsWith('\n') ? `${was}\n` : (was ?? '');
-        return `${head}${JSON.stringify({ id, text })}\n`;
+        return `${head}${rowOf(id, text, kind)}\n`;
     })) === 'written';
 
 /**
  * a waiting join's words replaced, its id and place kept; false when its row is gone (a turn took it) or not written
- * yet, the file as it was @param {JoinIo} io @param {string} path @param {string} id @param {string} text
+ * yet, the file as it was @param {JoinIo} io @param {string} path @param {string} id @param {string} text @param {JoinKind} [kind]
  */
-export const retextJoin = async (io, path, id, text) =>
+export const retextJoin = async (io, path, id, text, kind = null) =>
     (await editLocked(io, path, (was) => {
         let isFound = false;
         const next = (was ?? '')
@@ -74,7 +81,7 @@ export const retextJoin = async (io, path, id, text) =>
                 try {
                     if (JSON.parse(line)?.id !== id) return line;
                     isFound = true;
-                    return JSON.stringify({ id, text });
+                    return rowOf(id, text, kind);
                 } catch {
                     return line;
                 }
@@ -240,14 +247,17 @@ export function joinedTexts(entry) {
         entry.attachment?.type !== 'hook_additional_context'
     )
         return [];
-    const line = (entry.attachment.content ?? []).find(
-        (/** @type {unknown} */ l) =>
-            typeof l === 'string' && JOINED_HEAD.test(l),
+    return (entry.attachment.content ?? []).flatMap(
+        (/** @type {unknown} */ line) => {
+            if (typeof line !== 'string') return [];
+            // a grade's row comes as its own line, whole (the stash's grade rows)
+            if (line.startsWith(GRADE_LEAD)) return [line];
+            if (!JOINED_HEAD.test(line)) return [];
+            return line
+                .replace(JOINED_HEAD, '')
+                .replace(/^«/, '')
+                .replace(/»$/, '')
+                .split('»\n«');
+        },
     );
-    if (!line) return [];
-    const body = line
-        .replace(JOINED_HEAD, '')
-        .replace(/^«/, '')
-        .replace(/»$/, '');
-    return body.split('»\n«');
 }

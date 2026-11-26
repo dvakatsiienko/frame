@@ -318,6 +318,18 @@ describe('a join the thread took shows in the chat as his own message, read off 
             ),
         ).toEqual(['say the word alpha', 'then say the word beta']);
     });
+    test('a grade comes as its own line, whole, beside his words', () => {
+        const grade =
+            '🎚️ grade: dima graded 👎🏼 "the retry" (reply 1a2b3c4d): two\nlines (a case for the comms log, not a request)';
+        expect(
+            joinedTexts(
+                entry([
+                    '💨 dima wrote this in herdr while you worked; it joins this turn as his own words:\n«say alpha»',
+                    grade,
+                ]),
+            ),
+        ).toEqual(['say alpha', grade]);
+    });
     test('any other context line or record is none', () => {
         expect(joinedTexts(entry(['orbit holds no open ask']))).toEqual([]);
         expect(joinedTexts({ type: 'user' })).toEqual([]);
