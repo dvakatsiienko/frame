@@ -22,7 +22,7 @@ ordinal: 1000
 - [ ] #4 f106 ⏳ herdr-lane-3 spec archives with its last open section — waits for: FRM-620
 - [ ] #5 f111 ⏳ FRM-407 fresh-eyes: a trial round on speak v2 first screen, then the verdict — waits for: FRM-407
 - [ ] #6 f134 ⏳ herdr wisp: a triple click takes one visual line, fixed upstream, waits a herdr release — waits for: FRM-655
-- [ ] #7 f145 ⏳ stray batch, 2nd chore: x lane gate passes a herdr commit on any herdr area file (lefthook.yaml:128) — waits for: FRM-707
+- [ ] #7 f145 ⏳ stray 2nd chore: x lane gate passes on any herdr file (lefthook.yaml:128) — waits for: FRM-707
 - [ ] #8 f139 📅 FRM-596: the seat switch, 3 test lines and 4 gaps left (its 25 Nov comment) — on: 2026-11-27
 - [ ] #9 f132 📅 read the first week's typed look and test asks (mods spec after-merge) — on: 2026-12-02
 - [ ] #10 f137 📅 orbit asks: 7 days of real ones hold a title, a body and a pick (FRM-695 exit 10) — on: 2026-12-02
