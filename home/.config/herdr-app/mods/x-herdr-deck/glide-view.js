@@ -5,6 +5,8 @@ import { h_flex, v_flex } from 'gpui-base';
 import { div } from 'gpui-kit';
 import { exec, run, theme } from 'herdr';
 
+import { createListDrag } from './drag-view.js';
+import { inHisOrder, loadOrder, movedOrder, saveOrder } from './glide-order.js';
 import { GLIDE_MAX_PX, glideResize } from './glide-size.js';
 import { laneTicket, lanesShown, stepMark } from './lanes.js';
 import { SANS, SIZE, bar, line } from './look.js';
@@ -22,10 +24,19 @@ const REREAD_MS = 2000;
 // below this the sidebar is a rail, the width antenna draws its own rail at
 const RAIL_PX = 160;
 
-/** @param {string} block the layout node glide sizes, the copy's `props.block` */
-export function createGlide(block) {
-    /** @type {Lane[]} */
+// the space between two cards, which the drag slides a card by
+const CARD_GAP = 8;
+
+/**
+ * @param {string} block the layout node glide sizes, the copy's `props.block`
+ * @param {import('./glide-order.js').OrderStore} [store] where his order of the cards is kept, herdr's storage
+ */
+export function createGlide(block, store = localStorage) {
+    /** @type {Lane[]} the cards in his order */
     let lanes = [];
+    let order = loadOrder(store);
+    /** @type {ReturnType<typeof createListDrag<string>> | null} one drag, made with the copy's focus at init */
+    let drag = null;
     /** the cards opened to every step @type {Set<string>} */
     const open = new Set();
     let width = Infinity;
@@ -48,7 +59,7 @@ export function createGlide(block) {
                 });
                 return;
             }
-            lanes = lanesShown(body);
+            lanes = inHisOrder(lanesShown(body), order);
             cx.notify();
         });
 
@@ -57,11 +68,14 @@ export function createGlide(block) {
         if (px !== null) run('layout.resize', { id: block, px });
     };
 
-    /** @param {Theme} t @param {Lane} l */
-    const card = (t, l) => {
+    /** @param {Lane} l */
+    const keyOf = (l) => l.id ?? l.title;
+
+    /** what a card shows, drawn again for its ghost while he drags it @param {Theme} t @param {Lane} l @param {import('gpui-kit').Element} el */
+    const cardBody = (t, l, el) => {
         const items = l.items ?? [];
         const current = Math.min(l.current ?? 0, items.length);
-        const key = l.id ?? l.title;
+        const key = keyOf(l);
         const isOpen = open.has(key);
         const now = items[current];
         const ticketId = laneTicket(l);
@@ -83,22 +97,7 @@ export function createGlide(block) {
                         .when(i === current, (el) => el.font_semibold())
                         .child(item.text),
                 );
-        return v_flex()
-            .id(`lane-${key}`)
-            .min_w(0)
-            .mx(12)
-            .my(4)
-            .p(12)
-            .gap(8)
-            .rounded(8)
-            .border_1()
-            .border_color(t.border)
-            .cursor_pointer()
-            .hover((st) => st.bg(t.hover))
-            .on_click((_e, cx) => {
-                isOpen ? open.delete(key) : open.add(key);
-                cx.notify();
-            })
+        return el
             .child(
                 h_flex()
                     .gap(8)
@@ -165,9 +164,76 @@ export function createGlide(block) {
             );
     };
 
+    /** @param {Theme} t @param {Lane} l @param {number} at its place among the cards */
+    const card = (t, l, at) => {
+        const key = keyOf(l);
+        const el = cardBody(
+            t,
+            l,
+            v_flex()
+                .id(`lane-${key}`)
+                .min_w(0)
+                .p(12)
+                .gap(8)
+                .rounded(8)
+                .border_1()
+                .border_color(t.border)
+                .cursor_pointer()
+                .hover((st) => st.bg(t.hover)),
+        );
+        return drag
+            ? drag.item(
+                  el,
+                  {
+                      from: at,
+                      item: key,
+                      key,
+                      label: `🛼 ${l.title}`,
+                      look: () =>
+                          cardBody(t, l, v_flex().size_full().p(12).gap(8)),
+                      places: lanes.length,
+                      targetFor: () => at,
+                  },
+                  t,
+              )
+            : el;
+    };
+
+    /** the cards, the drag's whole zone: a drag past its edge springs home @param {Theme} t */
+    const cards = (t) => {
+        const list = v_flex()
+            .id('x-herdr-glide-zone')
+            .relative()
+            .w_full()
+            .px(12)
+            .py(4)
+            .gap(CARD_GAP)
+            .children(lanes.map((l, i) => card(t, l, i)));
+        return drag
+            ? drag
+                  .zone(list)
+                  .children([drag.ghost(t)].filter((g) => g !== null))
+            : list;
+    };
+
     return {
         /** @param {Context} cx */
         init(cx) {
+            const keys = cx.focus_handle();
+            drag = createListDrag({
+                axis: 'y',
+                focus: () => keys,
+                gap: CARD_GAP,
+                // a click opens the card to every step or folds it; a drag never does
+                onClick: (key) => {
+                    open.has(key) ? open.delete(key) : open.add(key);
+                },
+                onMove: (_key, from, to) => {
+                    order = movedOrder(lanes, from, to);
+                    saveOrder(store, order);
+                    lanes = inHisOrder(lanes, order);
+                },
+            });
             onShelfWrite(cx, LANES, read);
         },
 
@@ -228,9 +294,7 @@ export function createGlide(block) {
                                     el
                                         .child(head)
                                         .when(!isRail, (el2) =>
-                                            el2.children(
-                                                lanes.map((l) => card(t, l)),
-                                            ),
+                                            el2.child(cards(t)),
                                         ),
                                 ),
                         ),

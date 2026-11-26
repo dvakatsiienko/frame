@@ -45,3 +45,12 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a file that would not read keeps the cards and is read again 2 s later, with no write to wake it (FRM-527:W136)
   - decision: `~/.claude/shelf` is a link into frame and herdr names a change by the real path, so `onShelfWrite` (shelf.js) matches a path's end, one reader for glide and the usage file
   - decision: the deck and x-mod-stash test one fixture of the file (`x-mod-stash/tests/lanes-shelf.ts`), the writer that every field it writes is there, the deck that every field it reads is (FRM-659)
+- ⬜ dima drags a glide card to change the order (FRM-527:W138)
+  - given three cards
+  - when he drags the third above the first
+  - then it lifts, a ghost follows his pointer, the cards between slide a slot, and on the drop the order holds through a deck reload and a herdr restart; a new card lands last
+  - and a lane that ends leaves, the others keep their places; a new card of the same lane plan, a renamed or a re-linked one keeps its place
+  - and a click opens a card to every step and folds it, a drag never does; a press on the ticket pill lifts no card and its click opens the ticket
+  - and a drag past glide's edge, or Escape, springs it home and moves nothing
+  - decision: the order is his hand's, kept in herdr's storage, never in `lanes.json` (clio and the stash write that); the drag is antenna's, `_shared/drag-view.js`, no new one; no settings row (his 18:40 tick, 25 Nov)
+  - not checked: one drag by his hand in his window
